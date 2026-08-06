@@ -1,32 +1,53 @@
 use collab_ui::collab_panel;
-use gpui::{App, Menu, MenuItem, OsAction};
+use gpui::{App, Menu, MenuItem, OsAction, SharedString};
+use i18n::Translator;
 use release_channel::ReleaseChannel;
 use terminal_view::terminal_panel;
 use zed_actions::{Quit, assistant, debug_panel, dev, git_panel, project_panel};
 
+use crate::zed::ToggleLanguage;
+
 pub fn app_menus(cx: &mut App) -> Vec<Menu> {
+    let translator = cx.try_global::<Translator>();
+    let t = |key: &str, fallback: &'static str| -> SharedString {
+        translator
+            .and_then(|tr| tr.t(key))
+            .unwrap_or_else(|| fallback.into())
+    };
     let mut view_items = vec![
         MenuItem::action(
-            "Zoom In",
+            t("app-menu-zoom-in", "Zoom In"),
             zed_actions::IncreaseBufferFontSize { persist: false },
         ),
         MenuItem::action(
-            "Zoom Out",
+            t("app-menu-zoom-out", "Zoom Out"),
             zed_actions::DecreaseBufferFontSize { persist: false },
         ),
         MenuItem::action(
-            "Reset Zoom",
+            t("app-menu-reset-zoom", "Reset Zoom"),
             zed_actions::ResetBufferFontSize { persist: false },
         ),
         MenuItem::action(
-            "Reset All Zoom",
+            t("app-menu-reset-all-zoom", "Reset All Zoom"),
             zed_actions::ResetAllZoom { persist: false },
         ),
         MenuItem::separator(),
-        MenuItem::action("Toggle Left Dock", workspace::ToggleLeftDock),
-        MenuItem::action("Toggle Right Dock", workspace::ToggleRightDock),
-        MenuItem::action("Toggle Bottom Dock", workspace::ToggleBottomDock),
-        MenuItem::action("Toggle All Docks", workspace::ToggleAllDocks),
+        MenuItem::action(
+            t("app-menu-toggle-left-dock", "Toggle Left Dock"),
+            workspace::ToggleLeftDock,
+        ),
+        MenuItem::action(
+            t("app-menu-toggle-right-dock", "Toggle Right Dock"),
+            workspace::ToggleRightDock,
+        ),
+        MenuItem::action(
+            t("app-menu-toggle-bottom-dock", "Toggle Bottom Dock"),
+            workspace::ToggleBottomDock,
+        ),
+        MenuItem::action(
+            t("app-menu-toggle-all-docks", "Toggle All Docks"),
+            workspace::ToggleAllDocks,
+        ),
         MenuItem::submenu(Menu {
             name: "Editor Layout".into(),
             disabled: false,
@@ -48,6 +69,11 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
         MenuItem::separator(),
         MenuItem::action("Diagnostics", diagnostics::Deploy),
         MenuItem::separator(),
+        MenuItem::action(
+            t("app-menu-toggle-language", "Toggle Language (i18n demo)"),
+            ToggleLanguage,
+        ),
+        MenuItem::separator(),
     ];
 
     if ReleaseChannel::try_global(cx) == Some(ReleaseChannel::Dev) {
@@ -66,8 +92,8 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
                 MenuItem::action("About Zed", zed_actions::About),
                 MenuItem::action("Check for Updates", auto_update::Check),
                 MenuItem::separator(),
-                MenuItem::submenu(Menu::new("Settings").items([
-                    MenuItem::action("Open Settings", zed_actions::OpenSettings),
+                MenuItem::submenu(Menu::new(t("app-menu-settings", "Settings")).items([
+                    MenuItem::action(t("app-menu-open-settings", "Open Settings"), zed_actions::OpenSettings),
                     MenuItem::action("Open Settings File", super::OpenSettingsFile),
                     MenuItem::action("Open Project Settings", zed_actions::OpenProjectSettings),
                     MenuItem::action("Open Project Settings File", super::OpenProjectSettingsFile),

@@ -2,6 +2,17 @@
 # v0 mangling scheme provides more detailed backtraces around closures
 rustflags = ["-C", "symbol-mangling-version=v0", "--cfg", "tokio_unstable"]
 
+# NOTE (self-hosted branch only): this machine cannot reach static.crates.io and
+# the tuna mirror only mirrors the index, so builds use rsproxy (index + crate
+# downloads). Source replacement coexists with [patch.crates-io] in practice on
+# this machine (verified by successful `cargo check -p zed`). If this branch is
+# ever pushed to a CI / shared environment, remove this block first.
+[source.crates-io]
+replace-with = "rsproxy-sparse"
+
+[source.rsproxy-sparse]
+registry = "sparse+https://rsproxy.cn/index/"
+
 [alias]
 xtask = "run --package xtask --"
 perf-test = ["test", "--profile", "release-fast", "--lib", "--bins", "--tests", "--all-features", "--config", "target.'cfg(true)'.runner='cargo run -p perf --release'", "--config", "target.'cfg(true)'.rustflags=[\"--cfg\", \"perf_enabled\"]"]

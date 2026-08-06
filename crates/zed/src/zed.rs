@@ -149,6 +149,8 @@ actions!(
         TestPanic,
         /// Triggers a hard crash for debugging.
         TestCrash,
+        /// Toggles the UI language between English and Simplified Chinese (i18n prototype).
+        ToggleLanguage,
     ]
 );
 
@@ -198,6 +200,13 @@ pub fn init(cx: &mut App) {
     cx.on_action(quit);
 
     cx.on_action(|_: &RestoreBanner, cx| title_bar::restore_banner(cx));
+
+    // i18n prototype (wayfinder ticket 04): demo action that switches the UI
+    // language between en-US and zh-CN; observe_global::<Translator> refreshes
+    // all windows on change.
+    cx.on_action(|_: &ToggleLanguage, cx| {
+        i18n::Translator::update_global(cx, |translator, _| translator.toggle());
+    });
 
     cx.observe_flag::<PanicFeatureFlag, _>({
         let mut added = false;
@@ -436,6 +445,20 @@ pub fn initialize_workspace(app_state: Arc<AppState>, cx: &mut App) {
     init_cursor_hide_mode(cx);
     init_app_appearance(cx);
     init_reduce_motion(cx);
+
+    // i18n prototype (wayfinder ticket 04): install the Translator global and,
+    // on language switch, refresh every window so labels re-render through the
+    // Fluent lookup (see ticket 02: SettingsStore-style observe_global).
+    i18n::init(cx);
+    cx.observe_global::<i18n::Translator>(|cx| {
+        // The platform menu bar is built once (main.rs, before i18n::init), so a
+        // language switch must rebuild it — refresh_windows() only redraws
+        // window content, not the native menu bar.
+        let menus = app_menus(cx);
+        cx.set_menus(menus);
+        cx.refresh_windows();
+    })
+    .detach();
 
     cx.observe_new(|_multi_workspace: &mut MultiWorkspace, window, cx| {
         let Some(window) = window else {
