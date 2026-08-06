@@ -284,7 +284,10 @@ impl RenderOnce for Label {
                 );
             }
         }
-        self.base.child(self.label)
+        // i18n ui-layer fallback (ticket 05 step ①): every Label render goes
+        // through the Fluent lookup; only strings with a matching translation
+        // are replaced, everything else keeps its English source.
+        self.base.child(i18n::translate_text(&self.label, cx))
     }
 }
 

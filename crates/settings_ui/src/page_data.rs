@@ -871,6 +871,59 @@ fn appearance_page() -> SettingsPage {
         ]
     }
 
+    fn locale_section() -> [SettingsPageItem; 2] {
+        [
+            SettingsPageItem::SectionHeader("Language"),
+            SettingsPageItem::DynamicItem(DynamicItem {
+                discriminant: SettingItem {
+                    files: USER,
+                    title: "Language",
+                    description: "Choose the UI language. The menu bar is translated; remaining UI strings are added incrementally.",
+                    field: Box::new(SettingField {
+                        organization_override: None,
+                        json_path: Some("locale$"),
+                        pick: |settings_content| {
+                            Some(&dynamic_variants::<settings::LocaleSelection>()[
+                                settings::locale_discriminant_index(&settings_content.locale)])
+                        },
+                        write: |settings_content, value, _| {
+                            settings_content.locale = value.map(|v| match v {
+                                settings::LocaleSelectionDiscriminants::EnUs => "en-US".to_string(),
+                                settings::LocaleSelectionDiscriminants::ZhCn => "zh-CN".to_string(),
+                            });
+                        },
+                    }),
+                    metadata: None,
+                },
+                pick_discriminant: |settings_content| {
+                    Some(settings::locale_discriminant_index(&settings_content.locale))
+                },
+                fields: dynamic_variants::<settings::LocaleSelection>().into_iter().map(|variant| {
+                    vec![SettingItem {
+                        files: USER,
+                        title: match variant {
+                            settings::LocaleSelectionDiscriminants::EnUs => "English",
+                            settings::LocaleSelectionDiscriminants::ZhCn => "简体中文",
+                        },
+                        description: "",
+                        field: Box::new(SettingField {
+                            organization_override: None,
+                            json_path: Some("locale"),
+                            pick: |_| None,
+                            write: |settings_content, value, _| {
+                                settings_content.locale = value.map(|v| match v {
+                                    settings::LocaleSelectionDiscriminants::EnUs => "en-US".to_string(),
+                                    settings::LocaleSelectionDiscriminants::ZhCn => "zh-CN".to_string(),
+                                });
+                            },
+                        }),
+                        metadata: None,
+                    }]
+                }).collect(),
+            }),
+        ]
+    }
+
     fn buffer_font_section() -> [SettingsPageItem; 7] {
         [
             SettingsPageItem::SectionHeader("Buffer Font"),
@@ -1516,6 +1569,7 @@ fn appearance_page() -> SettingsPage {
 
     let items: Box<[SettingsPageItem]> = concat_sections!(
         theme_section(),
+        locale_section(),
         buffer_font_section(),
         ui_font_section(),
         agent_panel_font_section(),

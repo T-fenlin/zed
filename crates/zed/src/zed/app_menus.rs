@@ -11,7 +11,10 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
     let translator = cx.try_global::<Translator>();
     let t = |key: &str, fallback: &'static str| -> SharedString {
         translator
-            .and_then(|tr| tr.t(key))
+            .and_then(|tr| {
+                tr.t(key)
+                    .or_else(|| tr.t(&i18n::slugify(fallback)))
+            })
             .unwrap_or_else(|| fallback.into())
     };
     let mut view_items = vec![
@@ -49,7 +52,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             workspace::ToggleAllDocks,
         ),
         MenuItem::submenu(Menu {
-            name: "Editor Layout".into(),
+            name: t("editor-layout", "Editor Layout"),
             disabled: false,
             items: vec![
                 MenuItem::action("Split Up", workspace::SplitUp::default()),
@@ -86,7 +89,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
 
     vec![
         Menu {
-            name: "Zed".into(),
+            name: t("zed", "Zed"),
             disabled: false,
             items: vec![
                 MenuItem::action("About Zed", zed_actions::About),
@@ -131,7 +134,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "File".into(),
+            name: t("file", "File"),
             disabled: false,
             items: vec![
                 MenuItem::action("New", workspace::NewFile),
@@ -168,7 +171,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "Edit".into(),
+            name: t("edit", "Edit"),
             disabled: false,
             items: vec![
                 MenuItem::os_action("Undo", editor::actions::Undo, OsAction::Undo),
@@ -189,7 +192,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "Selection".into(),
+            name: t("selection", "Selection"),
             disabled: false,
             items: vec![
                 MenuItem::os_action(
@@ -237,12 +240,12 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "View".into(),
+            name: t("view", "View"),
             disabled: false,
             items: view_items,
         },
         Menu {
-            name: "Go".into(),
+            name: t("go", "Go"),
             disabled: false,
             items: vec![
                 MenuItem::action("Back", workspace::GoBack),
@@ -277,7 +280,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "Run".into(),
+            name: t("run", "Run"),
             disabled: false,
             items: vec![
                 MenuItem::action(
@@ -302,7 +305,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "Window".into(),
+            name: t("window", "Window"),
             disabled: false,
             items: vec![
                 MenuItem::action("Minimize", super::Minimize),
@@ -311,7 +314,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "Help".into(),
+            name: t("help", "Help"),
             disabled: false,
             items: vec![
                 MenuItem::action(

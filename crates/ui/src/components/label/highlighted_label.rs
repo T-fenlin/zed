@@ -209,8 +209,17 @@ impl RenderOnce for HighlightedLabel {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let highlight_color = cx.theme().colors().text_accent;
 
+        // i18n fallback (ticket 05 step ③): translate only when there are no
+        // highlight indices — translating text with highlights would shift the
+        // byte ranges and misalign the highlighting.
+        let label = if self.highlight_indices.is_empty() {
+            i18n::translate_text(&self.label, cx)
+        } else {
+            self.label
+        };
+
         let highlights = highlight_ranges(
-            &self.label,
+            &label,
             &self.highlight_indices,
             HighlightStyle {
                 color: Some(highlight_color),
@@ -222,7 +231,7 @@ impl RenderOnce for HighlightedLabel {
         text_style.color = self.base.color.color(cx);
 
         self.base
-            .child(StyledText::new(self.label).with_default_highlights(&text_style, highlights))
+            .child(StyledText::new(label).with_default_highlights(&text_style, highlights))
     }
 }
 

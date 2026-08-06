@@ -460,6 +460,17 @@ pub fn initialize_workspace(app_state: Arc<AppState>, cx: &mut App) {
     })
     .detach();
 
+    // Implementation step ② (wayfinder ticket 05): apply the persisted
+    // `locale` setting to the Translator, and keep it in sync when the setting
+    // changes in the settings UI. Changing the Translator triggers the
+    // observe_global above, which rebuilds the menus and redraws all windows.
+    let apply_locale = |cx: &mut App| {
+        let locale = LocaleSetting::get_global(cx).0.clone();
+        i18n::Translator::update_global(cx, |translator, _| translator.set_locale(&locale));
+    };
+    apply_locale(cx);
+    cx.observe_global::<SettingsStore>(apply_locale).detach();
+
     cx.observe_new(|_multi_workspace: &mut MultiWorkspace, window, cx| {
         let Some(window) = window else {
             return;
@@ -2111,6 +2122,21 @@ struct ReduceMotionSetting(settings::ReduceMotionMode);
 impl Settings for ReduceMotionSetting {
     fn from_settings(content: &settings::SettingsContent) -> Self {
         Self(content.reduce_motion.unwrap_or_default())
+    }
+}
+
+/// The persisted UI language setting (`"locale": "en-US" | "zh-CN"`).
+#[derive(Clone, Debug, settings::RegisterSetting)]
+struct LocaleSetting(String);
+
+impl Settings for LocaleSetting {
+    fn from_settings(content: &settings::SettingsContent) -> Self {
+        Self(
+            content
+                .locale
+                .clone()
+                .unwrap_or_else(|| "en-US".to_string()),
+        )
     }
 }
 

@@ -5,6 +5,7 @@ mod extension;
 mod fallible_options;
 mod language;
 mod language_model;
+mod locale;
 pub mod merge_from;
 mod project;
 mod serde_helper;
@@ -20,6 +21,7 @@ pub use extension::*;
 pub use fallible_options::*;
 pub use language::*;
 pub use language_model::*;
+pub use locale::*;
 pub use merge_from::MergeFrom as MergeFromTrait;
 pub use project::*;
 use serde::de::DeserializeOwned;
@@ -187,6 +189,11 @@ pub struct SettingsContent {
     ///
     /// Default: VSCode
     pub base_keymap: Option<BaseKeymapContent>,
+
+    /// The UI language, e.g. "en-US" or "zh-CN". When unset, defaults to "en-US".
+    ///
+    /// Default: en-US
+    pub locale: Option<String>,
 
     /// Configuration for the collab panel visual settings.
     pub collaboration_panel: Option<PanelSettingsContent>,
