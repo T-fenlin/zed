@@ -6,6 +6,7 @@ use cloud_api_types::Plan;
 use collections::HashMap;
 use fs::Fs;
 use gpui::{Action, Animation, AnimationExt, App, Entity, IntoElement, TaskExt, pulsating_between};
+use i18n::{keys, t};
 use project::agent_server_store::AllAgentServersSettings;
 use project::project_settings::ProjectSettings;
 use project::{AgentRegistryStore, RegistryAgent};
@@ -527,10 +528,13 @@ fn render_import_settings_section(tab_index: &mut isize, cx: &mut App) -> impl I
             v_flex()
                 .gap_0p5()
                 .max_w_5_6()
-                .child(Label::new("Import Settings"))
+                .child(Label::new(t(keys::onboarding::IMPORT_SETTINGS, cx)))
                 .child(
-                    Label::new("Automatically pull your settings from other editors")
-                        .color(Color::Muted),
+                    Label::new(t(
+                        keys::onboarding::AUTOMATICALLY_PULL_YOUR_SETTINGS_FROM_OTHER_EDITORS,
+                        cx,
+                    ))
+                    .color(Color::Muted),
                 ),
         )
         .child(h_flex().gap_1().child(vscode).child(cursor))
@@ -616,12 +620,12 @@ fn render_zed_agent_button(user_store: &Entity<UserStore>, cx: &mut App) -> impl
     let is_signed_in = !is_signed_out;
 
     let state_element = if is_signed_out {
-        Label::new("Sign In")
+        Label::new(t(keys::onboarding::SIGN_IN, cx))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .into_any_element()
     } else if is_signing_in {
-        Label::new("Signing In…")
+        Label::new(t(keys::onboarding::SIGNING_IN, cx))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .with_animation(
@@ -633,7 +637,7 @@ fn render_zed_agent_button(user_store: &Entity<UserStore>, cx: &mut App) -> impl
             )
             .into_any_element()
     } else if is_signed_in && is_free {
-        Label::new("Start Free Trial")
+        Label::new(t(keys::onboarding::START_FREE_TRIAL, cx))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .into_any_element()
@@ -704,10 +708,13 @@ fn render_ai_section(user_store: &Entity<UserStore>, cx: &mut App) -> impl IntoE
 
     v_flex()
         .gap_0p5()
-        .child(Label::new("Agent Setup"))
+        .child(Label::new(t(keys::onboarding::AGENT_SETUP, cx)))
         .child(
-            Label::new("Install your favorite agents and start your first thread.")
-                .color(Color::Muted),
+            Label::new(t(
+                keys::onboarding::INSTALL_YOUR_FAVORITE_AGENTS_AND_START_YOUR_FIRST_THREAD,
+                cx,
+            ))
+            .color(Color::Muted),
         )
         .child(grid)
 }

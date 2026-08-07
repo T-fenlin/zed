@@ -6,6 +6,7 @@ use gpui::{
     InteractiveElement, IntoElement, Modifiers, ModifiersChangedEvent, ParentElement, Render,
     SharedString, Styled, Subscription, Task, TaskExt, WeakEntity, Window, actions, rems,
 };
+use i18n::{keys, t};
 use picker::{Picker, PickerDelegate};
 use project::git_store::{Repository, RepositoryEvent};
 use std::sync::Arc;
@@ -643,7 +644,7 @@ impl PickerDelegate for StashListDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("drop-stash", "Drop")
+                    Button::new("drop-stash", t(keys::git_ui::DROP, cx))
                         .key_binding(
                             KeyBinding::for_action_in(
                                 &stash_picker::DropStashItem,
@@ -673,7 +674,7 @@ impl PickerDelegate for StashListDelegate {
                         })),
                 )
                 .child(
-                    Button::new("pop-stash", "Pop")
+                    Button::new("pop-stash", t(keys::git_ui::POP, cx))
                         .key_binding(
                             KeyBinding::for_action_in(&menu::SecondaryConfirm, &focus_handle, cx)
                                 .map(|kb| kb.size(rems_from_px(12.))),

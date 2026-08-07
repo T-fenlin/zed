@@ -13,6 +13,7 @@ use gpui::{
     Action, AnyElement, App, Context, Entity, EventEmitter, FocusHandle, Focusable, Render,
     SharedString, Subscription, Task, WeakEntity,
 };
+use i18n::{keys, t};
 use language::Capability;
 use project::{
     Project, ProjectPath,
@@ -110,7 +111,7 @@ impl DiffHunkDelegate for StagedDiffDelegate {
             .block_mouse_except_scroll()
             .shadow_md()
             .child(
-                Button::new(("unstage", row as u64), "Unstage")
+                Button::new(("unstage", row as u64), t(keys::git_ui::UNSTAGE, cx))
                     .alpha(if status.is_pending() { 0.66 } else { 1.0 })
                     .tooltip(Tooltip::text("Unstage Hunk"))
                     .on_click({
@@ -686,7 +687,7 @@ impl Render for StagedDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("unstage", "Unstage")
+                            Button::new("unstage", t(keys::git_ui::UNSTAGE, cx))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::text("Unstage Selected Hunks"))
                                 .on_click(cx.listener(|this, _, window, cx| {
@@ -696,7 +697,7 @@ impl Render for StagedDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("unstage", "Unstage")
+                            Button::new("unstage", t(keys::git_ui::UNSTAGE, cx))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Unstage and Go to Next Hunk",
@@ -711,7 +712,7 @@ impl Render for StagedDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("unstage-all", "Unstage All")
+                Button::new("unstage-all", t(keys::git_ui::UNSTAGE_ALL, cx))
                     .width(rems_from_px(80.))
                     .disabled(!button_states.unstage_all)
                     .tooltip(Tooltip::for_action_title_in(
@@ -723,9 +724,9 @@ impl Render for StagedDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", "Commit")
+                Button::new("commit", t(keys::git_ui::COMMIT, cx))
                     .tooltip(Tooltip::for_action_title_in(
-                        "Commit",
+                        t(keys::git_ui::COMMIT, cx),
                         &Commit,
                         &focus_handle,
                     ))

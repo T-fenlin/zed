@@ -34,6 +34,7 @@ futures.workspace = true
 fuzzy.workspace = true
 fuzzy_nucleo.workspace = true
 git.workspace = true
+i18n.workspace = true
 gpui.workspace = true
 itertools.workspace = true
 language.workspace = true

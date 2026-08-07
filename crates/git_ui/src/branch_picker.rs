@@ -11,6 +11,7 @@ use gpui::{
     InteractiveElement, IntoElement, Modifiers, ModifiersChangedEvent, ParentElement, PromptLevel,
     Render, SharedString, Styled, Subscription, Task, TaskExt, WeakEntity, Window, actions, rems,
 };
+use i18n::{keys, t};
 use picker::{Picker, PickerDelegate, PickerEditorPosition};
 use project::git_store::{Repository, RepositoryEvent};
 use project::project_settings::ProjectSettings;
@@ -1687,7 +1688,7 @@ impl PickerDelegate for BranchListDelegate {
         };
 
         let entry_title = match entry {
-            Entry::NewUrl { .. } => Label::new("Create Remote Repository")
+            Entry::NewUrl { .. } => Label::new(t(keys::git_ui::CREATE_REMOTE_REPOSITORY, cx))
                 .single_line()
                 .truncate()
                 .into_any_element(),
@@ -1866,7 +1867,7 @@ impl PickerDelegate for BranchListDelegate {
                                         })
                                         .when(!has_commit, |this| {
                                             this.child(
-                                                Label::new("No commits found")
+                                                Label::new(t(keys::git_ui::NO_COMMITS_FOUND, cx))
                                                     .color(Color::Muted)
                                                     .size(LabelSize::Small),
                                             )
@@ -1893,14 +1894,16 @@ impl PickerDelegate for BranchListDelegate {
                                                 .child(Label::new(branch_name.clone()))
                                                 .when(is_select_only && is_checked, |this| {
                                                     this.child(
-                                                        Label::new("Selected Branch")
-                                                            .size(LabelSize::Small)
-                                                            .color(Color::Muted),
+                                                        Label::new(t(
+                                                            keys::git_ui::SELECTED_BRANCH,
+                                                        ))
+                                                        .size(LabelSize::Small)
+                                                        .color(Color::Muted),
                                                     )
                                                 })
                                                 .when(is_head, |this| {
                                                     this.child(
-                                                        Label::new("Current Branch")
+                                                        Label::new(t(keys::git_ui::CURRENT_BRANCH))
                                                             .size(LabelSize::Small)
                                                             .color(Color::Muted),
                                                     )
@@ -2024,7 +2027,7 @@ impl PickerDelegate for BranchListDelegate {
                             .is_some_and(|branch| branch.is_head),
                         |this| {
                             this.child(
-                                Button::new("delete-branch", "Delete")
+                                Button::new("delete-branch", t(keys::git_ui::DELETE, cx))
                                     .key_binding(
                                         KeyBinding::for_action_in(
                                             &branch_picker::DeleteBranch,
@@ -2043,7 +2046,7 @@ impl PickerDelegate for BranchListDelegate {
                         },
                     )
                     .child(
-                        Button::new("switch_branch", "Switch")
+                        Button::new("switch_branch", t(keys::git_ui::SWITCH, cx))
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12.))),
@@ -2058,7 +2061,7 @@ impl PickerDelegate for BranchListDelegate {
                         .justify_end()
                         .map(|this| match branch_from_default_button {
                             Some(button) => this.child(button).child(
-                                Button::new("create", "Create")
+                                Button::new("create", t(keys::git_ui::CREATE, cx))
                                     .key_binding(
                                         KeyBinding::for_action_in(
                                             &menu::Confirm,
@@ -2103,7 +2106,7 @@ impl PickerDelegate for BranchListDelegate {
                             this.child(button)
                         })
                         .child(
-                            Button::new("create-new-branch", "Create")
+                            Button::new("create-new-branch", t(keys::git_ui::CREATE, cx))
                                 .key_binding(
                                     KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                         .map(|kb| kb.size(rems_from_px(12.))),
@@ -2119,7 +2122,7 @@ impl PickerDelegate for BranchListDelegate {
                 footer_container()
                     .justify_end()
                     .child(
-                        Button::new("confirm-create-remote", "Confirm")
+                        Button::new("confirm-create-remote", t(keys::git_ui::CONFIRM, cx))
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12.))),

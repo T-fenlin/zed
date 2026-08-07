@@ -1,4 +1,5 @@
 use gpui::{Action, IntoElement, ParentElement, RenderOnce};
+use i18n::{keys, t};
 use language_model::{IconOrSvg, LanguageModelRegistry, ZED_CLOUD_PROVIDER_ID};
 use ui::{Divider, List, ListBulletItem, prelude::*};
 
@@ -96,8 +97,11 @@ impl Render for ApiKeysWithProviders {
                                 div()
                                     .w_full()
                                     .child(
-                                        Label::new("Start now using API keys from your environment for the following providers:")
-                                            .color(Color::Muted)
+                                        Label::new(t(
+                                            keys::onboarding::START_NOW_USING_API_KEYS_FROM_YOUR_ENVIRONMENT_FOR_THE_FOLLOWING_PROVIDERS,
+                                            cx,
+                                        ))
+                                        .color(Color::Muted)
                                     )
                             )
                     )
@@ -124,7 +128,7 @@ impl RenderOnce for ApiKeysWithoutProviders {
                 h_flex()
                     .gap_2()
                     .child(
-                        Label::new("API Keys")
+                        Label::new(t(keys::onboarding::API_KEYS, cx))
                             .size(LabelSize::Small)
                             .color(Color::Muted)
                             .buffer_font(cx),

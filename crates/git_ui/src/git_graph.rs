@@ -25,6 +25,7 @@ use gpui::{
     UniformListScrollHandle, WeakEntity, Window, actions, anchored, deferred, point, prelude::*,
     px, uniform_list,
 };
+use i18n::{keys, t};
 use language::line_diff;
 use markdown::{Markdown, MarkdownElement};
 use menu::{Cancel, SelectFirst, SelectLast, SelectNext, SelectPrevious};
@@ -2492,10 +2493,21 @@ impl GitGraph {
         cx: &mut Context<Self>,
     ) {
         let is_path_history = matches!(self.log_source, LogSource::Path(_));
-        let columns: &[&str] = if is_path_history {
-            &["Description", "Date", "Author", "Commit"]
+        let columns: Vec<SharedString> = if is_path_history {
+            vec![
+                t(keys::git_ui::DESCRIPTION, cx),
+                t(keys::git_ui::DATE, cx),
+                t(keys::git_ui::AUTHOR, cx),
+                t(keys::git_ui::COMMIT, cx),
+            ]
         } else {
-            &["Graph", "Description", "Date", "Author", "Commit"]
+            vec![
+                t(keys::git_ui::GRAPH, cx),
+                t(keys::git_ui::DESCRIPTION, cx),
+                t(keys::git_ui::DATE, cx),
+                t(keys::git_ui::AUTHOR, cx),
+                t(keys::git_ui::COMMIT, cx),
+            ]
         };
 
         let filter = self.column_visibility.clone();
@@ -3153,7 +3165,7 @@ impl GitGraph {
             .child(Divider::horizontal())
             .child(
                 h_flex().p_1p5().w_full().child(
-                    Button::new("view-commit", "View Commit")
+                    Button::new("view-commit", t(keys::git_ui::VIEW_COMMIT, cx))
                         .full_width()
                         .start_icon(
                             Icon::new(IconName::GitCommit)
@@ -3730,7 +3742,7 @@ impl Render for GitGraph {
             } else if is_loading {
                 "Loading".to_string()
             } else {
-                "No commits found".to_string()
+                t(keys::git_ui::NO_COMMITS_FOUND, cx)
             };
             let label = Label::new(message)
                 .color(Color::Muted)
@@ -3805,20 +3817,20 @@ impl Render for GitGraph {
                                     if !is_path_history {
                                         TableRow::from_vec(
                                             vec![
-                                                Label::new("Graph")
+                                                Label::new(t(keys::git_ui::GRAPH, cx))
                                                     .color(Color::Muted)
                                                     .truncate()
                                                     .into_any_element(),
-                                                Label::new("Description")
+                                                Label::new(t(keys::git_ui::DESCRIPTION, cx))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Date")
+                                                Label::new(t(keys::git_ui::DATE, cx))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Author")
+                                                Label::new(t(keys::git_ui::AUTHOR, cx))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Commit")
+                                                Label::new(t(keys::git_ui::COMMIT, cx))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],
@@ -3827,16 +3839,16 @@ impl Render for GitGraph {
                                     } else {
                                         TableRow::from_vec(
                                             vec![
-                                                Label::new("Description")
+                                                Label::new(t(keys::git_ui::DESCRIPTION, cx))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Date")
+                                                Label::new(t(keys::git_ui::DATE, cx))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Author")
+                                                Label::new(t(keys::git_ui::AUTHOR, cx))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Commit")
+                                                Label::new(t(keys::git_ui::COMMIT, cx))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],

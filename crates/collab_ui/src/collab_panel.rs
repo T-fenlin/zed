@@ -11,6 +11,7 @@ use collections::{HashMap, HashSet};
 use contact_finder::ContactFinder;
 use db::kvp::KeyValueStore;
 use editor::{Editor, EditorElement, EditorStyle};
+use i18n::{keys, t};
 use fuzzy::{StringMatch, StringMatchCandidate, match_strings};
 use gpui::{
     AnyElement, App, AsyncWindowContext, Bounds, ClickEvent, ClipboardItem, DismissEvent, Div,
@@ -2715,16 +2716,20 @@ impl CollabPanel {
         let (button_id, button_label, button_icon) = if is_authenticated {
             (
                 "connect",
-                if is_busy { "Connecting…" } else { "Connect" },
+                if is_busy {
+                    "Connecting…".into()
+                } else {
+                    "Connect".into()
+                },
                 IconName::Public,
             )
         } else {
             (
                 "sign_in",
                 if is_busy {
-                    "Signing in…"
+                    t(keys::onboarding::SIGNING_IN, cx)
                 } else {
-                    "Sign In with GitHub"
+                    "Sign In with GitHub".into()
                 },
                 IconName::Github,
             )

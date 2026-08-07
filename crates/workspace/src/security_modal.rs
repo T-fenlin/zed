@@ -8,6 +8,7 @@ use std::{
 
 use collections::{HashMap, HashSet};
 use gpui::{DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, ScrollHandle, WeakEntity};
+use i18n::{keys, t};
 
 use project::{
     WorktreeId,
@@ -273,7 +274,7 @@ impl Render for SecurityModal {
                     .gap_1()
                     .justify_end()
                     .child(
-                        Button::new("rm", "Stay in Restricted Mode")
+                        Button::new("rm", t(keys::workspace::STAY_IN_RESTRICTED_MODE, cx))
                             .key_binding(
                                 KeyBinding::for_action(
                                     &ToggleWorktreeSecurity,
@@ -288,7 +289,7 @@ impl Render for SecurityModal {
                             })),
                     )
                     .child(
-                        Button::new("tc", "Trust and Continue")
+                        Button::new("tc", t(keys::workspace::TRUST_AND_CONTINUE, cx))
                             .style(ButtonStyle::Filled)
                             .layer(ui::ElevationIndex::ModalSurface)
                             .key_binding(

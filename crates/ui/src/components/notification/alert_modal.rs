@@ -5,6 +5,7 @@ use gpui::Action;
 use gpui::FocusHandle;
 use gpui::IntoElement;
 use gpui::Stateful;
+use i18n::{keys, t};
 use smallvec::{SmallVec, smallvec};
 use theme::ActiveTheme;
 
@@ -221,7 +222,10 @@ Review .zed/settings.json for any extensions or commands configured by this proj
                             .child(
                                 v_flex()
                                     .mt_1()
-                                    .child(Label::new("Restricted mode prevents:").color(Color::Muted))
+                                    .child(
+                                        Label::new(t(keys::workspace::RESTRICTED_MODE_PREVENTS, cx))
+                                            .color(Color::Muted),
+                                    )
                                     .child(ListBulletItem::new("Project settings from being applied"))
                                     .child(ListBulletItem::new("Language servers from running"))
                                     .child(ListBulletItem::new("MCP integrations from installing"))
@@ -237,8 +241,20 @@ Review .zed/settings.json for any extensions or commands configured by this proj
                                     .child(
                                         h_flex()
                                             .gap_1()
-                                            .child(Button::new("restricted", "Stay in Restricted Mode").color(Color::Muted))
-                                            .child(Button::new("trust", "Trust and Continue").style(ButtonStyle::Filled))
+                                            .child(
+                                                Button::new(
+                                                    "restricted",
+                                                    t(keys::workspace::STAY_IN_RESTRICTED_MODE, cx),
+                                                )
+                                                .color(Color::Muted),
+                                            )
+                                            .child(
+                                                Button::new(
+                                                    "trust",
+                                                    t(keys::workspace::TRUST_AND_CONTINUE, cx),
+                                                )
+                                                .style(ButtonStyle::Filled),
+                                            )
                                     )
                             )
                             .width(rems(40.))

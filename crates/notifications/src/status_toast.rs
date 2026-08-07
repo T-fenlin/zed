@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use gpui::{DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, IntoElement};
+use i18n::{keys, t};
 use ui::{Tooltip, prelude::*};
 use workspace::{ToastAction, ToastView};
 use zed_actions::toast;
@@ -157,9 +158,9 @@ impl Component for StatusToast {
     }
 
     fn preview(_window: &mut Window, cx: &mut App) -> AnyElement {
-        let text_example = StatusToast::new("Operation completed", cx, |this, _| this);
+        let text_example = StatusToast::new(t(keys::errors::OPERATION_COMPLETED, cx), cx, |this, _| this);
 
-        let action_example = StatusToast::new("Update ready to install", cx, |this, _cx| {
+        let action_example = StatusToast::new(t(keys::errors::UPDATE_READY_TO_INSTALL, cx), cx, |this, _cx| {
             this.action("Restart", |_, _| {})
         });
 
@@ -199,7 +200,7 @@ impl Component for StatusToast {
             },
         );
 
-        let warning_example = StatusToast::new("You have outdated settings", cx, |this, _cx| {
+        let warning_example = StatusToast::new(t(keys::errors::YOU_HAVE_OUTDATED_SETTINGS, cx), cx, |this, _cx| {
             this.icon(
                 Icon::new(IconName::Warning)
                     .size(IconSize::Small)

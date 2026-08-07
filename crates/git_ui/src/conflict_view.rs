@@ -9,6 +9,7 @@ use gpui::{
     App, ClickEvent, Context, Empty, Entity, InteractiveElement as _, ParentElement as _,
     Subscription, Task, WeakEntity,
 };
+use i18n::{keys, t};
 use language::{Anchor, Buffer, BufferId};
 use project::{
     ConflictRegion, ConflictSet, ConflictSetUpdate, Project,
@@ -374,7 +375,7 @@ fn render_conflict_buttons(
                 }),
         )
         .child(
-            Button::new("both", "Use Both")
+            Button::new("both", t(keys::git_ui::USE_BOTH, cx))
                 .label_size(LabelSize::Small)
                 .on_click({
                     let editor = editor.clone();
@@ -395,7 +396,7 @@ fn render_conflict_buttons(
         )
         .when(is_ai_enabled, |this| {
             this.child(Divider::vertical()).child(
-                Button::new("resolve-with-agent", "Resolve with Agent")
+                Button::new("resolve-with-agent", t(keys::git_ui::RESOLVE_WITH_AGENT, cx))
                     .label_size(LabelSize::Small)
                     .start_icon(
                         Icon::new(IconName::ZedAssistant)

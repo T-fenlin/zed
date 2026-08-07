@@ -33,3 +33,7 @@ rustflags = ["-C", "link-arg=-fuse-ld=lld"]
 
 [env]
 MACOSX_DEPLOYMENT_TARGET = "10.15.7"
+# This machine cannot download the prebuilt libwebrtc archive reliably
+# (static.crates.io / GitHub unreachable), so point webrtc-sys at the local
+# copy under D:\ProgramData\rust\webrtc (structure: include/ + lib/ + *.ninja).
+LK_CUSTOM_WEBRTC = "D:/ProgramData/rust/webrtc/win-x64-release"

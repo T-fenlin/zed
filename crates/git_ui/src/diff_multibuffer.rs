@@ -12,6 +12,7 @@ use editor::{
 };
 use futures_lite::future::yield_now;
 use git::{repository::RepoPath, status::FileStatus};
+use i18n::{keys, t};
 use gpui::{
     App, AppContext as _, AsyncWindowContext, Entity, EventEmitter, FocusHandle, Focusable, Render,
     SharedString, Subscription, Task, WeakEntity,
@@ -922,12 +923,12 @@ impl Render for DiffMultibuffer {
                             None => el.child(
                                 h_flex()
                                     .justify_around()
-                                    .child(Label::new("Remote up to date")),
+                                    .child(Label::new(t(keys::git_ui::REMOTE_UP_TO_DATE, cx))),
                             ),
                         })
                         .child(
                             h_flex().justify_around().mt_1().child(
-                                Button::new("project-diff-close-button", "Close")
+                                Button::new("project-diff-close-button", t(keys::git_ui::CLOSE, cx))
                                     .key_binding(KeyBinding::for_action_in(
                                         &CloseActiveItem::default(),
                                         &keybinding_focus_handle,

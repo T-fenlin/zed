@@ -8,6 +8,7 @@ use gpui::{
     FocusHandle, Focusable, Global, IntoElement, KeyContext, Render, ScrollHandle, SharedString,
     Subscription, Task, WeakEntity, Window, actions,
 };
+use i18n::{keys, t};
 use notifications::status_toast::StatusToast;
 use project::agent_server_store::AllAgentServersSettings;
 use schemars::JsonSchema;
@@ -355,15 +356,21 @@ impl Render for Onboarding {
                                                             .size(HeadlineSize::Small),
                                                     )
                                                     .child(
-                                                        Label::new("The editor for what's next")
-                                                            .color(Color::Muted)
-                                                            .size(LabelSize::Small)
-                                                            .italic(),
+                                                        Label::new(t(
+                                                            keys::workspace::THE_EDITOR_FOR_WHAT_S_NEXT,
+                                                            cx,
+                                                        ))
+                                                        .color(Color::Muted)
+                                                        .size(LabelSize::Small)
+                                                        .italic(),
                                                     ),
                                             ),
                                     )
                                     .child({
-                                        Button::new("finish_setup", "Finish Setup")
+                                        Button::new(
+                                            "finish_setup",
+                                            t(keys::onboarding::FINISH_SETUP, cx),
+                                        )
                                             .style(ButtonStyle::Filled)
                                             .size(ButtonSize::Medium)
                                             .width(rems_from_px(200.))

@@ -13,6 +13,7 @@ use gpui::{
     Action, AnyElement, App, Context, Entity, EventEmitter, FocusHandle, Focusable, Render,
     SharedString, Subscription, Task, WeakEntity,
 };
+use i18n::{keys, t};
 use language::Capability;
 use project::{
     Project, ProjectPath,
@@ -140,7 +141,7 @@ impl DiffHunkDelegate for UnstagedDiffDelegate {
             .block_mouse_except_scroll()
             .shadow_md()
             .child(
-                Button::new(("stage", row as u64), "Stage")
+                Button::new(("stage", row as u64), t(keys::git_ui::STAGE, cx))
                     .alpha(if status.is_pending() { 0.66 } else { 1.0 })
                     .tooltip(Tooltip::text("Stage Hunk"))
                     .on_click({
@@ -158,7 +159,7 @@ impl DiffHunkDelegate for UnstagedDiffDelegate {
                     }),
             )
             .child(
-                Button::new(("restore", row as u64), "Restore")
+                Button::new(("restore", row as u64), t(keys::git_ui::RESTORE, cx))
                     .tooltip(Tooltip::text("Restore Hunk"))
                     .on_click({
                         let editor = editor.clone();
@@ -792,7 +793,7 @@ impl Render for UnstagedDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", "Stage")
+                            Button::new("stage", t(keys::git_ui::STAGE, cx))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::text("Stage Selected Hunks"))
                                 .on_click(cx.listener(|this, _, window, cx| {
@@ -802,7 +803,7 @@ impl Render for UnstagedDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", "Stage")
+                            Button::new("stage", t(keys::git_ui::STAGE, cx))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Stage and Go to Next Hunk",
@@ -815,7 +816,7 @@ impl Render for UnstagedDiffToolbar {
                         )
                     })
                     .child(
-                        Button::new("restore", "Restore")
+                        Button::new("restore", t(keys::git_ui::RESTORE, cx))
                             .disabled(!button_states.restore)
                             .tooltip(Tooltip::text("Restore Selected Hunks"))
                             .on_click(cx.listener(|this, _, window, cx| {
@@ -825,7 +826,7 @@ impl Render for UnstagedDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("stage-all", "Stage All")
+                Button::new("stage-all", t(keys::git_ui::STAGE_ALL, cx))
                     .width(rems_from_px(80.))
                     .disabled(!button_states.stage_all)
                     .tooltip(Tooltip::for_action_title_in(
@@ -837,7 +838,7 @@ impl Render for UnstagedDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("restore-all", "Restore All")
+                Button::new("restore-all", t(keys::git_ui::RESTORE_ALL, cx))
                     .width(rems_from_px(80.))
                     .disabled(!button_states.restore_all)
                     .tooltip(Tooltip::text("Restore All Changes"))

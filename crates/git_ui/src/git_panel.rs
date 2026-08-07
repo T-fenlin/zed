@@ -27,6 +27,7 @@ use editor::{Editor, EditorElement, EditorMode, MultiBuffer, MultiBufferOffset, 
 use editor::{EditorStyle, RewrapOptions};
 use file_icons::FileIcons;
 use futures::StreamExt as _;
+use i18n::{keys, t};
 use futures::channel::oneshot::Canceled;
 use git::Oid;
 use git::commit::ParsedCommitMessage;
@@ -208,11 +209,13 @@ fn git_panel_context_menu(
     window: &mut Window,
     cx: &mut App,
 ) -> Entity<ContextMenu> {
+    let stage_all_label = t(keys::git_ui::STAGE_ALL, cx);
+    let unstage_all_label = t(keys::git_ui::UNSTAGE_ALL, cx);
     ContextMenu::build(window, cx, |context_menu, _, _| {
         context_menu
             .context(focus_handle.clone())
-            .action_disabled_when(!has_unstaged_changes, "Stage All", StageAll.boxed_clone())
-            .action_disabled_when(!has_staged_changes, "Unstage All", UnstageAll.boxed_clone())
+            .action_disabled_when(!has_unstaged_changes, stage_all_label, StageAll.boxed_clone())
+            .action_disabled_when(!has_staged_changes, unstage_all_label, UnstageAll.boxed_clone())
             .action_disabled_when(
                 !has_tracked_changes,
                 "Restore All Changes",
@@ -259,7 +262,7 @@ fn git_panel_view_options_menu(
             .header("View")
             .item({
                 let view_options_menu_state = view_options_menu_state.clone();
-                ContextMenuEntry::new("List")
+                ContextMenuEntry::new(t(keys::git_ui::LIST, cx))
                     .toggle(IconPosition::End, !state.tree_view)
                     .handler(move |window, cx| {
                         if state.tree_view {
@@ -273,7 +276,7 @@ fn git_panel_view_options_menu(
             })
             .item({
                 let view_options_menu_state = view_options_menu_state.clone();
-                ContextMenuEntry::new("Tree")
+                ContextMenuEntry::new(t(keys::git_ui::TREE, cx))
                     .toggle(IconPosition::End, state.tree_view)
                     .handler(move |window, cx| {
                         if !state.tree_view {
@@ -290,7 +293,7 @@ fn git_panel_view_options_menu(
                     .header("Sort By")
                     .item({
                         let view_options_menu_state = view_options_menu_state.clone();
-                        ContextMenuEntry::new("Path")
+                        ContextMenuEntry::new(t(keys::git_ui::PATH, cx))
                             .toggle(IconPosition::End, state.sort_by == GitPanelSortBy::Path)
                             .handler(move |window, cx| {
                                 if !state.tree_view {
@@ -304,7 +307,7 @@ fn git_panel_view_options_menu(
                     })
                     .item({
                         let view_options_menu_state = view_options_menu_state.clone();
-                        ContextMenuEntry::new("Name")
+                        ContextMenuEntry::new(t(keys::git_ui::NAME, cx))
                             .toggle(IconPosition::End, state.sort_by == GitPanelSortBy::Name)
                             .handler(move |window, cx| {
                                 if !state.tree_view {
@@ -321,7 +324,7 @@ fn git_panel_view_options_menu(
             .header("Group By")
             .item({
                 let view_options_menu_state = view_options_menu_state.clone();
-                ContextMenuEntry::new("None")
+                ContextMenuEntry::new(t(keys::git_ui::NONE, cx))
                     .toggle(IconPosition::End, state.group_by == GitPanelGroupBy::None)
                     .handler(move |window, cx| {
                         if state.group_by != GitPanelGroupBy::None {
@@ -525,11 +528,11 @@ impl StageIntent {
         }
     }
 
-    fn label(self, stage_status: impl FnOnce() -> StageStatus) -> &'static str {
+    fn label(self, stage_status: impl FnOnce() -> StageStatus, cx: &App) -> SharedString {
         if self.resolve_with(stage_status) {
-            "Stage"
+            t(keys::git_ui::STAGE, cx)
         } else {
-            "Unstage"
+            t(keys::git_ui::UNSTAGE, cx)
         }
     }
 }
@@ -2935,7 +2938,7 @@ impl GitPanel {
         let Some(active_repository) = self.active_repository.clone() else {
             return;
         };
-        let error_spawn = |message, window: &mut Window, cx: &mut App| {
+        let error_spawn = |message: SharedString, window: &mut Window, cx: &mut App| {
             let prompt = window.prompt(PromptLevel::Warning, message, None, &["OK"], cx);
             cx.spawn(async move |_| {
                 prompt.await.ok();
@@ -2945,7 +2948,7 @@ impl GitPanel {
 
         if self.has_unstaged_conflicts() {
             error_spawn(
-                "There are still conflicts. You must stage these before committing",
+                "There are still conflicts. You must stage these before committing".into(),
                 window,
                 cx,
             );
@@ -2981,7 +2984,7 @@ impl GitPanel {
                 .collect::<Vec<_>>();
 
             if changed_files.is_empty() && !options.amend {
-                error_spawn("No changes to commit", window, cx);
+                error_spawn(t(keys::git_ui::NO_CHANGES_TO_COMMIT, cx), window, cx);
                 return;
             }
 
@@ -3126,11 +3129,11 @@ impl GitPanel {
         }?;
 
         let action_text = if git_status_entry.status.is_deleted() {
-            Some("Delete")
+            Some(t(keys::git_ui::DELETE, cx))
         } else if git_status_entry.status.is_created() {
-            Some("Create")
+            Some(t(keys::git_ui::CREATE, cx))
         } else if git_status_entry.status.is_modified() {
-            Some("Update")
+            Some("Update".into())
         } else {
             None
         }?;
@@ -5434,14 +5437,14 @@ impl GitPanel {
                                 move |window, cx| window.dispatch_action(Box::new(Signoff), cx),
                             )
                             .item(
-                                ContextMenuEntry::new("Skip Hooks")
+                                ContextMenuEntry::new(t(keys::git_ui::SKIP_HOOKS, cx))
                                     .toggleable(IconPosition::Start, skip_hooks)
                                     .action(Box::new(SkipHooks))
                                     .handler(move |window, cx| {
                                         window.dispatch_action(Box::new(SkipHooks), cx)
                                     })
                                     .documentation_aside(DocumentationSide::Left, |_| {
-                                        Label::new("git commit --no-verify").into_any_element()
+                                        Label::new(t(keys::git_ui::GIT_COMMIT_NO_VERIFY, cx)).into_any_element()
                                     }),
                             )
                     }))
@@ -5458,37 +5461,37 @@ impl GitPanel {
         self.generate_commit_message_task.is_some()
     }
 
-    pub fn configure_commit_button(&self, cx: &mut Context<Self>) -> (bool, &'static str) {
+    pub fn configure_commit_button(&self, cx: &mut Context<Self>) -> (bool, SharedString) {
         if self.generate_commit_message_task.is_some() {
-            (false, "Generating commit message...")
+            (false, "Generating commit message...".into())
         } else if self.has_unstaged_conflicts() {
-            (false, "You must resolve conflicts before committing")
+            (false, "You must resolve conflicts before committing".into())
         } else if !self.has_staged_changes() && !self.has_tracked_changes() && !self.amend_pending {
-            (false, "No changes to commit")
+            (false, t(keys::git_ui::NO_CHANGES_TO_COMMIT, cx))
         } else if self.pending_commit.is_some() {
-            (false, "Commit in progress")
+            (false, "Commit in progress".into())
         } else if !self.has_commit_message(cx) {
-            (false, "No commit message")
+            (false, "No commit message".into())
         } else if !self.has_write_access(cx) {
-            (false, "You do not have write access to this project")
+            (false, "You do not have write access to this project".into())
         } else {
-            (true, self.commit_button_title())
+            (true, self.commit_button_title(cx))
         }
     }
 
-    pub fn commit_button_title(&self) -> &'static str {
+    pub fn commit_button_title(&self, cx: &App) -> SharedString {
         if self.amend_pending {
             if self.has_staged_changes() {
-                "Amend"
+                "Amend".into()
             } else if self.has_tracked_changes() {
-                "Amend Tracked"
+                "Amend Tracked".into()
             } else {
-                "Amend"
+                "Amend".into()
             }
         } else if self.has_staged_changes() {
-            "Commit"
+            t(keys::git_ui::COMMIT, cx)
         } else {
-            "Commit Tracked"
+            "Commit Tracked".into()
         }
     }
 
@@ -5574,9 +5577,9 @@ impl GitPanel {
 
     fn render_git_changes_actions_button(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let (text, action, stage, tooltip) = if self.primary_changes_action_stages() {
-            ("Stage All", StageAll.boxed_clone(), true, "git add --all")
+            (t(keys::git_ui::STAGE_ALL, cx), StageAll.boxed_clone(), true, "git add --all")
         } else {
-            ("Unstage All", UnstageAll.boxed_clone(), false, "git reset")
+            (t(keys::git_ui::UNSTAGE_ALL, cx), UnstageAll.boxed_clone(), false, "git reset")
         };
 
         SplitButton::new(
@@ -5639,7 +5642,7 @@ impl GitPanel {
                                         .color(Color::Muted),
                                 )
                                 .child(
-                                    Label::new("View Diff")
+                                    Label::new(t(keys::git_ui::VIEW_DIFF, cx))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -5656,7 +5659,7 @@ impl GitPanel {
                                 ),
                         )
                         .tooltip(Tooltip::for_action_title_in(
-                            "View Diff",
+                            t(keys::git_ui::VIEW_DIFF, cx),
                             &Diff,
                             &self.focus_handle,
                         ))
@@ -5884,7 +5887,7 @@ impl GitPanel {
 
     fn render_commit_button(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let (can_commit, tooltip) = self.configure_commit_button(cx);
-        let title = self.commit_button_title();
+        let title = self.commit_button_title(cx);
         let commit_tooltip_focus_handle = self.commit_editor.focus_handle(cx);
         let options = self.commit_options();
         let amend = options.amend;
@@ -5972,7 +5975,7 @@ impl GitPanel {
                     .overflow_hidden()
                     .max_w(relative(0.85))
                     .child(
-                        Label::new("This will update your most recent commit.")
+                        Label::new(t(keys::git_ui::THIS_WILL_UPDATE_YOUR_MOST_RECENT_COMMIT, cx))
                             .size(LabelSize::Small)
                             .truncate(),
                     ),
@@ -6774,10 +6777,10 @@ impl GitPanel {
         v_flex()
             .gap_1()
             .items_center()
-            .child(Label::new("No changes to commit").color(Color::Muted))
+            .child(Label::new(t(keys::git_ui::NO_CHANGES_TO_COMMIT, cx)).color(Color::Muted))
             .when(show_branch_diff, |this| {
                 this.child(
-                    Button::new("view_branch_diff", "View Branch Diff")
+                    Button::new("view_branch_diff", t(keys::git_ui::VIEW_BRANCH_DIFF, cx))
                         .label_size(LabelSize::Small)
                         .style(ButtonStyle::Outlined)
                         .on_click(move |_, _, cx| {
@@ -6815,7 +6818,7 @@ impl GitPanel {
                         .flex_wrap()
                         .gap_1()
                         .child(
-                            Button::new("trust_directory", "Trust Directory")
+                            Button::new("trust_directory", t(keys::git_ui::TRUST_DIRECTORY, cx))
                             .label_size(LabelSize::Small)
                             .layer(ElevationIndex::ModalSurface)
                             .style(ButtonStyle::Filled)
@@ -6845,9 +6848,9 @@ impl GitPanel {
             v_flex()
                 .gap_1()
                 .items_center()
-                .child(Label::new("No Git Repositories").color(Color::Muted))
+                .child(Label::new(t(keys::git_ui::NO_GIT_REPOSITORIES, cx)).color(Color::Muted))
                 .child(
-                    Button::new("initialize_repository", "Initialize Repository")
+                    Button::new("initialize_repository", t(keys::git_ui::INITIALIZE_REPOSITORY, cx))
                         .label_size(LabelSize::Small)
                         .style(ButtonStyle::Outlined)
                         .tooltip(Tooltip::for_action_title_in(
@@ -7140,11 +7143,11 @@ impl GitPanel {
                     .fill()
                     .elevation(ElevationIndex::Surface);
                 let tooltip_label = if all_conflicts_resolved {
-                    Some("All conflicts marked as resolved")
+                    Some("All conflicts marked as resolved".into())
                 } else {
                     match stage_intent {
-                        StageIntent::Stage => Some("Stage All"),
-                        StageIntent::Unstage => Some("Unstage All"),
+                        StageIntent::Stage => Some(t(keys::git_ui::STAGE_ALL, cx)),
+                        StageIntent::Unstage => Some(t(keys::git_ui::UNSTAGE_ALL, cx)),
                         StageIntent::Toggle => None,
                     }
                 };
@@ -7558,7 +7561,7 @@ impl GitPanel {
                                 if resolved_conflict {
                                     Tooltip::simple("Conflict marked as resolved", cx)
                                 } else {
-                                    let action = stage_intent.label(|| stage_status);
+                                    let action = stage_intent.label(|| stage_status, cx);
                                     Tooltip::for_action(action, &ToggleStaged, cx)
                                 }
                             }),
@@ -7737,7 +7740,7 @@ impl GitPanel {
                                 if resolved_conflict {
                                     Tooltip::simple("Conflicts marked as resolved", cx)
                                 } else {
-                                    let action = stage_intent.label(|| stage_status);
+                                    let action = stage_intent.label(|| stage_status, cx);
                                     Tooltip::simple(format!("{action} Folder"), cx)
                                 }
                             }),
@@ -7990,7 +7993,7 @@ impl Render for GenerateCommitMessageConfigurationTooltip {
                                 }),
                         )
                         .child(
-                            Button::new("llm-provider-docs", "See Docs")
+                            Button::new("llm-provider-docs", t(keys::git_ui::SEE_DOCS, cx))
                                 .style(ButtonStyle::OutlinedGhost)
                                 .end_icon(
                                     Icon::new(IconName::ArrowUpRight)

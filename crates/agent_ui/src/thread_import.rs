@@ -14,6 +14,7 @@ use gpui::{
     Focusable, MouseDownEvent, Render, SharedString, Task, TaskExt, WeakEntity, Window,
     pulsating_between,
 };
+use i18n::{keys, t};
 use itertools::Itertools as _;
 use notifications::status_toast::StatusToast;
 use project::{AgentId, AgentRegistryStore, AgentServerStore};
@@ -389,7 +390,7 @@ impl ThreadImportModal {
 
     fn show_imported_threads_toast(&self, imported_count: usize, cx: &mut App) {
         let status_toast = if imported_count == 0 {
-            StatusToast::new("No threads found to import.", cx, |this, _cx| {
+            StatusToast::new(t(keys::errors::NO_THREADS_FOUND_TO_IMPORT, cx), cx, |this, _cx| {
                 this.icon(
                     Icon::new(IconName::Info)
                         .size(IconSize::Small)
@@ -961,7 +962,7 @@ fn show_cross_channel_import_toast(
     cx: &mut App,
 ) {
     let status_toast = if imported_count == 0 {
-        StatusToast::new("No new threads found to import.", cx, |this, _cx| {
+        StatusToast::new(t(keys::errors::NO_NEW_THREADS_FOUND_TO_IMPORT, cx), cx, |this, _cx| {
             this.icon(Icon::new(IconName::Info).color(Color::Muted))
                 .dismiss_button(true)
         })

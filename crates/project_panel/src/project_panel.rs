@@ -28,6 +28,7 @@ use gpui::{
     div, hsla, linear_color_stop, linear_gradient, point, px, size, transparent_white,
     uniform_list,
 };
+use i18n::{keys, t};
 use language::DiagnosticSeverity;
 use markdown_preview::markdown_preview_view::MarkdownPreviewView;
 use menu::{Confirm, SelectFirst, SelectLast, SelectNext, SelectPrevious};
@@ -1110,6 +1111,7 @@ impl ProjectPanel {
             };
 
             let has_pasteable_content = self.has_pasteable_content(cx);
+            let open_in_default_app_label = t(keys::workspace::OPEN_IN_DEFAULT_APP, cx);
             let context_menu = ContextMenu::build(window, cx, |menu, _, _| {
                 menu.context(self.focus_handle.clone()).map(|menu| {
                     if is_read_only {
@@ -1130,7 +1132,10 @@ impl ProjectPanel {
                                 )
                             })
                             .when(is_local, |menu| {
-                                menu.action("Open in Default App", Box::new(OpenWithSystem))
+                                menu.action(
+                                    open_in_default_app_label.clone(),
+                                    Box::new(OpenWithSystem),
+                                )
                             })
                             .action("Open in Terminal", Box::new(OpenInTerminal))
                             .when(is_markdown, |menu| {

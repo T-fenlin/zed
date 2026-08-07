@@ -31,6 +31,7 @@ use settings::GitDiffBaseSetting;
 use std::any::{Any, TypeId};
 use std::sync::Arc;
 use ui::{DiffStat, Divider, Tooltip, prelude::*};
+use i18n::{keys, t};
 use workspace::{
     ItemNavHistory, SerializableItem, ToolbarItemEvent, ToolbarItemLocation, ToolbarItemView,
     Workspace,
@@ -861,9 +862,9 @@ impl Render for ProjectDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", "Toggle Staged")
+                            Button::new("stage", t(keys::git_ui::TOGGLE_STAGED, cx))
                                 .tooltip(Tooltip::for_action_title_in(
-                                    "Toggle Staged",
+                                    t(keys::git_ui::TOGGLE_STAGED, cx),
                                     &ToggleStaged,
                                     &focus_handle,
                                 ))
@@ -875,7 +876,7 @@ impl Render for ProjectDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", "Stage")
+                            Button::new("stage", t(keys::git_ui::STAGE, cx))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Stage and Go to Next Hunk",
@@ -887,7 +888,7 @@ impl Render for ProjectDiffToolbar {
                                 })),
                         )
                         .child(
-                            Button::new("unstage", "Unstage")
+                            Button::new("unstage", t(keys::git_ui::UNSTAGE, cx))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Unstage and Go to Next Hunk",
@@ -905,7 +906,7 @@ impl Render for ProjectDiffToolbar {
                 button_states.unstage_all && !button_states.stage_all,
                 |this| {
                     this.child(
-                        Button::new("unstage-all", "Unstage All")
+                        Button::new("unstage-all", t(keys::git_ui::UNSTAGE_ALL, cx))
                             .width(stage_all_button_width)
                             .tooltip(Tooltip::for_action_title_in(
                                 "Unstage All Changes",
@@ -922,7 +923,7 @@ impl Render for ProjectDiffToolbar {
                 !button_states.unstage_all || button_states.stage_all,
                 |this| {
                     this.child(
-                        Button::new("stage-all", "Stage All")
+                        Button::new("stage-all", t(keys::git_ui::STAGE_ALL, cx))
                             .width(stage_all_button_width)
                             .disabled(!button_states.stage_all)
                             .tooltip(Tooltip::for_action_title_in(
@@ -938,9 +939,9 @@ impl Render for ProjectDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", "Commit")
+                Button::new("commit", t(keys::git_ui::COMMIT, cx))
                     .tooltip(Tooltip::for_action_title_in(
-                        "Commit",
+                        t(keys::git_ui::COMMIT, cx),
                         &Commit,
                         &focus_handle,
                     ))

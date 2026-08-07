@@ -16,6 +16,7 @@ use gpui::{
     SharedString, Subscription, Task, TaskExt, WeakEntity, Window,
 };
 use menu::{Cancel, Confirm};
+use i18n::{keys, t};
 use project::git_store::Repository;
 use project_diff::ProjectDiff;
 use time::OffsetDateTime;
@@ -756,7 +757,7 @@ impl Render for RefPickerModal {
                     .w_full()
                     .gap_1p5()
                     .child(Icon::new(IconName::Hash).size(IconSize::XSmall))
-                    .child(Headline::new("View Commit").size(HeadlineSize::XSmall)),
+                    .child(Headline::new(t(keys::git_ui::VIEW_COMMIT, cx)).size(HeadlineSize::XSmall)),
             )
             .child(div().px_3().w_full().child(self.editor.clone()))
             .when_some(commit_preview, |el, preview| {
@@ -1305,9 +1306,12 @@ impl Render for GitCloneModal {
                     .rounded_b_sm()
                     .bg(cx.theme().colors().editor_background)
                     .child(
-                        Label::new("Clone a repository from GitHub or other sources.")
-                            .color(Color::Muted)
-                            .size(LabelSize::Small),
+                        Label::new(t(
+                            keys::git_ui::CLONE_A_REPOSITORY_FROM_GITHUB_OR_OTHER_SOURCES,
+                            cx,
+                        ))
+                        .color(Color::Muted)
+                        .size(LabelSize::Small),
                     )
                     .child(
                         Button::new("learn-more", "Learn More")

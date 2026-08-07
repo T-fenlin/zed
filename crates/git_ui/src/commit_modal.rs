@@ -14,6 +14,7 @@ use zed_actions::{DecreaseBufferFontSize, IncreaseBufferFontSize, ResetBufferFon
 
 use editor::{Editor, EditorElement};
 use gpui::*;
+use i18n::{keys, t};
 use util::ResultExt;
 use workspace::{
     ModalView, Workspace,
@@ -327,14 +328,15 @@ impl CommitModal {
                                 },
                             )
                             .item(
-                                ContextMenuEntry::new("Skip Hooks")
+                                ContextMenuEntry::new(t(keys::git_ui::SKIP_HOOKS))
                                     .toggleable(IconPosition::Start, skip_hooks_enabled)
                                     .action(Box::new(SkipHooks))
                                     .handler(move |window, cx| {
                                         window.dispatch_action(Box::new(SkipHooks), cx)
                                     })
                                     .documentation_aside(DocumentationSide::Left, |_| {
-                                        Label::new("git commit --no-verify").into_any_element()
+                                        Label::new(t(keys::git_ui::GIT_COMMIT_NO_VERIFY))
+                                            .into_any_element()
                                     }),
                             )
                     }))
@@ -360,7 +362,7 @@ impl CommitModal {
             is_generating,
         ) = self.git_panel.update(cx, |git_panel, cx| {
             let (can_commit, tooltip) = git_panel.configure_commit_button(cx);
-            let title = git_panel.commit_button_title();
+            let title = git_panel.commit_button_title(cx);
             let co_authors = git_panel.render_co_authors(cx);
             let generate_commit_message = git_panel.render_generate_commit_message_button(cx);
             let active_repo = git_panel.active_repository.clone();

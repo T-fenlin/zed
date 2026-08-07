@@ -12,6 +12,7 @@ use git::{
     BuildCommitPermalinkParams, GitHostingProviderRegistry, GitRemote, ParsedGitRemote,
     parse_git_remote_url,
 };
+use i18n::{keys, t};
 use gpui::{
     AnyElement, App, AppContext as _, AsyncWindowContext, ClipboardItem, Context, Entity,
     EventEmitter, FocusHandle, Focusable, InteractiveElement, IntoElement, ParentElement,
@@ -676,7 +677,7 @@ impl CommitView {
                     )
                     .when(self.stash.is_none(), |this| {
                         this.child(
-                            Button::new("sha", "Commit SHA")
+                            Button::new("sha", t(keys::git_ui::COMMIT_SHA, cx))
                                 .start_icon(
                                     Icon::new(copy_icon)
                                         .size(IconSize::Small)
@@ -783,7 +784,7 @@ impl CommitView {
     fn pop_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
         Self::stash_action(
             workspace,
-            "Pop",
+            t(keys::git_ui::POP, cx),
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {
@@ -810,7 +811,7 @@ impl CommitView {
     fn remove_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
         Self::stash_action(
             workspace,
-            "Drop",
+            t(keys::git_ui::DROP, cx),
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {

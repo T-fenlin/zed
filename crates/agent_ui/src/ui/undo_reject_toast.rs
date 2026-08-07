@@ -1,5 +1,6 @@
 use action_log::ActionLog;
 use gpui::{App, Entity};
+use i18n::{keys, t};
 use notifications::status_toast::StatusToast;
 use ui::prelude::*;
 use workspace::Workspace;
@@ -10,7 +11,7 @@ pub fn show_undo_reject_toast(
     cx: &mut App,
 ) {
     let action_log_weak = action_log.downgrade();
-    let status_toast = StatusToast::new("Agent Changes Rejected", cx, move |this, _cx| {
+    let status_toast = StatusToast::new(t(keys::errors::AGENT_CHANGES_REJECTED, cx), cx, move |this, _cx| {
         this.icon(
             Icon::new(IconName::Undo)
                 .size(IconSize::Small)

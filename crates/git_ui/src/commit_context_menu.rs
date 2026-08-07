@@ -1,6 +1,7 @@
 use crate::commit_view::CommitView;
 use git::Oid;
 use gpui::{Action, ClipboardItem, Entity, FocusHandle, SharedString, WeakEntity, Window, actions};
+use i18n::{keys, t};
 use project::{GIT_COMMAND_TASK_TAG, git_store::Repository};
 
 use task::{TaskContext, TaskVariables, VariableName};
@@ -55,11 +56,13 @@ pub(crate) fn commit_context_menu(
         None => format!("Commit {sha_short}"),
     };
 
+    let view_diff_label = t(keys::git_ui::VIEW_DIFF, cx);
+
     ContextMenu::build(window, cx, move |context_menu, _, _| {
         context_menu
             .context(focus_handle)
             .header(header)
-            .entry("View Diff", Some(OpenCommitView.boxed_clone()), {
+            .entry(view_diff_label, Some(OpenCommitView.boxed_clone()), {
                 let repository = repository.clone();
                 let workspace = workspace.clone();
                 move |window, cx| {

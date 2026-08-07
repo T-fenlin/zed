@@ -9,6 +9,7 @@ use gpui::{
     Focusable, InteractiveElement, IntoElement, MouseDownEvent, ParentElement, Render, Styled,
     Subscription, TaskExt, Window, WindowBounds, WindowOptions, div, point,
 };
+use i18n::{keys, t};
 use project::project_settings::ProjectSettings;
 use release_channel::ReleaseChannel;
 use settings::Settings as _;
@@ -886,11 +887,11 @@ impl ConfigurationView {
             .style(ButtonStyle::Outlined)
     }
 
-    fn render_sign_in_button(&self, edit_prediction: bool) -> impl IntoElement {
+    fn render_sign_in_button(&self, edit_prediction: bool, cx: &mut App) -> impl IntoElement {
         let label = if edit_prediction {
-            "Sign in to GitHub"
+            "Sign in to GitHub".into()
         } else {
-            "Sign In"
+            t(keys::onboarding::SIGN_IN, cx)
         };
 
         Button::new("sign_in", label)
@@ -945,7 +946,7 @@ impl ConfigurationView {
             })
     }
 
-    fn render_for_edit_prediction(&self) -> impl IntoElement {
+    fn render_for_edit_prediction(&self, cx: &mut App) -> impl IntoElement {
         let container = |description: SharedString, action: AnyElement| {
             h_flex()
                 .pt_2p5()
@@ -983,19 +984,19 @@ impl ConfigurationView {
         } else if self.has_no_status() {
             container(
                 no_status_label,
-                self.render_sign_in_button(true).into_any_element(),
+                self.render_sign_in_button(true, cx).into_any_element(),
             )
             .into_any_element()
         } else {
             container(
                 start_label,
-                self.render_sign_in_button(true).into_any_element(),
+                self.render_sign_in_button(true, cx).into_any_element(),
             )
             .into_any_element()
         }
     }
 
-    fn render_for_chat(&self) -> impl IntoElement {
+    fn render_for_chat(&self, cx: &mut App) -> impl IntoElement {
         let start_label = "To use Zed's agent with GitHub Copilot Chat, you need to be logged in to GitHub. Note that your GitHub account must have an active Copilot Chat subscription.";
         let no_status_label = "Copilot Chat requires an active GitHub Copilot subscription. Please ensure Copilot Chat is configured and try again, or use a different LLM provider.";
 
@@ -1007,17 +1008,17 @@ impl ConfigurationView {
         } else if self.is_error() {
             (
                 "Copilot Chat had an issue signing in. Please try again.",
-                self.render_sign_in_button(false).into_any_element(),
+                self.render_sign_in_button(false, cx).into_any_element(),
             )
         } else if self.has_no_status() {
             (
                 no_status_label,
-                self.render_sign_in_button(false).into_any_element(),
+                self.render_sign_in_button(false, cx).into_any_element(),
             )
         } else {
             (
                 start_label,
-                self.render_sign_in_button(false).into_any_element(),
+                self.render_sign_in_button(false, cx).into_any_element(),
             )
         };
 
@@ -1051,9 +1052,9 @@ impl Render for ConfigurationView {
         }
 
         if self.edit_prediction {
-            self.render_for_edit_prediction().into_any_element()
+            self.render_for_edit_prediction(cx).into_any_element()
         } else {
-            self.render_for_chat().into_any_element()
+            self.render_for_chat(cx).into_any_element()
         }
     }
 }

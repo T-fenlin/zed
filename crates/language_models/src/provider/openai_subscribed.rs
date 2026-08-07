@@ -3,6 +3,7 @@ use credentials_provider::CredentialsProvider;
 use futures::future::Shared;
 use gpui::{App, Context, Entity, SharedString, Task, Window};
 use http_client::HttpClient;
+use i18n::{keys, t};
 use language_model::{
     AuthenticateError, FastModeConfirmation, IconOrSvg, InlineDescription, LanguageModel,
     LanguageModelProvider, LanguageModelProviderId, LanguageModelProviderName,
@@ -188,9 +189,9 @@ impl Render for ConfigurationView {
 
         let is_signing_in = state.is_signing_in();
         let button_label = if is_signing_in {
-            "Signing in…"
+            t(keys::onboarding::SIGNING_IN, cx)
         } else {
-            "Sign In"
+            t(keys::onboarding::SIGN_IN, cx)
         };
 
         v_flex()
