@@ -20,3 +20,7 @@ signing-in = Signing in…
 start-free-trial = Start Free Trial
 start-now-using-api-keys-from-your-environment-for-the-following-providers = Start now using API keys from your environment for the following providers:
 try-zed-pro-for-free = Try Zed Pro for Free
+base-keymap = Base Keymap
+theme = Theme
+install = Install
+welcome-to-zed = Welcome to Zed

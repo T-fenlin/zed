@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::path::PathBuf;
 
 use agent_settings::AgentSettings;
@@ -244,7 +245,7 @@ fn render_empty_state(border_color: gpui::Hsla) -> AnyElement {
         .border_dashed()
         .border_color(border_color)
         .child(
-            Label::new("Nothing configured")
+            Label::new(t(keys::settings_ui::NOTHING_CONFIGURED))
                 .size(LabelSize::Small)
                 .color(Color::Disabled),
         )

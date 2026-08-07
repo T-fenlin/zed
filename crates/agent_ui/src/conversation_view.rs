@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use acp_thread::{
     AcpThread, AcpThreadEvent, AgentThreadEntry, AssistantMessage, AssistantMessageChunk,
     AuthRequired, ClientUserMessageId, ElicitationEntryId, ElicitationStatus, ElicitationStore,
@@ -2316,7 +2317,7 @@ impl ConversationView {
                     .map(|this| {
                         if show_fallback_description {
                             this.child(
-                                Label::new("Choose one of the following authentication options:")
+                                Label::new(t(keys::agent_ui::CHOOSE_ONE_OF_THE_FOLLOWING_AUTHENTICATION_OPTIONS))
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             )

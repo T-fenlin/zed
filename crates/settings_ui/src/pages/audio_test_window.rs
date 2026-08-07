@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use audio::{AudioSettings, CHANNEL_COUNT, RodioExt, SAMPLE_RATE};
 use cpal::DeviceId;
 use gpui::{
@@ -219,13 +220,13 @@ impl Render for AudioTestWindow {
             .child(
                 v_flex()
                     .gap_1()
-                    .child(Label::new("Output Device"))
+                    .child(Label::new(t(keys::settings_ui::OUTPUT_DEVICE)))
                     .child(output_dropdown),
             )
             .child(
                 v_flex()
                     .gap_1()
-                    .child(Label::new("Input Device"))
+                    .child(Label::new(t(keys::settings_ui::INPUT_DEVICE)))
                     .child(input_dropdown),
             )
             .child(

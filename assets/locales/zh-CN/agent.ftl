@@ -54,7 +54,6 @@ go-back = 返回
 image = 图片
 import-threads = 导入线程
 input = 输入：
-install = 安装
 installed = 已安装
 keep-all = 全部保留
 learn-more = 了解更多

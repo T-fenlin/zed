@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::sync::Arc;
 
 use collections::HashMap;
@@ -55,8 +56,8 @@ pub(crate) fn render_mcp_servers_page(
                 .px_8()
                 .gap_2()
                 .child(
-                    v_flex().child(Label::new("Configured Servers")).child(
-                        Label::new("Manage servers connected directly or via extensions.")
+                    v_flex().child(Label::new(t(keys::settings_ui::CONFIGURED_SERVERS))).child(
+                        Label::new(t(keys::settings_ui::MANAGE_SERVERS_CONNECTED_DIRECTLY_OR_VIA_EXTENSIONS))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),
@@ -124,7 +125,7 @@ fn render_no_project_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new("No active project found. Open a workspace to manage MCP servers.")
+            Label::new(t(keys::settings_ui::NO_ACTIVE_PROJECT_FOUND_OPEN_A_WORKSPACE_TO_MANAGE_MCP_SERVERS))
                 .color(Color::Muted)
                 .size(LabelSize::Small),
         )
@@ -441,7 +442,7 @@ fn render_status_details(
                                     .color(Color::Muted),
                             )
                             .child(
-                                Label::new("Authenticate to connect this server")
+                                Label::new(t(keys::agent_ui::AUTHENTICATE_TO_CONNECT_THIS_SERVER))
                                     .color(Color::Muted)
                                     .size(LabelSize::Small),
                             ),
@@ -474,7 +475,7 @@ fn render_status_details(
                                 .color(Color::Muted),
                         )
                         .child(
-                            Label::new("A client secret is required to connect this server")
+                            Label::new(t(keys::settings_ui::A_CLIENT_SECRET_IS_REQUIRED_TO_CONNECT_THIS_SERVER))
                                 .color(Color::Muted)
                                 .size(LabelSize::Small),
                         ),
@@ -489,7 +490,7 @@ fn render_status_details(
                 .gap_2()
                 .child(div().size_3().flex_shrink_0())
                 .child(
-                    Label::new("Authenticating…")
+                    Label::new(t(keys::agent_ui::AUTHENTICATING))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                 )

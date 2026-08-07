@@ -589,7 +589,7 @@ impl Render for ThreadImportModal {
                                 .when(has_agents, |this| this.children(agent_rows))
                                 .when(!has_agents, |this| {
                                     this.child(
-                                        Label::new("No external agents available.")
+                                        Label::new(t(keys::agent_ui::NO_EXTERNAL_AGENTS_AVAILABLE))
                                             .color(Color::Muted)
                                             .size(LabelSize::Small),
                                     )
@@ -608,7 +608,7 @@ impl Render for ThreadImportModal {
                                                 .color(Color::Muted)
                                                 .with_rotate_animation(3),
                                         )
-                                        .child(Label::new("Fetching Agent Threads…")
+                                        .child(Label::new(t(keys::agent_ui::FETCHING_AGENT_THREADS))
                                             .size(LabelSize::Small)
                                             .color(Color::Muted))
 

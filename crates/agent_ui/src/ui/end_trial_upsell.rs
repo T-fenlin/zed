@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::sync::Arc;
 
 use ai_onboarding::{AgentPanelOnboardingCard, PlanDefinitions};
@@ -24,7 +25,7 @@ impl RenderOnce for EndTrialUpsell {
                 h_flex()
                     .gap_2()
                     .child(
-                        Label::new("Pro")
+                        Label::new(t(keys::agent_ui::PRO))
                             .size(LabelSize::Small)
                             .color(Color::Accent)
                             .buffer_font(cx),
@@ -49,7 +50,7 @@ impl RenderOnce for EndTrialUpsell {
                 h_flex()
                     .gap_2()
                     .child(
-                        Label::new("Free")
+                        Label::new(t(keys::agent_ui::FREE))
                             .size(LabelSize::Small)
                             .color(Color::Muted)
                             .buffer_font(cx),

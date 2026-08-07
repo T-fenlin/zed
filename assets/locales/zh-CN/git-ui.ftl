@@ -45,3 +45,5 @@ use-both = 使用两者
 view-branch-diff = 查看分支差异
 view-commit = 查看提交
 view-diff = 查看差异
+generate-commit-message = 生成提交消息
+configure-an-llm-provider-to-generate-commit-messages = 配置 LLM 提供商以生成提交消息。

@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use acp_thread::AgentSessionModes;
 use agent_client_protocol::schema::v1 as acp;
 use agent_servers::AgentServer;
@@ -165,7 +166,7 @@ impl Render for ModeSelector {
                                 h_flex()
                                     .gap_2()
                                     .justify_between()
-                                    .child(Label::new("Change Mode"))
+                                    .child(Label::new(t(keys::agent_ui::CHANGE_MODE)))
                                     .child(KeyBinding::for_action(&ToggleProfileSelector, cx)),
                             )
                             .child(
@@ -175,7 +176,7 @@ impl Render for ModeSelector {
                                     .border_t_1()
                                     .border_color(cx.theme().colors().border_variant)
                                     .justify_between()
-                                    .child(Label::new("Cycle Through Modes"))
+                                    .child(Label::new(t(keys::agent_ui::CYCLE_THROUGH_MODES)))
                                     .child(KeyBinding::for_action(&CycleModeSelector, cx)),
                             )
                             .into_any()

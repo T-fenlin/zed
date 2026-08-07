@@ -35,7 +35,6 @@ auto-signature-help = 自动签名帮助
 auto-update = 自动更新
 autoscroll-on-clicks = 点击时自动滚动
 background-coloring = 背景着色
-base-keymap = 基础按键映射
 bold-folder-labels = 加粗文件夹标签
 border-size = 边框大小
 bottom-dock-layout = 底部面板布局

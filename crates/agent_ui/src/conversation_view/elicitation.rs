@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use acp_thread::{Elicitation, ElicitationEntryId, ElicitationStatus};
 use agent_client_protocol::schema::v1 as acp;
 use collections::{HashMap, HashSet};
@@ -1884,7 +1885,7 @@ impl<'a> ElicitationCard<'a> {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Label::new("Destination")
+                                    Label::new(t(keys::agent_ui::DESTINATION))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )

@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{collections::HashSet, sync::Arc};
 
 use editor::Editor;
@@ -267,7 +268,7 @@ fn render_api_key_providers_item(
                         .min_w_0()
                         .max_w_1_2()
                         .gap_0p5()
-                        .child(Label::new("API Key"))
+                        .child(Label::new(t(keys::settings_ui::API_KEY)))
                         .child(
                             h_flex()
                                 .w_full()
@@ -275,7 +276,7 @@ fn render_api_key_providers_item(
                                 .flex_wrap()
                                 .gap_0p5()
                                 .child(
-                                    Label::new("Visit the")
+                                    Label::new(t(keys::settings_ui::VISIT_THE))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -289,7 +290,7 @@ fn render_api_key_providers_item(
                                     .label_color(Color::Muted),
                                 )
                                 .child(
-                                    Label::new("to generate an API key.")
+                                    Label::new(t(keys::settings_ui::TO_GENERATE_AN_API_KEY))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 ),
@@ -375,7 +376,7 @@ fn render_subpage_item(
                 .min_w_0()
                 .max_w_1_2()
                 .gap_0p5()
-                .child(Label::new("Configure Provider"))
+                .child(Label::new(t(keys::agent_ui::CONFIGURE_PROVIDER)))
                 .when_some(description, |this, description| {
                     this.child(render_inline_description(provider_name, description))
                 }),
@@ -405,7 +406,7 @@ fn render_inline_description(
         InlineDescription::ApiKeyUrl(url) => h_flex()
             .gap_0p5()
             .child(
-                Label::new("To find an API key, visit the")
+                Label::new(t(keys::settings_ui::TO_FIND_AN_API_KEY_VISIT_THE))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             )
@@ -754,7 +755,7 @@ fn render_models_section(
         .child(
             h_flex()
                 .justify_between()
-                .child(Label::new("Models"))
+                .child(Label::new(t(keys::settings_ui::MODELS)))
                 .child(
                     Button::new("add-model", "Add Model")
                         .start_icon(
@@ -986,7 +987,7 @@ fn render_reasoning_effort_selector(
 
     v_flex()
         .gap_1()
-        .child(Label::new("Default reasoning effort").size(LabelSize::Small))
+        .child(Label::new(t(keys::settings_ui::DEFAULT_REASONING_EFFORT)).size(LabelSize::Small))
         .child(
             DropdownMenu::new(
                 ElementId::Name(format!("reasoning-effort-selector-{index}").into()),

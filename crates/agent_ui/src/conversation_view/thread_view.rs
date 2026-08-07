@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use crate::{
     DEFAULT_THREAD_TITLE, SelectPermissionGranularity,
     agent_configuration::configure_context_server_modal::default_markdown_style,
@@ -3489,7 +3490,7 @@ impl ThreadView {
                         .border_b_1()
                         .border_color(cx.theme().colors().border)
                         .child(
-                            Label::new("Subagents Awaiting Permission:")
+                            Label::new(t(keys::agent_ui::SUBAGENTS_AWAITING_PERMISSION))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
                         )
@@ -3533,7 +3534,7 @@ impl ThreadView {
                                 )
                                 .child(
                                     div().visible_on_hover(&group).child(
-                                        Label::new("Scroll to Subagent")
+                                        Label::new(t(keys::agent_ui::SCROLL_TO_SUBAGENT))
                                             .size(LabelSize::Small)
                                             .color(Color::Muted)
                                             .truncate(),
@@ -3705,7 +3706,7 @@ impl ThreadView {
                 .gap_1()
                 .truncate()
                 .child(
-                    Label::new("Current:")
+                    Label::new(t(keys::agent_ui::CURRENT))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -3754,7 +3755,7 @@ impl ThreadView {
                 .gap_1()
                 .justify_between()
                 .child(
-                    Label::new("Plan")
+                    Label::new(t(keys::agent_ui::PLAN))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -3894,7 +3895,7 @@ impl ThreadView {
                             .border_b_1()
                             .border_color(self.tool_card_border_color(cx))
                             .child(
-                                Label::new("Completed Plan")
+                                Label::new(t(keys::agent_ui::COMPLETED_PLAN))
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             )
@@ -4118,7 +4119,7 @@ impl ThreadView {
                             };
 
                             this.child(
-                                Label::new("Edits")
+                                Label::new(t(keys::agent_ui::EDITS))
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             )
@@ -5254,7 +5255,7 @@ impl ThreadView {
                     h_flex()
                         .gap_2()
                         .justify_between()
-                        .child(Label::new("Change Thinking Effort"))
+                        .child(Label::new(t(keys::agent_ui::CHANGE_THINKING_EFFORT)))
                         .child(KeyBinding::for_action_in(
                             &ToggleThinkingEffortMenu,
                             &focus_handle,
@@ -5270,7 +5271,7 @@ impl ThreadView {
                             .justify_between()
                             .border_t_1()
                             .border_color(cx.theme().colors().border_variant)
-                            .child(Label::new("Cycle Thinking Effort"))
+                            .child(Label::new(t(keys::agent_ui::CYCLE_THINKING_EFFORT)))
                             .child(KeyBinding::for_action_in(
                                 &CycleThinkingEffort,
                                 &focus_handle,
@@ -5430,7 +5431,7 @@ impl ThreadView {
                                     h_flex()
                                         .gap_2()
                                         .justify_between()
-                                        .child(Label::new("Queue and Send"))
+                                        .child(Label::new(t(keys::agent_ui::QUEUE_AND_SEND)))
                                         .child(KeyBinding::for_action_in(&Chat, &focus_handle, cx)),
                                 )
                                 .child(
@@ -5440,7 +5441,7 @@ impl ThreadView {
                                         .justify_between()
                                         .border_t_1()
                                         .border_color(cx.theme().colors().border_variant)
-                                        .child(Label::new("Send Immediately"))
+                                        .child(Label::new(t(keys::agent_ui::SEND_IMMEDIATELY)))
                                         .child(KeyBinding::for_action_in(
                                             &SendImmediately,
                                             &focus_handle,
@@ -5731,7 +5732,7 @@ impl Render for TokenUsageTooltip {
             container
                 .min_w_40()
                 .child(
-                    Label::new("Context")
+                    Label::new(t(keys::agent_ui::CONTEXT))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                 )
@@ -5753,7 +5754,7 @@ impl Render for TokenUsageTooltip {
                             .child(
                                 h_flex()
                                     .gap_0p5()
-                                    .child(Label::new("Input:").color(Color::Muted).mr_0p5())
+                                    .child(Label::new(t(keys::agent_ui::INPUT)).color(Color::Muted).mr_0p5())
                                     .child(Label::new(input_tokens))
                                     .child(Label::new("/").color(separator_color))
                                     .child(Label::new(input_max).color(Color::Muted)),
@@ -5761,7 +5762,7 @@ impl Render for TokenUsageTooltip {
                             .child(
                                 h_flex()
                                     .gap_0p5()
-                                    .child(Label::new("Output:").color(Color::Muted).mr_0p5())
+                                    .child(Label::new(t(keys::agent_ui::OUTPUT)).color(Color::Muted).mr_0p5())
                                     .child(Label::new(output_tokens))
                                     .child(Label::new("/").color(separator_color))
                                     .child(Label::new(output_max).color(Color::Muted)),
@@ -5777,7 +5778,7 @@ impl Render for TokenUsageTooltip {
                             .border_t_1()
                             .border_color(cx.theme().colors().border_variant)
                             .child(
-                                Label::new("Cost")
+                                Label::new(t(keys::agent_ui::COST))
                                     .color(Color::Muted)
                                     .size(LabelSize::Small),
                             )
@@ -5796,7 +5797,7 @@ impl Render for TokenUsageTooltip {
                                 .border_t_1()
                                 .border_color(cx.theme().colors().border_variant)
                                 .child(
-                                    Label::new("Rules")
+                                    Label::new(t(keys::agent_ui::RULES))
                                         .color(Color::Muted)
                                         .size(LabelSize::Small),
                                 )
@@ -6283,7 +6284,7 @@ impl ThreadView {
                                                     move |_, _| {
                                                         v_flex()
                                                             .gap_1()
-                                                            .child(Label::new("Unavailable Editing"))
+                                                            .child(Label::new(t(keys::agent_ui::UNAVAILABLE_EDITING)))
                                                             .child(
                                                                 div().max_w_64().child(
                                                                     Label::new(format!(
@@ -6463,7 +6464,7 @@ impl ThreadView {
                                         .size(IconSize::Small),
                                 )
                                 .child(
-                                    Label::new("Subagent Output")
+                                    Label::new(t(keys::agent_ui::SUBAGENT_OUTPUT))
                                         .size(LabelSize::Custom(self.tool_name_font_size()))
                                         .color(Color::Muted),
                                 ),
@@ -7341,7 +7342,7 @@ impl ThreadView {
                     )
                     .child(
                         div().min_w(rems(8.)).child(
-                            LoadingLabel::new("Awaiting Confirmation")
+                            LoadingLabel::new(t(keys::agent_ui::AWAITING_CONFIRMATION))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
                         ),
@@ -7770,7 +7771,7 @@ impl ThreadView {
         let run_command_label = if is_preview {
             Some(
                 h_flex().h_6().child(
-                    Label::new("Run Command")
+                    Label::new(t(keys::agent_ui::RUN_COMMAND))
                         .buffer_font(cx)
                         .size(LabelSize::XSmall)
                         .color(Color::Muted),
@@ -8770,7 +8771,7 @@ impl ThreadView {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Label::new("Network access")
+                                    Label::new(t(keys::agent_ui::NETWORK_ACCESS))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -8868,7 +8869,7 @@ impl ThreadView {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Label::new("Write Access")
+                                    Label::new(t(keys::agent_ui::WRITE_ACCESS))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -8914,7 +8915,7 @@ impl ThreadView {
                         .size(IconSize::Small),
                 )
                 .child(
-                    Label::new("Runs without the OS sandbox")
+                    Label::new(t(keys::agent_ui::RUNS_WITHOUT_THE_OS_SANDBOX))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -8926,7 +8927,7 @@ impl ThreadView {
                 .py_1()
                 .gap_0p5()
                 .child(
-                    Label::new("Reason")
+                    Label::new(t(keys::agent_ui::REASON))
                         .size(LabelSize::XSmall)
                         .color(Color::Muted),
                 )
@@ -9176,7 +9177,7 @@ impl ThreadView {
                             .flex_1()
                             .gap_0p5()
                             .child(
-                                Label::new("This command can write to a file on a Windows drive")
+                                Label::new(t(keys::agent_ui::THIS_COMMAND_CAN_WRITE_TO_A_FILE_ON_A_WINDOWS_DRIVE))
                                     .size(LabelSize::Small)
                                     .color(Color::Warning),
                             )
@@ -11897,7 +11898,7 @@ impl ThreadView {
                 h_flex()
                     .gap_1()
                     .child(
-                        Label::new("Anthropic will retain inference logs.")
+                        Label::new(t(keys::agent_ui::ANTHROPIC_WILL_RETAIN_INFERENCE_LOGS))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     )

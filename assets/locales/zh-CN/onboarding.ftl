@@ -17,3 +17,7 @@ signing-in = 正在登录…
 start-free-trial = 开始免费试用
 start-now-using-api-keys-from-your-environment-for-the-following-providers = 现在开始使用环境中的 API 密钥，适用于以下提供商：
 try-zed-pro-for-free = 免费试用 Zed Pro
+base-keymap = 基础键位
+theme = 主题
+install = 安装
+welcome-to-zed = 欢迎使用 Zed

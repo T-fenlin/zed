@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use codestral::{CODESTRAL_API_URL, codestral_api_key_state, codestral_api_url};
 use edit_prediction::{
     ApiKeyState,
@@ -156,9 +157,9 @@ fn render_provider_dropdown(window: &mut Window, cx: &mut App) -> AnyElement {
                         .w_full()
                         .min_w_0()
                         .max_w_1_2()
-                        .child(Label::new("Provider"))
+                        .child(Label::new(t(keys::settings_ui::PROVIDER)))
                         .child(
-                            Label::new("Select which provider to use for edit predictions.")
+                            Label::new(t(keys::settings_ui::SELECT_WHICH_PROVIDER_TO_USE_FOR_EDIT_PREDICTIONS))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
                         ),
@@ -250,7 +251,7 @@ fn render_api_key_provider(
             .flex_wrap()
             .gap_0p5()
             .child(
-                Label::new("Visit the")
+                Label::new(t(keys::settings_ui::VISIT_THE))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             )
@@ -261,7 +262,7 @@ fn render_api_key_provider(
                     .label_color(Color::Muted),
             )
             .child(
-                Label::new("to generate an API key.")
+                Label::new(t(keys::settings_ui::TO_GENERATE_AN_API_KEY))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             ),
@@ -304,7 +305,7 @@ fn render_api_key_provider(
                         .min_w_0()
                         .max_w_1_2()
                         .gap_0p5()
-                        .child(Label::new("API Key"))
+                        .child(Label::new(t(keys::settings_ui::API_KEY)))
                         .child(description)
                         .when_some(env_var_name, |this, env_var_name| {
                             this.child({

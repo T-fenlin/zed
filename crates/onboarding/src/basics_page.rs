@@ -58,7 +58,7 @@ fn render_theme_section(tab_index: &mut isize, cx: &mut App) -> impl IntoElement
     return v_flex()
         .gap_2()
         .child(
-            h_flex().justify_between().child(Label::new("Theme")).child(
+            h_flex().justify_between().child(Label::new(t(keys::onboarding::THEME))).child(
                 ToggleButtonGroup::single_row(
                     "theme-selector-onboarding-dark-light",
                     [
@@ -343,7 +343,7 @@ fn render_base_keymap_section(tab_index: &mut isize, cx: &mut App) -> impl IntoE
         BaseKeymap::None => None,
     };
 
-    return v_flex().gap_2().child(Label::new("Base Keymap")).child(
+    return v_flex().gap_2().child(Label::new(t(keys::onboarding::BASE_KEYMAP))).child(
         ToggleButtonGroup::two_rows(
             "base_keymap_selection",
             [
@@ -563,7 +563,7 @@ fn render_registry_agent_button(
             .color(Color::Success)
             .into_any_element()
     } else {
-        Label::new("Install")
+        Label::new(t(keys::onboarding::INSTALL))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .into_any_element()

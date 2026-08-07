@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use crate::{Keep, KeepAll, OpenAgentDiff, Reject, RejectAll};
 use acp_thread::{AcpThread, AcpThreadEvent};
 use action_log::{ActionLogTelemetry, LastRejectUndo};
@@ -548,7 +549,7 @@ impl Item for AgentDiffPane {
                         title.clone().unwrap_or_else(|| "Review".to_string()),
                     ))
                     .child(
-                        Label::new("Agent Diff")
+                        Label::new(t(keys::agent_ui::AGENT_DIFF))
                             .color(Color::Muted)
                             .size(LabelSize::Small),
                     )

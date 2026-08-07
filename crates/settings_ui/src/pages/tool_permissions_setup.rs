@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use agent::{AgentTool, TerminalTool, ToolPermissionDecision};
 use agent_settings::AgentSettings;
 use gpui::{
@@ -536,7 +537,7 @@ fn render_verification_section(
                 .border_color(color.border_variant)
                 .rounded_sm()
                 .child(
-                    Label::new("Test Your Rules")
+                    Label::new(t(keys::settings_ui::TEST_YOUR_RULES))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                 )
@@ -556,7 +557,7 @@ fn render_verification_section(
                     this.when(patterns_agree, |this| {
                         if matched_patterns.is_empty() {
                             this.child(
-                                Label::new("No regex matches, using the default action.")
+                                Label::new(t(keys::settings_ui::NO_REGEX_MATCHES_USING_THE_DEFAULT_ACTION))
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             )
@@ -788,7 +789,7 @@ fn render_verdict_label(mode: ToolPermissionMode) -> AnyElement {
     h_flex()
         .gap_1()
         .child(
-            Label::new("Result:")
+            Label::new(t(keys::settings_ui::RESULT))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )
@@ -818,7 +819,7 @@ fn render_invalid_patterns_section(
                         .size(IconSize::Small)
                         .color(Color::Error),
                 )
-                .child(Label::new("Invalid Patterns").color(Color::Error)),
+                .child(Label::new(t(keys::settings_ui::INVALID_PATTERNS)).color(Color::Error)),
         )
         .child(
             Label::new(
@@ -956,7 +957,7 @@ fn render_pattern_empty_state(cx: &mut Context<SettingsWindow>) -> AnyElement {
         .border_dashed()
         .border_color(cx.theme().colors().border_variant)
         .child(
-            Label::new("No patterns configured")
+            Label::new(t(keys::settings_ui::NO_PATTERNS_CONFIGURED))
                 .size(LabelSize::Small)
                 .color(Color::Disabled),
         )
@@ -1080,7 +1081,7 @@ fn render_global_default_mode_section(current_mode: ToolPermissionMode) -> AnyEl
             v_flex()
                 .w_full()
                 .min_w_0()
-                .child(Label::new("Default Permission"))
+                .child(Label::new(t(keys::settings_ui::DEFAULT_PERMISSION)))
                 .child(
                     Label::new(
                         "Controls the default behavior for all tool actions. Per-tool rules and patterns can override this.",
@@ -1136,9 +1137,9 @@ fn render_default_mode_section(
             v_flex()
                 .w_full()
                 .min_w_0()
-                .child(Label::new("Default Action"))
+                .child(Label::new(t(keys::settings_ui::DEFAULT_ACTION)))
                 .child(
-                    Label::new("Action to take when no patterns match.")
+                    Label::new(t(keys::settings_ui::ACTION_TO_TAKE_WHEN_NO_PATTERNS_MATCH))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 ),

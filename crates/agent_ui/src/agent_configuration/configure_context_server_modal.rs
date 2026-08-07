@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use anyhow::{Context as _, Result};
 use collections::HashMap;
 use context_server::{ContextServerCommand, ContextServerId};
@@ -968,7 +969,7 @@ impl ConfigureContextServerModal {
                             .color(Color::Muted),
                     )
                     .child(
-                        Label::new("Authenticate to connect this server")
+                        Label::new(t(keys::agent_ui::AUTHENTICATE_TO_CONNECT_THIS_SERVER))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),
@@ -1074,7 +1075,7 @@ impl ConfigureContextServerModal {
                             .with_rotate_animation(3),
                     )
                     .child(
-                        Label::new("Authenticating…")
+                        Label::new(t(keys::agent_ui::AUTHENTICATING))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),

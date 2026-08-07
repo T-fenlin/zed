@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use feature_flags::{FeatureFlagDescriptor, FeatureFlagStore, FeatureFlagVariant};
 use fs::Fs;
 use gpui::{ScrollHandle, prelude::*};
@@ -59,7 +60,7 @@ fn render_flag_row(
                     ))
                     .when(forced_on, |this| {
                         this.child(
-                            Label::new("enabled for all")
+                            Label::new(t(keys::settings_ui::ENABLED_FOR_ALL))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
                         )

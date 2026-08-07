@@ -49,3 +49,5 @@ use-both = Use Both
 view-branch-diff = View Branch Diff
 view-commit = View Commit
 view-diff = View Diff
+generate-commit-message = Generate Commit Message
+configure-an-llm-provider-to-generate-commit-messages = Configure an LLM provider to generate commit messages.

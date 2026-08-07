@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::ops::Range;
 
 use anyhow::Result;
@@ -48,9 +49,9 @@ pub(crate) fn render_external_agents_page(
         .pb_16()
         .track_scroll(scroll_handle)
         .overflow_y_scroll()
-        .child(Label::new("External Agents"))
+        .child(Label::new(t(keys::settings_ui::EXTERNAL_AGENTS)))
         .child(
-            Label::new("Agents connected through the Agent Client Protocol.")
+            Label::new(t(keys::settings_ui::AGENTS_CONNECTED_THROUGH_THE_AGENT_CLIENT_PROTOCOL))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )
@@ -133,7 +134,7 @@ fn render_no_project_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new("No active project found. Open a workspace to manage external agents.")
+            Label::new(t(keys::settings_ui::NO_ACTIVE_PROJECT_FOUND_OPEN_A_WORKSPACE_TO_MANAGE_EXTERNAL_AGENTS))
                 .color(Color::Muted)
                 .size(LabelSize::Small),
         )

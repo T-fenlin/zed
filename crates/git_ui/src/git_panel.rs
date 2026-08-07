@@ -5325,10 +5325,10 @@ impl GitPanel {
         } else {
             button.tooltip(move |_window, cx| {
                 if !can_commit {
-                    Tooltip::simple("No Changes to Commit", cx)
+                    Tooltip::simple(t(keys::git_ui::NO_CHANGES_TO_COMMIT), cx)
                 } else {
                     Tooltip::for_action_in(
-                        "Generate Commit Message",
+                        t(keys::git_ui::GENERATE_COMMIT_MESSAGE),
                         &git::GenerateCommitMessage,
                         &editor_focus_handle,
                         cx,
@@ -7971,7 +7971,7 @@ impl Render for GenerateCommitMessageConfigurationTooltip {
             container
                 .gap_1p5()
                 .child(Label::new(
-                    "Configure an LLM provider to generate commit messages.",
+                    t(keys::git_ui::CONFIGURE_AN_LLM_PROVIDER_TO_GENERATE_COMMIT_MESSAGES),
                 ))
                 .child(
                     h_flex()

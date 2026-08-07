@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use crate::{
     CycleModeSelector, ManageProfiles, ToggleProfileSelector, ui::documentation_aside_side,
 };
@@ -231,7 +232,7 @@ impl Render for ProfileSelector {
                     .gap_1()
                     .child(
                         container()
-                            .child(Label::new("Change Profile"))
+                            .child(Label::new(t(keys::agent_ui::CHANGE_PROFILE)))
                             .child(KeyBinding::for_action(&ToggleProfileSelector, cx)),
                     )
                     .child(
@@ -239,7 +240,7 @@ impl Render for ProfileSelector {
                             .pt_1()
                             .border_t_1()
                             .border_color(cx.theme().colors().border_variant)
-                            .child(Label::new("Cycle Through Profiles"))
+                            .child(Label::new(t(keys::agent_ui::CYCLE_THROUGH_PROFILES)))
                             .child(KeyBinding::for_action(&CycleModeSelector, cx)),
                     )
                     .into_any()
@@ -752,7 +753,7 @@ impl PickerDelegate for ProfilePickerDelegate {
                                                 .color(Color::Warning),
                                         )
                                         .child(
-                                            Label::new("Disabled in Restricted Mode")
+                                            Label::new(t(keys::agent_ui::DISABLED_IN_RESTRICTED_MODE))
                                                 .size(LabelSize::Small),
                                         ),
                                 )

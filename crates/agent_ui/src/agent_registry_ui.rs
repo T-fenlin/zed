@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::ops::Range;
 
 use client::zed_urls;
@@ -382,7 +383,7 @@ impl AgentRegistryPage {
 
     fn render_missing_agent(&self) -> AgentRegistryCard {
         AgentRegistryCard::new().child(
-            Label::new("Missing registry entry.")
+            Label::new(t(keys::agent_ui::MISSING_REGISTRY_ENTRY))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )
@@ -456,7 +457,7 @@ impl AgentRegistryPage {
                             .child(Label::new(format!("v{}", agent.version())).color(Color::Muted))
                             .when(!supports_current_platform, |this| {
                                 this.child(
-                                    Label::new("Not supported on this platform")
+                                    Label::new(t(keys::agent_ui::NOT_SUPPORTED_ON_THIS_PLATFORM))
                                         .size(LabelSize::Small)
                                         .color(Color::Warning),
                                 )
