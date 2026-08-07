@@ -155,7 +155,7 @@ impl ZedAiOnboarding {
         })
     }
 
-    fn render_sign_in_disclaimer(&self, cx: &mut App) -> AnyElement {
+    fn render_sign_in_disclaimer(&self, _cx: &mut App) -> AnyElement {
         let signing_in = matches!(self.sign_in_status, SignInStatus::SigningIn);
 
         v_flex()
@@ -164,16 +164,13 @@ impl ZedAiOnboarding {
             .gap_1()
             .child(Headline::new("Welcome to Zed AI"))
             .child(
-                Label::new(t(
-                    keys::onboarding::SIGN_IN_TO_TRY_ZED_PRO_FREE_FOR_14_DAYS,
-                    cx,
-                ))
+                Label::new(t(keys::onboarding::SIGN_IN_TO_TRY_ZED_PRO_FREE_FOR_14_DAYS))
                 .color(Color::Muted)
                 .mb_2(),
             )
             .child(PlanDefinitions.sign_in_upsell())
             .child(
-                Button::new("sign_in", t(keys::onboarding::TRY_ZED_PRO_FOR_FREE, cx))
+                Button::new("sign_in", t(keys::onboarding::TRY_ZED_PRO_FOR_FREE))
                     .disabled(signing_in)
                     .full_width()
                     .style(ButtonStyle::Tinted(ui::TintColor::Accent))
@@ -214,7 +211,7 @@ impl ZedAiOnboarding {
                         )
                         .child(PlanDefinitions.pro_plan())
                         .child(
-                            Button::new("pro", t(keys::onboarding::GET_STARTED, cx))
+                            Button::new("pro", t(keys::onboarding::GET_STARTED))
                                 .full_width()
                                 .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                                 .on_click(move |_, _window, cx| {
@@ -267,7 +264,7 @@ impl ZedAiOnboarding {
                             h_flex()
                                 .gap_2()
                                 .child(
-                                    Label::new(t(keys::onboarding::PRO_TRIAL, cx))
+                                    Label::new(t(keys::onboarding::PRO_TRIAL))
                                         .size(LabelSize::Small)
                                         .color(Color::Accent)
                                         .buffer_font(cx),
@@ -276,7 +273,7 @@ impl ZedAiOnboarding {
                         )
                         .child(PlanDefinitions.pro_trial(true))
                         .child(
-                            Button::new("pro", t(keys::onboarding::START_FREE_TRIAL, cx))
+                            Button::new("pro", t(keys::onboarding::START_FREE_TRIAL))
                                 .full_width()
                                 .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                                 .on_click(move |_, _window, cx| {
@@ -300,10 +297,7 @@ impl ZedAiOnboarding {
             .child(Self::pro_trial_stamp(cx))
             .child(Headline::new("Welcome to the Zed Pro Trial"))
             .child(
-                Label::new(t(
-                    keys::onboarding::HERE_S_WHAT_YOU_GET_FOR_THE_NEXT_14_DAYS,
-                    cx,
-                ))
+                Label::new(t(keys::onboarding::HERE_S_WHAT_YOU_GET_FOR_THE_NEXT_14_DAYS))
                 .color(Color::Muted)
                 .mb_2(),
             )
@@ -320,7 +314,7 @@ impl ZedAiOnboarding {
             .child(Self::certified_user_stamp(cx))
             .child(Headline::new("Welcome to Zed Pro"))
             .child(
-                Label::new(t(keys::onboarding::HERE_S_WHAT_YOU_GET, cx))
+                Label::new(t(keys::onboarding::HERE_S_WHAT_YOU_GET))
                     .color(Color::Muted)
                     .mb_2(),
             )
@@ -337,7 +331,7 @@ impl ZedAiOnboarding {
             .child(Self::business_stamp(cx))
             .child(Headline::new("Welcome to Zed Business"))
             .child(
-                Label::new(t(keys::onboarding::HERE_S_WHAT_YOU_GET, cx))
+                Label::new(t(keys::onboarding::HERE_S_WHAT_YOU_GET))
                     .color(Color::Muted)
                     .mb_2(),
             )
@@ -354,7 +348,7 @@ impl ZedAiOnboarding {
             .child(Self::vip_stamp(cx))
             .child(Headline::new("Welcome to Zed VIP"))
             .child(
-                Label::new(t(keys::onboarding::HERE_S_WHAT_YOU_GET, cx))
+                Label::new(t(keys::onboarding::HERE_S_WHAT_YOU_GET))
                     .color(Color::Muted)
                     .mb_2(),
             )
@@ -371,7 +365,7 @@ impl ZedAiOnboarding {
             .child(Self::student_stamp(cx))
             .child(Headline::new("Welcome to Zed Student"))
             .child(
-                Label::new(t(keys::onboarding::HERE_S_WHAT_YOU_GET, cx))
+                Label::new(t(keys::onboarding::HERE_S_WHAT_YOU_GET))
                     .color(Color::Muted)
                     .mb_2(),
             )

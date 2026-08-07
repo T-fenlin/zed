@@ -375,7 +375,7 @@ fn render_conflict_buttons(
                 }),
         )
         .child(
-            Button::new("both", t(keys::git_ui::USE_BOTH, cx))
+            Button::new("both", t(keys::git_ui::USE_BOTH))
                 .label_size(LabelSize::Small)
                 .on_click({
                     let editor = editor.clone();
@@ -396,7 +396,7 @@ fn render_conflict_buttons(
         )
         .when(is_ai_enabled, |this| {
             this.child(Divider::vertical()).child(
-                Button::new("resolve-with-agent", t(keys::git_ui::RESOLVE_WITH_AGENT, cx))
+                Button::new("resolve-with-agent", t(keys::git_ui::RESOLVE_WITH_AGENT))
                     .label_size(LabelSize::Small)
                     .start_icon(
                         Icon::new(IconName::ZedAssistant)

@@ -390,7 +390,7 @@ impl ThreadImportModal {
 
     fn show_imported_threads_toast(&self, imported_count: usize, cx: &mut App) {
         let status_toast = if imported_count == 0 {
-            StatusToast::new(t(keys::errors::NO_THREADS_FOUND_TO_IMPORT, cx), cx, |this, _cx| {
+            StatusToast::new(t(keys::errors::NO_THREADS_FOUND_TO_IMPORT), cx, |this, _cx| {
                 this.icon(
                     Icon::new(IconName::Info)
                         .size(IconSize::Small)
@@ -962,7 +962,7 @@ fn show_cross_channel_import_toast(
     cx: &mut App,
 ) {
     let status_toast = if imported_count == 0 {
-        StatusToast::new(t(keys::errors::NO_NEW_THREADS_FOUND_TO_IMPORT, cx), cx, |this, _cx| {
+        StatusToast::new(t(keys::errors::NO_NEW_THREADS_FOUND_TO_IMPORT), cx, |this, _cx| {
             this.icon(Icon::new(IconName::Info).color(Color::Muted))
                 .dismiss_button(true)
         })

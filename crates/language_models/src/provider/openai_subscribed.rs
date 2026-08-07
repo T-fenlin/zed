@@ -189,9 +189,9 @@ impl Render for ConfigurationView {
 
         let is_signing_in = state.is_signing_in();
         let button_label = if is_signing_in {
-            t(keys::onboarding::SIGNING_IN, cx)
+            t(keys::onboarding::SIGNING_IN)
         } else {
-            t(keys::onboarding::SIGN_IN, cx)
+            t(keys::onboarding::SIGN_IN)
         };
 
         v_flex()

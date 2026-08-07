@@ -677,7 +677,7 @@ impl CommitView {
                     )
                     .when(self.stash.is_none(), |this| {
                         this.child(
-                            Button::new("sha", t(keys::git_ui::COMMIT_SHA, cx))
+                            Button::new("sha", t(keys::git_ui::COMMIT_SHA))
                                 .start_icon(
                                     Icon::new(copy_icon)
                                         .size(IconSize::Small)
@@ -784,7 +784,7 @@ impl CommitView {
     fn pop_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
         Self::stash_action(
             workspace,
-            t(keys::git_ui::POP, cx),
+            t(keys::git_ui::POP).as_ref(),
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {
@@ -811,7 +811,7 @@ impl CommitView {
     fn remove_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
         Self::stash_action(
             workspace,
-            t(keys::git_ui::DROP, cx),
+            t(keys::git_ui::DROP).as_ref(),
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {

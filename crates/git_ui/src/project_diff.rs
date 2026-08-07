@@ -862,9 +862,9 @@ impl Render for ProjectDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", t(keys::git_ui::TOGGLE_STAGED, cx))
+                            Button::new("stage", t(keys::git_ui::TOGGLE_STAGED))
                                 .tooltip(Tooltip::for_action_title_in(
-                                    t(keys::git_ui::TOGGLE_STAGED, cx),
+                                    t(keys::git_ui::TOGGLE_STAGED),
                                     &ToggleStaged,
                                     &focus_handle,
                                 ))
@@ -876,7 +876,7 @@ impl Render for ProjectDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", t(keys::git_ui::STAGE, cx))
+                            Button::new("stage", t(keys::git_ui::STAGE))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Stage and Go to Next Hunk",
@@ -888,7 +888,7 @@ impl Render for ProjectDiffToolbar {
                                 })),
                         )
                         .child(
-                            Button::new("unstage", t(keys::git_ui::UNSTAGE, cx))
+                            Button::new("unstage", t(keys::git_ui::UNSTAGE))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Unstage and Go to Next Hunk",
@@ -906,7 +906,7 @@ impl Render for ProjectDiffToolbar {
                 button_states.unstage_all && !button_states.stage_all,
                 |this| {
                     this.child(
-                        Button::new("unstage-all", t(keys::git_ui::UNSTAGE_ALL, cx))
+                        Button::new("unstage-all", t(keys::git_ui::UNSTAGE_ALL))
                             .width(stage_all_button_width)
                             .tooltip(Tooltip::for_action_title_in(
                                 "Unstage All Changes",
@@ -923,7 +923,7 @@ impl Render for ProjectDiffToolbar {
                 !button_states.unstage_all || button_states.stage_all,
                 |this| {
                     this.child(
-                        Button::new("stage-all", t(keys::git_ui::STAGE_ALL, cx))
+                        Button::new("stage-all", t(keys::git_ui::STAGE_ALL))
                             .width(stage_all_button_width)
                             .disabled(!button_states.stage_all)
                             .tooltip(Tooltip::for_action_title_in(
@@ -939,9 +939,9 @@ impl Render for ProjectDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", t(keys::git_ui::COMMIT, cx))
+                Button::new("commit", t(keys::git_ui::COMMIT))
                     .tooltip(Tooltip::for_action_title_in(
-                        t(keys::git_ui::COMMIT, cx),
+                        t(keys::git_ui::COMMIT),
                         &Commit,
                         &focus_handle,
                     ))

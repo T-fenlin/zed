@@ -375,7 +375,7 @@ impl Render for TitleBar {
                 )
                 .when(is_signing_in, |this| {
                     this.child(
-                        Label::new(t(keys::onboarding::SIGNING_IN, cx))
+                        Label::new(t(keys::onboarding::SIGNING_IN))
                             .size(LabelSize::Small)
                             .color(Color::Muted)
                             .with_animation(
@@ -1179,10 +1179,10 @@ impl TitleBar {
         }
     }
 
-    pub fn render_sign_in_button(&mut self, cx: &mut Context<Self>) -> Button {
+    pub fn render_sign_in_button(&mut self, _cx: &mut Context<Self>) -> Button {
         let client = self.client.clone();
         let workspace = self.workspace.clone();
-        Button::new("sign_in", t(keys::onboarding::SIGN_IN, cx))
+        Button::new("sign_in", t(keys::onboarding::SIGN_IN))
             .label_size(LabelSize::Small)
             .tab_index(0isize)
             .on_click(move |_, window, cx| {

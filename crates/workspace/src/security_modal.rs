@@ -274,7 +274,7 @@ impl Render for SecurityModal {
                     .gap_1()
                     .justify_end()
                     .child(
-                        Button::new("rm", t(keys::workspace::STAY_IN_RESTRICTED_MODE, cx))
+                        Button::new("rm", t(keys::workspace::STAY_IN_RESTRICTED_MODE))
                             .key_binding(
                                 KeyBinding::for_action(
                                     &ToggleWorktreeSecurity,
@@ -289,7 +289,7 @@ impl Render for SecurityModal {
                             })),
                     )
                     .child(
-                        Button::new("tc", t(keys::workspace::TRUST_AND_CONTINUE, cx))
+                        Button::new("tc", t(keys::workspace::TRUST_AND_CONTINUE))
                             .style(ButtonStyle::Filled)
                             .layer(ui::ElevationIndex::ModalSurface)
                             .key_binding(

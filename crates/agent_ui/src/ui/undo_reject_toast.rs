@@ -11,7 +11,7 @@ pub fn show_undo_reject_toast(
     cx: &mut App,
 ) {
     let action_log_weak = action_log.downgrade();
-    let status_toast = StatusToast::new(t(keys::errors::AGENT_CHANGES_REJECTED, cx), cx, move |this, _cx| {
+    let status_toast = StatusToast::new(t(keys::errors::AGENT_CHANGES_REJECTED), cx, move |this, _cx| {
         this.icon(
             Icon::new(IconName::Undo)
                 .size(IconSize::Small)

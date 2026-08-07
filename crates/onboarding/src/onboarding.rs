@@ -356,10 +356,7 @@ impl Render for Onboarding {
                                                             .size(HeadlineSize::Small),
                                                     )
                                                     .child(
-                                                        Label::new(t(
-                                                            keys::workspace::THE_EDITOR_FOR_WHAT_S_NEXT,
-                                                            cx,
-                                                        ))
+                                                        Label::new(t(keys::workspace::THE_EDITOR_FOR_WHAT_S_NEXT))
                                                         .color(Color::Muted)
                                                         .size(LabelSize::Small)
                                                         .italic(),
@@ -369,7 +366,7 @@ impl Render for Onboarding {
                                     .child({
                                         Button::new(
                                             "finish_setup",
-                                            t(keys::onboarding::FINISH_SETUP, cx),
+                                            t(keys::onboarding::FINISH_SETUP),
                                         )
                                             .style(ButtonStyle::Filled)
                                             .size(ButtonSize::Medium)

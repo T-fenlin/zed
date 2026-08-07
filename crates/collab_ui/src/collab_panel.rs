@@ -2727,7 +2727,7 @@ impl CollabPanel {
             (
                 "sign_in",
                 if is_busy {
-                    t(keys::onboarding::SIGNING_IN, cx)
+                    t(keys::onboarding::SIGNING_IN)
                 } else {
                     "Sign In with GitHub".into()
                 },

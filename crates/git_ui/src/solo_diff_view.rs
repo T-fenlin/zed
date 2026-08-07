@@ -821,10 +821,10 @@ impl Render for SoloDiffGitToolbar {
                 h_group_sm()
                     .when(button_states.selection, |el| {
                         el.child(
-                            Button::new("stage", t(keys::git_ui::TOGGLE_STAGED, cx))
+                            Button::new("stage", t(keys::git_ui::TOGGLE_STAGED))
                                 .disabled(!button_states.stage && !button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    t(keys::git_ui::TOGGLE_STAGED, cx),
+                                    t(keys::git_ui::TOGGLE_STAGED),
                                     &ToggleStaged,
                                     &focus_handle,
                                 ))
@@ -835,7 +835,7 @@ impl Render for SoloDiffGitToolbar {
                     })
                     .when(!button_states.selection, |el| {
                         el.child(
-                            Button::new("stage", t(keys::git_ui::STAGE, cx))
+                            Button::new("stage", t(keys::git_ui::STAGE))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Stage and Go to Next Hunk",
@@ -847,7 +847,7 @@ impl Render for SoloDiffGitToolbar {
                                 })),
                         )
                         .child(
-                            Button::new("unstage", t(keys::git_ui::UNSTAGE, cx))
+                            Button::new("unstage", t(keys::git_ui::UNSTAGE))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Unstage and Go to Next Hunk",
@@ -860,7 +860,7 @@ impl Render for SoloDiffGitToolbar {
                         )
                     })
                     .child(
-                        Button::new("restore", t(keys::git_ui::RESTORE, cx))
+                        Button::new("restore", t(keys::git_ui::RESTORE))
                             .tooltip(Tooltip::for_action_title_in(
                                 "Restore selected hunk",
                                 &Restore,
@@ -874,21 +874,21 @@ impl Render for SoloDiffGitToolbar {
             )
             .child(Divider::vertical())
             .child(h_group_sm().child(if button_states.stage_file {
-                Button::new("stage-file", t(keys::git_ui::STAGE_ALL, cx))
+                Button::new("stage-file", t(keys::git_ui::STAGE_ALL))
                     .width(rems_from_px(80.))
                     .disabled(!button_states.stage_file)
                     .tooltip(Tooltip::for_action_title_in(
-                        t(keys::git_ui::STAGE_ALL, cx),
+                        t(keys::git_ui::STAGE_ALL),
                         &StageFile,
                         &focus_handle,
                     ))
                     .on_click(cx.listener(|this, _, window, cx| this.stage_file(window, cx)))
             } else {
-                Button::new("unstage-file", t(keys::git_ui::UNSTAGE_ALL, cx))
+                Button::new("unstage-file", t(keys::git_ui::UNSTAGE_ALL))
                     .width(rems_from_px(80.))
                     .disabled(!button_states.unstage_file)
                     .tooltip(Tooltip::for_action_title_in(
-                        t(keys::git_ui::UNSTAGE_ALL, cx),
+                        t(keys::git_ui::UNSTAGE_ALL),
                         &UnstageFile,
                         &focus_handle,
                     ))
@@ -896,9 +896,9 @@ impl Render for SoloDiffGitToolbar {
             }))
             .child(Divider::vertical())
             .child(
-                Button::new("commit", t(keys::git_ui::COMMIT, cx))
+                Button::new("commit", t(keys::git_ui::COMMIT))
                     .tooltip(Tooltip::for_action_title_in(
-                        t(keys::git_ui::COMMIT, cx),
+                        t(keys::git_ui::COMMIT),
                         &Commit,
                         &focus_handle,
                     ))

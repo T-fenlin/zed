@@ -644,7 +644,7 @@ impl PickerDelegate for StashListDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("drop-stash", t(keys::git_ui::DROP, cx))
+                    Button::new("drop-stash", t(keys::git_ui::DROP))
                         .key_binding(
                             KeyBinding::for_action_in(
                                 &stash_picker::DropStashItem,
@@ -674,7 +674,7 @@ impl PickerDelegate for StashListDelegate {
                         })),
                 )
                 .child(
-                    Button::new("pop-stash", t(keys::git_ui::POP, cx))
+                    Button::new("pop-stash", t(keys::git_ui::POP))
                         .key_binding(
                             KeyBinding::for_action_in(&menu::SecondaryConfirm, &focus_handle, cx)
                                 .map(|kb| kb.size(rems_from_px(12.))),

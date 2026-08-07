@@ -352,7 +352,7 @@ impl WelcomePage {
                             .color(Color::Muted)
                             .size(IconSize::Small),
                     )
-                    .child(Label::new(t(keys::workspace::COLLABORATE_WITH_AGENTS, cx))),
+                    .child(Label::new(t(keys::workspace::COLLABORATE_WITH_AGENTS))),
             )
             .child(
                 Label::new(description)
@@ -361,7 +361,7 @@ impl WelcomePage {
                     .mb_2(),
             )
             .child(
-                Button::new("open-agent", t(keys::workspace::OPEN_AGENT_PANEL, cx))
+                Button::new("open-agent", t(keys::workspace::OPEN_AGENT_PANEL))
                     .full_width()
                     .tab_index(tab_index as isize)
                     .style(ButtonStyle::Outlined)
@@ -481,7 +481,7 @@ impl Render for WelcomePage {
                             .child(Vector::square(VectorName::ZedLogo, rems_from_px(45.)))
                             .child(
                                 v_flex().child(Headline::new(welcome_label)).child(
-                                    Label::new(t(keys::workspace::THE_EDITOR_FOR_WHAT_S_NEXT, cx))
+                                    Label::new(t(keys::workspace::THE_EDITOR_FOR_WHAT_S_NEXT))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted)
                                         .italic(),
@@ -498,7 +498,7 @@ impl Render for WelcomePage {
                     .when(!self.fallback_to_recent_projects, |this| {
                         this.child(
                             v_flex().gap_4().child(Divider::horizontal()).child(
-                                Button::new("welcome-exit", t(keys::workspace::RETURN_TO_ONBOARDING, cx))
+                                Button::new("welcome-exit", t(keys::workspace::RETURN_TO_ONBOARDING))
                                     .tab_index(next_tab_index as isize)
                                     .full_width()
                                     .label_size(LabelSize::XSmall)

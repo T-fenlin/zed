@@ -528,12 +528,9 @@ fn render_import_settings_section(tab_index: &mut isize, cx: &mut App) -> impl I
             v_flex()
                 .gap_0p5()
                 .max_w_5_6()
-                .child(Label::new(t(keys::onboarding::IMPORT_SETTINGS, cx)))
+                .child(Label::new(t(keys::onboarding::IMPORT_SETTINGS)))
                 .child(
-                    Label::new(t(
-                        keys::onboarding::AUTOMATICALLY_PULL_YOUR_SETTINGS_FROM_OTHER_EDITORS,
-                        cx,
-                    ))
+                    Label::new(t(keys::onboarding::AUTOMATICALLY_PULL_YOUR_SETTINGS_FROM_OTHER_EDITORS))
                     .color(Color::Muted),
                 ),
         )
@@ -620,12 +617,12 @@ fn render_zed_agent_button(user_store: &Entity<UserStore>, cx: &mut App) -> impl
     let is_signed_in = !is_signed_out;
 
     let state_element = if is_signed_out {
-        Label::new(t(keys::onboarding::SIGN_IN, cx))
+        Label::new(t(keys::onboarding::SIGN_IN))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .into_any_element()
     } else if is_signing_in {
-        Label::new(t(keys::onboarding::SIGNING_IN, cx))
+        Label::new(t(keys::onboarding::SIGNING_IN))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .with_animation(
@@ -637,7 +634,7 @@ fn render_zed_agent_button(user_store: &Entity<UserStore>, cx: &mut App) -> impl
             )
             .into_any_element()
     } else if is_signed_in && is_free {
-        Label::new(t(keys::onboarding::START_FREE_TRIAL, cx))
+        Label::new(t(keys::onboarding::START_FREE_TRIAL))
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .into_any_element()
@@ -708,12 +705,9 @@ fn render_ai_section(user_store: &Entity<UserStore>, cx: &mut App) -> impl IntoE
 
     v_flex()
         .gap_0p5()
-        .child(Label::new(t(keys::onboarding::AGENT_SETUP, cx)))
+        .child(Label::new(t(keys::onboarding::AGENT_SETUP)))
         .child(
-            Label::new(t(
-                keys::onboarding::INSTALL_YOUR_FAVORITE_AGENTS_AND_START_YOUR_FIRST_THREAD,
-                cx,
-            ))
+            Label::new(t(keys::onboarding::INSTALL_YOUR_FAVORITE_AGENTS_AND_START_YOUR_FIRST_THREAD))
             .color(Color::Muted),
         )
         .child(grid)

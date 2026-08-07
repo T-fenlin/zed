@@ -102,7 +102,7 @@ impl Render for InvalidItemView {
                                 h_flex().justify_center().child(
                                     Button::new(
                                         "open-with-system",
-                                        t(keys::workspace::OPEN_IN_DEFAULT_APP, cx),
+                                        t(keys::workspace::OPEN_IN_DEFAULT_APP),
                                     )
                                         .on_click(move |_, _, cx| {
                                             cx.open_with_system(&abs_path);

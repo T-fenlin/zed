@@ -757,7 +757,7 @@ impl Render for RefPickerModal {
                     .w_full()
                     .gap_1p5()
                     .child(Icon::new(IconName::Hash).size(IconSize::XSmall))
-                    .child(Headline::new(t(keys::git_ui::VIEW_COMMIT, cx)).size(HeadlineSize::XSmall)),
+                    .child(Headline::new(t(keys::git_ui::VIEW_COMMIT)).size(HeadlineSize::XSmall)),
             )
             .child(div().px_3().w_full().child(self.editor.clone()))
             .when_some(commit_preview, |el, preview| {
@@ -1306,10 +1306,7 @@ impl Render for GitCloneModal {
                     .rounded_b_sm()
                     .bg(cx.theme().colors().editor_background)
                     .child(
-                        Label::new(t(
-                            keys::git_ui::CLONE_A_REPOSITORY_FROM_GITHUB_OR_OTHER_SOURCES,
-                            cx,
-                        ))
+                        Label::new(t(keys::git_ui::CLONE_A_REPOSITORY_FROM_GITHUB_OR_OTHER_SOURCES))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                     )

@@ -97,10 +97,7 @@ impl Render for ApiKeysWithProviders {
                                 div()
                                     .w_full()
                                     .child(
-                                        Label::new(t(
-                                            keys::onboarding::START_NOW_USING_API_KEYS_FROM_YOUR_ENVIRONMENT_FOR_THE_FOLLOWING_PROVIDERS,
-                                            cx,
-                                        ))
+                                        Label::new(t(keys::onboarding::START_NOW_USING_API_KEYS_FROM_YOUR_ENVIRONMENT_FOR_THE_FOLLOWING_PROVIDERS))
                                         .color(Color::Muted)
                                     )
                             )
@@ -128,7 +125,7 @@ impl RenderOnce for ApiKeysWithoutProviders {
                 h_flex()
                     .gap_2()
                     .child(
-                        Label::new(t(keys::onboarding::API_KEYS, cx))
+                        Label::new(t(keys::onboarding::API_KEYS))
                             .size(LabelSize::Small)
                             .color(Color::Muted)
                             .buffer_font(cx),

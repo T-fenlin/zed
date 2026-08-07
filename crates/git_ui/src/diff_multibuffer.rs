@@ -923,12 +923,12 @@ impl Render for DiffMultibuffer {
                             None => el.child(
                                 h_flex()
                                     .justify_around()
-                                    .child(Label::new(t(keys::git_ui::REMOTE_UP_TO_DATE, cx))),
+                                    .child(Label::new(t(keys::git_ui::REMOTE_UP_TO_DATE))),
                             ),
                         })
                         .child(
                             h_flex().justify_around().mt_1().child(
-                                Button::new("project-diff-close-button", t(keys::git_ui::CLOSE, cx))
+                                Button::new("project-diff-close-button", t(keys::git_ui::CLOSE))
                                     .key_binding(KeyBinding::for_action_in(
                                         &CloseActiveItem::default(),
                                         &keybinding_focus_handle,

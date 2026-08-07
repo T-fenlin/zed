@@ -887,11 +887,11 @@ impl ConfigurationView {
             .style(ButtonStyle::Outlined)
     }
 
-    fn render_sign_in_button(&self, edit_prediction: bool, cx: &mut App) -> impl IntoElement {
+    fn render_sign_in_button(&self, edit_prediction: bool, _cx: &mut App) -> impl IntoElement {
         let label = if edit_prediction {
             "Sign in to GitHub".into()
         } else {
-            t(keys::onboarding::SIGN_IN, cx)
+            t(keys::onboarding::SIGN_IN)
         };
 
         Button::new("sign_in", label)

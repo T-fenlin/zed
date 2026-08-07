@@ -56,7 +56,7 @@ pub(crate) fn commit_context_menu(
         None => format!("Commit {sha_short}"),
     };
 
-    let view_diff_label = t(keys::git_ui::VIEW_DIFF, cx);
+    let view_diff_label = t(keys::git_ui::VIEW_DIFF);
 
     ContextMenu::build(window, cx, move |context_menu, _, _| {
         context_menu

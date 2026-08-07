@@ -12,6 +12,7 @@
 
 use fluent_templates::{static_loader, LanguageIdentifier, Loader};
 use gpui::{App, Global, SharedString};
+use std::sync::atomic::{AtomicU8, Ordering};
 
 pub mod keys;
 
@@ -25,6 +26,27 @@ static_loader! {
     };
 }
 
+/// Process-wide current UI language, kept in sync with [`Translator::set_locale`]
+/// so the cx-free [`t`] API can resolve keys anywhere (menus, settings, renders).
+/// 0 = en-US, 1 = zh-CN.
+static CURRENT_LOCALE: AtomicU8 = AtomicU8::new(0);
+
+fn locale_index(lang: &LanguageIdentifier) -> u8 {
+    if lang == &"zh-CN".parse::<LanguageIdentifier>().unwrap() {
+        1
+    } else {
+        0
+    }
+}
+
+fn locale_from_index(index: u8) -> LanguageIdentifier {
+    if index == 1 {
+        "zh-CN".parse().unwrap()
+    } else {
+        "en-US".parse().unwrap()
+    }
+}
+
 /// Look up `key` in `lang`, walking the fluent-langneg negotiation chain
 /// (e.g. zh-CN -> zh -> en-US). Returns `None` when the key is missing entirely.
 pub fn lookup(lang: &LanguageIdentifier, key: &str) -> Option<SharedString> {
@@ -32,15 +54,14 @@ pub fn lookup(lang: &LanguageIdentifier, key: &str) -> Option<SharedString> {
 }
 
 /// Look up `key` in the current UI language, falling back to the key itself
-/// when missing. This is the explicit-key call-site API: `t(keys::domain::NAME, cx)`.
+/// when missing. This is the explicit-key call-site API: `t(keys::domain::NAME)`.
 ///
 /// The lookup walks lang -> language family -> en-US.ftl (default language
 /// resource) -> the key string, so missing keys surface visibly during
 /// development while en-US users always see English text.
-pub fn t(key: &str, cx: &App) -> SharedString {
-    cx.try_global::<Translator>()
-        .and_then(|translator| translator.t(key))
-        .unwrap_or_else(|| key.into())
+pub fn t(key: &str) -> SharedString {
+    let lang = locale_from_index(CURRENT_LOCALE.load(Ordering::Relaxed));
+    lookup(&lang, key).unwrap_or_else(|| key.into())
 }
 
 /// Convert an English UI string to a kebab-case lookup key ("Zoom In" -> "zoom-in").
@@ -131,6 +152,8 @@ impl Translator {
             "zh-CN" => "zh-CN".parse().unwrap(),
             _ => "en-US".parse().unwrap(),
         };
+        // Keep the cx-free `t()` API in sync with the app-global Translator.
+        CURRENT_LOCALE.store(locale_index(&self.current_lang), Ordering::Relaxed);
     }
 }
 

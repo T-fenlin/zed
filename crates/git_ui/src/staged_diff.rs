@@ -111,7 +111,7 @@ impl DiffHunkDelegate for StagedDiffDelegate {
             .block_mouse_except_scroll()
             .shadow_md()
             .child(
-                Button::new(("unstage", row as u64), t(keys::git_ui::UNSTAGE, cx))
+                Button::new(("unstage", row as u64), t(keys::git_ui::UNSTAGE))
                     .alpha(if status.is_pending() { 0.66 } else { 1.0 })
                     .tooltip(Tooltip::text("Unstage Hunk"))
                     .on_click({
@@ -687,7 +687,7 @@ impl Render for StagedDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("unstage", t(keys::git_ui::UNSTAGE, cx))
+                            Button::new("unstage", t(keys::git_ui::UNSTAGE))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::text("Unstage Selected Hunks"))
                                 .on_click(cx.listener(|this, _, window, cx| {
@@ -697,7 +697,7 @@ impl Render for StagedDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("unstage", t(keys::git_ui::UNSTAGE, cx))
+                            Button::new("unstage", t(keys::git_ui::UNSTAGE))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Unstage and Go to Next Hunk",
@@ -712,7 +712,7 @@ impl Render for StagedDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("unstage-all", t(keys::git_ui::UNSTAGE_ALL, cx))
+                Button::new("unstage-all", t(keys::git_ui::UNSTAGE_ALL))
                     .width(rems_from_px(80.))
                     .disabled(!button_states.unstage_all)
                     .tooltip(Tooltip::for_action_title_in(
@@ -724,9 +724,9 @@ impl Render for StagedDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", t(keys::git_ui::COMMIT, cx))
+                Button::new("commit", t(keys::git_ui::COMMIT))
                     .tooltip(Tooltip::for_action_title_in(
-                        t(keys::git_ui::COMMIT, cx),
+                        t(keys::git_ui::COMMIT),
                         &Commit,
                         &focus_handle,
                     ))

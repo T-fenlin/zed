@@ -1,6 +1,6 @@
 use collab_ui::collab_panel;
-use gpui::{App, Menu, MenuItem, OsAction, SharedString};
-use i18n::{keys, Translator};
+use gpui::{App, Menu, MenuItem, OsAction};
+use i18n::{keys, t};
 use release_channel::ReleaseChannel;
 use terminal_view::terminal_panel;
 use zed_actions::{Quit, assistant, debug_panel, dev, git_panel, project_panel};
@@ -8,12 +8,6 @@ use zed_actions::{Quit, assistant, debug_panel, dev, git_panel, project_panel};
 use crate::zed::ToggleLanguage;
 
 pub fn app_menus(cx: &mut App) -> Vec<Menu> {
-    let translator = cx.try_global::<Translator>();
-    let t = |key: &str| -> SharedString {
-        translator
-            .and_then(|tr| tr.t(key))
-            .unwrap_or_else(|| key.into())
-    };
     let mut view_items = vec![
         MenuItem::action(
             t(keys::app_menu::ZOOM_IN),

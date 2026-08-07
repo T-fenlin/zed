@@ -1111,7 +1111,7 @@ impl ProjectPanel {
             };
 
             let has_pasteable_content = self.has_pasteable_content(cx);
-            let open_in_default_app_label = t(keys::workspace::OPEN_IN_DEFAULT_APP, cx);
+            let open_in_default_app_label = t(keys::workspace::OPEN_IN_DEFAULT_APP);
             let context_menu = ContextMenu::build(window, cx, |menu, _, _| {
                 menu.context(self.focus_handle.clone()).map(|menu| {
                     if is_read_only {

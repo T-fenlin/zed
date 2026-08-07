@@ -223,7 +223,7 @@ Review .zed/settings.json for any extensions or commands configured by this proj
                                 v_flex()
                                     .mt_1()
                                     .child(
-                                        Label::new(t(keys::workspace::RESTRICTED_MODE_PREVENTS, cx))
+                                        Label::new(t(keys::workspace::RESTRICTED_MODE_PREVENTS))
                                             .color(Color::Muted),
                                     )
                                     .child(ListBulletItem::new("Project settings from being applied"))
@@ -244,14 +244,14 @@ Review .zed/settings.json for any extensions or commands configured by this proj
                                             .child(
                                                 Button::new(
                                                     "restricted",
-                                                    t(keys::workspace::STAY_IN_RESTRICTED_MODE, cx),
+                                                    t(keys::workspace::STAY_IN_RESTRICTED_MODE),
                                                 )
                                                 .color(Color::Muted),
                                             )
                                             .child(
                                                 Button::new(
                                                     "trust",
-                                                    t(keys::workspace::TRUST_AND_CONTINUE, cx),
+                                                    t(keys::workspace::TRUST_AND_CONTINUE),
                                                 )
                                                 .style(ButtonStyle::Filled),
                                             )

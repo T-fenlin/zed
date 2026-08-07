@@ -887,7 +887,7 @@ impl Render for BranchDiffToolbar {
             .when(show_review_button, |this| {
                 let focus_handle = focus_handle.clone();
                 this.child(Divider::vertical()).child(
-                    Button::new("review-diff", t(keys::git_ui::REVIEW_DIFF, cx))
+                    Button::new("review-diff", t(keys::git_ui::REVIEW_DIFF))
                         .start_icon(
                             Icon::new(IconName::ZedAssistant)
                                 .size(IconSize::Small)
@@ -895,7 +895,7 @@ impl Render for BranchDiffToolbar {
                         )
                         .tooltip(move |_, cx| {
                             Tooltip::with_meta_in(
-                                t(keys::git_ui::REVIEW_DIFF, cx),
+                                t(keys::git_ui::REVIEW_DIFF),
                                 Some(&ReviewDiff),
                                 "Send this diff for your last agent to review.",
                                 &focus_handle,
