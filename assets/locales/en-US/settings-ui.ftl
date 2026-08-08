@@ -362,6 +362,7 @@ terminal-dock = Terminal Dock
 terminal-panel-flexible-sizing = Terminal Panel Flexible Sizing
 terminal-thread-init-command = Terminal Thread Init Command
 test-audio = Test Audio
+test = Test
 text-rendering-mode = Text Rendering Mode
 theme-mode = Theme Mode
 theme-name = Theme Name

@@ -362,6 +362,7 @@ terminal-dock = 终端停靠
 terminal-panel-flexible-sizing = 终端面板灵活尺寸
 terminal-thread-init-command = 终端线程初始化命令
 test-audio = 测试音频
+test = 测试
 text-rendering-mode = 文本渲染模式
 theme-mode = 主题模式
 theme-name = 主题名称

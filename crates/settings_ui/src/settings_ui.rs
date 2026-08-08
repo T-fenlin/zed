@@ -1396,7 +1396,7 @@ fn render_settings_item_layout(
     // description), so adding a group with the same label here would make
     // screen readers announce the setting name twice.
     h_flex()
-        .id(title)
+        .id(title.clone())
         .min_w_0()
         .justify_between()
         .child(
@@ -1431,7 +1431,7 @@ fn render_settings_item_layout(
                         }),
                 )
                 .child(
-                    Label::new(description)
+                    Label::new(description.clone())
                         .size(LabelSize::Small)
                         .color(Color::Muted)
                         .render_code_spans(),
@@ -2084,7 +2084,7 @@ impl SettingsWindow {
 
         for (page_index, page) in self.pages.iter().enumerate() {
             navbar_entries.push(NavBarEntry {
-                title: page.title,
+                title: page.title.clone(),
                 is_root: true,
                 expanded: false,
                 page_index,
@@ -2097,7 +2097,7 @@ impl SettingsWindow {
                     continue;
                 };
                 navbar_entries.push(NavBarEntry {
-                    title,
+                    title: title.clone(),
                     is_root: false,
                     expanded: false,
                     page_index,
@@ -5283,7 +5283,7 @@ pub mod test {
         pub fn test(window: &mut Window, cx: &mut Context<Self>) -> Self {
             let search_bar = cx.new(|cx| Editor::single_line(window, cx));
             let dummy_page = SettingsPage {
-                title: "Test",
+                title: t(keys::settings_ui::TEST),
                 items: Box::new([]),
             };
             Self {
@@ -5404,7 +5404,7 @@ pub mod test {
                     .last_mut()
                     .unwrap()
                     .items
-                    .push(SettingsPageItem::SectionHeader(title));
+                    .push(SettingsPageItem::SectionHeader(SharedString::from(title)));
                 if selected_idx == Some(index) && !in_expanded_section {
                     panic!("Items in unexpanded sections cannot be selected");
                 }
@@ -5420,7 +5420,7 @@ pub mod test {
         let pages: Vec<SettingsPage> = page_builders
             .into_iter()
             .map(|builder| SettingsPage {
-                title: builder.title,
+                title: builder.title.info(),
                 items: builder.items.into_boxed_slice(),
             })
             .collect();

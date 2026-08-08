@@ -788,6 +788,7 @@ pub mod settings_ui {
         TERMINAL_PANEL_FLEXIBLE_SIZING = "terminal-panel-flexible-sizing",
         TERMINAL_THREAD_INIT_COMMAND = "terminal-thread-init-command",
         TEST_AUDIO = "test-audio",
+        TEST = "test",
         TEST_YOUR_RULES = "test-your-rules",
         TEXT_RENDERING_MODE = "text-rendering-mode",
         THEME_MODE = "theme-mode",
