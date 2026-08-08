@@ -5,6 +5,8 @@ use gpui::{
     RenderOnce, Styled, Window,
 };
 
+use i18n::{keys, t};
+
 use crate::{Tooltip, prelude::*};
 
 const COPIED_STATE_DURATION: Duration = Duration::from_secs(2);
@@ -47,7 +49,7 @@ impl CopyButton {
             message: message.into(),
             icon_size: IconSize::Small,
             disabled: false,
-            tooltip_label: "Copy".into(),
+            tooltip_label: t(keys::ui::COPY),
             visible_on_hover: None,
             custom_on_click: None,
         }

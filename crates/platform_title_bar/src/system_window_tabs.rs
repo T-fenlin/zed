@@ -1,5 +1,7 @@
 use settings::{Settings, SettingsStore};
 
+use i18n::{keys, t};
+
 use gpui::{
     AnyWindowHandle, Context, Hsla, InteractiveElement, MouseButton, ParentElement, ScrollHandle,
     Styled, SystemWindowTab, SystemWindowTabController, Window, WindowId, actions, canvas, div,
@@ -286,7 +288,7 @@ impl SystemWindowTabs {
                 let merge_tabs = tabs.clone();
 
                 ContextMenu::build(window, cx, move |mut menu, _window_, _cx| {
-                    menu = menu.entry("Close Tab", None, move |window, cx| {
+                    menu = menu.entry(t(keys::ui::CLOSE_TAB), None, move |window, cx| {
                         Self::handle_right_click_action(
                             cx,
                             window,

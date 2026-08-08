@@ -88,7 +88,6 @@ go = 跳转
 back = 后退
 forward = 前进
 go-to-file = 转到文件…
-go-to-symbol-in-project = 转到项目中的符号
 go-to-line-column = 转到行/列…
 go-to-declaration = 转到声明
 go-to-type-definition = 转到类型定义

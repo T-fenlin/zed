@@ -501,8 +501,8 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                "Agent Name",
-                "Required. A unique name used to identify this agent.",
+                "Agent Name".into(),
+                "Required. A unique name used to identify this agent.".into(),
                 input_box(&form.name, cx).into_any_element(),
                 None,
                 None,
@@ -515,8 +515,8 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                "Command",
-                "Required. Path to the executable that launches the agent.",
+                "Command".into(),
+                "Required. Path to the executable that launches the agent.".into(),
                 input_box(&form.command, cx).into_any_element(),
                 None,
                 None,
@@ -529,8 +529,8 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                "Arguments",
-                "Space-separated arguments passed to the command.",
+                t(keys::settings_ui::ARGUMENTS),
+                "Space-separated arguments passed to the command.".into(),
                 input_box(&form.args, cx).into_any_element(),
                 None,
                 None,
@@ -636,8 +636,8 @@ fn render_env_section(
 
     crate::render_settings_item_layout(
         settings_window,
-        "Environment Variables",
-        "Environment variables provided to the agent process.",
+        t(keys::settings_ui::ENVIRONMENT_VARIABLES),
+        "Environment variables provided to the agent process.".into(),
         control,
         None,
         None,

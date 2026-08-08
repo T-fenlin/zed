@@ -311,8 +311,8 @@ impl SettingFieldRenderer {
             SettingField<T>,
             SettingsUiFile,
             Option<&SettingsFieldMetadata>,
-            &'static str,
-            &'static str,
+            SharedString,
+            SharedString,
             &mut Window,
             &mut App,
         ) -> AnyElement
@@ -331,8 +331,8 @@ impl SettingFieldRenderer {
                     field,
                     settings_file.clone(),
                     metadata,
-                    item.title,
-                    item.description,
+                    item.title.clone(),
+                    item.description.clone(),
                     window,
                     cx,
                 );
@@ -788,9 +788,9 @@ fn open_settings_editor_at_target(
 
             if settings_window.filter_table[page_index][item_index]
                 && let SettingsPageItem::SubPageLink(link) = item
-                && let SettingsPageItem::SectionHeader(header) = page.items[header_index]
+                && let SettingsPageItem::SectionHeader(header) = &page.items[header_index]
             {
-                settings_window.push_sub_page(link.clone(), SharedString::from(header), window, cx);
+                settings_window.push_sub_page(link.clone(), header.clone(), window, cx);
             }
         }
 
@@ -1043,7 +1043,7 @@ impl Drop for SubPage {
 
 #[derive(Debug)]
 struct NavBarEntry {
-    title: &'static str,
+    title: SharedString,
     is_root: bool,
     expanded: bool,
     page_index: usize,
@@ -1052,13 +1052,13 @@ struct NavBarEntry {
 }
 
 struct SettingsPage {
-    title: &'static str,
+    title: SharedString,
     items: Box<[SettingsPageItem]>,
 }
 
 #[derive(PartialEq)]
 enum SettingsPageItem {
-    SectionHeader(&'static str),
+    SectionHeader(SharedString),
     SettingItem(SettingItem),
     SubPageLink(SubPageLink),
     DynamicItem(DynamicItem),
@@ -1086,7 +1086,7 @@ impl std::fmt::Debug for SettingsPageItem {
 }
 
 impl SettingsPageItem {
-    fn header_text(&self) -> Option<&'static str> {
+    fn header_text(&self) -> Option<&SharedString> {
         match self {
             SettingsPageItem::SectionHeader(header) => Some(header),
             _ => None,
@@ -1173,7 +1173,7 @@ impl SettingsPageItem {
 
         match self {
             SettingsPageItem::SectionHeader(header) => {
-                SettingsSectionHeader::new(SharedString::new_static(header)).into_any_element()
+                SettingsSectionHeader::new(header.clone()).into_any_element()
             }
             SettingsPageItem::SettingItem(setting_item) => {
                 let (field_with_padding, _) =
@@ -1241,7 +1241,7 @@ impl SettingsPageItem {
                                                 .take(item_index)
                                                 .rev()
                                                 .find_map(|item| {
-                                                    item.header_text().map(SharedString::new_static)
+                                                    item.header_text().map(|header| header.clone())
                                                 })
                                         });
 
@@ -1382,8 +1382,8 @@ impl SettingsPageItem {
 /// optional reset button and copy-link icon.
 fn render_settings_item_layout(
     settings_window: &SettingsWindow,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     control: AnyElement,
     reset_fn: Option<Box<dyn Fn(&mut Window, &mut App)>>,
     modified_in: Option<String>,
@@ -1409,7 +1409,7 @@ fn render_settings_item_layout(
                     h_flex()
                         .w_full()
                         .gap_1()
-                        .child(Label::new(SharedString::new_static(title)))
+                        .child(Label::new(title))
                         .when_some(reset_fn, |this, reset_to_default| {
                             this.child(
                                 IconButton::new("reset-to-default-btn", IconName::Undo)
@@ -1431,7 +1431,7 @@ fn render_settings_item_layout(
                         }),
                 )
                 .child(
-                    Label::new(SharedString::new_static(description))
+                    Label::new(description)
                         .size(LabelSize::Small)
                         .color(Color::Muted)
                         .render_code_spans(),
@@ -1503,8 +1503,8 @@ fn render_settings_item(
 
     render_settings_item_layout(
         settings_window,
-        setting_item.title,
-        setting_item.description,
+        setting_item.title.clone(),
+        setting_item.description.clone(),
         control,
         reset_fn,
         modified_in,
@@ -1561,8 +1561,8 @@ fn render_settings_item_link(
 }
 
 struct SettingItem {
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     field: Box<dyn AnySettingField>,
     metadata: Option<Box<SettingsFieldMetadata>>,
     files: FileMask,
@@ -2392,7 +2392,7 @@ impl SettingsWindow {
         // we could only search relevant items based on the current file
         for (page_index, page) in self.pages.iter().enumerate() {
             let mut header_index = 0;
-            let mut header_str = "";
+            let mut header_str = SharedString::default();
             for (item_index, item) in page.items.iter().enumerate() {
                 let key_index = key_lut.len();
                 let mut json_path = None;
@@ -2408,27 +2408,39 @@ impl SettingsWindow {
                         documents.push(SearchDocument {
                             id: key_index,
                             words: split_into_words(&[
-                                page.title,
-                                header_str,
-                                item.title,
-                                item.description,
+                                page.title.as_ref(),
+                                header_str.as_ref(),
+                                item.title.as_ref(),
+                                item.description.as_ref(),
                             ]),
                         });
-                        push_candidates(&mut fuzzy_match_candidates, key_index, item.title);
-                        push_candidates(&mut fuzzy_match_candidates, key_index, item.description);
+                        push_candidates(
+                            &mut fuzzy_match_candidates,
+                            key_index,
+                            item.title.as_ref(),
+                        );
+                        push_candidates(
+                            &mut fuzzy_match_candidates,
+                            key_index,
+                            item.description.as_ref(),
+                        );
                     }
                     SettingsPageItem::SectionHeader(header) => {
                         documents.push(SearchDocument {
                             id: key_index,
-                            words: split_into_words(&[header]),
+                            words: split_into_words(&[header.as_ref()]),
                         });
-                        push_candidates(&mut fuzzy_match_candidates, key_index, header);
+                        push_candidates(&mut fuzzy_match_candidates, key_index, header.as_ref());
                         header_index = item_index;
-                        header_str = *header;
+                        header_str = header.clone();
                     }
                     SettingsPageItem::SubPageLink(sub_page_link) => {
                         json_path = sub_page_link.json_path;
-                        let mut parts = vec![page.title, header_str, sub_page_link.title.as_ref()];
+                        let mut parts = vec![
+                            page.title.as_ref(),
+                            header_str.as_ref(),
+                            sub_page_link.title.as_ref(),
+                        ];
                         parts.extend(sub_page_link.search_aliases);
                         documents.push(SearchDocument {
                             id: key_index,
@@ -2447,8 +2459,8 @@ impl SettingsWindow {
                         documents.push(SearchDocument {
                             id: key_index,
                             words: split_into_words(&[
-                                page.title,
-                                header_str,
+                                page.title.as_ref(),
+                                header_str.as_ref(),
                                 action_link.title.as_ref(),
                             ]),
                         });
@@ -2459,8 +2471,8 @@ impl SettingsWindow {
                         );
                     }
                 }
-                push_candidates(&mut fuzzy_match_candidates, key_index, page.title);
-                push_candidates(&mut fuzzy_match_candidates, key_index, header_str);
+                push_candidates(&mut fuzzy_match_candidates, key_index, page.title.as_ref());
+                push_candidates(&mut fuzzy_match_candidates, key_index, header_str.as_ref());
 
                 key_lut.push(SearchKeyLUTEntry {
                     page_index,
@@ -3177,7 +3189,7 @@ impl SettingsWindow {
                                     .map(|(entry_index, entry)| {
                                         TreeViewItem::new(
                                             ("settings-ui-navbar-entry", entry_index),
-                                            entry.title,
+                                            entry.title.clone(),
                                         )
                                         .track_focus(&entry.focus_handle)
                                         .root_item(entry.is_root)
@@ -3195,9 +3207,9 @@ impl SettingsWindow {
                                                 ))
                                         })
                                         .on_click({
-                                            let category = this.pages[entry.page_index].title;
+                                            let category = this.pages[entry.page_index].title.clone();
                                             let subcategory =
-                                                (!entry.is_root).then_some(entry.title);
+                                                (!entry.is_root).then_some(entry.title.clone());
 
                                             cx.listener(move |this, event: &gpui::ClickEvent, window, cx| {
                                                 if this.toggle_navbar_entry_on_double_click(
@@ -3495,7 +3507,7 @@ impl SettingsWindow {
             .child(Label::new("/").color(Color::Muted))
             .children(
                 itertools::intersperse(
-                    std::iter::once(self.current_page().title.into()).chain(
+                    std::iter::once(self.current_page().title.clone().into()).chain(
                         self.sub_page_stack
                             .iter()
                             .enumerate()
@@ -3557,7 +3569,7 @@ impl SettingsWindow {
                 .navbar_entries
                 .iter()
                 .find(|entry| entry.is_root && entry.page_index == self.current_page_index())
-                .map(|entry| entry.title);
+                .map(|entry| entry.title.clone());
 
             let list_content = list(
                 self.list_state.clone(),
@@ -3566,7 +3578,7 @@ impl SettingsWindow {
                         return div()
                             .px_8()
                             .when(this.sub_page_stack.is_empty(), |this| {
-                                this.when_some(root_nav_label, |this, title| {
+                                this.when_some(root_nav_label.clone(), |this, title| {
                                     this.child(
                                         Label::new(title).size(LabelSize::Large).mt_2().mb_3(),
                                     )
@@ -3680,11 +3692,11 @@ impl SettingsWindow {
                 .navbar_entries
                 .iter()
                 .find(|entry| entry.is_root && entry.page_index == self.current_page_index())
-                .map(|entry| entry.title);
+                .map(|entry| entry.title.clone());
 
             page_content
                 .when(self.sub_page_stack.is_empty(), |this| {
-                    this.when_some(root_nav_label, |this, title| {
+                    this.when_some(root_nav_label.clone(), |this, title| {
                         this.child(Label::new(title).size(LabelSize::Large).mt_2().mb_3())
                     })
                 })
@@ -4346,7 +4358,7 @@ impl SettingsWindow {
                             .iter()
                             .take(item_index)
                             .rev()
-                            .find_map(|item| item.header_text().map(SharedString::new_static))
+                            .find_map(|item| item.header_text().map(|header| header.clone()))
                             .unwrap_or_else(|| "Settings".into());
 
                         self.push_sub_page(sub_page_link.clone(), section_header, window, cx);
@@ -4849,8 +4861,8 @@ fn render_text_field<T: From<String> + Into<String> + AsRef<str> + Clone>(
     field: SettingField<T>,
     file: SettingsUiFile,
     metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -4914,8 +4926,8 @@ fn render_toggle_button<B: Into<bool> + From<bool> + Copy>(
     field: SettingField<B>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -4955,8 +4967,8 @@ fn render_editable_number_field<T: NumberFieldType + Send + Sync>(
     field: SettingField<T>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -4997,8 +5009,8 @@ fn render_dropdown<T>(
     field: SettingField<T>,
     file: SettingsUiFile,
     metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement
@@ -5078,8 +5090,8 @@ fn render_font_picker(
     field: SettingField<settings::FontFamilyName>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -5139,8 +5151,8 @@ fn render_theme_picker(
     field: SettingField<settings::ThemeName>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -5200,8 +5212,8 @@ fn render_icon_theme_picker(
     field: SettingField<settings::IconThemeName>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -5349,7 +5361,7 @@ pub mod test {
 
     fn parse(input: &'static str, window: &mut Window, cx: &mut App) -> SettingsWindow {
         struct PageBuilder {
-            title: &'static str,
+            title: &str,
             items: Vec<SettingsPageItem>,
         }
         let mut page_builders: Vec<PageBuilder> = Vec::new();

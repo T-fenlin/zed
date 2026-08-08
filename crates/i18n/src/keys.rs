@@ -257,6 +257,9 @@ pub fn all() -> Vec<&'static str> {
         .chain(onboarding::ALL.iter().copied())
         .chain(workspace::ALL.iter().copied())
         .chain(git_ui::ALL.iter().copied())
+        .chain(agent_ui::ALL.iter().copied())
+        .chain(settings_ui::ALL.iter().copied())
+        .chain(ui::ALL.iter().copied())
         .collect()
 }
 
@@ -835,5 +838,17 @@ pub mod settings_ui {
         WORKING_DIRECTORY = "working-directory",
         WRAP_GUIDES = "wrap-guides",
         ZOOMED_PADDING = "zoomed-padding",
+    }
+}
+/// UI 通用编辑操作（zh-CN/ui.ftl + en-US/ui.ftl 对应）。
+pub mod ui {
+    define_keys! {
+        CLOSE_TAB = "close-tab",
+        COPY = "copy",
+        CUT = "cut",
+        NEW_FILE = "new-file",
+        PASTE = "paste",
+        REOPEN_CLOSED_TAB = "reopen-closed-tab",
+        SELECT_ALL = "select-all",
     }
 }

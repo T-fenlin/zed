@@ -75,8 +75,8 @@ fn render_context_server_timeout(
     cx: &mut Context<SettingsWindow>,
 ) -> AnyElement {
     let item = SettingsPageItem::SettingItem(SettingItem {
-        title: "MCP Server Timeout",
-        description: "Default timeout in seconds for MCP server tool calls.",
+        title: "MCP Server Timeout".into(),
+        description: "Default timeout in seconds for MCP server tool calls.".into(),
         field: Box::new(SettingField {
             organization_override: None,
             json_path: Some("context_server_timeout"),
@@ -1016,8 +1016,8 @@ fn render_form_field(
     let control = input_box(editor, cx).into_any_element();
     crate::render_settings_item_layout(
         settings_window,
-        title,
-        description,
+        title.into(),
+        description.into(),
         control,
         None,
         None,
@@ -1086,8 +1086,8 @@ fn render_kv_section(
 
     crate::render_settings_item_layout(
         settings_window,
-        title,
-        description,
+        title.into(),
+        description.into(),
         control,
         None,
         None,

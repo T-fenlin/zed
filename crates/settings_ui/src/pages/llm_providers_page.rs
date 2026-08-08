@@ -665,20 +665,20 @@ fn render_llm_provider_form_page(
                 }))
                 .child(Divider::horizontal().flex_shrink_0())
                 .child(render_form_field(
-                    "Provider Name",
-                    "A unique name used to identify this provider.",
+                    "Provider Name".into(),
+                    "A unique name used to identify this provider.".into(),
                     &form.provider_name,
                     cx,
                 ))
                 .child(render_form_field(
-                    "API URL",
-                    "The base URL for the compatible API.",
+                    "API URL".into(),
+                    "The base URL for the compatible API.".into(),
                     &form.api_url,
                     cx,
                 ))
                 .child(render_form_field(
-                    "API Key",
-                    "Stored in the system keychain, not in settings.json.",
+                    t(keys::settings_ui::API_KEY),
+                    "Stored in the system keychain, not in settings.json.".into(),
                     &form.api_key,
                     cx,
                 ))
@@ -700,8 +700,8 @@ fn render_llm_provider_form_page(
 }
 
 fn render_form_field(
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     editor: &Entity<Editor>,
     cx: &mut Context<SettingsWindow>,
 ) -> AnyElement {
@@ -795,28 +795,28 @@ fn render_model(
         .border_color(cx.theme().colors().border.opacity(0.6))
         .bg(cx.theme().colors().element_active.opacity(0.15))
         .child(render_form_field(
-            "Model Name",
-            "The model's name in the provider's API.",
+            "Model Name".into(),
+            "The model's name in the provider's API.".into(),
             &model.name,
             cx,
         ))
         .when(matches!(kind, CompatibleProviderKind::OpenAi), |this| {
             this.child(render_form_field(
-                "Max Completion Tokens",
-                "Maximum completion tokens for OpenAI-compatible requests.",
+                "Max Completion Tokens".into(),
+                "Maximum completion tokens for OpenAI-compatible requests.".into(),
                 &model.max_completion_tokens,
                 cx,
             ))
         })
         .child(render_form_field(
-            "Max Output Tokens",
-            "The maximum number of tokens the model can output.",
+            "Max Output Tokens".into(),
+            "The maximum number of tokens the model can output.".into(),
             &model.max_output_tokens,
             cx,
         ))
         .child(render_form_field(
-            "Max Tokens",
-            "The model context window size.",
+            "Max Tokens".into(),
+            "The model context window size.".into(),
             &model.max_tokens,
             cx,
         ))

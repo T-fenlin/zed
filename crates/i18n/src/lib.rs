@@ -253,8 +253,8 @@ mod tests {
     fn translate_text_looks_up_slugified_key() {
         let zh: LanguageIdentifier = "zh-CN".parse().unwrap();
         assert_eq!(
-            lookup(&zh, &slugify("New File...")).unwrap(),
-            SharedString::from("新建文件")
+            lookup(&zh, &slugify("Welcome to Zed")).unwrap(),
+            SharedString::from("欢迎使用 Zed")
         );
         // Untranslated strings keep the original text.
         assert_eq!(lookup(&zh, &slugify("Something Untranslated")), None);
@@ -266,8 +266,8 @@ mod tests {
         zh.set_locale("zh-CN");
         // Hit: translated.
         assert_eq!(
-            translate_with(&zh, "New File..."),
-            SharedString::from("新建文件")
+            translate_with(&zh, "Welcome to Zed"),
+            SharedString::from("欢迎使用 Zed")
         );
         // Miss: original text.
         assert_eq!(
@@ -278,7 +278,7 @@ mod tests {
         // en-US looks up en-US.ftl: no slug keys there, so the original text
         // is returned unchanged.
         let en = Translator::new();
-        assert_eq!(translate_with(&en, "New File..."), SharedString::from("New File..."));
+        assert_eq!(translate_with(&en, "Welcome to Zed"), SharedString::from("Welcome to Zed"));
         assert_eq!(translate_with(&en, "Any String"), SharedString::from("Any String"));
     }
 

@@ -160,8 +160,8 @@ pub fn render_ollama_model_picker(
     field: SettingField<settings::OllamaModelName>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {

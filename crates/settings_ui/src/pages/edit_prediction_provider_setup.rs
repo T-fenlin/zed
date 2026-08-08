@@ -367,8 +367,8 @@ fn render_ollama_provider(
 fn ollama_settings() -> Box<[SettingsPageItem]> {
     Box::new([
         SettingsPageItem::SettingItem(SettingItem {
-            title: "API URL",
-            description: "The base URL of your Ollama server.",
+            title: "API URL".into(),
+            description: "The base URL of your Ollama server.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -401,8 +401,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Model",
-            description: "The Ollama model to use for edit predictions.",
+            title: "Model".into(),
+            description: "The Ollama model to use for edit predictions.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -435,8 +435,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Prompt Format",
-            description: "The prompt format to use when requesting predictions. Set to Infer to have the format inferred based on the model name.",
+            title: "Prompt Format".into(),
+            description: "The prompt format to use when requesting predictions. Set to Infer to have the format inferred based on the model name.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -466,8 +466,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             metadata: None,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Max Output Tokens",
-            description: "The maximum number of tokens to generate.",
+            title: "Max Output Tokens".into(),
+            description: "The maximum number of tokens to generate.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -502,8 +502,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
 fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
     Box::new([
         SettingsPageItem::SettingItem(SettingItem {
-            title: "API URL",
-            description: "The URL of your OpenAI-compatible server's completions API.",
+            title: "API URL".into(),
+            description: "The URL of your OpenAI-compatible server's completions API.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -536,8 +536,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Model",
-            description: "The model string to pass to the OpenAI-compatible server.",
+            title: "Model".into(),
+            description: "The model string to pass to the OpenAI-compatible server.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -570,8 +570,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Prompt Format",
-            description: "The prompt format to use when requesting predictions. Set to Infer to have the format inferred based on the model name.",
+            title: "Prompt Format".into(),
+            description: "The prompt format to use when requesting predictions. Set to Infer to have the format inferred based on the model name.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -601,8 +601,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             metadata: None,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Max Output Tokens",
-            description: "The maximum number of tokens to generate.",
+            title: "Max Output Tokens".into(),
+            description: "The maximum number of tokens to generate.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -637,8 +637,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
 fn codestral_settings() -> Box<[SettingsPageItem]> {
     Box::new([
         SettingsPageItem::SettingItem(SettingItem {
-            title: "API URL",
-            description: "The API URL to use for Codestral.",
+            title: "API URL".into(),
+            description: "The API URL to use for Codestral.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -671,8 +671,8 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Max Tokens",
-            description: "The maximum number of tokens to generate.",
+            title: "Max Tokens".into(),
+            description: "The maximum number of tokens to generate.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -702,8 +702,8 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Model",
-            description: "The Codestral model id to use.",
+            title: "Model".into(),
+            description: "The Codestral model id to use.".into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {

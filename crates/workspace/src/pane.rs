@@ -17,6 +17,7 @@ use crate::{
 use anyhow::Result;
 use collections::{BTreeSet, HashMap, HashSet, VecDeque};
 use futures::{StreamExt, stream::FuturesUnordered};
+use i18n::{keys, t};
 use gpui::{
     Action, Anchor, AnyElement, App, AsyncWindowContext, ClickEvent, ClipboardItem, Context, Div,
     DragMoveEvent, Entity, EntityId, EventEmitter, ExternalPaths, FocusHandle, FocusOutEvent,
@@ -2990,10 +2991,10 @@ impl Pane {
             .start_slot::<Indicator>(indicator)
             .map(|this| {
                 let end_slot_action: &'static dyn Action;
-                let end_slot_tooltip_text: &'static str;
+                let end_slot_tooltip_text: SharedString;
                 let end_slot = if is_pinned {
                     end_slot_action = &TogglePinTab;
-                    end_slot_tooltip_text = "Unpin Tab";
+                    end_slot_tooltip_text = "Unpin Tab".into();
                     IconButton::new("unpin tab", IconName::Pin)
                         .shape(IconButtonShape::Square)
                         .icon_color(Color::Muted)
@@ -3007,7 +3008,7 @@ impl Pane {
                         save_intent: None,
                         close_pinned: false,
                     };
-                    end_slot_tooltip_text = "Close Tab";
+                    end_slot_tooltip_text = t(keys::ui::CLOSE_TAB);
                     match show_close_button {
                         ShowCloseButton::Always => IconButton::new("close tab", IconName::Close),
                         ShowCloseButton::Hover => {
@@ -3029,7 +3030,7 @@ impl Pane {
                         let focus_handle = focus_handle.clone();
                         this.tooltip(move |window, cx| {
                             Tooltip::for_action_in(
-                                end_slot_tooltip_text,
+                                end_slot_tooltip_text.clone(),
                                 end_slot_action,
                                 &window.focused(cx).unwrap_or_else(|| focus_handle.clone()),
                                 cx,

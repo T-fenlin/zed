@@ -13890,6 +13890,7 @@ name = "platform_title_bar"
 version = "0.1.0"
 dependencies = [
  "gpui",
+ "i18n",
  "project",
  "settings",
  "smallvec",

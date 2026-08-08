@@ -1,5 +1,4 @@
-# 兜底键（ui 层注入点 ①）：未显式 t() 改写的 Label 字符串按 slugify 后的裸键查表
-# 注意：save / open-file 等键已在 app-menu.ftl 定义（同一 locale bundle 内键必须唯一）
+# 通用编辑操作（keys::ui 域）
 
 new-file = 新建文件
 close-tab = 关闭标签页
