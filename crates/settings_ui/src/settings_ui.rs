@@ -3507,7 +3507,7 @@ impl SettingsWindow {
             .child(Label::new("/").color(Color::Muted))
             .children(
                 itertools::intersperse(
-                    std::iter::once(self.current_page().title.clone().into()).chain(
+                    std::iter::once(self.current_page().title.clone()).chain(
                         self.sub_page_stack
                             .iter()
                             .enumerate()
@@ -5361,7 +5361,7 @@ pub mod test {
 
     fn parse(input: &'static str, window: &mut Window, cx: &mut App) -> SettingsWindow {
         struct PageBuilder {
-            title: &str,
+            title: SharedString,
             items: Vec<SettingsPageItem>,
         }
         let mut page_builders: Vec<PageBuilder> = Vec::new();
@@ -5387,14 +5387,14 @@ pub mod test {
                 let page_idx = page_builders.len();
                 expanded_pages.push(page_idx);
                 page_builders.push(PageBuilder {
-                    title,
+                    title: SharedString::from(title),
                     items: vec![],
                 });
                 index += 1;
                 in_expanded_section = true;
             } else if kind == '>' {
                 page_builders.push(PageBuilder {
-                    title,
+                    title: SharedString::from(title),
                     items: vec![],
                 });
                 index += 1;
@@ -5420,7 +5420,7 @@ pub mod test {
         let pages: Vec<SettingsPage> = page_builders
             .into_iter()
             .map(|builder| SettingsPage {
-                title: builder.title.info(),
+                title: builder.title,
                 items: builder.items.into_boxed_slice(),
             })
             .collect();

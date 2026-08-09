@@ -284,7 +284,7 @@ impl RenderOnce for Label {
                 );
             }
         }
-        self.base.child(self.label.clone())
+        self.base.child(self.label)
     }
 }
 
