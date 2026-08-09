@@ -163,7 +163,7 @@ mod tests {
         fn package_manager(source: &str) -> Option<&'static str> {
             PackageJsonData::new(
                 Path::new("/root/package.json").into(),
-                serde_json_lenient::from_str(source).expect("provided source should be valid JSON"),
+                serde_json_lenient::from_str(source).expect("提供的源代码应为有效的 JSON"),
             )
             .package_manager
         }

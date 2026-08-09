@@ -35,7 +35,7 @@ impl From<WebSearchToolOutput> for LanguageModelToolResultContent {
     fn from(value: WebSearchToolOutput) -> Self {
         match value {
             WebSearchToolOutput::Success(response) => serde_json::to_string(&response)
-                .unwrap_or_else(|e| format!("Failed to serialize web search response: {e}"))
+                .unwrap_or_else(|e| format!("无法序列化网络搜索结果:{e}"))
                 .into(),
             WebSearchToolOutput::Error { error } => error.into(),
         }
@@ -97,7 +97,7 @@ impl AgentTool for WebSearchTool {
             let search_task = cx.update(|cx| {
                 let Some(provider) = WebSearchRegistry::read_global(cx).active_provider() else {
                     return Err(WebSearchToolOutput::Error {
-                        error: "Web search is not available.".to_string(),
+                        error: "网络搜索不可用。".to_string(),
                     });
                 };
                 Ok(provider.search(input.query, cx))
@@ -109,13 +109,13 @@ impl AgentTool for WebSearchTool {
                         Ok(response) => response,
                         Err(err) => {
                             event_stream
-                                .update_fields(acp::ToolCallUpdateFields::new().title("Web Search Failed"));
+                                .update_fields(acp::ToolCallUpdateFields::new().title("网络搜索失败"));
                             return Err(WebSearchToolOutput::Error { error: err.to_string() });
                         }
                     }
                 }
                 _ = event_stream.cancelled_by_user().fuse() => {
-                    return Err(WebSearchToolOutput::Error { error: "Web search cancelled by user".to_string() });
+                    return Err(WebSearchToolOutput::Error { error: "用户已取消网络搜索".to_string() });
                 }
             };
 
@@ -140,13 +140,13 @@ impl AgentTool for WebSearchTool {
 
 fn emit_update(response: &WebSearchResponse, event_stream: &ToolCallEventStream) {
     let result_text = if response.results.len() == 1 {
-        "1 result".to_string()
+        "1 条结果".to_string()
     } else {
-        format!("{} results", response.results.len())
+        format!("{} 条结果", response.results.len())
     };
     event_stream.update_fields(
         acp::ToolCallUpdateFields::new()
-            .title(format!("Searched the web: {result_text}"))
+            .title(format!("已搜索网络:{result_text}"))
             .content(
                 response
                     .results

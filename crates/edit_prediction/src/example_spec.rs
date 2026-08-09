@@ -68,14 +68,14 @@ pub struct TelemetrySource {
     pub was_shown: bool,
 }
 
-const REASONING_HEADING: &str = "Reasoning";
-const UNCOMMITTED_DIFF_HEADING: &str = "Uncommitted Diff";
-const RECENTLY_OPENED_FILES_HEADING: &str = "Recently Opened Files";
-const RECENTLY_VIEWED_FILES_HEADING: &str = "Recently Viewed Files";
-const EDIT_HISTORY_HEADING: &str = "Edit History";
-const CURSOR_POSITION_HEADING: &str = "Cursor Position";
-const EXPECTED_PATCH_HEADING: &str = "Expected Patch";
-const REJECTED_PATCH_HEADING: &str = "Rejected Patch";
+const REASONING_HEADING: &str = "推理";
+const UNCOMMITTED_DIFF_HEADING: &str = "未提交的差异";
+const RECENTLY_OPENED_FILES_HEADING: &str = "最近打开的文件";
+const RECENTLY_VIEWED_FILES_HEADING: &str = "最近查看的文件";
+const EDIT_HISTORY_HEADING: &str = "编辑历史";
+const CURSOR_POSITION_HEADING: &str = "光标位置";
+const EXPECTED_PATCH_HEADING: &str = "预期补丁";
+const REJECTED_PATCH_HEADING: &str = "已拒绝的补丁";
 const ACCEPTED_PREDICTION_MARKER: &str = "// User accepted prediction:";
 
 fn write_path_list(markdown: &mut String, heading: &str, files: &[RecentFile]) {
@@ -205,7 +205,7 @@ impl ExampleSpec {
         _ = writeln!(markdown);
 
         if self.edit_history.is_empty() {
-            _ = writeln!(markdown, "(No edit history)");
+            _ = writeln!(markdown, "(无编辑历史)");
             _ = writeln!(markdown);
         } else {
             _ = writeln!(markdown, "```diff");
@@ -346,7 +346,7 @@ impl ExampleSpec {
                     mem::take(&mut text);
                 }
                 Event::End(TagEnd::Heading(level)) => {
-                    anyhow::bail!("Unexpected heading level: {level}");
+                    anyhow::bail!("意外的标题级别: {level}");
                 }
                 Event::Start(Tag::CodeBlock(kind)) => {
                     if current_section == Section::EditHistory
@@ -360,7 +360,7 @@ impl ExampleSpec {
                             block_info = info;
                         }
                         CodeBlockKind::Indented => {
-                            anyhow::bail!("Unexpected indented codeblock");
+                            anyhow::bail!("意外的缩进代码块");
                         }
                     };
                 }
@@ -408,7 +408,7 @@ impl ExampleSpec {
         }
 
         if spec.cursor_path.as_ref() == Path::new("") || spec.cursor_position.is_empty() {
-            anyhow::bail!("Missing cursor position codeblock");
+            anyhow::bail!("缺少光标位置代码块");
         }
 
         Ok(spec)
@@ -435,7 +435,7 @@ impl ExampleSpec {
 
         let marker_offset = input
             .find(CURSOR_POSITION_MARKER)
-            .context("missing [CURSOR_POSITION] marker")?;
+            .context("缺少 [CURSOR_POSITION] 标记")?;
         let marker_line_start = input[..marker_offset]
             .rfind('\n')
             .map(|pos| pos + 1)
@@ -454,7 +454,7 @@ impl ExampleSpec {
                 .unwrap_or(less_than_pos)
         } else {
             anyhow::bail!(
-                "cursor position marker line must contain '^' or '<' before [CURSOR_POSITION]"
+                "光标位置标记行必须在 [CURSOR_POSITION] 之前包含 '^' 或 '<'"
             );
         };
 

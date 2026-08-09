@@ -283,7 +283,7 @@ fn get_active_tab_switcher(
     workspace.update(cx, |workspace, cx| {
         workspace
             .active_modal::<TabSwitcher>(cx)
-            .expect("tab switcher is not open")
+            .expect("标签切换器未打开")
             .read(cx)
             .picker
             .clone()
@@ -297,7 +297,7 @@ async fn open_buffer(
 ) -> Box<dyn ItemHandle> {
     let project = workspace.read_with(cx, |workspace, _| workspace.project().clone());
     let worktree_id = project.update(cx, |project, cx| {
-        let worktree = project.worktrees(cx).last().expect("worktree not found");
+        let worktree = project.worktrees(cx).last().expect("未找到工作树");
         worktree.read(cx).id()
     });
     let project_path = ProjectPath {
@@ -321,7 +321,7 @@ fn assert_match_selection(
     assert_eq!(
         tab_switcher.delegate.selected_index(),
         expected_selection_index,
-        "item is not selected"
+        "项目未被选中"
     );
     assert_match_at_position(tab_switcher, expected_selection_index, expected_item);
 }
@@ -336,7 +336,7 @@ fn assert_match_at_position(
         .delegate
         .matches
         .get(match_index)
-        .unwrap_or_else(|| panic!("Tab Switcher has no match for index {match_index}"));
+        .unwrap_or_else(|| panic!("标签切换器在索引 {match_index} 处没有匹配项"));
     assert_eq!(match_item.item.item_id(), expected_item.item_id());
 }
 
@@ -345,7 +345,7 @@ fn assert_tab_switcher_is_closed(workspace: Entity<Workspace>, cx: &mut VisualTe
     workspace.update(cx, |workspace, cx| {
         assert!(
             workspace.active_modal::<TabSwitcher>(cx).is_none(),
-            "tab switcher is still open"
+            "标签切换器仍处于打开状态"
         );
     });
 }
@@ -398,7 +398,7 @@ async fn test_open_in_active_pane_deduplicates_files_by_path(cx: &mut gpui::Test
         assert_eq!(
             picker.delegate.matches.len(),
             2,
-            "should show 2 unique files despite 3 tabs"
+            "尽管有 3 个标签页,仍应显示 2 个唯一文件"
         );
     });
 }
@@ -441,19 +441,19 @@ async fn test_open_in_active_pane_clones_files_to_current_pane(cx: &mut gpui::Te
     let editor_1 = panes[0].read_with(cx, |pane, cx| {
         pane.active_item()
             .and_then(|item| item.act_as::<Editor>(cx))
-            .expect("pane 1 should have editor")
+            .expect("窗格 1 应有编辑器")
     });
 
     let editor_2 = panes[1].read_with(cx, |pane, cx| {
         pane.active_item()
             .and_then(|item| item.act_as::<Editor>(cx))
-            .expect("pane 2 should have editor")
+            .expect("窗格 2 应有编辑器")
     });
 
     assert_ne!(
         editor_1.entity_id(),
         editor_2.entity_id(),
-        "should clone to new instance"
+        "应克隆到新实例"
     );
 }
 
@@ -494,14 +494,14 @@ async fn test_open_in_active_pane_moves_terminals_to_current_pane(cx: &mut gpui:
             pane.items()
                 .any(|item| item.item_id() == test_item.item_id())
         }),
-        "should be removed from pane 1"
+        "应从窗格 1 中移除"
     );
     assert!(
         panes[1].read_with(cx, |pane, _| {
             pane.items()
                 .any(|item| item.item_id() == test_item.item_id())
         }),
-        "should be moved to pane 2"
+        "应移动到窗格 2"
     );
 }
 
@@ -545,7 +545,7 @@ async fn test_open_in_active_pane_closes_file_in_all_panes(cx: &mut gpui::TestAp
         assert_eq!(
             pane.read_with(cx, |pane, _| pane.items_len()),
             0,
-            "all panes should be empty"
+            "所有窗格应为空"
         );
     }
 }

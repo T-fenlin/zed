@@ -139,11 +139,11 @@ async fn run_sql_with_polling(
         let statement_handle = response
             .statement_handle
             .as_ref()
-            .context("async query response missing statementHandle")?
+            .context("异步查询响应缺少 statementHandle")?
             .clone();
 
         for attempt in 0.. {
-            step_progress.set_substatus(format!("polling ({attempt})"));
+            step_progress.set_substatus(format!("轮询中 ({attempt})"));
 
             background_executor.timer(POLL_INTERVAL).await;
 
@@ -197,9 +197,9 @@ where
 {
     let snowflake = SnowflakeConfig {
         token: std::env::var("EP_SNOWFLAKE_API_KEY")
-            .context("missing required environment variable EP_SNOWFLAKE_API_KEY")?,
+            .context("缺少必需的环境变量 EP_SNOWFLAKE_API_KEY")?,
         base_url: std::env::var("EP_SNOWFLAKE_BASE_URL").context(
-            "missing required environment variable EP_SNOWFLAKE_BASE_URL (e.g. https://<account>.snowflakecomputing.com)",
+            "缺少必需的环境变量 EP_SNOWFLAKE_BASE_URL(例如 https://<account>.snowflakecomputing.com)",
         )?,
         role: std::env::var("EP_SNOWFLAKE_ROLE").ok(),
     };
@@ -239,7 +239,7 @@ where
                 if is_snowflake_timeout_error(&error) && !parsed_examples.is_empty() {
                     retry_count += 1;
                     step_progress.set_substatus(format!(
-                        "retrying from {} ({retry_count})",
+                        "从 {} 重试 ({retry_count})",
                         retry_state.resume_after
                     ));
                     continue;
@@ -261,7 +261,7 @@ where
             .unwrap_or(1)
             .max(1);
 
-        step_progress.set_info(format!("{} rows", total_rows), InfoStyle::Normal);
+        step_progress.set_info(format!("{} 行", total_rows), InfoStyle::Normal);
         step_progress.set_substatus("parsing");
 
         let column_indices = get_column_indices(&response.result_set_meta_data, &requested_columns);
@@ -277,11 +277,11 @@ where
             let statement_handle = response
                 .statement_handle
                 .as_ref()
-                .context("response has multiple partitions but no statementHandle")?;
+                .context("响应包含多个分区但没有 statementHandle")?;
 
             for partition in 1..partition_count {
                 step_progress.set_substatus(format!(
-                    "fetching partition {}/{}",
+                    "获取分区 {}/{}",
                     partition + 1,
                     partition_count
                 ));
@@ -346,7 +346,7 @@ where
         retry_state.offset = 0;
         retry_count += 1;
         step_progress.set_substatus(format!(
-            "retrying from {} ({retry_count})",
+            "从 {} 重试 ({retry_count})",
             retry_state.resume_after
         ));
     }
@@ -382,7 +382,7 @@ pub(crate) async fn fetch_partition(
     let response = http_client
         .send(http_request)
         .await
-        .context("failed to send partition request to Snowflake SQL API")?;
+        .context("无法向 Snowflake SQL API 发送分区请求")?;
 
     let status = response.status();
     let content_encoding = response
@@ -398,7 +398,7 @@ pub(crate) async fn fetch_partition(
         let mut bytes = Vec::new();
         body.read_to_end(&mut bytes)
             .await
-            .context("failed to read Snowflake SQL API partition response body")?;
+            .context("无法读取 Snowflake SQL API 分区响应体")?;
         bytes
     };
 
@@ -407,7 +407,7 @@ pub(crate) async fn fetch_partition(
         let mut decompressed = Vec::new();
         decoder
             .read_to_end(&mut decompressed)
-            .context("failed to decompress gzip response")?;
+            .context("无法解压 gzip 响应")?;
         decompressed
     } else {
         body_bytes
@@ -416,7 +416,7 @@ pub(crate) async fn fetch_partition(
     if !status.is_success() && status.as_u16() != 202 {
         let body_text = String::from_utf8_lossy(&body_bytes);
         anyhow::bail!(
-            "snowflake sql api partition request http {}: {}",
+            "snowflake sql api 分区请求 http {}: {}",
             status.as_u16(),
             body_text
         );
@@ -424,7 +424,7 @@ pub(crate) async fn fetch_partition(
 
     if body_bytes.is_empty() {
         anyhow::bail!(
-            "snowflake sql api partition {} returned empty response body (http {})",
+            "snowflake sql api 分区 {} 返回空响应体 (http {})",
             partition,
             status.as_u16()
         );
@@ -433,7 +433,7 @@ pub(crate) async fn fetch_partition(
     serde_json::from_slice::<SnowflakeStatementResponse>(&body_bytes).with_context(|| {
         let body_preview = String::from_utf8_lossy(&body_bytes[..body_bytes.len().min(500)]);
         format!(
-            "failed to parse Snowflake SQL API partition {} response JSON (http {}): {}",
+            "无法解析 Snowflake SQL API 分区 {} 响应 JSON (http {}): {}",
             partition,
             status.as_u16(),
             body_preview
@@ -479,16 +479,16 @@ async fn fetch_partition_with_retries(
 
     match last_error {
         Some(error) => Err(error),
-        None => anyhow::bail!("partition fetch retry loop exited without a result"),
+        None => anyhow::bail!("分区获取重试循环在无结果的情况下退出"),
     }
 }
 
 fn is_transient_partition_fetch_error(error: &anyhow::Error) -> bool {
     error.chain().any(|cause| {
         let message = cause.to_string();
-        message.contains("failed to read Snowflake SQL API partition response body")
-            || message.contains("unexpected EOF")
-            || message.contains("peer closed connection without sending TLS close_notify")
+        message.contains("无法读取 Snowflake SQL API 分区响应体")
+            || message.contains("意外的 EOF")
+            || message.contains("对端在未发送 TLS close_notify 的情况下关闭了连接")
     })
 }
 
@@ -501,7 +501,7 @@ pub(crate) async fn run_sql(
     let url = format!("{}/api/v2/statements", base_url.trim_end_matches('/'));
 
     let request_body =
-        serde_json::to_vec(request).context("failed to serialize Snowflake SQL API request")?;
+        serde_json::to_vec(request).context("无法序列化 Snowflake SQL API 请求")?;
 
     let http_request = Request::builder()
         .method(Method::POST)
@@ -519,7 +519,7 @@ pub(crate) async fn run_sql(
     let response = http_client
         .send(http_request)
         .await
-        .context("failed to send request to Snowflake SQL API")?;
+        .context("无法向 Snowflake SQL API 发送请求")?;
 
     let status = response.status();
     let body_bytes = {
@@ -529,12 +529,12 @@ pub(crate) async fn run_sql(
         let mut bytes = Vec::new();
         body.read_to_end(&mut bytes)
             .await
-            .context("failed to read Snowflake SQL API response body")?;
+            .context("无法读取 Snowflake SQL API 响应体")?;
         bytes
     };
 
     let snowflake_response = serde_json::from_slice::<SnowflakeStatementResponse>(&body_bytes)
-        .context("failed to parse Snowflake SQL API response JSON")?;
+        .context("无法解析 Snowflake SQL API 响应 JSON")?;
 
     if !status.is_success() && status.as_u16() != 202 && !is_timeout_response(&snowflake_response) {
         let body_text = String::from_utf8_lossy(&body_bytes);
@@ -543,12 +543,12 @@ pub(crate) async fn run_sql(
 
     if is_timeout_response(&snowflake_response) {
         anyhow::bail!(
-            "snowflake sql api timed out code={} message={}",
-            snowflake_response.code.as_deref().unwrap_or("<no code>"),
+            "snowflake sql api 超时 code={} message={}",
+            snowflake_response.code.as_deref().unwrap_or("<无代码>"),
             snowflake_response
                 .message
                 .as_deref()
-                .unwrap_or("<no message>")
+                .unwrap_or("<无消息>")
         );
     }
 
@@ -572,7 +572,7 @@ pub async fn fetch_rejected_examples_after(
     let mut all_examples = Vec::new();
 
     for (explicit, after_date) in after_timestamps.iter() {
-        let step_progress_name = format!("rejected>{after_date}");
+        let step_progress_name = format!("已拒绝>{after_date}");
         let step_progress = progress.start(Step::PullExamples, &step_progress_name);
         step_progress.set_substatus("querying");
 
@@ -621,7 +621,7 @@ pub async fn fetch_rejected_examples_after(
             },
             |retry_state| {
                 json!({
-                    "1": { "type": "TEXT", "value": if *explicit { "Rejected (Explicit)" } else { "Rejected%" } },
+                    "1": { "type": "TEXT", "value": if *explicit { "已拒绝(显式)" } else { "已拒绝%" } },
                     "2": { "type": "TEXT", "value": retry_state.resume_after },
                     "3": { "type": "FIXED", "value": min_version_ref },
                     "4": { "type": "FIXED", "value": min_version_ref },
@@ -668,7 +668,7 @@ pub async fn fetch_accepted_examples_after(
     let mut all_examples = Vec::new();
 
     for after_date in after_timestamps.iter() {
-        let step_progress_name = format!("accepted>{after_date}");
+        let step_progress_name = format!("已接受>{after_date}");
         let step_progress = progress.start(Step::PullExamples, &step_progress_name);
         step_progress.set_substatus("querying");
 
@@ -762,7 +762,7 @@ pub async fn fetch_requested_examples_after(
     let mut all_examples = Vec::new();
 
     for after_date in after_timestamps.iter() {
-        let step_progress_name = format!("requested>{after_date}");
+        let step_progress_name = format!("已请求>{after_date}");
         let step_progress = progress.start(Step::PullExamples, &step_progress_name);
         step_progress.set_substatus("querying");
 
@@ -839,7 +839,7 @@ pub async fn fetch_captured_examples_after(
     let mut all_examples = Vec::new();
 
     for after_date in after_timestamps.iter() {
-        let step_progress_name = format!("captured>{after_date}");
+        let step_progress_name = format!("已捕获>{after_date}");
         let step_progress = progress.start(Step::PullExamples, &step_progress_name);
         step_progress.set_substatus("querying");
 
@@ -928,7 +928,7 @@ pub async fn fetch_settled_examples_after(
     let mut all_examples = Vec::new();
 
     for after_date in after_timestamps.iter() {
-        let step_progress_name = format!("settled>{after_date}");
+        let step_progress_name = format!("已确定>{after_date}");
         let step_progress = progress.start(Step::PullExamples, &step_progress_name);
         step_progress.set_substatus("querying");
 
@@ -1012,13 +1012,13 @@ pub async fn fetch_rated_examples_after(
             Some(EditPredictionRating::Positive) => ":positive",
             Some(EditPredictionRating::Negative) => ":negative",
         };
-        let step_progress_name = format!("rated{filter_label}>{after_date}");
+        let step_progress_name = format!("已评分{filter_label}>{after_date}");
         let step_progress = progress.start(Step::PullExamples, &step_progress_name);
         step_progress.set_substatus("querying");
 
         let rating_value = rating_filter.as_ref().map(|rating| match rating {
-            EditPredictionRating::Positive => "Positive",
-            EditPredictionRating::Negative => "Negative",
+            EditPredictionRating::Positive => "正面",
+            EditPredictionRating::Negative => "负面",
         });
 
         let statement = indoc! {r#"
@@ -1096,8 +1096,8 @@ fn rated_examples_from_response<'a>(
     if let Some(code) = &response.code {
         if code != SNOWFLAKE_SUCCESS_CODE {
             anyhow::bail!(
-                "snowflake sql api returned error code={code} message={}",
-                response.message.as_deref().unwrap_or("<no message>")
+                "snowflake sql api 返回错误 code={code} message={}",
+                response.message.as_deref().unwrap_or("<无消息>")
             );
         }
     }
@@ -1135,7 +1135,7 @@ fn rated_examples_from_response<'a>(
                     Ok(parsed) => Some(parsed),
                     Err(e) => {
                         log::warn!(
-                            "skipping row {row_index}: failed to parse inputs - {e}",
+                            "跳过第 {row_index} 行:无法解析 inputs - {e}",
                         );
                         return None;
                     }
@@ -1170,7 +1170,7 @@ fn rated_examples_from_response<'a>(
                 }
                 _ => {
                     log::warn!(
-                        "skipping row {row_index}: missing fields - inputs={:?} output={:?} rating={:?} time={:?}",
+                        "跳过第 {row_index} 行:缺少字段 - inputs={:?} output={:?} rating={:?} time={:?}",
                         inputs_json.is_some(),
                         output.is_some(),
                         rating.is_some(),
@@ -1197,7 +1197,7 @@ fn build_rated_example(
     environment: Option<String>,
     zed_version: Option<String>,
 ) -> Example {
-    let parsed_rating = if rating == "Positive" {
+    let parsed_rating = if rating == "正面" {
         EditPredictionRating::Positive
     } else {
         EditPredictionRating::Negative
@@ -1260,8 +1260,8 @@ fn requested_examples_from_response<'a>(
     if let Some(code) = &response.code {
         if code != SNOWFLAKE_SUCCESS_CODE {
             anyhow::bail!(
-                "snowflake sql api returned error code={code} message={}",
-                response.message.as_deref().unwrap_or("<no message>")
+                "snowflake sql api 返回错误 code={code} message={}",
+                response.message.as_deref().unwrap_or("<无消息>")
             );
         }
     }
@@ -1314,7 +1314,7 @@ fn requested_examples_from_response<'a>(
                 }
                 _ => {
                     log::warn!(
-                        "skipping row {row_index}: missing fields - request_id={:?} device_id={:?} time={:?} input={:?}",
+                        "跳过第 {row_index} 行:缺少字段 - request_id={:?} device_id={:?} time={:?} input={:?}",
                         request_id_str.is_some(),
                         device_id.is_some(),
                         time.is_some(),
@@ -1335,8 +1335,8 @@ fn settled_examples_from_response<'a>(
     if let Some(code) = &response.code {
         if code != SNOWFLAKE_SUCCESS_CODE {
             anyhow::bail!(
-                "snowflake sql api returned error code={code} message={}",
-                response.message.as_deref().unwrap_or("<no message>")
+                "snowflake sql api 返回错误 code={code} message={}",
+                response.message.as_deref().unwrap_or("<无消息>")
             );
         }
     }
@@ -1438,7 +1438,7 @@ fn settled_examples_from_response<'a>(
                     }
 
                     log::warn!(
-                        "skipping settled row {row_index}: [{}]",
+                        "跳过已确定行 {row_index}: [{}]",
                         missing_fields.join(", "),
                     );
                     None
@@ -1456,8 +1456,8 @@ fn captured_examples_from_response<'a>(
     if let Some(code) = &response.code {
         if code != SNOWFLAKE_SUCCESS_CODE {
             anyhow::bail!(
-                "snowflake sql api returned error code={code} message={}",
-                response.message.as_deref().unwrap_or("<no message>")
+                "snowflake sql api 返回错误 code={code} message={}",
+                response.message.as_deref().unwrap_or("<无消息>")
             );
         }
     }
@@ -1509,7 +1509,7 @@ fn captured_examples_from_response<'a>(
                             .as_str()
                             .and_then(|markdown| ExampleSpec::from_markdown(markdown).ok())
                             .ok_or_else(|| {
-                                serde_json::Error::io(std::io::Error::other("not markdown"))
+                                serde_json::Error::io(std::io::Error::other("不是 Markdown"))
                             })
                     })
                     .ok()
@@ -1565,7 +1565,7 @@ fn captured_examples_from_response<'a>(
                     }
 
                     log::warn!(
-                        "skipping captured row {row_index}: [{}]",
+                        "跳过已捕获行 {row_index}: [{}]",
                         missing_fields.join(", "),
                     );
                     None
@@ -1605,7 +1605,7 @@ fn build_settled_example(
 
     if !requested_range_is_valid {
         log::warn!(
-            "skipping malformed requested range for request {}: requested={:?} (base_len={})",
+            "跳过请求 {} 的格式错误的请求范围: requested={:?} (base_len={})",
             request_id,
             requested_editable_range,
             base_cursor_excerpt.len(),
@@ -1676,8 +1676,8 @@ fn rejected_examples_from_response<'a>(
     if let Some(code) = &response.code {
         if code != SNOWFLAKE_SUCCESS_CODE {
             anyhow::bail!(
-                "snowflake sql api returned error code={code} message={}",
-                response.message.as_deref().unwrap_or("<no message>")
+                "snowflake sql api 返回错误 code={code} message={}",
+                response.message.as_deref().unwrap_or("<无消息>")
             );
         }
     }
@@ -1747,7 +1747,7 @@ fn rejected_examples_from_response<'a>(
                 }
                 _ => {
                     log::warn!(
-                        "skipping row {row_index}: missing fields - request_id={:?} device_id={:?} time={:?} input={:?} output={:?} was_shown={:?} reason={:?}",
+                        "跳过第 {row_index} 行:缺少字段 - request_id={:?} device_id={:?} time={:?} input={:?} output={:?} was_shown={:?} reason={:?}",
                         request_id_str.is_some(),
                         device_id.is_some(),
                         time.is_some(),
@@ -1836,8 +1836,8 @@ fn accepted_examples_from_response<'a>(
     if let Some(code) = &response.code {
         if code != SNOWFLAKE_SUCCESS_CODE {
             anyhow::bail!(
-                "snowflake sql api returned error code={code} message={}",
-                response.message.as_deref().unwrap_or("<no message>")
+                "snowflake sql api 返回错误 code={code} message={}",
+                response.message.as_deref().unwrap_or("<无消息>")
             );
         }
     }
@@ -1894,7 +1894,7 @@ fn accepted_examples_from_response<'a>(
                 }
                 _ => {
                     log::warn!(
-                        "skipping row {row_index}: missing fields - request_id={:?} device_id={:?} time={:?} input={:?} output={:?}",
+                        "跳过第 {row_index} 行:缺少字段 - request_id={:?} device_id={:?} time={:?} input={:?} output={:?}",
                         request_id_str.is_some(),
                         device_id.is_some(),
                         time.is_some(),

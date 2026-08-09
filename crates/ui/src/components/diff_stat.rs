@@ -80,7 +80,7 @@ impl Component for DiffStat {
         };
 
         let diff_stat_example = vec![single_example(
-            "Default",
+            "默认",
             container()
                 .child(DiffStat::new("id", 1_234, 5_678))
                 .into_any_element(),

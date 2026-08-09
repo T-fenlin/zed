@@ -9,7 +9,7 @@ pub fn derive_app_context(input: TokenStream) -> TokenStream {
 
     let Some(app_variable) = get_simple_attribute_field(&ast, "app") else {
         return quote! {
-            compile_error!("Derive must have an #[app] attribute to detect the &mut App field");
+            compile_error!("派生宏必须带有 #[app] 属性以检测 &mut App 字段");
         }
         .into();
     };

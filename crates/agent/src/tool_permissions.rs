@@ -292,7 +292,7 @@ impl ToolPermissionDecision {
                 return match permissions.default {
                     ToolPermissionMode::Allow => ToolPermissionDecision::Allow,
                     ToolPermissionMode::Deny => {
-                        ToolPermissionDecision::Deny("Blocked by global default: deny".into())
+                        ToolPermissionDecision::Deny("被全局默认规则阻止:拒绝".into())
                     }
                     ToolPermissionMode::Confirm => ToolPermissionDecision::Confirm,
                 };
@@ -396,7 +396,7 @@ fn check_commands(
         // DENY: immediate return if any command matches a deny pattern
         if rules.always_deny.iter().any(|r| r.is_match(&command)) {
             return ToolPermissionDecision::Deny(format!(
-                "Command blocked by security rule for {} tool",
+                "命令被 {} 工具的安全规则阻止",
                 tool_name
             ));
         }
@@ -423,7 +423,7 @@ fn check_commands(
 
     match rules.default.unwrap_or(global_default) {
         ToolPermissionMode::Deny => {
-            ToolPermissionDecision::Deny(format!("{} tool is disabled", tool_name))
+            ToolPermissionDecision::Deny(format!("{} 工具已禁用", tool_name))
         }
         ToolPermissionMode::Allow => ToolPermissionDecision::Allow,
         ToolPermissionMode::Confirm => ToolPermissionDecision::Confirm,
@@ -615,7 +615,7 @@ mod tests {
     fn pattern(command: &str) -> &'static str {
         Box::leak(
             extract_terminal_pattern(command)
-                .expect("failed to extract pattern")
+                .expect("无法提取模式")
                 .into_boxed_str(),
         )
     }
@@ -686,14 +686,14 @@ mod tests {
             assert_eq!(
                 self.run(),
                 ToolPermissionDecision::Allow,
-                "expected Allow for '{}'",
+                "期望允许 '{}'",
                 self.input
             );
         }
         fn is_deny(self) {
             assert!(
                 matches!(self.run(), ToolPermissionDecision::Deny(_)),
-                "expected Deny for '{}'",
+                "期望拒绝 '{}'",
                 self.input
             );
         }
@@ -701,7 +701,7 @@ mod tests {
             assert_eq!(
                 self.run(),
                 ToolPermissionDecision::Confirm,
-                "expected Confirm for '{}'",
+                "期望确认 '{}'",
                 self.input
             );
         }
@@ -717,7 +717,7 @@ mod tests {
                         .iter()
                         .map(|(p, cs)| {
                             CompiledRegex::new(p, *cs)
-                                .unwrap_or_else(|| panic!("invalid regex in test: {p:?}"))
+                                .unwrap_or_else(|| panic!("测试中的无效正则表达式:{p:?}"))
                         })
                         .collect(),
                     always_deny: self
@@ -725,7 +725,7 @@ mod tests {
                         .iter()
                         .map(|(p, cs)| {
                             CompiledRegex::new(p, *cs)
-                                .unwrap_or_else(|| panic!("invalid regex in test: {p:?}"))
+                                .unwrap_or_else(|| panic!("测试中的无效正则表达式:{p:?}"))
                         })
                         .collect(),
                     always_confirm: self
@@ -733,7 +733,7 @@ mod tests {
                         .iter()
                         .map(|(p, cs)| {
                             CompiledRegex::new(p, *cs)
-                                .unwrap_or_else(|| panic!("invalid regex in test: {p:?}"))
+                                .unwrap_or_else(|| panic!("测试中的无效正则表达式:{p:?}"))
                         })
                         .collect(),
                     invalid_patterns: vec![],
@@ -1194,11 +1194,11 @@ mod tests {
         match decision {
             ToolPermissionDecision::Deny(message) => {
                 assert!(
-                    message.contains("built-in security rule"),
-                    "expected hardcoded denial message, got: {message}"
+                    message.contains("内置安全规则"),
+                    "期望硬编码拒绝消息,实际得到:{message}"
                 );
             }
-            other => panic!("expected Deny, got {other:?}"),
+            other => panic!("期望拒绝,实际得到 {other:?}"),
         }
     }
 
@@ -1208,11 +1208,11 @@ mod tests {
         match decision {
             ToolPermissionDecision::Deny(message) => {
                 assert!(
-                    message.contains("built-in security rule"),
-                    "expected hardcoded denial message, got: {message}"
+                    message.contains("内置安全规则"),
+                    "期望硬编码拒绝消息,实际得到:{message}"
                 );
             }
-            other => panic!("expected Deny, got {other:?}"),
+            other => panic!("期望拒绝,实际得到 {other:?}"),
         }
     }
 
@@ -1349,9 +1349,9 @@ mod tests {
 
     #[test]
     fn always_allow_button_works_end_to_end() {
-        // This test verifies that the "Always Allow" button behavior works correctly:
+        // This test verifies that the "始终允许" button behavior works correctly:
         // 1. User runs a command like "cargo build --release"
-        // 2. They click "Always Allow for `cargo build` commands"
+        // 2. They click "始终允许 `cargo build` 命令"
         // 3. The pattern extracted should match future "cargo build" commands
         //    but NOT other cargo subcommands like "cargo test"
         let original_command = "cargo build --release";
@@ -1602,12 +1602,12 @@ mod tests {
         match result {
             ToolPermissionDecision::Deny(msg) => {
                 assert!(
-                    msg.contains("2 regex patterns"),
-                    "Expected '2 regex patterns' in message, got: {}",
+                    msg.contains("2 个正则表达式模式"),
+                    "消息中期望 '2 个正则表达式模式',实际得到:{}",
                     msg
                 );
             }
-            other => panic!("Expected Deny, got {:?}", other),
+            other => panic!("期望拒绝,实际得到 {:?}", other),
         }
     }
 
@@ -2260,7 +2260,7 @@ mod tests {
             decide_permission_for_path(EditFileTool::NAME, "/tmp/../etc/passwd", &settings);
         assert!(
             matches!(decision, ToolPermissionDecision::Deny(_)),
-            "expected Deny for traversal to /etc/passwd, got {:?}",
+            "预期对 /etc/passwd 的路径穿越返回 Deny,实际为 {:?}",
             decision
         );
     }
@@ -2300,21 +2300,21 @@ mod tests {
                     .iter()
                     .map(|p| {
                         CompiledRegex::new(p, false)
-                            .unwrap_or_else(|| panic!("invalid regex: {p:?}"))
+                            .unwrap_or_else(|| panic!("无效的正则表达式: {p:?}"))
                     })
                     .collect(),
                 always_deny: deny
                     .iter()
                     .map(|p| {
                         CompiledRegex::new(p, false)
-                            .unwrap_or_else(|| panic!("invalid regex: {p:?}"))
+                            .unwrap_or_else(|| panic!("无效的正则表达式: {p:?}"))
                     })
                     .collect(),
                 always_confirm: confirm
                     .iter()
                     .map(|p| {
                         CompiledRegex::new(p, false)
-                            .unwrap_or_else(|| panic!("invalid regex: {p:?}"))
+                            .unwrap_or_else(|| panic!("无效的正则表达式: {p:?}"))
                     })
                     .collect(),
                 invalid_patterns: vec![],

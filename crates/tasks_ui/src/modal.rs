@@ -55,9 +55,9 @@ impl TasksModalDelegate {
             reveal_target: Some(RevealTarget::Center),
         }) = &task_overrides
         {
-            Arc::from("Find a task, or run a command in the central pane")
+            Arc::from("查找任务,或在中央窗格中运行命令")
         } else {
-            Arc::from("Find a task, or run a command")
+            Arc::from("查找任务,或运行命令")
         };
         Self {
             task_store,
@@ -569,7 +569,7 @@ impl PickerDelegate for TasksModalDelegate {
                                         .checked_sub(1);
                                     picker.refresh(window, cx);
                                 }))
-                                .tooltip(|_, cx| Tooltip::simple("Delete from Recent Tasks", cx)),
+                                .tooltip(|_, cx| Tooltip::simple("从最近任务中删除", cx)),
                         );
                         item.end_slot_on_hover(delete_button)
                     } else {
@@ -646,7 +646,7 @@ impl PickerDelegate for TasksModalDelegate {
             .last_scheduled_task(None)
             .is_some()
         {
-            Some(("Rerun Last Task", Rerun::default().boxed_clone()))
+            Some(("重新运行上次任务", Rerun::default().boxed_clone()))
         } else {
             None
         };
@@ -680,9 +680,9 @@ impl PickerDelegate for TasksModalDelegate {
                         .boxed_clone();
                         this.child({
                             let spawn_oneshot_label = if current_modifiers.secondary() {
-                                "Spawn Oneshot Without History"
+                                "启动一次性任务(不记录历史)"
                             } else {
-                                "Spawn Oneshot"
+                                "启动一次性任务"
                             };
 
                             Button::new("spawn-onehshot", spawn_oneshot_label)
@@ -694,9 +694,9 @@ impl PickerDelegate for TasksModalDelegate {
                     } else if current_modifiers.secondary() {
                         this.child({
                             let label = if is_recent_selected {
-                                "Rerun Without History"
+                                "重新运行(不记录历史)"
                             } else {
-                                "Spawn Without History"
+                                "启动(不记录历史)"
                             };
                             Button::new("spawn", label)
                                 .key_binding(KeyBinding::for_action(&menu::SecondaryConfirm, cx))
@@ -707,7 +707,7 @@ impl PickerDelegate for TasksModalDelegate {
                     } else {
                         this.child({
                             let run_entry_label =
-                                if is_recent_selected { "Rerun" } else { "Spawn" };
+                                if is_recent_selected { "重新运行" } else { "启动" };
 
                             Button::new("spawn", run_entry_label)
                                 .key_binding(KeyBinding::for_action(&menu::Confirm, cx))
@@ -787,12 +787,12 @@ mod tests {
         assert_eq!(
             query(&tasks_picker, cx),
             "",
-            "Initial query should be empty"
+            "初始查询应为空"
         );
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec!["another one", "example task"],
-            "With no global tasks and no open item, a single worktree should be used and its tasks listed"
+            "当没有全局任务且没有打开的项目时,应使用单个工作树并列出其任务"
         );
         drop(tasks_picker);
 
@@ -814,7 +814,7 @@ mod tests {
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec!["another one", "example task"],
-            "Initial tasks should be listed in alphabetical order"
+            "初始任务应按字母顺序列出"
         );
 
         let query_str = "tas";
@@ -823,19 +823,19 @@ mod tests {
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec!["example task"],
-            "Only one task should match the query {query_str}"
+            "只有一个任务应匹配查询 {query_str}"
         );
 
         cx.dispatch_action(picker::ConfirmCompletion);
         assert_eq!(
             query(&tasks_picker, cx),
             "echo 4",
-            "Query should be set to the selected task's command"
+            "查询应设置为所选任务的命令"
         );
         assert_eq!(
             task_names(&tasks_picker, cx),
             Vec::<String>::new(),
-            "No task should be listed"
+            "不应列出任何任务"
         );
         cx.dispatch_action(picker::ConfirmInput { secondary: false });
 
@@ -843,12 +843,12 @@ mod tests {
         assert_eq!(
             query(&tasks_picker, cx),
             "",
-            "Query should be reset after confirming"
+            "确认后应重置查询"
         );
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec!["echo 4", "another one", "example task"],
-            "New oneshot task should be listed first"
+            "新的一次性任务应列在最前面"
         );
 
         let query_str = "echo 4";
@@ -857,7 +857,7 @@ mod tests {
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec!["echo 4"],
-            "New oneshot should match custom command query"
+            "新的一次性任务应匹配自定义命令查询"
         );
 
         cx.dispatch_action(picker::ConfirmInput { secondary: false });
@@ -865,24 +865,24 @@ mod tests {
         assert_eq!(
             query(&tasks_picker, cx),
             "",
-            "Query should be reset after confirming"
+            "确认后应重置查询"
         );
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec![query_str, "another one", "example task"],
-            "Last recently used one show task should be listed first"
+            "最近使用的一次性任务应列在最前面"
         );
 
         cx.dispatch_action(picker::ConfirmCompletion);
         assert_eq!(
             query(&tasks_picker, cx),
             query_str,
-            "Query should be set to the custom task's name"
+            "查询应设置为自定义任务的名称"
         );
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec![query_str],
-            "Only custom task should be listed"
+            "只应列出自定义任务"
         );
 
         let query_str = "0";
@@ -891,7 +891,7 @@ mod tests {
         assert_eq!(
             task_names(&tasks_picker, cx),
             Vec::<String>::new(),
-            "New oneshot should not match any command query"
+            "新的一次性任务不应匹配任何命令查询"
         );
 
         cx.dispatch_action(picker::ConfirmInput { secondary: true });
@@ -899,12 +899,12 @@ mod tests {
         assert_eq!(
             query(&tasks_picker, cx),
             "",
-            "Query should be reset after confirming"
+            "确认后应重置查询"
         );
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec!["echo 4", "another one", "example task"],
-            "No query should be added to the list, as it was submitted with secondary action (that maps to omit_history = true)"
+            "不应将查询添加到列表中,因为它是通过次要操作提交的(该操作映射到 omit_history = true)"
         );
 
         cx.dispatch_action(Spawn::ByName {
@@ -961,7 +961,7 @@ mod tests {
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec![concat!("opened now: ", path!("/dir")).to_string()],
-            "When no file is open for a single worktree, should autodetect all worktree-related tasks"
+            "当单个工作树没有打开文件时,应自动检测所有与工作树相关的任务"
         );
         tasks_picker.update(cx, |_, cx| {
             cx.emit(DismissEvent);
@@ -991,7 +991,7 @@ mod tests {
                 concat!("hello from ", path!("/dir/file_with.odd_extension:1:1")).to_string(),
                 concat!("opened now: ", path!("/dir")).to_string(),
             ],
-            "Second opened buffer should fill the context, labels should be trimmed if long enough"
+            "第二个打开的缓冲区应填充上下文,标签过长时应截断"
         );
         tasks_picker.update(cx, |_, cx| {
             cx.emit(DismissEvent);
@@ -1030,7 +1030,7 @@ mod tests {
                 concat!("hello from ", path!("/dir/file_without_extension:2:3")).to_string(),
                 concat!("opened now: ", path!("/dir")).to_string(),
             ],
-            "Opened buffer should fill the context, labels should be trimmed if long enough"
+            "打开的缓冲区应填充上下文,标签过长时应截断"
         );
         tasks_picker.update(cx, |_, cx| {
             cx.emit(DismissEvent);
@@ -1064,9 +1064,9 @@ mod tests {
             .with_context_provider(Some(Arc::new(
                 ContextProviderWithLspTaskSource::new(ContextProviderWithTasks::new(
                     TaskTemplates(vec![TaskTemplate {
-                        label: "Run language task".to_string(),
+                        label: "运行语言任务".to_string(),
                         command: "echo".to_string(),
-                        args: vec!["language task".to_string()],
+                        args: vec!["语言任务".to_string()],
                         ..TaskTemplate::default()
                     }]),
                 )),
@@ -1101,7 +1101,7 @@ mod tests {
         cx.executor().run_until_parked();
         let fake_server = fake_servers
             .try_recv()
-            .expect("fake LSP server should have started");
+            .expect("模拟 LSP 服务器应已启动");
         use project::lsp_store::lsp_ext_command::Runnables;
         fake_server
             .set_request_handler::<Runnables, _, _>(move |_, _| async move { Ok(Vec::new()) });
@@ -1109,8 +1109,8 @@ mod tests {
         let tasks_picker = open_spawn_tasks(&workspace, cx);
         assert_eq!(
             task_names(&tasks_picker, cx),
-            vec!["Run language task"],
-            "An empty LSP task response should not suppress language tasks in the modal"
+            vec!["运行语言任务"],
+            "空的 LSP 任务响应不应抑制模态框中的语言任务"
         );
     }
 
@@ -1147,17 +1147,17 @@ mod tests {
                 .with_context_provider(Some(Arc::new(
                     ContextProviderWithTasks::new(TaskTemplates(vec![
                         TaskTemplate {
-                            label: "Task without variables".to_string(),
+                            label: "无变量任务".to_string(),
                             command: "npm run clean".to_string(),
                             ..TaskTemplate::default()
                         },
                         TaskTemplate {
-                            label: "TypeScript task from file $ZED_FILE".to_string(),
+                            label: "来自文件 $ZED_FILE 的 TypeScript 任务".to_string(),
                             command: "npm run build".to_string(),
                             ..TaskTemplate::default()
                         },
                         TaskTemplate {
-                            label: "Another task from file $ZED_FILE".to_string(),
+                            label: "来自文件 $ZED_FILE 的另一个任务".to_string(),
                             command: "npm run lint".to_string(),
                             ..TaskTemplate::default()
                         },
@@ -1179,7 +1179,7 @@ mod tests {
                 )
                 .with_context_provider(Some(Arc::new(
                     ContextProviderWithTasks::new(TaskTemplates(vec![TaskTemplate {
-                        label: "Rust task".to_string(),
+                        label: "Rust 任务".to_string(),
                         command: "cargo check".into(),
                         ..TaskTemplate::default()
                     }])),
@@ -1208,17 +1208,17 @@ mod tests {
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec![
-                concat!("Another task from file ", path!("/dir/a1.ts")),
-                concat!("TypeScript task from file ", path!("/dir/a1.ts")),
-                "Task without variables",
+                concat!("来自文件的另一个任务 ", path!("/dir/a1.ts")),
+                concat!("来自文件的 TypeScript 任务 ", path!("/dir/a1.ts")),
+                "无变量任务",
             ],
-            "Should open spawn TypeScript tasks for the opened file, tasks with most template variables above, all groups sorted alphanumerically"
+            "应为打开的文件打开启动 TypeScript 任务,模板变量最多的任务排在上面,所有组按字母数字排序"
         );
 
         emulate_task_schedule(
             tasks_picker,
             &project,
-            concat!("TypeScript task from file ", path!("/dir/a1.ts")),
+            concat!("来自文件的 TypeScript 任务 ", path!("/dir/a1.ts")),
             cx,
         );
 
@@ -1226,9 +1226,9 @@ mod tests {
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec![
-                concat!("TypeScript task from file ", path!("/dir/a1.ts")),
-                concat!("Another task from file ", path!("/dir/a1.ts")),
-                "Task without variables",
+                concat!("来自文件的 TypeScript 任务 ", path!("/dir/a1.ts")),
+                concat!("来自文件的另一个任务 ", path!("/dir/a1.ts")),
+                "无变量任务",
             ],
             "After spawning the task and getting it into the history, it should be up in the sort as recently used.
             Tasks with the same labels and context are deduplicated."
@@ -1257,12 +1257,12 @@ mod tests {
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec![
-                concat!("TypeScript task from file ", path!("/dir/a1.ts")),
-                concat!("Another task from file ", path!("/dir/a2.ts")),
-                concat!("TypeScript task from file ", path!("/dir/a2.ts")),
-                "Task without variables",
+                concat!("来自文件的 TypeScript 任务 ", path!("/dir/a1.ts")),
+                concat!("来自文件的另一个任务 ", path!("/dir/a2.ts")),
+                concat!("来自文件的 TypeScript 任务 ", path!("/dir/a2.ts")),
+                "无变量任务",
             ],
-            "Even when both TS files are open, should only show the history (on the top), and tasks, resolved for the current file"
+            "即使两个 TS 文件都打开,也应只显示历史记录(在顶部)以及为当前文件解析的任务"
         );
         tasks_picker.update(cx, |_, cx| {
             cx.emit(DismissEvent);
@@ -1287,12 +1287,12 @@ mod tests {
         let tasks_picker = open_spawn_tasks(&workspace, cx);
         assert_eq!(
             task_names(&tasks_picker, cx),
-            vec!["Rust task"],
-            "Even when both TS files are open and one TS task spawned, opened file's language tasks should be displayed only"
+            vec!["Rust 任务"],
+            "即使两个 TS 文件都打开且一个 TS 任务已启动,也应只显示打开文件的语言任务"
         );
 
         cx.dispatch_action(CloseInactiveTabsAndPanes::default());
-        emulate_task_schedule(tasks_picker, &project, "Rust task", cx);
+        emulate_task_schedule(tasks_picker, &project, "Rust 任务", cx);
         let _ts_file_2 = workspace
             .update_in(cx, |workspace, window, cx| {
                 workspace.open_abs_path(
@@ -1311,10 +1311,10 @@ mod tests {
         assert_eq!(
             task_names(&tasks_picker, cx),
             vec![
-                concat!("TypeScript task from file ", path!("/dir/a1.ts")),
-                concat!("Another task from file ", path!("/dir/a2.ts")),
-                concat!("TypeScript task from file ", path!("/dir/a2.ts")),
-                "Task without variables",
+                concat!("来自文件的 TypeScript 任务 ", path!("/dir/a1.ts")),
+                concat!("来自文件的另一个任务 ", path!("/dir/a2.ts")),
+                concat!("来自文件的 TypeScript 任务 ", path!("/dir/a2.ts")),
+                "无变量任务",
             ],
             "After closing all but *.rs tabs, running a Rust task and switching back to TS tasks, \
             same TS spawn history should be restored"
@@ -1386,7 +1386,7 @@ mod tests {
         workspace.update(cx, |workspace, cx| {
             workspace
                 .active_modal::<TasksModal>(cx)
-                .expect("no task modal after `Spawn` action was dispatched")
+                .expect("调度 `Spawn` 操作后没有任务模态框")
                 .read(cx)
                 .picker
                 .clone()

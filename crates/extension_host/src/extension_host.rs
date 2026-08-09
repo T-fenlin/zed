@@ -741,12 +741,12 @@ impl ExtensionStore {
                 .body_mut()
                 .read_to_end(&mut body)
                 .await
-                .context("error reading extensions")?;
+                .context("读取扩展时出错")?;
 
             if response.status().is_client_error() {
                 let text = String::from_utf8_lossy(body.as_slice());
                 bail!(
-                    "status error {}, response: {text:?}",
+                    "状态错误 {}, 响应: {text:?}",
                     response.status().as_u16()
                 );
             }
@@ -802,7 +802,7 @@ impl ExtensionStore {
                 let mut response = http_client
                     .get(url.as_ref(), Default::default(), true)
                     .await
-                    .context("downloading extension")?;
+                    .context("正在下载扩展")?;
 
                 let content_length = response
                     .headers()
@@ -886,7 +886,7 @@ impl ExtensionStore {
     }
 
     pub fn install_latest_extension(&mut self, extension_id: Arc<str>, cx: &mut Context<Self>) {
-        log::info!("installing extension {extension_id} latest version");
+        log::info!("正在安装扩展 {extension_id} 最新版本");
 
         let schema_versions = schema_version_range();
         let wasm_api_versions = wasm_api_version_range(ReleaseChannel::global(cx));
@@ -935,7 +935,7 @@ impl ExtensionStore {
         operation: ExtensionOperation,
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
-        log::info!("installing extension {extension_id} {version}");
+        log::info!("正在安装扩展 {extension_id} {version}");
         let Some(url) = self
             .http_client
             .build_zed_api_url(
@@ -983,7 +983,7 @@ impl ExtensionStore {
                 },
             )
             .await
-            .with_context(|| format!("Removing extension dir {extension_dir:?}"))?;
+            .with_context(|| format!("正在移除扩展目录 {extension_dir:?}"))?;
 
             extension_store
                 .update(cx, |extension_store, cx| extension_store.reload(None, cx))?
@@ -1008,7 +1008,7 @@ impl ExtensionStore {
                     Ok(()) => break,
                     Err(e) => {
                         if i == 2 {
-                            log::error!("Failed to remove extension work dir {work_dir:?} : {e}");
+                            log::error!("无法移除扩展工作目录 {work_dir:?} : {e}");
                         }
                     }
                 }
@@ -1107,7 +1107,7 @@ impl ExtensionStore {
                     )
                     .await?;
                 } else {
-                    bail!("extension {extension_id} is still installed");
+                    bail!("扩展 {extension_id} 仍处于已安装状态");
                 }
             }
 
@@ -1245,7 +1245,7 @@ impl ExtensionStore {
             .count();
 
         log::info!(
-            "extensions updated. loading {}, reloading {}, unloading {}",
+            "扩展已更新。正在加载 {}, 重新加载 {}, 卸载 {}",
             extensions_to_load.len() - reload_count,
             reload_count,
             extensions_to_unload.len() - reload_count
@@ -1261,7 +1261,7 @@ impl ExtensionStore {
             })
             .collect::<Vec<_>>();
 
-        telemetry::event!("Extensions Loaded", id_and_versions = extension_ids);
+        telemetry::event!("扩展已加载", id_and_versions = extension_ids);
 
         let themes_to_remove = old_index
             .themes
@@ -1479,14 +1479,14 @@ impl ExtensionStore {
                         match fs
                             .load(snippets_path)
                             .await
-                            .with_context(|| format!("Loading snippets from {snippets_path:?}"))
+                            .with_context(|| format!("正在从 {snippets_path:?} 加载代码片段"))
                         {
                             Ok(snippets_contents) => {
                                 proxy
                                     .register_snippet(snippets_path, &snippets_contents)
                                     .log_err();
                             }
-                            Err(e) => log::error!("Cannot load snippets: {e:#}"),
+                            Err(e) => log::error!("无法加载代码片段: {e:#}"),
                         }
                     }
                 }
@@ -1507,7 +1507,7 @@ impl ExtensionStore {
                     cx,
                 )
                 .await
-                .with_context(|| format!("Loading extension from {extension_path:?}"));
+                .with_context(|| format!("正在从 {extension_path:?} 加载扩展"));
 
                 match wasm_extension {
                     Ok(wasm_extension) => {
@@ -1515,7 +1515,7 @@ impl ExtensionStore {
                     }
                     Err(e) => {
                         log::error!(
-                            "Failed to load extension: {}, {:#}",
+                            "无法加载扩展: {}, {:#}",
                             extension.manifest.id,
                             e
                         );
@@ -1628,11 +1628,11 @@ impl ExtensionStore {
             if let Ok(index_json) = serde_json::to_string_pretty(&index) {
                 fs.save(&index_path, &index_json.as_str().into(), Default::default())
                     .await
-                    .context("failed to save extension index")
+                    .context("无法保存扩展索引")
                     .log_err();
             }
 
-            log::info!("rebuilt extension index in {:?}", start_time.elapsed());
+            log::info!("已在 {:?} 内重建扩展索引", start_time.elapsed());
             index
         })
     }
@@ -1651,14 +1651,14 @@ impl ExtensionStore {
         let is_dev = fs
             .metadata(&extension_dir)
             .await?
-            .with_context(|| format!("missing extension directory {extension_dir:?}"))?
+            .with_context(|| format!("缺少扩展目录 {extension_dir:?}"))?
             .is_symlink;
 
         let language_dir = extension_dir.join("languages");
         if let Ok(mut language_paths) = fs.read_dir(&language_dir).await {
             while let Some(language_path) = language_paths.next().await {
                 let language_path = language_path
-                    .with_context(|| format!("reading entries in language dir {language_dir:?}"))?;
+                    .with_context(|| format!("正在读取语言目录 {language_dir:?} 中的条目"))?;
                 let Ok(relative_path) = language_path.strip_prefix(&extension_dir) else {
                     continue;
                 };
@@ -1670,7 +1670,7 @@ impl ExtensionStore {
                 }
                 let language_config_path = language_path.join(LanguageConfig::FILE_NAME);
                 let config = fs.load(&language_config_path).await.with_context(|| {
-                    format!("loading language config from {language_config_path:?}")
+                    format!("正在从 {language_config_path:?} 加载语言配置")
                 })?;
                 let config = ::toml::from_str::<LanguageConfig>(&config)?;
 
@@ -1785,7 +1785,7 @@ impl ExtensionStore {
         let src_dir = self.extensions_dir().join(extension_id.as_ref());
         let Some(loaded_extension) = self.extension_index.extensions.get(&extension_id).cloned()
         else {
-            return Task::ready(Err(anyhow!("extension no longer installed")));
+            return Task::ready(Err(anyhow!("扩展已不再安装")));
         };
         let fs = self.fs.clone();
         cx.background_spawn(async move {
@@ -1896,14 +1896,14 @@ impl ExtensionStore {
                     .join(&response.tmp_dir, &missing_extension.id)
                     .with_context(|| {
                         format!(
-                            "failed to construct destination path: {:?}, {:?}",
+                            "无法构造目标路径: {:?}, {:?}",
                             response.tmp_dir, missing_extension.id,
                         )
                     })?,
                 path_style,
             );
             log::info!(
-                "Uploading extension {} to {:?}",
+                "正在将扩展 {} 上传到 {:?}",
                 missing_extension.clone().id,
                 dest_dir
             );
@@ -1915,7 +1915,7 @@ impl ExtensionStore {
                 .await?;
 
             log::info!(
-                "Finished uploading extension {}",
+                "扩展 {} 上传完成",
                 missing_extension.clone().id
             );
 
@@ -1930,7 +1930,7 @@ impl ExtensionStore {
 
             if let Err(e) = result {
                 log::error!(
-                    "Failed to install extension {}: {}",
+                    "无法安装扩展 {}: {}",
                     missing_extension.id,
                     e
                 );

@@ -83,7 +83,7 @@ impl LinuxClient for HeadlessClient {
     {
         let (tx, rx) = futures::channel::oneshot::channel();
         tx.send(Err(anyhow::anyhow!(
-            "Headless mode does not support screen capture."
+            "无头模式不支持屏幕捕获。"
         )))
         .ok();
         rx
@@ -136,7 +136,7 @@ impl LinuxClient for HeadlessClient {
             .borrow_mut()
             .event_loop
             .take()
-            .expect("App is already running");
+            .expect("应用已在运行");
 
         event_loop.run(None, &mut self.clone(), |_| {}).log_err();
     }

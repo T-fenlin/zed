@@ -233,7 +233,7 @@ async fn setup_editor_and_tool(cx: &mut TestAppContext, file_text: String) -> Ha
             project.open_local_buffer(FILE_ABS_PATH, cx)
         })
         .await
-        .expect("failed to open buffer");
+        .expect("无法打开缓冲区");
     let lsp_handle = project.update(cx, |project, cx| {
         project.register_buffer_with_language_servers(&buffer, cx)
     });
@@ -241,7 +241,7 @@ async fn setup_editor_and_tool(cx: &mut TestAppContext, file_text: String) -> Ha
     let fake_server = fake_servers
         .next()
         .await
-        .expect("fake language server should start");
+        .expect("模拟语言服务器应已启动");
     // Publish diagnostics on every edit, mirroring a real server reacting to
     // `didChange`, so the editor's diagnostics path runs per edit.
     let server = fake_server.clone();
@@ -253,7 +253,7 @@ async fn setup_editor_and_tool(cx: &mut TestAppContext, file_text: String) -> Ha
                 diagnostics: vec![lsp::Diagnostic {
                     range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 1)),
                     severity: Some(lsp::DiagnosticSeverity::WARNING),
-                    message: "bench diagnostic".to_string(),
+                    message: "基准诊断".to_string(),
                     ..Default::default()
                 }],
             });
@@ -268,7 +268,7 @@ async fn setup_editor_and_tool(cx: &mut TestAppContext, file_text: String) -> Ha
         window.focus(&editor.focus_handle(cx), cx);
         editor
     });
-    let editor = window.root(cx).expect("window should have an editor root");
+    let editor = window.root(cx).expect("窗口应有一个编辑器根节点");
     let window: AnyWindowHandle = window.into();
     // Lay out and paint a real frame so the editor establishes a viewport (this
     // is what makes the viewport-gated observers like bracket colorization run).
@@ -343,12 +343,12 @@ fn run_streamed_edit(harness: &mut BenchmarkHarness) -> EditFileToolOutput {
     let cx = harness
         .cx
         .as_ref()
-        .expect("benchmark harness should have a cx");
+        .expect("基准测试框架应有一个 cx");
     let task = cx.update(|cx| {
         harness
             .edit_tool
             .as_ref()
-            .expect("benchmark harness should have an edit tool")
+            .expect("基准测试框架应有一个编辑工具")
             .clone()
             .run(input, event_stream, cx)
     });
@@ -356,7 +356,7 @@ fn run_streamed_edit(harness: &mut BenchmarkHarness) -> EditFileToolOutput {
     let executor = harness
         .cx
         .as_ref()
-        .expect("benchmark harness should have a cx")
+        .expect("基准测试框架应有一个 cx")
         .executor();
     block_on_executor(&executor, task).unwrap()
 }
@@ -373,7 +373,7 @@ fn block_on_executor<R>(executor: &BackgroundExecutor, future: impl Future<Outpu
         executor.run_until_parked();
     }
 
-    panic!("future did not complete while running edit_file_tool benchmark");
+    panic!("运行 edit_file_tool 基准测试时,future 未完成");
 }
 
 /// Builds the streamed partial payloads for a (possibly multi-edit) session,

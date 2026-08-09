@@ -72,7 +72,7 @@ impl ModeSelector {
 
         cx.spawn(async move |this: WeakEntity<ModeSelector>, cx| {
             if let Err(err) = task.await {
-                log::error!("Failed to set session mode: {:?}", err);
+                log::error!("设置会话模式失败:{:?}", err);
             }
             this.update(cx, |this, cx| {
                 this.setting_mode = false;
@@ -138,7 +138,7 @@ impl Render for ModeSelector {
             .iter()
             .find(|mode| mode.id == current_mode_id)
             .map(|mode| mode.name.clone())
-            .unwrap_or_else(|| "Unknown".into());
+            .unwrap_or_else(|| "未知".into());
 
         let this = cx.weak_entity();
 
@@ -165,7 +165,7 @@ impl Render for ModeSelector {
                                 h_flex()
                                     .gap_2()
                                     .justify_between()
-                                    .child(Label::new("Change Mode"))
+                                    .child(Label::new("更改模式"))
                                     .child(KeyBinding::for_action(&ToggleProfileSelector, cx)),
                             )
                             .child(
@@ -175,7 +175,7 @@ impl Render for ModeSelector {
                                     .border_t_1()
                                     .border_color(cx.theme().colors().border_variant)
                                     .justify_between()
-                                    .child(Label::new("Cycle Through Modes"))
+                                    .child(Label::new("循环切换模式"))
                                     .child(KeyBinding::for_action(&CycleModeSelector, cx)),
                             )
                             .into_any()
@@ -251,7 +251,7 @@ mod tests {
             _project: Entity<Project>,
             _cx: &mut App,
         ) -> Task<anyhow::Result<Rc<dyn AgentConnection>>> {
-            Task::ready(Err(anyhow::anyhow!("test agent server cannot connect")))
+            Task::ready(Err(anyhow::anyhow!("测试代理服务器无法连接")))
         }
 
         fn into_any(self: Rc<Self>) -> Rc<dyn Any> {
@@ -289,8 +289,8 @@ mod tests {
 
         fn all_modes(&self) -> Vec<acp::SessionMode> {
             vec![
-                acp::SessionMode::new("auto", "Auto"),
-                acp::SessionMode::new("manual", "Manual"),
+                acp::SessionMode::new("auto", "自动"),
+                acp::SessionMode::new("manual", "手动"),
             ]
         }
 

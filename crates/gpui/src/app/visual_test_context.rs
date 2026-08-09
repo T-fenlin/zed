@@ -366,7 +366,7 @@ impl VisualTestAppContext {
             }
 
             if start.elapsed() > timeout {
-                return Err(anyhow!("Timed out waiting for condition"));
+                return Err(anyhow!("等待条件超时"));
             }
 
             self.run_until_parked();
@@ -427,7 +427,7 @@ impl AppContext for VisualTestAppContext {
     where
         T: 'static,
     {
-        panic!("Cannot use as_mut with a visual test app context. Try calling update() first")
+        panic!("无法在可视化测试应用上下文中使用 as_mut,请先调用 更新()")
     }
 
     fn read_entity<T, R>(&self, handle: &Entity<T>, read: impl FnOnce(&T, &App) -> R) -> R

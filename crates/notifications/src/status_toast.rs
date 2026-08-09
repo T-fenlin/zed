@@ -116,7 +116,7 @@ impl Render for StatusToast {
                         .shape(ui::IconButtonShape::Square)
                         .icon_size(IconSize::Small)
                         .icon_color(Color::Muted)
-                        .tooltip(Tooltip::text("Dismiss"))
+                        .tooltip(Tooltip::text("关闭"))
                         .on_click(move |_click_event, _window, cx| {
                             handle.update(cx, |_, cx| {
                                 cx.emit(DismissEvent);
@@ -157,17 +157,17 @@ impl Component for StatusToast {
     }
 
     fn preview(_window: &mut Window, cx: &mut App) -> AnyElement {
-        let text_example = StatusToast::new("Operation completed", cx, |this, _| this);
+        let text_example = StatusToast::new("操作已完成", cx, |this, _| this);
 
-        let action_example = StatusToast::new("Update ready to install", cx, |this, _cx| {
-            this.action("Restart", |_, _| {})
+        let action_example = StatusToast::new("更新已准备好安装", cx, |this, _cx| {
+            this.action("重启", |_, _| {})
         });
 
         let dismiss_button_example =
-            StatusToast::new("Dismiss Button", cx, |this, _| this.dismiss_button(true));
+            StatusToast::new("关闭按钮", cx, |this, _| this.dismiss_button(true));
 
         let icon_example = StatusToast::new(
-            "Nathan Sobo accepted your contact request",
+            "Nathan Sobo 接受了你的联系人请求",
             cx,
             |this, _| {
                 this.icon(
@@ -178,7 +178,7 @@ impl Component for StatusToast {
             },
         );
 
-        let success_example = StatusToast::new("Pushed 4 changes to `zed/main`", cx, |this, _| {
+        let success_example = StatusToast::new("已将 4 处更改推送到 `zed/main`", cx, |this, _| {
             this.icon(
                 Icon::new(IconName::Check)
                     .size(IconSize::Small)
@@ -187,7 +187,7 @@ impl Component for StatusToast {
         });
 
         let error_example = StatusToast::new(
-            "git push: Couldn't find remote origin `iamnbutler/zed`",
+            "git push: 找不到远程源 `iamnbutler/zed`",
             cx,
             |this, _cx| {
                 this.icon(
@@ -195,27 +195,27 @@ impl Component for StatusToast {
                         .size(IconSize::Small)
                         .color(Color::Error),
                 )
-                .action("More Info", |_, _| {})
+                .action("更多信息", |_, _| {})
             },
         );
 
-        let warning_example = StatusToast::new("You have outdated settings", cx, |this, _cx| {
+        let warning_example = StatusToast::new("你的设置已过时", cx, |this, _cx| {
             this.icon(
                 Icon::new(IconName::Warning)
                     .size(IconSize::Small)
                     .color(Color::Warning),
             )
-            .action("More Info", |_, _| {})
+            .action("更多信息", |_, _| {})
         });
 
         let pr_example =
-            StatusToast::new("`zed/new-notification-system` created!", cx, |this, _cx| {
+            StatusToast::new("`zed/new-notification-system` 已创建!", cx, |this, _cx| {
                 this.icon(
                     Icon::new(IconName::GitBranch)
                         .size(IconSize::Small)
                         .color(Color::Muted),
                 )
-                .action("Open Pull Request", |_, cx| {
+                .action("打开拉取请求", |_, cx| {
                     cx.open_url("https://github.com/")
                 })
             });
@@ -225,24 +225,24 @@ impl Component for StatusToast {
             .p_4()
             .children(vec![
                 example_group_with_title(
-                    "Basic Toast",
+                    "基本提示",
                     vec![
-                        single_example("Text", div().child(text_example).into_any_element()),
-                        single_example("Action", div().child(action_example).into_any_element()),
-                        single_example("Icon", div().child(icon_example).into_any_element()),
+                        single_example("文本", div().child(text_example).into_any_element()),
+                        single_example("操作", div().child(action_example).into_any_element()),
+                        single_example("图标", div().child(icon_example).into_any_element()),
                         single_example(
-                            "Dismiss Button",
+                            "关闭按钮",
                             div().child(dismiss_button_example).into_any_element(),
                         ),
                     ],
                 ),
                 example_group_with_title(
-                    "Examples",
+                    "示例",
                     vec![
-                        single_example("Success", div().child(success_example).into_any_element()),
-                        single_example("Error", div().child(error_example).into_any_element()),
-                        single_example("Warning", div().child(warning_example).into_any_element()),
-                        single_example("Create PR", div().child(pr_example).into_any_element()),
+                        single_example("成功", div().child(success_example).into_any_element()),
+                        single_example("错误", div().child(error_example).into_any_element()),
+                        single_example("警告", div().child(warning_example).into_any_element()),
+                        single_example("创建 PR", div().child(pr_example).into_any_element()),
                     ],
                 )
                 .vertical(),

@@ -85,7 +85,7 @@ pub fn sandbox_git_dirs(project: &Project, cx: &App) -> Vec<PathBuf> {
 }
 
 /// What sandbox a thread applies to agent terminal commands, as one value the
-/// UI renders and enforcement builds from. "No sandbox" is its own variant
+/// UI renders and enforcement builds from. "无沙箱" is its own variant
 /// rather than a maximally-permissive [`SandboxPolicy`] so that a wide-open but
 /// real sandbox (e.g. `allow_fs_write_all` + `allow_all_hosts`) stays
 /// distinguishable from running with no sandbox at all. The sandbox still
@@ -153,7 +153,7 @@ pub fn settings_thread_sandbox(persistent: &SandboxPermissions) -> ThreadSandbox
     }
 }
 
-/// Translate the persistent "allow always" sandbox settings into the
+/// Translate the persistent "始终允许" sandbox settings into the
 /// cross-platform [`SandboxPolicy`] used for display. This is the "from your
 /// settings" half of the sandbox status surface; the per-thread overrides come
 /// from [`ThreadSandboxGrants::to_policy`].
@@ -216,8 +216,8 @@ pub(crate) fn sandboxing_enabled(cx: &App) -> bool {
 /// Whether sandboxing is *applicable* for this project at all — the feature is
 /// enabled, the project is local, and the platform has a sandbox integration —
 /// independent of the persistent `allow_unsandboxed` setting. Used by the UI to
-/// distinguish "sandboxing isn't relevant here" (don't show the indicator) from
-/// "sandboxing is available but turned off in settings" (show it, struck out).
+/// distinguish "沙箱在此处不适用" (don't show the indicator) from
+/// "沙箱可用但已在设置中关闭" (show it, struck out).
 pub(crate) fn sandboxing_available_for_project(project: &Project, cx: &App) -> bool {
     sandboxing_enabled(cx)
         && project.is_local()
@@ -243,7 +243,7 @@ pub(crate) enum NetworkRequest {
     None,
     /// Allow connections only to these host patterns.
     Hosts(Vec<HostPattern>),
-    /// Allow connections to any host ("arbitrary network access").
+    /// Allow connections to any host ("任意网络访问").
     AnyHost,
 }
 
@@ -300,7 +300,7 @@ impl SandboxRequest {
 ///
 /// Lives on the `Thread` and is shared (via `Rc<RefCell<…>>`) with each tool
 /// call's event stream so a later command requesting an already-granted
-/// permission can skip the approval prompt. Persistent "allow always" grants
+/// permission can skip the approval prompt. Persistent "始终允许" grants
 /// are stored separately in [`SandboxPermissions`].
 #[derive(Default)]
 pub(crate) struct ThreadSandboxGrants {
@@ -313,7 +313,7 @@ pub(crate) struct ThreadSandboxGrants {
     unsandboxed: bool,
     /// Whether the user approved running commands *without* a sandbox for the
     /// rest of the thread when the OS sandbox could not be created (the
-    /// fallback prompt's "Allow for this thread"). Distinct from
+    /// fallback prompt's "允许此对话线程"). Distinct from
     /// `unsandboxed`, which records a model-requested escape; this is a
     /// user-acknowledged degradation because the sandbox is unavailable.
     sandbox_fallback: bool,
@@ -324,7 +324,7 @@ pub(crate) struct ThreadSandboxGrants {
 }
 
 impl ThreadSandboxGrants {
-    /// Whether the union of thread grants and persistent "allow always" grants
+    /// Whether the union of thread grants and persistent "始终允许" grants
     /// covers everything `request` asks for, so the command can run without
     /// prompting again.
     ///
@@ -372,7 +372,7 @@ impl ThreadSandboxGrants {
     }
 
     /// Whether the requested network escalation is already granted by the
-    /// thread grants unioned with persistent "allow always" grants.
+    /// thread grants unioned with persistent "始终允许" grants.
     fn network_covered(&self, request: &NetworkRequest, persistent: &SandboxPermissions) -> bool {
         let any_host_granted = self.network_any_host || persistent.allow_all_hosts;
         match request {
@@ -394,7 +394,7 @@ impl ThreadSandboxGrants {
     }
 
     /// Whether the user allowed running commands unsandboxed for the rest of
-    /// the thread (the fallback prompt's "Allow for this thread"). Distinct
+    /// the thread (the fallback prompt's "允许此对话线程"). Distinct
     /// from the persistent `allow_unsandboxed` setting.
     pub fn fallback_granted_for_thread(&self) -> bool {
         self.sandbox_fallback
@@ -418,10 +418,10 @@ impl ThreadSandboxGrants {
     }
 
     /// The sandbox this thread's grants establish on top of the settings, as a
-    /// [`ThreadSandbox`]. A standing "run unsandboxed" grant (a model-requested
+    /// [`ThreadSandbox`]. A standing "无沙箱运行" grant (a model-requested
     /// escape approved for the thread, or the sandbox-creation fallback) removes
     /// the sandbox entirely; otherwise the granted writable paths and hosts form
-    /// its scope. This is the "overridden in this thread" half of the sandbox
+    /// its scope. This is the "在此对话线程中已覆盖" half of the sandbox
     /// status surface; the persistent half comes from [`settings_thread_sandbox`].
     pub fn thread_sandbox(&self) -> ThreadSandbox {
         if self.unsandboxed || self.sandbox_fallback {
@@ -499,7 +499,7 @@ impl ThreadSandboxGrants {
             match HostPattern::parse(raw) {
                 Ok(pattern) => insert_host_pattern(&mut network_hosts, pattern),
                 Err(error) => {
-                    log::warn!("ignoring invalid persisted sandbox network host '{raw}': {error}")
+                    log::warn!("忽略无效的持久化沙箱网络主机 '{raw}': {error}")
                 }
             }
         }
@@ -533,7 +533,7 @@ impl ThreadSandboxGrants {
     }
 
     /// Compute the effective sandbox permissions to enforce for a command: the
-    /// union of persistent "allow always" grants, thread grants, and this
+    /// union of persistent "始终允许" grants, thread grants, and this
     /// specific command's request.
     ///
     /// This is what makes standing grants "stick": every sandboxed command
@@ -595,7 +595,7 @@ fn parse_persistent_hosts(raw: &[String]) -> Vec<HostPattern> {
             Ok(pattern) => Some(pattern),
             Err(error) => {
                 log::warn!(
-                    "ignoring invalid network host pattern '{host}' in sandbox settings: {error}"
+                    "忽略沙箱设置中无效的网络主机模式 '{host}': {error}"
                 );
                 None
             }
@@ -1173,7 +1173,7 @@ mod tests {
 
     #[test]
     fn effective_unions_grants_with_once_request() {
-        // An "allow once" path (passed via `request`, never recorded) is
+        // An "允许一次" path (passed via `request`, never recorded) is
         // enforced for this command alongside the standing grants.
         let mut grants = ThreadSandboxGrants::default();
         grants.record(&request(hosts(&["github.com"]), false, &["/tmp/build"]));

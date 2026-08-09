@@ -135,9 +135,9 @@ pub fn get_windows_system_shell() -> String {
             .into_iter()
             .find_map(|f| f())
             .map(|p| p.to_string_lossy().trim().to_owned())
-            .inspect(|shell| log::info!("Found powershell in: {}", shell))
+            .inspect(|shell| log::info!("在 {} 中找到 PowerShell", shell))
             .unwrap_or_else(|| {
-                log::warn!("Powershell not found, falling back to `cmd`");
+                log::warn!("未找到 PowerShell,回退到 `cmd`");
                 "cmd.exe".to_string()
             })
     });
@@ -186,7 +186,7 @@ macro_rules! debug_panic {
 pub fn some_or_debug_panic<T>(option: Option<T>) -> Option<T> {
     #[cfg(debug_assertions)]
     if option.is_none() {
-        panic!("Unexpected None");
+        panic!("意外的 None");
     }
     option
 }
@@ -548,10 +548,10 @@ impl std::hash::Hasher for TypeIdHasher {
             bytes
                 .as_array()
                 .map(|&array| self.value = u64::from_ne_bytes(array))
-                .unwrap_or_else(|| unreachable!("slice was sliced to 8 bytes"));
+                .unwrap_or_else(|| unreachable!("切片被截断为 8 字节"));
         } else {
             debug_panic!(
-                "expected a 64-bit value, did you use this hasher with something other than a TypeId?"
+                "期望一个 64 位值,你是否将此哈希器用于 TypeId 以外的类型?"
             );
         }
     }

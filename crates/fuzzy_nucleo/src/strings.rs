@@ -461,7 +461,7 @@ mod tests {
                 "some_very_long_variable_name_fuzzy"
             )
         );
-        assert!(ordered, "matches are not in the proper order.");
+        assert!(ordered, "匹配结果顺序不正确。");
 
         let results_penalty = match_strings_async(
             &cs,
@@ -474,7 +474,7 @@ mod tests {
         )
         .await;
         let greater = results[2].score > results_penalty[2].score;
-        assert!(greater, "penalize length not affecting long candidates");
+        assert!(greater, "长度惩罚未影响长候选");
     }
 
     #[gpui::test]
@@ -560,15 +560,15 @@ mod tests {
             .iter()
             .find(|m| m.string.as_ref() == "aaaaaaaaaaaaaaaaaaaaaaaaaaaa_FooBar")
             .map(|m| m.score)
-            .expect("exact-case candidate should match");
+            .expect("精确大小写候选应匹配");
         let mismatch = results
             .iter()
             .find(|m| m.string.as_ref() == "aaaaaaaaaaaaaaaaaaaaaaaaaaaa_foobar")
             .map(|m| m.score)
-            .expect("mismatch-case candidate should match");
+            .expect("大小写不匹配的候选应匹配");
         assert!(
             exact >= mismatch,
-            "exact-case score ({exact}) should be >= mismatch-case score ({mismatch})"
+            "精确大小写得分 ({exact}) 应大于等于大小写不匹配得分 ({mismatch})"
         );
     }
 
@@ -657,7 +657,7 @@ mod tests {
         .await;
         assert!(
             results.is_empty(),
-            "no candidate contains 'xyzzy', so nothing should match"
+            "没有候选包含 'xyzzy',因此不应有任何匹配"
         );
     }
 

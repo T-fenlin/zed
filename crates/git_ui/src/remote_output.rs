@@ -6,13 +6,13 @@ use util::ResultExt as _;
 
 const PULL_REQUEST_HINTS: &[(&str, &str)] = &[
     // GitHub: "Create a pull request for 'branch' on GitHub by visiting:"
-    ("Create a pull request", "Create Pull Request"),
+    ("Create a pull request", "创建拉取请求"),
     // Bitbucket: "Create pull request for branch:"
-    ("Create pull request", "Create Pull Request"),
+    ("Create pull request", "创建拉取请求"),
     // GitLab: "To create a merge request for branch, visit:"
-    ("create a merge request", "Create Merge Request"),
+    ("create a merge request", "创建合并请求"),
     // GitLab: "View merge request for branch:"
-    ("View merge request", "View Merge Request"),
+    ("View merge request", "查看合并请求"),
 ];
 
 #[derive(Clone)]
@@ -84,13 +84,13 @@ pub fn format_output(action: &RemoteAction, output: RemoteCommandOutput) -> Succ
         RemoteAction::Fetch(remote) => {
             if output.stderr.is_empty() {
                 SuccessMessage {
-                    message: "Fetch: Already up to date".into(),
+                    message: "获取:已是最新".into(),
                     style: SuccessStyle::Toast,
                 }
             } else {
                 let message = match remote {
-                    Some(remote) => format!("Synchronized with {}", remote.name),
-                    None => "Synchronized with remotes".into(),
+                    Some(remote) => format!("已与 {} 同步", remote.name),
+                    None => "已与远程仓库同步".into(),
                 };
                 SuccessMessage {
                     message,
@@ -104,33 +104,33 @@ pub fn format_output(action: &RemoteAction, output: RemoteCommandOutput) -> Succ
                     .stdout
                     .lines()
                     .last()
-                    .context("Failed to get last line of output")?
+                    .context("无法获取输出的最后一行")?
                     .trim();
 
                 let files_changed = last_line
                     .split_whitespace()
                     .next()
-                    .context("Failed to get first word of last line")?
+                    .context("无法获取最后一行的第一个单词")?
                     .parse()?;
 
                 Ok(files_changed)
             };
             if output.stdout.ends_with("Already up to date.\n") {
                 SuccessMessage {
-                    message: "Pull: Already up to date".into(),
+                    message: "拉取:已是最新".into(),
                     style: SuccessStyle::Toast,
                 }
             } else if output.stdout.starts_with("Updating") {
                 let files_changed = get_changes(&output).log_err();
                 let message = if let Some(files_changed) = files_changed {
                     format!(
-                        "Received {} file change{} from {}",
+                        "从 {} 收到 {} 个文件更改{}",
                         files_changed,
                         if files_changed == 1 { "" } else { "s" },
                         remote_ref.name
                     )
                 } else {
-                    format!("Fast forwarded from {}", remote_ref.name)
+                    format!("已从 {} 快进", remote_ref.name)
                 };
                 SuccessMessage {
                     message,
@@ -140,13 +140,13 @@ pub fn format_output(action: &RemoteAction, output: RemoteCommandOutput) -> Succ
                 let files_changed = get_changes(&output).log_err();
                 let message = if let Some(files_changed) = files_changed {
                     format!(
-                        "Merged {} file change{} from {}",
+                        "已从 {} 合并 {} 个文件更改{}",
                         files_changed,
                         if files_changed == 1 { "" } else { "s" },
                         remote_ref.name
                     )
                 } else {
-                    format!("Merged from {}", remote_ref.name)
+                    format!("已从 {} 合并", remote_ref.name)
                 };
                 SuccessMessage {
                     message,
@@ -154,12 +154,12 @@ pub fn format_output(action: &RemoteAction, output: RemoteCommandOutput) -> Succ
                 }
             } else if output.stdout.contains("Successfully rebased") {
                 SuccessMessage {
-                    message: format!("Successfully rebased from {}", remote_ref.name),
+                    message: format!("已成功从 {} 变基", remote_ref.name),
                     style: SuccessStyle::ToastWithLog { output },
                 }
             } else {
                 SuccessMessage {
-                    message: format!("Successfully pulled from {}", remote_ref.name),
+                    message: format!("已成功从 {} 拉取", remote_ref.name),
                     style: SuccessStyle::ToastWithLog { output },
                 }
             }
@@ -167,17 +167,17 @@ pub fn format_output(action: &RemoteAction, output: RemoteCommandOutput) -> Succ
         RemoteAction::Push(branch_name, remote_ref) => {
             if output.stderr.ends_with("Everything up-to-date\n") {
                 SuccessMessage {
-                    message: "Push: Everything is up-to-date".to_string(),
+                    message: "推送:一切已是最新".to_string(),
                     style: SuccessStyle::Toast,
                 }
             } else if let Some((label, url)) = extract_pull_request_link(&output) {
                 SuccessMessage {
-                    message: format!("Pushed {} to {}", branch_name, remote_ref.name),
+                    message: format!("已将 {} 推送到 {}", branch_name, remote_ref.name),
                     style: SuccessStyle::PushPrLink { label, url },
                 }
             } else {
                 SuccessMessage {
-                    message: format!("Pushed {} to {}", branch_name, remote_ref.name),
+                    message: format!("已将 {} 推送到 {}", branch_name, remote_ref.name),
                     style: SuccessStyle::ToastWithLog { output },
                 }
             }
@@ -216,7 +216,7 @@ mod tests {
         let msg = format_output(&action, output);
         if let SuccessStyle::PushPrLink { label, url } = msg.style {
             assert_eq!(msg.message, "Pushed test_branch to test_remote");
-            assert_eq!(label, "Create Pull Request");
+            assert_eq!(label, "创建拉取请求");
             assert_eq!(url, "https://example.com/test/test/pull/new/test");
         } else {
             panic!("Expected PushPrLink variant");
@@ -250,7 +250,7 @@ mod tests {
 
         if let SuccessStyle::PushPrLink { label, url } = msg.style {
             assert_eq!(msg.message, "Pushed test_branch to test_remote");
-            assert_eq!(label, "Create Merge Request");
+            assert_eq!(label, "创建合并请求");
             assert_eq!(
                 url,
                 "https://example.com/test/test/-/merge_requests/new?merge_request%5Bsource_branch%5D=test"
@@ -275,7 +275,7 @@ mod tests {
         assert_eq!(
             extract_pull_request_link(&output),
             Some((
-                "Create Pull Request",
+                "创建拉取请求",
                 "https://bitbucket.example.com/projects/TEST/repos/test/pull-requests?create&sourceBranch=refs/heads/test".to_string()
             ))
         );
@@ -314,7 +314,7 @@ mod tests {
 
         if let SuccessStyle::PushPrLink { label, url } = msg.style {
             assert_eq!(msg.message, "Pushed test_branch to test_remote");
-            assert_eq!(label, "View Merge Request");
+            assert_eq!(label, "查看合并请求");
             assert_eq!(url, "https://example.com/test/test/-/merge_requests/99999");
         } else {
             panic!("Expected PushPrLink variant")

@@ -50,7 +50,7 @@ impl Drop for SyntaxSnapshot {
                 std::thread::Builder::new()
                     .name("SyntaxSnapshot::drop".into())
                     .spawn(move || while let Ok(_) = rx.recv() {})
-                    .expect("failed to spawn drop thread");
+                    .expect("无法生成释放线程");
                 tx
             });
         // This does allocate a new Arc, but it's cheap and avoids blocking the main thread without needing to use an `Option` or `MaybeUninit`.
@@ -430,7 +430,7 @@ impl SyntaxSnapshot {
 
                 debug_assert!(
                     tree.root_node().end_byte() <= text.len(),
-                    "tree's size {}, is larger than text size {}",
+                    "树的大小 {} 大于文本大小 {}",
                     tree.root_node().end_byte(),
                     text.len(),
                 );
@@ -506,7 +506,7 @@ impl SyntaxSnapshot {
                     .is_some()
                 {
                     let range = layer.range.to_offset(text);
-                    log::trace!("reparse range {range:?} for language {language_name:?}");
+                    log::trace!("重新解析范围 {range:?},语言 {language_name:?}");
                     resolved_injection_ranges.push(range);
                 }
 
@@ -540,7 +540,7 @@ impl SyntaxSnapshot {
         budget: &mut Option<Duration>,
     ) -> Result<(), ParseTimeout> {
         log::trace!(
-            "reparse. invalidated ranges:{:?}",
+            "重新解析。失效范围:{:?}",
             LogOffsetRanges(&invalidated_ranges, text),
         );
 
@@ -571,7 +571,7 @@ impl SyntaxSnapshot {
             let step = queue.pop();
             let position = if let Some(step) = &step {
                 log::trace!(
-                    "parse step depth:{}, range:{:?}, language:{} ({:?})",
+                    "解析步骤 深度:{}, 范围:{:?}, 语言:{} ({:?})",
                     step.depth,
                     LogAnchorRange(&step.range, text),
                     step.language.name(),
@@ -614,7 +614,7 @@ impl SyntaxSnapshot {
                     if changed_regions.intersects(layer, text) {
                         if let SyntaxLayerContent::Parsed { language, .. } = &layer.content {
                             log::trace!(
-                                "discard layer. language:{}, range:{:?}. changed_regions:{:?}",
+                                "丢弃层。语言:{}, 范围:{:?}。变更区域:{:?}",
                                 language.name(),
                                 LogAnchorRange(&layer.range, text),
                                 LogChangedRegions(&changed_regions, text),
@@ -681,7 +681,7 @@ impl SyntaxSnapshot {
                         old_layer.map(|layer| (&layer.content, layer.range.clone()))
                     {
                         log::trace!(
-                            "existing layer. language:{}, range:{:?}, included_ranges:{:?}",
+                            "已有层。语言:{}, 范围:{:?}, 包含范围:{:?}",
                             language.name(),
                             LogAnchorRange(&layer_range, text),
                             LogIncludedRanges(&old_tree.included_ranges())
@@ -722,7 +722,7 @@ impl SyntaxSnapshot {
                         }
 
                         log::trace!(
-                            "update layer. language:{}, range:{:?}, included_ranges:{:?}",
+                            "更新层。语言:{}, 范围:{:?}, 包含范围:{:?}",
                             language.name(),
                             LogAnchorRange(&step.range, text),
                             LogIncludedRanges(&included_ranges),
@@ -742,7 +742,7 @@ impl SyntaxSnapshot {
                                 return Err(ParseTimeout);
                             }
                             Err(e) => {
-                                log::error!("error parsing text: {e:?}");
+                                log::error!("解析文本出错: {e:?}");
                                 continue;
                             }
                         };
@@ -779,7 +779,7 @@ impl SyntaxSnapshot {
                         }
 
                         log::trace!(
-                            "create layer. language:{}, range:{:?}, included_ranges:{:?}",
+                            "创建层。语言:{}, 范围:{:?}, 包含范围:{:?}",
                             language.name(),
                             LogAnchorRange(&step.range, text),
                             LogIncludedRanges(&included_ranges),
@@ -799,7 +799,7 @@ impl SyntaxSnapshot {
                                 return Err(ParseTimeout);
                             }
                             Err(e) => {
-                                log::error!("error parsing text: {e:?}");
+                                log::error!("解析文本出错: {e:?}");
                                 continue;
                             }
                         };
@@ -906,17 +906,17 @@ impl SyntaxSnapshot {
         for layer in self.layers.iter() {
             match Ord::cmp(&layer.depth, &max_depth) {
                 Ordering::Less => {
-                    panic!("layers out of order")
+                    panic!("层顺序错乱")
                 }
                 Ordering::Equal => {
                     if let Some((prev_range, prev_language_id)) = prev_layer {
                         match layer.range.start.cmp(&prev_range.start, text) {
-                            Ordering::Less => panic!("layers out of order"),
+                            Ordering::Less => panic!("层顺序错乱"),
                             Ordering::Equal => match layer.range.end.cmp(&prev_range.end, text) {
-                                Ordering::Less => panic!("layers out of order"),
+                                Ordering::Less => panic!("层顺序错乱"),
                                 Ordering::Equal => {
                                     if layer.content.language_id() < prev_language_id {
-                                        panic!("layers out of order")
+                                        panic!("层顺序错乱")
                                     }
                                 }
                                 Ordering::Greater => {}
@@ -1495,7 +1495,7 @@ impl std::error::Error for ParseTimeout {}
 
 impl std::fmt::Display for ParseTimeout {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "parse timeout")
+        write!(f, "解析超时")
     }
 }
 
@@ -1547,7 +1547,7 @@ fn parse_text(
             })
             .ok_or_else(|| match timed_out {
                 true => anyhow::anyhow!(ParseTimeout),
-                false => anyhow::anyhow!("parsing failed"),
+                false => anyhow::anyhow!("解析失败"),
             })
     })
 }

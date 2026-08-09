@@ -118,7 +118,7 @@ impl LocalExecutor {
         self.scheduler
             .block(Some(self.session_id), future.as_mut(), None);
 
-        output.take().expect("block_on future did not complete")
+        output.take().expect("block_on 的 future 未完成")
     }
 
     /// Block until the future completes or timeout occurs.
@@ -453,7 +453,7 @@ impl<T: 'static> Future for FallibleTask<T> {
                     Poll::Ready(Some(boxed_any)) => Poll::Ready(Some(
                         *boxed_any
                             .downcast::<T>()
-                            .expect("FallibleTask::poll: downcast type mismatch"),
+                            .expect("FallibleTask::poll: 向下转换类型不匹配"),
                     )),
                     Poll::Ready(None) => Poll::Ready(None),
                     Poll::Pending => Poll::Pending,
@@ -489,7 +489,7 @@ impl<T: 'static> Future for Task<T> {
                 Poll::Ready(boxed_any) => Poll::Ready(
                     *boxed_any
                         .downcast::<T>()
-                        .expect("Task::poll: downcast type mismatch"),
+                        .expect("Task::poll: 向下转换类型不匹配"),
                 ),
                 Poll::Pending => Poll::Pending,
             },
@@ -532,7 +532,7 @@ where
             assert_eq!(
                 self.id,
                 thread_id(),
-                "local task dropped by a thread that didn't spawn it. Task spawned at {}",
+                "本地任务被非创建它的线程丢弃。任务创建于 {}",
                 self.location
             );
             // SAFETY: `inner` is wrapped in `ManuallyDrop`, so this is the only
@@ -552,7 +552,7 @@ where
             let this = unsafe { self.get_unchecked_mut() };
             assert!(
                 this.id == thread_id(),
-                "local task polled by a thread that didn't spawn it. Task spawned at {}",
+                "本地任务被非创建它的线程轮询。任务创建于 {}",
                 this.location
             );
             // SAFETY: `inner` is structurally pinned by `Checked`; after

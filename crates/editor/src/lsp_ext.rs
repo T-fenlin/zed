@@ -176,7 +176,7 @@ pub fn lsp_tasks(
         })
         .with_timeout(Duration::from_millis(200), &cx.background_executor())
         .unwrap_or_else(|_| {
-            log::debug!("Timed out waiting for LSP tasks");
+            log::debug!("等待 LSP 任务超时");
             Vec::new()
         })
         .await
@@ -244,10 +244,10 @@ mod tests {
             assert_eq!(
                 language.name().as_ref(),
                 "Rust",
-                "{message}: wrong language"
+                "{message}: 语言错误"
             );
-            assert_eq!(server_id, expected_server_id, "{message}: wrong server ID");
-            assert_eq!(buffer, underlying_buffer, "{message}: wrong buffer");
+            assert_eq!(server_id, expected_server_id, "{message}: 服务器 ID 错误");
+            assert_eq!(buffer, underlying_buffer, "{message}: 缓冲区错误");
         };
 
         editor.update(cx, |editor, cx| {
@@ -258,7 +258,7 @@ mod tests {
                     filter,
                     language_server_name.clone(),
                 ),
-                "should find correct language server at beginning of file",
+                "应在文件开头找到正确的语言服务器",
             );
         });
 
@@ -274,7 +274,7 @@ mod tests {
                     filter,
                     language_server_name.clone(),
                 ),
-                "should find correct language server at end of file",
+                "应在文件末尾找到正确的语言服务器",
             );
         });
     }

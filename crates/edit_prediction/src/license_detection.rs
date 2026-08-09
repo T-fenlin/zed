@@ -116,7 +116,7 @@ static LICENSE_PATTERNS: LazyLock<LicensePatterns> = LazyLock::new(|| {
 fn detect_license(text: &str) -> Option<OpenSourceLicense> {
     let text = canonicalize_license_text(text);
     for (license, pattern) in LICENSE_PATTERNS.patterns.iter() {
-        log::trace!("Checking if license is {}", license);
+        log::trace!("正在检查许可证是否为 {}", license);
         if check_pattern(&pattern, &text) {
             return Some(*license);
         }
@@ -179,7 +179,7 @@ fn parse_pattern(pattern_source: &str) -> Result<(Vec<PatternPart>, usize)> {
                 Some(())
             });
             if valid.is_none() {
-                return Err(anyhow!("Invalid pattern directive: {}", line));
+                return Err(anyhow!("无效的模式指令: {}", line));
             }
             continue;
         }
@@ -351,11 +351,11 @@ impl LicenseDetectionWatcher {
     }
 
     async fn is_path_eligible(fs: &Arc<dyn Fs>, abs_path: PathBuf) -> Option<bool> {
-        log::debug!("checking if `{abs_path:?}` is an open source license");
+        log::debug!("正在检查 `{abs_path:?}` 是否为开源许可证");
         // resolve symlinks so that the file size from metadata is correct
         let Some(abs_path) = fs.canonicalize(&abs_path).await.ok() else {
             log::debug!(
-                "`{abs_path:?}` license file probably deleted (error canonicalizing the path)"
+                "`{abs_path:?}` 许可证文件可能已被删除(规范化路径时出错)"
             );
             return None;
         };
@@ -376,11 +376,11 @@ impl LicenseDetectionWatcher {
         let is_eligible = detect_license(&text).is_some();
         if is_eligible {
             log::debug!(
-                "`{abs_path:?}` matches a license that is eligible for data collection (if enabled)"
+                "`{abs_path:?}` 匹配符合数据收集条件的许可证(如果已启用)"
             );
         } else {
             log::debug!(
-                "`{abs_path:?}` does not match a license that is eligible for data collection"
+                "`{abs_path:?}` 不匹配符合数据收集条件的许可证"
             );
         }
         Some(is_eligible)
@@ -436,7 +436,7 @@ mod tests {
             walked_entries += 1;
             if walked_entries % 10000 == 0 {
                 println!(
-                    "So far visited {} files in {}",
+                    "目前已访问 {} 个文件,位于 {}",
                     walked_entries,
                     homedir.display()
                 );
@@ -467,11 +467,11 @@ mod tests {
             println!("{}", path);
         }
         panic!(
-            "{} licenses detected, {} unrecognized",
+            "检测到 {} 个许可证,{} 个未识别",
             detected.len(),
             unrecognized.len()
         );
-        println!("This line has a warning to make sure this test is always commented out");
+        println!("此行包含警告,以确保此测试始终被注释掉");
     }
     */
 

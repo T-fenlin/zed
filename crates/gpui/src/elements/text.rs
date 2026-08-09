@@ -422,7 +422,7 @@ impl StyledText {
     ) -> Self {
         debug_assert!(
             self.delayed_highlights.is_none(),
-            "Can't use `with_default_highlights` and `with_highlights`"
+            "不能同时使用 `with_default_highlights` 和 `with_highlights`"
         );
         let runs = Self::compute_runs(&self.text, default_style, highlights);
         self.with_runs(runs)
@@ -436,7 +436,7 @@ impl StyledText {
     ) -> Self {
         debug_assert!(
             self.runs.is_none(),
-            "Can't use `with_highlights` and `with_default_highlights`"
+            "不能同时使用 `with_highlights` 和 `with_default_highlights`"
         );
         self.delayed_highlights = Some(
             highlights
@@ -528,12 +528,12 @@ impl StyledText {
         for run in &runs {
             text = text.get(run.len..).unwrap_or_else(|| {
                 #[cfg(debug_assertions)]
-                panic!("invalid text run. Text: '{text}', run: {run:?}");
+                panic!("无效的文本运行。文本: '{text}', 运行: {run:?}");
                 #[cfg(not(debug_assertions))]
-                panic!("invalid text run");
+                panic!("无效的文本运行");
             });
         }
-        assert!(text.is_empty(), "invalid text run");
+        assert!(text.is_empty(), "无效的文本运行");
         self.runs = Some(runs);
         self
     }
@@ -784,7 +784,7 @@ impl TextLayout {
         let mut element_state = self.0.borrow_mut();
         let element_state = element_state
             .as_mut()
-            .with_context(|| format!("measurement has not been performed on {text}"))
+            .with_context(|| format!("尚未对 {text} 执行测量"))
             .unwrap();
         element_state.bounds = Some(bounds);
     }
@@ -793,11 +793,11 @@ impl TextLayout {
         let element_state = self.0.borrow();
         let element_state = element_state
             .as_ref()
-            .with_context(|| format!("measurement has not been performed on {text}"))
+            .with_context(|| format!("尚未对 {text} 执行测量"))
             .unwrap();
         let bounds = element_state
             .bounds
-            .with_context(|| format!("prepaint has not been performed on {text}"))
+            .with_context(|| format!("尚未对 {text} 执行预绘制"))
             .unwrap();
 
         let line_height = element_state.line_height;
@@ -831,10 +831,10 @@ impl TextLayout {
         let element_state = self.0.borrow();
         let element_state = element_state
             .as_ref()
-            .expect("measurement has not been performed");
+            .expect("尚未执行测量");
         let bounds = element_state
             .bounds
-            .expect("prepaint has not been performed");
+            .expect("尚未执行预绘制");
 
         if position.y < bounds.top() {
             return Err(0);
@@ -865,10 +865,10 @@ impl TextLayout {
         let element_state = self.0.borrow();
         let element_state = element_state
             .as_ref()
-            .expect("measurement has not been performed");
+            .expect("尚未执行测量");
         let bounds = element_state
             .bounds
-            .expect("prepaint has not been performed");
+            .expect("尚未执行预绘制");
         let line_height = element_state.line_height;
 
         let mut line_origin = bounds.origin;
@@ -896,7 +896,7 @@ impl TextLayout {
         let element_state = self.0.borrow();
         let element_state = element_state
             .as_ref()
-            .expect("measurement has not been performed");
+            .expect("尚未执行测量");
         let mut line_start_ix = 0;
 
         for line in &element_state.lines {
@@ -919,7 +919,7 @@ impl TextLayout {
         self.0
             .borrow()
             .as_ref()
-            .expect("measurement has not been performed")
+            .expect("尚未执行测量")
             .lines
             .iter()
             .map(|line| line.layout.clone())

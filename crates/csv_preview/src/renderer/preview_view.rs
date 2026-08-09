@@ -38,10 +38,10 @@ impl Render for CsvPreviewView {
                                 h_flex()
                                     .gap_2()
                                     .child(SpinnerLabel::new())
-                                    .child("Loading…"),
+                                    .child("加载中…"),
                             )
                         })
-                        .when(!is_parsing, |div| div.child("No CSV content to display"))
+                        .when(!is_parsing, |div| div.child("没有可显示的 CSV 内容"))
                         .into_any_element()
                 } else {
                     self.create_table(&self.column_widths.widths, cx)

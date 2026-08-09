@@ -193,7 +193,7 @@ impl MasterProcess {
 
     pub async fn wait_connected(&mut self) -> Result<()> {
         let Some(mut stdout) = self.process.stdout.take() else {
-            anyhow::bail!("ssh process stdout capture failed");
+            anyhow::bail!("无法捕获 ssh 进程的标准输出");
         };
 
         let mut output = Vec::new();
@@ -245,7 +245,7 @@ impl MasterProcess {
         use smol::io::AsyncBufReadExt;
 
         let Some(stdout) = self.process.stdout.take() else {
-            anyhow::bail!("ssh process stdout capture failed");
+            anyhow::bail!("无法捕获 ssh 进程的标准输出");
         };
 
         let mut reader = smol::io::BufReader::new(stdout);
@@ -255,7 +255,7 @@ impl MasterProcess {
         loop {
             let n = reader.read_line(&mut line).await?;
             if n == 0 {
-                anyhow::bail!("ssh process exited before connection established");
+                anyhow::bail!("ssh 进程在连接建立前退出");
             }
 
             if line.contains(Self::CONNECTION_ESTABLISHED_MAGIC) {
@@ -282,7 +282,7 @@ impl RemoteConnection for SshRemoteConnection {
     async fn kill(&self) -> Result<()> {
         self.killed.store(true, Ordering::Release);
         let Some(mut process) = self.master_process.lock().take() else {
-            log::debug!("no master process to kill (external ControlMaster session)");
+            log::debug!("没有可终止的主进程(外部 ControlMaster 会话)");
             return Ok(());
         };
         process.as_mut().kill().ok();
@@ -402,7 +402,7 @@ impl RemoteConnection for SshRemoteConnection {
             // This is for example the case on Windows as evidenced by this implementation snippet:
             // https://github.com/PowerShell/openssh-portable/blob/b8c08ef9da9450a94a9c5ef717d96a7bd83f3332/sshconnect2.c#L417
             if Self::is_sftp_available().await {
-                log::debug!("using SFTP for directory upload");
+                log::debug!("正在使用 SFTP 上传目录");
                 let mut child = sftp_command.spawn()?;
                 if let Some(mut stdin) = child.stdin.take() {
                     use futures::AsyncWriteExt;
@@ -417,10 +417,10 @@ impl RemoteConnection for SshRemoteConnection {
                 }
 
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                log::debug!("failed to upload directory via SFTP {src_path_display} -> {dest_path_str}: {stderr}");
+                log::debug!("通过 SFTP 上传目录失败 {src_path_display} -> {dest_path_str}: {stderr}");
             }
 
-            log::debug!("using SCP for directory upload");
+            log::debug!("正在使用 SCP 上传目录");
             let output = scp_command.output().await?;
 
             if output.status.success() {
@@ -428,10 +428,10 @@ impl RemoteConnection for SshRemoteConnection {
             }
 
             let stderr = String::from_utf8_lossy(&output.stderr);
-            log::debug!("failed to upload directory via SCP {src_path_display} -> {dest_path_str}: {stderr}");
+            log::debug!("通过 SCP 上传目录失败 {src_path_display} -> {dest_path_str}: {stderr}");
 
             anyhow::bail!(
-                "failed to upload directory via SFTP/SCP {} -> {}: {}",
+                "通过 SFTP/SCP 上传目录失败 {} -> {}: {}",
                 src_path_display,
                 dest_path_str,
                 stderr,
@@ -450,10 +450,10 @@ impl RemoteConnection for SshRemoteConnection {
         cx: &mut AsyncApp,
     ) -> Task<Result<i32>> {
         const VARS: [&str; 3] = ["RUST_LOG", "RUST_BACKTRACE", "ZED_GENERATE_MINIDUMPS"];
-        delegate.set_status(Some("Starting proxy"), cx);
+        delegate.set_status(Some("正在启动代理"), cx);
 
         let Some(remote_binary_path) = self.remote_binary_path.clone() else {
-            return Task::ready(Err(anyhow!("Remote binary path not set")));
+            return Task::ready(Err(anyhow!("远程二进制文件路径未设置")));
         };
 
         let mut ssh_command = if self.ssh_platform.os.is_windows() {
@@ -500,7 +500,7 @@ impl RemoteConnection for SshRemoteConnection {
             Ok(process) => process,
             Err(error) => {
                 return Task::ready(Err(
-                    anyhow::Error::new(error).context("failed to spawn remote server")
+                    anyhow::Error::new(error).context("无法启动远程服务器")
                 ));
             }
         };
@@ -552,13 +552,13 @@ async fn find_existing_control_master(
     {
         Ok(output) => output,
         Err(e) => {
-            log::debug!("failed to run ssh -G: {e}");
+            log::debug!("运行 ssh -G 失败: {e}");
             return None;
         }
     };
 
     if !output.status.success() {
-        log::debug!("ssh -G failed for {destination}, skipping ControlMaster reuse");
+        log::debug!("ssh -G 对 {destination} 失败,跳过 ControlMaster 复用");
         return None;
     }
 
@@ -587,20 +587,20 @@ async fn find_existing_control_master(
     {
         Ok(output) => output,
         Err(e) => {
-            log::debug!("failed to run ssh -O check: {e}");
+            log::debug!("运行 ssh -O check 失败: {e}");
             return None;
         }
     };
 
     if check.status.success() {
         log::info!(
-            "reusing existing SSH ControlMaster at {}",
+            "正在复用位于 {} 的现有 SSH ControlMaster",
             control_path.display()
         );
         Some(control_path)
     } else {
         log::debug!(
-            "ControlMaster socket at {} is not alive, creating new connection",
+            "位于 {} 的 ControlMaster 套接字不活跃,正在创建新连接",
             control_path.display()
         );
         None
@@ -629,8 +629,8 @@ impl SshRemoteConnection {
 
         #[cfg(not(windows))]
         let (socket, master_process_option) = if let Some(reused_path) = reused_socket {
-            delegate.set_status(Some("Connecting (reusing session)"), cx);
-            log::info!("reusing existing ControlMaster, skipping authentication");
+            delegate.set_status(Some("正在连接(复用会话)"), cx);
+            log::info!("正在复用现有 ControlMaster,跳过身份验证");
             let socket = SshSocket::new(connection_options, reused_path).await?;
             (socket, None)
         } else {
@@ -643,7 +643,7 @@ impl SshRemoteConnection {
                 askpass::AskPassSession::new(cx.background_executor().clone(), askpass_delegate)
                     .await?;
 
-            delegate.set_status(Some("Connecting"), cx);
+            delegate.set_status(Some("正在连接"), cx);
 
             // Start the master SSH process, which does not do anything except
             // for establish the connection and keep it open, allowing other ssh
@@ -661,10 +661,10 @@ impl SshRemoteConnection {
                     match result {
                         AskPassResult::CancelledByUser => {
                             master_process.as_mut().kill().ok();
-                            anyhow::bail!("SSH connection canceled")
+                            anyhow::bail!("SSH 连接已取消")
                         }
                         AskPassResult::Timedout => {
-                            anyhow::bail!("connecting to host timed out")
+                            anyhow::bail!("连接主机超时")
                         }
                     }
                 }
@@ -674,7 +674,7 @@ impl SshRemoteConnection {
             };
 
             if let Err(e) = result {
-                return Err(e.context("Failed to connect to host"));
+                return Err(e.context("无法连接到主机"));
             }
 
             if master_process.as_mut().try_status()?.is_some() {
@@ -683,7 +683,7 @@ impl SshRemoteConnection {
                 stderr.read_to_end(&mut output).await?;
 
                 let error_message = format!(
-                    "failed to connect: {}",
+                    "连接失败: {}",
                     String::from_utf8_lossy(&output).trim()
                 );
                 anyhow::bail!(error_message);
@@ -705,7 +705,7 @@ impl SshRemoteConnection {
                 askpass::AskPassSession::new(cx.background_executor().clone(), askpass_delegate)
                     .await?;
 
-            delegate.set_status(Some("Connecting"), cx);
+            delegate.set_status(Some("正在连接"), cx);
 
             let mut master_process = MasterProcess::new(
                 askpass.script_path().as_ref(),
@@ -719,10 +719,10 @@ impl SshRemoteConnection {
                     match result {
                         AskPassResult::CancelledByUser => {
                             master_process.as_mut().kill().ok();
-                            anyhow::bail!("SSH connection canceled")
+                            anyhow::bail!("SSH 连接已取消")
                         }
                         AskPassResult::Timedout => {
-                            anyhow::bail!("connecting to host timed out")
+                            anyhow::bail!("连接主机超时")
                         }
                     }
                 }
@@ -732,7 +732,7 @@ impl SshRemoteConnection {
             };
 
             if let Err(e) = result {
-                return Err(e.context("Failed to connect to host"));
+                return Err(e.context("无法连接到主机"));
             }
 
             if master_process.as_mut().try_status()?.is_some() {
@@ -741,7 +741,7 @@ impl SshRemoteConnection {
                 stderr.read_to_end(&mut output).await?;
 
                 let error_message = format!(
-                    "failed to connect: {}",
+                    "连接失败: {}",
                     String::from_utf8_lossy(&output).trim()
                 );
                 anyhow::bail!(error_message);
@@ -752,7 +752,7 @@ impl SshRemoteConnection {
                 askpass
                     .get_password()
                     .or_else(|| askpass::EncryptedPassword::try_from("").ok())
-                    .context("Failed to fetch askpass password")?,
+                    .context("无法获取 askpass 密码")?,
                 cx.background_executor().clone(),
             )
             .await?;
@@ -762,17 +762,17 @@ impl SshRemoteConnection {
         };
 
         let is_windows = socket.probe_is_windows().await;
-        log::info!("Remote is windows: {}", is_windows);
+        log::info!("远程系统是 Windows: {}", is_windows);
 
         let ssh_shell = socket.shell(is_windows).await;
-        log::info!("Remote shell discovered: {}", ssh_shell);
+        log::info!("检测到远程 Shell: {}", ssh_shell);
 
         let ssh_shell_kind = ShellKind::new(&ssh_shell, is_windows);
         let ssh_platform = socket.platform(ssh_shell_kind, is_windows).await?;
-        log::info!("Remote platform discovered: {:?}", ssh_platform);
+        log::info!("检测到远程平台: {:?}", ssh_platform);
 
         let ssh_os_version = socket.os_version(ssh_platform.os, ssh_shell_kind).await;
-        log::info!("Remote OS version discovered: {:?}", ssh_os_version);
+        log::info!("检测到远程操作系统版本: {:?}", ssh_os_version);
 
         let (ssh_path_style, ssh_default_system_shell) = match ssh_platform.os {
             RemoteOs::Windows => (PathStyle::Windows, ssh_shell.clone()),
@@ -870,7 +870,7 @@ impl SshRemoteConnection {
             ReleaseChannel::Nightly => Ok(None),
             ReleaseChannel::Dev => {
                 anyhow::bail!(
-                    "ZED_BUILD_REMOTE_SERVER is not set and no remote server exists at ({:?})",
+                    "未设置 ZED_BUILD_REMOTE_SERVER,且 ({:?}) 处不存在远程服务器",
                     dst_path
                 )
             }
@@ -907,12 +907,12 @@ impl SshRemoteConnection {
                 Ok(_) => {
                     self.extract_server_binary(&dst_path, &tmp_path_compressed, delegate, cx)
                         .await
-                        .context("extracting server binary")?;
+                        .context("正在解压服务器二进制文件")?;
                     return Ok(dst_path.into());
                 }
                 Err(e) => {
                     log::error!(
-                        "Failed to download binary on server, attempting to download locally and then upload it the server: {e:#}",
+                        "在服务器上下载二进制文件失败,尝试在本地下载然后上传到服务器: {e:#}",
                     )
                 }
             }
@@ -926,13 +926,13 @@ impl SshRemoteConnection {
                 cx,
             )
             .await
-            .context("downloading server binary locally")?;
+            .context("正在本地下载服务器二进制文件")?;
         self.upload_local_server_binary(&src_path, &tmp_path_compressed, delegate, cx)
             .await
-            .context("uploading server binary")?;
+            .context("正在上传服务器二进制文件")?;
         self.extract_server_binary(&dst_path, &tmp_path_compressed, delegate, cx)
             .await
-            .context("extracting server binary")?;
+            .context("正在解压服务器二进制文件")?;
         Ok(dst_path.into())
     }
 
@@ -959,7 +959,7 @@ impl SshRemoteConnection {
             }
         }
 
-        delegate.set_status(Some("Downloading remote development server on host"), cx);
+        delegate.set_status(Some("正在主机上下载远程开发服务器"), cx);
 
         let connection_timeout = self
             .socket
@@ -997,7 +997,7 @@ impl SshRemoteConnection {
                     return Err(e);
                 }
 
-                log::info!("curl is not available, trying wget");
+                log::info!("curl 不可用,正在尝试 wget");
                 match self
                     .socket
                     .run_command(
@@ -1026,7 +1026,7 @@ impl SshRemoteConnection {
                         {
                             return Err(e);
                         } else {
-                            anyhow::bail!("Neither curl nor wget is available");
+                            anyhow::bail!("curl 和 wget 均不可用");
                         }
                     }
                 }
@@ -1061,20 +1061,20 @@ impl SshRemoteConnection {
 
         let src_stat = fs::metadata(&src_path)
             .await
-            .with_context(|| format!("failed to get metadata for {:?}", src_path))?;
+            .with_context(|| format!("无法获取 {:?} 的元数据", src_path))?;
         let size = src_stat.len();
 
         let t0 = Instant::now();
-        delegate.set_status(Some("Uploading remote development server"), cx);
+        delegate.set_status(Some("正在上传远程开发服务器"), cx);
         log::info!(
-            "uploading remote development server to {:?} ({}kb)",
+            "正在将远程开发服务器上传到 {:?} ({}kb)",
             tmp_path,
             size / 1024
         );
         self.upload_file(src_path, tmp_path)
             .await
-            .context("failed to upload server binary")?;
-        log::info!("uploaded remote development server in {:?}", t0.elapsed());
+            .context("上传服务器二进制文件失败")?;
+        log::info!("远程开发服务器上传完成,耗时 {:?}", t0.elapsed());
         Ok(())
     }
 
@@ -1085,7 +1085,7 @@ impl SshRemoteConnection {
         delegate: &Arc<dyn RemoteClientDelegate>,
         cx: &mut AsyncApp,
     ) -> Result<()> {
-        delegate.set_status(Some("Extracting remote development server"), cx);
+        delegate.set_status(Some("正在解压远程开发服务器"), cx);
 
         if self.ssh_platform.os.is_windows() {
             self.extract_server_binary_windows(dst_path, tmp_path).await
@@ -1105,21 +1105,21 @@ impl SshRemoteConnection {
         let server_mode = format!("{:o}", server_mode);
         let server_mode = shell_kind
             .try_quote(&server_mode)
-            .context("shell quoting")?;
+            .context("Shell 引用")?;
         let dst_path = dst_path.display(self.path_style());
-        let dst_path = shell_kind.try_quote(&dst_path).context("shell quoting")?;
+        let dst_path = shell_kind.try_quote(&dst_path).context("Shell 引用")?;
         let script = if let Some(tmp_path) = orig_tmp_path.strip_suffix(".gz") {
             let orig_tmp_path = shell_kind
                 .try_quote(&orig_tmp_path)
-                .context("shell quoting")?;
-            let tmp_path = shell_kind.try_quote(&tmp_path).context("shell quoting")?;
+                .context("Shell 引用")?;
+            let tmp_path = shell_kind.try_quote(&tmp_path).context("Shell 引用")?;
             format!(
                 "gunzip -f {orig_tmp_path} && chmod {server_mode} {tmp_path} && mv {tmp_path} {dst_path}",
             )
         } else {
             let orig_tmp_path = shell_kind
                 .try_quote(&orig_tmp_path)
-                .context("shell quoting")?;
+                .context("Shell 引用")?;
             format!("chmod {server_mode} {orig_tmp_path} && mv {orig_tmp_path} {dst_path}",)
         };
         let args = shell_kind.args_for_shell(false, script.to_string());
@@ -1137,24 +1137,24 @@ impl SshRemoteConnection {
         let shell_kind = ShellKind::Pwsh;
         let orig_tmp_path = tmp_path.display(self.path_style());
         let dst_path = dst_path.display(self.path_style());
-        let dst_path = shell_kind.try_quote(&dst_path).context("shell quoting")?;
+        let dst_path = shell_kind.try_quote(&dst_path).context("Shell 引用")?;
 
         let script = if let Some(tmp_path) = orig_tmp_path.strip_suffix(".zip") {
             let orig_tmp_path = shell_kind
                 .try_quote(&orig_tmp_path)
-                .context("shell quoting")?;
-            let tmp_path = shell_kind.try_quote(tmp_path).context("shell quoting")?;
+                .context("Shell 引用")?;
+            let tmp_path = shell_kind.try_quote(tmp_path).context("Shell 引用")?;
             let tmp_exe_path = format!("{tmp_path}\\remote_server.exe");
             let tmp_exe_path = shell_kind
                 .try_quote(&tmp_exe_path)
-                .context("shell quoting")?;
+                .context("Shell 引用")?;
             format!(
                 "Expand-Archive -Force -Path {orig_tmp_path} -DestinationPath {tmp_path} -ErrorAction Stop; Move-Item -Force {tmp_exe_path} {dst_path}; Remove-Item -Force {tmp_path} -Recurse; Remove-Item -Force {orig_tmp_path}",
             )
         } else {
             let orig_tmp_path = shell_kind
                 .try_quote(&orig_tmp_path)
-                .context("shell quoting")?;
+                .context("Shell 引用")?;
             format!("Move-Item -Force {orig_tmp_path} {dst_path}")
         };
 
@@ -1216,7 +1216,7 @@ impl SshRemoteConnection {
     }
 
     async fn upload_file(&self, src_path: &Path, dest_path: &RelPath) -> Result<()> {
-        log::debug!("uploading file {:?} to {:?}", src_path, dest_path);
+        log::debug!("正在将文件 {:?} 上传到 {:?}", src_path, dest_path);
 
         let src_path_display = src_path.display().to_string();
         let dest_path_str = dest_path.display(self.path_style());
@@ -1228,7 +1228,7 @@ impl SshRemoteConnection {
         // This is for example the case on Windows as evidenced by this implementation snippet:
         // https://github.com/PowerShell/openssh-portable/blob/b8c08ef9da9450a94a9c5ef717d96a7bd83f3332/sshconnect2.c#L417
         if Self::is_sftp_available().await {
-            log::debug!("using SFTP for file upload");
+            log::debug!("正在使用 SFTP 上传文件");
             let mut command = self.build_sftp_command();
             let sftp_batch = format!("put {src_path_display} {dest_path_str}\n");
 
@@ -1246,11 +1246,11 @@ impl SshRemoteConnection {
 
             let stderr = String::from_utf8_lossy(&output.stderr);
             log::debug!(
-                "failed to upload file via SFTP {src_path_display} -> {dest_path_str}: {stderr}"
+                "通过 SFTP 上传文件失败 {src_path_display} -> {dest_path_str}: {stderr}"
             );
         }
 
-        log::debug!("using SCP for file upload");
+        log::debug!("正在使用 SCP 上传文件");
         let mut command = self.build_scp_command(src_path, &dest_path_str, None);
         let output = command.output().await?;
 
@@ -1260,10 +1260,10 @@ impl SshRemoteConnection {
 
         let stderr = String::from_utf8_lossy(&output.stderr);
         log::debug!(
-            "failed to upload file via SCP {src_path_display} -> {dest_path_str}: {stderr}",
+            "通过 SCP 上传文件失败 {src_path_display} -> {dest_path_str}: {stderr}",
         );
         anyhow::bail!(
-            "failed to upload file via STFP/SCP {} -> {}: {}",
+            "通过 SFTP/SCP 上传文件失败 {} -> {}: {}",
             src_path_display,
             dest_path_str,
             stderr,
@@ -1330,16 +1330,16 @@ impl SshSocket {
         let program = shell_kind.prepend_command_prefix(program);
         let mut to_run = shell_kind
             .try_quote_prefix_aware(&program)
-            .expect("shell quoting")
+            .expect("Shell 引用")
             .into_owned();
         for arg in args {
             // We're trying to work with: sh, bash, zsh, fish, tcsh, ...?
             debug_assert!(
                 !arg.as_ref().contains('\n'),
-                "multiline arguments do not work in all shells"
+                "多行参数并非在所有 Shell 中都能使用"
             );
             to_run.push(' ');
-            to_run.push_str(&shell_kind.try_quote(arg.as_ref()).expect("shell quoting"));
+            to_run.push_str(&shell_kind.try_quote(arg.as_ref()).expect("Shell 引用"));
         }
         let to_run = if shell_kind == ShellKind::Cmd {
             to_run // 'cd' prints the current directory in CMD
@@ -1369,7 +1369,7 @@ impl SshSocket {
         log::debug!("{:?}: {:?}", command, output);
         anyhow::ensure!(
             output.status.success(),
-            "failed to run command {command:?}: {}",
+            "运行命令 {command:?} 失败: {}",
             String::from_utf8_lossy(&output.stderr)
         );
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
@@ -1441,7 +1441,7 @@ impl SshSocket {
         let output = self
             .run_command(shell, "uname", &["-sm"], false)
             .await
-            .context("Failed to run 'uname -sm' to determine platform")?;
+            .context("运行 'uname -sm' 以确定平台失败")?;
         parse_platform(&output)
     }
 
@@ -1453,7 +1453,7 @@ impl SshSocket {
         match self.run_command(shell, program, args, false).await {
             Ok(output) => super::parse_os_version(os, &output),
             Err(error) => {
-                log::warn!("Failed to determine remote OS version: {error:#}");
+                log::warn!("无法确定远程操作系统版本: {error:#}");
                 None
             }
         }
@@ -1469,7 +1469,7 @@ impl SshSocket {
             )
             .await
             .context(
-                "Failed to run 'echo %PROCESSOR_ARCHITECTURE%' to determine Windows architecture",
+                "运行 'echo %PROCESSOR_ARCHITECTURE%' 以确定 Windows 架构失败",
             )?;
 
         Ok(RemotePlatform {
@@ -1478,7 +1478,7 @@ impl SshSocket {
                 "AMD64" => RemoteArch::X86_64,
                 "ARM64" => RemoteArch::Aarch64,
                 arch => anyhow::bail!(
-                    "Prebuilt remote servers are not yet available for windows-{arch}. See https://zed.dev/docs/remote-development"
+                    "暂不提供适用于 windows-{arch} 的预构建远程服务器。请参阅 https://zed.dev/docs/remote-development"
                 ),
             },
         })
@@ -1515,7 +1515,7 @@ impl SshSocket {
         {
             Ok(output) => parse_shell(&output, DEFAULT_SHELL),
             Err(e) => {
-                log::error!("Failed to detect remote shell: {e}");
+                log::error!("无法检测远程 Shell: {e}");
                 DEFAULT_SHELL.to_owned()
             }
         }
@@ -1543,7 +1543,7 @@ impl SshSocket {
         {
             Ok(output) => parse_shell(&output, DEFAULT_SHELL),
             Err(e) => {
-                log::error!("Failed to detect remote shell: {e}");
+                log::error!("无法检测远程 Shell: {e}");
                 DEFAULT_SHELL.to_owned()
             }
         }
@@ -1553,7 +1553,7 @@ impl SshSocket {
 fn parse_port_number(port_str: &str) -> Result<u16> {
     port_str
         .parse()
-        .with_context(|| format!("parsing port number: {port_str}"))
+        .with_context(|| format!("解析端口号: {port_str}"))
 }
 
 fn split_port_forward_tokens(spec: &str) -> Result<Vec<String>> {
@@ -1568,7 +1568,7 @@ fn split_port_forward_tokens(spec: &str) -> Result<Vec<String>> {
                 match chars.next() {
                     Some(']') => break,
                     Some(ch) => bracket_content.push(ch),
-                    None => anyhow::bail!("Unmatched '[' in port forward spec: {spec}"),
+                    None => anyhow::bail!("端口转发规范中 '[' 不匹配: {spec}"),
                 }
             }
             tokens.push(bracket_content);
@@ -1620,7 +1620,7 @@ fn parse_port_forward_spec(spec: &str) -> Result<SshPortForwardOption> {
                 remote_port,
             })
         }
-        _ => anyhow::bail!("Invalid port forward format: {spec}"),
+        _ => anyhow::bail!("无效的端口转发格式: {spec}"),
     }
 }
 
@@ -1644,7 +1644,7 @@ impl SshConnectionOptions {
 
         let mut tokens = ShellKind::Posix
             .split(input)
-            .context("invalid input")?
+            .context("无效输入")?
             .into_iter();
 
         'outer: while let Some(arg) = tokens.next() {
@@ -1676,7 +1676,7 @@ impl SshConnectionOptions {
                 if let Some(spec) = forward_spec {
                     port_forwards.push(parse_port_forward_spec(&spec)?);
                 } else {
-                    anyhow::bail!("Missing port forward format");
+                    anyhow::bail!("缺少端口转发格式");
                 }
             }
 
@@ -1693,7 +1693,7 @@ impl SshConnectionOptions {
                 }
             }
             if arg.starts_with("-") || hostname.is_some() {
-                anyhow::bail!("unsupported argument: {:?}", arg);
+                anyhow::bail!("不支持的参数: {:?}", arg);
             }
             let mut input = &arg as &str;
             // Destination might be: username1@username2@ip2@ip1
@@ -1723,7 +1723,7 @@ impl SshConnectionOptions {
         }
 
         let Some(hostname) = hostname else {
-            anyhow::bail!("missing hostname");
+            anyhow::bail!("缺少主机名");
         };
 
         let port_forwards = match port_forwards.len() {
@@ -1855,7 +1855,7 @@ fn build_command_posix(
             } else {
                 let quoted_remainder = ssh_shell_kind
                     .try_quote(remainder)
-                    .context("shell quoting")?;
+                    .context("Shell 引用")?;
                 write!(
                     exec,
                     "cd \"$HOME\"/{quoted_remainder} {} ",
@@ -1865,7 +1865,7 @@ fn build_command_posix(
         } else {
             let quoted_dir = ssh_shell_kind
                 .try_quote(&working_dir)
-                .context("shell quoting")?;
+                .context("Shell 引用")?;
             write!(
                 exec,
                 "cd {quoted_dir} {} ",
@@ -1885,7 +1885,7 @@ fn build_command_posix(
         let assignment = format!("{k}={v}");
         let assignment = ssh_shell_kind
             .try_quote(&assignment)
-            .context("shell quoting")?;
+            .context("Shell 引用")?;
         write!(exec, "{assignment} ")?;
     }
 
@@ -1895,10 +1895,10 @@ fn build_command_posix(
             "{}",
             ssh_shell_kind
                 .try_quote_prefix_aware(&input_program)
-                .context("shell quoting")?
+                .context("Shell 引用")?
         )?;
         for arg in input_args {
-            let arg = ssh_shell_kind.try_quote(&arg).context("shell quoting")?;
+            let arg = ssh_shell_kind.try_quote(&arg).context("Shell 引用")?;
             write!(exec, " {}", &arg)?;
         }
     } else {
@@ -1966,7 +1966,7 @@ fn build_command_windows(
             "Set-Location -Path {} {} ",
             shell_kind
                 .try_quote(&working_dir)
-                .context("shell quoting")?,
+                .context("Shell 引用")?,
             shell_kind.sequential_and_commands_separator()
         )?;
     }
@@ -1978,7 +1978,7 @@ fn build_command_windows(
     //         exec,
     //         "$env:{}={} {} ",
     //         k,
-    //         shell_kind.try_quote(v).context("shell quoting")?,
+    //         shell_kind.try_quote(v).context("Shell 引用")?,
     //         shell_kind.sequential_and_commands_separator()
     //     )?;
     // }
@@ -1989,10 +1989,10 @@ fn build_command_windows(
             "{}",
             shell_kind
                 .try_quote_prefix_aware(&shell_kind.prepend_command_prefix(&input_program))
-                .context("shell quoting")?
+                .context("Shell 引用")?
         )?;
         for arg in input_args {
-            let arg = shell_kind.try_quote(arg).context("shell quoting")?;
+            let arg = shell_kind.try_quote(arg).context("Shell 引用")?;
             write!(exec, " {}", &arg)?;
         }
     } else {
@@ -2166,10 +2166,10 @@ mod tests {
         let remote_command = command
             .args
             .last()
-            .context("missing remote command argument")?;
+            .context("缺少远程命令参数")?;
         assert!(
             remote_command.contains("exec env 'ZED$(echo foo)=value' remote_program"),
-            "expected env assignment to be quoted, got: {remote_command}"
+            "预期环境变量赋值应加引号,实际为:{remote_command}"
         );
 
         Ok(())
@@ -2197,7 +2197,7 @@ mod tests {
         let ssh_args = options.additional_args();
         assert!(
             ssh_args.iter().any(|arg| arg.starts_with("-L")),
-            "expected ssh args to include port-forward: {ssh_args:?}"
+            "预期 ssh 参数包含端口转发:{ssh_args:?}"
         );
 
         let scp_args = options.additional_args_for_scp();
@@ -2297,7 +2297,7 @@ mod tests {
         let args = options.additional_args();
         assert!(
             args.iter().any(|arg| arg == "-L[::1]:8080:[::1]:80"),
-            "expected bracketed IPv6 in -L flag: {args:?}"
+            "预期 -L 标志中包含带括号的 IPv6 地址:{args:?}"
         );
     }
 
@@ -2320,7 +2320,7 @@ mod tests {
 
         assert!(
             command.args.iter().any(|arg| arg == "8080:[::1]:80"),
-            "expected bracketed IPv6 in port forward arg: {:?}",
+            "预期端口转发参数中包含带括号的 IPv6 地址:{:?}",
             command.args
         );
 

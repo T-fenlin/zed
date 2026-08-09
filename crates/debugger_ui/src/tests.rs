@@ -66,7 +66,7 @@ pub async fn init_test_workspace(
         })
         .unwrap()
         .await
-        .expect("Failed to load debug panel");
+        .expect("无法加载调试面板");
 
     let terminal_panel = workspace_handle
         .update(cx, |multi, window, cx| {
@@ -77,7 +77,7 @@ pub async fn init_test_workspace(
         })
         .unwrap()
         .await
-        .expect("Failed to load terminal panel");
+        .expect("无法加载终端面板");
 
     workspace_handle
         .update(cx, |multi, window, cx| {
@@ -141,7 +141,7 @@ pub fn start_debug_session_with<T: Fn(&Arc<DebugAdapterClient>) + 'static>(
             })
             .map(|session| session.read(cx).running_state().read(cx).session())
             .cloned()
-            .context("Failed to get active session")
+            .context("无法获取活动会话")
     })??;
 
     Ok(session)

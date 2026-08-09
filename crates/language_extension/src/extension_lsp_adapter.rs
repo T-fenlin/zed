@@ -126,7 +126,7 @@ impl ExtensionLanguageServerProxy for LanguageServerRegistryProxy {
         status: BinaryStatus,
     ) {
         log::debug!(
-            "updating binary status for {} to {:?}",
+            "正在将 {} 的二进制状态更新为 {:?}",
             language_server_id,
             status
         );
@@ -216,7 +216,7 @@ impl DynLspInstaller for ExtensionLspAdapter {
                 {
                     make_file_executable(&path)
                         .await
-                        .context("failed to set file permissions")?;
+                        .context("无法设置文件权限")?;
                 }
 
                 Ok(LanguageServerBinary {
@@ -325,7 +325,7 @@ impl LspAdapter for ExtensionLspAdapter {
             .await?;
         Ok(if let Some(json_options) = json_options {
             serde_json::from_str(&json_options).with_context(|| {
-                format!("failed to parse initialization_options from extension: {json_options}")
+                format!("无法解析扩展中的 initialization_options: {json_options}")
             })?
         } else {
             None
@@ -346,7 +346,7 @@ impl LspAdapter for ExtensionLspAdapter {
             .await?;
         Ok(if let Some(json_options) = json_options {
             serde_json::from_str(&json_options).with_context(|| {
-                format!("failed to parse workspace_configuration from extension: {json_options}")
+                format!("无法解析扩展中的 workspace_configuration: {json_options}")
             })?
         } else {
             serde_json::json!({})
@@ -408,7 +408,7 @@ impl LspAdapter for ExtensionLspAdapter {
         Ok(if let Some(json_options) = json_options {
             serde_json::from_str(&json_options).with_context(|| {
                 format!(
-                    "failed to parse additional_initialization_options from extension: {json_options}"
+                    "无法解析扩展中的 additional_initialization_options: {json_options}"
                 )
             })?
         } else {
@@ -435,7 +435,7 @@ impl LspAdapter for ExtensionLspAdapter {
             .await?;
         Ok(if let Some(json_options) = json_options {
             serde_json::from_str(&json_options).with_context(|| {
-                format!("failed to parse additional_workspace_configuration from extension: {json_options}")
+                format!("无法解析扩展中的 additional_workspace_configuration: {json_options}")
             })?
         } else {
             None

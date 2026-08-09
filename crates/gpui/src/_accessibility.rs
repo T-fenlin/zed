@@ -1,6 +1,6 @@
 //! # Accessibility in GPUI
 //!
-//! "Accessibility" refers to the ability of your application to be used by all
+//! "无障碍" refers to the ability of your application to be used by all
 //! users, regardless of disability status. There are many aspects, all important, including:
 //! - Ensuring sufficient text contrast.
 //! - Providing a mechanism to disable animations.
@@ -92,7 +92,7 @@
 //!     );
 //! ```
 //! Logically, the UI has not changed. But the screen reader has no way of
-//! knowing that both child [`div`]s are "the same". So assistive technology
+//! knowing that both child [`div`]s are "相同". So assistive technology
 //! will interpret this as one node being removed, and another node being added.
 //! This can be very disorienting for users, since announcements typically only
 //! happen when something has *meaningfully* changed.
@@ -135,7 +135,7 @@
 //! This can produce surprising behaviour. For example, this footgun:
 //! ```rust
 //! # use gpui::*;
-//! let todos = vec!["eat lunch", "drink water", "go to gym"];
+//! let todos = vec!["eat lunch", "喝水", "去健身房"];
 //! let todo_divs = todos.into_iter().map(|todo| {
 //!     text!(todo)
 //! });
@@ -154,7 +154,7 @@
 //! To fix this, you can set an ID:
 //! ```rust
 //! # use gpui::*;
-//! let todos = vec!["eat lunch", "drink water", "go to gym"];
+//! let todos = vec!["吃午饭", "喝水", "去健身房"];
 //! let todo_divs = todos.into_iter().enumerate().map(|(index, todo)| {
 //!     text!(todo).with_id(index)  // OR `text(id = index, todo)`
 //! });
@@ -168,7 +168,7 @@
 //! *does* have a unique global ID. For example:
 //! ```rust
 //! # use gpui::*;
-//! let todos = vec!["eat lunch", "drink water", "go to gym"];
+//! let todos = vec!["吃午饭", "喝水", "去健身房"];
 //! let todo_divs = todos.into_iter().enumerate().map(|(index, todo)| {
 //!     div().id(index).child(text!(todo))
 //! });

@@ -1892,7 +1892,7 @@ pub fn parse_zeta2_model_output(
         ),
         ZetaFormat::V0615HashRegions => {
             anyhow::bail!(
-                "V0615HashRegions output addresses related-file context; use parse_zeta2_model_output_as_patch"
+                "V0615HashRegions 输出处理相关文件上下文;请使用 parse_zeta2_model_output_as_patch"
             )
         }
         _ => (editable_range_in_context, output.to_string()),
@@ -1924,7 +1924,7 @@ pub fn parse_zeta3_model_output_as_patch(
 ) -> Result<String> {
     match format {
         ZetaFormat::V0318SeedMultiRegions => {}
-        _ => anyhow::bail!("unsupported Zeta3 output format: {format}"),
+        _ => anyhow::bail!("不支持的 Zeta3 输出格式:{format}"),
     }
 
     let output = match output_end_marker_for_format(format) {
@@ -1932,7 +1932,7 @@ pub fn parse_zeta3_model_output_as_patch(
         None => output,
     };
     let (current_excerpt, cursor_offset_in_excerpt) = zeta3_current_file_excerpt(input)
-        .ok_or_else(|| anyhow!("Zeta3 input is missing current-file editable context at cursor"))?;
+        .ok_or_else(|| anyhow!("Zeta3 输入缺少光标处的当前文件可编辑上下文"))?;
     let (context, editable_range_in_context, context_range, _) = resolve_zeta3_cursor_region(
         current_excerpt.text.as_ref(),
         cursor_offset_in_excerpt,
@@ -3340,7 +3340,7 @@ pub mod hashline {
                     &case.editable_range,
                     case.cursor_offset,
                 );
-                assert_eq!(prompt, case.expected, "failed case: {}", case.name);
+                assert_eq!(prompt, case.expected, "失败的用例:{}", case.name);
             }
         }
 
@@ -3711,7 +3711,7 @@ pub mod hashline {
 
             for case in &cases {
                 let result = hashline::apply_edit_commands(case.original, &case.model_output);
-                assert_eq!(result, case.expected, "failed case: {}", case.name);
+                assert_eq!(result, case.expected, "失败的用例:{}", case.name);
             }
         }
 
@@ -4022,16 +4022,16 @@ pub mod hashline {
 
                 let commands =
                     hashline::patch_to_edit_commands(case.old, case.patch, cursor_offset)
-                        .unwrap_or_else(|e| panic!("failed case {}: {e}", case.name));
+                        .unwrap_or_else(|e| panic!("失败的用例 {}:{e}", case.name));
 
                 assert!(
                     hashline::output_has_edit_commands(&commands),
-                    "case {}: expected edit commands, got: {commands:?}",
+                    "用例 {}:期望编辑命令,实际得到:{commands:?}",
                     case.name,
                 );
 
                 let applied = hashline::apply_edit_commands(case.old, &commands);
-                assert_eq!(applied, case.expected_new, "case {}", case.name);
+                assert_eq!(applied, case.expected_new, "用例 {}", case.name);
             }
         }
     }
@@ -4389,7 +4389,7 @@ pub mod v0304_variable_edit {
         let (prefix_context, rest) = model_output
             .split_once("<|fim_middle|>\n")
             .or_else(|| model_output.split_once("<|fim_middle|>"))
-            .ok_or_else(|| anyhow::anyhow!("missing <|fim_middle|> in model output"))?;
+            .ok_or_else(|| anyhow::anyhow!("模型输出中缺少 <|fim_middle|>"))?;
 
         let (new_text, suffix_context) = rest
             .split_once("<|fim_suffix|>\n")
@@ -4403,13 +4403,13 @@ pub mod v0304_variable_edit {
         };
 
         let prefix_offset = find_substring_at_line_boundary(context, prefix_context)
-            .ok_or_else(|| anyhow!("could not locate prefix lines"))?
+            .ok_or_else(|| anyhow!("无法定位前缀行"))?
             + prefix_context.len();
         let suffix_offset = if suffix_context.is_empty() {
             context.len()
         } else {
             find_substring_at_line_boundary(&context[prefix_offset..], suffix_context)
-                .ok_or_else(|| anyhow!("could not locate suffix lines"))?
+                .ok_or_else(|| anyhow!("无法定位后缀行"))?
                 + prefix_offset
         };
 
@@ -4459,7 +4459,7 @@ pub mod v0304_variable_edit {
             let context_pos = new_text[search_from..]
                 .find(&hunk.old_context)
                 .map(|pos| pos + search_from)
-                .ok_or_else(|| anyhow::anyhow!("could not locate hunk context in text"))?;
+                .ok_or_else(|| anyhow::anyhow!("无法在文本中定位代码块上下文"))?;
 
             if first_hunk_pos.is_none() {
                 first_hunk_pos = Some(context_pos);
@@ -5260,23 +5260,23 @@ pub mod v0304_variable_edit {
                 let output =
                     patch_to_variable_edit_output(case.old, case.patch, case.cursor_offset)
                         .unwrap_or_else(|error| {
-                            panic!("failed converting patch for {}: {error}", case.name)
+                            panic!("转换 {} 的补丁失败:{error}", case.name)
                         });
                 assert_eq!(
                     output, case.expected_variable_edit,
-                    "patch->variable_edit mismatch for {}",
+                    "{} 的补丁与变量编辑不匹配",
                     case.name
                 );
 
                 let (edit_range, replacement) = apply_variable_edit(case.old, &output)
                     .unwrap_or_else(|error| {
-                        panic!("failed applying variable_edit for {}: {error}", case.name)
+                        panic!("应用 {} 的变量编辑失败:{error}", case.name)
                     });
                 let mut edited_by_variable_edit = case.old.to_string();
                 edited_by_variable_edit.replace_range(edit_range, &replacement);
                 assert_eq!(
                     edited_by_variable_edit, case.expected_after_apply,
-                    "variable_edit apply mismatch for {}",
+                    "{} 的变量编辑应用不匹配",
                     case.name
                 );
 
@@ -5284,7 +5284,7 @@ pub mod v0304_variable_edit {
                     apply_variable_edit(case.old, case.expected_variable_edit).unwrap_or_else(
                         |error| {
                             panic!(
-                                "failed applying expected variable_edit for {}: {error}",
+                                "应用 {} 的预期变量编辑失败:{error}",
                                 case.name
                             )
                         },
@@ -5294,7 +5294,7 @@ pub mod v0304_variable_edit {
                     .replace_range(expected_edit_range, &expected_replacement);
                 assert_eq!(
                     edited_by_expected_variable_edit, case.expected_after_apply,
-                    "expected variable_edit apply mismatch for {}",
+                    "{} 的预期变量编辑应用不匹配",
                     case.name
                 );
             }
@@ -5327,8 +5327,8 @@ pub mod zeta1 {
 
     const INSTRUCTION_HEADER: &str = concat!(
         "### Instruction:\n",
-        "You are a code completion assistant and your task is to analyze user edits and then rewrite an ",
-        "excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking ",
+        "你是一个代码补全助手,你的任务是分析用户的编辑,然后重写用户提供的摘录,",
+        "在摘录中建议合适的编辑,同时考虑光标位置。\n\n",
         "into account the cursor location.\n\n",
         "### User Edits:\n\n"
     );
@@ -6756,8 +6756,8 @@ mod tests {
             prompt,
             concat!(
                 "### Instruction:\n",
-                "You are a code completion assistant and your task is to analyze user edits and then rewrite an ",
-                "excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking ",
+                "你是一个代码补全助手,你的任务是分析用户的编辑,然后重写用户提供的摘录,",
+                "在摘录中建议合适的编辑,同时考虑光标位置。\n\n",
                 "into account the cursor location.\n",
                 "\n",
                 "### User Edits:\n",
@@ -6820,8 +6820,8 @@ mod tests {
             prompt,
             concat!(
                 "### Instruction:\n",
-                "You are a code completion assistant and your task is to analyze user edits and then rewrite an ",
-                "excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking ",
+                "你是一个代码补全助手,你的任务是分析用户的编辑,然后重写用户提供的摘录,",
+                "在摘录中建议合适的编辑,同时考虑光标位置。\n\n",
                 "into account the cursor location.\n",
                 "\n",
                 "### User Edits:\n",
@@ -6879,8 +6879,8 @@ mod tests {
             prompt,
             concat!(
                 "### Instruction:\n",
-                "You are a code completion assistant and your task is to analyze user edits and then rewrite an ",
-                "excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking ",
+                "你是一个代码补全助手,你的任务是分析用户的编辑,然后重写用户提供的摘录,",
+                "在摘录中建议合适的编辑,同时考虑光标位置。\n\n",
                 "into account the cursor location.\n",
                 "\n",
                 "### User Edits:\n",

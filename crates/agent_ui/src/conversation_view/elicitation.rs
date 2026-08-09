@@ -238,7 +238,7 @@ impl ElicitationFormSubmission {
                 ) => {
                     if value.is_empty() {
                         if is_required {
-                            Err(format!("{} is required", property_title(name, property)).into())
+                            Err(format!("{}是必填项", property_title(name, property)).into())
                         } else {
                             Ok(None)
                         }
@@ -258,7 +258,7 @@ impl ElicitationFormSubmission {
                             })
                             .map(|()| Some(value.clone().into()))
                     } else if is_required {
-                        Err(format!("{} is required", property_title(name, property)).into())
+                        Err(format!("{}是必填项", property_title(name, property)).into())
                     } else {
                         Ok(None)
                     }
@@ -270,7 +270,7 @@ impl ElicitationFormSubmission {
                     let value = value.trim();
                     if value.is_empty() {
                         if is_required {
-                            Err(format!("{} is required", property_title(name, property)).into())
+                            Err(format!("{}是必填项", property_title(name, property)).into())
                         } else {
                             Ok(None)
                         }
@@ -286,7 +286,7 @@ impl ElicitationFormSubmission {
                     let value = value.trim();
                     if value.is_empty() {
                         if is_required {
-                            Err(format!("{} is required", property_title(name, property)).into())
+                            Err(format!("{}是必填项", property_title(name, property)).into())
                         } else {
                             Ok(None)
                         }
@@ -323,7 +323,7 @@ impl ElicitationFormSubmission {
                         .is_some_and(|min_items| values.len() < min_items as usize)
                     {
                         Err(
-                            format!("{} needs more selections", property_title(name, property))
+                            format!("{}需要更多选择", property_title(name, property))
                                 .into(),
                         )
                     } else if schema
@@ -331,7 +331,7 @@ impl ElicitationFormSubmission {
                         .is_some_and(|max_items| values.len() > max_items as usize)
                     {
                         Err(
-                            format!("{} has too many selections", property_title(name, property))
+                            format!("{}选择过多", property_title(name, property))
                                 .into(),
                         )
                     } else {
@@ -375,7 +375,7 @@ mod tests {
             validate_string_value("Email".into(), &schema, "not-an-email")
                 .expect_err("invalid email should be rejected")
                 .to_string(),
-            "Email must be an email address"
+            "Email必须是有效的电子邮件地址"
         );
     }
 
@@ -389,7 +389,7 @@ mod tests {
             validate_string_value("Environment".into(), &schema, "dev-42")
                 .expect_err("pattern mismatch should be rejected")
                 .to_string(),
-            "Environment does not match the requested pattern"
+            "Environment不符合要求的模式"
         );
     }
 
@@ -403,7 +403,7 @@ mod tests {
             validate_string_value("Environment".into(), &schema, "prod-45")
                 .expect_err("backreference mismatch should be rejected")
                 .to_string(),
-            "Environment does not match the requested pattern"
+            "Environment不符合要求的模式"
         );
     }
 
@@ -415,7 +415,7 @@ mod tests {
             validate_string_value("Value".into(), &oversized_pattern, "a")
                 .expect_err("oversized pattern should be rejected")
                 .to_string(),
-            "Value has an invalid validation pattern"
+            "Value包含无效的验证模式"
         );
 
         let schema = acp::StringPropertySchema::new().pattern(".*");
@@ -424,7 +424,7 @@ mod tests {
             validate_string_value("Value".into(), &schema, &oversized_value)
                 .expect_err("oversized pattern input should be rejected")
                 .to_string(),
-            "Value is too long to validate safely"
+            "Value过长,无法安全验证"
         );
     }
 
@@ -443,7 +443,7 @@ mod tests {
                 validate_number_value("Amount".into(), &schema, value)
                     .expect_err("non-finite number should be rejected")
                     .to_string(),
-                "Amount must be a finite number"
+                "Amount必须是有限数字"
             );
         }
     }
@@ -457,7 +457,7 @@ mod tests {
                     preview_request_scope(0),
                     acp::ElicitationSchema::new(),
                 ),
-                "Review this request.",
+                "审查此请求。",
             ),
             status: pending_status(),
         };
@@ -471,7 +471,7 @@ mod tests {
                     acp::ElicitationId::new("accepted-url"),
                     "https://auth.example.com/device",
                 ),
-                "Authorize Zed in your browser.",
+                "在浏览器中授权 Zed。",
             ),
             status: ElicitationStatus::Accepted,
         };
@@ -484,7 +484,7 @@ mod tests {
                     preview_request_scope(2),
                     acp::ElicitationSchema::new(),
                 ),
-                "Review this request.",
+                "审查此请求。",
             ),
             status: ElicitationStatus::Accepted,
         };
@@ -494,7 +494,7 @@ mod tests {
             id: ElicitationEntryId("pending-unknown".into()),
             request: acp::CreateElicitationRequest::new(
                 acp::OtherElicitationMode::new("future", preview_request_scope(3), BTreeMap::new()),
-                "Use a future input mode.",
+                "使用未来的输入模式。",
             ),
             status: pending_status(),
         };
@@ -569,7 +569,7 @@ mod tests {
     #[test]
     fn single_select_options_include_titled_descriptions() {
         let schema = acp::StringPropertySchema::new().one_of(vec![
-            acp::EnumOption::new("production", "Production").description("Use live resources"),
+            acp::EnumOption::new("production", "Production").description("使用实时资源"),
         ]);
 
         let options = single_select_options(&schema);
@@ -584,15 +584,15 @@ mod tests {
                 .description
                 .as_ref()
                 .map(|description| description.to_string()),
-            Some("Use live resources".to_string())
+            Some("使用实时资源".to_string())
         );
     }
 
     #[test]
     fn multi_select_options_include_titled_descriptions() {
         let schema = acp::MultiSelectPropertySchema::titled(vec![
-            acp::EnumOption::new("repository", "Repository Access")
-                .description("Read and update repositories"),
+            acp::EnumOption::new("repository", "仓库访问权限")
+                .description("读取和更新仓库"),
         ]);
 
         let options = multi_select_options(&schema);
@@ -601,13 +601,13 @@ mod tests {
             panic!("expected one option, got {}", options.len());
         };
         assert_eq!(option.value, "repository");
-        assert_eq!(option.label.to_string(), "Repository Access");
+        assert_eq!(option.label.to_string(), "仓库访问权限");
         assert_eq!(
             option
                 .description
                 .as_ref()
                 .map(|description| description.to_string()),
-            Some("Read and update repositories".to_string())
+            Some("读取和更新仓库".to_string())
         );
     }
 
@@ -761,7 +761,7 @@ mod tests {
                     .get("environment")
                     .expect("environment should have an error")
                     .to_string(),
-                "Environment must be one of the provided options"
+                "Environment必须是提供的选项之一"
             );
 
             Editor::single_line(window, cx)
@@ -801,21 +801,21 @@ mod tests {
                     .get("account")
                     .expect("account should have an error")
                     .to_string(),
-                "account is required"
+                "account是必填项"
             );
             assert_eq!(
                 errors
                     .get("age")
                     .expect("age should have an error")
                     .to_string(),
-                "Age must be an integer"
+                "Age必须是整数"
             );
             assert_eq!(
                 errors
                     .get("environment")
                     .expect("environment should have an error")
                     .to_string(),
-                "Environment must be one of the provided options"
+                "Environment必须是提供的选项之一"
             );
 
             Editor::single_line(window, cx)
@@ -832,7 +832,7 @@ impl Component for ElicitationCardPreview {
     }
 
     fn description() -> &'static str {
-        "ACP elicitation request cards as rendered in the agent panel."
+        "ACP 请求卡片在代理面板中的渲染效果。"
     }
 
     fn preview(window: &mut Window, cx: &mut App) -> AnyElement {
@@ -840,22 +840,22 @@ impl Component for ElicitationCardPreview {
             .gap_6()
             .children([
                 example_group_with_title(
-                    "Form Requests",
+                    "表单请求",
                     vec![
                         single_example(
-                            "Pending Form",
+                            "待处理表单",
                             render_form_preview(0, pending_status(), &[], window, cx),
                         )
                         .width(px(640.)),
                         single_example(
-                            "Validation Errors",
+                            "验证错误",
                             render_form_preview(
                                 1,
                                 pending_status(),
                                 &[
-                                    ("account_name", "Account name is required"),
-                                    ("environment", "Choose an environment"),
-                                    ("scopes", "Choose at least one access scope"),
+                                    ("account_name", "账户名是必填项"),
+                                    ("environment", "选择环境"),
+                                    ("scopes", "至少选择一个访问范围"),
                                 ],
                                 window,
                                 cx,
@@ -867,10 +867,10 @@ impl Component for ElicitationCardPreview {
                 .vertical()
                 .into_any_element(),
                 example_group_with_title(
-                    "URL Requests",
+                    "URL 请求",
                     vec![
                         single_example(
-                            "URL Consent",
+                            "URL 授权",
                             render_url_preview(3, pending_status(), window, cx),
                         )
                         .width(px(640.)),
@@ -879,15 +879,15 @@ impl Component for ElicitationCardPreview {
                 .vertical()
                 .into_any_element(),
                 example_group_with_title(
-                    "Terminal States",
+                    "终端状态",
                     vec![
                         single_example(
-                            "Declined",
+                            "已拒绝",
                             render_form_preview(6, ElicitationStatus::Declined, &[], window, cx),
                         )
                         .width(px(640.)),
                         single_example(
-                            "Canceled",
+                            "已取消",
                             render_form_preview(7, ElicitationStatus::Canceled, &[], window, cx),
                         )
                         .width(px(640.)),
@@ -909,7 +909,7 @@ fn render_form_preview(
 ) -> AnyElement {
     let request = acp::CreateElicitationRequest::new(
         acp::ElicitationFormMode::new(preview_request_scope(entry_ix), preview_form_schema()),
-        "Choose how Zed should connect to this account.",
+        "选择 Zed 应如何连接到此账户。",
     );
     let mut form_state = matches!(status, ElicitationStatus::Pending { .. }).then(|| {
         let acp::ElicitationMode::Form(mode) = &request.mode else {
@@ -942,7 +942,7 @@ fn render_url_preview(
             acp::ElicitationId::new(format!("preview-url-{entry_ix}")),
             preview_url(),
         ),
-        "Authorize Zed in your browser to finish signing in.",
+        "在浏览器中授权 Zed 以完成登录。",
     );
 
     render_preview_card(entry_ix, request, status, None, cx)
@@ -968,7 +968,7 @@ fn render_preview_card(
             ElicitationCard::new(
                 entry_ix,
                 &elicitation,
-                "Example Agent".into(),
+                "示例代理".into(),
                 form_state,
                 ElicitationCardHandlers::noop(),
             )
@@ -991,22 +991,22 @@ fn preview_form_schema() -> acp::ElicitationSchema {
         .property(
             "account_name",
             acp::StringPropertySchema::new()
-                .title("Account Name")
-                .description("Used to label this connection in the agent panel.")
-                .default_value("Work"),
+                .title("账户名")
+                .description("用于在代理面板中标记此连接。")
+                .default_value("工作"),
             true,
         )
         .property(
             "environment",
             acp::StringPropertySchema::new()
                 .title("Environment")
-                .description("Select the environment this credential should target.")
+                .description("选择此凭据应针对的环境。")
                 .one_of(vec![
                     acp::EnumOption::new("production", "Production")
-                        .description("Use the live account and production resources."),
-                    acp::EnumOption::new("staging", "Staging")
-                        .description("Validate changes against staging data first."),
-                    acp::EnumOption::new("development", "Development"),
+                        .description("使用实时账户和生产资源。"),
+                    acp::EnumOption::new("staging", "预发布")
+                        .description("首先针对预发布数据验证更改。"),
+                    acp::EnumOption::new("development", "开发"),
                 ])
                 .default_value("staging"),
             true,
@@ -1014,14 +1014,14 @@ fn preview_form_schema() -> acp::ElicitationSchema {
         .property(
             "scopes",
             acp::MultiSelectPropertySchema::titled(vec![
-                acp::EnumOption::new("profile", "Profile")
-                    .description("Read account identity and basic profile details."),
-                acp::EnumOption::new("repository", "Repository Access")
-                    .description("Read and update repositories connected to this account."),
-                acp::EnumOption::new("terminal", "Terminal Commands"),
+                acp::EnumOption::new("profile", "个人资料")
+                    .description("读取账户身份和基本个人资料详情。"),
+                acp::EnumOption::new("repository", "仓库访问权限")
+                    .description("读取和更新连接到此账户的仓库。"),
+                acp::EnumOption::new("terminal", "终端命令"),
             ])
-            .title("Access")
-            .description("Choose what the agent can use for this authorization.")
+            .title("访问权限")
+            .description("选择代理可以为此授权使用的内容。")
             .min_items(1)
             .default_value(vec!["profile".to_string(), "repository".to_string()]),
             true,
@@ -1029,8 +1029,8 @@ fn preview_form_schema() -> acp::ElicitationSchema {
         .property(
             "remember",
             acp::BooleanPropertySchema::new()
-                .title("Remember Authorization")
-                .description("Store this authorization for future sessions.")
+                .title("记住授权")
+                .description("存储此授权以供将来的会话使用。")
                 .default_value(true),
             false,
         )
@@ -1107,19 +1107,19 @@ fn validate_number_value(
 ) -> Result<f64, SharedString> {
     let parsed = value
         .parse::<f64>()
-        .map_err(|_| SharedString::from(format!("{title} must be a number")))?;
+        .map_err(|_| SharedString::from(format!("{title}必须是数字")))?;
     if !parsed.is_finite() {
-        return Err(format!("{title} must be a finite number").into());
+        return Err(format!("{title}必须是有限数字").into());
     }
     if let Some(minimum) = schema.minimum
         && parsed < minimum
     {
-        return Err(format!("{title} must be at least {minimum}").into());
+        return Err(format!("{title}必须至少为 {minimum}").into());
     }
     if let Some(maximum) = schema.maximum
         && parsed > maximum
     {
-        return Err(format!("{title} must be at most {maximum}").into());
+        return Err(format!("{title}必须至多为 {maximum}").into());
     }
 
     Ok(parsed)
@@ -1132,16 +1132,16 @@ fn validate_integer_value(
 ) -> Result<i64, SharedString> {
     let parsed = value
         .parse::<i64>()
-        .map_err(|_| SharedString::from(format!("{title} must be an integer")))?;
+        .map_err(|_| SharedString::from(format!("{title}必须是整数")))?;
     if let Some(minimum) = schema.minimum
         && parsed < minimum
     {
-        return Err(format!("{title} must be at least {minimum}").into());
+        return Err(format!("{title}必须至少为 {minimum}").into());
     }
     if let Some(maximum) = schema.maximum
         && parsed > maximum
     {
-        return Err(format!("{title} must be at most {maximum}").into());
+        return Err(format!("{title}必须至多为 {maximum}").into());
     }
 
     Ok(parsed)
@@ -1157,13 +1157,13 @@ fn validate_string_value(
         .min_length
         .is_some_and(|min_length| length < min_length as usize)
     {
-        return Err(format!("{title} is too short").into());
+        return Err(format!("{title}太短").into());
     }
     if schema
         .max_length
         .is_some_and(|max_length| length > max_length as usize)
     {
-        return Err(format!("{title} is too long").into());
+        return Err(format!("{title}太长").into());
     }
 
     validate_string_pattern_and_format(title, schema, value)
@@ -1178,7 +1178,7 @@ fn validate_single_select_value(
     if options.iter().any(|option| option.value.as_str() == value) {
         Ok(())
     } else {
-        Err(format!("{title} must be one of the provided options").into())
+        Err(format!("{title}必须是提供的选项之一").into())
     }
 }
 
@@ -1201,10 +1201,10 @@ fn validate_string_pattern_and_format(
         .as_ref()
         .is_some_and(|pattern| pattern.len() > MAX_ELICITATION_PATTERN_BYTES)
     {
-        return Err(format!("{title} has an invalid validation pattern").into());
+        return Err(format!("{title}包含无效的验证模式").into());
     }
     if schema.pattern.is_some() && value.len() > MAX_ELICITATION_PATTERN_INPUT_BYTES {
-        return Err(format!("{title} is too long to validate safely").into());
+        return Err(format!("{title}过长,无法安全验证").into());
     }
 
     let mut validation_schema = serde_json::Map::new();
@@ -1237,9 +1237,9 @@ fn validate_string_pattern_and_format(
         .build(&validation_schema)
         .map_err(|_| {
             if schema.pattern.is_some() {
-                format!("{title} has an invalid validation pattern")
+                format!("{title}包含无效的验证模式")
             } else {
-                format!("{title} has an invalid validation format")
+                format!("{title}包含无效的验证格式")
             }
         })?;
     let value = serde_json::Value::String(value.to_string());
@@ -1248,7 +1248,7 @@ fn validate_string_pattern_and_format(
             error.kind(),
             jsonschema::error::ValidationErrorKind::BacktrackLimitExceeded { .. }
         ) {
-            return Err(format!("{title} has a validation pattern that is too complex").into());
+            return Err(format!("{title}的验证模式过于复杂").into());
         }
     } else {
         return Ok(());
@@ -1258,9 +1258,9 @@ fn validate_string_pattern_and_format(
         schema.pattern.is_some(),
         schema.format.and_then(string_format_label),
     ) {
-        (true, Some(_)) => Err(format!("{title} does not match the requested constraints").into()),
-        (true, None) => Err(format!("{title} does not match the requested pattern").into()),
-        (false, Some(format)) => Err(format!("{title} must be {format}").into()),
+        (true, Some(_)) => Err(format!("{title}不符合要求的约束条件").into()),
+        (true, None) => Err(format!("{title}不符合要求的模式").into()),
+        (false, Some(format)) => Err(format!("{title}必须是{format}").into()),
         (false, None) => Ok(()),
     }
 }
@@ -1277,10 +1277,10 @@ fn string_format_json_name(format: acp::StringFormat) -> Option<&'static str> {
 
 fn string_format_label(format: acp::StringFormat) -> Option<&'static str> {
     match format {
-        acp::StringFormat::Email => Some("an email address"),
-        acp::StringFormat::Uri => Some("a URI"),
-        acp::StringFormat::Date => Some("a date"),
-        acp::StringFormat::DateTime => Some("a date and time"),
+        acp::StringFormat::Email => Some("电子邮件地址"),
+        acp::StringFormat::Uri => Some("URI"),
+        acp::StringFormat::Date => Some("日期"),
+        acp::StringFormat::DateTime => Some("日期和时间"),
         _ => None,
     }
 }
@@ -1464,14 +1464,14 @@ impl<'a> ElicitationCard<'a> {
             (ElicitationStatus::Accepted, acp::ElicitationMode::Url(_))
         );
         let (status_label, status_icon, status_color) = match &self.elicitation.status {
-            ElicitationStatus::Pending { .. } => ("Waiting for input", IconName::Info, Color::Info),
+            ElicitationStatus::Pending { .. } => ("等待输入", IconName::Info, Color::Info),
             ElicitationStatus::Accepted if is_accepted_url => {
-                ("Waiting for completion", IconName::Info, Color::Info)
+                ("等待完成", IconName::Info, Color::Info)
             }
-            ElicitationStatus::Accepted => ("Submitted", IconName::Check, Color::Success),
-            ElicitationStatus::Declined => ("Declined", IconName::Close, Color::Muted),
-            ElicitationStatus::Canceled => ("Canceled", IconName::Circle, Color::Muted),
-            ElicitationStatus::Completed => ("Completed", IconName::Check, Color::Success),
+            ElicitationStatus::Accepted => ("已提交", IconName::Check, Color::Success),
+            ElicitationStatus::Declined => ("已拒绝", IconName::Close, Color::Muted),
+            ElicitationStatus::Canceled => ("已取消", IconName::Circle, Color::Muted),
+            ElicitationStatus::Completed => ("已完成", IconName::Check, Color::Success),
         };
 
         let body = v_flex()
@@ -1513,7 +1513,7 @@ impl<'a> ElicitationCard<'a> {
                                     .color(status_color),
                             )
                             .child(
-                                Label::new(format!("Input Requested by {}", self.requester_name))
+                                Label::new(format!("{}请求输入", self.requester_name))
                                     .size(LabelSize::Custom(tool_name_font_size))
                                     .truncate(),
                             ),
@@ -1884,7 +1884,7 @@ impl<'a> ElicitationCard<'a> {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Label::new("Destination")
+                                    Label::new("目标地址")
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -1904,7 +1904,7 @@ impl<'a> ElicitationCard<'a> {
                                         )
                                         .child(
                                             Label::new(format!(
-                                                "This internationalized address displays as {decoded_host}. Verify it carefully."
+                                                "此国际化地址显示为 {decoded_host}。请仔细核实。"
                                             ))
                                             .size(LabelSize::Small)
                                             .color(Color::Warning),
@@ -1950,11 +1950,11 @@ impl<'a> ElicitationCard<'a> {
             open_url.is_some() && matches!(self.elicitation.status, ElicitationStatus::Accepted);
         let is_submitting = self.form_state.is_some_and(|state| state.is_submitting);
         let (accept_label, accept_icon, accept_icon_color) = if is_accepted_url {
-            ("Open Again", IconName::ArrowUpRight, Color::Muted)
+            ("重新打开", IconName::ArrowUpRight, Color::Muted)
         } else if open_url.is_some() {
-            ("Open", IconName::ArrowUpRight, Color::Muted)
+            ("打开", IconName::ArrowUpRight, Color::Muted)
         } else {
-            ("Submit", IconName::Check, Color::Success)
+            ("提交", IconName::Check, Color::Success)
         };
         let border_color = cx.theme().colors().border.opacity(0.8);
         let on_submit = self.handlers.on_submit.clone();
@@ -1996,7 +1996,7 @@ impl<'a> ElicitationCard<'a> {
             )
             .when(!is_accepted_url, |this| {
                 this.child(
-                    Button::new(("elicitation-decline", self.entry_ix), "Decline")
+                    Button::new(("elicitation-decline", self.entry_ix), "拒绝")
                         .start_icon(
                             Icon::new(IconName::Close)
                                 .size(IconSize::XSmall)
@@ -2008,7 +2008,7 @@ impl<'a> ElicitationCard<'a> {
                         }),
                 )
                 .child(
-                    Button::new(("elicitation-cancel", self.entry_ix), "Cancel")
+                    Button::new(("elicitation-cancel", self.entry_ix), "取消")
                         .label_size(LabelSize::Small)
                         .on_click(move |_, window, cx| {
                             on_cancel(cancel_id.clone(), window, cx);
@@ -2017,7 +2017,7 @@ impl<'a> ElicitationCard<'a> {
             })
             .when(is_accepted_url, |this| {
                 this.child(
-                    Button::new(("elicitation-dismiss-url", self.entry_ix), "Cancel")
+                    Button::new(("elicitation-dismiss-url", self.entry_ix), "取消")
                         .label_size(LabelSize::Small)
                         .on_click(move |_, window, cx| {
                             on_dismiss_url(dismiss_id.clone(), window, cx);

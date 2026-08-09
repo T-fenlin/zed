@@ -60,7 +60,7 @@ pub fn into_google(
                 MessageContent::ToolUse(tool_use) => {
                     let thought_signature = tool_use.thought_signature.filter(|s| !s.is_empty());
                     let LanguageModelToolUseInput::Json(input) = tool_use.input else {
-                        anyhow::bail!("Google AI does not support custom tool calls");
+                        anyhow::bail!("Google AI 不支持自定义工具调用");
                     };
 
                     mapped_parts.push(Part::FunctionCallPart(crate::FunctionCallPart {
@@ -91,7 +91,7 @@ pub fn into_google(
                         }
                     }
                     let output = if text_output.is_empty() && !images.is_empty() {
-                        "Tool responded with an image".to_string()
+                        "工具以图片形式响应".to_string()
                     } else {
                         text_output
                     };
@@ -143,7 +143,7 @@ pub fn into_google(
                         })
                     }
                     LanguageModelRequestToolInput::Custom { .. } => {
-                        Err(anyhow::anyhow!("Google AI does not support custom tools"))
+                        Err(anyhow::anyhow!("Google AI 不支持自定义工具"))
                     }
                 })
                 .collect::<Result<_>>()?,
@@ -324,7 +324,7 @@ impl GoogleEventMapper {
                     StopReason::Refusal
                 }
                 _ => {
-                    log::error!("Unexpected Google block_reason: {block_reason}");
+                    log::error!("意外的 Google block_reason: {block_reason}");
                     StopReason::Refusal
                 }
             };
@@ -357,7 +357,7 @@ impl GoogleEventMapper {
                         | "MISSING_THOUGHT_SIGNATURE"
                         | "MALFORMED_RESPONSE" => StopReason::Refusal,
                         _ => {
-                            log::error!("Unexpected google finish_reason: {finish_reason}");
+                            log::error!("意外的 Google finish_reason: {finish_reason}");
                             StopReason::EndTurn
                         }
                     };
@@ -581,7 +581,7 @@ mod tests {
         .unwrap();
 
         let Part::TextPart(text_part) = &request.contents[0].parts[0] else {
-            panic!("expected text part");
+            panic!("应为文本部分");
         };
         assert_eq!(text_part.text, "summary");
         assert!(text_part.thought);
@@ -633,7 +633,7 @@ mod tests {
         .unwrap();
 
         let Part::TextPart(text_part) = part else {
-            panic!("expected text part");
+            panic!("应为文本部分");
         };
         assert_eq!(text_part.text, "visible text");
         assert!(!text_part.thought);
@@ -741,7 +741,7 @@ mod tests {
                 Some("test_signature_123")
             );
         } else {
-            panic!("Expected ToolUse event");
+            panic!("应为 ToolUse 事件");
         }
     }
 
@@ -778,7 +778,7 @@ mod tests {
         if let Ok(LanguageModelCompletionEvent::ToolUse(tool_use)) = &events[0] {
             assert!(tool_use.thought_signature.is_none());
         } else {
-            panic!("Expected ToolUse event");
+            panic!("应为 ToolUse 事件");
         }
     }
 
@@ -813,7 +813,7 @@ mod tests {
         if let Ok(LanguageModelCompletionEvent::ToolUse(tool_use)) = &events[0] {
             assert!(tool_use.thought_signature.is_none());
         } else {
-            panic!("Expected ToolUse event");
+            panic!("应为 ToolUse 事件");
         }
     }
 }

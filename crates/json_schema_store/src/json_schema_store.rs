@@ -145,7 +145,7 @@ pub fn handle_schema_request(
 ) -> Task<Result<String>> {
     let path = match uri.strip_prefix(SCHEMA_URI_PREFIX) {
         Some(path) => path,
-        None => return Task::ready(Err(anyhow::anyhow!("Invalid schema URI: {}", uri))),
+        None => return Task::ready(Err(anyhow::anyhow!("无效的架构 URI: {}", uri))),
     };
 
     if let Some(json) = resolve_static_schema(path) {
@@ -160,7 +160,7 @@ pub fn handle_schema_request(
     let uri_clone = uri.clone();
     cx.spawn(async move |cx| {
         let schema = resolve_dynamic_schema(lsp_store, &path, cx).await?;
-        let json = serde_json::to_string(&schema).context("Failed to serialize schema")?;
+        let json = serde_json::to_string(&schema).context("无法序列化架构")?;
 
         DYNAMIC_SCHEMA_CACHE.write().insert(uri_clone, json.clone());
 
@@ -242,7 +242,7 @@ async fn resolve_dynamic_schema(
                             .unwrap_or("lsp/"),
                     )
                 })
-                .context("Invalid LSP schema path")?;
+                .context("无效的 LSP 架构路径")?;
 
             // Parse the schema type from the path:
             // - "rust-analyzer/initialization_options" → initialization_options_schema
@@ -272,7 +272,7 @@ async fn resolve_dynamic_schema(
                 .or_else(|| {
                     languages.load_available_lsp_adapter(&LanguageServerName::from(lsp_name))
                 })
-                .with_context(|| format!("LSP adapter not found: {}", lsp_name))?;
+                .with_context(|| format!("未找到 LSP 适配器: {}", lsp_name))?;
 
             let delegate: Arc<dyn LspAdapterDelegate> = cx
                 .update(|inner_cx| {
@@ -290,8 +290,8 @@ async fn resolve_dynamic_schema(
                     })
                 })
                 .context(concat!(
-                    "Failed to create adapter delegate - ",
-                    "either LSP store is not in local mode or no worktree is available"
+                    "创建适配器委托失败 - ",
+                    "LSP 存储未处于本地模式或没有可用的工作树"
                 ))?;
 
             let schema = match schema_kind {
@@ -412,7 +412,7 @@ async fn resolve_dynamic_schema(
         }
         "keymap" => cx.update(settings::KeymapFile::generate_json_schema_for_registered_actions),
         "action" => {
-            let normalized_action_name = rest.context("No Action name provided")?;
+            let normalized_action_name = rest.context("未提供操作名称")?;
             let action_name = denormalize_action_name(normalized_action_name);
             let mut generator = settings::KeymapFile::action_schema_generator();
             let schema = cx
@@ -422,7 +422,7 @@ async fn resolve_dynamic_schema(
         }
         "tasks" => task::TaskTemplates::generate_json_schema(),
         _ => {
-            anyhow::bail!("Unrecognized schema: {schema_name}");
+            anyhow::bail!("无法识别的架构: {schema_name}");
         }
     };
     Ok(schema)

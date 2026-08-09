@@ -63,21 +63,21 @@ pub async fn prediction_edits_for_single_file_diff(
             } => {
                 anyhow::ensure!(
                     status == FileStatus::Modified,
-                    "V4 edit predictions only support modifying existing files"
+                    "V4 编辑预测仅支持修改现有文件"
                 );
 
                 let path = path.to_string();
                 if let Some((target_path, _, _)) = &target_file {
                     anyhow::ensure!(
                         target_path == &path,
-                        "V4 edit predictions only support one file"
+                        "V4 编辑预测仅支持单个文件"
                     );
                 } else {
                     let project_path = project
                         .update(cx, |project, cx| {
                             project.find_project_path(Path::new(&path), cx)
                         })
-                        .with_context(|| format!("no such path: {path}"))?;
+                        .with_context(|| format!("不存在该路径: {path}"))?;
                     let buffer = project
                         .update(cx, |project, cx| project.open_buffer(project_path, cx))
                         .await?;
@@ -86,7 +86,7 @@ pub async fn prediction_edits_for_single_file_diff(
                     target_file = Some((path, buffer, snapshot));
                 }
 
-                let (_, _, snapshot) = target_file.as_ref().context("missing target file")?;
+                let (_, _, snapshot) = target_file.as_ref().context("缺少目标文件")?;
                 for edit in &mut hunk.edits {
                     while let Some(marker_offset) = edit.text.find(INLINE_CURSOR_MARKER) {
                         edit.text.replace_range(
@@ -123,7 +123,7 @@ pub async fn prediction_edits_for_single_file_diff(
             DiffEvent::FileEnd { renamed_to } => {
                 anyhow::ensure!(
                     renamed_to.is_none(),
-                    "V4 edit predictions do not support renames"
+                    "V4 编辑预测不支持重命名"
                 );
             }
         }
@@ -140,7 +140,7 @@ pub async fn apply_diff(
 ) -> Result<OpenedBuffers> {
     let worktree = project
         .read_with(cx, |project, cx| project.visible_worktrees(cx).next())
-        .context("project has no worktree")?;
+        .context("项目没有工作树")?;
 
     let paths: Vec<_> = diff_str
         .lines()
@@ -196,7 +196,7 @@ pub async fn apply_diff(
                                         .update(cx, |project, cx| {
                                             project.find_project_path(path.as_ref(), cx)
                                         })
-                                        .with_context(|| format!("no such path: {}", path))?;
+                                        .with_context(|| format!("不存在该路径: {}", path))?;
                                     project
                                         .update(cx, |project, cx| {
                                             project.open_buffer(project_path, cx)
@@ -226,7 +226,7 @@ pub async fn apply_diff(
             DiffEvent::FileEnd { renamed_to } => {
                 let buffer = current_file
                     .take()
-                    .context("Got a FileEnd event before an Hunk event")?;
+                    .context("在 代码块 事件之前收到了 FileEnd 事件")?;
 
                 if let Some(renamed_to) = renamed_to {
                     project
@@ -234,11 +234,11 @@ pub async fn apply_diff(
                             let new_project_path = project
                                 .find_project_path(Path::new(renamed_to.as_ref()), cx)
                                 .with_context(|| {
-                                    format!("Failed to find worktree for new path: {}", renamed_to)
+                                    format!("无法为新路径找到工作树: {}", renamed_to)
                                 })?;
 
                             let project_file = project::File::from_dyn(buffer.read(cx).file())
-                                .expect("Wrong file type");
+                                .expect("错误的文件类型");
 
                             anyhow::Ok(project.rename_entry(
                                 project_file.entry_id.unwrap(),
@@ -371,7 +371,7 @@ fn resolve_hunk_edits_in_buffer(
     };
 
     if let Some(edit) = hunk.edits.iter().find(|edit| edit.range.end > buffer.len()) {
-        return Err(anyhow!("Edit range {:?} exceeds buffer length", edit.range));
+        return Err(anyhow!("编辑范围 {:?} 超出缓冲区长度", edit.range));
     }
 
     Ok(hunk

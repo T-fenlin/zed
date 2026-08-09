@@ -60,7 +60,7 @@ fn copy_markdown_sources(destination: &Path, site_url: &str, pages: &[DocsPage])
         let destination = destination.join(&page.source_path);
         if let Some(parent) = destination.parent() {
             std::fs::create_dir_all(parent).with_context(|| {
-                format!("failed to create markdown destination {}", parent.display())
+                format!("无法创建 Markdown 目标目录 {}", parent.display())
             })?;
         }
         let contents = rewrite_docs_links(&markdown_source_contents(&page.content), site_url);
@@ -70,7 +70,7 @@ fn copy_markdown_sources(destination: &Path, site_url: &str, pages: &[DocsPage])
         )
         .with_context(|| {
             format!(
-                "failed to write markdown page {} to {}",
+                "无法将 Markdown 页面 {} 写入 {}",
                 page.source_path.display(),
                 destination.display()
             )
@@ -79,7 +79,7 @@ fn copy_markdown_sources(destination: &Path, site_url: &str, pages: &[DocsPage])
     let getting_started = destination.join("getting-started.md");
     if getting_started.exists() {
         std::fs::copy(&getting_started, destination.join("index.md"))
-            .context("failed to write index.md markdown alias")?;
+            .context("无法写入 index.md Markdown 别名")?;
     }
     Ok(())
 }
@@ -149,7 +149,7 @@ fn write_llms_txt(destination: &Path, site_url: &str, pages: &[DocsPage]) -> Res
         }
         contents.push('\n');
     }
-    std::fs::write(destination.join("llms.txt"), contents).context("failed to write llms.txt")?;
+    std::fs::write(destination.join("llms.txt"), contents).context("无法写入 llms.txt")?;
     Ok(())
 }
 
@@ -174,7 +174,7 @@ fn write_sitemap_xml(destination: &Path, site_url: &str, pages: &[DocsPage]) -> 
     }
     contents.push_str("</urlset>\n");
     std::fs::write(destination.join("sitemap.xml"), contents)
-        .context("failed to write sitemap.xml")?;
+        .context("无法写入 sitemap.xml")?;
     Ok(())
 }
 
@@ -214,7 +214,7 @@ pub(crate) fn write_pages_redirects(
         }
     }
     std::fs::write(deploy_root.join("_redirects"), contents)
-        .context("failed to write Cloudflare Pages _redirects")?;
+        .context("无法写入 Cloudflare Pages _redirects")?;
     Ok(())
 }
 
@@ -239,7 +239,7 @@ pub(crate) fn write_markdown_redirect_aliases(
         if let Some(parent) = source_markdown.parent() {
             std::fs::create_dir_all(parent).with_context(|| {
                 format!(
-                    "failed to create markdown alias directory {}",
+                    "无法创建 Markdown 别名目录 {}",
                     parent.display()
                 )
             })?;
@@ -253,7 +253,7 @@ pub(crate) fn write_markdown_redirect_aliases(
         );
         std::fs::write(&source_markdown, contents).with_context(|| {
             format!(
-                "failed to write markdown redirect alias from {} to {}",
+                "无法将 Markdown 重定向别名从 {} 写入 {}",
                 redirect_destination_path,
                 source_markdown.display()
             )
@@ -495,23 +495,23 @@ mod tests {
         let pages = vec![
             DocsPage {
                 section: "Docs".to_string(),
-                title: "Getting Started".to_string(),
-                description: Some("Start using Zed.".to_string()),
+                title: "入门指南".to_string(),
+                description: Some("开始使用 Zed。".to_string()),
                 source_path: PathBuf::from("getting-started.md"),
                 content: format!(
                     "{}\n# Getting Started\n",
-                    FRONT_MATTER_COMMENT.replace("{}", r#"{"description":"Start using Zed."}"#)
+                    FRONT_MATTER_COMMENT.replace("{}", r#"{"description":"开始使用 Zed。"}"#)
                 ),
             },
             DocsPage {
                 section: "AI".to_string(),
                 title: "MCP".to_string(),
-                description: Some("Connect model context servers.".to_string()),
+                description: Some("连接模型上下文服务器。".to_string()),
                 source_path: PathBuf::from("ai/mcp.md"),
                 content: format!(
                     "{}\n# MCP\n",
                     FRONT_MATTER_COMMENT
-                        .replace("{}", r#"{"description":"Connect model context servers."}"#)
+                        .replace("{}", r#"{"description":"连接模型上下文服务器。"}"#)
                 ),
             },
         ];
@@ -519,14 +519,14 @@ mod tests {
         write_ai_discovery_artifacts(&pages, &destination, "/docs/")?;
 
         let llms_txt = std::fs::read_to_string(destination.join("llms.txt"))?;
-        assert!(llms_txt.contains("## Docs"));
+        assert!(llms_txt.contains("## 文档"));
         assert!(llms_txt.contains(
-            "- [Getting Started](https://zed.dev/docs/getting-started.md): Start using Zed."
+            "- [入门指南](https://zed.dev/docs/getting-started.md):开始使用 Zed。"
         ));
         assert!(llms_txt.contains("## AI"));
         assert!(
             llms_txt.contains(
-                "- [MCP](https://zed.dev/docs/ai/mcp.md): Connect model context servers."
+                "- [MCP](https://zed.dev/docs/ai/mcp.md):连接模型上下文服务器。"
             )
         );
 
@@ -541,7 +541,7 @@ mod tests {
         assert!(!mcp_markdown.contains("ZED_META"));
 
         let index_markdown = std::fs::read_to_string(destination.join("index.md"))?;
-        assert!(index_markdown.contains("# Getting Started"));
+        assert!(index_markdown.contains("# 入门指南"));
 
         std::fs::remove_dir_all(&destination)?;
         Ok(())

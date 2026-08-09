@@ -35,7 +35,7 @@ pub async fn run_git(repo_path: &Path, args: &[&str]) -> Result<String> {
 
     anyhow::ensure!(
         output.status.success(),
-        "`git {}` within `{}` failed with status: {}\nstderr:\n{}\nstdout:\n{}",
+        "在 `{}` 中执行 `git {}` 失败,状态码: {}\n标准错误:\n{}\n标准输出:\n{}",
         args.join(" "),
         repo_path.display(),
         output.status,
@@ -47,14 +47,14 @@ pub async fn run_git(repo_path: &Path, args: &[&str]) -> Result<String> {
 
 pub fn parse_repo_url(url: &str) -> Result<(String, String)> {
     if url.contains('@') {
-        let (_, path) = url.split_once(':').context("expected : in git url")?;
-        let (owner, repo) = path.split_once('/').context("expected / in git url")?;
+        let (_, path) = url.split_once(':').context("git URL 中缺少 ':'")?;
+        let (owner, repo) = path.split_once('/').context("git URL 中缺少 '/'")?;
         Ok((owner.to_string(), repo.trim_end_matches(".git").to_string()))
     } else {
         let parsed = http_client::Url::parse(url)?;
-        let mut segments = parsed.path_segments().context("empty http url")?;
-        let owner = segments.next().context("expected owner")?;
-        let repo = segments.next().context("expected repo")?;
+        let mut segments = parsed.path_segments().context("HTTP URL 为空")?;
+        let owner = segments.next().context("缺少所有者")?;
+        let repo = segments.next().context("缺少仓库名")?;
         Ok((owner.to_string(), repo.trim_end_matches(".git").to_string()))
     }
 }
@@ -82,7 +82,7 @@ pub async fn ensure_repo_cloned(repo_url: &str) -> Result<PathBuf> {
     }
 
     if !git_repo_exists {
-        log::info!("Cloning {} into {:?}", repo_url, repo_path);
+        log::info!("正在将 {} 克隆到 {:?}", repo_url, repo_path);
         std::fs::create_dir_all(&repo_path)?;
         run_git(&repo_path, &["init"]).await?;
         run_git(&repo_path, &["remote", "add", "origin", repo_url])

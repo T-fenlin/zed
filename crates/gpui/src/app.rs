@@ -791,7 +791,7 @@ impl App {
         let foreground_executor = platform.foreground_executor();
         assert!(
             background_executor.is_main_thread(),
-            "must construct App on main thread"
+            "必须在主线程上构造 App"
         );
         let synced_animation_epoch = background_executor.now();
 
@@ -966,7 +966,7 @@ impl App {
             .block_with_timeout(SHUTDOWN_TIMEOUT, futures)
             .is_err()
         {
-            log::error!("timed out waiting on app_will_quit");
+            log::error!("等待 app_will_quit 超时");
         }
 
         self.quitting = false;
@@ -1195,7 +1195,7 @@ impl App {
             (
                 TypeId::of::<Evt>(),
                 Box::new(move |event, cx| {
-                    let event: &Evt = event.downcast_ref().expect("invalid event type");
+                    let event: &Evt = event.downcast_ref().expect("无效的事件类型");
                     if let Some(entity) = handle.upgrade() {
                         on_event(entity, event, cx)
                     } else {
@@ -1773,7 +1773,7 @@ impl App {
                     let entity = entity.clone();
                     |_, window, cx| (observer)(entity, &mut Some(window), cx)
                 })
-                .expect("All windows should be off the stack when flushing effects");
+                .expect("刷新效果时,所有 Windows 都应不在栈上");
             } else {
                 (observer)(entity.clone(), &mut None, self)
             }
@@ -1856,7 +1856,7 @@ impl App {
 
             Some(result)
         })
-        .context("window not found")
+        .context("未找到窗口")
     }
 
     /// Creates an `AsyncApp`, which can be cloned and has a static lifetime
@@ -1877,7 +1877,7 @@ impl App {
     /// Obtains a reference to the executor, which can be used to spawn futures.
     pub fn foreground_executor(&self) -> &ForegroundExecutor {
         if self.quitting {
-            panic!("Can't spawn on main thread after on_app_quit")
+            panic!("on_app_quit 之后无法在主线程上生成任务")
         };
         &self.foreground_executor
     }
@@ -1891,7 +1891,7 @@ impl App {
         R: 'static,
     {
         if self.quitting {
-            debug_panic!("Can't spawn on main thread after on_app_quit")
+            debug_panic!("on_app_quit 之后无法在主线程上生成任务")
         };
 
         let mut cx = self.to_async();
@@ -1909,7 +1909,7 @@ impl App {
         R: 'static,
     {
         if self.quitting {
-            debug_panic!("Can't spawn on main thread after on_app_quit")
+            debug_panic!("on_app_quit 之后无法在主线程上生成任务")
         };
 
         let mut cx = self.to_async();
@@ -1947,7 +1947,7 @@ impl App {
         self.globals_by_type
             .get(&TypeId::of::<G>())
             .map(|any_state| any_state.downcast_ref::<G>().unwrap())
-            .unwrap_or_else(|| panic!("no state of type {} exists", type_name::<G>()))
+            .unwrap_or_else(|| panic!("不存在类型为 {} 的状态", type_name::<G>()))
     }
 
     /// Access the global of the given type if a value has been assigned.
@@ -1965,7 +1965,7 @@ impl App {
         self.globals_by_type
             .get_mut(&global_type)
             .and_then(|any_state| any_state.downcast_mut::<G>())
-            .unwrap_or_else(|| panic!("no state of type {} exists", type_name::<G>()))
+            .unwrap_or_else(|| panic!("不存在类型为 {} 的状态", type_name::<G>()))
     }
 
     /// Access the global of the given type mutably. A default value is assigned if a global of this type has not
@@ -2000,7 +2000,7 @@ impl App {
         *self
             .globals_by_type
             .remove(&global_type)
-            .unwrap_or_else(|| panic!("no global added for {}", type_name::<G>()))
+            .unwrap_or_else(|| panic!("未为 {} 添加全局变量", type_name::<G>()))
             .downcast()
             .unwrap()
     }
@@ -2027,7 +2027,7 @@ impl App {
         GlobalLease::new(
             self.globals_by_type
                 .remove(&TypeId::of::<G>())
-                .with_context(|| format!("no global registered of type {}", type_name::<G>()))
+                .with_context(|| format!("未注册类型为 {} 的全局变量", type_name::<G>()))
                 .unwrap(),
         )
     }
@@ -2084,7 +2084,7 @@ impl App {
         let (subscription, activate) = self.release_listeners.insert(
             handle.entity_id(),
             Box::new(move |entity, cx| {
-                let entity = entity.downcast_mut().expect("invalid entity type");
+                let entity = entity.downcast_mut().expect("无效的实体类型");
                 on_release(entity, cx)
             }),
         );
@@ -2794,14 +2794,14 @@ impl AppContext for App {
         let window = self
             .windows
             .get(window.id)
-            .context("window not found")?
+            .context("未找到窗口")?
             .as_deref()
-            .expect("attempted to read a window that is already on the stack");
+            .expect("尝试读取已在栈上的窗口");
 
         let root_view = window.root.clone().unwrap();
         let view = root_view
             .downcast::<T>()
-            .map_err(|_| anyhow!("root view's type has changed"))?;
+            .map_err(|_| anyhow!("根视图的类型已更改"))?;
 
         Ok(read(view, self))
     }
@@ -2956,7 +2956,7 @@ impl HttpClient for NullHttpClient {
         anyhow::Result<http_client::Response<http_client::AsyncBody>>,
     > {
         async move {
-            anyhow::bail!("No HttpClient available");
+            anyhow::bail!("没有可用的 HttpClient");
         }
         .boxed()
     }

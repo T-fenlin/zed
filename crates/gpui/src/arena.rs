@@ -141,7 +141,7 @@ impl Arena {
             self.force_clear();
         } else {
             log::debug!(
-                "deferring arena clear; {} enclosing scope(s) still active",
+                "延迟清除竞技场;仍有 {} 个外层作用域处于活动状态",
                 self.scope_depth
             );
         }
@@ -181,7 +181,7 @@ impl Arena {
                 self.chunks.push(Chunk::new(self.chunk_size));
                 assert_eq!(self.current_chunk_index, self.chunks.len() - 1);
                 log::trace!(
-                    "increased element arena capacity to {}kb",
+                    "元素竞技场容量已增至 {}kb",
                     self.capacity() / 1024,
                 );
             }

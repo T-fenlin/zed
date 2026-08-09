@@ -114,7 +114,7 @@ impl TestServer {
             e.insert(server.clone());
             Ok(server)
         } else {
-            anyhow::bail!("a server with url {url:?} already exists");
+            anyhow::bail!("已存在 URL 为 {url:?} 的服务器");
         }
     }
 
@@ -122,7 +122,7 @@ impl TestServer {
         Ok(SERVERS
             .lock()
             .get(url)
-            .context("no server found for url")?
+            .context("未找到该 URL 对应的服务器")?
             .clone())
     }
 
@@ -130,7 +130,7 @@ impl TestServer {
         SERVERS
             .lock()
             .remove(&self.url)
-            .with_context(|| format!("server with url {:?} does not exist", self.url))?;
+            .with_context(|| format!("URL 为 {:?} 的服务器不存在", self.url))?;
         Ok(())
     }
 
@@ -162,7 +162,7 @@ impl TestServer {
             e.insert(Default::default());
             Ok(())
         } else {
-            anyhow::bail!("{room:?} already exists");
+            anyhow::bail!("房间 {room:?} 已存在");
         }
     }
 
@@ -172,7 +172,7 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         server_rooms
             .remove(&room)
-            .with_context(|| format!("room {room:?} does not exist"))?;
+            .with_context(|| format!("房间 {room:?} 不存在"))?;
         Ok(())
     }
 
@@ -183,14 +183,14 @@ impl TestServer {
         let identity = ParticipantIdentity(
             claims
                 .sub
-                .context("missing participant identity")?
+                .context("缺少参与者身份")?
                 .to_string(),
         );
-        let room_name = claims.video.room.context("missing room name")?.to_string();
+        let room_name = claims.video.room.context("缺少房间名称")?.to_string();
         let mut server_rooms = self.rooms.lock();
         let room = (*server_rooms).entry(room_name.clone()).or_default();
         if let Some(revoked_before) = room.token_revocations.get(&identity) {
-            anyhow::ensure!(claims.nbf >= *revoked_before, "invalid token: revoked");
+            anyhow::ensure!(claims.nbf >= *revoked_before, "无效令牌:已被撤销");
         }
 
         if let Entry::Vacant(e) = room.client_rooms.entry(identity.clone()) {
@@ -243,7 +243,7 @@ impl TestServer {
             e.insert(client_room);
             Ok(identity)
         } else {
-            anyhow::bail!("{identity:?} attempted to join room {room_name:?} twice");
+            anyhow::bail!("{identity:?} 尝试重复加入房间 {room_name:?}");
         }
     }
 
@@ -256,9 +256,9 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         let room = server_rooms
             .get_mut(&*room_name)
-            .with_context(|| format!("room {room_name:?} does not exist"))?;
+            .with_context(|| format!("房间 {room_name:?} 不存在"))?;
         room.client_rooms.remove(&identity).with_context(|| {
-            format!("{identity:?} attempted to leave room {room_name:?} before joining it")
+            format!("{identity:?} 在加入房间 {room_name:?} 之前尝试离开")
         })?;
         Ok(())
     }
@@ -307,11 +307,11 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         let room = server_rooms
             .get_mut(&room_name)
-            .with_context(|| format!("room {room_name} does not exist"))?;
+            .with_context(|| format!("房间 {room_name} 不存在"))?;
         let removed_room = room
             .client_rooms
             .remove(&identity)
-            .with_context(|| format!("participant {identity:?} did not join room {room_name:?}"))?;
+            .with_context(|| format!("参与者 {identity:?} 未加入房间 {room_name:?}"))?;
         room.token_revocations.insert(identity, revoked_before);
         let mut removed_room = removed_room.0.lock();
         removed_room.connection_state = ConnectionState::Disconnected;
@@ -336,7 +336,7 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         let room = server_rooms
             .get_mut(&room_name)
-            .with_context(|| format!("room {room_name} does not exist"))?;
+            .with_context(|| format!("房间 {room_name} 不存在"))?;
         let identity = ParticipantIdentity(identity);
         room.participant_permissions
             .insert(identity.clone(), permission);
@@ -379,7 +379,7 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         let room = server_rooms
             .get_mut(&*room_name)
-            .with_context(|| format!("room {room_name} does not exist"))?;
+            .with_context(|| format!("房间 {room_name} 不存在"))?;
 
         let can_publish = room
             .participant_permissions
@@ -388,7 +388,7 @@ impl TestServer {
             .or(claims.video.can_publish)
             .unwrap_or(true);
 
-        anyhow::ensure!(can_publish, "user is not allowed to publish");
+        anyhow::ensure!(can_publish, "用户无权发布");
 
         let sid: TrackSid = format!("TR_{}", nanoid::nanoid!(17)).try_into().unwrap();
         let server_track = Arc::new(TestServerVideoTrack {
@@ -443,7 +443,7 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         let room = server_rooms
             .get_mut(&*room_name)
-            .with_context(|| format!("room {room_name} does not exist"))?;
+            .with_context(|| format!("房间 {room_name} 不存在"))?;
 
         let can_publish = room
             .participant_permissions
@@ -452,7 +452,7 @@ impl TestServer {
             .or(claims.video.can_publish)
             .unwrap_or(true);
 
-        anyhow::ensure!(can_publish, "user is not allowed to publish");
+        anyhow::ensure!(can_publish, "用户无权发布");
 
         let sid: TrackSid = format!("TR_{}", nanoid::nanoid!(17)).try_into().unwrap();
         let server_track = Arc::new(TestServerAudioTrack {
@@ -502,7 +502,7 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         let room = server_rooms
             .get_mut(&*room_name)
-            .with_context(|| format!("room {room_name} does not exist"))?;
+            .with_context(|| format!("房间 {room_name} 不存在"))?;
 
         if let Some(video_to_unpublish) = room.video_tracks.iter().position(|t| t.sid == *track_sid)
         {
@@ -583,7 +583,7 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         let room = server_rooms
             .get_mut(&*room_name)
-            .with_context(|| format!("room {room_name} does not exist"))?;
+            .with_context(|| format!("房间 {room_name} 不存在"))?;
         if let Some(track) = room
             .audio_tracks
             .iter_mut()
@@ -653,11 +653,11 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         let room = server_rooms
             .get_mut(&*room_name)
-            .with_context(|| format!("room {room_name} does not exist"))?;
+            .with_context(|| format!("房间 {room_name} 不存在"))?;
         let client_room = room
             .client_rooms
             .get(&identity)
-            .context("not a participant in room")?;
+            .context("不是房间内的参与者")?;
         Ok(room
             .video_tracks
             .iter()
@@ -676,11 +676,11 @@ impl TestServer {
         let mut server_rooms = self.rooms.lock();
         let room = server_rooms
             .get_mut(&*room_name)
-            .with_context(|| format!("room {room_name} does not exist"))?;
+            .with_context(|| format!("房间 {room_name} 不存在"))?;
         let client_room = room
             .client_rooms
             .get(&identity)
-            .context("not a participant in room")?;
+            .context("不是房间内的参与者")?;
         Ok(room
             .audio_tracks
             .iter()
@@ -849,7 +849,7 @@ impl Room {
         let identity = server
             .join_room(token.to_string(), this.clone())
             .await
-            .context("room join")?;
+            .context("加入房间")?;
         {
             let mut state = this.0.lock();
             state.local_identity = identity;
@@ -974,7 +974,7 @@ mod tests {
             executor,
             timestamp_source.clone(),
         )
-        .expect("create LiveKit test server");
+        .expect("创建 LiveKit 测试服务器");
         TestServerGuard {
             server,
             timestamp_source,
@@ -983,12 +983,12 @@ mod tests {
 
     async fn assert_token_was_revoked(server: &TestServer, token: String, cx: &mut TestAppContext) {
         match Room::connect(server.url.clone(), token, &mut cx.to_async()).await {
-            Ok(_) => panic!("revoked token unexpectedly connected"),
+            Ok(_) => panic!("已撤销的令牌意外连接成功"),
             Err(error) => {
                 let error = format!("{error:#}");
                 assert!(
-                    error.contains("invalid token: revoked"),
-                    "expected revoked token error, got {error}"
+                    error.contains("无效令牌:已被撤销"),
+                    "预期收到令牌已撤销错误,实际得到 {error}"
                 );
             }
         }
@@ -1003,25 +1003,25 @@ mod tests {
         server
             .create_room("room".into())
             .await
-            .expect("create LiveKit test room");
+            .expect("创建 LiveKit 测试房间");
         let api_client = server.create_api_client();
 
         let initial_token = api_client
             .room_token("room", "participant")
-            .expect("create initial room token");
+            .expect("创建初始房间令牌");
         let (initial_room, _) = Room::connect(
             server.url.clone(),
             initial_token.clone(),
             &mut cx.to_async(),
         )
         .await
-        .expect("connect with initial room token");
+        .expect("使用初始房间令牌连接");
 
         server.advance_timestamp();
         api_client
             .remove_participant("room".into(), "participant".into())
             .await
-            .expect("remove participant");
+            .expect("移除参与者");
 
         assert_eq!(
             initial_room.connection_state(),
@@ -1031,10 +1031,10 @@ mod tests {
 
         let fresh_token = api_client
             .room_token("room", "participant")
-            .expect("create fresh room token");
+            .expect("创建新的房间令牌");
         let (fresh_room, _) = Room::connect(server.url.clone(), fresh_token, &mut cx.to_async())
             .await
-            .expect("connect with fresh room token");
+            .expect("使用新的房间令牌连接");
 
         assert_eq!(fresh_room.connection_state(), ConnectionState::Connected);
     }
@@ -1048,19 +1048,19 @@ mod tests {
         server
             .create_room("room".into())
             .await
-            .expect("create LiveKit test room");
+            .expect("创建 LiveKit 测试房间");
         let api_client = server.create_api_client();
 
         let initial_token = api_client
             .guest_token("room", "participant")
-            .expect("create initial guest token");
+            .expect("创建初始访客令牌");
         let (initial_room, _) = Room::connect(
             server.url.clone(),
             initial_token.clone(),
             &mut cx.to_async(),
         )
         .await
-        .expect("connect with initial guest token");
+        .expect("使用初始访客令牌连接");
 
         server.advance_timestamp();
         api_client
@@ -1076,7 +1076,7 @@ mod tests {
                 },
             )
             .await
-            .expect("update participant permissions");
+            .expect("更新参与者权限");
         assert_token_was_revoked(&server, initial_token, cx).await;
 
         server.disconnect_client("participant".into()).await;
@@ -1087,10 +1087,10 @@ mod tests {
 
         let fresh_token = api_client
             .guest_token("room", "participant")
-            .expect("create fresh guest token");
+            .expect("创建新的访客令牌");
         let (fresh_room, _) = Room::connect(server.url.clone(), fresh_token, &mut cx.to_async())
             .await
-            .expect("connect with fresh guest token");
+            .expect("使用新的访客令牌连接");
 
         assert_eq!(fresh_room.connection_state(), ConnectionState::Connected);
     }

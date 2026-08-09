@@ -38,7 +38,7 @@ impl Model {
             "grok-4.3" => Ok(Self::Grok43),
             "grok-4.20-0309-reasoning" => Ok(Self::Grok420Reasoning),
             "grok-4.20-0309-non-reasoning" => Ok(Self::Grok420NonReasoning),
-            _ => anyhow::bail!("invalid model id '{id}'"),
+            _ => anyhow::bail!("无效的模型 ID '{id}'"),
         }
     }
 

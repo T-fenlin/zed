@@ -164,7 +164,7 @@ impl LanguageSelectorDelegate {
         if let Some(buffer_language) = buffer_language
             .filter(|buffer_language| buffer_language.name().as_ref() == mat.string.as_str())
         {
-            label.push_str(" (current)");
+            label.push_str(" (当前)");
             let icon = need_icon
                 .then(|| self.language_icon(&buffer_language.config().matcher, cx))
                 .flatten();
@@ -202,7 +202,7 @@ impl PickerDelegate for LanguageSelectorDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Select a language…".into()
+        "选择语言…".into()
     }
 
     fn match_count(&self) -> usize {
@@ -217,8 +217,8 @@ impl PickerDelegate for LanguageSelectorDelegate {
             let buffer = self.buffer.downgrade();
             cx.spawn_in(window, async move |_, cx| {
                 let language = language.await?;
-                let project = project.upgrade().context("project was dropped")?;
-                let buffer = buffer.upgrade().context("buffer was dropped")?;
+                let project = project.upgrade().context("项目已被释放")?;
+                let buffer = buffer.upgrade().context("缓冲区已被释放")?;
                 project.update(cx, |project, cx| {
                     project.set_language_for_buffer(&buffer, language, cx);
                 });
@@ -389,7 +389,7 @@ mod tests {
             project
                 .worktrees(cx)
                 .next()
-                .expect("project should have a worktree")
+                .expect("项目应包含工作树")
                 .read(cx)
                 .id()
         });
@@ -402,12 +402,12 @@ mod tests {
                 workspace.open_path(project_path, None, true, window, cx)
             })
             .await
-            .expect("file should open");
+            .expect("文件应能打开");
 
         cx.update(|_, cx| {
             opened_item
                 .act_as::<Editor>(cx)
-                .expect("opened item should be an editor")
+                .expect("打开的项目应为编辑器")
         })
     }
 
@@ -421,7 +421,7 @@ mod tests {
         let buffer = editor.read_with(cx, |editor, cx| {
             editor
                 .active_buffer(cx)
-                .expect("editor should have an active buffer")
+                .expect("编辑器应具有活动缓冲区")
         });
         buffer.update(cx, |buffer, cx| {
             buffer.set_language(None, cx);
@@ -435,7 +435,7 @@ mod tests {
         cx: &mut VisualTestContext,
     ) -> Entity<Editor> {
         let create_buffer = project.update(cx, |project, cx| project.create_buffer(None, true, cx));
-        let buffer = create_buffer.await.expect("empty buffer should be created");
+        let buffer = create_buffer.await.expect("应创建空缓冲区");
         let editor = cx.new_window_entity(|window, cx| {
             Editor::for_buffer(buffer.clone(), Some(project.clone()), window, cx)
         });
@@ -456,11 +456,11 @@ mod tests {
                 project.languages().language_for_name(language_name)
             })
             .await
-            .expect("language should exist in registry");
+            .expect("语言应存在于注册表中");
         editor.update(cx, move |editor, cx| {
             let buffer = editor
                 .active_buffer(cx)
-                .expect("editor should have an active excerpt");
+                .expect("编辑器应具有活动摘录");
             buffer.update(cx, |buffer, cx| {
                 buffer.set_language(Some(language), cx);
             });
@@ -474,7 +474,7 @@ mod tests {
         workspace.update(cx, |workspace, cx| {
             workspace
                 .active_modal::<LanguageSelector>(cx)
-                .expect("language selector should be open")
+                .expect("语言选择器应处于打开状态")
                 .read(cx)
                 .picker
                 .clone()
@@ -496,7 +496,7 @@ mod tests {
         workspace.read_with(cx, |workspace, cx| {
             assert!(
                 workspace.active_modal::<LanguageSelector>(cx).is_none(),
-                "language selector should be closed"
+                "语言选择器应处于关闭状态"
             );
         });
     }
@@ -511,7 +511,7 @@ mod tests {
             let was_activated = workspace.activate_item(editor, true, true, window, cx);
             assert!(
                 was_activated,
-                "editor should be activated before opening the modal"
+                "打开模态框前应激活编辑器"
             );
         });
         cx.run_until_parked();
@@ -522,18 +522,18 @@ mod tests {
                 .delegate
                 .matches
                 .get(picker.delegate.selected_index)
-                .expect("selected index should point to a match");
+                .expect("所选索引应指向匹配项");
             let selected_candidate = picker
                 .delegate
                 .candidates
                 .get(selected_match.candidate_id)
-                .expect("selected match should map to a candidate");
+                .expect("所选匹配项应映射到候选");
 
             if let Some(expected_language_name) = expected_language_name {
                 let current_language_candidate_index = picker
                     .delegate
                     .current_language_candidate_index
-                    .expect("current language should map to a candidate");
+                    .expect("当前语言应映射到候选");
                 assert_eq!(
                     selected_match.candidate_id,
                     current_language_candidate_index
@@ -586,7 +586,7 @@ mod tests {
         let buffer = empty_editor.read_with(cx, |editor, cx| {
             editor
                 .active_buffer(cx)
-                .expect("editor should have an active excerpt")
+                .expect("编辑器应具有活动摘录")
         });
         buffer.update(cx, |buffer, cx| {
             buffer.set_language(None, cx);
@@ -617,7 +617,7 @@ mod tests {
             let was_activated = workspace.activate_item(&editor, true, true, window, cx);
             assert!(
                 was_activated,
-                "editor should be activated before opening the modal"
+                "打开模态框前应激活编辑器"
             );
         });
         cx.run_until_parked();
@@ -628,14 +628,14 @@ mod tests {
                 .delegate
                 .matches
                 .get(picker.delegate.selected_index)
-                .expect("selected index should point to a match");
+                .expect("所选索引应指向匹配项");
             let selected_candidate = picker
                 .delegate
                 .candidates
                 .get(selected_match.candidate_id)
-                .expect("selected match should map to a candidate");
+                .expect("所选匹配项应映射到候选");
 
-            assert_eq!(selected_candidate.string, "Plain Text");
+            assert_eq!(selected_candidate.string, "纯文本");
             assert!(
                 picker
                     .delegate
@@ -643,7 +643,7 @@ mod tests {
                     .is_some_and(|current_language_candidate_index| {
                         current_language_candidate_index > 1
                     }),
-                "test setup should place Plain Text after at least two earlier languages",
+                "测试设置应将纯文本放在至少两个较早语言之后",
             );
         });
 
@@ -655,7 +655,7 @@ mod tests {
         picker.read_with(cx, |picker, _| {
             assert!(
                 picker.delegate.matches.len() > 1,
-                "query should return multiple matches"
+                "查询应返回多个匹配项"
             );
             assert_eq!(picker.delegate.selected_index, 0);
 
@@ -663,12 +663,12 @@ mod tests {
                 .delegate
                 .matches
                 .first()
-                .expect("query should produce at least one match");
+                .expect("查询应至少产生一个匹配项");
             let selected_match = picker
                 .delegate
                 .matches
                 .get(picker.delegate.selected_index)
-                .expect("selected index should point to a match");
+                .expect("所选索引应指向匹配项");
 
             assert_eq!(selected_match.candidate_id, first_match.candidate_id);
         });

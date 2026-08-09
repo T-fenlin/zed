@@ -7,7 +7,7 @@ pub fn get_dotenv_vars(current_dir: impl AsRef<Path>) -> Result<Vec<(String, Str
 
     let mut vars = Vec::new();
     let env_content =
-        fs::read_to_string(current_dir.join(".env.toml")).context("no .env.toml file found")?;
+        fs::read_to_string(current_dir.join(".env.toml")).context("未找到 .env.toml 文件")?;
 
     add_vars(env_content, &mut vars)?;
 

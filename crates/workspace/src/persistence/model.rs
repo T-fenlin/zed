@@ -308,7 +308,7 @@ impl SerializedPaneGroup {
                 let new_items = serialized_pane
                     .deserialize_to(project, &pane, workspace_id, workspace.clone(), cx)
                     .await
-                    .context("Could not deserialize pane)")
+                    .context("无法反序列化窗格)")
                     .log_err()?;
 
                 if pane

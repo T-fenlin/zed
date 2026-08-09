@@ -144,7 +144,7 @@ impl ThreadedDispatcher {
                         profiler::save_task_timing();
                     }
                 })
-                .expect("failed to spawn threaded dispatcher worker");
+                .expect("无法生成线程调度器工作线程");
         }
         drop(background_receiver);
 
@@ -195,7 +195,7 @@ impl ThreadedDispatcher {
                         state = timers.state.lock();
                     }
                 })
-                .expect("failed to spawn threaded dispatcher timer");
+                .expect("无法生成线程调度器定时器线程");
         }
 
         Self {
@@ -220,7 +220,7 @@ impl ThreadedDispatcher {
     pub fn run_until_idle(&self) {
         assert!(
             self.is_main_thread(),
-            "run_until_idle must be called on the threaded dispatcher's main thread"
+            "run_until_idle 必须在线程调度器的主线程上调用"
         );
         loop {
             if self.drain_main_queue() {
@@ -272,7 +272,7 @@ impl ThreadedDispatcher {
     pub(crate) fn run_until<R>(&self, mut ready: impl FnMut() -> Option<R>) -> R {
         assert!(
             self.is_main_thread(),
-            "run_until must be called on the threaded dispatcher's main thread"
+            "run_until 必须在线程调度器的主线程上调用"
         );
         loop {
             if let Some(result) = ready() {
@@ -319,7 +319,7 @@ impl ThreadedDispatcher {
     pub fn run_ready_main_tasks(&self) -> bool {
         assert!(
             self.is_main_thread(),
-            "run_ready_main_tasks must be called on the threaded dispatcher's main thread"
+            "run_ready_main_tasks 必须在线程调度器的主线程上调用"
         );
         let pending = self.main_receiver.lock().len();
         let mut ran_any = false;
@@ -412,7 +412,7 @@ impl PlatformDispatcher for ThreadedDispatcher {
         self.idle.increment();
         self.background_sender
             .send(priority, runnable)
-            .unwrap_or_else(|_| panic!("threaded dispatcher workers are no longer running"));
+            .unwrap_or_else(|_| panic!("线程调度器工作线程已停止运行"));
     }
 
     fn dispatch_on_main_thread(&self, runnable: RunnableVariant, priority: Priority) {
@@ -446,7 +446,7 @@ impl PlatformDispatcher for ThreadedDispatcher {
         thread::Builder::new()
             .name("ThreadedDispatcherRealtime".to_owned())
             .spawn(f)
-            .expect("failed to spawn threaded dispatcher realtime thread");
+            .expect("无法生成线程调度器实时线程");
     }
 
     fn as_threaded(&self) -> Option<&ThreadedDispatcher> {
@@ -532,7 +532,7 @@ mod tests {
             thread::sleep(Duration::from_millis(10));
             sender
                 .send(())
-                .expect("foreground receiver should remain alive");
+                .expect("前台接收器应保持活动状态");
         });
 
         let completed = Arc::new(AtomicBool::new(false));
@@ -542,14 +542,14 @@ mod tests {
                 async move {
                     receiver
                         .await
-                        .expect("external sender should deliver its wake");
+                        .expect("外部发送器应传递其唤醒信号");
                     completed.store(true, Ordering::SeqCst);
                 }
             })
             .detach();
 
         dispatcher.run_until(|| completed.load(Ordering::SeqCst).then_some(()));
-        sender_thread.join().expect("sender thread should finish");
+        sender_thread.join().expect("发送线程应正常结束");
         assert!(completed.load(Ordering::SeqCst));
     }
 
@@ -590,7 +590,7 @@ mod tests {
         dispatcher.run_until(|| completed.load(Ordering::SeqCst).then_some(()));
         assert!(
             iterations.load(Ordering::SeqCst) < REQUEUE_LIMIT,
-            "run_until should return at readiness instead of draining re-queued main work"
+            "run_until 应在就绪时返回,而不是排空重新排队的主线程任务"
         );
     }
 

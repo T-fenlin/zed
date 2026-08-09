@@ -23,9 +23,9 @@ impl AnnouncementToast {
             heading: None,
             description: None,
             bullet_items: SmallVec::new(),
-            primary_action_label: "Try Now".into(),
+            primary_action_label: "立即尝试".into(),
             primary_on_click: Box::new(|_, _, _| {}),
-            secondary_action_label: "Learn More".into(),
+            secondary_action_label: "了解更多".into(),
             secondary_on_click: Box::new(|_, _, _| {}),
             dismiss_on_click: Box::new(|_, _, _| {}),
         }
@@ -161,29 +161,29 @@ impl Component for AnnouncementToast {
     }
 
     fn description() -> &'static str {
-        "A special toast for announcing new and exciting features."
+        "用于宣布新功能的特殊通知。"
     }
 
     fn preview(_window: &mut Window, _cx: &mut App) -> AnyElement {
         let examples = vec![single_example(
-            "Basic",
+            "基本",
             div()
                 .w_80()
                 .child(
                     AnnouncementToast::new()
-                        .heading("Introducing Parallel Agents")
-                        .description("Run multiple agent threads simultaneously across projects.")
+                        .heading("推出并行代理")
+                        .description("跨项目同时运行多个代理线程。")
                         .bullet_item(ListBulletItem::new(
-                            "Mix and match Zed's agent with any ACP-compatible agent",
+                            "将 Zed 的代理与任何兼容 ACP 的代理混合搭配使用",
                         ))
                         .bullet_item(ListBulletItem::new(
-                            "Optional worktree isolation keeps agents from conflicting",
+                            "可选的工作树隔离可防止代理之间发生冲突",
                         ))
                         .bullet_item(ListBulletItem::new(
-                            "Updated workspace layout designed for agentic workflows",
+                            "为代理工作流设计的更新版工作区布局",
                         ))
-                        .primary_action_label("Try Now")
-                        .secondary_action_label("Learn More"),
+                        .primary_action_label("立即尝试")
+                        .secondary_action_label("了解更多"),
                 )
                 .into_any_element(),
         )];

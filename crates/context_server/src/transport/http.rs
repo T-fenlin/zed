@@ -24,7 +24,7 @@ impl std::fmt::Display for TransportError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             TransportError::AuthRequired { .. } => {
-                write!(f, "OAuth authorization required")
+                write!(f, "需要 OAuth 授权")
             }
         }
     }
@@ -218,7 +218,7 @@ impl HttpTransport {
                     .and_then(|v| v.to_str().ok())
                 {
                     *self.session_id.lock() = Some(session_id.to_string());
-                    log::debug!("Session ID set: {}", session_id);
+                    log::debug!("会话 ID 已设置: {}", session_id);
                 }
 
                 match content_type {
@@ -233,7 +233,7 @@ impl HttpTransport {
                             self.response_tx
                                 .send(body)
                                 .await
-                                .map_err(|_| anyhow!("Failed to send JSON response"))?;
+                                .map_err(|_| anyhow!("发送 JSON 响应失败"))?;
                         }
                     }
                     Some(ct) if ct.starts_with(EVENT_STREAM_MIME_TYPE) => {
@@ -243,16 +243,16 @@ impl HttpTransport {
                     _ => {
                         // For notifications, 202 Accepted with no content type is ok
                         if is_notification && status.as_u16() == 202 {
-                            log::debug!("Notification accepted");
+                            log::debug!("通知已接受");
                         } else {
-                            return Err(anyhow!("Unexpected content type: {:?}", content_type));
+                            return Err(anyhow!("意外的内容类型: {:?}", content_type));
                         }
                     }
                 }
             }
             status if status.as_u16() == 202 => {
                 // Accepted - notification acknowledged, no response needed
-                log::debug!("Notification accepted");
+                log::debug!("通知已接受");
             }
             _ => {
                 let mut error_body = String::new();
@@ -261,7 +261,7 @@ impl HttpTransport {
                 self.error_tx
                     .send(format!("HTTP {}: {}", response.status(), error_body))
                     .await
-                    .map_err(|_| anyhow!("Failed to send error"))?;
+                    .map_err(|_| anyhow!("发送错误失败"))?;
             }
         }
 
@@ -293,7 +293,7 @@ impl HttpTransport {
                                     // Filter out ping messages and empty data
                                     if !message.trim().is_empty() && message != "ping" {
                                         if let Err(e) = response_tx.send(message).await {
-                                            log::error!("Failed to send SSE message: {}", e);
+                                            log::error!("发送 SSE 消息失败: {}", e);
                                             break;
                                         }
                                     }
@@ -306,7 +306,7 @@ impl HttpTransport {
                                 if !data.is_empty() {
                                     // Check if this is a ping message
                                     if data == "ping" {
-                                        log::trace!("Received SSE ping");
+                                        log::trace!("收到 SSE ping");
                                         continue;
                                     }
                                     data_buffer.push(data.to_string());
@@ -324,7 +324,7 @@ impl HttpTransport {
                             }
                         }
                         Err(e) => {
-                            let _ = error_tx.send(format!("SSE stream error: {}", e)).await;
+                            let _ = error_tx.send(format!("SSE 流错误: {}", e)).await;
                             break;
                         }
                     }
@@ -523,7 +523,7 @@ mod tests {
             transport
                 .send(r#"{"jsonrpc":"2.0","id":1,"method":"initialize"}"#.to_string())
                 .await
-                .expect("send should succeed");
+                .expect("发送应成功");
 
             let mut responses = transport.receive();
             let next_response = responses.next().fuse();
@@ -531,13 +531,13 @@ mod tests {
             futures::pin_mut!(next_response, timeout);
 
             let response = futures::select_biased! {
-                response = next_response => response.expect("expected SSE response"),
-                _ = timeout => panic!("timed out waiting for SSE response with {data_prefix:?}"),
+                response = next_response => response.expect("预期 SSE 响应"),
+                _ = timeout => panic!("等待 SSE 响应超时,数据前缀为 {data_prefix:?}"),
             };
 
             assert_eq!(
                 response, r#"{"jsonrpc":"2.0","id":1,"result":{}}"#,
-                "unexpected SSE response for {data_prefix:?}",
+                "意外的 SSE 响应,数据前缀为 {data_prefix:?}",
             );
         }
     }
@@ -569,7 +569,7 @@ mod tests {
         transport
             .send(r#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.to_string())
             .await
-            .expect("send should succeed");
+            .expect("发送应成功");
 
         assert_eq!(
             captured_auth.lock().as_deref(),
@@ -601,7 +601,7 @@ mod tests {
         transport
             .send(r#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.to_string())
             .await
-            .expect("send should succeed");
+            .expect("发送应成功");
 
         assert!(captured_auth.lock().is_none());
     }
@@ -632,7 +632,7 @@ mod tests {
         transport
             .send(r#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.to_string())
             .await
-            .expect("send should succeed after proactive refresh");
+            .expect("主动刷新后发送应成功");
 
         assert_eq!(provider.refresh_count(), 1);
         assert_eq!(
@@ -680,7 +680,7 @@ mod tests {
         transport
             .send(r#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.to_string())
             .await
-            .expect("send should succeed after refresh");
+            .expect("刷新后发送应成功");
 
         assert_eq!(provider.refresh_count(), 1);
         assert_eq!(request_count.load(Ordering::SeqCst), 2);
@@ -728,7 +728,7 @@ mod tests {
         transport
             .send(r#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.to_string())
             .await
-            .expect("send should succeed after refresh");
+            .expect("刷新后发送应成功");
 
         assert_eq!(provider_ref.refresh_count(), 1);
         assert_eq!(request_count.load(Ordering::SeqCst), 2);
@@ -766,7 +766,7 @@ mod tests {
 
         let transport_err = err
             .downcast_ref::<TransportError>()
-            .expect("error should be TransportError");
+            .expect("错误应为 TransportError");
         match transport_err {
             TransportError::AuthRequired { www_authenticate } => {
                 assert_eq!(
@@ -812,7 +812,7 @@ mod tests {
 
         let transport_err = err
             .downcast_ref::<TransportError>()
-            .expect("error should be TransportError");
+            .expect("错误应为 TransportError");
         match transport_err {
             TransportError::AuthRequired { www_authenticate } => {
                 assert!(www_authenticate.resource_metadata.is_none());
@@ -851,7 +851,7 @@ mod tests {
             .unwrap_err();
 
         err.downcast_ref::<TransportError>()
-            .expect("error should be TransportError");
+            .expect("错误应为 TransportError");
         // Refresh was attempted exactly once.
         assert_eq!(provider.refresh_count(), 1);
     }

@@ -145,22 +145,22 @@ impl Component for Chip {
 
     fn preview(_window: &mut Window, cx: &mut App) -> AnyElement {
         let chip_examples = vec![
-            single_example("Default", Chip::new("Chip Example").into_any_element()),
+            single_example("默认", Chip::new("Chip Example").into_any_element()),
             single_example(
-                "Customized Label Color",
+                "自定义标签颜色",
                 Chip::new("Chip Example")
                     .label_color(Color::Accent)
                     .into_any_element(),
             ),
             single_example(
-                "Customized Label Size",
+                "自定义标签大小",
                 Chip::new("Chip Example")
                     .label_size(LabelSize::Large)
                     .label_color(Color::Accent)
                     .into_any_element(),
             ),
             single_example(
-                "Customized Background Color",
+                "自定义背景颜色",
                 Chip::new("Chip Example")
                     .bg_color(cx.theme().colors().text_accent.opacity(0.1))
                     .into_any_element(),

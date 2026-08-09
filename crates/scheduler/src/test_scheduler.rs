@@ -64,12 +64,12 @@ impl TestScheduler {
             .map(|seed| {
                 let mut unwind_safe_f = AssertUnwindSafe(&mut f);
                 if interactive {
-                    eprintln!("Running seed: {seed}");
+                    eprintln!("正在运行种子:{seed}");
                 }
                 match panic::catch_unwind(move || Self::with_seed(seed, &mut *unwind_safe_f)) {
                     Ok(result) => result,
                     Err(error) => {
-                        eprintln!("\x1b[31mFailing Seed: {seed}\x1b[0m");
+                        eprintln!("\x1b[31m失败的种子:{seed}\x1b[0m");
                         panic::resume_unwind(error);
                     }
                 }
@@ -381,7 +381,7 @@ impl TestScheduler {
         if debug {
             let timer_count = self.state.lock().timers.len();
             eprintln!(
-                "[scheduler] advance_clock({:?}) from {:?}, {} pending timers",
+                "[调度器] 从 {:?} 推进时钟({:?}),{} 个待处理定时器",
                 duration, start, timer_count
             );
         }
@@ -393,7 +393,7 @@ impl TestScheduler {
                 let advance_to = timer.expiration;
                 if debug {
                     eprintln!(
-                        "[scheduler] Advancing clock {:?} -> {:?} for timer",
+                        "[调度器] 为定时器推进时钟 {:?} -> {:?}",
                         self.clock.now(),
                         advance_to
                     );
@@ -406,7 +406,7 @@ impl TestScheduler {
         self.clock.advance(next_now - self.clock.now());
         if debug {
             eprintln!(
-                "[scheduler] advance_clock done, now at {:?}",
+                "[调度器] 推进时钟完成,当前时间 {:?}",
                 self.clock.now()
             );
         }
@@ -472,16 +472,16 @@ impl TestScheduler {
             false
         } else if cfg!(miri) {
             // miri cannot debug print backtraces with `miri-disable-isolation` enabled
-            panic!("Parking forbidden.");
+            panic!("禁止挂起。");
         } else if self.state.lock().capture_pending_traces {
             let mut pending_traces = String::new();
             for (_, trace) in mem::take(&mut self.state.lock().pending_traces) {
                 writeln!(pending_traces, "{:?}", exclude_wakers_from_trace(trace)).unwrap();
             }
-            panic!("Parking forbidden. Pending traces:\n{}", pending_traces);
+            panic!("禁止挂起。待处理跟踪:\n{}", pending_traces);
         } else {
             panic!(
-                "Parking forbidden. Re-run with {PENDING_TRACES_VAR_NAME}=1 to show pending traces"
+                "禁止挂起。使用 {PENDING_TRACES_VAR_NAME}=1 重新运行以显示待处理跟踪"
             );
         }
     }
@@ -498,7 +498,7 @@ fn assert_correct_thread(expected: &Thread, state: &Arc<Mutex<SchedulerState>>) 
     }
 
     let message = format!(
-        "Detected activity on thread {:?} {:?}, but test scheduler is running on {:?} {:?}. Your test is not deterministic.",
+        "在线程 {:?} {:?} 上检测到活动,但测试调度器正在 {:?} {:?} 上运行。您的测试不是确定性的。",
         current_thread.name(),
         current_thread.id(),
         expected.name(),

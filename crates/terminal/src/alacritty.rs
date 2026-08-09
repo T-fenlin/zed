@@ -96,13 +96,13 @@ impl PtySender {
             .0
             .send(Msg::Resize(window_size_from_terminal_bounds(bounds)))
         {
-            log::error!("failed to resize alacritty pty: {error}");
+            log::error!("调整 alacritty pty 大小失败:{error}");
         }
     }
 
     pub(super) fn shutdown(&self) {
         if let Err(error) = self.notifier.0.send(Msg::Shutdown) {
-            log::debug!("failed to shut down alacritty pty loop: {error}");
+            log::debug!("关闭 alacritty pty 循环失败:{error}");
         }
     }
 }
@@ -206,7 +206,7 @@ pub(super) fn spawn_event_loop(
     drain_on_exit: bool,
 ) -> Result<PtySender> {
     let event_loop = EventLoop::new(term, ZedListener(events_tx), pty, drain_on_exit, false)
-        .context("failed to create event loop")?;
+        .context("创建事件循环失败")?;
     let pty_tx = event_loop.channel();
     let _io_thread = event_loop.spawn();
 
@@ -1049,7 +1049,7 @@ mod tests {
 
         match (&cell.extra, &converted.cell.extra) {
             (Some(extra), Some(converted_extra)) => assert!(Arc::ptr_eq(extra, converted_extra)),
-            _ => panic!("expected extra storage on both cells"),
+            _ => panic!("两个单元格上均应有额外存储"),
         }
     }
 

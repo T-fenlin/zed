@@ -57,7 +57,7 @@ async fn test_dynamic_semantic_tokens_registration(cx: &mut gpui::TestAppContext
 
     assert!(
         semantic_tokens_provider(cx).is_none(),
-        "server should not advertise semantic tokens before dynamic registration"
+        "服务器在动态注册之前不应通告语义令牌"
     );
 
     fake_server
@@ -96,7 +96,7 @@ async fn test_dynamic_semantic_tokens_registration(cx: &mut gpui::TestAppContext
     cx.executor().run_until_parked();
 
     let provider = semantic_tokens_provider(cx)
-        .expect("semantic tokens provider should be set after dynamic registration");
+        .expect("动态注册后应设置语义令牌提供程序");
     // The capability round-trips through capability-sync serialization, which may
     // normalize the registration options into plain options; either shape is fine
     // as long as the legend survives.
@@ -128,7 +128,7 @@ async fn test_dynamic_semantic_tokens_registration(cx: &mut gpui::TestAppContext
 
     assert!(
         semantic_tokens_provider(cx).is_none(),
-        "semantic tokens provider should be cleared after unregistration"
+        "注销后应清除语义令牌提供程序"
     );
 }
 
@@ -152,7 +152,7 @@ async fn test_multi_registration_inlay_hint(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         server_capabilities(&project, server_id, cx).inlay_hint_provider,
         None,
-        "expected no inlay hint provider before any registration",
+        "在任何注册之前不应有内联提示提供程序",
     );
 
     register_capability(
@@ -168,7 +168,7 @@ async fn test_multi_registration_inlay_hint(cx: &mut gpui::TestAppContext) {
         Some(lsp::OneOf::Right(
             lsp::InlayHintServerCapabilities::Options(options_a.clone())
         )),
-        "expected the first registration's options after the first registration",
+        "第一次注册后应使用第一次注册的选项",
     );
 
     register_capability(
@@ -202,7 +202,7 @@ async fn test_multi_registration_inlay_hint(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         server_capabilities(&project, server_id, cx).inlay_hint_provider,
         None,
-        "expected inlay hint provider to be cleared after unregistering the last registration",
+        "注销最后一个注册后应清除内联提示提供程序",
     );
 }
 
@@ -224,7 +224,7 @@ async fn test_multi_registration_code_lens(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         server_capabilities(&project, server_id, cx).code_lens_provider,
         None,
-        "expected no code lens provider before any registration",
+        "在任何注册之前不应有代码透镜提供程序",
     );
 
     register_capability(
@@ -261,7 +261,7 @@ async fn test_multi_registration_code_lens(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         server_capabilities(&project, server_id, cx).code_lens_provider,
         None,
-        "expected code lens provider to be cleared after unregistering the last registration",
+        "注销最后一个注册后应清除代码透镜提供程序",
     );
 }
 
@@ -281,7 +281,7 @@ async fn test_multi_registration_document_symbol(cx: &mut gpui::TestAppContext) 
     assert_eq!(
         server_capabilities(&project, server_id, cx).document_symbol_provider,
         None,
-        "expected no document symbol provider before any registration",
+        "在任何注册之前不应有文档符号提供程序",
     );
 
     register_capability(&fake_server, method, "document-symbol-a", None).await;
@@ -312,7 +312,7 @@ async fn test_multi_registration_document_symbol(cx: &mut gpui::TestAppContext) 
     assert_eq!(
         server_capabilities(&project, server_id, cx).document_symbol_provider,
         None,
-        "expected document symbol provider to be cleared after unregistering the last registration",
+        "注销最后一个注册后应清除文档符号提供程序",
     );
 }
 
@@ -333,7 +333,7 @@ async fn test_multi_registration_restores_static_capability(cx: &mut gpui::TestA
     assert_eq!(
         server_capabilities(&project, server_id, cx).inlay_hint_provider,
         Some(lsp::OneOf::Left(true)),
-        "expected the statically declared inlay hint provider before any dynamic registration",
+        "在任何动态注册之前应存在静态声明的内联提示提供程序",
     );
 
     let dynamic_options = lsp::InlayHintOptions {
@@ -353,7 +353,7 @@ async fn test_multi_registration_restores_static_capability(cx: &mut gpui::TestA
         Some(lsp::OneOf::Right(
             lsp::InlayHintServerCapabilities::Options(dynamic_options)
         )),
-        "expected the dynamic registration's options to override the static capability",
+        "动态注册的选项应覆盖静态能力",
     );
 
     unregister_capabilities(&fake_server, method, &["unknown-id", "inlay-hint-dynamic"]).await;
@@ -361,7 +361,7 @@ async fn test_multi_registration_restores_static_capability(cx: &mut gpui::TestA
     assert_eq!(
         server_capabilities(&project, server_id, cx).inlay_hint_provider,
         Some(lsp::OneOf::Left(true)),
-        "expected the static capability to be restored after unregistering the last dynamic registration, despite an unknown ID earlier in the batch",
+        "即使在批次中较早出现未知 ID,注销最后一个动态注册后也应恢复静态能力",
     );
 }
 
@@ -405,7 +405,7 @@ async fn test_multi_registration_duplicate_id_keeps_order(cx: &mut gpui::TestApp
             format!("inlay_hints({server_id})"),
             format!("inlay_hints({server_id})"),
         ],
-        "expected both registrations to trigger a refresh",
+        "两次注册都应触发刷新",
     );
 
     register_capability(
@@ -421,12 +421,12 @@ async fn test_multi_registration_duplicate_id_keeps_order(cx: &mut gpui::TestApp
         Some(lsp::OneOf::Right(
             lsp::InlayHintServerCapabilities::Options(options_b)
         )),
-        "expected the latest distinct registration to stay active after a duplicate ID replaced an older one",
+        "在重复 ID 替换旧注册后,最新的不同注册应保持活动状态",
     );
     assert_eq!(
         refresh_events.lock().as_slice(),
         &[] as &[String],
-        "expected no refresh after a duplicate ID replaced an inactive registration",
+        "重复 ID 替换非活动注册后不应触发刷新",
     );
 
     unregister_capabilities(&fake_server, method, &["inlay-hint-b"]).await;
@@ -444,7 +444,7 @@ async fn test_multi_registration_duplicate_id_keeps_order(cx: &mut gpui::TestApp
     assert_eq!(
         server_capabilities(&project, server_id, cx).inlay_hint_provider,
         None,
-        "expected inlay hint provider to be cleared after unregistering the last registration",
+        "注销最后一个注册后应清除内联提示提供程序",
     );
 }
 
@@ -472,7 +472,7 @@ async fn test_registration_with_unchanged_options_does_not_refresh(cx: &mut gpui
     assert_eq!(
         refresh_events.lock().drain(..).collect::<Vec<_>>(),
         vec![format!("code_lens({server_id})")],
-        "expected the first registration to refresh",
+        "第一次注册应触发刷新",
     );
 
     register_capability(
@@ -499,7 +499,7 @@ async fn test_registration_with_unchanged_options_does_not_refresh(cx: &mut gpui
     assert_eq!(
         server_capabilities(&project, server_id, cx).code_lens_provider,
         Some(options),
-        "expected the remaining registration's options to stay active",
+        "剩余注册的选项应保持活动状态",
     );
 
     unregister_capabilities(&fake_server, method, &["lens-a"]).await;
@@ -507,12 +507,12 @@ async fn test_registration_with_unchanged_options_does_not_refresh(cx: &mut gpui
     assert_eq!(
         refresh_events.lock().drain(..).collect::<Vec<_>>(),
         vec![format!("code_lens({server_id})")],
-        "expected the last unregistration to clear the capability and refresh",
+        "最后一次注销应清除能力并触发刷新",
     );
     assert_eq!(
         server_capabilities(&project, server_id, cx).code_lens_provider,
         None,
-        "expected the code lens provider to be cleared after unregistering the last registration",
+        "注销最后一个注册后应清除代码透镜提供程序",
     );
 }
 
@@ -553,7 +553,7 @@ async fn test_multi_registration_completion_triggers(cx: &mut gpui::TestAppConte
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::from([".".to_string()]),
-        "expected the first registration's triggers to be applied",
+        "应应用第一次注册的触发器",
     );
 
     register_capability(
@@ -567,7 +567,7 @@ async fn test_multi_registration_completion_triggers(cx: &mut gpui::TestAppConte
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::from([":".to_string()]),
-        "expected the second registration's triggers to replace the first ones",
+        "第二次注册的触发器应替换第一次的触发器",
     );
 
     let options_a_replacement = lsp::CompletionOptions {
@@ -585,7 +585,7 @@ async fn test_multi_registration_completion_triggers(cx: &mut gpui::TestAppConte
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::from([":".to_string()]),
-        "expected the active registration's triggers to stay applied after a duplicate ID replaced an inactive one",
+        "在重复 ID 替换非活动注册后,活动注册的触发器应保持应用",
     );
 
     unregister_capabilities(&fake_server, method, &["completion-b"]).await;
@@ -593,7 +593,7 @@ async fn test_multi_registration_completion_triggers(cx: &mut gpui::TestAppConte
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::from(["!".to_string()]),
-        "expected the replaced registration's triggers to be restored",
+        "应恢复被替换注册的触发器",
     );
 
     unregister_capabilities(&fake_server, method, &["completion-a"]).await;
@@ -601,7 +601,7 @@ async fn test_multi_registration_completion_triggers(cx: &mut gpui::TestAppConte
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::new(),
-        "expected completion triggers to be cleared after unregistering the last registration",
+        "注销最后一个注册后应清除补全触发器",
     );
 }
 
@@ -646,12 +646,12 @@ async fn test_multi_registration_middle_removal(cx: &mut gpui::TestAppContext) {
         Some(lsp::OneOf::Right(
             lsp::InlayHintServerCapabilities::Options(options_b)
         )),
-        "expected the latest registration to stay active after removing an older one from the middle",
+        "从中间移除较旧的注册后,最新的注册应保持活动状态",
     );
     assert_eq!(
         refresh_events.lock().as_slice(),
         &[] as &[String],
-        "expected no refresh after removing an inactive registration",
+        "移除非活动注册后不应触发刷新",
     );
 
     unregister_capabilities(&fake_server, method, &["inlay-hint-b"]).await;
@@ -695,7 +695,7 @@ async fn test_refresh_during_code_lens_fetch_does_not_resurrect_stale_data(
                 Ok(Some(vec![lsp::CodeLens {
                     range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 1)),
                     command: Some(lsp::Command {
-                        title: "stale lens".to_string(),
+                        title: "过期透镜".to_string(),
                         command: "lens_cmd".to_string(),
                         arguments: None,
                     }),
@@ -725,7 +725,7 @@ async fn test_refresh_during_code_lens_fetch_does_not_resurrect_stale_data(
     assert_eq!(
         lens_requests.load(atomic::Ordering::Acquire),
         1,
-        "expected the code lens request to be in flight before the unregistration",
+        "注销前代码透镜请求应正在进行中",
     );
 
     unregister_capabilities(&fake_server, method, &["lens"]).await;
@@ -742,12 +742,12 @@ async fn test_refresh_during_code_lens_fetch_does_not_resurrect_stale_data(
     assert_eq!(
         actions.map(|actions| actions.len()),
         Some(0),
-        "expected no code lens data after the unregistration, even though a stale fetch completed after it",
+        "注销后不应有代码透镜数据,即使过期的获取在其后完成",
     );
     assert_eq!(
         lens_requests.load(atomic::Ordering::Acquire),
         1,
-        "expected the unregistered server to not be queried again",
+        "不应再次查询已注销的服务器",
     );
 }
 
@@ -769,7 +769,7 @@ async fn test_multi_registration_unregister_with_static_only(cx: &mut gpui::Test
     assert_eq!(
         server_capabilities(&project, server_id, cx).inlay_hint_provider,
         Some(lsp::OneOf::Left(true)),
-        "expected the static capability to survive unregistering an unknown ID",
+        "注销未知 ID 后静态能力应保持不变",
     );
 }
 
@@ -803,7 +803,7 @@ async fn test_multi_registration_completion_static_restore(cx: &mut gpui::TestAp
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::from([".".to_string()]),
-        "expected the static trigger characters before any dynamic registration",
+        "在任何动态注册之前应存在静态触发器字符",
     );
 
     let dynamic_options = lsp::CompletionOptions {
@@ -821,7 +821,7 @@ async fn test_multi_registration_completion_static_restore(cx: &mut gpui::TestAp
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::from([":".to_string()]),
-        "expected the dynamic registration's triggers to override the static ones",
+        "动态注册的触发器应覆盖静态触发器",
     );
 
     unregister_capabilities(&fake_server, method, &["completion-dynamic"]).await;
@@ -829,12 +829,12 @@ async fn test_multi_registration_completion_static_restore(cx: &mut gpui::TestAp
     assert_eq!(
         server_capabilities(&project, server_id, cx).completion_provider,
         Some(static_options),
-        "expected the static completion provider to be restored",
+        "应恢复静态补全提供程序",
     );
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::from([".".to_string()]),
-        "expected the static trigger characters to be restored",
+        "应恢复静态触发器字符",
     );
 }
 
@@ -863,12 +863,12 @@ async fn test_multi_registration_same_id_different_methods(cx: &mut gpui::TestAp
     let capabilities = server_capabilities(&project, server_id, cx);
     assert_eq!(
         capabilities.code_lens_provider, None,
-        "expected the code lens registration to be removed",
+        "应移除代码透镜注册",
     );
     assert_eq!(
         capabilities.inlay_hint_provider,
         Some(lsp::OneOf::Left(true)),
-        "expected the inlay hint registration with the same ID to stay intact",
+        "具有相同 ID 的内联提示注册应保持完整",
     );
 }
 
@@ -932,7 +932,7 @@ async fn test_multi_registration_diagnostics(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         server_capabilities(&project, server_id, cx).diagnostic_provider,
         Some(options_a),
-        "expected an unknown unregistration ID to leave the diagnostic provider intact",
+        "未知的注销 ID 应使诊断提供程序保持完整",
     );
 
     unregister_capabilities(&fake_server, method, &["diag-a"]).await;
@@ -940,7 +940,7 @@ async fn test_multi_registration_diagnostics(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         server_capabilities(&project, server_id, cx).diagnostic_provider,
         None,
-        "expected the diagnostic provider to be cleared after unregistering the last registration",
+        "注销最后一个注册后应清除诊断提供程序",
     );
 }
 
@@ -1031,12 +1031,12 @@ async fn test_per_server_refreshes_keep_other_servers_data(cx: &mut gpui::TestAp
     assert_eq!(
         fetch_all_lsp_data(&project, &rust_buffer, InvalidationStrategy::None, cx).await,
         only_static,
-        "expected only the statically capable server's data after the initial fetch",
+        "初始获取后应仅包含具有静态能力的服务器的数据",
     );
     assert_eq!(
         fetch_all_lsp_data(&project, &markdown_buffer, InvalidationStrategy::None, cx).await,
         only_markdown,
-        "expected the markdown server's data after the initial fetch",
+        "初始获取后应包含 Markdown 服务器的数据",
     );
     assert_eq!(refresh_events.lock().as_slice(), &[] as &[String]);
 
@@ -1045,17 +1045,17 @@ async fn test_per_server_refreshes_keep_other_servers_data(cx: &mut gpui::TestAp
     assert_eq!(
         sorted(refresh_events.lock().drain(..)),
         all_dynamic_refresh_events,
-        "expected every dynamic registration to trigger the corresponding per-server refresh",
+        "每个动态注册都应触发相应的按服务器刷新",
     );
     assert_eq!(
         fetch_all_lsp_data(&project, &rust_buffer, dynamic_refresh, cx).await,
         both_rust_servers,
-        "expected both servers' data after the dynamic registrations",
+        "动态注册后应包含两个服务器的数据",
     );
     assert_eq!(
         fetch_all_lsp_data(&project, &markdown_buffer, InvalidationStrategy::None, cx).await,
         only_markdown,
-        "expected the registrations of another language's server to not disturb markdown data",
+        "其他语言服务器的注册不应干扰 Markdown 数据",
     );
 
     dynamic_server
@@ -1081,17 +1081,17 @@ async fn test_per_server_refreshes_keep_other_servers_data(cx: &mut gpui::TestAp
             format!("inlay_hints({dynamic_server_id})"),
             format!("semantic_tokens({dynamic_server_id})"),
         ],
-        "expected the server-sent refresh requests to trigger per-server refreshes",
+        "服务器发送的刷新请求应触发按服务器刷新",
     );
     assert_eq!(
         fetch_all_lsp_data(&project, &rust_buffer, dynamic_refresh, cx).await,
         both_rust_servers,
-        "expected the per-server refresh requests to keep the other server's data",
+        "按服务器刷新请求应保留其他服务器的数据",
     );
     assert_eq!(
         fetch_all_lsp_data(&project, &markdown_buffer, InvalidationStrategy::None, cx).await,
         only_markdown,
-        "expected another language server's refresh requests to not disturb markdown data",
+        "其他语言服务器的刷新请求不应干扰 Markdown 数据",
     );
 
     unregister_all_lsp_data_capabilities(&dynamic_server).await;
@@ -1099,17 +1099,17 @@ async fn test_per_server_refreshes_keep_other_servers_data(cx: &mut gpui::TestAp
     assert_eq!(
         sorted(refresh_events.lock().drain(..)),
         all_dynamic_refresh_events,
-        "expected every unregistration to trigger the corresponding per-server refresh",
+        "每次注销都应触发相应的按服务器刷新",
     );
     assert_eq!(
         fetch_all_lsp_data(&project, &rust_buffer, dynamic_refresh, cx).await,
         only_static,
-        "expected the unregistrations to drop only the dynamic server's data",
+        "注销应仅丢弃动态服务器的数据",
     );
     assert_eq!(
         fetch_all_lsp_data(&project, &markdown_buffer, InvalidationStrategy::None, cx).await,
         only_markdown,
-        "expected the unregistrations of another language's server to not disturb markdown data",
+        "其他语言服务器的注销不应干扰 Markdown 数据",
     );
 
     assert_eq!(
@@ -1123,7 +1123,7 @@ async fn test_per_server_refreshes_keep_other_servers_data(cx: &mut gpui::TestAp
             ("links", 1),
             ("semantic_tokens", 1),
         ]),
-        "expected the static server to never be re-queried by the other server's changes",
+        "静态服务器不应因其他服务器的更改而被重新查询",
     );
     assert_eq!(
         *dynamic_counts.lock(),
@@ -1136,7 +1136,7 @@ async fn test_per_server_refreshes_keep_other_servers_data(cx: &mut gpui::TestAp
             ("links", 1),
             ("semantic_tokens", 2),
         ]),
-        "expected the dynamic server to be re-queried only after registering and for the kinds it requested refreshes for",
+        "动态服务器应仅在注册后以及为其请求刷新的类型被重新查询",
     );
     assert_eq!(
         *markdown_counts.lock(),
@@ -1149,7 +1149,7 @@ async fn test_per_server_refreshes_keep_other_servers_data(cx: &mut gpui::TestAp
             ("links", 1),
             ("semantic_tokens", 1),
         ]),
-        "expected the markdown server to never be re-queried by the rust servers' changes",
+        "Markdown 服务器不应因 Rust 服务器的更改而被重新查询",
     );
 }
 
@@ -1231,12 +1231,12 @@ async fn test_dynamic_registration_refreshes_lsp_data(cx: &mut gpui::TestAppCont
     assert_eq!(
         *static_counts.lock(),
         all_kinds_queried_once,
-        "expected the initial fetch to query the statically capable server",
+        "初始获取应查询具有静态能力的服务器",
     );
     assert_eq!(
         *dynamic_counts.lock(),
         BTreeMap::new(),
-        "expected the initial fetch to skip the server without capabilities",
+        "初始获取应跳过没有能力的服务器",
     );
     assert_eq!(buffer_triggers(cx), BTreeSet::from([".".to_string()]));
     assert_eq!(refresh_events.lock().as_slice(), &[] as &[String]);
@@ -1258,12 +1258,12 @@ async fn test_dynamic_registration_refreshes_lsp_data(cx: &mut gpui::TestAppCont
     assert_eq!(
         sorted(refresh_events.lock().drain(..)),
         all_dynamic_refresh_events,
-        "expected every dynamic registration to trigger the corresponding per-server refresh",
+        "每个动态注册都应触发相应的按服务器刷新",
     );
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::from([".".to_string(), ":".to_string()]),
-        "expected trigger characters from both servers to be combined",
+        "两个服务器的触发器字符应合并",
     );
 
     fetch_all_lsp_data(
@@ -1278,12 +1278,12 @@ async fn test_dynamic_registration_refreshes_lsp_data(cx: &mut gpui::TestAppCont
     assert_eq!(
         *dynamic_counts.lock(),
         all_kinds_queried_once,
-        "expected the newly registered server to be queried after the refreshes",
+        "刷新后应查询新注册的服务器",
     );
     assert_eq!(
         *static_counts.lock(),
         all_kinds_queried_once,
-        "expected per-server refreshes to leave the static server's cached data untouched",
+        "按服务器刷新应保持静态服务器的缓存数据不变",
     );
 
     unregister_all_lsp_data_capabilities(&dynamic_server).await;
@@ -1293,12 +1293,12 @@ async fn test_dynamic_registration_refreshes_lsp_data(cx: &mut gpui::TestAppCont
     assert_eq!(
         sorted(refresh_events.lock().drain(..)),
         all_dynamic_refresh_events,
-        "expected every unregistration to trigger the corresponding per-server refresh",
+        "每次注销都应触发相应的按服务器刷新",
     );
     assert_eq!(
         buffer_triggers(cx),
         BTreeSet::from([".".to_string()]),
-        "expected only the static server's trigger characters to remain",
+        "应仅保留静态服务器的触发器字符",
     );
 
     fetch_all_lsp_data(
@@ -1313,12 +1313,12 @@ async fn test_dynamic_registration_refreshes_lsp_data(cx: &mut gpui::TestAppCont
     assert_eq!(
         *dynamic_counts.lock(),
         all_kinds_queried_once,
-        "expected the unregistered server to not be queried anymore",
+        "不应再查询已注销的服务器",
     );
     assert_eq!(
         *static_counts.lock(),
         all_kinds_queried_once,
-        "expected the static server to never be re-queried by another server's capability changes",
+        "静态服务器不应因其他服务器的能力更改而被重新查询",
     );
 }
 
@@ -1402,7 +1402,7 @@ async fn test_semantic_tokens_refresh_invalidates_only_the_refreshed_server(
     assert_eq!(
         cached_token_servers(cx),
         vec![server_a_id, server_b_id],
-        "expected tokens from both servers after the initial fetch",
+        "初始获取后应包含两个服务器的令牌",
     );
 
     for repetition in 0..2 {
@@ -1417,7 +1417,7 @@ async fn test_semantic_tokens_refresh_invalidates_only_the_refreshed_server(
         assert_eq!(
             cached_token_servers(cx),
             vec![server_b_id],
-            "expected refresh {repetition} to invalidate only the refreshed server's tokens",
+            "刷新 {repetition} 应仅使已刷新服务器的令牌失效",
         );
         let concurrent_task = lsp_store.update(cx, |lsp_store, cx| {
             lsp_store.semantic_tokens(buffer.clone(), cx)
@@ -1425,14 +1425,14 @@ async fn test_semantic_tokens_refresh_invalidates_only_the_refreshed_server(
         assert_eq!(
             cached_token_servers(cx),
             vec![server_b_id],
-            "expected a concurrent query {repetition} to not invalidate the data again",
+            "并发查询 {repetition} 不应再次使数据失效",
         );
         refresh_task.await.unwrap();
         concurrent_task.await.unwrap();
         assert_eq!(
             cached_token_servers(cx),
             vec![server_a_id, server_b_id],
-            "expected the refreshed server's tokens to be re-fetched after refresh {repetition}",
+            "刷新 {repetition} 后应重新获取已刷新服务器的令牌",
         );
     }
 }
@@ -1508,7 +1508,7 @@ async fn test_semantic_tokens_refresh_during_fetch_does_not_resurrect_stale_data
     assert_eq!(
         token_requests.load(atomic::Ordering::Acquire),
         1,
-        "expected the first fetch to be in flight before the refresh",
+        "刷新前第一次获取应正在进行中",
     );
 
     fake_server
@@ -1530,12 +1530,12 @@ async fn test_semantic_tokens_refresh_during_fetch_does_not_resurrect_stale_data
     assert_eq!(
         lsp_store.read_with(cx, |lsp_store, _| lsp_store.semantic_token_data(buffer_id)),
         vec![(server_id, fresh_data)],
-        "expected the stale fetch, completed after the refresh, to not overwrite the refreshed tokens",
+        "在刷新后完成的过期获取不应覆盖已刷新的令牌",
     );
     assert_eq!(
         token_requests.load(atomic::Ordering::Acquire),
         2,
-        "expected exactly the stale and the fresh fetches to have queried the server",
+        "应恰好有过期和新的获取查询过服务器",
     );
 }
 
@@ -1581,7 +1581,7 @@ async fn test_code_lens_concurrent_fetches_are_deduplicated(cx: &mut gpui::TestA
     assert_eq!(
         lens_requests.load(atomic::Ordering::Acquire),
         1,
-        "expected concurrent code lens fetches to share one LSP request",
+        "并发的代码透镜获取应共享一个 LSP 请求",
     );
 
     lsp_store
@@ -1591,7 +1591,7 @@ async fn test_code_lens_concurrent_fetches_are_deduplicated(cx: &mut gpui::TestA
     assert_eq!(
         lens_requests.load(atomic::Ordering::Acquire),
         1,
-        "expected a repeated fetch for the unchanged buffer to be served from the cache",
+        "对未更改缓冲区的重复获取应从缓存中提供",
     );
 }
 

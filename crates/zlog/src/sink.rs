@@ -195,7 +195,7 @@ pub fn submit(mut record: Record) {
                 Ok(Some(file)) => *file_guard = Some(file),
                 Ok(None) => {}
                 Err(e) => {
-                    eprintln!("Failed to open log file: {e}")
+                    eprintln!("无法打开日志文件:{e}")
                 }
             }
             SINK_FILE_SIZE_BYTES.store(0, Ordering::Release);
@@ -214,7 +214,7 @@ pub fn flush() {
     if let Some(file) = file.as_mut()
         && let Err(err) = file.flush()
     {
-        eprintln!("Failed to flush log file: {}", err);
+        eprintln!("无法刷新日志文件:{}", err);
     }
 }
 
@@ -266,14 +266,14 @@ where
 {
     let path = path.as_ref().map(PathRef::as_ref);
     let rotation_error = match (path, path_rotate) {
-        (Some(_), None) => Some(anyhow::anyhow!("No rotation log file path configured")),
-        (None, _) => Some(anyhow::anyhow!("No log file path configured")),
+        (Some(_), None) => Some(anyhow::anyhow!("未配置日志轮转文件路径")),
+        (None, _) => Some(anyhow::anyhow!("未配置日志文件路径")),
         (Some(path), Some(path_rotate)) => fs::copy(path, path_rotate)
             .err()
             .map(|err| anyhow::anyhow!(err)),
     };
     if let Some(err) = rotation_error {
-        eprintln!("Log file rotation failed. Truncating log file anyways: {err}",);
+        eprintln!("日志文件轮转失败,仍将截断日志文件:{err}",);
     }
     path.map(|path| {
         fs::OpenOptions::new()

@@ -31,7 +31,7 @@ impl TryFrom<String> for Role {
             "assistant" => Ok(Self::Assistant),
             "system" => Ok(Self::System),
             "tool" => Ok(Self::Tool),
-            _ => anyhow::bail!("invalid role '{value}'"),
+            _ => anyhow::bail!("无效角色 '{value}'"),
         }
     }
 }
@@ -74,7 +74,7 @@ impl Model {
         match id {
             "deepseek-v4-flash" => Ok(Self::V4Flash),
             "deepseek-v4-pro" => Ok(Self::V4Pro),
-            _ => anyhow::bail!("invalid model id {id}"),
+            _ => anyhow::bail!("无效的模型 ID {id}"),
         }
     }
 
@@ -333,7 +333,7 @@ pub async fn stream_completion(
         let mut body = String::new();
         response.body_mut().read_to_string(&mut body).await?;
         anyhow::bail!(
-            "Failed to connect to DeepSeek API: {} {}",
+            "无法连接 DeepSeek API: {} {}",
             response.status(),
             body,
         );

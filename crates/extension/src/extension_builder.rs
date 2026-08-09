@@ -102,14 +102,14 @@ impl ExtensionBuilder {
 
         if extension_dir.is_relative() {
             bail!(
-                "extension dir {} is not an absolute path",
+                "扩展目录 {} 不是绝对路径",
                 extension_dir.display()
             );
         }
 
         fs.create_dir(&self.cache_dir)
             .await
-            .context("failed to create cache dir")?;
+            .context("无法创建缓存目录")?;
 
         let (tx, mut rx) = oneshot::channel();
 
@@ -129,12 +129,12 @@ impl ExtensionBuilder {
         let rust_compilation_task =
             (extension_manifest.lib.kind == Some(ExtensionLibraryKind::Rust)).then(|| {
                 async {
-                    log::info!("compiling Rust extension {}", extension_dir.display());
+                    log::info!("正在编译 Rust 扩展 {}", extension_dir.display());
                     self.compile_rust_extension(extension_dir, extension_manifest, tx, &options)
                         .await
-                        .context("failed to compile Rust extension")?;
+                        .context("编译 Rust 扩展失败")?;
 
-                    log::info!("compiled Rust extension {}", extension_dir.display());
+                    log::info!("已编译 Rust 扩展 {}", extension_dir.display());
                     Ok(())
                 }
                 .boxed()
@@ -155,13 +155,13 @@ impl ExtensionBuilder {
                     }
 
                     log::info!(
-                        "compiling grammar {grammar_name} for extension {}",
+                        "正在为扩展 {} 编译语法 {grammar_name}",
                         extension_dir.display()
                     );
 
                     let clang_path = clang_path_task
                         .await
-                        .context("Failed to resolve clang path")?;
+                        .context("无法解析 clang 路径")?;
 
                     self.compile_grammar(
                         extension_dir,
@@ -170,9 +170,9 @@ impl ExtensionBuilder {
                         &clang_path,
                     )
                     .await
-                    .with_context(|| format!("failed to compile grammar '{grammar_name}'"))?;
+                    .with_context(|| format!("编译语法 '{grammar_name}' 失败"))?;
                     log::info!(
-                        "compiled grammar {grammar_name} for extension {}",
+                        "已为扩展 {} 编译语法 {grammar_name}",
                         extension_dir.display()
                     );
 
@@ -204,7 +204,7 @@ impl ExtensionBuilder {
         }
 
         log::info!(
-            "finished compiling extension {} in {time:.2}s",
+            "在 {time:.2} 秒内完成扩展 {} 的编译",
             extension_dir.display(),
             time = start.elapsed().as_secs_f64(),
         );
@@ -224,7 +224,7 @@ impl ExtensionBuilder {
         let cargo_toml: CargoToml = toml::from_str(&cargo_toml_content)?;
 
         log::info!(
-            "compiling Rust crate for extension {}",
+            "正在为扩展 {} 编译 Rust crate",
             extension_dir.display()
         );
         let output = util::command::new_command("cargo")
@@ -237,16 +237,16 @@ impl ExtensionBuilder {
             .current_dir(extension_dir)
             .output()
             .await
-            .context("failed to run `cargo`")?;
+            .context("运行 `cargo` 失败")?;
         if !output.status.success() {
             bail!(
-                "failed to build extension {}",
+                "构建扩展 {} 失败",
                 String::from_utf8_lossy(&output.stderr)
             );
         }
 
         log::info!(
-            "compiled Rust crate for extension {}",
+            "已为扩展 {} 编译 Rust crate",
             extension_dir.display()
         );
 
@@ -264,30 +264,30 @@ impl ExtensionBuilder {
         wasm_path.set_extension("wasm");
 
         log::info!(
-            "encoding wasm component for extension {}",
+            "正在为扩展 {} 编码 wasm 组件",
             extension_dir.display()
         );
 
         let component_bytes = fs::read(&wasm_path)
-            .with_context(|| format!("failed to read output module `{}`", wasm_path.display()))?;
+            .with_context(|| format!("无法读取输出模块 `{}`", wasm_path.display()))?;
 
         let component_bytes = self
             .strip_custom_sections(&component_bytes)
-            .context("failed to strip debug sections from wasm component")?;
+            .context("无法从 wasm 组件中剥离调试段")?;
 
         let wasm_extension_api_version =
             parse_wasm_extension_version(&manifest.id, &component_bytes)
-                .context("compiled wasm did not contain a valid zed extension api version")?;
+                .context("编译后的 wasm 不包含有效的 zed 扩展 API 版本")?;
         wasm_extension_api_version_tx
             .send(wasm_extension_api_version)
-            .map_err(|_| anyhow::anyhow!("Failed to send API version"))?;
+            .map_err(|_| anyhow::anyhow!("发送 API 版本失败"))?;
 
         let extension_file = extension_dir.join("extension.wasm");
         fs::write(extension_file.clone(), &component_bytes)
-            .context("failed to write extension.wasm")?;
+            .context("无法写入 扩展.wasm")?;
 
         log::info!(
-            "extension {} written to {}",
+            "扩展 {} 已写入到 {}",
             extension_dir.display(),
             extension_file.display()
         );
@@ -308,7 +308,7 @@ impl ExtensionBuilder {
         let mut grammar_wasm_path = grammar_repo_dir.clone();
         grammar_wasm_path.set_extension("wasm");
 
-        log::info!("checking out {grammar_name} parser");
+        log::info!("正在检出 {grammar_name} 解析器");
         self.checkout_repo(
             &grammar_repo_dir,
             &grammar_metadata.repository,
@@ -330,10 +330,10 @@ impl ExtensionBuilder {
         if file_newer_than_deps(&grammar_wasm_path, &[&parser_path, &scanner_path]).unwrap_or(false)
         {
             log::info!(
-                "skipping compilation of {grammar_name} parser because the existing compiled grammar is up to date"
+                "跳过 {grammar_name} 解析器的编译,因为现有编译的语法已是最新"
             );
         } else {
-            log::info!("compiling {grammar_name} parser");
+            log::info!("正在编译 {grammar_name} 解析器");
             let clang_output = util::command::new_command(&clang_path)
                 .args(["-fPIC", "-shared", "-Os"])
                 .arg(format!("-Wl,--export=tree_sitter_{grammar_name}"))
@@ -345,11 +345,11 @@ impl ExtensionBuilder {
                 .args(scanner_path.exists().then_some(scanner_path))
                 .output()
                 .await
-                .context("failed to run clang")?;
+                .context("运行 clang 失败")?;
 
             if !clang_output.status.success() {
                 bail!(
-                    "failed to compile {} parser with clang: {}",
+                    "使用 clang 编译 {} 解析器失败: {}",
                     grammar_name,
                     String::from_utf8_lossy(&clang_output.stderr),
                 );
@@ -374,14 +374,14 @@ impl ExtensionBuilder {
                 && String::from_utf8_lossy(&remotes_output.stdout).trim() == url;
             if !has_remote {
                 bail!(
-                    "grammar directory '{}' already exists, but is not a git clone of '{}'",
+                    "语法目录 '{}' 已存在,但不是 '{}' 的 git 克隆",
                     directory.display(),
                     url
                 );
             }
         } else {
             fs::create_dir_all(directory).with_context(|| {
-                format!("failed to create grammar directory {}", directory.display(),)
+                format!("无法创建语法目录 {}", directory.display(),)
             })?;
             let init_output = util::command::new_command("git")
                 .arg("init")
@@ -390,7 +390,7 @@ impl ExtensionBuilder {
                 .await?;
             if !init_output.status.success() {
                 bail!(
-                    "failed to run `git init` in directory '{}'",
+                    "在目录 '{}' 中运行 `git init` 失败",
                     directory.display()
                 );
             }
@@ -401,10 +401,10 @@ impl ExtensionBuilder {
                 .args(["remote", "add", "origin", url])
                 .output()
                 .await
-                .context("failed to execute `git remote add`")?;
+                .context("执行 `git remote add` 失败")?;
             if !remote_add_output.status.success() {
                 bail!(
-                    "failed to add remote {url} for git repository {}",
+                    "无法为 git 仓库 {} 添加远程 {url}",
                     git_dir.display()
                 );
             }
@@ -416,7 +416,7 @@ impl ExtensionBuilder {
             .args(["fetch", "--depth", "1", "origin", rev])
             .output()
             .await
-            .context("failed to execute `git fetch`")?;
+            .context("执行 `git fetch` 失败")?;
 
         let checkout_output = util::command::new_command("git")
             .arg("--git-dir")
@@ -425,17 +425,17 @@ impl ExtensionBuilder {
             .current_dir(directory)
             .output()
             .await
-            .context("failed to execute `git checkout`")?;
+            .context("执行 `git checkout` 失败")?;
         if !checkout_output.status.success() {
             if !fetch_output.status.success() {
                 bail!(
-                    "failed to fetch revision {} in directory '{}'",
+                    "无法在目录 '{}' 中获取修订版本 {}",
                     rev,
                     directory.display()
                 );
             }
             bail!(
-                "failed to checkout revision {} in directory '{}': {}",
+                "无法在目录 '{}' 中检出修订版本 {}: {}",
                 rev,
                 directory.display(),
                 String::from_utf8_lossy(&checkout_output.stderr)
@@ -450,10 +450,10 @@ impl ExtensionBuilder {
             .args(["--print", "target-libdir", "--target", RUST_TARGET])
             .output()
             .await
-            .context("failed to run rustc")?;
+            .context("运行 rustc 失败")?;
         if !rustc_output.status.success() {
             bail!(
-                "failed to retrieve the `{RUST_TARGET}` target libdir: {}",
+                "无法获取 `{RUST_TARGET}` 目标的 libdir: {}",
                 String::from_utf8_lossy(&rustc_output.stderr)
             );
         }
@@ -478,10 +478,10 @@ impl ExtensionBuilder {
             .stdout(Stdio::inherit())
             .output()
             .await
-            .context("failed to run `rustup target add`")?;
+            .context("运行 `rustup target add` 失败")?;
         if !output.status.success() {
             bail!(
-                "failed to install the `{RUST_TARGET}` target: {}",
+                "安装 `{RUST_TARGET}` 目标失败: {}",
                 String::from_utf8_lossy(&output.stderr)
             );
         }
@@ -494,24 +494,24 @@ impl ExtensionBuilder {
             let sdk_path = PathBuf::from(sdk_path);
             let clang_path = wasi_sdk_clang_path(&sdk_path);
             if fs::metadata(&clang_path).is_ok_and(|metadata| metadata.is_file()) {
-                log::info!("using wasi-sdk from WASI_SDK_PATH: {sdk_path:?}");
+                log::info!("正在使用来自 WASI_SDK_PATH 的 wasi-sdk: {sdk_path:?}");
                 return Ok(clang_path);
             }
             log::warn!(
-                "WASI_SDK_PATH is set to {sdk_path:?} but clang was not found at {clang_path:?}, falling back to download"
+                "WASI_SDK_PATH 设置为 {sdk_path:?},但在 {clang_path:?} 未找到 clang,回退到下载"
             );
         }
 
         let url = if let Some(asset_name) = WASI_SDK_ASSET_NAME {
             format!("{WASI_SDK_URL}{asset_name}")
         } else {
-            bail!("wasi-sdk is not available for platform {}", env::consts::OS);
+            bail!("wasi-sdk 不适用于平台 {}", env::consts::OS);
         };
 
         let wasi_sdk_dir = self.cache_dir.join("wasi-sdk");
         let clang_path = wasi_sdk_clang_path(&wasi_sdk_dir);
 
-        log::info!("downloading wasi-sdk to {}", wasi_sdk_dir.display());
+        log::info!("正在下载 wasi-sdk 到 {}", wasi_sdk_dir.display());
 
         if fs::metadata(&clang_path).is_ok_and(|metadata| metadata.is_file()) {
             return Ok(clang_path);
@@ -521,23 +521,23 @@ impl ExtensionBuilder {
 
         fs::remove_dir_all(&wasi_sdk_dir).ok();
         fs::remove_dir_all(&tar_out_dir).ok();
-        fs::create_dir_all(&tar_out_dir).context("failed to create extraction directory")?;
+        fs::create_dir_all(&tar_out_dir).context("无法创建解压目录")?;
 
         let mut response = self.http.get(&url, AsyncBody::default(), true).await?;
 
         // Write the response to a temporary file
         let tar_gz_path = self.cache_dir.join("wasi-sdk.tar.gz");
         let tar_gz_file =
-            fs::File::create(&tar_gz_path).context("failed to create temporary tar.gz file")?;
+            fs::File::create(&tar_gz_path).context("无法创建临时 tar.gz 文件")?;
         let response_body = response.body_mut();
 
         let mut async_file = io::AllowStdIo::new(tar_gz_file);
         io::copy(response_body, &mut async_file)
             .await
-            .context("failed to stream response to file")?;
+            .context("无法将响应流式传输到文件")?;
         drop(async_file);
 
-        log::info!("un-tarring wasi-sdk to {}", tar_out_dir.display());
+        log::info!("正在解压 wasi-sdk 到 {}", tar_out_dir.display());
 
         // Shell out to tar to extract the archive
         let tar_output = util::command::new_command("tar")
@@ -547,26 +547,26 @@ impl ExtensionBuilder {
             .arg(&tar_out_dir)
             .output()
             .await
-            .context("failed to run tar")?;
+            .context("运行 tar 失败")?;
 
         if !tar_output.status.success() {
             bail!(
-                "failed to extract wasi-sdk archive: {}",
+                "解压 wasi-sdk 归档失败: {}",
                 String::from_utf8_lossy(&tar_output.stderr)
             );
         }
 
-        log::info!("finished downloading wasi-sdk");
+        log::info!("已完成下载 wasi-sdk");
 
         // Clean up the temporary tar.gz file
         fs::remove_file(&tar_gz_path).ok();
 
         let inner_dir = fs::read_dir(&tar_out_dir)?
             .next()
-            .context("no content")?
-            .context("failed to read contents of extracted wasi archive directory")?
+            .context("无内容")?
+            .context("无法读取解压后的 wasi 归档目录内容")?
             .path();
-        fs::rename(&inner_dir, &wasi_sdk_dir).context("failed to move extracted wasi dir")?;
+        fs::rename(&inner_dir, &wasi_sdk_dir).context("无法移动解压后的 wasi 目录")?;
         fs::remove_dir_all(&tar_out_dir).ok();
 
         Ok(clang_path)
@@ -665,7 +665,7 @@ async fn populate_defaults(
         let mut language_dir_entries = fs
             .read_dir(&languages_dir)
             .await
-            .context("failed to list languages dir")?;
+            .context("无法列出语言目录")?;
 
         while let Some(language_dir) = language_dir_entries.next().await {
             let language_dir = language_dir?;
@@ -686,7 +686,7 @@ async fn populate_defaults(
         let mut theme_dir_entries = fs
             .read_dir(&themes_dir)
             .await
-            .context("failed to list themes dir")?;
+            .context("无法列出主题目录")?;
 
         while let Some(theme_path) = theme_dir_entries.next().await {
             let theme_path = theme_path?;
@@ -705,7 +705,7 @@ async fn populate_defaults(
         let mut icon_theme_dir_entries = fs
             .read_dir(&icon_themes_dir)
             .await
-            .context("failed to list icon themes dir")?;
+            .context("无法列出图标主题目录")?;
 
         while let Some(icon_theme_path) = icon_theme_dir_entries.next().await {
             let icon_theme_path = icon_theme_path?;
@@ -734,7 +734,7 @@ async fn populate_defaults(
             let mut grammar_dir_entries = fs
                 .read_dir(&grammars_dir)
                 .await
-                .context("failed to list grammars dir")?;
+                .context("无法列出语法目录")?;
 
             while let Some(grammar_path) = grammar_dir_entries.next().await {
                 let grammar_path = grammar_path?;
@@ -753,7 +753,7 @@ async fn populate_defaults(
                     let grammar_name = grammar_path
                         .file_stem()
                         .and_then(|stem| stem.to_str())
-                        .context("no grammar name")?;
+                        .context("无语法名称")?;
                     if !manifest.grammars.contains_key(grammar_name) {
                         manifest.grammars.insert(
                             grammar_name.into(),
@@ -828,19 +828,19 @@ mod tests {
 
         assert!(
             !file_newer_than_deps(&target, &[&dep1, &dep2]).unwrap(),
-            "target doesn't exist"
+            "目标不存在"
         );
         std::fs::write(&target, "foo").unwrap(); // Create target
         assert!(
             file_newer_than_deps(&target, &[&dep1, &dep2]).unwrap(),
-            "dependencies don't exist; target is newer"
+            "依赖不存在;目标较新"
         );
         sleep(Duration::from_secs(1));
         std::fs::write(&dep1, "foo").unwrap(); // Create dep1 (newer than target)
         // Dependency is newer
         assert!(
             !file_newer_than_deps(&target, &[&dep1, &dep2]).unwrap(),
-            "a dependency is newer (target {:?}, dep1 {:?})",
+            "某个依赖较新(目标 {:?},依赖1 {:?})",
             target.metadata().unwrap().modified().unwrap(),
             dep1.metadata().unwrap().modified().unwrap(),
         );
@@ -850,7 +850,7 @@ mod tests {
         std::fs::write(&target, "foobar").unwrap(); // Update target
         assert!(
             file_newer_than_deps(&target, &[&dep1, &dep2]).unwrap(),
-            "target is newer than dependencies (target {:?}, dep2 {:?})",
+            "目标比依赖新(目标 {:?},依赖2 {:?})",
             target.metadata().unwrap().modified().unwrap(),
             dep2.metadata().unwrap().modified().unwrap(),
         );
@@ -866,7 +866,7 @@ mod tests {
             serde_json::json!({
                 "extension.toml": indoc! {r#"
                     id = "test-manifest"
-                    name = "Test Manifest"
+                    name = "测试清单"
                     version = "0.0.1"
                     schema_version = 1
 
@@ -904,7 +904,7 @@ mod tests {
             serde_json::json!({
                 "extension.toml": indoc! {r#"
                     id = "test-manifest"
-                    name = "Test Manifest"
+                    name = "测试清单"
                     version = "0.0.1"
                     schema_version = 1
 

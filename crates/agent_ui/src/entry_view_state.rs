@@ -257,7 +257,7 @@ impl EntryViewState {
                             self.thread_store.clone(),
                             self.session_capabilities.clone(),
                             self.agent_id.clone(),
-                            "Edit message － @ to include context",
+                            "编辑消息 - @ 以包含上下文",
                             editor::EditorMode::AutoHeight {
                                 min_lines: 1,
                                 max_lines: None,
@@ -882,7 +882,7 @@ mod tests {
                             acp::ElicitationSessionScope::new(session_id.clone()),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )

@@ -66,9 +66,9 @@ impl SharedState {
         }
 
         let message = if self.neovim != marked_text {
-            "Test is incorrect (currently expected != neovim_state)"
+            "测试不正确(当前预期 != neovim 状态)"
         } else {
-            "Editor does not match nvim behavior"
+            "编辑器与 nvim 行为不匹配"
         };
         panic!(
             indoc! {"{}
@@ -109,9 +109,9 @@ impl SharedClipboard {
         }
 
         let message = if expected != self.neovim {
-            "Test is incorrect (currently expected != neovim_state)"
+            "测试不正确(当前预期 != neovim 状态)"
         } else {
-            "Editor does not match nvim behavior"
+            "编辑器与 nvim 行为不匹配"
         };
 
         panic!(
@@ -146,7 +146,7 @@ impl NeovimBackedTestContext {
         let thread = thread::current();
         let test_name = thread
             .name()
-            .expect("thread is not named")
+            .expect("线程未命名")
             .split(':')
             .next_back()
             .unwrap()
@@ -170,7 +170,7 @@ impl NeovimBackedTestContext {
         let thread = thread::current();
         let test_name = thread
             .name()
-            .expect("thread is not named")
+            .expect("线程未命名")
             .split(':')
             .next_back()
             .unwrap()
@@ -190,7 +190,7 @@ impl NeovimBackedTestContext {
         let thread = thread::current();
         let test_name = thread
             .name()
-            .expect("thread is not named")
+            .expect("线程未命名")
             .split(':')
             .next_back()
             .unwrap()
@@ -214,7 +214,7 @@ impl NeovimBackedTestContext {
         let thread = thread::current();
         let test_name = thread
             .name()
-            .expect("thread is not named")
+            .expect("线程未命名")
             .split(':')
             .next_back()
             .unwrap()
@@ -234,7 +234,7 @@ impl NeovimBackedTestContext {
         let thread = thread::current();
         let test_name = thread
             .name()
-            .expect("thread is not named")
+            .expect("线程未命名")
             .split(':')
             .next_back()
             .unwrap()
@@ -277,7 +277,7 @@ impl NeovimBackedTestContext {
 
     pub async fn set_shared_wrap(&mut self, columns: u32) {
         if columns < 12 {
-            panic!("nvim doesn't support columns < 12")
+            panic!("nvim 不支持列数小于 12")
         }
         self.neovim.set_option("wrap").await;
         self.neovim

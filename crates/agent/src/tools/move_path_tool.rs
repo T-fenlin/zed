@@ -86,12 +86,12 @@ impl AgentTool for MovePathTool {
             {
                 Some(filename) if src_path.parent() == dest_path.parent() => {
                     let filename = MarkdownInlineCode(&filename);
-                    format!("Rename {src} to {filename}").into()
+                    format!("将 {src} 重命名为 {filename}").into()
                 }
-                _ => format!("Move {src} to {dest}").into(),
+                _ => format!("将 {src} 移动到 {dest}").into(),
             }
         } else {
-            "Move path".into()
+            "移动路径".into()
         }
     }
 
@@ -126,7 +126,7 @@ impl AgentTool for MovePathTool {
                 .await
             {
                 return Err(
-                    "Cannot move the global agent skills directory itself. Move a skill directory or file beneath it instead."
+                    "无法移动全局 agent 技能目录本身。请移动其下的技能目录或文件。"
                         .to_string(),
                 );
             }
@@ -183,7 +183,7 @@ impl AgentTool for MovePathTool {
                         Self::NAME,
                         vec![input.source_path.clone(), input.destination_path.clone()],
                     );
-                    let title = format!("Move {src} to {dest}");
+                    let title = format!("将 {src} 移动到 {dest}");
                     authorize_with_sensitive_settings(
                         sensitive_kind,
                         context,
@@ -206,13 +206,13 @@ impl AgentTool for MovePathTool {
                 } else {
                     project.read_with(cx, |project, cx| {
                         let project_path = project.find_project_path(&input.source_path, cx).ok_or_else(|| {
-                            format!("Source path {} was not found in the project.", input.source_path)
+                            format!("在项目中未找到源路径 {}。", input.source_path)
                         })?;
                         project.entry_for_path(&project_path, cx).ok_or_else(|| {
-                            format!("Source path {} was not found in the project.", input.source_path)
+                            format!("在项目中未找到源路径 {}。", input.source_path)
                         })?;
                         project.absolute_path(&project_path, cx).ok_or_else(|| {
-                            format!("Source path {} could not be resolved.", input.source_path)
+                            format!("无法解析源路径 {}。", input.source_path)
                         })
                     })?
                 };
@@ -224,13 +224,13 @@ impl AgentTool for MovePathTool {
                     project.read_with(cx, |project, cx| {
                         let project_path = project.find_project_path(&input.destination_path, cx).ok_or_else(|| {
                             format!(
-                                "Destination path {} was outside the project.",
+                                "目标路径 {} 位于项目之外。",
                                 input.destination_path
                             )
                         })?;
                         project.absolute_path(&project_path, cx).ok_or_else(|| {
                             format!(
-                                "Destination path {} could not be resolved.",
+                                "无法解析目标路径 {}。",
                                 input.destination_path
                             )
                         })
@@ -246,15 +246,15 @@ impl AgentTool for MovePathTool {
                             ..fs::RenameOptions::default()
                         },
                     ).fuse() => {
-                        result.map_err(|e| format!("Moving {} to {}: {e}", input.source_path, input.destination_path))?;
+                        result.map_err(|e| format!("正在将 {} 移动到 {}: {e}", input.source_path, input.destination_path))?;
                     }
                     _ = event_stream.cancelled_by_user().fuse() => {
-                        return Err("Move cancelled by user".to_string());
+                        return Err("用户已取消移动".to_string());
                     }
                 }
 
                 return Ok(format!(
-                    "Moved {} to {}",
+                    "已将 {} 移动到 {}",
                     input.source_path, input.destination_path
                 ));
             }
@@ -267,25 +267,25 @@ impl AgentTool for MovePathTool {
                     Some(entity) => match project.find_project_path(&input.destination_path, cx) {
                         Some(project_path) => Ok(project.rename_entry(entity.id, project_path, cx)),
                         None => Err(format!(
-                            "Destination path {} was outside the project.",
+                            "目标路径 {} 位于项目之外。",
                             input.destination_path
                         )),
                     },
                     None => Err(format!(
-                        "Source path {} was not found in the project.",
+                        "在项目中未找到源路径 {}。",
                         input.source_path
                     )),
                 }
             })?;
 
             futures::select! {
-                result = rename_task.fuse() => result.map_err(|e| format!("Moving {} to {}: {e}", input.source_path, input.destination_path))?,
+                result = rename_task.fuse() => result.map_err(|e| format!("正在将 {} 移动到 {}: {e}", input.source_path, input.destination_path))?,
                 _ = event_stream.cancelled_by_user().fuse() => {
-                    return Err("Move cancelled by user".to_string());
+                    return Err("用户已取消移动".to_string());
                 }
             };
             Ok(format!(
-                "Moved {} to {}",
+                "已将 {} 移动到 {}",
                 input.source_path, input.destination_path
             ))
         })
@@ -352,13 +352,13 @@ mod tests {
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
             title.contains("agent skills"),
-            "Authorization title should mention agent skills, got: {title}",
+            "授权标题应提及代理技能,实际为: {title}",
         );
         assert!(
             auth.options
                 .first_option_of_kind(acp::PermissionOptionKind::AllowAlways)
                 .is_none(),
-            "agent skills prompt must not offer an \"Always allow\" option: {:?}",
+            "代理技能提示不得提供“始终允许”选项:{:?}",
             auth.options,
         );
         auth.response
@@ -366,10 +366,10 @@ mod tests {
                 acp::PermissionOptionId::new("allow"),
                 acp::PermissionOptionKind::AllowOnce,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
 
         let result = task.await;
-        assert!(result.is_ok(), "should move after approval: {result:?}");
+        assert!(result.is_ok(), "批准后应移动: {result:?}");
         assert!(!fs.is_dir(&skill_dir).await);
         assert_eq!(
             fs.load(path!("/root/project/my-skill/SKILL.md").as_ref())
@@ -418,13 +418,13 @@ mod tests {
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
             title.contains("agent skills"),
-            "Authorization title should mention agent skills, got: {title}",
+            "授权标题应提及代理技能,实际为: {title}",
         );
         assert!(
             auth.options
                 .first_option_of_kind(acp::PermissionOptionKind::AllowAlways)
                 .is_none(),
-            "agent skills prompt must not offer an \"Always allow\" option: {:?}",
+            "代理技能提示不得提供“始终允许”选项:{:?}",
             auth.options,
         );
         auth.response
@@ -432,10 +432,10 @@ mod tests {
                 acp::PermissionOptionId::new("allow"),
                 acp::PermissionOptionKind::AllowOnce,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
 
         let result = task.await;
-        assert!(result.is_ok(), "should move after approval: {result:?}");
+        assert!(result.is_ok(), "批准后应移动: {result:?}");
         assert!(
             !fs.is_dir(path!("/root/project/exported-skill").as_ref())
                 .await
@@ -489,9 +489,9 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("points outside the project")
-                || title.contains("symlinks outside project"),
-            "Authorization title should mention symlink escape, got: {title}",
+            title.contains("指向项目外部")
+                || title.contains("项目外的符号链接"),
+            "授权标题应提及符号链接逃逸,实际为: {title}",
         );
 
         auth.response
@@ -502,7 +502,7 @@ mod tests {
             .unwrap();
 
         let result = task.await;
-        assert!(result.is_ok(), "should succeed after approval: {result:?}");
+        assert!(result.is_ok(), "批准后应成功: {result:?}");
     }
 
     #[gpui::test]
@@ -547,7 +547,7 @@ mod tests {
         drop(auth);
 
         let result = task.await;
-        assert!(result.is_err(), "should fail when denied");
+        assert!(result.is_err(), "拒绝时应失败");
     }
 
     #[gpui::test]
@@ -598,9 +598,9 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("points outside the project")
-                || title.contains("symlinks outside project"),
-            "Authorization title should mention symlink escape, got: {title}",
+            title.contains("指向项目外部")
+                || title.contains("项目外的符号链接"),
+            "授权标题应提及符号链接逃逸,实际为: {title}",
         );
 
         auth.response
@@ -615,13 +615,13 @@ mod tests {
                 event_rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "Expected a single authorization prompt",
+            "预期只有一次授权提示",
         );
 
         let result = task.await;
         assert!(
             result.is_ok(),
-            "Tool should succeed after one authorization: {result:?}"
+            "工具应在一次授权后成功: {result:?}"
         );
     }
 
@@ -676,13 +676,13 @@ mod tests {
             .update(|cx| tool.run(ToolInput::resolved(input), event_stream, cx))
             .await;
 
-        assert!(result.is_err(), "Tool should fail when policy denies");
+        assert!(result.is_err(), "策略拒绝时工具应失败");
         assert!(
             !matches!(
                 event_rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "Deny policy should not emit symlink authorization prompt",
+            "拒绝策略不应发出符号链接授权提示",
         );
     }
 }

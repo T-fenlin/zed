@@ -68,7 +68,7 @@ impl ProtoLspResponse<Box<dyn AnyTypedEnvelope>> {
             .downcast::<TypedEnvelope<T::Response>>()
             .map_err(|_| {
                 anyhow::anyhow!(
-                    "cannot downcast LspResponse to {} for message {}",
+                    "无法将 LSP 响应向下转换至 {},消息为 {}",
                     T::Response::NAME,
                     T::NAME,
                 )
@@ -195,7 +195,7 @@ pub struct TypedEnvelope<T> {
 impl<T> TypedEnvelope<T> {
     pub fn original_sender_id(&self) -> Result<PeerId> {
         self.original_sender_id
-            .context("missing original_sender_id")
+            .context("缺少原始发送者 ID")
     }
 }
 

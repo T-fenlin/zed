@@ -1892,7 +1892,7 @@ impl DapCommand for LocationsCommand {
             source: response
                 .source
                 .map(<dap::Source as ProtoConversion>::from_proto)
-                .context("Missing `source` field in Locations proto")?,
+                .context("Locations proto 中缺少 `source` 字段")?,
             line: response.line,
             column: response.column,
             end_line: response.end_line,
@@ -1941,7 +1941,7 @@ impl LocalDapCommand for ReadMemory {
             base64::engine::general_purpose::STANDARD
                 .decode(data)
                 .log_err()
-                .context("parsing base64 data from DAP's ReadMemory response")?
+                .context("解析 DAP 的 ReadMemory 响应中的 base64 数据")?
         } else {
             vec![]
         };

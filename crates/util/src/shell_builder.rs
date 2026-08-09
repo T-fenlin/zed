@@ -328,7 +328,7 @@ mod test {
         assert_eq!(args, vec!["-c", "echo hello"]);
         assert!(
             !args.iter().any(|arg| arg == "-i"),
-            "non-interactive shell command must not include `-i`"
+            "非交互式 Shell 命令不得包含 `-i`"
         );
     }
 

@@ -2245,7 +2245,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
 
             if !metadata_entries.is_empty() {
                 let serialized = serde_json_lenient::to_string(&metadata_entries).map_err(|e| {
-                    log::error!("Problem serializing metadata: {e}");
+                    log::error!("序列化元数据时出现问题:{e}");
                     DevContainerError::ContainerNotValid(build_resources.image.id.clone())
                 })?;
                 command.arg("-l");
@@ -2326,7 +2326,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
         container_started: bool,
     ) -> Result<(), DevContainerError> {
         let ConfigStatus::VariableParsed(config) = &self.config else {
-            log::error!("Config not yet parsed, cannot proceed with remote scripts");
+            log::error!("配置尚未解析,无法继续执行远程脚本");
             return Err(DevContainerError::DevContainerScriptsFailed);
         };
         let remote_folder = self.remote_workspace_folder()?.display().to_string();
@@ -2334,7 +2334,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
         if new_container {
             if let Some(on_create_command) = &config.on_create_command {
                 for (command_name, command) in on_create_command.script_commands() {
-                    log::debug!("Running on create command {command_name}");
+                    log::debug!("正在运行创建命令 {command_name}");
                     self.docker_client
                         .run_docker_exec(
                             &devcontainer_up.container_id,
@@ -2348,7 +2348,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
             }
             if let Some(update_content_command) = &config.update_content_command {
                 for (command_name, command) in update_content_command.script_commands() {
-                    log::debug!("Running update content command {command_name}");
+                    log::debug!("正在运行更新内容命令 {command_name}");
                     self.docker_client
                         .run_docker_exec(
                             &devcontainer_up.container_id,
@@ -2363,7 +2363,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
 
             if let Some(post_create_command) = &config.post_create_command {
                 for (command_name, command) in post_create_command.script_commands() {
-                    log::debug!("Running post create command {command_name}");
+                    log::debug!("正在运行创建后命令 {command_name}");
                     self.docker_client
                         .run_docker_exec(
                             &devcontainer_up.container_id,
@@ -2381,7 +2381,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
             if let Some(started_at) = &devcontainer_up.started_at {
                 if !script_commands.is_empty() {
                     for command_name in script_commands.keys() {
-                        log::debug!("Running post start command {command_name}");
+                        log::debug!("正在运行启动后命令 {command_name}");
                     }
                     let script = post_start_marker_script(started_at, script_commands);
                     self.docker_client
@@ -2396,7 +2396,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
                 }
             } else if container_started {
                 for (command_name, command) in script_commands {
-                    log::debug!("Running post start command {command_name}");
+                    log::debug!("正在运行启动后命令 {command_name}");
                     self.docker_client
                         .run_docker_exec(
                             &devcontainer_up.container_id,
@@ -2411,7 +2411,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
         }
         if let Some(post_attach_command) = &config.post_attach_command {
             for (command_name, command) in post_attach_command.script_commands() {
-                log::debug!("Running post attach command {command_name}");
+                log::debug!("正在运行附加后命令 {command_name}");
                 self.docker_client
                     .run_docker_exec(
                         &devcontainer_up.container_id,
@@ -2429,17 +2429,17 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
 
     async fn run_initialize_commands(&self) -> Result<(), DevContainerError> {
         let ConfigStatus::VariableParsed(config) = &self.config else {
-            log::error!("Config not yet parsed, cannot proceed with initializeCommand");
+            log::error!("配置尚未解析,无法继续执行 initializeCommand");
             return Err(DevContainerError::DevContainerParseFailed);
         };
 
         if let Some(initialize_command) = &config.initialize_command {
-            log::debug!("Running initialize command");
+            log::debug!("正在运行初始化命令");
             initialize_command
                 .run(&self.command_runner, &self.local_project_directory)
                 .await
         } else {
-            log::warn!("No initialize command found");
+            log::warn!("未找到初始化命令");
             Ok(())
         }
     }
@@ -2448,13 +2448,13 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
         &self,
     ) -> Result<Option<DevContainerUp>, DevContainerError> {
         if let Some(docker_ps) = self.check_for_existing_container().await? {
-            log::debug!("Dev container already found. Proceeding with it");
+            log::debug!("已找到开发容器,继续使用");
 
             let mut docker_inspect = self.docker_client.inspect(&docker_ps.id).await?;
 
             let container_started = !docker_inspect.is_running();
             if container_started {
-                log::debug!("Container not running. Will attempt to start, and then proceed");
+                log::debug!("容器未运行,将尝试启动,然后继续");
                 match self.dev_container().build_type() {
                     DevContainerBuildType::DockerCompose => {
                         let resources = self.docker_compose_manifest().await?;
@@ -2489,7 +2489,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
 
             Ok(Some(dev_container_up))
         } else {
-            log::debug!("Existing container not found.");
+            log::debug!("未找到现有容器。");
 
             Ok(None)
         }
@@ -2542,7 +2542,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
                     Ok(contents) => contents,
                     Err(err) => {
                         log::warn!(
-                            "Ignoring unreadable compose fragment `{}` while deriving project name: {err:?}",
+                            "推导项目名称时忽略不可读的 compose 片段 `{}`:{err:?}",
                             file.display()
                         );
                         continue;
@@ -2565,7 +2565,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
                 // fall back to a non-canonical project name and create a
                 // second compose project for the same repo.
                 log::error!(
-                    "Failed to read workspace .env `{}` while deriving project name: {err:?}",
+                    "推导项目名称时读取工作区 .env `{}` 失败:{err:?}",
                     dotenv_path.display()
                 );
                 return Err(DevContainerError::FilesystemError);
@@ -2584,7 +2584,7 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
 
     async fn expanded_dockerfile_content(&self) -> Result<String, DevContainerError> {
         let Some(dockerfile_path) = self.dockerfile_location().await else {
-            log::error!("Tried to expand dockerfile for an image-type config");
+            log::error!("尝试为镜像类型配置展开 Dockerfile");
             return Err(DevContainerError::DevContainerParseFailed);
         };
 
@@ -2607,12 +2607,12 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
                 .unwrap_or_default(),
         };
         let contents = self.fs.load(&dockerfile_path).await.map_err(|e| {
-            log::error!("Failed to load Dockerfile: {e}");
+            log::error!("加载 Dockerfile 失败:{e}");
             DevContainerError::FilesystemError
         })?;
         let mut parsed_lines: Vec<String> = Vec::new();
         let mut inline_args: Vec<(String, String)> = Vec::new();
-        let key_regex = Regex::new(r"(?:^|\s)(\w+)=").expect("valid regex");
+        let key_regex = Regex::new(r"(?:^|\s)(\w+)=").expect("有效正则表达式");
 
         for line in contents.lines() {
             let mut parsed_line = line.to_string();
@@ -2629,9 +2629,9 @@ RUN sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1\${PATH:-\3}/g' /etc/profile || true
                 for (i, captures) in key_matches.iter().enumerate() {
                     let key = captures[1].to_string();
                     // Insert the devcontainer overrides here if needed
-                    let value_start = captures.get(0).expect("full match").end();
+                    let value_start = captures.get(0).expect("完全匹配").end();
                     let value_end = if i + 1 < key_matches.len() {
-                        key_matches[i + 1].get(0).expect("full match").start()
+                        key_matches[i + 1].get(0).expect("完全匹配").start()
                     } else {
                         trimmed.len()
                     };
@@ -2732,14 +2732,14 @@ pub(crate) async fn spawn_dev_container(
 
     devcontainer_manifest.parse_nonremote_vars()?;
 
-    log::debug!("Checking for existing container");
+    log::debug!("正在检查现有容器");
     if let Some(devcontainer) = devcontainer_manifest
         .check_for_existing_devcontainer()
         .await?
     {
         Ok(devcontainer)
     } else {
-        log::debug!("Existing container not found. Building");
+        log::debug!("未找到现有容器,正在构建");
 
         devcontainer_manifest.build_and_run().await
     }
@@ -2939,7 +2939,7 @@ fn derive_project_name(
     sanitize_compose_project_name(&raw)
 }
 
-/// Classify an anyhow error from `Fs::load` as "file does not exist" vs a
+/// Classify an anyhow error from `Fs::load` as "文件不存在" vs a
 /// real I/O failure. Used on the `.env` read in `project_name()`, where the
 /// CLI's `getProjectName` catches only `ENOENT`/`EISDIR` and rethrows
 /// everything else; any other error must propagate so callers can surface
@@ -3070,11 +3070,11 @@ fn generate_install_wrapper(
     env_variables: &str,
 ) -> Result<String, DevContainerError> {
     let escaped_id = shlex::try_quote(feature_ref).map_err(|e| {
-        log::error!("Error escaping feature ref {feature_ref}: {e}");
+        log::error!("转义功能引用 {feature_ref} 时出错:{e}");
         DevContainerError::DevContainerParseFailed
     })?;
     let escaped_name = shlex::try_quote(feature_id).map_err(|e| {
-        log::error!("Error escaping feature {feature_id}: {e}");
+        log::error!("转义功能 {feature_id} 时出错:{e}");
         DevContainerError::DevContainerParseFailed
     })?;
     let options_indented: String = env_variables
@@ -3084,7 +3084,7 @@ fn generate_install_wrapper(
         .collect::<Vec<_>>()
         .join("\n");
     let escaped_options = shlex::try_quote(&options_indented).map_err(|e| {
-        log::error!("Error escaping options {options_indented}: {e}");
+        log::error!("转义选项 {options_indented} 时出错:{e}");
         DevContainerError::DevContainerParseFailed
     })?;
 
@@ -3162,9 +3162,9 @@ fn dockerfile_inject_alias(
     let Some((line_idx, parsed)) = target_entry else {
         match &build_target {
             Some(target) => log::warn!(
-                "Build target stage {target:?} not found in Dockerfile; leaving it unmodified"
+                "在 Dockerfile 中未找到构建目标阶段 {target:?};保持其不变"
             ),
-            None => log::warn!("No FROM instruction found in Dockerfile; leaving it unmodified"),
+            None => log::warn!("在 Dockerfile 中未找到 FROM 指令;保持其不变"),
         }
         return dockerfile_content.to_string();
     };
@@ -3180,7 +3180,7 @@ fn dockerfile_inject_alias(
             .is_some_and(|line| line.trim_end().ends_with('\\'))
         {
             log::warn!(
-                "FROM instruction spans multiple lines via `\\` continuation; cannot inject stage alias, leaving Dockerfile unmodified"
+                "FROM 指令通过 `\\` 续行符跨多行;无法注入阶段别名,保持 Dockerfile 不变"
             );
             return dockerfile_content.to_string();
         }
@@ -3546,7 +3546,7 @@ mod test {
     fn test_project_filename() -> String {
         PathBuf::from(TEST_PROJECT_PATH)
             .file_name()
-            .expect("is valid")
+            .expect("有效")
             .display()
             .to_string()
     }
@@ -3858,7 +3858,7 @@ mod test {
             .unwrap();
         assert!(
             resources.entrypoint_script.is_none(),
-            "overrideCommand: false must not produce an entrypoint script"
+            "overrideCommand: false 不得生成入口点脚本"
         );
 
         let docker_run_command = devcontainer_manifest
@@ -3867,11 +3867,11 @@ mod test {
         let args: Vec<&OsStr> = docker_run_command.get_args().collect();
         assert!(
             !args.contains(&OsStr::new("--entrypoint")),
-            "overrideCommand: false must not pass --entrypoint to docker run"
+            "overrideCommand: false 不得向 docker run 传递 --entrypoint"
         );
         assert!(
             args.contains(&OsStr::new("mcr.microsoft.com/devcontainers/base:ubuntu")),
-            "image id must still be present in docker run command"
+            "镜像 ID 必须仍然存在于 docker run 命令中"
         );
     }
 
@@ -4006,7 +4006,7 @@ mod test {
         assert!(
             post_start_script.find("echo post-start").unwrap()
                 < post_start_script.find("printf '%s'").unwrap(),
-            "postStartCommand marker must be written only after the command succeeds"
+            "postStartCommand 标记必须在命令成功后才写入"
         );
         assert_eq!(
             docker_exec_commands[1]._inner_command.get_program(),
@@ -4035,7 +4035,7 @@ mod test {
 
         assert!(
             output.status.success(),
-            "script should not fail when marker directory cannot be created: {}",
+            "当无法创建标记目录时,脚本不应失败:{}",
             String::from_utf8_lossy(&output.stderr)
         );
         assert_eq!(String::from_utf8_lossy(&output.stdout), "post-start\n");
@@ -4060,15 +4060,15 @@ mod test {
 
         assert!(
             output.status.success(),
-            "background command should be accepted: {}",
+            "应接受后台命令:{}",
             String::from_utf8_lossy(&output.stderr)
         );
         assert_eq!(
-            std_fs::read_to_string(&marker).expect("marker should be written"),
+            std_fs::read_to_string(&marker).expect("应写入标记"),
             started_at
         );
 
-        std_fs::remove_dir_all(home_directory).expect("temporary home should be removed");
+        std_fs::remove_dir_all(home_directory).expect("应删除临时主目录");
     }
 
     #[cfg(not(target_os = "windows"))]
@@ -4089,24 +4089,24 @@ mod test {
         let output = run_shell_script(&script, &home_directory);
         assert!(
             output.status.success(),
-            "script should run successfully: {}",
+            "脚本应成功运行:{}",
             String::from_utf8_lossy(&output.stderr)
         );
         assert_eq!(String::from_utf8_lossy(&output.stdout), "post-start\n");
         assert_eq!(
-            std_fs::read_to_string(&marker).expect("marker should be written"),
+            std_fs::read_to_string(&marker).expect("应写入标记"),
             started_at
         );
 
         let output = run_shell_script(&script, &home_directory);
         assert!(
             output.status.success(),
-            "script should skip successfully: {}",
+            "脚本应成功跳过:{}",
             String::from_utf8_lossy(&output.stderr)
         );
         assert_eq!(String::from_utf8_lossy(&output.stdout), "");
 
-        std_fs::remove_dir_all(home_directory).expect("temporary home should be removed");
+        std_fs::remove_dir_all(home_directory).expect("应删除临时主目录");
     }
 
     #[cfg(not(target_os = "windows"))]
@@ -4116,7 +4116,7 @@ mod test {
         let marker = home_directory
             .join(".devcontainer")
             .join(".postStartCommandMarker");
-        std_fs::create_dir_all(&marker).expect("marker path should be a directory");
+        std_fs::create_dir_all(&marker).expect("标记路径应为目录");
         let mut command = Command::new("echo");
         command.arg("post-start");
         let script = super::post_start_marker_script(
@@ -4130,7 +4130,7 @@ mod test {
         assert_eq!(String::from_utf8_lossy(&output.stdout), "post-start\n");
         assert!(marker.is_dir());
 
-        std_fs::remove_dir_all(home_directory).expect("temporary home should be removed");
+        std_fs::remove_dir_all(home_directory).expect("应删除临时主目录");
     }
 
     #[cfg(not(target_os = "windows"))]
@@ -4150,27 +4150,27 @@ mod test {
         assert!(!output.status.success());
         assert!(!marker.exists());
 
-        std_fs::remove_dir_all(home_directory).expect("temporary home should be removed");
+        std_fs::remove_dir_all(home_directory).expect("应删除临时主目录");
     }
 
     #[cfg(not(target_os = "windows"))]
     fn run_shell_script(script: &str, home_directory: &Path) -> Output {
         let mut command = Command::new("sh");
         command.arg("-c").arg(script).env("HOME", home_directory);
-        gpui::block_on(command.output()).expect("shell should run postStartCommand marker script")
+        gpui::block_on(command.output()).expect("Shell 应运行 postStartCommand 标记脚本")
     }
 
     #[cfg(not(target_os = "windows"))]
     fn temporary_home_directory(prefix: &str) -> PathBuf {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .expect("system time should be after unix epoch")
+            .expect("系统时间应晚于 Unix 纪元")
             .as_nanos();
         let path = std::env::temp_dir().join(format!(
             "zed-devcontainer-{prefix}-{}-{now}",
             std::process::id()
         ));
-        std_fs::create_dir_all(&path).expect("temporary home should be created");
+        std_fs::create_dir_all(&path).expect("应创建临时主目录");
         path
     }
 
@@ -4279,7 +4279,7 @@ mod test {
         let ConfigStatus::VariableParsed(variable_replaced_devcontainer) =
             &devcontainer_manifest.config
         else {
-            panic!("Config not parsed");
+            panic!("配置未解析");
         };
 
         // ${devcontainerId}
@@ -4428,7 +4428,7 @@ mod test {
         let ConfigStatus::VariableParsed(variable_replaced_devcontainer) =
             &devcontainer_manifest.config
         else {
-            panic!("Config not parsed");
+            panic!("配置未解析");
         };
 
         // ${devcontainerId}
@@ -4883,7 +4883,7 @@ chmod +x ./install.sh
                 "ghcr.io/devcontainers/features/aws-cli:1": {},
                 "ghcr.io/devcontainers/features/docker-in-docker:2": {},
               },
-              "name": "Rust and PostgreSQL",
+              "name": "Rust 和 PostgreSQL",
               "dockerComposeFile": "docker-compose.yml",
               "service": "app",
               "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -4985,12 +4985,12 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
                 c.args.first().map(String::as_str) == Some("compose")
                     && c.args.iter().any(|a| a == "up")
             })
-            .expect("docker compose up command recorded");
+            .expect("已记录 docker compose up 命令");
         let project_name_idx = compose_up
             .args
             .iter()
             .position(|a| a == "--project-name")
-            .expect("compose command has --project-name flag");
+            .expect("compose 命令包含 --项目-name 标志");
         assert_eq!(
             compose_up.args[project_name_idx + 1],
             "project_devcontainer",
@@ -5128,10 +5128,10 @@ ENV DOCKER_BUILDKIT=1
             .get("app")
             .and_then(|s| s.build.as_ref())
             .and_then(|b| b.context.clone())
-            .expect("build override should have a context");
+            .expect("构建覆盖应包含上下文");
         assert_eq!(
             build_context, ".",
-            "build override should preserve the original build context from docker-compose.yml"
+            "构建覆盖应保留 docker-compose.yml 中的原始构建上下文"
         );
 
         let runtime_override = files
@@ -5146,7 +5146,7 @@ ENV DOCKER_BUILDKIT=1
         let runtime_config: DockerComposeConfig =
             serde_json_lenient::from_str(&runtime_override).unwrap();
 
-        let app_service = runtime_config.services.get("app").expect("app service");
+        let app_service = runtime_config.services.get("app").expect("app 服务");
         assert_eq!(app_service.cap_add, Some(vec!["SYS_PTRACE".to_string()]));
         assert_eq!(
             app_service.security_opt,
@@ -5176,12 +5176,12 @@ ENV DOCKER_BUILDKIT=1
         });
         assert!(
             has_dind_feature,
-            "metadata should include docker-in-docker feature entry"
+            "元数据应包含 docker-in-docker 功能条目"
         );
         let has_forward_ports = metadata.iter().any(|e| e.get("forwardPorts").is_some());
         assert!(
             has_forward_ports,
-            "metadata should include devcontainer.json config entry with forwardPorts"
+            "元数据应包含带有 forwardPorts 的 devcontainer.json 配置条目"
         );
 
         assert_eq!(app_service.volumes.len(), 1);
@@ -5211,7 +5211,7 @@ ENV DOCKER_BUILDKIT=1
                 "ghcr.io/devcontainers/features/aws-cli:1": {},
                 "ghcr.io/devcontainers/features/docker-in-docker:2": {},
               },
-              "name": "Rust and PostgreSQL",
+              "name": "Rust 和 PostgreSQL",
               "dockerComposeFile": "docker-compose.yml",
               "service": "app",
               "runServices": ["db"],
@@ -5275,7 +5275,7 @@ RUN apt-get update
         let build_services = recorded
             .iter()
             .find_map(|services| services.clone())
-            .expect("docker_compose_build should have been invoked with a service list");
+            .expect("应已使用服务列表调用 docker_compose_build");
 
         assert!(
             build_services.iter().any(|s| s == "app"),
@@ -5299,12 +5299,12 @@ RUN apt-get update
                 c.args.first().map(String::as_str) == Some("compose")
                     && c.args.iter().any(|a| a == "up")
             })
-            .expect("docker compose up command recorded");
+            .expect("已记录 docker compose up 命令");
         let up_index = compose_up
             .args
             .iter()
             .position(|a| a == "up")
-            .expect("up token present");
+            .expect("存在 up 令牌");
         let up_service_args = &compose_up.args[up_index + 2..];
         assert!(
             up_service_args.iter().any(|s| s == "app"),
@@ -5374,7 +5374,7 @@ RUN apt-get update
         let got = derive_project_name(
             &HashMap::new(),
             None,
-            Some("My Compose Project"),
+            Some("我的 Compose 项目"),
             true,
             Some(Path::new(
                 "/path/to/local/project/.devcontainer/docker-compose.yml",
@@ -5502,7 +5502,7 @@ RUN apt-get update
         assert!(compose_fragment_declares_name(
             "{name: my-project, services: {app: {image: foo}}}\n"
         ));
-        // Unparsable fragment falls through to "not declared" (matches the
+        // Unparsable fragment falls through to "未声明" (matches the
         // CLI's behavior on parse failure).
         assert!(!compose_fragment_declares_name(": : :\n- - -\n"));
     }
@@ -5537,7 +5537,7 @@ RUN apt-get update
         let other_io = anyhow::Error::new(std::io::Error::from(std::io::ErrorKind::Other));
         assert!(!is_missing_file_error(&other_io));
 
-        let non_io: anyhow::Error = anyhow::anyhow!("something else");
+        let non_io: anyhow::Error = anyhow::anyhow!("其他内容");
         assert!(!is_missing_file_error(&non_io));
     }
 
@@ -5613,7 +5613,7 @@ RUN apt-get update
 
         let given_devcontainer_contents = r#"
             {
-              "name": "Test",
+              "name": "测试",
               "dockerComposeFile": "docker-compose-context-parent.yml",
               "service": "app",
               "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
@@ -5649,7 +5649,7 @@ RUN apt-get update
             "ghcr.io/devcontainers/features/aws-cli:1": {},
             "ghcr.io/devcontainers/features/docker-in-docker:2": {},
           },
-          "name": "Rust and PostgreSQL",
+          "name": "Rust 和 PostgreSQL",
           "dockerComposeFile": "docker-compose.yml",
           "service": "app",
           "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -5817,7 +5817,7 @@ ENV DOCKER_BUILDKIT=1
         env_logger::try_init().ok();
         let given_devcontainer_contents = r#"
         {
-          "name": "Devcontainer and PostgreSQL",
+          "name": "Devcontainer 和 PostgreSQL",
           "dockerComposeFile": "docker-compose.yml",
           "service": "devcontainer",
           "runServices": ["devcontainer", "db"],
@@ -5903,7 +5903,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
                 c.args.first().map(String::as_str) == Some("compose")
                     && c.args.iter().any(|a| a == "up")
             })
-            .expect("docker compose up command recorded");
+            .expect("已记录 docker compose up 命令");
         assert!(
             compose_up.args.ends_with(&[
                 "up".to_string(),
@@ -5970,7 +5970,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
                 command.args.first().map(String::as_str) == Some("compose")
                     && command.args.iter().any(|argument| argument == "up")
             })
-            .expect("docker compose up command recorded");
+            .expect("已记录 docker compose up 命令");
 
         assert!(
             command.args.ends_with(&[
@@ -5998,7 +5998,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
             "ghcr.io/devcontainers/features/aws-cli:1": {},
             "ghcr.io/devcontainers/features/docker-in-docker:2": {},
           },
-          "name": "Rust and PostgreSQL",
+          "name": "Rust 和 PostgreSQL",
           "dockerComposeFile": "docker-compose.yml",
           "service": "app",
           "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -6550,12 +6550,12 @@ chmod +x ./install.sh
                 f.file_name()
                     .is_some_and(|s| s.display().to_string() == "Dockerfile.extended")
             })
-            .expect("Dockerfile.extended should be generated");
+            .expect("应生成 Dockerfile.extended");
         let feature_dockerfile = test_dependencies.fs.load(feature_dockerfile).await.unwrap();
 
         assert!(
             feature_dockerfile.contains("lsp-devtools_0"),
-            "Dockerfile.extended should reference the local feature. Got:\n{}",
+            "Dockerfile.extended 应引用本地功能。实际内容:\n{}",
             feature_dockerfile
         );
 
@@ -6566,11 +6566,11 @@ chmod +x ./install.sh
                     .is_some_and(|s| s.display().to_string() == "devcontainer-features-install.sh")
                     && f.to_str().is_some_and(|s| s.contains("/lsp-devtools_"))
             })
-            .expect("Install wrapper should be generated for local feature");
+            .expect("应为本地功能生成安装包装脚本");
         let install_wrapper = test_dependencies.fs.load(install_wrapper).await.unwrap();
         assert!(
             install_wrapper.contains("./lsp-devtools"),
-            "Install wrapper should reference the local feature path. Got:\n{}",
+            "安装包装脚本应引用本地功能路径。实际内容:\n{}",
             install_wrapper
         );
 
@@ -6581,11 +6581,11 @@ chmod +x ./install.sh
                     .is_some_and(|s| s.display().to_string() == "devcontainer-features.env")
                     && f.to_str().is_some_and(|s| s.contains("/lsp-devtools_"))
             })
-            .expect("Feature env file should be generated for local feature");
+            .expect("应为本地功能生成功能环境变量文件");
         let feature_env = test_dependencies.fs.load(feature_env).await.unwrap();
         assert!(
             feature_env.contains("VERSION=0.1.0"),
-            "Feature env should contain user-provided version override. Got:\n{}",
+            "功能环境变量应包含用户提供的版本覆盖。实际内容:\n{}",
             feature_env
         );
 
@@ -6596,11 +6596,11 @@ chmod +x ./install.sh
                     .is_some_and(|s| s.display().to_string() == "install.sh")
                     && f.to_str().is_some_and(|s| s.contains("/lsp-devtools_"))
             })
-            .expect("install.sh should be copied from the local feature directory");
+            .expect("安装.sh 应从本地功能目录复制");
         let install_sh = test_dependencies.fs.load(install_sh).await.unwrap();
         assert!(
-            install_sh.contains("Installing lsp-devtools"),
-            "install.sh should have the original content. Got:\n{}",
+            install_sh.contains("正在安装 lsp-devtools"),
+            "安装.sh 应保留原始内容。实际内容:\n{}",
             install_sh
         );
     }
@@ -7120,7 +7120,7 @@ FROM docker.io/hexpm/elixir:1.21-erlang-28.4.1-debian-trixie-20260316-slim AS de
         assert_eq!(expanded, "FROM test_image:latest\nUSER root");
 
         let base_image =
-            image_from_dockerfile(expanded, &None).expect("base image resolves from compose args");
+            image_from_dockerfile(expanded, &None).expect("基础镜像从 compose 参数解析");
         assert_eq!(base_image, "test_image:latest");
     }
 
@@ -7190,7 +7190,7 @@ RUN echo $RUBY_VERSION2
             .await;
 
         let Err(DevContainerError::MultipleMatchingContainers(ids)) = result else {
-            panic!("expected MultipleMatchingContainers, got {result:?}");
+            panic!("预期 MultipleMatchingContainers,实际得到 {result:?}");
         };
         assert_eq!(ids, vec!["abc123".to_string(), "def456".to_string()]);
     }
@@ -7215,11 +7215,11 @@ RUN echo $RUBY_VERSION2
 
         assert!(
             image_tag.starts_with("abcde-"),
-            "expected prefix 'abcde-', got: {image_tag}"
+            "预期前缀 'abcde-',实际得到:{image_tag}"
         );
         assert!(
             image_tag.ends_with("-features"),
-            "expected suffix '-features', got: {image_tag}"
+            "预期后缀 '-features',实际得到:{image_tag}"
         );
     }
 
@@ -7316,7 +7316,7 @@ RUN echo $RUBY_VERSION2
         fn recorded_compose_build_services(&self) -> Vec<Option<Vec<String>>> {
             self.compose_build_services
                 .lock()
-                .expect("should be available")
+                .expect("应可用")
                 .clone()
         }
         #[cfg(not(target_os = "windows"))]
@@ -7328,7 +7328,7 @@ RUN echo $RUBY_VERSION2
             *self
                 .duplicate_container_ids
                 .lock()
-                .expect("should be available") = Some(ids);
+                .expect("应可用") = Some(ids);
         }
     }
 
@@ -7636,7 +7636,7 @@ RUN echo $RUBY_VERSION2
         ) -> Result<(), DevContainerError> {
             self.compose_build_services
                 .lock()
-                .expect("should be available")
+                .expect("应可用")
                 .push(_services.cloned());
             Ok(())
         }
@@ -7651,7 +7651,7 @@ RUN echo $RUBY_VERSION2
             let mut record = self
                 .exec_commands_recorded
                 .lock()
-                .expect("should be available");
+                .expect("应可用");
             record.push(RecordedExecCommand {
                 _container_id: container_id.to_string(),
                 _remote_folder: remote_folder.to_string(),
@@ -7671,7 +7671,7 @@ RUN echo $RUBY_VERSION2
             if let Some(ids) = self
                 .duplicate_container_ids
                 .lock()
-                .expect("should be available")
+                .expect("应可用")
                 .clone()
             {
                 return Err(DevContainerError::MultipleMatchingContainers(ids));
@@ -7871,7 +7871,7 @@ RUN echo $RUBY_VERSION2
                           "version": "2.16.1",
                           "name": "Docker (Docker-in-Docker)",
                           "documentationURL": "https://github.com/devcontainers/features/tree/main/src/docker-in-docker",
-                          "description": "Create child containers *inside* a container, independent from the host's docker instance. Installs Docker extension in the container along with needed CLIs.",
+                          "description": "在容器*内部*创建子容器,独立于主机的 docker 实例。在容器中安装 Docker 扩展以及所需的 CLI。",
                           "options": {
                             "version": {
                               "type": "string",
@@ -7881,17 +7881,17 @@ RUN echo $RUBY_VERSION2
                                 "20.10"
                               ],
                               "default": "latest",
-                              "description": "Select or enter a Docker/Moby Engine version. (Availability can vary by OS version.)"
+                              "description": "选择或输入 Docker/Moby 引擎版本。(可用性可能因操作系统版本而异。)"
                             },
                             "moby": {
                               "type": "boolean",
                               "default": true,
-                              "description": "Install OSS Moby build instead of Docker CE"
+                              "description": "安装 OSS Moby 构建版本而非 Docker CE"
                             },
                             "mobyBuildxVersion": {
                               "type": "string",
                               "default": "latest",
-                              "description": "Install a specific version of moby-buildx when using Moby"
+                              "description": "使用 Moby 时安装特定版本的 moby-buildx"
                             },
                             "dockerDashComposeVersion": {
                               "type": "string",
@@ -7901,33 +7901,33 @@ RUN echo $RUBY_VERSION2
                                 "v2"
                               ],
                               "default": "v2",
-                              "description": "Default version of Docker Compose (v1, v2 or none)"
+                              "description": "Docker Compose 的默认版本(v1、v2 或无)"
                             },
                             "azureDnsAutoDetection": {
                               "type": "boolean",
                               "default": true,
-                              "description": "Allow automatically setting the dockerd DNS server when the installation script detects it is running in Azure"
+                              "description": "当安装脚本检测到在 Azure 中运行时,允许自动设置 dockerd DNS 服务器"
                             },
                             "dockerDefaultAddressPool": {
                               "type": "string",
                               "default": "",
                               "proposals": [],
-                              "description": "Define default address pools for Docker networks. e.g. base=192.168.0.0/16,size=24"
+                              "description": "为 Docker 网络定义默认地址池。例如 base=192.168.0.0/16,size=24"
                             },
                             "installDockerBuildx": {
                               "type": "boolean",
                               "default": true,
-                              "description": "Install Docker Buildx"
+                              "description": "安装 Docker Buildx"
                             },
                             "installDockerComposeSwitch": {
                               "type": "boolean",
                               "default": false,
-                              "description": "Install Compose Switch (provided docker compose is available) which is a replacement to the Compose V1 docker-compose (python) executable. It translates the command line into Compose V2 docker compose then runs the latter."
+                              "description": "安装 Compose Switch(前提是 docker compose 可用),它是 Compose V1 docker-compose(python)可执行文件的替代品。它将命令行转换为 Compose V2 docker compose 然后运行后者。"
                             },
                             "disableIp6tables": {
                               "type": "boolean",
                               "default": false,
-                              "description": "Disable ip6tables (this option is only applicable for Docker versions 27 and greater)"
+                              "description": "禁用 ip6tables(此选项仅适用于 Docker 27 及更高版本)"
                             }
                           },
                           "entrypoint": "/usr/local/share/docker-init.sh",
@@ -7943,7 +7943,7 @@ RUN echo $RUBY_VERSION2
                               "settings": {
                                 "github.copilot.chat.codeGeneration.instructions": [
                                   {
-                                    "text": "This dev container includes the Docker CLI (`docker`) pre-installed and available on the `PATH` for running and managing containers using a dedicated Docker daemon running inside the dev container."
+                                    "text": "此开发容器预装了 Docker CLI(`docker`),并可在 `PATH` 中使用,用于通过开发容器内运行的专用 Docker 守护进程来运行和管理容器。"
                                   }
                                 ]
                               }
@@ -8029,7 +8029,7 @@ RUN echo $RUBY_VERSION2
                         case ${ADJUSTED_ID} in
                             debian)
                                 if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
-                                    echo "Running apt-get update..."
+                                    echo "正在运行 apt-get 更新..."
                                     apt-get update -y
                                 fi
                                 ;;
@@ -8040,7 +8040,7 @@ RUN echo $RUBY_VERSION2
                                     cache_check_dir="/var/cache/${PKG_MGR_CMD}"
                                 fi
                                 if [ "$(ls ${cache_check_dir}/* 2>/dev/null | wc -l)" = 0 ]; then
-                                    echo "Running ${PKG_MGR_CMD} makecache ..."
+                                    echo "正在运行 ${PKG_MGR_CMD} makecache ..."
                                     ${PKG_MGR_CMD} makecache
                                 fi
                                 ;;
@@ -8093,7 +8093,7 @@ RUN echo $RUBY_VERSION2
                             fi
                         fi
                         if [ -z "${!variable_name}" ] || ! echo "${version_list}" | grep "^${!variable_name//./\\.}$" > /dev/null 2>&1; then
-                            err "Invalid ${variable_name} value: ${requested_version}\nValid values:\n${version_list}" >&2
+                            err "无效的 ${variable_name} 值:${requested_version}\n有效值:\n${version_list}" >&2
                             exit 1
                         fi
                         echo "${variable_name}=${!variable_name}"
@@ -8151,14 +8151,14 @@ RUN echo $RUBY_VERSION2
                         if echo "$output" | jq -e 'type == "object"' > /dev/null; then
                           message=$(echo "$output" | jq -r '.message')
 
-                          if [[ $message == "API rate limit exceeded"* ]]; then
-                                echo -e "\nAn attempt to find latest version using GitHub Api Failed... \nReason: ${message}"
-                                echo -e "\nAttempting to find latest version using GitHub tags."
+                          if [[ $message == "超出 API 速率限制"* ]]; then
+                                echo -e "\n尝试使用 GitHub API 查找最新版本失败... \n原因:${message}"
+                                echo -e "\n正在尝试使用 GitHub 标签查找最新版本。"
                                 find_prev_version_from_git_tags prev_version "$url" "tags/v"
                                 declare -g ${variable_name}="${prev_version}"
                            fi
                         elif echo "$output" | jq -e 'type == "array"' > /dev/null; then
-                            echo -e "\nAttempting to find latest version using GitHub Api."
+                            echo -e "\n正在尝试使用 GitHub API 查找最新版本。"
                             version=$(echo "$output" | jq -r '.[1].tag_name')
                             declare -g ${variable_name}="${version#v}"
                         fi
@@ -8197,13 +8197,13 @@ RUN echo $RUBY_VERSION2
                         done
 
                         if [ -z "${PKG_MGR_CMD}" ]; then
-                            err "Unable to find a supported package manager (tdnf, dnf, microdnf, yum)"
+                            err "找不到受支持的软件包管理器(tdnf、dnf、microdnf、yum)"
                             exit 1
                         fi
 
                         architecture="$(rpm --eval '%{_arch}' 2>/dev/null || uname -m)"
                     else
-                        err "Linux distro ${ID} not supported."
+                        err "不支持 Linux 发行版 ${ID}。"
                         exit 1
                     fi
 
@@ -8214,8 +8214,8 @@ RUN echo $RUBY_VERSION2
 
                     # Prevent attempting to install Moby on Debian trixie (packages removed)
                     if [ "${USE_MOBY}" = "true" ] && [ "${ID}" = "debian" ] && [ "${VERSION_CODENAME}" = "trixie" ]; then
-                        err "The 'moby' option is not supported on Debian 'trixie' because 'moby-cli' and related system packages have been removed from that distribution."
-                        err "To continue, either set the feature option '\"moby\": false' or use a different base image (for example: 'debian:bookworm' or 'ubuntu-24.04')."
+                        err "Debian 'trixie' 不支持 'moby' 选项,因为 'moby-cli' 及相关系统软件包已从该发行版中移除。"
+                        err "要继续,请设置功能选项 '\"moby\": false' 或使用其他基础镜像(例如:'debian:bookworm' 或 'ubuntu-24.04')。"
                         exit 1
                     fi
 
@@ -8223,29 +8223,29 @@ RUN echo $RUBY_VERSION2
                     if [ "${USE_MOBY}" = "true" ]; then
                         if [ "${ADJUSTED_ID}" = "debian" ]; then
                             if [[ "${DOCKER_MOBY_ARCHIVE_VERSION_CODENAMES}" != *"${VERSION_CODENAME}"* ]]; then
-                                err "Unsupported distribution version '${VERSION_CODENAME}'. To resolve, either: (1) set feature option '\"moby\": false' , or (2) choose a compatible OS distribution"
-                                err "Supported distributions include: ${DOCKER_MOBY_ARCHIVE_VERSION_CODENAMES}"
+                                err "不支持的发行版版本 '${VERSION_CODENAME}'。要解决此问题,请:(1) 设置功能选项 '\"moby\": false',或 (2) 选择兼容的操作系统发行版"
+                                err "支持的发行版包括:${DOCKER_MOBY_ARCHIVE_VERSION_CODENAMES}"
                                 exit 1
                             fi
-                            echo "(*) ${VERSION_CODENAME} is supported for Moby installation  - setting up Microsoft repository"
+                            echo "(*) ${VERSION_CODENAME} 支持 Moby 安装 - 正在设置 Microsoft 软件源"
                         elif [ "${ADJUSTED_ID}" = "rhel" ]; then
                             if [ "${ID}" = "azurelinux" ] || [ "${ID}" = "mariner" ]; then
-                                echo " (*) ${ID} ${VERSION_ID} detected - using Microsoft repositories for Moby packages"
+                                echo " (*) 检测到 ${ID} ${VERSION_ID} - 正在使用 Microsoft 软件源获取 Moby 软件包"
                             else
-                                echo "RHEL-based system (${ID}) detected - Moby packages may require additional configuration"
+                                echo "检测到基于 RHEL 的系统(${ID})- Moby 软件包可能需要额外配置"
                             fi
                         fi
                     else
                         if [ "${ADJUSTED_ID}" = "debian" ]; then
                             if [[ "${DOCKER_LICENSED_ARCHIVE_VERSION_CODENAMES}" != *"${VERSION_CODENAME}"* ]]; then
-                                err "Unsupported distribution version '${VERSION_CODENAME}'. To resolve, please choose a compatible OS distribution"
-                                err "Supported distributions include: ${DOCKER_LICENSED_ARCHIVE_VERSION_CODENAMES}"
+                                err "不支持的发行版版本 '${VERSION_CODENAME}'。要解决此问题,请选择兼容的操作系统发行版"
+                                err "支持的发行版包括:${DOCKER_LICENSED_ARCHIVE_VERSION_CODENAMES}"
                                 exit 1
                             fi
-                            echo "(*) ${VERSION_CODENAME} is supported for Docker CE installation (supported: ${DOCKER_LICENSED_ARCHIVE_VERSION_CODENAMES}) - setting up Docker repository"
+                            echo "(*) ${VERSION_CODENAME} 支持 Docker CE 安装(支持:${DOCKER_LICENSED_ARCHIVE_VERSION_CODENAMES})- 正在设置 Docker 软件源"
                         elif [ "${ADJUSTED_ID}" = "rhel" ]; then
 
-                            echo "RHEL-based system (${ID}) detected - using Docker CE packages"
+                            echo "检测到基于 RHEL 的系统(${ID})- 正在使用 Docker CE 软件包"
                         fi
                     fi
 
@@ -8295,22 +8295,22 @@ RUN echo $RUBY_VERSION2
                                 echo "deb [arch=${architecture} signed-by=/usr/share/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/repos/microsoft-${ID}-${VERSION_CODENAME}-prod ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/microsoft.list
                                 ;;
                             rhel)
-                                echo "(*) ${ID} detected - checking for Moby packages..."
+                                echo "(*) 检测到 ${ID} - 正在检查 Moby 软件包..."
 
                                 # Check if moby packages are available in default repos
                                 if ${PKG_MGR_CMD} list available moby-engine >/dev/null 2>&1; then
-                                    echo "(*) Using built-in ${ID} Moby packages"
+                                    echo "(*) 正在使用 ${ID} 内置的 Moby 软件包"
                                 else
                                     case "${ID}" in
                                         azurelinux)
-                                            echo "(*) Moby packages not found in Azure Linux repositories"
-                                            echo "(*) For Azure Linux, Docker CE ('moby': false) is recommended"
-                                            err "Moby packages are not available for Azure Linux ${VERSION_ID}."
-                                            err "Recommendation: Use '\"moby\": false' to install Docker CE instead."
+                                            echo "(*) 在 Azure Linux 软件源中未找到 Moby 软件包"
+                                            echo "(*) 对于 Azure Linux,建议使用 Docker CE('moby': false)"
+                                            err "Azure Linux ${VERSION_ID} 没有可用的 Moby 软件包。"
+                                            err "建议:使用 '\"moby\": false' 来安装 Docker CE。"
                                             exit 1
                                             ;;
                                         mariner)
-                                            echo "(*) Adding Microsoft repository for CBL-Mariner..."
+                                            echo "(*) 正在为 CBL-Mariner 添加 Microsoft 软件源..."
                                             # Add Microsoft repository if packages aren't available locally
                                             curl -sSL ${MICROSOFT_GPG_KEYS_URI} | gpg --dearmor > /etc/pki/rpm-gpg/microsoft.gpg
                                             cat > /etc/yum.repos.d/microsoft.repo << EOF
@@ -8324,14 +8324,14 @@ RUN echo $RUBY_VERSION2
                                     # Verify packages are available after adding repo
                                     pkg_mgr_update
                                     if ! ${PKG_MGR_CMD} list available moby-engine >/dev/null 2>&1; then
-                                        echo "(*) Moby packages not found in Microsoft repository either"
-                                        err "Moby packages are not available for CBL-Mariner ${VERSION_ID}."
-                                        err "Recommendation: Use '\"moby\": false' to install Docker CE instead."
+                                        echo "(*) 在 Microsoft 软件源中也未找到 Moby 软件包"
+                                        err "CBL-Mariner ${VERSION_ID} 没有可用的 Moby 软件包。"
+                                        err "建议:使用 '\"moby\": false' 来安装 Docker CE。"
                                         exit 1
                                     fi
                                     ;;
                                 *)
-                                    err "Moby packages are not available for ${ID}. Please use 'moby': false option."
+                                    err "${ID} 没有可用的 Moby 软件包。请使用 'moby': false 选项。"
                                     exit 1
                                     ;;
                                 esac
@@ -8363,16 +8363,16 @@ RUN echo $RUBY_VERSION2
                     EOF
                                 }
                                 install_azure_linux_deps() {
-                                    echo "(*) Installing device-mapper libraries for Docker CE..."
-                                    [ "${ID}" != "mariner" ] && ${PKG_MGR_CMD} -y install device-mapper-libs 2>/dev/null || echo "(*) Device-mapper install failed, proceeding"
-                                    echo "(*) Installing additional Docker CE dependencies..."
+                                    echo "(*) 正在为 Docker CE 安装 device-mapper 库..."
+                                    [ "${ID}" != "mariner" ] && ${PKG_MGR_CMD} -y install device-mapper-libs 2>/dev/null || echo "(*) device-mapper 安装失败,继续执行"
+                                    echo "(*) 正在安装额外的 Docker CE 依赖项..."
                                     ${PKG_MGR_CMD} -y install libseccomp libtool-ltdl systemd-libs libcgroup tar xz || {
-                                        echo "(*) Some optional dependencies could not be installed, continuing..."
+                                        echo "(*) 某些可选依赖项无法安装,继续执行..."
                                     }
                                 }
                                 setup_selinux_context() {
-                                    if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce 2>/dev/null)" != "Disabled" ]; then
-                                        echo "(*) Creating minimal SELinux context for Docker compatibility..."
+                                    if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce 2>/dev/null)" != "已禁用" ]; then
+                                        echo "(*) 正在为 Docker 兼容性创建最小 SELinux 上下文..."
                                         mkdir -p /etc/selinux/targeted/contexts/files/ 2>/dev/null || true
                                         echo "/var/lib/docker(/.*)? system_u:object_r:container_file_t:s0" >> /etc/selinux/targeted/contexts/files/file_contexts.local 2>/dev/null || true
                                     fi
@@ -8381,19 +8381,19 @@ RUN echo $RUBY_VERSION2
                                 # Special handling for RHEL Docker CE installation
                                 case "${ID}" in
                                     azurelinux|mariner)
-                                        echo "(*) ${ID} detected"
-                                        echo "(*) Note: Moby packages work better on Azure Linux. Consider using 'moby': true"
-                                        echo "(*) Setting up Docker CE repository..."
+                                        echo "(*) 检测到 ${ID}"
+                                        echo "(*) 注意:Moby 软件包在 Azure Linux 上运行效果更好。请考虑使用 'moby': true"
+                                        echo "(*) 正在设置 Docker CE 软件源..."
 
                                         setup_docker_ce_repo
                                         install_azure_linux_deps
 
                                         if [ "${USE_MOBY}" != "true" ]; then
-                                            echo "(*) Docker CE installation for Azure Linux - skipping container-selinux"
-                                            echo "(*) Note: SELinux policies will be minimal but Docker will function normally"
+                                            echo "(*) 为 Azure Linux 安装 Docker CE - 跳过 container-selinux"
+                                            echo "(*) 注意:SELinux 策略将是最低限度的,但 Docker 将正常运行"
                                             setup_selinux_context
                                         else
-                                            echo "(*) Using Moby - container-selinux not required"
+                                            echo "(*) 正在使用 Moby - 不需要 container-selinux"
                                         fi
                                         ;;
                                     *)
@@ -8440,7 +8440,7 @@ RUN echo $RUBY_VERSION2
                             engine_version_suffix="=$(apt-cache madison ${engine_package_name} | awk -F"|" '{print $2}' | sed -e 's/^[ \t]*//' | grep -E -m 1 "${docker_version_regex}")"
                         set -e
                         if [ -z "${engine_version_suffix}" ] || [ "${engine_version_suffix}" = "=" ] || [ -z "${cli_version_suffix}" ] || [ "${cli_version_suffix}" = "=" ] ; then
-                            err "No full or partial Docker / Moby version match found for \"${DOCKER_VERSION}\" on OS ${ID} ${VERSION_CODENAME} (${architecture}). Available versions:"
+                            err "在操作系统 ${ID} ${VERSION_CODENAME}(${architecture})上未找到与 \"${DOCKER_VERSION}\" 完全或部分匹配的 Docker / Moby 版本。可用版本:"
                             apt-cache madison ${cli_package_name} | awk -F"|" '{print $2}' | grep -oP '^(.+:)?\K.+'
                             exit 1
                         fi
@@ -8450,16 +8450,16 @@ RUN echo $RUBY_VERSION2
                                 docker_version_escaped="${DOCKER_VERSION//./\\.}"
                                 set +e # Don't exit if finding version fails - will handle gracefully
                                     if [ "${USE_MOBY}" = "true" ]; then
-                                        available_versions=$(${PKG_MGR_CMD} list --available moby-engine 2>/dev/null | grep -v "Available Packages" | awk '{print $2}' | grep -E "^${docker_version_escaped}" | head -1)
+                                        available_versions=$(${PKG_MGR_CMD} list --available moby-engine 2>/dev/null | grep -v "可用软件包" | awk '{print $2}' | grep -E "^${docker_version_escaped}" | head -1)
                                     else
-                                        available_versions=$(${PKG_MGR_CMD} list --available docker-ce 2>/dev/null | grep -v "Available Packages" | awk '{print $2}' | grep -E "^${docker_version_escaped}" | head -1)
+                                        available_versions=$(${PKG_MGR_CMD} list --available docker-ce 2>/dev/null | grep -v "可用软件包" | awk '{print $2}' | grep -E "^${docker_version_escaped}" | head -1)
                                     fi
                                 set -e
                                 if [ -n "${available_versions}" ]; then
                                     engine_version_suffix="-${available_versions}"
                                     cli_version_suffix="-${available_versions}"
                                 else
-                                    echo "(*) Exact version ${DOCKER_VERSION} not found, using latest available"
+                                    echo "(*) 未找到确切版本 ${DOCKER_VERSION},正在使用最新可用版本"
                                     engine_version_suffix=""
                                     cli_version_suffix=""
                                 fi
@@ -8482,7 +8482,7 @@ RUN echo $RUBY_VERSION2
                                 buildx_version_suffix="=$(apt-cache madison moby-buildx | awk -F"|" '{print $2}' | sed -e 's/^[ \t]*//' | grep -E -m 1 "${buildx_version_regex}")"
                             set -e
                             if [ -z "${buildx_version_suffix}" ] || [ "${buildx_version_suffix}" = "=" ]; then
-                                err "No full or partial moby-buildx version match found for \"${MOBY_BUILDX_VERSION}\" on OS ${ID} ${VERSION_CODENAME} (${architecture}). Available versions:"
+                                err "在操作系统 ${ID} ${VERSION_CODENAME}(${architecture})上未找到与 \"${MOBY_BUILDX_VERSION}\" 完全或部分匹配的 moby-buildx 版本。可用版本:"
                                 apt-cache madison moby-buildx | awk -F"|" '{print $2}' | grep -oP '^(.+:)?\K.+'
                                 exit 1
                             fi
@@ -8491,12 +8491,12 @@ RUN echo $RUBY_VERSION2
                                     # For RHEL-based systems, try to find buildx version or use latest
                                     buildx_version_escaped="${MOBY_BUILDX_VERSION//./\\.}"
                                     set +e
-                                    available_buildx=$(${PKG_MGR_CMD} list --available moby-buildx 2>/dev/null | grep -v "Available Packages" | awk '{print $2}' | grep -E "^${buildx_version_escaped}" | head -1)
+                                    available_buildx=$(${PKG_MGR_CMD} list --available moby-buildx 2>/dev/null | grep -v "可用软件包" | awk '{print $2}' | grep -E "^${buildx_version_escaped}" | head -1)
                                     set -e
                                     if [ -n "${available_buildx}" ]; then
                                         buildx_version_suffix="-${available_buildx}"
                                     else
-                                        echo "(*) Exact buildx version ${MOBY_BUILDX_VERSION} not found, using latest available"
+                                        echo "(*) 未找到确切的 buildx 版本 ${MOBY_BUILDX_VERSION},正在使用最新可用版本"
                                         buildx_version_suffix=""
                                     fi
                                     ;;
@@ -8507,7 +8507,7 @@ RUN echo $RUBY_VERSION2
 
                     # Install Docker / Moby CLI if not already installed
                     if type docker > /dev/null 2>&1 && type dockerd > /dev/null 2>&1; then
-                        echo "Docker / Moby CLI and Engine already installed."
+                        echo "Docker / Moby CLI 和引擎已安装。"
                     else
                             case ${ADJUSTED_ID} in
                             debian)
@@ -8519,17 +8519,17 @@ RUN echo $RUBY_VERSION2
                                     set -e
 
                                     if [ ${exit_code} -ne 0 ]; then
-                                        err "Packages for moby not available in OS ${ID} ${VERSION_CODENAME} (${architecture}). To resolve, either: (1) set feature option '\"moby\": false' , or (2) choose a compatible OS version (eg: 'ubuntu-24.04')."
+                                        err "操作系统 ${ID} ${VERSION_CODENAME}(${architecture})中没有可用的 moby 软件包。要解决此问题,请:(1) 设置功能选项 '\"moby\": false',或 (2) 选择兼容的操作系统版本(例如:'ubuntu-24.04')。"
                                         exit 1
                                     fi
 
                                     # Install compose
-                                    apt-get -y install --no-install-recommends moby-compose || err "Package moby-compose (Docker Compose v2) not available for OS ${ID} ${VERSION_CODENAME} (${architecture}). Skipping."
+                                    apt-get -y install --no-install-recommends moby-compose || err "操作系统 ${ID} ${VERSION_CODENAME}(${architecture})没有可用的 moby-compose(Docker Compose v2)软件包。正在跳过。"
                                 else
                                     apt-get -y install --no-install-recommends docker-ce-cli${cli_version_suffix} docker-ce${engine_version_suffix}
                                     # Install compose
                                     apt-mark hold docker-ce docker-ce-cli
-                                    apt-get -y install --no-install-recommends docker-compose-plugin || echo "(*) Package docker-compose-plugin (Docker Compose v2) not available for OS ${ID} ${VERSION_CODENAME} (${architecture}). Skipping."
+                                    apt-get -y install --no-install-recommends docker-compose-plugin || echo "(*) 操作系统 ${ID} ${VERSION_CODENAME}(${architecture})没有可用的 docker-compose-plugin(Docker Compose v2)软件包。正在跳过。"
                                 fi
                                 ;;
                             rhel)
@@ -8540,18 +8540,18 @@ RUN echo $RUBY_VERSION2
                                     set -e
 
                                     if [ ${exit_code} -ne 0 ]; then
-                                        err "Packages for moby not available in OS ${ID} ${VERSION_CODENAME} (${architecture}). To resolve, either: (1) set feature option '\"moby\": false' , or (2) choose a compatible OS version."
+                                        err "操作系统 ${ID} ${VERSION_CODENAME}(${architecture})中没有可用的 moby 软件包。要解决此问题,请:(1) 设置功能选项 '\"moby\": false',或 (2) 选择兼容的操作系统版本。"
                                         exit 1
                                     fi
 
                                     # Install compose
                                     if [ "${DOCKER_DASH_COMPOSE_VERSION}" != "none" ]; then
-                                        ${PKG_MGR_CMD} -y install moby-compose || echo "(*) Package moby-compose not available for ${ID} ${VERSION_CODENAME} (${architecture}). Skipping."
+                                        ${PKG_MGR_CMD} -y install moby-compose || echo "(*) ${ID} ${VERSION_CODENAME}(${architecture})没有可用的 moby-compose 软件包。正在跳过。"
                                     fi
                                 else
                                                    # Special handling for Azure Linux Docker CE installation
                                     if [ "${ID}" = "azurelinux" ] || [ "${ID}" = "mariner" ]; then
-                                        echo "(*) Installing Docker CE on Azure Linux (bypassing container-selinux dependency)..."
+                                        echo "(*) 正在 Azure Linux 上安装 Docker CE(绕过 container-selinux 依赖)..."
 
                                         # Use rpm with --force and --nodeps for Azure Linux
                                         set +e  # Don't exit on error for this section
@@ -8560,15 +8560,15 @@ RUN echo $RUBY_VERSION2
                                         set -e
 
                                         if [ $install_result -ne 0 ]; then
-                                            echo "(*) Standard installation failed, trying manual installation..."
+                                            echo "(*) 标准安装失败,正在尝试手动安装..."
 
-                                            echo "(*) Standard installation failed, trying manual installation..."
+                                            echo "(*) 标准安装失败,正在尝试手动安装..."
 
                                             # Create directory for downloading packages
                                             mkdir -p /tmp/docker-ce-install
 
                                             # Download packages manually using curl since tdnf doesn't support download
-                                            echo "(*) Downloading Docker CE packages manually..."
+                                            echo "(*) 正在手动下载 Docker CE 软件包..."
 
                                             # Get the repository baseurl
                                             repo_baseurl="https://download.docker.com/linux/centos/9/x86_64/stable"
@@ -8585,12 +8585,12 @@ RUN echo $RUBY_VERSION2
                                                 docker_ce_version="latest"
                                             fi
 
-                                            echo "(*) Attempting to download Docker CE packages from repository..."
+                                            echo "(*) 正在尝试从软件源下载 Docker CE 软件包..."
 
                                             # Try to download latest packages if specific version fails
                                             if ! curl -fsSL "${repo_baseurl}/Packages/docker-ce-${docker_ce_version}.el9.x86_64.rpm" -o docker-ce.rpm 2>/dev/null; then
                                                 # Fallback: try to get latest available version
-                                                echo "(*) Specific version not found, trying latest..."
+                                                echo "(*) 未找到特定版本,正在尝试最新版本..."
                                                 latest_docker=$(curl -s "${repo_baseurl}/Packages/" | grep -o 'docker-ce-[0-9][^"]*\.el9\.x86_64\.rpm' | head -1)
                                                 latest_cli=$(curl -s "${repo_baseurl}/Packages/" | grep -o 'docker-ce-cli-[0-9][^"]*\.el9\.x86_64\.rpm' | head -1)
                                                 latest_containerd=$(curl -s "${repo_baseurl}/Packages/" | grep -o 'containerd\.io-[0-9][^"]*\.el9\.x86_64\.rpm' | head -1)
@@ -8600,28 +8600,28 @@ RUN echo $RUBY_VERSION2
                                                     curl -fsSL "${repo_baseurl}/Packages/${latest_cli}" -o docker-ce-cli.rpm
                                                     curl -fsSL "${repo_baseurl}/Packages/${latest_containerd}" -o containerd.io.rpm
                                                 else
-                                                    echo "(*) ERROR: Could not find Docker CE packages in repository"
-                                                    echo "(*) Please check repository configuration or use 'moby': true"
+                                                    echo "(*) 错误:在软件源中找不到 Docker CE 软件包"
+                                                    echo "(*) 请检查软件源配置或使用 'moby': true"
                                                     exit 1
                                                 fi
                                             fi
                                             # Install systemd libraries required by Docker CE
-                                            echo "(*) Installing systemd libraries required by Docker CE..."
+                                            echo "(*) 正在安装 Docker CE 所需的 systemd 库..."
                                             ${PKG_MGR_CMD} -y install systemd-libs || ${PKG_MGR_CMD} -y install systemd-devel || {
-                                                echo "(*) WARNING: Could not install systemd libraries"
-                                                echo "(*) Docker may fail to start without these"
+                                                echo "(*) 警告:无法安装 systemd 库"
+                                                echo "(*) 缺少这些库,Docker 可能无法启动"
                                             }
 
                                             # Install with rpm --force --nodeps
-                                            echo "(*) Installing Docker CE packages with dependency override..."
+                                            echo "(*) 正在使用依赖覆盖安装 Docker CE 软件包..."
                                             rpm -Uvh --force --nodeps *.rpm
 
                                             # Cleanup
                                             cd /
                                             rm -rf /tmp/docker-ce-install
 
-                                            echo "(*) Docker CE installation completed with dependency bypass"
-                                            echo "(*) Note: Some SELinux functionality may be limited without container-selinux"
+                                            echo "(*) Docker CE 安装已完成,已绕过依赖"
+                                            echo "(*) 注意:没有 container-selinux,某些 SELinux 功能可能会受限"
                                         fi
                                     else
                                         # Standard installation for other RHEL-based systems
@@ -8629,14 +8629,14 @@ RUN echo $RUBY_VERSION2
                                     fi
                                     # Install compose
                                     if [ "${DOCKER_DASH_COMPOSE_VERSION}" != "none" ]; then
-                                        ${PKG_MGR_CMD} -y install docker-compose-plugin || echo "(*) Package docker-compose-plugin not available for ${ID} ${VERSION_CODENAME} (${architecture}). Skipping."
+                                        ${PKG_MGR_CMD} -y install docker-compose-plugin || echo "(*) ${ID} ${VERSION_CODENAME}(${architecture})没有可用的 docker-compose-plugin 软件包。正在跳过。"
                                     fi
                                 fi
                                 ;;
                         esac
                     fi
 
-                    echo "Finished installing docker / moby!"
+                    echo "docker / moby 安装完成!"
 
                     docker_home="/usr/libexec/docker"
                     cli_plugins_dir="${docker_home}/cli-plugins"
@@ -8645,9 +8645,9 @@ RUN echo $RUBY_VERSION2
                     fallback_compose(){
                         local url=$1
                         local repo_url=$(get_github_api_repo_url "$url")
-                        echo -e "\n(!) Failed to fetch the latest artifacts for docker-compose v${compose_version}..."
+                        echo -e "\n(!) 获取 docker-compose v${compose_version} 的最新构件失败..."
                         get_previous_version "${url}" "${repo_url}" compose_version
-                        echo -e "\nAttempting to install v${compose_version}"
+                        echo -e "\n正在尝试安装 v${compose_version}"
                         curl -fsSL "https://github.com/docker/compose/releases/download/v${compose_version}/docker-compose-linux-${target_compose_arch}" -o ${docker_compose_path}
                     }
 
@@ -8657,17 +8657,17 @@ RUN echo $RUBY_VERSION2
                         amd64|x86_64) target_compose_arch=x86_64 ;;
                         arm64|aarch64) target_compose_arch=aarch64 ;;
                         *)
-                            echo "(!) Docker in docker does not support machine architecture '$architecture'. Please use an x86-64 or ARM64 machine."
+                            echo "(!) Docker in Docker 不支持机器架构 '$architecture'。请使用 x86-64 或 ARM64 机器。"
                             exit 1
                         esac
 
                         docker_compose_path="/usr/local/bin/docker-compose"
                         if [ "${DOCKER_DASH_COMPOSE_VERSION}" = "v1" ]; then
-                            err "The final Compose V1 release, version 1.29.2, was May 10, 2021. These packages haven't received any security updates since then. Use at your own risk."
+                            err "Compose V1 的最终版本 1.29.2 于 2021 年 5 月 10 日发布。这些软件包自此未收到任何安全更新。使用风险自负。"
                             INSTALL_DOCKER_COMPOSE_SWITCH="false"
 
                             if [ "${target_compose_arch}" = "x86_64" ]; then
-                                echo "(*) Installing docker compose v1..."
+                                echo "(*) 正在安装 docker compose v1..."
                                 curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -o ${docker_compose_path}
                                 chmod +x ${docker_compose_path}
 
@@ -8676,12 +8676,12 @@ RUN echo $RUBY_VERSION2
                                 echo "${DOCKER_COMPOSE_SHA256}  ${docker_compose_path}" > docker-compose.sha256sum
                                 sha256sum -c docker-compose.sha256sum --ignore-missing
                             elif [ "${VERSION_CODENAME}" = "bookworm" ]; then
-                                err "Docker compose v1 is unavailable for 'bookworm' on Arm64. Kindly switch to use v2"
+                                err "Docker compose v1 在 Arm64 架构的 'bookworm' 上不可用。请改用 v2 版本。"
                                 exit 1
                             else
                                 # Use pip to get a version that runs on this architecture
                                 check_packages python3-minimal python3-pip libffi-dev python3-venv
-                                echo "(*) Installing docker compose v1 via pip..."
+                                echo "(*) 正在通过 pip 安装 docker compose v1..."
                                 export PYTHONUSERBASE=/usr/local
                                 pip3 install --disable-pip-version-check --no-cache-dir --user "Cython<3.0" pyyaml wheel docker-compose --no-build-isolation
                             fi
@@ -8689,9 +8689,9 @@ RUN echo $RUBY_VERSION2
                             compose_version=${DOCKER_DASH_COMPOSE_VERSION#v}
                             docker_compose_url="https://github.com/docker/compose"
                             find_version_from_git_tags compose_version "$docker_compose_url" "tags/v"
-                            echo "(*) Installing docker-compose ${compose_version}..."
+                            echo "(*) 正在安装 docker-compose ${compose_version}..."
                             curl -fsSL "https://github.com/docker/compose/releases/download/v${compose_version}/docker-compose-linux-${target_compose_arch}" -o ${docker_compose_path} || {
-                                     echo -e "\n(!) Failed to fetch the latest artifacts for docker-compose v${compose_version}..."
+                                     echo -e "\n(!) 获取 docker-compose v${compose_version} 的最新构件失败..."
                                      fallback_compose "$docker_compose_url"
                             }
 
@@ -8711,15 +8711,15 @@ RUN echo $RUBY_VERSION2
                     fallback_compose-switch() {
                         local url=$1
                         local repo_url=$(get_github_api_repo_url "$url")
-                        echo -e "\n(!) Failed to fetch the latest artifacts for compose-switch v${compose_switch_version}..."
+                        echo -e "\n(!) 获取 compose-switch v${compose_switch_version} 的最新构件失败..."
                         get_previous_version "$url" "$repo_url" compose_switch_version
-                        echo -e "\nAttempting to install v${compose_switch_version}"
+                        echo -e "\n正在尝试安装 v${compose_switch_version}"
                         curl -fsSL "https://github.com/docker/compose-switch/releases/download/v${compose_switch_version}/docker-compose-linux-${target_switch_arch}" -o /usr/local/bin/compose-switch
                     }
                     # Install docker-compose switch if not already installed - https://github.com/docker/compose-switch#manual-installation
                     if [ "${INSTALL_DOCKER_COMPOSE_SWITCH}" = "true" ] && ! type compose-switch > /dev/null 2>&1; then
                         if type docker-compose > /dev/null 2>&1; then
-                            echo "(*) Installing compose-switch..."
+                            echo "(*) 正在安装 compose-switch..."
                             current_compose_path="$(command -v docker-compose)"
                             target_compose_path="$(dirname "${current_compose_path}")/docker-compose-v1"
                             compose_switch_version="latest"
@@ -8728,7 +8728,7 @@ RUN echo $RUBY_VERSION2
                             set +e
                             find_version_from_git_tags compose_switch_version "$compose_switch_url"
                             if [ $? -ne 0 ] || [ -z "${compose_switch_version}" ] || [ "${compose_switch_version}" = "latest" ]; then
-                                echo "(*) GitHub API rate limited or failed, using fallback method"
+                                echo "(*) GitHub API 请求受限或失败,正在使用备用方法"
                                 fallback_compose-switch "$compose_switch_url"
                             fi
                             set -e
@@ -8747,18 +8747,18 @@ RUN echo $RUBY_VERSION2
                             update-alternatives --install ${docker_compose_path} docker-compose /usr/local/bin/compose-switch 99
                             update-alternatives --install ${docker_compose_path} docker-compose "${target_compose_path}" 1
                         else
-                            err "Skipping installation of compose-switch as docker compose is unavailable..."
+                            err "由于 docker compose 不可用,跳过安装 compose-switch..."
                         fi
                     fi
 
                     # If init file already exists, exit
                     if [ -f "/usr/local/share/docker-init.sh" ]; then
-                        echo "/usr/local/share/docker-init.sh already exists, so exiting."
+                        echo "/usr/local/share/docker-init.sh 已存在,正在退出。"
                         # Clean up
                         rm -rf /var/lib/apt/lists/*
                         exit 0
                     fi
-                    echo "docker-init doesn't exist, adding..."
+                    echo "docker-init 不存在,正在添加..."
 
                     if ! cat /etc/group | grep -e "^docker:" > /dev/null 2>&1; then
                             groupadd -r docker
@@ -8770,10 +8770,10 @@ RUN echo $RUBY_VERSION2
                     fallback_buildx() {
                         local url=$1
                         local repo_url=$(get_github_api_repo_url "$url")
-                        echo -e "\n(!) Failed to fetch the latest artifacts for docker buildx v${buildx_version}..."
+                        echo -e "\n(!) 获取 docker buildx v${buildx_version} 的最新构件失败..."
                         get_previous_version "$url" "$repo_url" buildx_version
                         buildx_file_name="buildx-v${buildx_version}.linux-${target_buildx_arch}"
-                        echo -e "\nAttempting to install v${buildx_version}"
+                        echo -e "\n正在尝试安装 v${buildx_version}"
                         wget https://github.com/docker/buildx/releases/download/v${buildx_version}/${buildx_file_name}
                     }
 
@@ -8781,7 +8781,7 @@ RUN echo $RUBY_VERSION2
                         buildx_version="latest"
                         docker_buildx_url="https://github.com/docker/buildx"
                         find_version_from_git_tags buildx_version "$docker_buildx_url" "refs/tags/v"
-                        echo "(*) Installing buildx ${buildx_version}..."
+                        echo "(*) 正在安装 buildx ${buildx_version}..."
 
                           # Map architecture for buildx downloads
                         case "${architecture}" in
@@ -8820,7 +8820,7 @@ RUN echo $RUBY_VERSION2
                         fi
                         if [ "$DOCKER_VERSION" = "latest" ] || [[ -n "$requested_version" && "$requested_version" -ge 27 ]] ; then
                             DOCKER_DEFAULT_IP6_TABLES="--ip6tables=false"
-                            echo "(!) As requested, passing '${DOCKER_DEFAULT_IP6_TABLES}'"
+                            echo "(!) 按请求,传递 '${DOCKER_DEFAULT_IP6_TABLES}'"
                         fi
                     fi
 
@@ -8891,7 +8891,7 @@ RUN echo $RUBY_VERSION2
                                 set_cgroup_nesting
 
                                 if [ $? -ne 0 ]; then
-                                    echo "(*) cgroup v2: Failed to enable nesting, retrying..."
+                                    echo "(*) cgroup v2: 启用嵌套失败,正在重试..."
                                 else
                                     break
                                 fi
@@ -8907,10 +8907,10 @@ RUN echo $RUBY_VERSION2
                             cat /etc/resolv.conf | grep -i 'internal.cloudapp.net' > /dev/null 2>&1
                             if [ $? -eq 0 ] && [ "${AZURE_DNS_AUTO_DETECTION}" = "true" ]
                             then
-                                echo "Setting dockerd Azure DNS."
+                                echo "正在设置 dockerd Azure DNS。"
                                 CUSTOMDNS="--dns 168.63.129.16"
                             else
-                                echo "Not setting dockerd DNS manually."
+                                echo "不手动设置 dockerd DNS。"
                                 CUSTOMDNS=""
                             fi
                         set -e
@@ -8961,7 +8961,7 @@ RUN echo $RUBY_VERSION2
                         done
 
                         if [ "${docker_ok}" != "true" ] && [ "${retry_docker_start_count}" != "4" ]; then
-                            echo "(*) Failed to start docker, retrying..."
+                            echo "(*) 启动 docker 失败,正在重试..."
                             set +e
                                 sudo_if pkill dockerd
                                 sudo_if pkill containerd
@@ -9032,7 +9032,7 @@ RUN echo $RUBY_VERSION2
                             "version": "1.3.3",
                             "name": "Go",
                             "documentationURL": "https://github.com/devcontainers/features/tree/main/src/go",
-                            "description": "Installs Go and common Go utilities. Auto-detects latest version and installs needed dependencies.",
+                            "description": "安装 Go 及常用 Go 工具。自动检测最新版本并安装所需依赖。",
                             "options": {
                                 "version": {
                                     "type": "string",
@@ -9043,12 +9043,12 @@ RUN echo $RUBY_VERSION2
                                         "1.23"
                                     ],
                                     "default": "latest",
-                                    "description": "Select or enter a Go version to install"
+                                    "description": "选择或输入要安装的 Go 版本"
                                 },
                                 "golangciLintVersion": {
                                     "type": "string",
                                     "default": "latest",
-                                    "description": "Version of golangci-lint to install"
+                                    "description": "要安装的 golangci-lint 版本"
                                 }
                             },
                             "init": true,
@@ -9060,7 +9060,7 @@ RUN echo $RUBY_VERSION2
                                     "settings": {
                                         "github.copilot.chat.codeGeneration.instructions": [
                                             {
-                                                "text": "This dev container includes Go and common Go utilities pre-installed and available on the `PATH`, along with the Go language extension for Go development."
+                                                "text": "此开发容器预装了 Go 及常用 Go 工具,并已添加到 `PATH` 环境变量中,同时包含用于 Go 开发的 Go 语言扩展。"
                                             }
                                         ]
                                     }
@@ -9124,7 +9124,7 @@ RUN echo $RUBY_VERSION2
                             VERSION_CODENAME="${ID}${MAJOR_VERSION_ID}"
                         fi
                     else
-                        echo "Linux distro ${ID} not supported."
+                        echo "不支持 Linux 发行版 ${ID}。"
                         exit 1
                     fi
 
@@ -9195,7 +9195,7 @@ RUN echo $RUBY_VERSION2
                             fi
                         fi
                         if [ -z "${!variable_name}" ] || ! echo "${version_list}" | grep "^${!variable_name//./\\.}$" > /dev/null 2>&1; then
-                            echo -e "Invalid ${variable_name} value: ${requested_version}\nValid values:\n${version_list}" >&2
+                            echo -e "无效的 ${variable_name} 值:${requested_version}\n有效值:\n${version_list}" >&2
                             exit 1
                         fi
                         echo "${variable_name}=${!variable_name}"
@@ -9205,19 +9205,19 @@ RUN echo $RUBY_VERSION2
                         case $ADJUSTED_ID in
                             debian)
                                 if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
-                                    echo "Running apt-get update..."
+                                    echo "正在运行 apt-get 更新..."
                                     ${PKG_MGR_CMD} update -y
                                 fi
                                 ;;
                             rhel)
                                 if [ ${PKG_MGR_CMD} = "microdnf" ]; then
                                     if [ "$(ls /var/cache/yum/* 2>/dev/null | wc -l)" = 0 ]; then
-                                        echo "Running ${PKG_MGR_CMD} makecache ..."
+                                        echo "正在运行 ${PKG_MGR_CMD} makecache ..."
                                         ${PKG_MGR_CMD} makecache
                                     fi
                                 else
                                     if [ "$(ls /var/cache/${PKG_MGR_CMD}/* 2>/dev/null | wc -l)" = 0 ]; then
-                                        echo "Running ${PKG_MGR_CMD} check-update ..."
+                                        echo "正在运行 ${PKG_MGR_CMD} check-更新 ..."
                                         set +e
                                         ${PKG_MGR_CMD} check-update
                                         rc=$?
@@ -9313,7 +9313,7 @@ RUN echo $RUBY_VERSION2
                         aarch64 | armv8*) architecture="arm64";;
                         aarch32 | armv7* | armvhf*) architecture="armv6l";;
                         i?86) architecture="386";;
-                        *) echo "(!) Architecture $architecture unsupported"; exit 1 ;;
+                        *) echo "(!) 不支持的架构 $architecture"; exit 1 ;;
                     esac
 
                     # Install Go
@@ -9331,13 +9331,13 @@ RUN echo $RUBY_VERSION2
                         chmod 700 ${GNUPGHOME}
                         curl -sSL -o /tmp/tmp-gnupg/golang_key "${GO_GPG_KEY_URI}"
                         gpg -q --import /tmp/tmp-gnupg/golang_key
-                        echo "Downloading Go ${TARGET_GO_VERSION}..."
+                        echo "正在下载 Go ${TARGET_GO_VERSION}..."
                         set +e
                         curl -fsSL -o /tmp/go.tar.gz "https://golang.org/dl/go${TARGET_GO_VERSION}.linux-${architecture}.tar.gz"
                         exit_code=$?
                         set -e
                         if [ "$exit_code" != "0" ]; then
-                            echo "(!) Download failed."
+                            echo "(!) 下载失败。"
                             # Try one break fix version number less if we get a failure. Use "set +e" since "set -e" can cause failures in valid scenarios.
                             set +e
                             major="$(echo "${TARGET_GO_VERSION}" | grep -oE '^[0-9]+' || echo '')"
@@ -9358,16 +9358,16 @@ RUN echo $RUBY_VERSION2
                                 fi
                             fi
                             set -e
-                            echo "Trying ${TARGET_GO_VERSION}..."
+                            echo "正在尝试 ${TARGET_GO_VERSION}..."
                             curl -fsSL -o /tmp/go.tar.gz "https://golang.org/dl/go${TARGET_GO_VERSION}.linux-${architecture}.tar.gz"
                         fi
                         curl -fsSL -o /tmp/go.tar.gz.asc "https://golang.org/dl/go${TARGET_GO_VERSION}.linux-${architecture}.tar.gz.asc"
                         gpg --verify /tmp/go.tar.gz.asc /tmp/go.tar.gz
-                        echo "Extracting Go ${TARGET_GO_VERSION}..."
+                        echo "正在解压 Go ${TARGET_GO_VERSION}..."
                         tar -xzf /tmp/go.tar.gz -C "${TARGET_GOROOT}" --strip-components=1
                         rm -rf /tmp/go.tar.gz /tmp/go.tar.gz.asc /tmp/tmp-gnupg
                     else
-                        echo "(!) Go is already installed with version ${TARGET_GO_VERSION}. Skipping."
+                        echo "(!) 已安装 Go ${TARGET_GO_VERSION} 版本。正在跳过。"
                     fi
 
                     # Install Go tools that are isImportant && !replacedByGopls based on
@@ -9384,7 +9384,7 @@ RUN echo $RUBY_VERSION2
                         github.com/josharian/impl@latest"
 
                     if [ "${INSTALL_GO_TOOLS}" = "true" ]; then
-                        echo "Installing common Go tools..."
+                        echo "正在安装常用 Go 工具..."
                         export PATH=${TARGET_GOROOT}/bin:${PATH}
                         export GOPATH=/tmp/gotools
                         export GOCACHE="${GOPATH}/cache"
@@ -9397,7 +9397,7 @@ RUN echo $RUBY_VERSION2
                         if [[ "1.16" > "$(go version | grep -oP 'go\K[0-9]+\.[0-9]+(\.[0-9]+)?')" ]]; then
                             export GO111MODULE=on
                             go_install_command=get
-                            echo "Go version < 1.16, using go get."
+                            echo "Go 版本低于 1.16,使用 go get。"
                         fi
 
                         (echo "${GO_TOOLS}" | xargs -n 1 go ${go_install_command} -v )2>&1 | tee -a /usr/local/etc/vscode-dev-containers/go.log
@@ -9409,11 +9409,11 @@ RUN echo $RUBY_VERSION2
 
                         # Install golangci-lint from precompiled binaries
                         if [ "$GOLANGCILINT_VERSION" = "latest" ] || [ "$GOLANGCILINT_VERSION" = "" ]; then
-                            echo "Installing golangci-lint latest..."
+                            echo "正在安装最新版 golangci-lint..."
                             curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
                                 sh -s -- -b "${TARGET_GOPATH}/bin"
                         else
-                            echo "Installing golangci-lint ${GOLANGCILINT_VERSION}..."
+                            echo "正在安装 golangci-lint ${GOLANGCILINT_VERSION}..."
                             curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
                                 sh -s -- -b "${TARGET_GOPATH}/bin" "v${GOLANGCILINT_VERSION}"
                         fi
@@ -9431,7 +9431,7 @@ RUN echo $RUBY_VERSION2
                     # Clean up
                     clean_up
 
-                    echo "Done!"
+                    echo "完成!"
                         "#),
                 ])
                 .await;
@@ -9482,7 +9482,7 @@ RUN echo $RUBY_VERSION2
     "version": "1.1.3",
     "name": "AWS CLI",
     "documentationURL": "https://github.com/devcontainers/features/tree/main/src/aws-cli",
-    "description": "Installs the AWS CLI along with needed dependencies. Useful for base Dockerfiles that often are missing required install dependencies like gpg.",
+    "description": "安装 AWS CLI 及其所需依赖。适用于经常缺少 gpg 等必要安装依赖的基础 Dockerfile。",
     "options": {
         "version": {
             "type": "string",
@@ -9490,12 +9490,12 @@ RUN echo $RUBY_VERSION2
                 "latest"
             ],
             "default": "latest",
-            "description": "Select or enter an AWS CLI version."
+            "description": "选择或输入 AWS CLI 版本。"
         },
         "verbose": {
             "type": "boolean",
             "default": true,
-            "description": "Suppress verbose output."
+            "description": "抑制详细输出。"
         }
     },
     "customizations": {
@@ -9506,7 +9506,7 @@ RUN echo $RUBY_VERSION2
             "settings": {
                 "github.copilot.chat.codeGeneration.instructions": [
                     {
-                        "text": "This dev container includes the AWS CLI along with needed dependencies pre-installed and available on the `PATH`, along with the AWS Toolkit extensions for AWS development."
+                        "text": "此开发容器预装了 AWS CLI 及其所需依赖,并已添加到 `PATH` 环境变量中,同时包含用于 AWS 开发的 AWS Toolkit 扩展。"
                     }
                 ]
             }
@@ -9576,7 +9576,7 @@ RUN echo $RUBY_VERSION2
                     apt_get_update()
                     {
                         if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
-                            echo "Running apt-get update..."
+                            echo "正在运行 apt-get 更新..."
                             apt-get update -y
                         fi
                     }
@@ -9620,7 +9620,7 @@ RUN echo $RUBY_VERSION2
                             amd64) architectureStr=x86_64 ;;
                             arm64) architectureStr=aarch64 ;;
                             *)
-                                echo "AWS CLI does not support machine architecture '$architecture'. Please use an x86-64 or ARM64 machine."
+                                echo "AWS CLI 不支持机器架构 '$architecture'。请使用 x86-64 或 ARM64 机器。"
                                 exit 1
                         esac
                         local scriptUrl=https://awscli.amazonaws.com/awscli-exe-linux-${architectureStr}${versionStr}.zip
@@ -9629,7 +9629,7 @@ RUN echo $RUBY_VERSION2
 
                         verify_aws_cli_gpg_signature "$scriptZipFile" "$scriptSigFile"
                         if (( $? > 0 )); then
-                            echo "Could not verify GPG signature of AWS CLI install script. Make sure you provided a valid version."
+                            echo "无法验证 AWS CLI 安装脚本的 GPG 签名。请确保提供了有效的版本。"
                             exit 1
                         fi
 
@@ -9655,14 +9655,14 @@ RUN echo $RUBY_VERSION2
                         rm -rf ./aws
                     }
 
-                    echo "(*) Installing AWS CLI..."
+                    echo "(*) 正在安装 AWS CLI..."
 
                     install
 
                     # Clean up
                     rm -rf /var/lib/apt/lists/*
 
-                    echo "Done!""#,
+                    echo "完成!""#,
                     ),
                     ("./scripts/", r#""#),
                     (

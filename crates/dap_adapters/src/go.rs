@@ -48,7 +48,7 @@ impl GoDebugAdapter {
             "macos" => "apple-darwin",
             "linux" => "unknown-linux-gnu",
             "windows" => "pc-windows-msvc",
-            other => bail!("Running on unsupported os: {other}"),
+            other => bail!("在不支持的操作系统上运行: {other}"),
         };
         let suffix = if consts::OS == "windows" {
             ".zip"
@@ -60,7 +60,7 @@ impl GoDebugAdapter {
             .assets
             .iter()
             .find(|asset| asset.name == asset_name)
-            .with_context(|| format!("no asset found matching `{asset_name:?}`"))?;
+            .with_context(|| format!("未找到与 `{asset_name:?}` 匹配的资源"))?;
 
         Ok(AdapterVersion {
             tag_name: release.tag_name,
@@ -117,7 +117,7 @@ impl GoDebugAdapter {
                 }
 
                 if let Some(path) = cached {
-                    warn!("Failed to fetch latest delve-shim-dap, using cached version: {error:#}");
+                    warn!("获取最新 delve-shim-dap 失败,正在使用缓存版本: {error:#}");
                     self.shim_path.set(path.clone()).ok();
                     Ok(path)
                 } else {
@@ -143,27 +143,27 @@ impl DebugAdapter for GoDebugAdapter {
         let common_properties = json!({
             "debugAdapter": {
                 "enum": ["legacy", "dlv-dap"],
-                "description": "Select which debug adapter to use with this configuration.",
+                "description": "选择此配置要使用的调试适配器。",
                 "default": "dlv-dap"
             },
             "stopOnEntry": {
                 "type": "boolean",
-                "description": "Automatically stop program after launch or attach.",
+                "description": "启动或附加后自动停止程序。",
                 "default": false
             },
             "showLog": {
                 "type": "boolean",
-                "description": "Show log output from the delve debugger. Maps to dlv's `--log` flag.",
+                "description": "显示 delve 调试器的日志输出。对应 dlv 的 `--log` 标志。",
                 "default": false
             },
             "cwd": {
                 "type": "string",
-                "description": "Workspace relative or absolute path to the working directory of the program being debugged.",
+                "description": "正在调试程序的工作目录的工作区相对或绝对路径。",
                 "default": "${ZED_WORKTREE_ROOT}"
             },
             "dlvFlags": {
                 "type": "array",
-                "description": "Extra flags for `dlv`. See `dlv help` for the full list of supported flags.",
+                "description": "`dlv` 的额外标志。有关支持的标志的完整列表,请参阅 `dlv help`。",
                 "items": {
                     "type": "string"
                 },
@@ -171,12 +171,12 @@ impl DebugAdapter for GoDebugAdapter {
             },
             "port": {
                 "type": "number",
-                "description": "Debug server port. For remote configurations, this is where to connect.",
+                "description": "调试服务器端口。对于远程配置,这是连接位置。",
                 "default": 2345
             },
             "host": {
                 "type": "string",
-                "description": "Debug server host. For remote configurations, this is where to connect.",
+                "description": "调试服务器主机。对于远程配置,这是连接位置。",
                 "default": "127.0.0.1"
             },
             "substitutePath": {
@@ -186,66 +186,66 @@ impl DebugAdapter for GoDebugAdapter {
                     "properties": {
                         "from": {
                             "type": "string",
-                            "description": "The absolute local path to be replaced."
+                            "description": "要替换的本地绝对路径。"
                         },
                         "to": {
                             "type": "string",
-                            "description": "The absolute remote path to replace with."
+                            "description": "要替换为的远程绝对路径。"
                         }
                     }
                 },
-                "description": "Mappings from local to remote paths for debugging.",
+                "description": "用于调试的本地到远程路径映射。",
                 "default": []
             },
             "trace": {
                 "type": "string",
                 "enum": ["verbose", "trace", "log", "info", "warn", "error"],
                 "default": "error",
-                "description": "Debug logging level."
+                "description": "调试日志级别。"
             },
             "backend": {
                 "type": "string",
                 "enum": ["default", "native", "lldb", "rr"],
-                "description": "Backend used by delve. Maps to `dlv`'s `--backend` flag."
+                "description": "delve 使用的后端。对应 `dlv` 的 `--backend` 标志。"
             },
             "logOutput": {
                 "type": "string",
                 "enum": ["debugger", "gdbwire", "lldbout", "debuglineerr", "rpc", "dap"],
-                "description": "Components that should produce debug output.",
+                "description": "应产生调试输出的组件。",
                 "default": "debugger"
             },
             "logDest": {
                 "type": "string",
-                "description": "Log destination for delve."
+                "description": "delve 的日志目标。"
             },
             "stackTraceDepth": {
                 "type": "number",
-                "description": "Maximum depth of stack traces.",
+                "description": "堆栈跟踪的最大深度。",
                 "default": 50
             },
             "showGlobalVariables": {
                 "type": "boolean",
                 "default": false,
-                "description": "Show global package variables in variables pane."
+                "description": "在变量面板中显示全局包变量。"
             },
             "showRegisters": {
                 "type": "boolean",
                 "default": false,
-                "description": "Show register variables in variables pane."
+                "description": "在变量面板中显示寄存器变量。"
             },
             "hideSystemGoroutines": {
                 "type": "boolean",
                 "default": false,
-                "description": "Hide system goroutines from call stack view."
+                "description": "从调用堆栈视图中隐藏系统 goroutine。"
             },
             "console": {
                 "default": "internalConsole",
-                "description": "Where to launch the debugger.",
+                "description": "启动调试器的位置。",
                 "enum": ["internalConsole", "integratedTerminal"]
             },
             "asRoot": {
                 "default": false,
-                "description": "Debug with elevated permissions (on Unix).",
+                "description": "使用提升的权限进行调试(在 Unix 上)。",
                 "type": "boolean"
             }
         });
@@ -254,12 +254,12 @@ impl DebugAdapter for GoDebugAdapter {
         let launch_properties = json!({
             "program": {
                 "type": "string",
-                "description": "Path to the program folder or file to debug.",
+                "description": "要调试的程序文件夹或文件的路径。",
                 "default": "${ZED_WORKTREE_ROOT}"
             },
             "args": {
                 "type": ["array", "string"],
-                "description": "Command line arguments for the program.",
+                "description": "程序的命令行参数。",
                 "items": {
                     "type": "string"
                 },
@@ -267,7 +267,7 @@ impl DebugAdapter for GoDebugAdapter {
             },
             "env": {
                 "type": "object",
-                "description": "Environment variables for the debugged program.",
+                "description": "被调试程序的环境变量。",
                 "default": {}
             },
             "envFile": {
@@ -275,7 +275,7 @@ impl DebugAdapter for GoDebugAdapter {
                 "items": {
                     "type": "string"
                 },
-                "description": "Path(s) to files with environment variables.",
+                "description": "包含环境变量的文件的路径。",
                 "default": ""
             },
             "buildFlags": {
@@ -283,26 +283,26 @@ impl DebugAdapter for GoDebugAdapter {
                 "items": {
                     "type": "string"
                 },
-                "description": "Flags for the Go compiler.",
+                "description": "Go 编译器的标志。",
                 "default": []
             },
             "output": {
                 "type": "string",
-                "description": "Output path for the binary.",
+                "description": "二进制文件的输出路径。",
                 "default": "debug"
             },
             "mode": {
                 "enum": [ "debug", "test", "exec", "replay", "core"],
-                "description": "Debug mode for launch configuration.",
+                "description": "启动配置的调试模式。",
             },
             "traceDirPath": {
                 "type": "string",
-                "description": "Directory for record trace (for 'replay' mode).",
+                "description": "记录跟踪的目录(用于“replay”模式)。",
                 "default": ""
             },
             "coreFilePath": {
                 "type": "string",
-                "description": "Path to core dump file (for 'core' mode).",
+                "description": "核心转储文件的路径(用于“core”模式)。",
                 "default": ""
             }
         });
@@ -313,28 +313,28 @@ impl DebugAdapter for GoDebugAdapter {
                 "anyOf": [
                     {
                         "enum": ["${command:pickProcess}", "${command:pickGoProcess}"],
-                        "description": "Use process picker to select a process."
+                        "description": "使用进程选择器选择进程。"
                     },
                     {
                         "type": "string",
-                        "description": "Process name to attach to."
+                        "description": "要附加到的进程名称。"
                     },
                     {
                         "type": "number",
-                        "description": "Process ID to attach to."
+                        "description": "要附加到的进程 ID。"
                     }
                 ],
                 "default": 0
             },
             "mode": {
                 "enum": ["local", "remote"],
-                "description": "Local or remote debugging.",
+                "description": "本地或远程调试。",
                 "default": "local"
             },
             "remotePath": {
                 "type": "string",
-                "description": "Path to source on remote machine.",
-                "markdownDeprecationMessage": "Use `substitutePath` instead.",
+                "description": "远程机器上源代码的路径。",
+                "markdownDeprecationMessage": "请改用 `substitutePath`。",
                 "default": ""
             }
         });
@@ -351,7 +351,7 @@ impl DebugAdapter for GoDebugAdapter {
                                 "request": {
                                     "type": "string",
                                     "enum": ["launch"],
-                                    "description": "Request to launch a new process"
+                                    "description": "请求启动新进程"
                                 }
                             }
                         },
@@ -375,7 +375,7 @@ impl DebugAdapter for GoDebugAdapter {
                                 "request": {
                                     "type": "string",
                                     "enum": ["attach"],
-                                    "description": "Request to attach to an existing process"
+                                    "description": "请求附加到现有进程"
                                 }
                             }
                         },
@@ -459,7 +459,7 @@ impl DebugAdapter for GoDebugAdapter {
             let go = delegate
                 .which(OsStr::new("go"))
                 .await
-                .context("Go not found in path. Please install Go first, then Dlv will be installed automatically.")?;
+                .context("在路径中未找到 Go。请先安装 Go,然后 Dlv 将自动安装。")?;
 
             let adapter_path = paths::debug_adapters_dir().join(&Self::ADAPTER_NAME);
 
@@ -472,7 +472,7 @@ impl DebugAdapter for GoDebugAdapter {
 
             if !install_output.status.success() {
                 bail!(
-                    "failed to install dlv via `go install`. stdout: {:?}, stderr: {:?}\n Please try installing it manually using 'go install github.com/go-delve/delve/cmd/dlv@latest'",
+                    "通过 `go install` 安装 dlv 失败。stdout: {:?}, stderr: {:?}\n 请尝试使用 'go install github.com/go-delve/delve/cmd/dlv@latest' 手动安装",
                     String::from_utf8_lossy(&install_output.stdout),
                     String::from_utf8_lossy(&install_output.stderr)
                 );
@@ -601,7 +601,7 @@ async fn handle_envs(
             envs.extend(file_envs.iter().map(|(k, v)| (k.clone(), v.clone())));
             env_vars.extend(file_envs);
         } else {
-            warn!("While starting Go debug session: failed to read env file {path:?}");
+            warn!("启动 Go 调试会话时:读取环境文件 {path:?} 失败");
         };
     }
 

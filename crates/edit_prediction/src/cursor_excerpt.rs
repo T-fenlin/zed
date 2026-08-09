@@ -323,7 +323,7 @@ mod tests {
         // [ ] = expected context range
         let test_cases = vec![
             TestCase {
-                name: "small function fits entirely in editable and context",
+                name: "小函数完全适合可编辑和上下文范围",
                 marked_text: indoc! {r#"
                     [«fn foo() {
                         let x = 1;ˇ
@@ -334,7 +334,7 @@ mod tests {
                 context_token_limit: 60,
             },
             TestCase {
-                name: "cursor near end of function - editable expands to syntax boundaries",
+                name: "光标位于函数末尾附近 - 可编辑范围扩展到语法边界",
                 marked_text: indoc! {r#"
                     [fn first() {
                         let a = 1;
@@ -351,7 +351,7 @@ mod tests {
                 context_token_limit: 35,
             },
             TestCase {
-                name: "cursor at function start - editable expands to syntax boundaries",
+                name: "光标位于函数开头 - 可编辑范围扩展到语法边界",
                 marked_text: indoc! {r#"
                     [fn before() {
                     «    let a = 1;
@@ -371,7 +371,7 @@ mod tests {
                 context_token_limit: 50,
             },
             TestCase {
-                name: "tiny budget - just lines around cursor, no syntax expansion",
+                name: "预算极小 - 仅光标周围的行,无语法扩展",
                 marked_text: indoc! {r#"
                     fn outer() {
                     [    let line1 = 1;
@@ -387,7 +387,7 @@ mod tests {
                 context_token_limit: 24,
             },
             TestCase {
-                name: "context extends beyond editable",
+                name: "上下文范围超出可编辑范围",
                 marked_text: indoc! {r#"
                     [fn first() { let a = 1; }
                     «fn second() { let b = 2; }
@@ -399,7 +399,7 @@ mod tests {
                 context_token_limit: 45,
             },
             TestCase {
-                name: "cursor in first if-block - editable expands to syntax boundaries",
+                name: "光标位于第一个 if 块中 - 可编辑范围扩展到语法边界",
                 marked_text: indoc! {r#"
                     [«fn before() { }
 
@@ -424,7 +424,7 @@ mod tests {
                 context_token_limit: 60,
             },
             TestCase {
-                name: "cursor in middle if-block - editable spans surrounding blocks",
+                name: "光标位于中间 if 块中 - 可编辑范围跨越周围块",
                 marked_text: indoc! {r#"
                     [fn before() { }
 
@@ -449,7 +449,7 @@ mod tests {
                 context_token_limit: 60,
             },
             TestCase {
-                name: "cursor near bottom of long function - context reaches function boundary",
+                name: "光标位于长函数底部附近 - 上下文范围到达函数边界",
                 marked_text: indoc! {r#"
                     [fn other() { }
 
@@ -473,7 +473,7 @@ mod tests {
                 context_token_limit: 55,
             },
             TestCase {
-                name: "zero context budget - context equals editable",
+                name: "零上下文预算 - 上下文范围等于可编辑范围",
                 marked_text: indoc! {r#"
                     fn before() {
                         let p = 1;
@@ -570,7 +570,7 @@ mod tests {
                         println!("\nActual context ({:?}):", actual_context);
                         println!("---\n{}---", range_text(&actual_context));
                     }
-                    panic!("Test '{}' failed - see output above", test_case.name);
+                    panic!("测试 '{}' 失败 - 请参见上方输出", test_case.name);
                 }
 
                 buffer

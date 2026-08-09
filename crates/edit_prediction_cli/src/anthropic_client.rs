@@ -26,7 +26,7 @@ impl PlainLlmClient {
     pub fn new() -> Result<Self> {
         let http_client: Arc<dyn http_client::HttpClient> = Arc::new(ReqwestClient::new());
         let api_key = std::env::var("ANTHROPIC_API_KEY")
-            .map_err(|_| anyhow::anyhow!("ANTHROPIC_API_KEY environment variable not set"))?;
+            .map_err(|_| anyhow::anyhow!("未设置 ANTHROPIC_API_KEY 环境变量"))?;
         Ok(Self {
             http_client,
             api_key,
@@ -132,7 +132,7 @@ impl PlainLlmClient {
             }
         }
 
-        let mut response = response.ok_or_else(|| anyhow::anyhow!("No response received"))?;
+        let mut response = response.ok_or_else(|| anyhow::anyhow!("未收到响应"))?;
 
         if response.content.is_empty() && !text_content.is_empty() {
             response
@@ -190,7 +190,7 @@ impl BatchingLlmClient {
     fn new(cache_path: &Path) -> Result<Self> {
         let http_client: Arc<dyn http_client::HttpClient> = Arc::new(ReqwestClient::new());
         let api_key = std::env::var("ANTHROPIC_API_KEY")
-            .map_err(|_| anyhow::anyhow!("ANTHROPIC_API_KEY environment variable not set"))?;
+            .map_err(|_| anyhow::anyhow!("未设置 ANTHROPIC_API_KEY 环境变量"))?;
 
         let connection = sqlez::connection::Connection::open_file(&cache_path.to_str().unwrap());
         let mut statement = sqlez::statement::Statement::prepare(
@@ -309,7 +309,7 @@ impl BatchingLlmClient {
     /// Import batch results from external batch IDs (useful for recovering after database loss)
     pub async fn import_batches(&self, batch_ids: &[String]) -> Result<()> {
         for batch_id in batch_ids {
-            log::info!("Importing batch {}", batch_id);
+            log::info!("正在导入批次 {}", batch_id);
 
             let batch_status = anthropic::batches::retrieve_batch(
                 self.http_client.as_ref(),
@@ -318,17 +318,17 @@ impl BatchingLlmClient {
                 batch_id,
             )
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to retrieve batch {}: {:?}", batch_id, e))?;
+            .map_err(|e| anyhow::anyhow!("获取批次 {} 失败: {:?}", batch_id, e))?;
 
             log::info!(
-                "Batch {} status: {}",
+                "批次 {} 状态: {}",
                 batch_id,
                 batch_status.processing_status
             );
 
             if batch_status.processing_status != "ended" {
                 log::warn!(
-                    "Batch {} is not finished (status: {}), skipping",
+                    "批次 {} 尚未完成(状态: {}),跳过",
                     batch_id,
                     batch_status.processing_status
                 );
@@ -343,7 +343,7 @@ impl BatchingLlmClient {
             )
             .await
             .map_err(|e| {
-                anyhow::anyhow!("Failed to retrieve batch results for {}: {:?}", batch_id, e)
+                anyhow::anyhow!("获取批次 {} 的结果失败: {:?}", batch_id, e)
             })?;
 
             let mut updates: Vec<(String, String, String)> = Vec::new();
@@ -365,7 +365,7 @@ impl BatchingLlmClient {
                     }
                     anthropic::batches::BatchResult::Errored { error } => {
                         log::error!(
-                            "Batch request {} failed: {}: {}",
+                            "批次请求 {} 失败: {}: {}",
                             request_hash,
                             error.error.error_type,
                             error.error.message
@@ -381,11 +381,11 @@ impl BatchingLlmClient {
                         error_count += 1;
                     }
                     anthropic::batches::BatchResult::Canceled => {
-                        log::warn!("Batch request {} was canceled", request_hash);
+                        log::warn!("批次请求 {} 已取消", request_hash);
                         error_count += 1;
                     }
                     anthropic::batches::BatchResult::Expired => {
-                        log::warn!("Batch request {} expired", request_hash);
+                        log::warn!("批次请求 {} 已过期", request_hash);
                         error_count += 1;
                     }
                 }
@@ -411,7 +411,7 @@ impl BatchingLlmClient {
             })?;
 
             log::info!(
-                "Imported batch {}: {} successful, {} errors",
+                "已导入批次 {}: {} 成功, {} 错误",
                 batch_id,
                 success_count,
                 error_count
@@ -439,7 +439,7 @@ impl BatchingLlmClient {
             .map_err(|e| anyhow::anyhow!("{:?}", e))?;
 
             log::info!(
-                "Batch {} status: {}",
+                "批次 {} 状态: {}",
                 batch_id,
                 batch_status.processing_status
             );
@@ -471,7 +471,7 @@ impl BatchingLlmClient {
                         }
                         anthropic::batches::BatchResult::Errored { error } => {
                             log::error!(
-                                "Batch request {} failed: {}: {}",
+                                "批次请求 {} 失败: {}: {}",
                                 request_hash,
                                 error.error.error_type,
                                 error.error.message
@@ -486,22 +486,22 @@ impl BatchingLlmClient {
                             updates.push((error_json, request_hash));
                         }
                         anthropic::batches::BatchResult::Canceled => {
-                            log::warn!("Batch request {} was canceled", request_hash);
+                            log::warn!("批次请求 {} 已取消", request_hash);
                             let error_json = serde_json::json!({
                                 "error": {
                                     "type": "canceled",
-                                    "message": "Batch request was canceled"
+                                    "message": "批次请求已取消"
                                 }
                             })
                             .to_string();
                             updates.push((error_json, request_hash));
                         }
                         anthropic::batches::BatchResult::Expired => {
-                            log::warn!("Batch request {} expired", request_hash);
+                            log::warn!("批次请求 {} 已过期", request_hash);
                             let error_json = serde_json::json!({
                                 "error": {
                                     "type": "expired",
-                                    "message": "Batch request expired"
+                                    "message": "批次请求已过期"
                                 }
                             })
                             .to_string();
@@ -519,7 +519,7 @@ impl BatchingLlmClient {
                     }
                     Ok(())
                 })?;
-                log::info!("Downloaded {} successful requests", success_count);
+                log::info!("已下载 {} 个成功请求", success_count);
             }
         }
 
@@ -641,7 +641,7 @@ impl BatchingLlmClient {
 
                 let batch_len = batch_requests.len();
                 log::info!(
-                    "Uploading batch with {} requests (~{:.2} MB)",
+                    "正在上传包含 {} 个请求的批次(约 {:.2} MB)",
                     batch_len,
                     batch_size as f64 / (1024.0 * 1024.0)
                 );
@@ -671,7 +671,7 @@ impl BatchingLlmClient {
 
                 total_uploaded += batch_len;
                 log::info!(
-                    "Uploaded batch {} with {} requests ({} total)",
+                    "已上传批次 {},包含 {} 个请求(共 {} 个)",
                     batch.id,
                     batch_len,
                     total_uploaded
@@ -692,7 +692,7 @@ impl BatchingLlmClient {
 
             let batch_len = batch_requests.len();
             log::info!(
-                "Uploading final batch with {} requests (~{:.2} MB)",
+                "正在上传包含 {} 个请求的最终批次(约 {:.2} MB)",
                 batch_len,
                 current_batch_size as f64 / (1024.0 * 1024.0)
             );
@@ -722,7 +722,7 @@ impl BatchingLlmClient {
 
             total_uploaded += batch_len;
             log::info!(
-                "Uploaded batch {} with {} requests ({} total)",
+                "已上传批次 {},包含 {} 个请求(共 {} 个)",
                 batch.id,
                 batch_len,
                 total_uploaded
@@ -733,7 +733,7 @@ impl BatchingLlmClient {
 
         if !all_batch_ids.is_empty() {
             log::info!(
-                "Finished uploading {} batches with {} total requests",
+                "已完成上传 {} 个批次,共 {} 个请求",
                 all_batch_ids.len(),
                 total_uploaded
             );
@@ -812,7 +812,7 @@ impl AnthropicClient {
                     .generate(model, max_tokens, messages, seed, cache_only)
                     .await
             }
-            AnthropicClient::Dummy => panic!("Dummy LLM client is not expected to be used"),
+            AnthropicClient::Dummy => panic!("不应使用虚拟 LLM 客户端"),
         }
     }
 
@@ -833,9 +833,9 @@ impl AnthropicClient {
                 .await
                 .map(Some),
             AnthropicClient::Batch(_) => {
-                anyhow::bail!("Streaming not supported with batching client")
+                anyhow::bail!("批处理客户端不支持流式传输")
             }
-            AnthropicClient::Dummy => panic!("Dummy LLM client is not expected to be used"),
+            AnthropicClient::Dummy => panic!("不应使用虚拟 LLM 客户端"),
         }
     }
 
@@ -843,7 +843,7 @@ impl AnthropicClient {
         match self {
             AnthropicClient::Plain(_) => Ok(()),
             AnthropicClient::Batch(batching_llm_client) => batching_llm_client.sync_batches().await,
-            AnthropicClient::Dummy => panic!("Dummy LLM client is not expected to be used"),
+            AnthropicClient::Dummy => panic!("不应使用虚拟 LLM 客户端"),
         }
     }
 
@@ -853,19 +853,19 @@ impl AnthropicClient {
             AnthropicClient::Batch(batching_llm_client) => {
                 batching_llm_client.pending_batch_count()
             }
-            AnthropicClient::Dummy => panic!("Dummy LLM client is not expected to be used"),
+            AnthropicClient::Dummy => panic!("不应使用虚拟 LLM 客户端"),
         }
     }
 
     pub async fn import_batches(&self, batch_ids: &[String]) -> Result<()> {
         match self {
             AnthropicClient::Plain(_) => {
-                anyhow::bail!("Import batches is only supported with batching client")
+                anyhow::bail!("仅批处理客户端支持导入批次")
             }
             AnthropicClient::Batch(batching_llm_client) => {
                 batching_llm_client.import_batches(batch_ids).await
             }
-            AnthropicClient::Dummy => panic!("Dummy LLM client is not expected to be used"),
+            AnthropicClient::Dummy => panic!("不应使用虚拟 LLM 客户端"),
         }
     }
 }

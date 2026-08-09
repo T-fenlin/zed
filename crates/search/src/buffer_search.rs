@@ -119,9 +119,9 @@ impl Render for BufferSearchBar {
                 .map(|editor: Entity<Editor>| editor.read(cx).has_any_buffer_folded(cx))
                 .unwrap_or_default();
             let (icon, tooltip_label) = if is_collapsed {
-                (IconName::ChevronUpDown, "Expand All Files")
+                (IconName::ChevronUpDown, "展开所有文件")
             } else {
-                (IconName::ChevronDownUp, "Collapse All Files")
+                (IconName::ChevronDownUp, "折叠所有文件")
             };
 
             let collapse_expand_icon_button = |id| {
@@ -177,12 +177,12 @@ impl Render for BufferSearchBar {
 
         self.query_editor.update(cx, |query_editor, cx| {
             if query_editor.placeholder_text(cx).is_none() {
-                query_editor.set_placeholder_text("Search…", window, cx);
+                query_editor.set_placeholder_text("搜索…", window, cx);
             }
         });
 
         self.replacement_editor.update(cx, |editor, cx| {
-            editor.set_placeholder_text("Replace with…", window, cx);
+            editor.set_placeholder_text("替换为…", window, cx);
         });
 
         let mut color_override = None;
@@ -270,7 +270,7 @@ impl Render for BufferSearchBar {
                     "buffer-search-bar-toggle",
                     IconName::Replace,
                     self.replace_enabled.then_some(ActionButtonState::Toggled),
-                    "Toggle Replace",
+                    "切换替换",
                     &ToggleReplace,
                     focus_handle.clone(),
                 ))
@@ -294,7 +294,7 @@ impl Render for BufferSearchBar {
                         let focus_handle = focus_handle.clone();
                         move |_window, cx| {
                             Tooltip::for_action_in(
-                                "Toggle Search Selection",
+                                "切换搜索选区",
                                 &ToggleSelection,
                                 &focus_handle,
                                 cx,
@@ -316,7 +316,7 @@ impl Render for BufferSearchBar {
                         self.active_match_index
                             .is_none()
                             .then_some(ActionButtonState::Disabled),
-                        "Select Previous Match",
+                        "选择上一个匹配项",
                         &SelectPreviousMatch,
                         query_focus.clone(),
                     ))
@@ -326,7 +326,7 @@ impl Render for BufferSearchBar {
                         self.active_match_index
                             .is_none()
                             .then_some(ActionButtonState::Disabled),
-                        "Select Next Match",
+                        "选择下一个匹配项",
                         &SelectNextMatch,
                         query_focus.clone(),
                     ))
@@ -347,7 +347,7 @@ impl Render for BufferSearchBar {
                         "buffer-search-nav-button",
                         IconName::SelectAll,
                         Default::default(),
-                        "Select All Matches",
+                        "选择所有匹配项",
                         &SelectAllMatches,
                         query_focus.clone(),
                     ))
@@ -359,7 +359,7 @@ impl Render for BufferSearchBar {
                     "buffer-search",
                     IconName::Close,
                     Default::default(),
-                    "Close Search Bar",
+                    "关闭搜索栏",
                     &Dismiss,
                     focus_handle.clone(),
                 ))
@@ -393,7 +393,7 @@ impl Render for BufferSearchBar {
                     "buffer-search-replace-button",
                     IconName::ReplaceNext,
                     Default::default(),
-                    "Replace Next Match",
+                    "替换下一个匹配项",
                     &ReplaceNext,
                     focus_handle.clone(),
                 ))
@@ -401,7 +401,7 @@ impl Render for BufferSearchBar {
                     "buffer-search-replace-button",
                     IconName::ReplaceAll,
                     Default::default(),
-                    "Replace All Matches",
+                    "替换所有匹配项",
                     &ReplaceAll,
                     focus_handle,
                 ));
@@ -446,7 +446,7 @@ impl Render for BufferSearchBar {
                                 "buffer-search",
                                 IconName::Close,
                                 Default::default(),
-                                "Close Search Bar",
+                                "关闭搜索栏",
                                 &Dismiss,
                                 focus_handle.clone(),
                             )),
@@ -758,7 +758,7 @@ impl BufferSearchBar {
                 .buffer()
                 .read(cx)
                 .as_singleton()
-                .expect("query editor should be backed by a singleton buffer");
+                .expect("查询编辑器应由单例缓冲区支持");
 
             query_buffer
                 .read(cx)
@@ -770,7 +770,7 @@ impl BufferSearchBar {
                 let regex_language = languages
                     .language_for_name("regex")
                     .await
-                    .context("loading regex language")?;
+                    .context("加载正则表达式语言")?;
 
                 buffer_search_bar
                     .update(cx, |buffer_search_bar, cx| {
@@ -1005,7 +1005,7 @@ impl BufferSearchBar {
         if let Some(split_editor) = item.act_as_type(TypeId::of::<SplittableEditor>(), cx) {
             let split_editor = split_editor
                 .downcast::<SplittableEditor>()
-                .expect("Is a splittable editor");
+                .expect("是一个可拆分编辑器");
             if split_editor.read(cx).is_split() {
                 split_editor.update(cx, |split_editor, cx| {
                     split_editor.toggle_soft_wrap(action, window, cx)
@@ -1014,7 +1014,7 @@ impl BufferSearchBar {
             }
         }
         if let Some(item) = item.act_as_type(TypeId::of::<Editor>(), cx) {
-            let editor = item.downcast::<Editor>().expect("Is an editor");
+            let editor = item.downcast::<Editor>().expect("是一个编辑器");
             editor.update(cx, |editor, cx| editor.toggle_soft_wrap(action, window, cx));
         }
     }
@@ -1022,7 +1022,7 @@ impl BufferSearchBar {
     fn toggle_fold_all_in_item(&self, window: &mut Window, cx: &mut Context<Self>) {
         if let Some(item) = &self.active_searchable_item {
             if let Some(item) = item.act_as_type(TypeId::of::<Editor>(), cx) {
-                let editor = item.downcast::<Editor>().expect("Is an editor");
+                let editor = item.downcast::<Editor>().expect("是一个编辑器");
                 editor.update(cx, |editor, cx| {
                     let is_collapsed = editor.has_any_buffer_folded(cx);
                     if is_collapsed {
@@ -1834,7 +1834,7 @@ impl BufferSearchBar {
             .buffer()
             .read(cx)
             .as_singleton()
-            .expect("query editor should be backed by a singleton buffer");
+            .expect("查询编辑器应由单例缓冲区支持");
 
         if enable {
             if let Some(regex_language) = self.regex_language.clone() {
@@ -1916,7 +1916,7 @@ mod tests {
                             A regular expression (shortened as regex or regexp;[1] also referred to as
                             rational expression[2][3]) is a sequence of characters that specifies a search
                             pattern in text. Usually such patterns are used by string-searching algorithms
-                            for "find" or "find and replace" operations on strings, or for input validation.
+                            for "find" or "查找和替换" operations on strings, or for input validation.
                             "#
                             .unindent(),
                             cx,
@@ -1992,7 +1992,7 @@ mod tests {
                 A regular expression (shortened as regex or regexp;[1] also referred to as
                 rational expression[2][3]) is a sequence of characters that specifies a search
                 pattern in text. Usually such patterns are used by string-searching algorithms
-                for "find" or "find and replace" operations on strings, or for input validation.
+                for "find" or "查找和替换" operations on strings, or for input validation.
                 "#
                 .unindent(),
                 cx,
@@ -2389,7 +2389,7 @@ mod tests {
         A regular expression (shortened as regex or regexp;[1] also referred to as
         rational expression[2][3]) is a sequence of characters that specifies a search
         pattern in text. Usually such patterns are used by string-searching algorithms
-        for "find" or "find and replace" operations on strings, or for input validation.
+        for "find" or "查找和替换" operations on strings, or for input validation.
         "#
         .unindent();
         let expected_query_matches_count = buffer_text
@@ -2398,7 +2398,7 @@ mod tests {
             .count();
         assert!(
             expected_query_matches_count > 1,
-            "Should pick a query with multiple results"
+            "应选择包含多个结果的查询"
         );
         let buffer = cx.new(|cx| Buffer::local(buffer_text, cx));
         let window = cx.add_window(|_, _| gpui::Empty);
@@ -2432,13 +2432,13 @@ mod tests {
                 });
                 assert!(
                     !editor.read(cx).is_focused(window),
-                    "Initially, the editor should not be focused"
+                    "初始状态下,编辑器不应获得焦点"
                 );
                 let initial_selections = editor.update(cx, |editor, cx| {
                     let initial_selections = editor.selections.display_ranges(&editor.display_snapshot(cx));
                     assert_eq!(
                         initial_selections.len(), 1,
-                        "Expected to have only one selection before adding carets to all matches, but got: {initial_selections:?}",
+                        "在向所有匹配项添加光标之前,应只有一个选区,但实际为:{initial_selections:?}",
                     );
                     initial_selections
                 });
@@ -2450,7 +2450,7 @@ mod tests {
                 });
                 assert!(
                     editor.read(cx).is_focused(window),
-                    "Should focus editor after successful SelectAllMatches"
+                    "成功执行“选择所有匹配项”后,编辑器应获得焦点"
                 );
                 search_bar.update(cx, |search_bar, cx| {
                     let all_selections =
@@ -2458,12 +2458,12 @@ mod tests {
                     assert_eq!(
                         all_selections.len(),
                         expected_query_matches_count,
-                        "Should select all `a` characters in the buffer, but got: {all_selections:?}"
+                        "应选择缓冲区中的所有 `a` 字符,但实际为:{all_selections:?}"
                     );
                     assert_eq!(
                         search_bar.active_match_index,
                         Some(0),
-                        "Match index should not change after selecting all matches"
+                        "选择所有匹配项后,匹配索引不应改变"
                     );
                 });
 
@@ -2475,7 +2475,7 @@ mod tests {
             .update(cx, |_, window, cx| {
                 assert!(
                     editor.read(cx).is_focused(window),
-                    "Should still have editor focused after SelectNextMatch"
+                    "执行“选择下一个匹配项”后,编辑器仍应保持焦点"
                 );
                 search_bar.update(cx, |search_bar, cx| {
                     let all_selections = editor.update(cx, |editor, cx| {
@@ -2486,16 +2486,16 @@ mod tests {
                     assert_eq!(
                         all_selections.len(),
                         1,
-                        "On next match, should deselect items and select the next match"
+                        "移动到下一个匹配项时,应取消选择当前项并选择下一个匹配项"
                     );
                     assert_ne!(
                         all_selections, initial_selections,
-                        "Next match should be different from the first selection"
+                        "下一个匹配项应与第一个选区不同"
                     );
                     assert_eq!(
                         search_bar.active_match_index,
                         Some(1),
-                        "Match index should be updated to the next one"
+                        "匹配索引应更新为下一个"
                     );
                     let handle = search_bar.query_editor.focus_handle(cx);
                     window.focus(&handle, cx);
@@ -2507,7 +2507,7 @@ mod tests {
             .update(cx, |_, window, cx| {
                 assert!(
                     editor.read(cx).is_focused(window),
-                    "Should focus editor after successful SelectAllMatches"
+                    "成功执行“选择所有匹配项”后,编辑器应获得焦点"
                 );
                 search_bar.update(cx, |search_bar, cx| {
                     let all_selections =
@@ -2515,12 +2515,12 @@ mod tests {
                     assert_eq!(
                     all_selections.len(),
                     expected_query_matches_count,
-                    "Should select all `a` characters in the buffer, but got: {all_selections:?}"
+                    "应选择缓冲区中的所有 `a` 字符,但实际为:{all_selections:?}"
                 );
                     assert_eq!(
                         search_bar.active_match_index,
                         Some(1),
-                        "Match index should not change after selecting all matches"
+                        "选择所有匹配项后,匹配索引不应改变"
                     );
                 });
                 search_bar.update(cx, |search_bar, cx| {
@@ -2532,7 +2532,7 @@ mod tests {
             .update(cx, |_, window, cx| {
                 assert!(
                     editor.read(cx).is_focused(window),
-                    "Should still have editor focused after SelectPreviousMatch"
+                    "执行“选择上一个匹配项”后,编辑器仍应保持焦点"
                 );
 
                 search_bar.update(cx, |search_bar, cx| {
@@ -2544,16 +2544,16 @@ mod tests {
                     assert_eq!(
                         all_selections.len(),
                         1,
-                        "On previous match, should deselect items and select the previous item"
+                        "移动到上一个匹配项时,应取消选择当前项并选择上一个匹配项"
                     );
                     assert_eq!(
                         all_selections, initial_selections,
-                        "Previous match should be the same as the first selection"
+                        "上一个匹配项应与第一个选区相同"
                     );
                     assert_eq!(
                         search_bar.active_match_index,
                         Some(0),
-                        "Match index should be updated to the previous one"
+                        "匹配索引应更新为上一个"
                     );
                     all_selections
                 })
@@ -2578,18 +2578,18 @@ mod tests {
                 });
                 assert!(
                     editor.update(cx, |this, _cx| !this.is_focused(window)),
-                    "Should not switch focus to editor if SelectAllMatches does not find any matches"
+                    "如果“选择所有匹配项”未找到任何匹配项,则不应将焦点切换到编辑器"
                 );
                 search_bar.update(cx, |search_bar, cx| {
                     let all_selections =
                         editor.update(cx, |editor, cx| editor.selections.display_ranges(&editor.display_snapshot(cx)));
                     assert_eq!(
                         all_selections, last_match_selections,
-                        "Should not select anything new if there are no matches"
+                        "如果没有匹配项,则不应选择任何新内容"
                     );
                     assert!(
                         search_bar.active_match_index.is_none(),
-                        "For no matches, there should be no active match index"
+                        "没有匹配项时,不应存在活动匹配索引"
                     );
                 });
             })
@@ -2654,7 +2654,7 @@ mod tests {
             assert_eq!(
                 all_selections.len(),
                 2,
-                "Should select all `edit(` in the buffer, but got: {all_selections:?}"
+                "应选择缓冲区中的所有 `edit(`,但实际为:{all_selections:?}"
             );
         });
 
@@ -2683,7 +2683,7 @@ mod tests {
             assert_eq!(
                 all_selections.len(),
                 2,
-                "Should select all `edit(` in the buffer, but got: {all_selections:?}"
+                "应选择缓冲区中的所有 `edit(`,但实际为:{all_selections:?}"
             );
         });
     }
@@ -2893,7 +2893,7 @@ mod tests {
             let scroll_bottom = scroll_top + visible_lines;
             assert!(
                 (cursor_row.0 as f64) < scroll_bottom,
-                "cursor row {cursor_row:?} should be visible (scroll range {scroll_top}..{scroll_bottom})"
+                "光标行 {cursor_row:?} 应可见(滚动范围 {scroll_top}..{scroll_bottom})"
             );
         });
     }
@@ -2923,7 +2923,7 @@ mod tests {
         A regular expr$1 (shortened as regex or regexp;[1] also referred to as
         rational expr$1[2][3]) is a sequence of characters that specifies a search
         pattern in text. Usually such patterns are used by string-searching algorithms
-        for "find" or "find and replace" operations on strings, or for input validation.
+        for "find" or "查找和替换" operations on strings, or for input validation.
         "#
             .unindent()
         );
@@ -2949,7 +2949,7 @@ mod tests {
         A regular expr$1 (shortened as regex banana regexp;[1] also referred to as
         rational expr$1[2][3]) is a sequence of characters that specifies a search
         pattern in text. Usually such patterns are used by string-searching algorithms
-        for "find" or "find and replace" operations on strings, or for input validation.
+        for "find" or "查找和替换" operations on strings, or for input validation.
         "#
             .unindent()
         );
@@ -2978,7 +2978,7 @@ mod tests {
         A regular expr$1 (shortened as regex banana regexp;1number also referred to as
         rational expr$12number3number) is a sequence of characters that specifies a search
         pattern in text. Usually such patterns are used by string-searching algorithms
-        for "find" or "find and replace" operations on strings, or for input validation.
+        for "find" or "查找和替换" operations on strings, or for input validation.
         "#
             .unindent()
         );
@@ -3009,7 +3009,7 @@ mod tests {
         A regular expr$1 (shortened as regex banana regexp;1number also referred to as
         rational expr$12number3number) is a sequence of characters that specifies a search
         pattern in text. Usually such patterns are used by string-searching things
-        for "find" or "find and replace" operations on strings, or for input validation.
+        for "find" or "查找和替换" operations on strings, or for input validation.
         "#
             .unindent()
         );
@@ -3020,7 +3020,7 @@ mod tests {
         let (editor, search_bar, cx) = init_test(cx);
 
         editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("What a bad day!", window, cx)
+            editor.set_text("多么糟糕的一天!", window, cx)
         });
 
         search_bar
@@ -3044,20 +3044,20 @@ mod tests {
         });
 
         // Focus on the editor instead of the search bar, as we want to ensure
-        // that pressing the "Replace Next Match" button will work, even if the
+        // that pressing the "替换下一个匹配项" button will work, even if the
         // search bar is not focused.
         cx.focus(&editor);
 
-        // We'll not simulate clicking the "Replace Next Match " button, asserting that
+        // We'll not simulate clicking the "替换下一个匹配项 " button, asserting that
         // the replacement was done.
         let button_bounds = cx
             .debug_bounds("ICON-ReplaceNext")
-            .expect("'Replace Next Match' button should be visible");
+            .expect("“替换下一个匹配项”按钮应可见");
         cx.simulate_click(button_bounds.center(), gpui::Modifiers::none());
 
         assert_eq!(
             editor.read_with(cx, |editor, cx| editor.text(cx)),
-            "What a great day!"
+            "多么美好的一天!"
         );
     }
 
@@ -3129,7 +3129,7 @@ mod tests {
             A regular \n (shortened as regex or regexp;[1] also referred to as
             rational \n[2][3]) is a sequence of characters that specifies a search
             pattern in text. Usually such patterns are used by string-searching algorithms
-            for "find" or "find and replace" operations on strings, or for input validation.
+            for "find" or "查找和替换" operations on strings, or for input validation.
             "#
             .unindent(),
         })
@@ -3148,7 +3148,7 @@ mod tests {
             \\ regexp;[1] also referred to as
             rational \n[2][3]) is a sequence of characters that specifies a search
             pattern in text. Usually such patterns are used by string-searching algorithms
-            for "find" or "find and replace" operations on strings, or for input validation.
+            for "find" or "查找和替换" operations on strings, or for input validation.
             "#
             .unindent(),
         })
@@ -3169,7 +3169,7 @@ mod tests {
             specifies a search
             pattern in text. Usually such patterns are used
             by string-searching algorithms
-            for "find" or "find and replace" operations on strings, or for input validation.
+            for "find" or "查找和替换" operations on strings, or for input validation.
             "#
             .unindent(),
         })
@@ -3209,11 +3209,11 @@ mod tests {
                     .replacement_editor
                     .focus_handle(cx)
                     .is_focused(window),
-                "replacement editor should be focused when deploying replace with a selection",
+                "使用选区部署替换时,替换编辑器应获得焦点",
             );
             assert!(
                 !search_bar.query_editor.focus_handle(cx).is_focused(window),
-                "search editor should not be focused when replacement editor is focused",
+                "当替换编辑器获得焦点时,搜索编辑器不应获得焦点",
             );
         });
     }
@@ -3240,13 +3240,13 @@ mod tests {
         search_bar.update_in(cx, |search_bar, window, cx| {
             assert!(
                 search_bar.query_editor.focus_handle(cx).is_focused(window),
-                "query editor should be focused after deploying the search bar",
+                "部署搜索栏后,查询编辑器应获得焦点",
             );
         });
         editor.update_in(cx, |editor, _, cx| {
             assert!(
                 matches!(editor.soft_wrap_mode(cx), SoftWrap::None),
-                "soft wrap should be disabled initially",
+                "软换行初始应处于禁用状态",
             );
         });
 
@@ -3256,13 +3256,13 @@ mod tests {
         editor.update_in(cx, |editor, _, cx| {
             assert!(
                 matches!(editor.soft_wrap_mode(cx), SoftWrap::EditorWidth),
-                "toggling soft wrap while the search bar is focused should affect the searched editor",
+                "在搜索栏获得焦点时切换软换行应影响被搜索的编辑器",
             );
         });
         search_bar.update_in(cx, |search_bar, window, cx| {
             assert!(
                 search_bar.query_editor.focus_handle(cx).is_focused(window),
-                "focus should stay in the search bar",
+                "焦点应保持在搜索栏中",
             );
         });
     }
@@ -3643,7 +3643,7 @@ mod tests {
             type Event = ();
 
             fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-                "Non-buffer item".into()
+                "非缓冲区项目".into()
             }
 
             fn as_searchable(
@@ -3741,7 +3741,7 @@ mod tests {
         search_bar.read_with(cx, |search_bar, cx| {
             assert!(
                 !search_bar.needs_expand_collapse_option(cx),
-                "Items reporting ItemBufferKind::None must not get the expand/collapse button"
+                "报告 ItemBufferKind::None 的项目不应显示展开/折叠按钮"
             );
         });
     }
@@ -3826,7 +3826,7 @@ mod tests {
         let has_any_folded = editor.read_with(cx, |editor, cx| editor.has_any_buffer_folded(cx));
         assert!(
             has_any_folded,
-            "All buffers should be folded after fold_all"
+            "执行 fold_all 后,所有缓冲区都应折叠"
         );
 
         // Manually unfold one buffer (simulating a chevron click)
@@ -3849,7 +3849,7 @@ mod tests {
         let has_any_folded = editor.read_with(cx, |editor, cx| editor.has_any_buffer_folded(cx));
         assert!(
             has_any_folded,
-            "Should still report folds when only one buffer is unfolded"
+            "仅展开一个缓冲区时仍应报告折叠状态"
         );
 
         // Manually unfold the second buffer too
@@ -3872,7 +3872,7 @@ mod tests {
         let has_any_folded = editor.read_with(cx, |editor, cx| editor.has_any_buffer_folded(cx));
         assert!(
             !has_any_folded,
-            "No folds should remain after unfolding all buffers individually"
+            "逐个展开所有缓冲区后,不应保留任何折叠"
         );
 
         // Manually fold one buffer back
@@ -3883,7 +3883,7 @@ mod tests {
         let has_any_folded = editor.read_with(cx, |editor, cx| editor.has_any_buffer_folded(cx));
         assert!(
             has_any_folded,
-            "Should report folds after manually folding one buffer"
+            "手动折叠一个缓冲区后应报告折叠状态"
         );
     }
 
@@ -3913,23 +3913,23 @@ mod tests {
             assert_eq!(
                 search_bar.search_options,
                 SearchOptions::NONE,
-                "Should have no search options enabled by default"
+                "默认情况下不应启用任何搜索选项"
             );
             search_bar.toggle_search_option(SearchOptions::WHOLE_WORD, window, cx);
             assert_eq!(
                 search_bar.search_options,
                 SearchOptions::WHOLE_WORD,
-                "Should enable the option toggled"
+                "应启用已切换的选项"
             );
             assert!(
                 !search_bar.dismissed,
-                "Search bar should be present and visible"
+                "搜索栏应存在且可见"
             );
             search_bar.deploy(&deploy, None, window, cx);
             assert_eq!(
                 search_bar.search_options,
                 SearchOptions::WHOLE_WORD,
-                "After (re)deploying, the option should still be enabled"
+                "(重新)部署后,该选项仍应处于启用状态"
             );
 
             search_bar.dismiss(&Dismiss, window, cx);
@@ -3937,7 +3937,7 @@ mod tests {
             assert_eq!(
                 search_bar.search_options,
                 SearchOptions::WHOLE_WORD,
-                "After hiding and showing the search bar, search options should be preserved"
+                "隐藏并重新显示搜索栏后,搜索选项应保持不变"
             );
 
             search_bar.toggle_search_option(SearchOptions::REGEX, window, cx);
@@ -3945,11 +3945,11 @@ mod tests {
             assert_eq!(
                 search_bar.search_options,
                 SearchOptions::REGEX,
-                "Should enable the options toggled"
+                "应启用已切换的选项"
             );
             assert!(
                 !search_bar.dismissed,
-                "Search bar should be present and visible"
+                "搜索栏应存在且可见"
             );
             search_bar.toggle_search_option(SearchOptions::WHOLE_WORD, window, cx);
         });
@@ -3969,26 +3969,26 @@ mod tests {
             assert_eq!(
                 search_bar.search_options,
                 SearchOptions::REGEX | SearchOptions::WHOLE_WORD,
-                "Should have no search options enabled by default"
+                "默认情况下不应启用任何搜索选项"
             );
 
             search_bar.deploy(&deploy, None, window, cx);
             assert_eq!(
                 search_bar.search_options,
                 SearchOptions::REGEX | SearchOptions::WHOLE_WORD,
-                "Toggling a non-dismissed search bar with custom options should not change the default options"
+                "切换带有自定义选项且未关闭的搜索栏不应更改默认选项"
             );
             search_bar.dismiss(&Dismiss, window, cx);
             search_bar.deploy(&deploy, None, window, cx);
             assert_eq!(
                 search_bar.configured_options,
                 SearchOptions::CASE_SENSITIVE,
-                "After a settings update and toggling the search bar, configured options should be updated"
+                "设置更新并切换搜索栏后,配置的选项应被更新"
             );
             assert_eq!(
                 search_bar.search_options,
                 SearchOptions::CASE_SENSITIVE,
-                "After a settings update and toggling the search bar, configured options should be used"
+                "设置更新并切换搜索栏后,应使用配置的选项"
             );
         });
 
@@ -4011,7 +4011,7 @@ mod tests {
             assert_eq!(
                 search_bar.search_options,
                 SearchOptions::CASE_SENSITIVE | SearchOptions::WHOLE_WORD,
-                "Calling deploy on an already deployed search bar should not prevent settings updates from being detected"
+                "对已部署的搜索栏调用 deploy 不应阻止检测设置更新"
             );
         });
     }
@@ -4116,12 +4116,12 @@ mod tests {
         editor.update(cx, |editor, cx| {
             assert!(
                 !editor.has_background_highlights(HighlightKey::SelectedTextHighlight),
-                "selection occurrence highlights must be suppressed during buffer search"
+                "缓冲区搜索期间必须抑制选区出现高亮"
             );
             assert_eq!(
                 editor.search_background_highlights(cx).len(),
                 3,
-                "expected exactly 3 search highlights (one per line start)"
+                "预期恰好有 3 个搜索高亮(每行开头一个)"
             );
         });
 
@@ -4140,7 +4140,7 @@ mod tests {
         editor.update(cx, |editor, _cx| {
             assert!(
                 editor.has_background_highlights(HighlightKey::SelectedTextHighlight),
-                "selection occurrence highlights must be restored after a manual selection"
+                "手动选择后必须恢复选区出现高亮"
             );
         });
     }
@@ -4204,7 +4204,7 @@ mod tests {
             assert_eq!(
                 search_bar.query(cx),
                 r"z\.d",
-                "seeded regex query must be escaped"
+                "种子正则表达式查询必须进行转义"
             );
         });
 
@@ -4212,7 +4212,7 @@ mod tests {
             assert_eq!(
                 editor.search_background_highlights(cx).len(),
                 1,
-                "only the literal 'z.d' should match, not 'zed'"
+                "只有字面量 'z.d' 应匹配,而不是 'zed'"
             );
         });
     }

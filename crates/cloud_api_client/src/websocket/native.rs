@@ -73,7 +73,7 @@ impl CloudApiClient {
             .map_err(|_| anyhow!("failed to set URL scheme"))?;
 
         let credentials = self.credentials.read();
-        let credentials = credentials.as_ref().context("no credentials provided")?;
+        let credentials = credentials.as_ref().context("未提供凭据")?;
         let authorization_header = format!("{} {}", credentials.user_id, credentials.access_token);
 
         Ok(gpui_tokio::Tokio::spawn_result(cx, async move {

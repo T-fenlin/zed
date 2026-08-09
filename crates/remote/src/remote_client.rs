@@ -461,7 +461,7 @@ impl RemoteClient {
                 match ready {
                     Ok(Some(_)) => {}
                     Ok(None) => {
-                        let mut error = "remote client exited before becoming ready".to_owned();
+                        let mut error = "远程客户端在就绪前已退出".to_owned();
                         if let Some(status) = io_task.now_or_never() {
                             match status {
                                 Ok(exit_code) => {
@@ -471,30 +471,30 @@ impl RemoteClient {
                             }
                         }
                         let error = anyhow::anyhow!("{error}");
-                        log::error!("failed to establish connection: {}", error);
+                        log::error!("无法建立连接: {}", error);
                         return Err(error);
                     }
                     Err(_) => {
                         let mut error = String::new();
                         if let Some(status) = io_task.now_or_never() {
-                            error.push_str("Client exited with ");
+                            error.push_str("客户端退出,");
                             match status {
                                 Ok(exit_code) => {
-                                    error.push_str(&format!("exit_code {exit_code:?}"))
+                                    error.push_str(&format!("退出码 {exit_code:?}"))
                                 }
-                                Err(e) => error.push_str(&format!("error {e:?}")),
+                                Err(e) => error.push_str(&format!("错误 {e:?}")),
                             }
                         } else {
-                            error.push_str("client did not become ready within the timeout");
+                            error.push_str("客户端未在超时时间内就绪");
                         }
                         let error = anyhow::anyhow!("{error}");
-                        log::error!("failed to establish connection: {error}");
+                        log::error!("无法建立连接: {error}");
                         return Err(error);
                     }
                 }
                 let multiplex_task = Self::monitor(this.downgrade(), io_task, cx);
                 if let Err(error) = client.ping(HEARTBEAT_TIMEOUT).await {
-                    log::error!("failed to establish connection: {}", error);
+                    log::error!("无法建立连接: {}", error);
                     return Err(error);
                 }
 
@@ -513,7 +513,7 @@ impl RemoteClient {
                 // remote events (see `client::telemetry::report_remote_event`)
                 // so all remote-origin telemetry can be queried uniformly.
                 telemetry::event!(
-                    "Remote Connection Established",
+                    "远程连接已建立",
                     remote = true,
                     remote_connection_type = connection_type,
                     remote_os_name = platform.os.display_name(),
@@ -549,7 +549,7 @@ impl RemoteClient {
         executor: BackgroundExecutor,
     ) -> Option<impl Future<Output = ()> + use<T>> {
         let state = self.state.take()?;
-        log::info!("shutting down remote processes");
+        log::info!("正在关闭远程进程");
 
         let State::Connected {
             multiplex_task,
@@ -592,13 +592,13 @@ impl RemoteClient {
             let state = if let Some(state) = self.state.as_ref() {
                 state.to_string()
             } else {
-                "no state set".to_string()
+                "未设置状态".to_string()
             };
             log::info!(
-                "aborting reconnect, because not in state that allows reconnecting: {state}"
+                "中止重连,因为当前状态不允许重连: {state}"
             );
             anyhow::bail!(
-                "aborting reconnect, because not in state that allows reconnecting: {state}"
+                "中止重连,因为当前状态不允许重连: {state}"
             );
         }
 
@@ -636,7 +636,7 @@ impl RemoteClient {
         let attempts = attempts + 1;
         if attempts > MAX_RECONNECT_ATTEMPTS {
             log::error!(
-                "Failed to reconnect to after {} attempts, giving up",
+                "重连 {} 次后仍失败,放弃重连",
                 MAX_RECONNECT_ATTEMPTS
             );
             self.set_state(State::ReconnectExhausted, cx);
@@ -646,7 +646,7 @@ impl RemoteClient {
         self.set_state(State::Reconnecting, cx);
 
         log::info!(
-            "Trying to reconnect to remote server... Attempt {}",
+            "正在尝试重连远程服务器... 第 {} 次",
             attempts
         );
 
@@ -668,7 +668,7 @@ impl RemoteClient {
             if let Err(error) = remote_connection
                 .kill()
                 .await
-                .context("Failed to kill remote_connection process")
+                .context("无法终止 remote_connection 进程")
             {
                 failed!(error, attempts, remote_connection, delegate);
             };
@@ -732,19 +732,19 @@ impl RemoteClient {
                             | State::HeartbeatMissed { .. }
                             | State::ServerNotRunning => {}
                             State::Connected { .. } => {
-                                log::info!("Successfully reconnected");
+                                log::info!("重连成功");
                             }
                             State::ReconnectFailed {
                                 error, attempts, ..
                             } => {
                                 log::error!(
-                                    "Reconnect attempt {} failed: {:?}. Starting new attempt...",
+                                    "第 {} 次重连失败: {:?}。开始新的尝试...",
                                     attempts,
                                     error
                                 );
                             }
                             State::ReconnectExhausted => {
-                                log::error!("Reconnect attempt failed and all attempts exhausted");
+                                log::error!("重连失败,所有尝试均已用尽");
                             }
                         }
                         Some(new_state)
@@ -758,7 +758,7 @@ impl RemoteClient {
                 } else if this.state_is(State::is_reconnect_exhausted) {
                     Ok(())
                 } else {
-                    log::debug!("State has transition from Reconnecting into new state while attempting reconnect.");
+                    log::debug!("尝试重连期间,状态已从“重连中”转换到新状态。");
                     Ok(())
                 }
             })
@@ -774,7 +774,7 @@ impl RemoteClient {
         cx: &mut AsyncApp,
     ) -> Task<Result<()>> {
         let Ok(client) = this.read_with(cx, |this, _| this.client.clone()) else {
-            return Task::ready(Err(anyhow!("remote_connectionRemoteClient lost")));
+            return Task::ready(Err(anyhow!("remote_connectionRemoteClient 已丢失")));
         };
 
         cx.spawn(async move |cx| {
@@ -787,7 +787,7 @@ impl RemoteClient {
                 select_biased! {
                     result = connection_activity_rx.next().fuse() => {
                         if result.is_none() {
-                            log::warn!("remote heartbeat: connection activity channel has been dropped. stopping.");
+                            log::warn!("远程心跳: 连接活动通道已关闭。正在停止。");
                             return Ok(());
                         }
 
@@ -799,7 +799,7 @@ impl RemoteClient {
                         }
                     }
                     _ = keepalive_timer => {
-                        log::debug!("Sending heartbeat to server...");
+                        log::debug!("正在向服务器发送心跳...");
 
                         let result = select_biased! {
                             _ = connection_activity_rx.next().fuse() => {
@@ -813,7 +813,7 @@ impl RemoteClient {
                         if result.is_err() {
                             missed_heartbeats += 1;
                             log::warn!(
-                                "No heartbeat from server after {:?}. Missed heartbeat {} out of {}.",
+                                "{:?} 后未收到服务器心跳。已错过 {} 次心跳,共允许 {} 次。",
                                 HEARTBEAT_TIMEOUT,
                                 missed_heartbeats,
                                 MAX_MISSED_HEARTBEATS
@@ -854,12 +854,12 @@ impl RemoteClient {
 
         if missed_heartbeats >= MAX_MISSED_HEARTBEATS {
             log::error!(
-                "Missed last {} heartbeats. Reconnecting...",
+                "已错过最后 {} 次心跳。正在重连...",
                 missed_heartbeats
             );
 
             self.reconnect(cx)
-                .context("failed to start reconnect process after missing heartbeats")
+                .context("错过心跳后无法启动重连进程")
                 .log_err();
             ControlFlow::Break(())
         } else {
@@ -880,14 +880,14 @@ impl RemoteClient {
                     if let Some(error) = ProxyLaunchError::from_exit_code(exit_code) {
                         match error {
                             ProxyLaunchError::ServerNotRunning => {
-                                log::error!("failed to reconnect because server is not running");
+                                log::error!("重连失败,因为服务器未运行");
                                 this.update(cx, |this, cx| {
                                     this.set_state(State::ServerNotRunning, cx);
                                 })?;
                             }
                         }
                     } else {
-                        log::error!("proxy process terminated unexpectedly: {exit_code}");
+                        log::error!("代理进程意外终止: {exit_code}");
                         this.update(cx, |this, cx| {
                             this.reconnect(cx).ok();
                         })?;
@@ -895,7 +895,7 @@ impl RemoteClient {
                 }
                 Err(error) => {
                     log::warn!(
-                        "remote io task died with error: {:?}. reconnecting...",
+                        "远程 IO 任务因错误终止: {:?}。正在重连...",
                         error
                     );
                     this.update(cx, |this, cx| {
@@ -921,7 +921,7 @@ impl RemoteClient {
     }
 
     fn set_state(&mut self, state: State, cx: &mut Context<Self>) {
-        log::info!("setting state to '{}'", &state);
+        log::info!("正在将状态设置为 '{}'", &state);
 
         let is_reconnect_exhausted = state.is_reconnect_exhausted();
         let is_server_not_running = state.is_server_not_running();
@@ -963,7 +963,7 @@ impl RemoteClient {
         interactive: Interactive,
     ) -> Result<CommandTemplate> {
         let Some(connection) = self.remote_connection() else {
-            return Err(anyhow!("no remote connection"));
+            return Err(anyhow!("没有远程连接"));
         };
         connection.build_command(program, args, env, working_dir, port_forward, interactive)
     }
@@ -973,7 +973,7 @@ impl RemoteClient {
         forwards: Vec<(u16, String, u16)>,
     ) -> Result<CommandTemplate> {
         let Some(connection) = self.remote_connection() else {
-            return Err(anyhow!("no remote connection"));
+            return Err(anyhow!("没有远程连接"));
         };
         connection.build_forward_ports_command(forwards)
     }
@@ -985,7 +985,7 @@ impl RemoteClient {
         cx: &App,
     ) -> Task<Result<()>> {
         let Some(connection) = self.remote_connection() else {
-            return Task::ready(Err(anyhow!("no remote connection")));
+            return Task::ready(Err(anyhow!("没有远程连接")));
         };
         connection.upload_directory(src_path, dest_path, cx)
     }
@@ -1047,10 +1047,10 @@ impl RemoteClient {
     /// Useful for testing reconnection behavior in real environments.
     pub fn force_disconnect(&mut self, cx: &mut Context<Self>) -> Task<Result<()>> {
         let Some(connection) = self.remote_connection() else {
-            return Task::ready(Err(anyhow!("no active remote connection to disconnect")));
+            return Task::ready(Err(anyhow!("没有活动的远程连接可断开")));
         };
 
-        log::info!("force_disconnect: killing remote connection");
+        log::info!("force_disconnect: 正在终止远程连接");
 
         cx.spawn(async move |_, _| {
             connection.kill().await?;
@@ -1063,7 +1063,7 @@ impl RemoteClient {
     /// after MAX_MISSED_HEARTBEATS are missed.
     /// Useful for testing timeout behavior in real environments.
     pub fn force_heartbeat_timeout(&mut self, attempts: usize, cx: &mut Context<Self>) {
-        log::info!("force_heartbeat_timeout: triggering heartbeat failure state");
+        log::info!("force_heartbeat_timeout: 正在触发心跳失败状态");
 
         if let Some(State::Connected {
             remote_connection,
@@ -1085,7 +1085,7 @@ impl RemoteClient {
                     State::ReconnectFailed {
                         remote_connection,
                         delegate,
-                        error: anyhow!("forced heartbeat timeout"),
+                        error: anyhow!("强制心跳超时"),
                         attempts,
                     }
                 },
@@ -1093,10 +1093,10 @@ impl RemoteClient {
             );
 
             self.reconnect(cx)
-                .context("failed to start reconnect after forced timeout")
+                .context("强制超时后无法启动重连")
                 .log_err();
         } else {
-            log::warn!("force_heartbeat_timeout: not in Connected state, ignoring");
+            log::warn!("force_heartbeat_timeout: 不处于已连接状态,忽略");
         }
     }
 
@@ -1114,10 +1114,10 @@ impl RemoteClient {
                     if let Some(connection) = c.upgrade() {
                         connection
                     } else {
-                        panic!("connection was dropped")
+                        panic!("连接已断开")
                     }
                 } else {
-                    panic!("missing test connection")
+                    panic!("缺少测试连接")
                 }
             });
 
@@ -1163,7 +1163,7 @@ impl RemoteClient {
         use crate::transport::mock::MockConnection;
         let mock_opts = match opts {
             RemoteConnectionOptions::Mock(mock_opts) => mock_opts.clone(),
-            _ => panic!("fake_server_with_opts requires Mock connection options"),
+            _ => panic!("fake_server_with_opts 需要 Mock 连接选项"),
         };
         MockConnection::new_with_opts(mock_opts, client_cx, server_cx)
     }
@@ -1230,28 +1230,28 @@ impl ConnectionPool {
         match connection {
             Some(ConnectionPoolEntry::Connecting(task)) => {
                 if let Some(task) = task.upgrade() {
-                    log::debug!("Connecting task is still alive");
+                    log::debug!("连接任务仍在运行");
                     cx.spawn(async move |cx| {
-                        delegate.set_status(Some("Waiting for existing connection attempt"), cx)
+                        delegate.set_status(Some("正在等待现有的连接尝试"), cx)
                     })
                     .detach();
                     return task;
                 }
-                log::debug!("Connecting task is dead, removing it and restarting a connection");
+                log::debug!("连接任务已结束,移除它并重新建立连接");
                 self.connections.remove(&opts);
             }
             Some(ConnectionPoolEntry::Connected(remote)) => {
                 if let Some(remote) = remote.upgrade()
                     && !remote.has_been_killed()
                 {
-                    log::debug!("Connection is still alive");
+                    log::debug!("连接仍然有效");
                     return Task::ready(Ok(remote)).shared();
                 }
-                log::debug!("Connection is dead, removing it and restarting a connection");
+                log::debug!("连接已失效,移除它并重新建立连接");
                 self.connections.remove(&opts);
             }
             None => {
-                log::debug!("No existing connection found, starting a new one");
+                log::debug!("未找到现有连接,正在建立新连接");
             }
         }
 
@@ -1283,7 +1283,7 @@ impl ConnectionPool {
                         }) {
                             Some(connection) => Ok(connection.await as Arc<dyn RemoteConnection>),
                             None => Err(anyhow!(
-                                "Mock connection not found. Call MockConnection::new() first."
+                                "未找到 Mock 连接。请先调用 MockConnection::new()。"
                             )),
                         },
                     };
@@ -1471,7 +1471,7 @@ mod tests {
         let error = second.unwrap_err();
         assert!(
             format!("{error}").contains("boom"),
-            "expected error to surface server message, got: {error}"
+            "预期错误会显示服务器消息,实际得到: {error}"
         );
 
         assert!(stream.next().await.is_none());
@@ -1505,7 +1505,7 @@ mod tests {
         assert_eq!(
             client.stream_response_channels.lock().len(),
             0,
-            "dropping a stream before any responses arrive should remove response channel bookkeeping"
+            "在任何响应到达之前丢弃流应移除响应通道的簿记"
         );
     }
 
@@ -1552,7 +1552,7 @@ mod tests {
         assert_eq!(
             client.stream_response_channels.lock().len(),
             0,
-            "stream channel should be removed once the consumer has dropped the stream"
+            "一旦消费者丢弃流,流通道应被移除"
         );
     }
 }
@@ -1743,7 +1743,7 @@ impl ChannelClient {
                 if let Some(proto::envelope::Payload::FlushBufferedMessages(_)) = &incoming.payload
                 {
                     log::debug!(
-                        "{}:remote message received. name:FlushBufferedMessages",
+                        "{}: 收到远程消息。名称: FlushBufferedMessages",
                         this.name
                     );
                     {
@@ -1819,19 +1819,19 @@ impl ChannelClient {
                         this.clone().into(),
                         cx.clone(),
                     ) {
-                        log::debug!("{}:remote message received. name:{type_name}", this.name);
+                        log::debug!("{}: 收到远程消息。名称: {type_name}", this.name);
                         cx.foreground_executor()
                             .spawn(async move {
                                 match future.await {
                                     Ok(_) => {
                                         log::debug!(
-                                            "{}:remote message handled. name:{type_name}",
+                                            "{}: 已处理远程消息。名称: {type_name}",
                                             this.name
                                         );
                                     }
                                     Err(error) => {
                                         log::error!(
-                                            "{}:error handling message. type:{}, error:{:#}",
+                                            "{}: 处理消息时出错。类型: {}, 错误: {:#}",
                                             this.name,
                                             type_name,
                                             format!("{error:#}").lines().fold(
@@ -1850,13 +1850,13 @@ impl ChannelClient {
                             })
                             .detach()
                     } else {
-                        log::error!("{}:unhandled remote message name:{type_name}", this.name);
+                        log::error!("{}: 未处理的远程消息,名称: {type_name}", this.name);
                         if let Err(e) = AnyProtoClient::from(this.clone()).send_response(
                             message_id,
-                            anyhow::anyhow!("no handler registered for {type_name}").to_proto(),
+                            anyhow::anyhow!("未为 {type_name} 注册处理器").to_proto(),
                         ) {
                             log::error!(
-                                "{}:error sending error response for {type_name}:{e:#}",
+                                "{}: 发送 {type_name} 的错误响应时出错: {e:#}",
                                 this.name
                             );
                         }
@@ -1889,13 +1889,13 @@ impl ChannelClient {
         payload: T,
         use_buffer: bool,
     ) -> impl 'static + Future<Output = Result<T::Response>> {
-        log::debug!("remote request start. name:{}", T::NAME);
+        log::debug!("远程请求开始。名称: {}", T::NAME);
         let response =
             self.request_dynamic(payload.into_envelope(0, None, None), T::NAME, use_buffer);
         async move {
             let response = response.await?;
-            log::debug!("remote request finish. name:{}", T::NAME);
-            T::Response::from_envelope(response).context("received a response of the wrong type")
+            log::debug!("远程请求结束。名称: {}", T::NAME);
+            T::Response::from_envelope(response).context("收到错误类型的响应")
         }
     }
 
@@ -1915,7 +1915,7 @@ impl ChannelClient {
             },
             async {
                 self.executor.timer(timeout).await;
-                anyhow::bail!("Timed out resyncing remote client")
+                anyhow::bail!("重新同步远程客户端超时")
             },
         )
         .await
@@ -1929,14 +1929,14 @@ impl ChannelClient {
             },
             async {
                 self.executor.timer(timeout).await;
-                anyhow::bail!("Timed out pinging remote client")
+                anyhow::bail!("ping 远程客户端超时")
             },
         )
         .await
     }
 
     fn send<T: EnvelopedMessage>(&self, payload: T) -> Result<()> {
-        log::debug!("remote send name:{}", T::NAME);
+        log::debug!("远程发送,名称: {}", T::NAME);
         self.send_dynamic(payload.into_envelope(0, None, None))
     }
 
@@ -1959,11 +1959,11 @@ impl ChannelClient {
         };
         async move {
             if let Err(error) = &result {
-                log::error!("failed to send message: {error}");
-                anyhow::bail!("failed to send message: {error}");
+                log::error!("发送消息失败: {error}");
+                anyhow::bail!("发送消息失败: {error}");
             }
 
-            let response = rx.await.context("connection lost")?.0;
+            let response = rx.await.context("连接已断开")?.0;
             if let Some(proto::envelope::Payload::Error(error)) = &response.payload {
                 return Err(RpcError::from_proto(error, type_name));
             }
@@ -1985,8 +1985,8 @@ impl ChannelClient {
         let result = self.send_buffered(envelope);
         async move {
             if let Err(error) = &result {
-                log::error!("failed to send message: {error}");
-                anyhow::bail!("failed to send message: {error}");
+                log::error!("发送消息失败: {error}");
+                anyhow::bail!("发送消息失败: {error}");
             }
 
             let cleanup_stream_response_channel = util::defer({

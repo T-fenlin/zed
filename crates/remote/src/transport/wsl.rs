@@ -67,7 +67,7 @@ impl WslRemoteConnection {
         cx: &mut AsyncApp,
     ) -> Result<Self> {
         log::info!(
-            "Connecting to WSL distro {} with user {:?}",
+            "正在连接到 WSL 发行版 {},用户 {:?}",
             connection_options.distro_name,
             connection_options.user
         );
@@ -87,16 +87,16 @@ impl WslRemoteConnection {
             default_system_shell: String::from("/bin/sh"),
             has_wsl_interop: false,
         };
-        delegate.set_status(Some("Detecting WSL environment"), cx);
+        delegate.set_status(Some("正在检测 WSL 环境"), cx);
         this.shell = this
             .detect_shell()
             .await
-            .context("failed detecting shell")?;
-        log::info!("Remote shell discovered: {}", this.shell);
+            .context("检测 Shell 失败")?;
+        log::info!("检测到远程 Shell: {}", this.shell);
         this.shell_kind = ShellKind::new(&this.shell, false);
         this.has_wsl_interop = this.detect_has_wsl_interop().await.unwrap_or_default();
         log::info!(
-            "Remote has wsl interop {}",
+            "远程 WSL 互操作状态: {}",
             if this.has_wsl_interop {
                 "enabled"
             } else {
@@ -106,16 +106,16 @@ impl WslRemoteConnection {
         this.platform = this
             .detect_platform()
             .await
-            .context("failed detecting platform")?;
-        log::info!("Remote platform discovered: {:?}", this.platform);
+            .context("检测平台失败")?;
+        log::info!("检测到远程平台: {:?}", this.platform);
         this.os_version = this.detect_os_version().await;
-        log::info!("Remote OS version discovered: {:?}", this.os_version);
+        log::info!("检测到远程操作系统版本: {:?}", this.os_version);
         this.remote_binary_path = Some(
             this.ensure_server_binary(&delegate, release_channel, version, cx)
                 .await
-                .context("failed ensuring server binary")?,
+                .context("确保服务器二进制文件失败")?,
         );
-        log::debug!("Detected WSL environment: {this:#?}");
+        log::debug!("检测到的 WSL 环境: {this:#?}");
 
         Ok(this)
     }
@@ -134,7 +134,7 @@ impl WslRemoteConnection {
         match self.run_wsl_command_with_output(&program, args).await {
             Ok(output) => super::parse_os_version(self.platform.os, &output),
             Err(error) => {
-                log::warn!("Failed to determine remote OS version: {error:#}");
+                log::warn!("无法确定远程操作系统版本: {error:#}");
                 None
             }
         }
@@ -148,7 +148,7 @@ impl WslRemoteConnection {
         {
             Ok(output) => Ok(parse_shell(&output, DEFAULT_SHELL)),
             Err(e) => {
-                log::error!("Failed to detect remote shell: {e}");
+                log::error!("无法检测远程 Shell: {e}");
                 Ok(DEFAULT_SHELL.to_owned())
             }
         }
@@ -163,7 +163,7 @@ impl WslRemoteConnection {
             Err(err) => self
                 .run_wsl_command_with_output("cat", &["/proc/sys/fs/binfmt_misc/WSLInterop-late"])
                 .await
-                .inspect_err(|err2| log::error!("Failed to detect wsl interop: {err}; {err2}"))?,
+                .inspect_err(|err2| log::error!("检测 WSL 互操作失败: {err}; {err2}"))?,
         };
         Ok(interop.contains("enabled"))
     }
@@ -213,7 +213,7 @@ impl WslRemoteConnection {
             let mkdir = self.shell_kind.prepend_command_prefix("mkdir");
             self.run_wsl_command(&mkdir, &["-p", &parent])
                 .await
-                .map_err(|e| e.context("Failed to create directory"))?;
+                .map_err(|e| e.context("无法创建目录"))?;
         }
 
         let binary_exists_on_server = self
@@ -279,23 +279,23 @@ impl WslRemoteConnection {
         delegate: &Arc<dyn RemoteClientDelegate>,
         cx: &mut AsyncApp,
     ) -> Result<()> {
-        delegate.set_status(Some("Uploading remote server"), cx);
+        delegate.set_status(Some("正在上传远程服务器"), cx);
 
         if let Some(parent) = dst_path.parent() {
             let parent = parent.display(PathStyle::Unix);
             let mkdir = self.shell_kind.prepend_command_prefix("mkdir");
             self.run_wsl_command(&mkdir, &["-p", &parent])
                 .await
-                .context("Failed to create directory when uploading file")?;
+                .context("上传文件时创建目录失败")?;
         }
 
         let t0 = Instant::now();
         let src_stat = fs::metadata(&src_path)
             .await
-            .with_context(|| format!("source path does not exist: {}", src_path.display()))?;
+            .with_context(|| format!("源路径不存在: {}", src_path.display()))?;
         let size = src_stat.len();
         log::info!(
-            "uploading remote server to WSL {:?} ({}kb)",
+            "正在上传远程服务器到 WSL {:?} ({}kb)",
             dst_path,
             size / 1024
         );
@@ -304,18 +304,18 @@ impl WslRemoteConnection {
             Ok(()) => {}
             Err(cp_err) => {
                 log::warn!(
-                    "failed to upload remote server via /mnt, falling back to wsl.exe stdin: {cp_err:#}"
+                    "通过 /mnt 上传远程服务器失败,回退到 wsl.exe 标准输入: {cp_err:#}"
                 );
-                delegate.set_status(Some("Streaming remote server into WSL"), cx);
+                delegate.set_status(Some("正在将远程服务器流式传输到 WSL"), cx);
                 self.stream_file_into_wsl(src_path, dst_path)
                     .await
                     .with_context(|| {
-                        format!("failed to stream file into WSL after /mnt copy failed: {cp_err:#}")
+                        format!("/mnt 复制失败后,将文件流式传输到 WSL 失败: {cp_err:#}")
                     })?;
             }
         }
 
-        log::info!("uploaded remote server in {:?}", t0.elapsed());
+        log::info!("远程服务器上传耗时 {:?}", t0.elapsed());
         Ok(())
     }
 
@@ -329,7 +329,7 @@ impl WslRemoteConnection {
         .await
         .map_err(|e| {
             anyhow!(
-                "Failed to copy file {}({}) to WSL {:?}: {}",
+                "无法将文件 {}({}) 复制到 WSL {:?}: {}",
                 src_path.display(),
                 src_path_in_wsl,
                 dst_path,
@@ -341,7 +341,7 @@ impl WslRemoteConnection {
     async fn stream_file_into_wsl(&self, src_path: &Path, dst_path: &RelPath) -> Result<()> {
         let mut file = fs::File::open(src_path).await.with_context(|| {
             format!(
-                "failed to open {} for streaming into WSL",
+                "无法打开 {} 以流式传输到 WSL",
                 src_path.display()
             )
         })?;
@@ -357,11 +357,11 @@ impl WslRemoteConnection {
 
         let mut child = command
             .spawn()
-            .context("failed to spawn wsl.exe for stdin upload")?;
+            .context("无法启动 wsl.exe 进行标准输入上传")?;
         let mut stdin = child
             .stdin
             .take()
-            .context("wsl.exe child did not expose stdin")?;
+            .context("wsl.exe 子进程未暴露标准输入")?;
 
         let copy_result = io::copy(&mut file, &mut stdin).await;
         let flush_result = stdin.flush().await;
@@ -370,21 +370,21 @@ impl WslRemoteConnection {
         let output = child
             .output()
             .await
-            .context("failed to await wsl.exe stdin-upload child")?;
+            .context("等待 wsl.exe 标准输入上传子进程失败")?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             anyhow::bail!(
-                "wsl.exe stdin upload failed (status {:?}): {}",
+                "wsl.exe 标准输入上传失败 (状态 {:?}): {}",
                 output.status.code(),
                 stderr.trim()
             );
         }
 
         copy_result.with_context(|| {
-            format!("failed to write {} into wsl.exe stdin", src_path.display())
+            format!("无法将 {} 写入 wsl.exe 标准输入", src_path.display())
         })?;
-        flush_result.context("failed to flush wsl.exe stdin")?;
+        flush_result.context("无法刷新 wsl.exe 标准输入")?;
 
         Ok(())
     }
@@ -396,7 +396,7 @@ impl WslRemoteConnection {
         delegate: &Arc<dyn RemoteClientDelegate>,
         cx: &mut AsyncApp,
     ) -> Result<()> {
-        delegate.set_status(Some("Extracting remote server"), cx);
+        delegate.set_status(Some("正在解压远程服务器"), cx);
 
         let tmp_path_str = tmp_path.display(PathStyle::Unix);
         let dst_path_str = dst_path.display(PathStyle::Unix);
@@ -417,7 +417,7 @@ impl WslRemoteConnection {
 
         self.run_wsl_command("sh", &["-c", &script])
             .await
-            .map_err(|e| e.context("Failed to extract server binary"))?;
+            .map_err(|e| e.context("解压服务器二进制文件失败"))?;
         Ok(())
     }
 }
@@ -434,10 +434,10 @@ impl RemoteConnection for WslRemoteConnection {
         delegate: Arc<dyn RemoteClientDelegate>,
         cx: &mut AsyncApp,
     ) -> Task<Result<i32>> {
-        delegate.set_status(Some("Starting proxy"), cx);
+        delegate.set_status(Some("正在启动代理"), cx);
 
         let Some(remote_binary_path) = &self.remote_binary_path else {
-            return Task::ready(Err(anyhow!("Remote binary path not set")));
+            return Task::ready(Err(anyhow!("远程二进制文件路径未设置")));
         };
 
         let mut proxy_args = vec![];
@@ -467,7 +467,7 @@ impl RemoteConnection for WslRemoteConnection {
                 Ok(process) => process,
                 Err(error) => {
                     return Task::ready(Err(
-                        anyhow::Error::new(error).context("failed to spawn remote server")
+                        anyhow::Error::new(error).context("无法启动远程服务器")
                     ));
                 }
             };
@@ -499,7 +499,7 @@ impl RemoteConnection for WslRemoteConnection {
                 );
                 run_wsl_command_impl(command).await.map_err(|e| {
                     anyhow!(
-                        "failed to upload directory {} -> {}: {}",
+                        "上传目录 {} -> {} 失败: {}",
                         src_path.display(),
                         dest_path,
                         e
@@ -533,7 +533,7 @@ impl RemoteConnection for WslRemoteConnection {
         _interactive: Interactive,
     ) -> Result<CommandTemplate> {
         if port_forward.is_some() {
-            bail!("WSL shares the network interface with the host system");
+            bail!("WSL 与主机系统共享网络接口");
         }
 
         let shell_kind = self.shell_kind;
@@ -545,7 +545,7 @@ impl RemoteConnection for WslRemoteConnection {
 
         for (key, value) in env.iter() {
             let assignment = format!("{key}={value}");
-            let assignment = shell_kind.try_quote(&assignment).context("shell quoting")?;
+            let assignment = shell_kind.try_quote(&assignment).context("Shell 引用")?;
             write!(exec, "{assignment} ")?;
         }
 
@@ -555,10 +555,10 @@ impl RemoteConnection for WslRemoteConnection {
                 "{}",
                 shell_kind
                     .try_quote_prefix_aware(&program)
-                    .context("shell quoting")?
+                    .context("Shell 引用")?
             )?;
             for arg in args {
-                let arg = shell_kind.try_quote(&arg).context("shell quoting")?;
+                let arg = shell_kind.try_quote(&arg).context("Shell 引用")?;
                 write!(exec, " {}", &arg)?;
             }
         } else {
@@ -601,7 +601,7 @@ impl RemoteConnection for WslRemoteConnection {
         &self,
         _: Vec<(u16, String, u16)>,
     ) -> anyhow::Result<CommandTemplate> {
-        Err(anyhow!("WSL shares a network interface with the host"))
+        Err(anyhow!("WSL 与主机共享网络接口"))
     }
 
     fn connection_options(&self) -> RemoteConnectionOptions {
@@ -638,7 +638,7 @@ impl RemoteConnection for WslRemoteConnection {
 async fn sanitize_path(path: &Path) -> Result<String> {
     let path = smol::fs::canonicalize(path)
         .await
-        .with_context(|| format!("Failed to canonicalize path {}", path.display()))?;
+        .with_context(|| format!("无法规范化路径 {}", path.display()))?;
     let path_str = path.to_string_lossy();
 
     let sanitized = path_str.strip_prefix(r"\\?\").unwrap_or(&path_str);
@@ -707,11 +707,11 @@ fn run_wsl_command_impl(
         let output = command
             .output()
             .await
-            .with_context(|| format!("Failed to run command '{:?}'", command))?;
+            .with_context(|| format!("运行命令 '{:?}' 失败", command))?;
 
         if !output.status.success() {
             return Err(anyhow!(
-                "Command '{:?}' failed: {}",
+                "命令 '{:?}' 失败: {}",
                 command,
                 String::from_utf8_lossy(&output.stderr).trim()
             ));

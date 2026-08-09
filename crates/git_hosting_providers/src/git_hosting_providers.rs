@@ -69,7 +69,7 @@ pub fn get_host_from_git_remote_url(remote_url: &str) -> Result<String> {
             .ok()
             .and_then(|remote_url| remote_url.host_str().map(|host| host.to_string()))
     })
-    .context("URL has no host")
+    .context("URL 没有主机名")
 }
 
 #[cfg(test)]

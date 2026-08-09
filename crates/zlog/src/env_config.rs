@@ -14,7 +14,7 @@ pub fn parse(filter: &str) -> Result<EnvFilter> {
     for directive in filter.split(',') {
         match directive.split_once('=') {
             Some((name, level)) => {
-                anyhow::ensure!(!level.contains('='), "Invalid directive: {directive}");
+                anyhow::ensure!(!level.contains('='), "无效指令: {directive}");
                 let level = parse_level(level.trim())?;
                 directive_names.push(name.trim().trim_end_matches(".rs").to_string());
                 directive_levels.push(level);
@@ -25,7 +25,7 @@ pub fn parse(filter: &str) -> Result<EnvFilter> {
                     directive_levels.push(log::LevelFilter::max() /* Enable all levels */);
                     continue;
                 };
-                anyhow::ensure!(max_level.is_none(), "Cannot set multiple max levels");
+                anyhow::ensure!(max_level.is_none(), "无法设置多个最大级别");
                 max_level.replace(level);
             }
         };
@@ -57,7 +57,7 @@ fn parse_level(level: &str) -> Result<log::LevelFilter> {
     if level.eq_ignore_ascii_case("OFF") || level.eq_ignore_ascii_case("NONE") {
         return Ok(log::LevelFilter::Off);
     }
-    anyhow::bail!("Invalid level: {level}")
+    anyhow::bail!("无效级别: {level}")
 }
 
 #[cfg(test)]

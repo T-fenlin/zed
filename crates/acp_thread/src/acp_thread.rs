@@ -55,7 +55,7 @@ pub struct MaxOutputTokensError;
 
 impl std::fmt::Display for MaxOutputTokensError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "output token limit reached")
+        write!(f, "已达到输出令牌限制")
     }
 }
 
@@ -172,7 +172,7 @@ pub struct SandboxAuthorizationDetails {
     pub network_hosts: Vec<String>,
     /// Whether the command requested access to any host ("arbitrary network
     /// access"). The `network` alias deserializes the field this replaced —
-    /// a plain bool meaning "network access" — so details persisted by older
+    /// a plain bool meaning "网络访问" — so details persisted by older
     /// builds still render the network request.
     #[serde(default, alias = "network")]
     pub network_all_hosts: bool,
@@ -211,7 +211,7 @@ pub fn sandbox_authorization_details_from_meta(
 
 pub const SANDBOX_FALLBACK_AUTHORIZATION_META_KEY: &str = "sandbox_fallback_authorization";
 
-/// Stable `PermissionOption` id for the "Retry" choice in the sandbox
+/// Stable `PermissionOption` id for the "重试" choice in the sandbox
 /// *fallback* prompt (shown when the OS sandbox can't be created on this
 /// system). The remaining choices reuse the [`SandboxPermission`] ids.
 pub const SANDBOX_FALLBACK_RETRY_OPTION_ID: &str = "retry";
@@ -225,13 +225,13 @@ pub struct SandboxFallbackAuthorizationDetails {
     #[serde(default)]
     pub command: Option<String>,
     /// Human-readable reason the OS sandbox could not be created (for example,
-    /// "bwrap not found on PATH"), shown to the user so they can decide
+    /// "在 PATH 中未找到 bwrap"), shown to the user so they can decide
     /// whether to run the command without a sandbox.
     #[serde(default)]
     pub reason: String,
     /// Slug of the sandboxing docs section that best explains how to fix this
     /// failure (see [`crate::LinuxWslSandboxError::docs_section`]), rendered as a
-    /// "Learn more" link. `None` when the cause is unknown.
+    /// "了解更多" link. `None` when the cause is unknown.
     #[serde(default)]
     pub docs_section: Option<String>,
 }
@@ -445,14 +445,14 @@ impl ElicitationStore {
             acp::ElicitationMode::Form(_) => {}
             acp::ElicitationMode::Url(mode) => {
                 let url = url::Url::parse(&mode.url)
-                    .map_err(|_| acp::Error::invalid_params().data("invalid elicitation URL"))?;
+                    .map_err(|_| acp::Error::invalid_params().data("无效的征询 URL"))?;
                 if !matches!(url.scheme(), "http" | "https") || url.host_str().is_none() {
                     return Err(acp::Error::invalid_params()
-                        .data("elicitation URL must use HTTP or HTTPS and include a host"));
+                        .data("征询 URL 必须使用 HTTP 或 HTTPS 并包含主机"));
                 }
             }
             _ => {
-                return Err(acp::Error::invalid_params().data("unsupported elicitation mode"));
+                return Err(acp::Error::invalid_params().data("不支持的征询模式"));
             }
         }
 
@@ -1253,7 +1253,7 @@ pub enum AuthorizationKind {
     /// This is the default for tool authorization prompts.
     PermissionGrant,
     /// The user is choosing between actions for the tool to take next
-    /// (for example, "Save" vs "Discard" before editing a dirty buffer).
+    /// (for example, "保存" vs "放弃" before editing a dirty buffer).
     /// The tool call always transitions to `InProgress` regardless of the
     /// selected `PermissionOptionKind`; the caller interprets the chosen
     /// `option_id` to decide what to do.
@@ -1322,13 +1322,13 @@ impl Display for ToolCallStatus {
             f,
             "{}",
             match self {
-                ToolCallStatus::Pending => "Pending",
-                ToolCallStatus::WaitingForConfirmation { .. } => "Waiting for confirmation",
-                ToolCallStatus::InProgress => "In Progress",
-                ToolCallStatus::Completed => "Completed",
-                ToolCallStatus::Failed => "Failed",
-                ToolCallStatus::Rejected => "Rejected",
-                ToolCallStatus::Canceled => "Canceled",
+                ToolCallStatus::Pending => "待处理",
+                ToolCallStatus::WaitingForConfirmation { .. } => "等待确认",
+                ToolCallStatus::InProgress => "进行中",
+                ToolCallStatus::Completed => "已完成",
+                ToolCallStatus::Failed => "失败",
+                ToolCallStatus::Rejected => "已拒绝",
+                ToolCallStatus::Canceled => "已取消",
             }
         )
     }
@@ -1841,7 +1841,7 @@ impl ToolCallContent {
                 .get(&terminal_id)
                 .cloned()
                 .map(|terminal| Some(Self::Terminal(terminal)))
-                .ok_or_else(|| anyhow::anyhow!("Terminal with id `{}` not found", terminal_id)),
+                .ok_or_else(|| anyhow::anyhow!("未找到 ID 为 `{}` 的终端", terminal_id)),
             _ => Ok(None),
         }
     }
@@ -2249,11 +2249,11 @@ impl Display for LoadError {
             } => {
                 write!(
                     f,
-                    "version {current_version} from {path} is not supported (need at least {minimum_version})"
+                    "来自 {path} 的版本 {current_version} 不受支持(至少需要 {minimum_version})"
                 )
             }
-            LoadError::FailedToInstall(msg) => write!(f, "Failed to install: {msg}"),
-            LoadError::Exited { status, .. } => write!(f, "Server exited with status {status}"),
+            LoadError::FailedToInstall(msg) => write!(f, "安装失败:{msg}"),
+            LoadError::Exited { status, .. } => write!(f, "服务器以状态 {status} 退出"),
             LoadError::Other(msg) => write!(f, "{msg}"),
         }
     }
@@ -3127,10 +3127,10 @@ impl AcpThread {
                 // Tool call not found - create a failed tool call entry
                 let failed_tool_call = ToolCall {
                     id: update.id().clone(),
-                    label: cx.new(|cx| Markdown::new("Tool call not found".into(), None, None, cx)),
+                    label: cx.new(|cx| Markdown::new("未找到工具调用".into(), None, None, cx)),
                     kind: acp::ToolKind::Fetch,
                     content: vec![ToolCallContent::ContentBlock(ContentBlock::new(
-                        "Tool call not found".into(),
+                        "未找到工具调用".into(),
                         &languages,
                         path_style,
                         cx,
@@ -3217,7 +3217,7 @@ impl AcpThread {
                 "failed"
             };
             telemetry::event!(
-                "Agent Tool Call Completed",
+                "代理工具调用已完成",
                 agent_telemetry_id,
                 session,
                 parent_session_id,
@@ -3688,7 +3688,7 @@ impl AcpThread {
                 let old_checkpoint = git_store
                     .update(cx, |git, cx| git.checkpoint(cx))
                     .await
-                    .context("failed to get old checkpoint")
+                    .context("获取旧检查点失败")
                     .log_err();
                 this.update(cx, |this, _cx| {
                     if let Some((_ix, message)) = this.last_user_message() {
@@ -3726,7 +3726,7 @@ impl AcpThread {
                     .retry(&this.session_id, cx)
                     .map(|retry| retry.run(cx))
             })?
-            .context("retrying a session is not supported")?
+            .context("不支持重试会话")?
             .await
         })
     }
@@ -3797,7 +3797,7 @@ impl AcpThread {
                             }
                             this.had_error = true;
                             cx.emit(AcpThreadEvent::Error);
-                            log::error!("Max tokens reached. Usage: {:?}", this.token_usage);
+                            log::error!("已达到最大令牌数。用量:{:?}", this.token_usage);
 
                             let exceeded_max_output_tokens =
                                 this.token_usage.as_ref().is_some_and(|u| {
@@ -3807,11 +3807,11 @@ impl AcpThread {
 
                             if exceeded_max_output_tokens {
                                 log::error!(
-                                    "Max output tokens reached. Usage: {:?}",
+                                    "已达到最大输出令牌数。用量:{:?}",
                                     this.token_usage
                                 );
                             } else {
-                                log::error!("Max tokens reached. Usage: {:?}", this.token_usage);
+                                log::error!("已达到最大令牌数。用量:{:?}", this.token_usage);
                             }
                             if is_same_turn {
                                 this.cancel_pending_turn_entries(cx);
@@ -3889,7 +3889,7 @@ impl AcpThread {
                         }
                         this.had_error = true;
                         cx.emit(AcpThreadEvent::Error);
-                        log::error!("Error in run turn: {:?}", e);
+                        log::error!("运行轮次出错:{:?}", e);
                         Err(e)
                     }
                 }
@@ -3948,7 +3948,7 @@ impl AcpThread {
                             && respond_tx.send(permission_outcome.clone()).is_err()
                         {
                             log::debug!(
-                                "Permission request closed before cancellation was delivered"
+                                "权限请求在取消传递前已关闭"
                             );
                         }
                         cx.emit(AcpThreadEvent::EntryUpdated(ix));
@@ -3986,7 +3986,7 @@ impl AcpThread {
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
         let Some((_, message)) = self.user_message_mut(&client_id) else {
-            return Task::ready(Err(anyhow!("message not found")));
+            return Task::ready(Err(anyhow!("未找到消息")));
         };
 
         let checkpoint = message
@@ -4021,7 +4021,7 @@ impl AcpThread {
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
         let Some(truncate) = self.connection.truncate(&self.session_id, cx) else {
-            return Task::ready(Err(anyhow!("not supported")));
+            return Task::ready(Err(anyhow!("不支持")));
         };
 
         Self::flush_streaming_text(&mut self.streaming_text_buffer, cx);
@@ -4082,7 +4082,7 @@ impl AcpThread {
         cx.spawn(async move |this, cx| {
             let Some(new_checkpoint) = new_checkpoint
                 .await
-                .context("failed to get new checkpoint")
+                .context("获取新检查点失败")
                 .log_err()
             else {
                 return Ok(());
@@ -4093,7 +4093,7 @@ impl AcpThread {
                     git.compare_checkpoints(old_checkpoint.clone(), new_checkpoint, cx)
                 })
                 .await
-                .context("failed to compare checkpoints")
+                .context("比较检查点失败")
                 .log_err()
             else {
                 return Ok(());
@@ -4148,7 +4148,7 @@ impl AcpThread {
         cx.spawn(async move |this, cx| {
             let Some(new_checkpoint) = new_checkpoint
                 .await
-                .context("failed to get new checkpoint")
+                .context("获取新检查点失败")
                 .log_err()
             else {
                 return Ok(());
@@ -4159,7 +4159,7 @@ impl AcpThread {
                     git.compare_checkpoints(old_checkpoint.clone(), new_checkpoint, cx)
                 })
                 .await
-                .context("failed to compare checkpoints")
+                .context("比较检查点失败")
                 .log_err()
             else {
                 return Ok(());
@@ -4264,7 +4264,7 @@ impl AcpThread {
 
             if start_position > max_point {
                 return Err(acp::Error::invalid_params().data(format!(
-                    "Attempting to read beyond the end of the file, line {}:{}",
+                    "尝试读取文件末尾之后的内容,行 {}:{}",
                     max_point.row + 1,
                     max_point.column
                 )));
@@ -4302,7 +4302,7 @@ impl AcpThread {
             let load = project.update(cx, |project, cx| {
                 let path = project
                     .project_path_for_absolute_path(&path, cx)
-                    .context("invalid path")?;
+                    .context("无效路径")?;
                 anyhow::Ok(project.open_buffer(path, cx))
             });
             let buffer = load?.await?;
@@ -4460,7 +4460,7 @@ impl AcpThread {
                             result = wrap.fuse() => result?,
                             _ = timeout.fuse() => return Err(anyhow::Error::new(
                                 sandbox::SandboxError::WslUnavailable(format!(
-                                    "WSL did not respond within {} seconds while preparing the sandboxed command",
+                                    "准备沙箱命令时 WSL 在 {} 秒内未响应",
                                     WSL_SANDBOX_WRAP_TIMEOUT.as_secs()
                                 )),
                             )),
@@ -4547,7 +4547,7 @@ impl AcpThread {
     ) -> Result<()> {
         self.terminals
             .get(&terminal_id)
-            .context("Terminal not found")?
+            .context("未找到终端")?
             .update(cx, |terminal, cx| {
                 terminal.kill(cx);
             });
@@ -4562,7 +4562,7 @@ impl AcpThread {
     ) -> Result<()> {
         self.terminals
             .remove(&terminal_id)
-            .context("Terminal not found")?
+            .context("未找到终端")?
             .update(cx, |terminal, cx| {
                 terminal.kill(cx);
             });
@@ -4573,7 +4573,7 @@ impl AcpThread {
     pub fn terminal(&self, terminal_id: acp::TerminalId) -> Result<Entity<Terminal>> {
         self.terminals
             .get(&terminal_id)
-            .context("Terminal not found")
+            .context("未找到终端")
             .cloned()
     }
 
@@ -4810,16 +4810,16 @@ mod tests {
     #[test]
     fn client_user_message_id_serializes_as_string() {
         let serialized =
-            serde_json::to_value(ClientUserMessageId::new()).expect("serialize client message id");
+            serde_json::to_value(ClientUserMessageId::new()).expect("序列化客户端消息 ID");
         assert!(
             serialized.is_string(),
-            "expected string, got {serialized:?}"
+            "应为字符串,实际为 {serialized:?}"
         );
 
         let deserialized: ClientUserMessageId =
-            serde_json::from_value(json!("client-id")).expect("deserialize client message id");
+            serde_json::from_value(json!("client-id")).expect("反序列化客户端消息 ID");
         assert_eq!(
-            serde_json::to_value(deserialized).expect("serialize client message id"),
+            serde_json::to_value(deserialized).expect("序列化客户端消息 ID"),
             json!("client-id")
         );
     }
@@ -4861,14 +4861,14 @@ mod tests {
             "```sh\necho 'hello from exec test'\n```"
         );
 
-        let markdown = acp::TextResourceContents::new("**approval** requested", "tool://preview")
+        let markdown = acp::TextResourceContents::new("**请求批准**", "tool://preview")
             .mime_type("text/markdown".to_string());
         assert_eq!(
             ContentBlock::text_resource_markdown(&markdown),
-            "**approval** requested"
+            "**请求批准**"
         );
 
-        let plain = acp::TextResourceContents::new("plain preview", "tool://preview")
+        let plain = acp::TextResourceContents::new("纯文本预览", "tool://preview")
             .mime_type("text/plain".to_string());
         assert_eq!(
             ContentBlock::text_resource_markdown(&plain),
@@ -4882,7 +4882,7 @@ mod tests {
             "```cpp\nint main() {}\n```"
         );
 
-        let untyped = acp::TextResourceContents::new("# plain preview", "tool://preview");
+        let untyped = acp::TextResourceContents::new("# 纯文本预览", "tool://preview");
         assert_eq!(
             ContentBlock::text_resource_markdown(&untyped),
             "```\n# plain preview\n```"
@@ -4913,7 +4913,7 @@ mod tests {
             );
 
             let ContentBlock::EmbeddedResource { resource, markdown } = &block else {
-                panic!("expected embedded resource block, got {block:?}");
+                panic!("应为嵌入式资源块,实际为 {block:?}");
             };
             match &resource.resource {
                 acp::EmbeddedResourceResource::TextResourceContents(text) => {
@@ -4921,12 +4921,12 @@ mod tests {
                     assert_eq!(text.uri, "tool://preview");
                     assert_eq!(text.mime_type.as_deref(), Some("text/x-shellscript"));
                 }
-                other => panic!("expected text resource contents, got {other:?}"),
+                other => panic!("应为文本资源内容,实际为 {other:?}"),
             }
 
             let markdown = markdown
                 .as_ref()
-                .expect("text resources should have renderable markdown")
+                .expect("文本资源应具有可渲染的 Markdown")
                 .read(cx)
                 .source()
                 .to_string();
@@ -4940,7 +4940,7 @@ mod tests {
             let untyped = ContentBlock::new_tool_call_content(
                 acp::ContentBlock::Resource(acp::EmbeddedResource::new(
                     acp::EmbeddedResourceResource::TextResourceContents(
-                        acp::TextResourceContents::new("# plain preview", "tool://preview"),
+                        acp::TextResourceContents::new("# 纯文本预览", "tool://preview"),
                     ),
                 )),
                 &language_registry,
@@ -4948,7 +4948,7 @@ mod tests {
                 cx,
             );
             assert_eq!(untyped.to_markdown(cx), "```\n# plain preview\n```");
-            assert_eq!(untyped.text_content(cx), Some("# plain preview"));
+            assert_eq!(untyped.text_content(cx), Some("# 纯文本预览"));
         });
     }
 
@@ -4979,7 +4979,7 @@ mod tests {
             );
 
             let ContentBlock::Image { image, dimensions } = &block else {
-                panic!("expected image block, got {block:?}");
+                panic!("应为图像块,实际为 {block:?}");
             };
             assert_eq!(image.format(), gpui::ImageFormat::Png);
             assert_eq!(
@@ -5002,7 +5002,7 @@ mod tests {
                 Arc::new(LanguageRegistry::test(cx.background_executor().clone()));
             let archive_blob = acp::ContentBlock::Resource(acp::EmbeddedResource::new(
                 acp::EmbeddedResourceResource::BlobResourceContents(
-                    acp::BlobResourceContents::new("not an image", "tool://archive.bin")
+                    acp::BlobResourceContents::new("不是图像", "tool://archive.bin")
                         .mime_type("application/octet-stream".to_string()),
                 ),
             ));
@@ -5015,7 +5015,7 @@ mod tests {
             );
 
             let ContentBlock::EmbeddedResource { resource, markdown } = &block else {
-                panic!("expected embedded resource block, got {block:?}");
+                panic!("应为嵌入式资源块,实际为 {block:?}");
             };
             assert!(markdown.is_none());
             match &resource.resource {
@@ -5023,7 +5023,7 @@ mod tests {
                     assert_eq!(blob.uri, "tool://archive.bin");
                     assert_eq!(blob.mime_type.as_deref(), Some("application/octet-stream"));
                 }
-                other => panic!("expected blob resource contents, got {other:?}"),
+                other => panic!("应为二进制资源内容,实际为 {other:?}"),
             }
             assert_eq!(block.to_markdown(cx), "tool://archive.bin");
             assert_eq!(block.text_content(cx), None);
@@ -5041,7 +5041,7 @@ mod tests {
                 cx,
             );
             let ContentBlock::EmbeddedResource { resource, markdown } = &invalid else {
-                panic!("expected embedded resource block, got {invalid:?}");
+                panic!("应为嵌入式资源块,实际为 {invalid:?}");
             };
             assert!(markdown.is_none());
             assert_eq!(
@@ -5115,7 +5115,7 @@ mod tests {
             thread.on_terminal_provider_event(
                 TerminalProviderEvent::Created {
                     terminal_id: terminal_id.clone(),
-                    label: "Buffered Test".to_string(),
+                    label: "缓冲测试".to_string(),
                     cwd: None,
                     output_byte_limit: None,
                     terminal: lower.clone(),
@@ -5131,8 +5131,8 @@ mod tests {
         });
 
         assert!(
-            content.contains("hello buffered"),
-            "expected buffered output to render, got: {content}"
+            content.contains("你好,缓冲"),
+            "应渲染缓冲输出,实际为:{content}"
         );
     }
 
@@ -5171,7 +5171,7 @@ mod tests {
             thread.on_terminal_provider_event(
                 TerminalProviderEvent::Created {
                     terminal_id: terminal_id.clone(),
-                    label: "Buffered Test".to_string(),
+                    label: "缓冲测试".to_string(),
                     cwd: None,
                     output_byte_limit: None,
                     terminal: lower.clone(),
@@ -5208,8 +5208,8 @@ mod tests {
         });
 
         assert!(
-            content.contains("line 14999"),
-            "expected output to remain visible after terminal exit, got: {content}"
+            content.contains("行 14999"),
+            "终端退出后输出应保持可见,实际为:{content}"
         );
     }
 
@@ -5272,7 +5272,7 @@ mod tests {
             thread.on_terminal_provider_event(
                 TerminalProviderEvent::Created {
                     terminal_id: terminal_id.clone(),
-                    label: "Buffered Exit Test".to_string(),
+                    label: "缓冲退出测试".to_string(),
                     cwd: None,
                     output_byte_limit: None,
                     terminal: lower.clone(),
@@ -5288,8 +5288,8 @@ mod tests {
         });
 
         assert!(
-            content.contains("pre-exit data"),
-            "expected pre-exit data to render, got: {content}"
+            content.contains("退出前数据"),
+            "应渲染退出前数据,实际为:{content}"
         );
     }
 
@@ -5385,7 +5385,7 @@ mod tests {
                 let term = thread
                     .terminals
                     .get(&terminal_id)
-                    .expect("terminal not found");
+                    .expect("未找到终端");
                 let content = term.read(cx).inner().read(cx).get_content();
                 content.contains("output_before_kill")
             });
@@ -5394,7 +5394,7 @@ mod tests {
             }
             assert!(
                 std::time::Instant::now() < deadline,
-                "Timed out waiting for printf output to appear in terminal",
+                "等待 printf 输出出现在终端中超时",
             );
             cx.executor().timer(Duration::from_millis(50)).await;
         }
@@ -5436,7 +5436,7 @@ mod tests {
 
         assert!(
             inner_content.contains("output_before_kill"),
-            "Underlying terminal should contain output from before kill, got: {}",
+            "底层终端应包含终止前的输出,实际为:{}",
             inner_content
         );
     }
@@ -5457,7 +5457,7 @@ mod tests {
 
         // Test creating a new user message
         thread.update(cx, |thread, cx| {
-            thread.push_user_content_block(None, "Hello, ".into(), cx);
+            thread.push_user_content_block(None, "你好,".into(), cx);
         });
 
         thread.update(cx, |thread, cx| {
@@ -5465,16 +5465,16 @@ mod tests {
             if let AgentThreadEntry::UserMessage(user_msg) = &thread.entries[0] {
                 assert_eq!(user_msg.protocol_id, None);
                 assert_eq!(user_msg.client_id, None);
-                assert_eq!(user_msg.content.to_markdown(cx), "Hello, ");
+                assert_eq!(user_msg.content.to_markdown(cx), "你好,");
             } else {
-                panic!("Expected UserMessage");
+                panic!("应为 UserMessage");
             }
         });
 
         // Test appending to existing user message
         let message_1_id = ClientUserMessageId::new();
         thread.update(cx, |thread, cx| {
-            thread.push_user_content_block(Some(message_1_id.clone()), "world!".into(), cx);
+            thread.push_user_content_block(Some(message_1_id.clone()), "世界!".into(), cx);
         });
 
         thread.update(cx, |thread, cx| {
@@ -5482,22 +5482,22 @@ mod tests {
             if let AgentThreadEntry::UserMessage(user_msg) = &thread.entries[0] {
                 assert_eq!(user_msg.protocol_id, None);
                 assert_eq!(user_msg.client_id, Some(message_1_id));
-                assert_eq!(user_msg.content.to_markdown(cx), "Hello, world!");
+                assert_eq!(user_msg.content.to_markdown(cx), "你好,世界!");
             } else {
-                panic!("Expected UserMessage");
+                panic!("应为 UserMessage");
             }
         });
 
         // Test creating new user message after assistant message
         thread.update(cx, |thread, cx| {
-            thread.push_assistant_content_block("Assistant response".into(), false, cx);
+            thread.push_assistant_content_block("助手响应".into(), false, cx);
         });
 
         let message_2_id = ClientUserMessageId::new();
         thread.update(cx, |thread, cx| {
             thread.push_user_content_block(
                 Some(message_2_id.clone()),
-                "New user message".into(),
+                "新用户消息".into(),
                 cx,
             );
         });
@@ -5507,9 +5507,9 @@ mod tests {
             if let AgentThreadEntry::UserMessage(user_msg) = &thread.entries[2] {
                 assert_eq!(user_msg.protocol_id, None);
                 assert_eq!(user_msg.client_id, Some(message_2_id));
-                assert_eq!(user_msg.content.to_markdown(cx), "New user message");
+                assert_eq!(user_msg.content.to_markdown(cx), "新用户消息");
             } else {
-                panic!("Expected UserMessage at index 2");
+                panic!("索引 2 处应为 UserMessage");
             }
         });
     }
@@ -5534,7 +5534,7 @@ mod tests {
             thread
                 .handle_session_update(
                     acp::SessionUpdate::UserMessageChunk(
-                        acp::ContentChunk::new("First ".into()).message_id("msg_user_1"),
+                        acp::ContentChunk::new("第一".into()).message_id("msg_user_1"),
                     ),
                     cx,
                 )
@@ -5550,7 +5550,7 @@ mod tests {
             thread
                 .handle_session_update(
                     acp::SessionUpdate::UserMessageChunk(
-                        acp::ContentChunk::new("Second message".into()).message_id("msg_user_2"),
+                        acp::ContentChunk::new("第二条消息".into()).message_id("msg_user_2"),
                     ),
                     cx,
                 )
@@ -5558,7 +5558,7 @@ mod tests {
             thread
                 .handle_session_update(
                     acp::SessionUpdate::UserMessageChunk(
-                        acp::ContentChunk::new("Echo".into()).message_id("msg_user_3"),
+                        acp::ContentChunk::new("回显".into()).message_id("msg_user_3"),
                     ),
                     cx,
                 )
@@ -5566,7 +5566,7 @@ mod tests {
             thread
                 .handle_session_update(
                     acp::SessionUpdate::UserMessageChunk(
-                        acp::ContentChunk::new("Echo".into()).message_id("msg_user_3"),
+                        acp::ContentChunk::new("回显".into()).message_id("msg_user_3"),
                     ),
                     cx,
                 )
@@ -5577,9 +5577,9 @@ mod tests {
             assert_eq!(thread.entries.len(), 3);
 
             let AgentThreadEntry::UserMessage(first_message) = &thread.entries[0] else {
-                panic!("expected first entry to be a user message")
+                panic!("第一个条目应为用户消息")
             };
-            assert_eq!(first_message.content.to_markdown(cx), "First message");
+            assert_eq!(first_message.content.to_markdown(cx), "第一条消息");
             assert_eq!(
                 first_message
                     .protocol_id
@@ -5590,9 +5590,9 @@ mod tests {
             );
 
             let AgentThreadEntry::UserMessage(second_message) = &thread.entries[1] else {
-                panic!("expected second entry to be a user message")
+                panic!("第二个条目应为用户消息")
             };
-            assert_eq!(second_message.content.to_markdown(cx), "Second message");
+            assert_eq!(second_message.content.to_markdown(cx), "第二条消息");
             assert_eq!(
                 second_message
                     .protocol_id
@@ -5603,9 +5603,9 @@ mod tests {
             );
 
             let AgentThreadEntry::UserMessage(third_message) = &thread.entries[2] else {
-                panic!("expected third entry to be a user message")
+                panic!("第三个条目应为用户消息")
             };
-            assert_eq!(third_message.content.to_markdown(cx), "EchoEcho");
+            assert_eq!(third_message.content.to_markdown(cx), "回声回声");
             assert_eq!(
                 third_message
                     .protocol_id
@@ -5638,14 +5638,14 @@ mod tests {
                 None,
                 true,
                 None,
-                "Typed prompt".into(),
+                "输入的提示词".into(),
                 false,
                 cx,
             );
             thread
                 .handle_session_update(
                     acp::SessionUpdate::UserMessageChunk(
-                        acp::ContentChunk::new("Agent user chunk".into())
+                        acp::ContentChunk::new("代理用户块".into())
                             .message_id("agent_user_chunk"),
                     ),
                     cx,
@@ -5657,18 +5657,18 @@ mod tests {
             assert_eq!(thread.entries.len(), 2);
 
             let AgentThreadEntry::UserMessage(optimistic_message) = &thread.entries[0] else {
-                panic!("expected first entry to be optimistic user message")
+                panic!("第一个条目应为乐观用户消息")
             };
             assert!(optimistic_message.is_optimistic);
-            assert_eq!(optimistic_message.content.to_markdown(cx), "Typed prompt");
+            assert_eq!(optimistic_message.content.to_markdown(cx), "输入的提示词");
             assert!(optimistic_message.protocol_id.is_none());
             assert!(optimistic_message.client_id.is_none());
 
             let AgentThreadEntry::UserMessage(agent_message) = &thread.entries[1] else {
-                panic!("expected second entry to be protocol user chunk")
+                panic!("第二个条目应为协议用户块")
             };
             assert!(!agent_message.is_optimistic);
-            assert_eq!(agent_message.content.to_markdown(cx), "Agent user chunk");
+            assert_eq!(agent_message.content.to_markdown(cx), "代理用户块");
             assert_eq!(
                 agent_message
                     .protocol_id
@@ -5700,7 +5700,7 @@ mod tests {
             thread
                 .handle_session_update(
                     acp::SessionUpdate::AgentThoughtChunk(
-                        acp::ContentChunk::new("Thinking ".into()).message_id("msg_thought_1"),
+                        acp::ContentChunk::new("思考 ".into()).message_id("msg_thought_1"),
                     ),
                     cx,
                 )
@@ -5716,7 +5716,7 @@ mod tests {
             thread
                 .handle_session_update(
                     acp::SessionUpdate::AgentThoughtChunk(
-                        acp::ContentChunk::new("A separate thought".into())
+                        acp::ContentChunk::new("一个独立的思考".into())
                             .message_id("msg_thought_2"),
                     ),
                     cx,
@@ -5725,7 +5725,7 @@ mod tests {
             thread
                 .handle_session_update(
                     acp::SessionUpdate::AgentMessageChunk(
-                        acp::ContentChunk::new("Answer ".into()).message_id("msg_agent_1"),
+                        acp::ContentChunk::new("回答 ".into()).message_id("msg_agent_1"),
                     ),
                     cx,
                 )
@@ -5741,7 +5741,7 @@ mod tests {
             thread
                 .handle_session_update(
                     acp::SessionUpdate::AgentMessageChunk(
-                        acp::ContentChunk::new("Follow-up".into()).message_id("msg_agent_2"),
+                        acp::ContentChunk::new("后续".into()).message_id("msg_agent_2"),
                     ),
                     cx,
                 )
@@ -5751,41 +5751,41 @@ mod tests {
         thread.update(cx, |thread, cx| {
             assert_eq!(thread.entries.len(), 1);
             let AgentThreadEntry::AssistantMessage(message) = &thread.entries[0] else {
-                panic!("expected assistant entry")
+                panic!("应为助手条目")
             };
             assert_eq!(message.chunks.len(), 4);
 
             let AssistantMessageChunk::Thought { id, block } = &message.chunks[0] else {
-                panic!("expected first chunk to be a thought")
+                panic!("第一个块应为思考")
             };
-            assert_eq!(block.to_markdown(cx), "Thinking hard");
+            assert_eq!(block.to_markdown(cx), "努力思考");
             assert_eq!(
                 id.as_ref().map(ToString::to_string).as_deref(),
                 Some("msg_thought_1")
             );
 
             let AssistantMessageChunk::Thought { id, block } = &message.chunks[1] else {
-                panic!("expected second chunk to be a thought")
+                panic!("第二个块应为思考")
             };
-            assert_eq!(block.to_markdown(cx), "A separate thought");
+            assert_eq!(block.to_markdown(cx), "一个独立的思考");
             assert_eq!(
                 id.as_ref().map(ToString::to_string).as_deref(),
                 Some("msg_thought_2")
             );
 
             let AssistantMessageChunk::Message { id, block } = &message.chunks[2] else {
-                panic!("expected third chunk to be a message")
+                panic!("第三个块应为消息")
             };
-            assert_eq!(block.to_markdown(cx), "Answer done");
+            assert_eq!(block.to_markdown(cx), "回答完成");
             assert_eq!(
                 id.as_ref().map(ToString::to_string).as_deref(),
                 Some("msg_agent_1")
             );
 
             let AssistantMessageChunk::Message { id, block } = &message.chunks[3] else {
-                panic!("expected fourth chunk to be a message")
+                panic!("第四个块应为消息")
             };
-            assert_eq!(block.to_markdown(cx), "Follow-up");
+            assert_eq!(block.to_markdown(cx), "后续");
             assert_eq!(
                 id.as_ref().map(ToString::to_string).as_deref(),
                 Some("msg_agent_2")
@@ -5806,7 +5806,7 @@ mod tests {
                         thread
                             .handle_session_update(
                                 acp::SessionUpdate::AgentThoughtChunk(acp::ContentChunk::new(
-                                    "Thinking ".into(),
+                                    "思考 ".into(),
                                 )),
                                 cx,
                             )
@@ -5814,7 +5814,7 @@ mod tests {
                         thread
                             .handle_session_update(
                                 acp::SessionUpdate::AgentThoughtChunk(acp::ContentChunk::new(
-                                    "hard!".into(),
+                                    "努力!".into(),
                                 )),
                                 cx,
                             )
@@ -5834,7 +5834,7 @@ mod tests {
             .unwrap();
 
         thread
-            .update(cx, |thread, cx| thread.send_raw("Hello from Zed!", cx))
+            .update(cx, |thread, cx| thread.send_raw("来自 Zed 的问候!", cx))
             .await
             .unwrap();
 
@@ -5917,7 +5917,7 @@ mod tests {
                     .entries
                     .iter()
                     .any(|entry| matches!(entry, AgentThreadEntry::UserMessage(_))),
-                "send_command must not echo a user message"
+                "send_command 不得回显用户消息"
             );
             // The command's own entry (here a compaction) is still shown.
             assert!(
@@ -5925,7 +5925,7 @@ mod tests {
                     .entries
                     .iter()
                     .any(|entry| matches!(entry, AgentThreadEntry::ContextCompaction(_))),
-                "the command's own thread entry should still be present"
+                "命令自身的线程条目应仍然存在"
             );
         });
     }
@@ -5970,15 +5970,15 @@ mod tests {
             .unwrap();
 
         thread
-            .update(cx, |thread, cx| thread.send_raw("Hello from Zed!", cx))
+            .update(cx, |thread, cx| thread.send_raw("来自 Zed 的问候!", cx))
             .await
             .unwrap();
 
         let output = thread.read_with(cx, |thread, cx| thread.to_markdown(cx));
-        assert_eq!(output.matches("Hello from Zed!").count(), 1);
+        assert_eq!(output.matches("来自 Zed 的问候!").count(), 1);
         thread.read_with(cx, |thread, _cx| {
             let Some(AgentThreadEntry::UserMessage(message)) = thread.entries.first() else {
-                panic!("expected optimistic user message");
+                panic!("应为乐观用户消息");
             };
             assert_eq!(message.protocol_id, None);
             assert_eq!(message.client_id, None);
@@ -6047,7 +6047,7 @@ mod tests {
             .unwrap();
 
         let request = thread.update(cx, |thread, cx| {
-            thread.send_raw("Extend the count in /tmp/foo", cx)
+            thread.send_raw("扩展 /tmp/foo 中的计数", cx)
         });
         read_file_rx.await.ok();
         buffer.update(cx, |buffer, cx| {
@@ -6270,7 +6270,7 @@ mod tests {
                         .update(&mut cx, |thread, cx| {
                             thread.handle_session_update(
                                 acp::SessionUpdate::ToolCall(
-                                    acp::ToolCall::new(id.clone(), "Label")
+                                    acp::ToolCall::new(id.clone(), "标签")
                                         .kind(acp::ToolKind::Fetch)
                                         .status(acp::ToolCallStatus::InProgress),
                                 ),
@@ -6293,7 +6293,7 @@ mod tests {
             .unwrap();
 
         let request = thread.update(cx, |thread, cx| {
-            thread.send_raw("Fetch https://example.com", cx)
+            thread.send_raw("获取 https://example.com", cx)
         });
 
         run_until_first_tool_call(&thread, cx).await;
@@ -6352,7 +6352,7 @@ mod tests {
         let fs = FakeFs::new(cx.executor());
         fs.insert_tree(
             path!("/tmp/skills/test-skill"),
-            json!({ "SKILL.md": "skill body" }),
+            json!({ "SKILL.md": "技能主体" }),
         )
         .await;
         let project = Project::test(fs, [], cx).await;
@@ -6369,7 +6369,7 @@ mod tests {
             .update(cx, |thread, cx| {
                 thread.handle_session_update(
                     acp::SessionUpdate::ToolCall(
-                        acp::ToolCall::new("write_file", "Write SKILL.md")
+                        acp::ToolCall::new("write_file", "写入 SKILL.md")
                             .kind(acp::ToolKind::Edit)
                             .status(acp::ToolCallStatus::Completed)
                             .locations(vec![acp::ToolCallLocation::new(skill_path.clone())]),
@@ -6384,14 +6384,14 @@ mod tests {
         thread.read_with(cx, |thread, cx| {
             let (tool_call_location, agent_location) = thread.entries[0]
                 .location(0)
-                .expect("external tool-call location should resolve");
+                .expect("外部工具调用位置应可解析");
             assert_eq!(tool_call_location.path, skill_path);
 
             let buffer = agent_location
                 .buffer
                 .upgrade()
-                .expect("resolved location should keep an open buffer");
-            assert_eq!(buffer.read(cx).text(), "skill body");
+                .expect("解析后的位置应保持缓冲区打开");
+            assert_eq!(buffer.read(cx).text(), "技能主体");
         });
     }
 
@@ -6416,14 +6416,14 @@ mod tests {
         let permission_task = thread
             .update(cx, |thread, cx| {
                 thread.request_tool_call_authorization(
-                    acp::ToolCall::new(tool_call_id.clone(), "Original title")
+                    acp::ToolCall::new(tool_call_id.clone(), "原始标题")
                         .kind(acp::ToolKind::Execute)
                         .status(acp::ToolCallStatus::Pending)
-                        .content(vec!["original content".into()])
+                        .content(vec!["原始内容".into()])
                         .into(),
                     PermissionOptions::Flat(vec![acp::PermissionOption::new(
                         allow_option_id.clone(),
-                        "Allow",
+                        "允许",
                         acp::PermissionOptionKind::AllowOnce,
                     )]),
                     AuthorizationKind::PermissionGrant,
@@ -6436,10 +6436,10 @@ mod tests {
             .update(cx, |thread, cx| {
                 thread.handle_session_update(
                     acp::SessionUpdate::ToolCall(
-                        acp::ToolCall::new(tool_call_id.clone(), "Updated title")
+                        acp::ToolCall::new(tool_call_id.clone(), "更新后的标题")
                             .kind(acp::ToolKind::Execute)
                             .status(acp::ToolCallStatus::Pending)
-                            .content(vec!["updated content".into()]),
+                            .content(vec!["更新后的内容".into()]),
                     ),
                     cx,
                 )
@@ -6449,14 +6449,14 @@ mod tests {
         thread.read_with(cx, |thread, cx| {
             let (_, tool_call) = thread
                 .tool_call(&tool_call_id)
-                .expect("tool call should exist");
-            assert_eq!(tool_call.label.read(cx).source(), "Updated title");
+                .expect("工具调用应存在");
+            assert_eq!(tool_call.label.read(cx).source(), "更新后的标题");
             assert!(matches!(
                 tool_call.status,
                 ToolCallStatus::WaitingForConfirmation { .. }
             ));
             assert_eq!(tool_call.content.len(), 1);
-            assert_eq!(tool_call.content[0].to_markdown(cx), "updated content");
+            assert_eq!(tool_call.content[0].to_markdown(cx), "更新后的内容");
         });
 
         thread
@@ -6466,8 +6466,8 @@ mod tests {
                         tool_call_id.clone(),
                         acp::ToolCallUpdateFields::new()
                             .status(acp::ToolCallStatus::InProgress)
-                            .title("Updated again")
-                            .content(vec!["updated again".into()]),
+                            .title("再次更新")
+                            .content(vec!["再次更新".into()]),
                     )),
                     cx,
                 )
@@ -6477,14 +6477,14 @@ mod tests {
         thread.read_with(cx, |thread, cx| {
             let (_, tool_call) = thread
                 .tool_call(&tool_call_id)
-                .expect("tool call should exist");
-            assert_eq!(tool_call.label.read(cx).source(), "Updated again");
+                .expect("工具调用应存在");
+            assert_eq!(tool_call.label.read(cx).source(), "再次更新");
             assert!(matches!(
                 tool_call.status,
                 ToolCallStatus::WaitingForConfirmation { .. }
             ));
             assert_eq!(tool_call.content.len(), 1);
-            assert_eq!(tool_call.content[0].to_markdown(cx), "updated again");
+            assert_eq!(tool_call.content[0].to_markdown(cx), "再次更新");
         });
 
         let selected_outcome = SelectedPermissionOutcome::new(
@@ -6498,7 +6498,7 @@ mod tests {
         thread.read_with(cx, |thread, _cx| {
             let (_, tool_call) = thread
                 .tool_call(&tool_call_id)
-                .expect("tool call should exist");
+                .expect("工具调用应存在");
             assert!(matches!(tool_call.status, ToolCallStatus::InProgress));
         });
 
@@ -6509,7 +6509,7 @@ mod tests {
             }
             RequestPermissionOutcome::Cancelled
             | RequestPermissionOutcome::InterruptedByFollowUp => {
-                panic!("permission request should remain open after duplicate tool call update")
+                panic!("重复的工具调用更新后,权限请求应保持打开状态")
             }
         }
 
@@ -6520,7 +6520,7 @@ mod tests {
                         tool_call_id.clone(),
                         acp::ToolCallUpdateFields::new()
                             .status(acp::ToolCallStatus::Completed)
-                            .title("Completed")
+                            .title("已完成")
                             .content(vec!["done".into()]),
                     )),
                     cx,
@@ -6531,8 +6531,8 @@ mod tests {
         thread.read_with(cx, |thread, cx| {
             let (_, tool_call) = thread
                 .tool_call(&tool_call_id)
-                .expect("tool call should exist");
-            assert_eq!(tool_call.label.read(cx).source(), "Completed");
+                .expect("工具调用应存在");
+            assert_eq!(tool_call.label.read(cx).source(), "已完成");
             assert!(matches!(tool_call.status, ToolCallStatus::Completed));
             assert_eq!(tool_call.content.len(), 1);
             assert_eq!(tool_call.content[0].to_markdown(cx), "done");
@@ -6557,13 +6557,13 @@ mod tests {
         let permission_task = thread
             .update(cx, |thread, cx| {
                 thread.request_tool_call_authorization(
-                    acp::ToolCall::new(tool_call_id.clone(), "Original title")
+                    acp::ToolCall::new(tool_call_id.clone(), "原始标题")
                         .kind(acp::ToolKind::Execute)
                         .status(acp::ToolCallStatus::Pending)
                         .into(),
                     PermissionOptions::Flat(vec![acp::PermissionOption::new(
                         acp::PermissionOptionId::new("allow"),
-                        "Allow",
+                        "允许",
                         acp::PermissionOptionKind::AllowOnce,
                     )]),
                     AuthorizationKind::PermissionGrant,
@@ -6587,7 +6587,7 @@ mod tests {
         thread.read_with(cx, |thread, _cx| {
             let (_, tool_call) = thread
                 .tool_call(&tool_call_id)
-                .expect("tool call should exist");
+                .expect("工具调用应存在");
             assert!(matches!(
                 tool_call.status,
                 ToolCallStatus::WaitingForConfirmation {
@@ -6611,7 +6611,7 @@ mod tests {
         thread.read_with(cx, |thread, _cx| {
             let (_, tool_call) = thread
                 .tool_call(&tool_call_id)
-                .expect("tool call should exist");
+                .expect("工具调用应存在");
             assert!(matches!(tool_call.status, ToolCallStatus::InProgress));
         });
 
@@ -6622,7 +6622,7 @@ mod tests {
             }
             RequestPermissionOutcome::Cancelled
             | RequestPermissionOutcome::InterruptedByFollowUp => {
-                panic!("resolved permission request should select an outcome")
+                panic!("已解决的权限请求应选择一个结果")
             }
         }
     }
@@ -6648,7 +6648,7 @@ mod tests {
             .update(cx, |thread, cx| {
                 thread.handle_session_update(
                     acp::SessionUpdate::ToolCall(
-                        acp::ToolCall::new(tool_call_id.clone(), "Running title")
+                        acp::ToolCall::new(tool_call_id.clone(), "运行中标题")
                             .kind(acp::ToolKind::Execute)
                             .status(acp::ToolCallStatus::InProgress),
                     ),
@@ -6660,13 +6660,13 @@ mod tests {
         let permission_task = thread
             .update(cx, |thread, cx| {
                 thread.request_tool_call_authorization(
-                    acp::ToolCall::new(tool_call_id.clone(), "Needs permission")
+                    acp::ToolCall::new(tool_call_id.clone(), "需要权限")
                         .kind(acp::ToolKind::Execute)
                         .status(acp::ToolCallStatus::Pending)
                         .into(),
                     PermissionOptions::Flat(vec![acp::PermissionOption::new(
                         acp::PermissionOptionId::new("allow"),
-                        "Allow",
+                        "允许",
                         acp::PermissionOptionKind::AllowOnce,
                     )]),
                     AuthorizationKind::PermissionGrant,
@@ -6678,8 +6678,8 @@ mod tests {
         thread.read_with(cx, |thread, cx| {
             let (_, tool_call) = thread
                 .tool_call(&tool_call_id)
-                .expect("tool call should exist");
-            assert_eq!(tool_call.label.read(cx).source(), "Needs permission");
+                .expect("工具调用应存在");
+            assert_eq!(tool_call.label.read(cx).source(), "需要权限");
             assert!(matches!(
                 tool_call.status,
                 ToolCallStatus::WaitingForConfirmation {
@@ -6707,7 +6707,7 @@ mod tests {
             }
             RequestPermissionOutcome::Cancelled
             | RequestPermissionOutcome::InterruptedByFollowUp => {
-                panic!("permission request should resolve after authorization")
+                panic!("授权后权限请求应被解决")
             }
         }
     }
@@ -6732,13 +6732,13 @@ mod tests {
         let permission_task = thread
             .update(cx, |thread, cx| {
                 thread.request_tool_call_authorization(
-                    acp::ToolCall::new(tool_call_id.clone(), "Needs permission")
+                    acp::ToolCall::new(tool_call_id.clone(), "需要权限")
                         .kind(acp::ToolKind::Execute)
                         .status(acp::ToolCallStatus::Pending)
                         .into(),
                     PermissionOptions::Flat(vec![acp::PermissionOption::new(
                         acp::PermissionOptionId::new("allow"),
-                        "Allow",
+                        "允许",
                         acp::PermissionOptionKind::AllowOnce,
                     )]),
                     AuthorizationKind::PermissionGrant,
@@ -6754,7 +6754,7 @@ mod tests {
         thread.read_with(cx, |thread, _cx| {
             let (_, tool_call) = thread
                 .tool_call(&tool_call_id)
-                .expect("tool call should exist");
+                .expect("工具调用应存在");
             assert!(matches!(tool_call.status, ToolCallStatus::Canceled));
         });
 
@@ -6762,7 +6762,7 @@ mod tests {
             RequestPermissionOutcome::Cancelled => {}
             RequestPermissionOutcome::InterruptedByFollowUp
             | RequestPermissionOutcome::Selected(_) => {
-                panic!("cancelled permission request should not select an outcome")
+                panic!("已取消的权限请求不应选择结果")
             }
         }
     }
@@ -6787,13 +6787,13 @@ mod tests {
         let permission_task = thread
             .update(cx, |thread, cx| {
                 thread.request_tool_call_authorization(
-                    acp::ToolCall::new(tool_call_id.clone(), "Needs permission")
+                    acp::ToolCall::new(tool_call_id.clone(), "需要权限")
                         .kind(acp::ToolKind::Execute)
                         .status(acp::ToolCallStatus::Pending)
                         .into(),
                     PermissionOptions::Flat(vec![acp::PermissionOption::new(
                         acp::PermissionOptionId::new("allow"),
-                        "Allow",
+                        "允许",
                         acp::PermissionOptionKind::AllowOnce,
                     )]),
                     AuthorizationKind::PermissionGrant,
@@ -6817,7 +6817,7 @@ mod tests {
         thread.read_with(cx, |thread, _cx| {
             let (_, tool_call) = thread
                 .tool_call(&tool_call_id)
-                .expect("tool call should exist");
+                .expect("工具调用应存在");
             assert!(matches!(tool_call.status, ToolCallStatus::Completed));
         });
 
@@ -6825,7 +6825,7 @@ mod tests {
             RequestPermissionOutcome::Cancelled => {}
             RequestPermissionOutcome::InterruptedByFollowUp
             | RequestPermissionOutcome::Selected(_) => {
-                panic!("terminal tool call update should close pending permission request")
+                panic!("终端工具调用更新应关闭待处理的权限请求")
             }
         }
     }
@@ -6844,7 +6844,7 @@ mod tests {
                         .update(&mut cx, |thread, cx| {
                             thread.handle_session_update(
                                 acp::SessionUpdate::ToolCall(
-                                    acp::ToolCall::new("test", "Label")
+                                    acp::ToolCall::new("test", "标签")
                                         .kind(acp::ToolKind::Edit)
                                         .status(acp::ToolCallStatus::Completed)
                                         .content(vec![acp::ToolCallContent::Diff(acp::Diff::new(
@@ -6907,7 +6907,7 @@ mod tests {
                     }
 
                     let acp::ContentBlock::Text(content) = &request.prompt[0] else {
-                        panic!("expected text content block");
+                        panic!("期望的文本内容块");
                     };
                     thread.update(&mut cx, |thread, cx| {
                         thread
@@ -7033,7 +7033,7 @@ mod tests {
         thread
             .update(cx, |thread, cx| {
                 let AgentThreadEntry::UserMessage(message) = &thread.entries[2] else {
-                    panic!("unexpected entries {:?}", thread.entries)
+                    panic!("意外的条目 {:?}", thread.entries)
                 };
                 thread.restore_checkpoint(message.client_id.clone().unwrap(), cx)
             })
@@ -7191,11 +7191,11 @@ mod tests {
                             thread
                                 .handle_session_update(
                                     acp::SessionUpdate::ToolCall(
-                                        acp::ToolCall::new("tool1", "Test Tool")
+                                        acp::ToolCall::new("tool1", "测试工具")
                                             .kind(acp::ToolKind::Fetch)
                                             .status(acp::ToolCallStatus::Completed)
                                             .raw_input(serde_json::json!({"query": "test"}))
-                                            .raw_output(serde_json::json!({"result": "inappropriate content"})),
+                                            .raw_output(serde_json::json!({"result": "不当内容"})),
                                     ),
                                     cx,
                                 )
@@ -7244,27 +7244,27 @@ mod tests {
         // 2. The user message was NOT truncated
         assert!(
             *saw_refusal_event.lock().unwrap(),
-            "Refusal event should be emitted for tool result refusals"
+            "工具结果被拒绝时应发出拒绝事件"
         );
 
         thread.read_with(cx, |thread, _| {
             let entries = thread.entries();
-            assert!(entries.len() >= 2, "Should have user message and tool call");
+            assert!(entries.len() >= 2, "应包含用户消息和工具调用");
 
             // Verify user message is still there
             assert!(
                 matches!(entries[0], AgentThreadEntry::UserMessage(_)),
-                "User message should not be truncated"
+                "用户消息不应被截断"
             );
 
             // Verify tool call is there with result
             if let AgentThreadEntry::ToolCall(tool_call) = &entries[1] {
                 assert!(
                     tool_call.raw_output.is_some(),
-                    "Tool call should have output"
+                    "工具调用应有输出"
                 );
             } else {
-                panic!("Expected tool call at index 1");
+                panic!("索引 1 处应有工具调用");
             }
         });
     }
@@ -7321,7 +7321,7 @@ mod tests {
         // Verify that a Refusal event WAS emitted for user prompt refusal
         assert!(
             *saw_refusal_event.lock().unwrap(),
-            "Refusal event should be emitted for user prompt refusals"
+            "用户提示被拒绝时应发出拒绝事件"
         );
 
         // Verify the message was truncated (user prompt refusal)
@@ -7348,7 +7348,7 @@ mod tests {
                     }
 
                     let acp::ContentBlock::Text(content) = &request.prompt[0] else {
-                        panic!("expected text content block");
+                        panic!("期望的文本内容块");
                     };
                     thread.update(&mut cx, |thread, cx| {
                         thread
@@ -7427,23 +7427,23 @@ mod tests {
 
     fn only_thread_elicitation(thread: &AcpThread) -> (ElicitationEntryId, &Elicitation) {
         let [entry] = thread.entries() else {
-            panic!("expected one elicitation entry, got {:?}", thread.entries());
+            panic!("期望一个征询条目,实际为 {:?}", thread.entries());
         };
         let AgentThreadEntry::Elicitation(id) = entry else {
-            panic!("expected one elicitation entry, got {:?}", thread.entries());
+            panic!("期望一个征询条目,实际为 {:?}", thread.entries());
         };
         let Some((_, elicitation)) = thread.elicitation(id) else {
-            panic!("missing elicitation entry");
+            panic!("缺少征询条目");
         };
         (id.clone(), elicitation)
     }
 
     fn latest_thread_elicitation(thread: &AcpThread) -> (ElicitationEntryId, &Elicitation) {
         let Some(AgentThreadEntry::Elicitation(id)) = thread.entries().last() else {
-            panic!("expected latest entry to be an elicitation");
+            panic!("期望最新条目为征询");
         };
         let Some((_, elicitation)) = thread.elicitation(id) else {
-            panic!("missing elicitation entry");
+            panic!("缺少征询条目");
         };
         (id.clone(), elicitation)
     }
@@ -7465,7 +7465,7 @@ mod tests {
                         acp::ElicitationSessionScope::new(session_id),
                         acp::ElicitationSchema::new().string("name", true),
                     ),
-                    "Provide a name",
+                    "提供名称",
                 ),
                 cx,
             )
@@ -7497,7 +7497,7 @@ mod tests {
                                 .tool_call_id(tool_call_id.clone()),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -7507,7 +7507,7 @@ mod tests {
         let elicitation_id = thread.read_with(cx, |thread, _| {
             let (elicitation_id, elicitation) = only_thread_elicitation(thread);
             let acp::ElicitationScope::Session(scope) = elicitation.request.scope() else {
-                panic!("expected session-scoped elicitation");
+                panic!("期望会话级征询");
             };
             assert_eq!(scope.tool_call_id.as_ref(), Some(&tool_call_id));
             elicitation_id
@@ -7536,7 +7536,7 @@ mod tests {
         );
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&elicitation_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Accepted));
         });
@@ -7559,7 +7559,7 @@ mod tests {
                             url_elicitation_id.clone(),
                             "https://example.com/complete",
                         ),
-                        "Complete this in the browser",
+                        "在浏览器中完成此操作",
                     ),
                     cx,
                 )
@@ -7576,7 +7576,7 @@ mod tests {
         });
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(
                 elicitation.status,
@@ -7601,7 +7601,7 @@ mod tests {
         });
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Completed));
         });
@@ -7624,7 +7624,7 @@ mod tests {
                             url_elicitation_id.clone(),
                             "https://example.com/complete",
                         ),
-                        "Complete this in the browser",
+                        "在浏览器中完成此操作",
                     ),
                     cx,
                 )
@@ -7655,7 +7655,7 @@ mod tests {
         });
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -7665,7 +7665,7 @@ mod tests {
         });
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -7688,7 +7688,7 @@ mod tests {
                             url_elicitation_id.clone(),
                             "https://example.com/complete",
                         ),
-                        "Complete this in the browser",
+                        "在浏览器中完成此操作",
                     ),
                     cx,
                 )
@@ -7715,7 +7715,7 @@ mod tests {
         ));
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Accepted));
         });
@@ -7725,7 +7725,7 @@ mod tests {
         });
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -7735,7 +7735,7 @@ mod tests {
         });
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -7772,13 +7772,13 @@ mod tests {
                 connection.new_session(project, PathList::new(&[Path::new(path!("/test"))]), cx)
             })
             .await
-            .expect("new session should succeed");
+            .expect("新会话应成功");
 
         let response = thread
-            .update(cx, |thread, cx| thread.send(vec!["first turn".into()], cx))
+            .update(cx, |thread, cx| thread.send(vec!["第一轮".into()], cx))
             .await
-            .expect("first turn should succeed")
-            .expect("first turn should return a response");
+            .expect("第一轮应成功")
+            .expect("第一轮应返回响应");
         assert_eq!(response.stop_reason, acp::StopReason::EndTurn);
 
         let session_id = thread.read_with(cx, |thread, _| thread.session_id().clone());
@@ -7792,11 +7792,11 @@ mod tests {
                             url_elicitation_id.clone(),
                             "https://example.com/complete",
                         ),
-                        "Complete this in the browser",
+                        "在浏览器中完成此操作",
                     ),
                     cx,
                 )
-                .expect("url elicitation should be accepted")
+                .expect("URL 征询应被接受")
         });
 
         let entry_id = thread.read_with(cx, |thread, _| {
@@ -7819,14 +7819,14 @@ mod tests {
         ));
 
         let response = thread
-            .update(cx, |thread, cx| thread.send(vec!["second turn".into()], cx))
+            .update(cx, |thread, cx| thread.send(vec!["第二轮".into()], cx))
             .await
-            .expect("second turn should succeed")
-            .expect("second turn should return a response");
+            .expect("第二轮应成功")
+            .expect("第二轮应返回响应");
         assert_eq!(response.stop_reason, acp::StopReason::Cancelled);
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -7836,7 +7836,7 @@ mod tests {
         });
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -7856,7 +7856,7 @@ mod tests {
                             acp::ElicitationRequestScope::new(acp::RequestId::Number(1)),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -7866,12 +7866,12 @@ mod tests {
         let elicitation_id = store.read_with(cx, |store, _| {
             let [elicitation] = store.elicitations() else {
                 panic!(
-                    "expected one elicitation entry, got {:?}",
+                    "期望一个征询条目,实际为 {:?}",
                     store.elicitations()
                 );
             };
             let acp::ElicitationScope::Request(scope) = elicitation.request.scope() else {
-                panic!("expected request-scoped elicitation");
+                panic!("预期请求级征询");
             };
             assert_eq!(scope.request_id, acp::RequestId::Number(1));
             elicitation.id.clone()
@@ -7888,7 +7888,7 @@ mod tests {
         assert_eq!(response_task.await.action, acp::ElicitationAction::Decline);
         store.read_with(cx, |store, _| {
             let Some((_, elicitation)) = store.elicitation(&elicitation_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Declined));
         });
@@ -7908,7 +7908,7 @@ mod tests {
                             acp::ElicitationRequestScope::new(acp::RequestId::Number(1)),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -7918,7 +7918,7 @@ mod tests {
         let elicitation_id = store.read_with(cx, |store, _| {
             let [elicitation] = store.elicitations() else {
                 panic!(
-                    "expected one elicitation entry, got {:?}",
+                    "期望一个征询条目,实际为 {:?}",
                     store.elicitations()
                 );
             };
@@ -7943,7 +7943,7 @@ mod tests {
         assert_eq!(response_task.await.action, acp::ElicitationAction::Decline);
         store.read_with(cx, |store, _| {
             let Some((_, elicitation)) = store.elicitation(&elicitation_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Declined));
         });
@@ -7964,7 +7964,7 @@ mod tests {
                             acp::ElicitationSessionScope::new(session_id),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -7978,7 +7978,7 @@ mod tests {
         assert_eq!(response_task.await.action, acp::ElicitationAction::Cancel);
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&elicitation_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -7999,7 +7999,7 @@ mod tests {
                             acp::ElicitationSessionScope::new(session_id),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -8018,7 +8018,7 @@ mod tests {
         assert_eq!(response_task.await.action, acp::ElicitationAction::Cancel);
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&elicitation_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -8037,7 +8037,7 @@ mod tests {
                             acp::ElicitationSessionScope::new(session_id),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -8065,7 +8065,7 @@ mod tests {
                     })
                     .detach();
 
-                    Err(anyhow!("prompt failed"))
+                    Err(anyhow!("提示失败"))
                 }
                 .boxed_local()
             }
@@ -8075,7 +8075,7 @@ mod tests {
                 connection.new_session(project, PathList::new(&[Path::new(path!("/test"))]), cx)
             })
             .await
-            .expect("new session should succeed");
+            .expect("新会话应成功");
 
         let result = thread
             .update(cx, |thread, cx| thread.send(vec!["hello".into()], cx))
@@ -8094,7 +8094,7 @@ mod tests {
                 }
                 _ => None,
             }) else {
-                panic!("expected an elicitation entry");
+                panic!("期望一个征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -8130,7 +8130,7 @@ mod tests {
                 connection.new_session(project, PathList::new(&[Path::new(path!("/test"))]), cx)
             })
             .await
-            .expect("new session should succeed");
+            .expect("新会话应成功");
 
         let result = thread
             .update(cx, |thread, cx| thread.send(vec!["hello".into()], cx))
@@ -8149,7 +8149,7 @@ mod tests {
                 }
                 _ => None,
             }) else {
-                panic!("expected an elicitation entry");
+                panic!("期望一个征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -8169,7 +8169,7 @@ mod tests {
                             acp::ElicitationRequestScope::new(acp::RequestId::Number(1)),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -8183,7 +8183,7 @@ mod tests {
         assert_eq!(response_task.await.action, acp::ElicitationAction::Cancel);
         store.read_with(cx, |store, _| {
             let Some((_, elicitation)) = store.elicitation(&elicitation_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -8203,7 +8203,7 @@ mod tests {
                             acp::ElicitationRequestScope::new(acp::RequestId::Number(1)),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -8233,7 +8233,7 @@ mod tests {
                             acp::ElicitationRequestScope::new(acp::RequestId::Number(1)),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -8247,7 +8247,7 @@ mod tests {
                             acp::ElicitationRequestScope::new(acp::RequestId::Number(2)),
                             acp::ElicitationSchema::new().string("account", true),
                         ),
-                        "Provide an account",
+                        "提供账户",
                     ),
                     cx,
                 )
@@ -8256,7 +8256,7 @@ mod tests {
 
         let first_elicitation_id = store.read_with(cx, |store, _| {
             let [first, _second] = store.elicitations() else {
-                panic!("expected two elicitations, got {:?}", store.elicitations());
+                panic!("期望两个征询,实际为 {:?}", store.elicitations());
             };
             first.id.clone()
         });
@@ -8298,7 +8298,7 @@ mod tests {
                             acp::ElicitationRequestScope::new(acp::RequestId::Number(1)),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -8312,7 +8312,7 @@ mod tests {
                             acp::ElicitationRequestScope::new(acp::RequestId::Number(2)),
                             acp::ElicitationSchema::new().string("account", true),
                         ),
-                        "Provide an account",
+                        "提供账户",
                     ),
                     cx,
                 )
@@ -8327,7 +8327,7 @@ mod tests {
                             url_elicitation_id,
                             "https://example.com/complete",
                         ),
-                        "Complete this in the browser",
+                        "在浏览器中完成此操作",
                     ),
                     cx,
                 )
@@ -8337,7 +8337,7 @@ mod tests {
         let (accepted_id, pending_id, accepted_url_id) = store.read_with(cx, |store, _| {
             let [accepted, pending, accepted_url] = store.elicitations() else {
                 panic!(
-                    "expected three request-scoped elicitations, got {:?}",
+                    "期望三个请求级征询,实际为 {:?}",
                     store.elicitations()
                 );
             };
@@ -8378,7 +8378,7 @@ mod tests {
         store.read_with(cx, |store, _| {
             let [pending, accepted_url] = store.elicitations() else {
                 panic!(
-                    "expected pending and accepted url elicitations, got {:?}",
+                    "期望待处理和已接受的 URL 征询,实际为 {:?}",
                     store.elicitations()
                 );
             };
@@ -8411,7 +8411,7 @@ mod tests {
                             url_elicitation_id.clone(),
                             "https://example.com/complete",
                         ),
-                        "Complete this in the browser",
+                        "在浏览器中完成此操作",
                     ),
                     cx,
                 )
@@ -8421,7 +8421,7 @@ mod tests {
         let entry_id = store.read_with(cx, |store, _| {
             let [elicitation] = store.elicitations() else {
                 panic!(
-                    "expected one request-scoped elicitation, got {:?}",
+                    "预期一个请求级征询,实际为 {:?}",
                     store.elicitations()
                 );
             };
@@ -8433,7 +8433,7 @@ mod tests {
         });
         store.read_with(cx, |store, _| {
             let Some((_, elicitation)) = store.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(
                 elicitation.status,
@@ -8458,7 +8458,7 @@ mod tests {
         });
         store.read_with(cx, |store, _| {
             let Some((_, elicitation)) = store.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Completed));
         });
@@ -8482,7 +8482,7 @@ mod tests {
                             url_elicitation_id.clone(),
                             "https://example.com/complete",
                         ),
-                        "Complete this in the browser",
+                        "在浏览器中完成此操作",
                     ),
                     cx,
                 )
@@ -8492,7 +8492,7 @@ mod tests {
         let entry_id = store.read_with(cx, |store, _| {
             let [elicitation] = store.elicitations() else {
                 panic!(
-                    "expected one elicitation entry, got {:?}",
+                    "期望一个征询条目,实际为 {:?}",
                     store.elicitations()
                 );
             };
@@ -8517,7 +8517,7 @@ mod tests {
         });
         store.read_with(cx, |store, _| {
             let Some((_, elicitation)) = store.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -8527,7 +8527,7 @@ mod tests {
         });
         store.read_with(cx, |store, _| {
             let Some((_, elicitation)) = store.elicitation(&entry_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Canceled));
         });
@@ -8550,7 +8550,7 @@ mod tests {
                             acp::ElicitationSessionScope::new(session_id),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -8574,7 +8574,7 @@ mod tests {
         assert_eq!(response_task.await.action, acp::ElicitationAction::Decline);
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&elicitation_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Declined));
         });
@@ -8595,7 +8595,7 @@ mod tests {
                             acp::ElicitationSessionScope::new(session_id),
                             acp::ElicitationSchema::new().string("name", true),
                         ),
-                        "Provide a name",
+                        "提供名称",
                     ),
                     cx,
                 )
@@ -8625,7 +8625,7 @@ mod tests {
         assert_eq!(response_task.await.action, acp::ElicitationAction::Decline);
         thread.read_with(cx, |thread, _| {
             let Some((_, elicitation)) = thread.elicitation(&elicitation_id) else {
-                panic!("missing elicitation entry");
+                panic!("缺少征询条目");
             };
             assert!(matches!(elicitation.status, ElicitationStatus::Declined));
         });
@@ -8639,7 +8639,7 @@ mod tests {
         let session_id = thread.read_with(cx, |thread, _| thread.session_id().clone());
 
         for invalid_url in [
-            "not a url",
+            "不是 URL",
             "file:///tmp/authorize",
             "data:text/plain,authorize",
             "mailto:user@example.com",
@@ -8653,14 +8653,14 @@ mod tests {
                             "url-1",
                             invalid_url,
                         ),
-                        "Complete this in the browser",
+                        "在浏览器中完成此操作",
                     ),
                     cx,
                 )
             });
 
             let Err(error) = result else {
-                panic!("{invalid_url} should not be accepted for URL elicitation");
+                panic!("{invalid_url} 不应被接受用于 URL 征询");
             };
             assert_eq!(error.code, acp::ErrorCode::InvalidParams);
         }
@@ -8681,14 +8681,14 @@ mod tests {
                         acp::ElicitationSessionScope::new(session_id),
                         std::collections::BTreeMap::new(),
                     ),
-                    "Use a future input mode",
+                    "使用未来的输入模式",
                 ),
                 cx,
             )
         });
 
         let Err(error) = result else {
-            panic!("unadvertised elicitation mode should be rejected");
+            panic!("未公布的征询模式应被拒绝");
         };
         assert_eq!(error.code, acp::ErrorCode::InvalidParams);
         thread.read_with(cx, |thread, _| assert!(thread.entries().is_empty()));
@@ -8707,14 +8707,14 @@ mod tests {
                         acp::ElicitationRequestScope::new(acp::RequestId::Number(1)),
                         std::collections::BTreeMap::new(),
                     ),
-                    "Use a future input mode",
+                    "使用未来的输入模式",
                 ),
                 cx,
             )
         });
 
         let Err(error) = result else {
-            panic!("unadvertised elicitation mode should be rejected");
+            panic!("未公布的征询模式应被拒绝");
         };
         assert_eq!(error.code, acp::ErrorCode::InvalidParams);
         store.read_with(cx, |store, _| assert!(store.elicitations().is_empty()));
@@ -8738,7 +8738,7 @@ mod tests {
 
         select! {
             _ = futures::FutureExt::fuse(cx.background_executor.timer(Duration::from_secs(10))) => {
-                panic!("Timeout waiting for tool call")
+                panic!("等待工具调用超时")
             }
             ix = rx.next().fuse() => {
                 drop(subscription);
@@ -8854,7 +8854,7 @@ mod tests {
             if self.auth_methods().iter().any(|m| m.id() == &method) {
                 Task::ready(Ok(()))
             } else {
-                Task::ready(Err(anyhow!("Invalid Auth Method")))
+                Task::ready(Err(anyhow!("无效的认证方法")))
             }
         }
 
@@ -8997,24 +8997,24 @@ mod tests {
                     match content_block {
                         ContentBlock::Markdown { markdown } => {
                             let markdown_text = markdown.read(cx).source();
-                            assert!(markdown_text.contains("Tool call not found"));
+                            assert!(markdown_text.contains("未找到工具调用"));
                         }
-                        ContentBlock::Empty => panic!("Expected markdown content, got empty"),
+                        ContentBlock::Empty => panic!("期望 Markdown 内容,实际为空"),
                         ContentBlock::ResourceLink { .. } => {
-                            panic!("Expected markdown content, got resource link")
+                            panic!("期望 Markdown 内容,实际为资源链接")
                         }
                         ContentBlock::EmbeddedResource { .. } => {
-                            panic!("Expected markdown content, got embedded resource")
+                            panic!("期望 Markdown 内容,实际为嵌入资源")
                         }
                         ContentBlock::Image { .. } => {
-                            panic!("Expected markdown content, got image")
+                            panic!("期望 Markdown 内容,实际为图片")
                         }
                     }
                 } else {
-                    panic!("Expected ContentBlock, got: {:?}", tool_call.content[0]);
+                    panic!("期望 ContentBlock,实际为: {:?}", tool_call.content[0]);
                 }
             } else {
-                panic!("Expected ToolCall entry, got: {:?}", thread.entries[0]);
+                panic!("期望 ToolCall 条目,实际为: {:?}", thread.entries[0]);
             }
         });
     }
@@ -9042,7 +9042,7 @@ mod tests {
         // Send first user message to create a checkpoint
         cx.update(|cx| {
             thread.update(cx, |thread, cx| {
-                thread.send(vec!["first message".into()], cx)
+                thread.send(vec!["第一条消息".into()], cx)
             })
         })
         .await
@@ -9051,7 +9051,7 @@ mod tests {
         // Send second message (creates another checkpoint) - we'll restore to this one
         cx.update(|cx| {
             thread.update(cx, |thread, cx| {
-                thread.send(vec!["second message".into()], cx)
+                thread.send(vec!["第二条消息".into()], cx)
             })
         })
         .await
@@ -9157,7 +9157,7 @@ mod tests {
             // - Index 1: Second user message (with checkpoint)
             // No assistant responses because FakeAgentConnection just returns EndTurn
             let AgentThreadEntry::UserMessage(message) = &thread.entries[1] else {
-                panic!("expected user message at index 1");
+                panic!("索引 1 处应有用户消息");
             };
             message.client_id.clone().unwrap()
         });
@@ -9208,7 +9208,7 @@ mod tests {
             thread
                 .handle_session_update(
                     acp::SessionUpdate::ToolCall(
-                        acp::ToolCall::new("terminal-tool-1", "Running command")
+                        acp::ToolCall::new("terminal-tool-1", "运行命令")
                             .kind(acp::ToolKind::Execute)
                             .status(acp::ToolCallStatus::InProgress)
                             .content(vec![acp::ToolCallContent::Terminal(acp::Terminal::new(
@@ -9226,7 +9226,7 @@ mod tests {
             thread.read_with(cx, |thread, _| thread.terminals.contains_key(&terminal_id));
         assert!(
             terminal_exists_before,
-            "Terminal should exist before checkpoint restore"
+            "检查点恢复前终端应存在"
         );
 
         // Verify the terminal's underlying task is still running (not completed)
@@ -9238,14 +9238,14 @@ mod tests {
         });
         assert!(
             terminal_running_before,
-            "Terminal should be running before checkpoint restore"
+            "检查点恢复前终端应正在运行"
         );
 
         // Verify we have the expected entries before restore
         let entry_count_before = thread.read_with(cx, |thread, _| thread.entries.len());
         assert!(
             entry_count_before > 1,
-            "Should have multiple entries before restore"
+            "恢复前应有多个条目"
         );
 
         // Restore the checkpoint to the second message.
@@ -9264,14 +9264,14 @@ mod tests {
         let has_send_task_after = thread.read_with(cx, |thread, _| thread.running_turn.is_some());
         assert!(
             !has_send_task_after,
-            "Should not have a send_task after restore (cancel should have cleared it)"
+            "恢复后不应有 send_task(取消应已清除它)"
         );
 
         // Verify the entries were truncated (restoring to index 1 truncates at 1, keeping only index 0)
         let entry_count = thread.read_with(cx, |thread, _| thread.entries.len());
         assert_eq!(
             entry_count, 1,
-            "Should have 1 entry after restore (only the first user message)"
+            "恢复后应有 1 个条目(仅第一条用户消息)"
         );
 
         // Verify the 2 completed terminals from before the checkpoint still exist
@@ -9280,7 +9280,7 @@ mod tests {
         });
         assert!(
             terminal_1_exists,
-            "Terminal 1 (from before checkpoint) should still exist"
+            "终端 1(检查点之前)应仍然存在"
         );
 
         let terminal_2_exists = thread.read_with(cx, |thread, _| {
@@ -9288,7 +9288,7 @@ mod tests {
         });
         assert!(
             terminal_2_exists,
-            "Terminal 2 (from before checkpoint) should still exist"
+            "终端 2(检查点之前)应仍然存在"
         );
 
         // Verify they're still in completed state
@@ -9296,27 +9296,27 @@ mod tests {
             let terminal_entity = thread.terminals.get(&terminal_id_1).unwrap();
             terminal_entity.read_with(cx, |term, _cx| term.output().is_some())
         });
-        assert!(terminal_1_completed, "Terminal 1 should still be completed");
+        assert!(terminal_1_completed, "终端 1 应仍处于完成状态");
 
         let terminal_2_completed = thread.read_with(cx, |thread, _cx| {
             let terminal_entity = thread.terminals.get(&terminal_id_2).unwrap();
             terminal_entity.read_with(cx, |term, _cx| term.output().is_some())
         });
-        assert!(terminal_2_completed, "Terminal 2 should still be completed");
+        assert!(terminal_2_completed, "终端 2 应仍处于完成状态");
 
         // Verify the running terminal (created after checkpoint) was removed
         let terminal_3_exists =
             thread.read_with(cx, |thread, _| thread.terminals.contains_key(&terminal_id));
         assert!(
             !terminal_3_exists,
-            "Terminal 3 (created after checkpoint) should have been removed"
+            "终端 3(检查点之后创建)应已被移除"
         );
 
         // Verify total count is 2 (the two from before the checkpoint)
         let terminal_count = thread.read_with(cx, |thread, _| thread.terminals.len());
         assert_eq!(
             terminal_count, 2,
-            "Should have exactly 2 terminals (the completed ones from before checkpoint)"
+            "应恰好有 2 个终端(检查点之前已完成的)"
         );
     }
 
@@ -9324,7 +9324,7 @@ mod tests {
     /// even when a new user message is added while the async checkpoint comparison is in progress.
     ///
     /// This is a regression test for a bug where update_last_checkpoint would fail with
-    /// "no checkpoint" if a new user message (without a checkpoint) was added between when
+    /// "无检查点" if a new user message (without a checkpoint) was added between when
     /// update_last_checkpoint started and when its async closure ran.
     #[gpui::test]
     async fn test_update_last_checkpoint_with_new_message_added(cx: &mut TestAppContext) {
@@ -9351,7 +9351,7 @@ mod tests {
             .await
             .unwrap();
 
-        let send_future = thread.update(cx, |thread, cx| thread.send_raw("First message", cx));
+        let send_future = thread.update(cx, |thread, cx| thread.send_raw("第一条消息", cx));
         let send_task = cx.background_executor.spawn(send_future);
 
         // Tick until handler completes, then a few more to let update_last_checkpoint start
@@ -9369,7 +9369,7 @@ mod tests {
                     client_id: Some(ClientUserMessageId::new()),
                     is_optimistic: true,
                     content: ContentBlock::Empty,
-                    chunks: vec!["Injected message (no checkpoint)".into()],
+                    chunks: vec!["注入的消息(无检查点)".into()],
                     checkpoint: None,
                     indented: false,
                 }),
@@ -9382,14 +9382,14 @@ mod tests {
 
         assert!(
             result.is_ok(),
-            "send should succeed even when new message added during update_last_checkpoint: {:?}",
+            "即使在 update_last_checkpoint 期间添加了新消息,发送也应成功: {:?}",
             result.err()
         );
     }
 
     /// This is a regression test for a bug where update_last_checkpoint would
     /// swallow a checkpoint comparison error and hide an already-visible
-    /// "Restore checkpoint" button without logging anything.
+    /// "恢复检查点" button without logging anything.
     #[gpui::test]
     async fn test_update_last_checkpoint_compare_error_keeps_checkpoint_visible(
         cx: &mut TestAppContext,
@@ -9460,7 +9460,7 @@ mod tests {
             let (_, message) = thread.last_user_message().unwrap();
             assert!(
                 message.checkpoint.as_ref().unwrap().show,
-                "a checkpoint comparison failure must not hide the restore checkpoint button"
+                "检查点比较失败不应隐藏恢复检查点按钮"
             );
         });
     }
@@ -9513,7 +9513,7 @@ mod tests {
         let permission_task = thread
             .update(cx, |thread, cx| {
                 thread.request_tool_call_authorization(
-                    acp::ToolCall::new("permission", "Needs permission").into(),
+                    acp::ToolCall::new("permission", "需要权限").into(),
                     PermissionOptions::Flat(Vec::new()),
                     AuthorizationKind::PermissionGrant,
                     cx,
@@ -9535,7 +9535,7 @@ mod tests {
         assert_eq!(
             running_turn_after_second_send,
             Some(2),
-            "running_turn should be set to turn 2 after sending second message"
+            "发送第二条消息后 running_turn 应设置为第 2 轮"
         );
 
         // Now signal first handler to complete
@@ -9550,7 +9550,7 @@ mod tests {
         assert_eq!(
             running_turn_after_first,
             Some(2),
-            "first turn completing should not clear running_turn (belongs to turn 2)"
+            "第一轮完成不应清除 running_turn(属于第 2 轮)"
         );
 
         // Second request completes - SHOULD clear running_turn
@@ -9560,7 +9560,7 @@ mod tests {
             thread.read_with(cx, |thread, _| thread.running_turn.is_some());
         assert!(
             !running_turn_after_second,
-            "second turn completing should clear running_turn"
+            "第二轮完成应清除 running_turn"
         );
     }
 
@@ -9590,7 +9590,7 @@ mod tests {
                     if is_first {
                         if let Some(rx) = first_complete_rx {
                             rx.await
-                                .expect("first completion sender should still be alive");
+                                .expect("第一个完成发送者应仍然存活");
                         }
 
                         thread.update(&mut cx, |thread, cx| {
@@ -9628,12 +9628,12 @@ mod tests {
 
         first_complete_tx
             .send(())
-            .expect("first completion receiver should still be alive");
+            .expect("第一个完成接收者应仍然存活");
 
         let response = first_request
             .await
-            .expect("first request should complete")
-            .expect("first request should have response");
+            .expect("第一个请求应完成")
+            .expect("第一个请求应有响应");
         assert_eq!(response.stop_reason, acp::StopReason::Cancelled);
 
         thread.read_with(cx, |thread, _| {
@@ -9646,18 +9646,18 @@ mod tests {
                     };
                     (compaction.id == compaction_id).then_some(compaction)
                 })
-                .expect("compaction entry should exist");
+                .expect("压缩条目应存在");
 
             assert_eq!(
                 compaction.status,
                 ContextCompactionStatus::InProgress,
-                "a stale cancelled response from an older turn should not cancel current compaction"
+                "来自旧轮次的过期取消响应不应取消当前压缩"
             );
         });
 
         second_request
             .await
-            .expect("second request should complete");
+            .expect("第二个请求应完成");
     }
 
     #[gpui::test]
@@ -9678,13 +9678,13 @@ mod tests {
             .unwrap();
 
         let response = thread
-            .update(cx, |thread, cx| thread.send_raw("test message", cx))
+            .update(cx, |thread, cx| thread.send_raw("测试消息", cx))
             .await;
 
-        assert!(response.is_ok(), "send should not fail: {response:?}");
+        assert!(response.is_ok(), "发送不应失败: {response:?}");
         thread.read_with(cx, |thread, _| {
             let AgentThreadEntry::UserMessage(message) = &thread.entries[0] else {
-                panic!("expected first entry to be a user message")
+                panic!("第一个条目应为用户消息")
             };
             assert_eq!(message.protocol_id, None);
             assert_eq!(message.client_id, None);
@@ -9710,7 +9710,7 @@ mod tests {
                                 acp::SessionUpdate::ToolCall(
                                     acp::ToolCall::new(
                                         acp::ToolCallId::new("test-tool"),
-                                        "Test Tool",
+                                        "测试工具",
                                     )
                                     .kind(acp::ToolKind::Fetch)
                                     .status(acp::ToolCallStatus::InProgress),
@@ -9735,16 +9735,16 @@ mod tests {
             .unwrap();
 
         let response = thread
-            .update(cx, |thread, cx| thread.send_raw("test message", cx))
+            .update(cx, |thread, cx| thread.send_raw("测试消息", cx))
             .await;
 
         let response = response
-            .expect("send should succeed")
-            .expect("should have response");
+            .expect("发送应成功")
+            .expect("应有响应");
         assert_eq!(
             response.stop_reason,
             acp::StopReason::Cancelled,
-            "response should have Cancelled stop_reason"
+            "响应应具有 Cancelled stop_reason"
         );
 
         thread.read_with(cx, |thread, _| {
@@ -9758,11 +9758,11 @@ mod tests {
                         None
                     }
                 })
-                .expect("should have tool call entry");
+                .expect("应有工具调用条目");
 
             assert!(
                 matches!(tool_entry.status, ToolCallStatus::Canceled),
-                "tool should be marked as Canceled when response is Cancelled, got {:?}",
+                "当响应为 Cancelled 时,工具应标记为 Canceled,实际为 {:?}",
                 tool_entry.status
             );
         });
@@ -9791,12 +9791,12 @@ mod tests {
 
         // Setting a provisional title updates the display title.
         thread.update(cx, |thread, cx| {
-            thread.set_provisional_title("Hello, can you help…".into(), cx);
+            thread.set_provisional_title("你好,你能帮忙…".into(), cx);
         });
         thread.read_with(cx, |thread, _| {
             assert_eq!(
                 thread.title().as_ref().map(|s| s.as_str()),
-                Some("Hello, can you help…")
+                Some("你好,你能帮忙…")
             );
         });
 
@@ -9804,25 +9804,25 @@ mod tests {
         assert_eq!(
             set_title_calls.borrow().len(),
             0,
-            "provisional title should not propagate to the connection"
+            "临时标题不应传播到连接"
         );
 
         // When the real title arrives via set_title, it replaces the
         // provisional title and propagates to the connection.
         let task = thread.update(cx, |thread, cx| {
-            thread.set_title("Helping with Rust question".into(), cx)
+            thread.set_title("正在帮助解决 Rust 问题".into(), cx)
         });
-        task.await.expect("set_title should succeed");
+        task.await.expect("set_title 应成功");
         thread.read_with(cx, |thread, _| {
             assert_eq!(
                 thread.title().as_ref().map(|s| s.as_str()),
-                Some("Helping with Rust question")
+                Some("正在帮助解决 Rust 问题")
             );
         });
         assert_eq!(
             set_title_calls.borrow().as_slice(),
-            &[SharedString::from("Helping with Rust question")],
-            "real title should propagate to the connection"
+            &[SharedString::from("正在帮助解决 Rust 问题")],
+            "真实标题应传播到连接"
         );
     }
 
@@ -9862,43 +9862,43 @@ mod tests {
         });
 
         thread.update(cx, |thread, cx| {
-            thread.set_provisional_title("Hello, can you help…".into(), cx);
+            thread.set_provisional_title("你好,你能帮忙…".into(), cx);
         });
         assert_eq!(
             *title_updated_events.borrow(),
             1,
-            "setting a provisional title should emit TitleUpdated"
+            "设置临时标题应发出 TitleUpdated"
         );
 
         let result = thread.update(cx, |thread, cx| {
             thread.handle_session_update(
                 acp::SessionUpdate::SessionInfoUpdate(
-                    acp::SessionInfoUpdate::new().title("Helping with Rust question"),
+                    acp::SessionInfoUpdate::new().title("正在帮助解决 Rust 问题"),
                 ),
                 cx,
             )
         });
-        result.expect("session info update should succeed");
+        result.expect("会话信息更新应成功");
 
         thread.read_with(cx, |thread, _| {
             assert_eq!(
                 thread.title().as_ref().map(|s| s.as_str()),
-                Some("Helping with Rust question")
+                Some("正在帮助解决 Rust 问题")
             );
             assert!(
                 !thread.has_provisional_title(),
-                "session info title update should clear provisional title"
+                "会话信息标题更新应清除临时标题"
             );
         });
 
         assert_eq!(
             *title_updated_events.borrow(),
             2,
-            "session info title update should emit TitleUpdated"
+            "会话信息标题更新应发出 TitleUpdated"
         );
         assert!(
             connection.set_title_calls.borrow().is_empty(),
-            "session info title update should not propagate back to the connection"
+            "会话信息标题更新不应传播回连接"
         );
     }
 
@@ -9928,11 +9928,11 @@ mod tests {
         });
 
         thread.read_with(cx, |thread, _| {
-            let usage = thread.token_usage().expect("token_usage should be set");
+            let usage = thread.token_usage().expect("token_usage 应被设置");
             assert_eq!(usage.max_tokens, 10000);
             assert_eq!(usage.used_tokens, 5000);
 
-            let cost = thread.cost().expect("cost should be set");
+            let cost = thread.cost().expect("cost 应被设置");
             assert!((cost.amount - 0.42).abs() < f64::EPSILON);
             assert_eq!(cost.currency.as_ref(), "USD");
         });
@@ -9975,13 +9975,13 @@ mod tests {
         thread.read_with(cx, |thread, _| {
             let usage = thread
                 .token_usage()
-                .expect("context compaction should not clear token usage on its own");
+                .expect("上下文压缩本身不应清除 token usage");
             assert_eq!(usage.used_tokens, 5000);
             assert_eq!(usage.max_tokens, 10000);
 
             let cost = thread
                 .cost()
-                .expect("context compaction should not clear cost on its own");
+                .expect("上下文压缩本身不应清除 cost");
             assert!((cost.amount - 0.42).abs() < f64::EPSILON);
         });
 
@@ -9997,7 +9997,7 @@ mod tests {
         thread.read_with(cx, |thread, _| {
             let usage = thread
                 .token_usage()
-                .expect("token_usage should be restored by the next usage update");
+                .expect("token_usage 应由下一次使用量更新恢复");
             assert_eq!(usage.used_tokens, 1000);
             assert_eq!(usage.max_tokens, 10000);
         });
@@ -10036,10 +10036,10 @@ mod tests {
         });
 
         thread.read_with(cx, |thread, _| {
-            let usage = thread.token_usage().expect("token_usage should be set");
+            let usage = thread.token_usage().expect("token_usage 应被设置");
             assert_eq!(usage.used_tokens, 2000);
 
-            let cost = thread.cost().expect("cost should be preserved");
+            let cost = thread.cost().expect("cost 应被保留");
             assert!((cost.amount - 0.10).abs() < f64::EPSILON);
         });
     }
@@ -10084,16 +10084,16 @@ mod tests {
             .unwrap();
 
         thread.read_with(cx, |thread, _| {
-            let usage = thread.token_usage().expect("token_usage should be set");
-            assert_eq!(usage.max_tokens, 10000, "max_tokens from UsageUpdate");
-            assert_eq!(usage.used_tokens, 3000, "used_tokens from UsageUpdate");
-            assert_eq!(usage.input_tokens, 200, "input_tokens from response usage");
+            let usage = thread.token_usage().expect("token_usage 应被设置");
+            assert_eq!(usage.max_tokens, 10000, "来自 UsageUpdate 的 max_tokens");
+            assert_eq!(usage.used_tokens, 3000, "来自 UsageUpdate 的 used_tokens");
+            assert_eq!(usage.input_tokens, 200, "来自响应使用量的 input_tokens");
             assert_eq!(
                 usage.output_tokens, 300,
-                "output_tokens from response usage"
+                "来自响应使用量的 output_tokens"
             );
 
-            let cost = thread.cost().expect("cost should be set");
+            let cost = thread.cost().expect("cost 应被设置");
             assert!((cost.amount - 0.05).abs() < f64::EPSILON);
             assert_eq!(cost.currency.as_ref(), "EUR");
         });
@@ -10131,7 +10131,7 @@ mod tests {
             assert!(thread.token_usage().is_none());
             assert!(
                 thread.cost().is_none(),
-                "cost should be cleared when token usage is cleared"
+                "清除 token usage 时 cost 也应被清除"
             );
         });
     }
@@ -10171,7 +10171,7 @@ mod tests {
         assert_eq!(
             thread.read_with(cx, |t, _| t.status()),
             ThreadStatus::Generating,
-            "thread should be generating while the handler is parked"
+            "处理程序暂停时线程应处于生成状态"
         );
 
         // Replace the in-flight send_task with a no-op. Dropping the original
@@ -10185,13 +10185,13 @@ mod tests {
         let result = request.await;
         assert!(
             matches!(result, Ok(None)),
-            "outer task should resolve to Ok(None) on dropped tx, got {result:?}"
+            "tx 被丢弃时外部任务应解析为 Ok(None),实际为 {result:?}"
         );
 
         assert_eq!(
             thread.read_with(cx, |t, _| t.status()),
             ThreadStatus::Idle,
-            "running_turn must be cleared even when tx was dropped without send"
+            "即使 tx 在未发送的情况下被丢弃,running_turn 也必须被清除"
         );
     }
 }

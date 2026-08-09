@@ -537,7 +537,7 @@ async fn run_terminal_tool(
         (cfg!(target_os = "macos") || cfg!(target_os = "linux")) && is_local_project;
     if !can_restrict_to_hosts && matches!(network, NetworkRequest::Hosts(_)) {
         return Err(
-            "This platform or project cannot restrict sandboxed network access to specific hosts. Use `allow_all_hosts: true` if the command needs network access."
+            "此平台或项目无法将沙箱网络访问限制到特定主机。如果命令需要网络访问,请使用 `allow_all_hosts: true`。"
                 .to_string(),
         );
     }
@@ -587,7 +587,7 @@ async fn run_terminal_tool(
             Ok(resolved) => Some(settings::GrantedWritePath::resolved(requested, resolved)),
             Err(error) => {
                 log::warn!(
-                    "could not resolve sandbox write path {}: {error}",
+                    "无法解析沙箱写入路径 {}:{error}",
                     requested.display()
                 );
                 None
@@ -597,7 +597,7 @@ async fn run_terminal_tool(
     #[cfg(target_os = "windows")]
     let write_paths: Vec<settings::GrantedWritePath> = {
         let Some(release) = wsl_zed_release.clone() else {
-            return Err("Could not select a Linux Zed release for WSL sandboxing".to_string());
+            return Err("无法为 WSL 沙箱选择 Linux Zed 版本".to_string());
         };
         let mut resolved_paths = Vec::with_capacity(write_paths.len());
         for requested in write_paths {
@@ -611,7 +611,7 @@ async fn run_terminal_tool(
                 }
                 Err(error) => {
                     log::warn!(
-                        "could not resolve sandbox write path {} in WSL: {error:#}",
+                        "无法在 WSL 中解析沙箱写入路径 {}:{error:#}",
                         requested.display()
                     );
                 }
@@ -631,8 +631,8 @@ async fn run_terminal_tool(
     // path on a Windows drive (DrvFs) — from an explicit grant, a standing
     // grant, or the default project directory — its integrity guarantees are
     // weaker. When the warning is enabled, confirm with the user first. This
-    // gate is transient (never persisted): on "Continue" the normal flow
-    // (including any escalation prompt) proceeds; on "Abort" the command is
+    // gate is transient (never persisted): on "继续" the normal flow
+    // (including any escalation prompt) proceeds; on "中止" the command is
     // cancelled. It recurs until the warning is disabled in settings.
     //
     // The warning only makes sense when a WSL sandbox will actually wrap the
@@ -669,7 +669,7 @@ async fn run_terminal_tool(
             // Carry the underlying error so a prompt-delivery failure is
             // distinguishable from a genuine user abort.
             return Ok(format!(
-                "Command cancelled: the user declined to run a command whose sandbox writes to a Windows drive ({error})."
+                "命令已取消:用户拒绝运行沙箱写入 Windows 驱动器的命令({error})。"
             ));
         }
     }
@@ -692,11 +692,11 @@ async fn run_terminal_tool(
         if let Err(error) = approve.await {
             if want_unsandboxed {
                 return Ok(format!(
-                    "Command cancelled: user denied permission to run outside the sandbox ({error})."
+                    "命令已取消:用户拒绝在沙箱外运行的权限({error})。"
                 ));
             }
             return Ok(format!(
-                "Command cancelled: user denied the requested sandbox permissions ({error})."
+                "命令已取消:用户拒绝了所请求的沙箱权限({error})。"
             ));
         }
     }
@@ -708,7 +708,7 @@ async fn run_terminal_tool(
     // create the sandbox it aborts. As the consumer we may still run the command
     // without a sandbox (when the user has opted into that), but we record
     // *why* in `sandbox_not_applied` so we can warn the user and tell the agent.
-    // A standing "run unsandboxed for this thread" grant (any platform) and the
+    // A standing "为此对话线程在沙箱外运行" grant (any platform) and the
     // Linux/Windows sandbox-creation fallbacks reassign this; on platforms
     // without a sandbox integration the binding stays `None` and wouldn't need
     // `mut`.
@@ -721,7 +721,7 @@ async fn run_terminal_tool(
     let sandbox_wrap = if sandboxing && !want_unsandboxed {
         if unsandboxed_floor {
             // Every command in this thread runs unsandboxed because the user
-            // approved it — a model-requested "run unsandboxed" escape granted
+            // approved it — a model-requested "无沙箱运行" escape granted
             // for the thread, or the sandbox-creation fallback after a failure.
             // Record why so the model is told it ran without isolation.
             sandbox_not_applied = Some(acp_thread::SandboxNotAppliedReason::DisabledForThisThread);
@@ -730,7 +730,7 @@ async fn run_terminal_tool(
             let effective = event_stream.effective_sandbox_request(&request, &persistent);
             if !can_restrict_to_hosts && matches!(effective.network, NetworkRequest::Hosts(_)) {
                 return Err(
-                    "This platform or project has a saved host-specific network grant, but cannot enforce host-specific sandboxed network access. Request `allow_all_hosts: true` if the command needs network access."
+                    "此平台或项目已保存特定主机的网络授权,但无法强制实施特定主机的沙箱网络访问。如果命令需要网络访问,请请求 `allow_all_hosts: true`。"
                         .to_string(),
                 );
             }
@@ -776,7 +776,7 @@ async fn run_terminal_tool(
                     // Distinct from the intentional skips above (settings / thread
                     // grant): the sandbox was requested but couldn't be created.
                     log::warn!(
-                        "Failed to create a sandbox for an agent terminal command: {error:?}"
+                        "为代理终端命令创建沙箱失败:{error:?}"
                     );
 
                     let decision = cx
@@ -827,10 +827,10 @@ async fn run_terminal_tool(
                         // drop access the user approved — or a safety-critical
                         // protection — so fail closed with the reason instead.
                         log::warn!(
-                            "Failed to create a sandbox for an agent terminal command: {error:?}"
+                            "为代理终端命令创建沙箱失败:{error:?}"
                         );
                         return Err(format!(
-                            "Cannot create a sandbox for this command: {}",
+                            "无法为此命令创建沙箱:{}",
                             error.user_facing_message()
                         ));
                     }
@@ -853,7 +853,7 @@ async fn run_terminal_tool(
     // the sandbox-creation fallback happens here, around `create_terminal`. The
     // user gets the same choices via `authorize_sandbox_fallback` (retry / run
     // unsandboxed once / for this thread / always / deny), and a chosen
-    // "run unsandboxed" is recorded in `sandbox_not_applied` exactly as on
+    // "无沙箱运行" is recorded in `sandbox_not_applied` exactly as on
     // Linux so the model and UI are told the command ran without a sandbox.
     #[cfg(target_os = "windows")]
     let terminal = {
@@ -890,7 +890,7 @@ async fn run_terminal_tool(
                 return Err(format!("{error:#}"));
             };
             let sandbox_error = acp_thread::LinuxWslSandboxError::Other(message);
-            log::warn!("Failed to create a WSL sandbox for an agent terminal command: {error:?}");
+            log::warn!("为代理终端命令创建 WSL 沙箱失败:{error:?}");
 
             let decision = cx
                 .update(|cx| {
@@ -1243,7 +1243,7 @@ genuinely need to run a Windows program, re-run with `unsandboxed: true`.";
 /// markers don't appear for ordinary Linux commands.
 #[cfg(target_os = "windows")]
 fn wsl_interop_blocked(content: &str) -> bool {
-    content.contains("UtilGetPpid") || content.contains("Failed to parse: /proc/1/stat")
+    content.contains("UtilGetPpid") || content.contains("解析失败:/proc/1/stat")
 }
 
 fn process_content(
@@ -1269,7 +1269,7 @@ fn process_content(
     let content = format!("```\n{content}\n```");
     let content = if output.truncated {
         format!(
-            "Command output too long. The first {} bytes:\n\n{content}",
+            "命令输出过长。前 {} 字节:\n\n{content}",
             content.len(),
         )
     } else {
@@ -1291,10 +1291,10 @@ fn process_content(
         }
     } else if timed_out {
         if is_empty {
-            format!("Command \"{command}\" timed out. No output was captured.")
+            format!("命令 \"{command}\" 超时。未捕获到输出。")
         } else {
             format!(
-                "Command \"{command}\" timed out. Output captured before timeout:\n\n{}",
+                "命令 \"{command}\" 超时。超时前捕获的输出:\n\n{}",
                 content
             )
         }
@@ -1303,32 +1303,32 @@ fn process_content(
         match exit_code {
             Some(0) => {
                 if is_empty {
-                    "Command executed successfully.".to_string()
+                    "命令执行成功。".to_string()
                 } else {
                     content
                 }
             }
             Some(exit_code) if interop_blocked => {
                 format!(
-                    "Command \"{command}\" failed with exit code {exit_code}. {WSL_INTEROP_BLOCKED_NOTE}\n\n{content}"
+                    "命令 \"{command}\" 以退出码 {exit_code} 失败。{WSL_INTEROP_BLOCKED_NOTE}\n\n{content}"
                 )
             }
             Some(exit_code) => {
                 if is_empty {
-                    format!("Command \"{command}\" failed with exit code {}.", exit_code)
+                    format!("命令 \"{command}\" 以退出码 {} 失败。", exit_code)
                 } else {
                     format!(
-                        "Command \"{command}\" failed with exit code {}.\n\n{content}",
+                        "命令 \"{command}\" 以退出码 {} 失败。\n\n{content}",
                         exit_code
                     )
                 }
             }
             None => {
                 if is_empty {
-                    "Command terminated unexpectedly. No output was captured.".to_string()
+                    "命令意外终止。未捕获到输出。".to_string()
                 } else {
                     format!(
-                        "Command terminated unexpectedly. Output captured:\n\n{}",
+                        "命令意外终止。捕获的输出:\n\n{}",
                         content
                     )
                 }
@@ -1348,7 +1348,7 @@ fn working_dir(cd: &str, project: &Entity<Project>, cx: &mut App) -> Result<Opti
             Some(worktree) => {
                 anyhow::ensure!(
                     worktrees.next().is_none(),
-                    "'.' is ambiguous in multi-root workspaces. Please specify a root directory explicitly.",
+                    "在多根工作区中,'.' 存在歧义。请明确指定根目录。",
                 );
                 Ok(Some(worktree.read(cx).abs_path().to_path_buf()))
             }
@@ -1370,7 +1370,7 @@ fn working_dir(cd: &str, project: &Entity<Project>, cx: &mut App) -> Result<Opti
             return Ok(Some(dir));
         }
 
-        anyhow::bail!("`cd` directory {cd:?} was not in any root directory in the project.");
+        anyhow::bail!("`cd` 目录 {cd:?} 不在项目的任何根目录中。");
     }
 }
 
@@ -1435,106 +1435,106 @@ mod tests {
         assert_eq!(
             resolve_cd_in_worktrees("/b/worktree", Unix, &unix_roots),
             Some(PathBuf::from("/b/worktree")),
-            "a POSIX-absolute path resolves under a POSIX project path style even on a Windows host"
+            "即使在 Windows 主机上,POSIX 绝对路径也会在 POSIX 项目路径样式下解析"
         );
         assert_eq!(
             resolve_cd_in_worktrees("/a/worktree/src", Unix, &unix_roots),
             Some(PathBuf::from("/a/worktree/src")),
-            "an absolute path inside a worktree resolves to the same path"
+            "工作树内的绝对路径解析为相同路径"
         );
         assert_eq!(
             resolve_cd_in_worktrees("/elsewhere", Unix, &unix_roots),
             None,
-            "an absolute path outside every worktree is rejected"
+            "拒绝所有工作树之外的绝对路径"
         );
         assert_eq!(
             resolve_cd_in_worktrees("/a/worktree/src/../docs", Unix, &unix_roots),
             Some(PathBuf::from("/a/worktree/docs")),
-            "an absolute path that stays within its worktree via `..` resolves to the same path"
+            "通过 `..` 保持在自身工作树内的绝对路径解析为相同路径"
         );
         assert_eq!(
             resolve_cd_in_worktrees("/a/worktree/../escape", Unix, &unix_roots),
             None,
-            "an absolute path that escapes its worktree via `..` is rejected"
+            "拒绝通过 `..` 逃逸出其工作树的绝对路径"
         );
         assert_eq!(
             resolve_cd_in_worktrees("/a/worktree/../../b/worktree", Unix, &unix_roots),
             Some(PathBuf::from("/b/worktree")),
-            "a path whose `..` components lexically resolve into a valid worktree is accepted"
+            "其 `..` 组件在词法上解析为有效工作树的路径被接受"
         );
         assert_eq!(
             resolve_cd_in_worktrees("/a/worktree//src/", Unix, &unix_roots),
             Some(PathBuf::from("/a/worktree/src")),
-            "doubled and trailing separators are normalized away"
+            "重复和尾随分隔符被规范化移除"
         );
 
         // relative root names
         assert_eq!(
             resolve_cd_in_worktrees("worktree", Unix, &unix_roots),
             Some(PathBuf::from("/a/worktree")),
-            "a root-relative path to a worktree root resolves to the first matching worktree"
+            "指向工作树根的根相对路径解析为第一个匹配的工作树"
         );
         assert_eq!(
             resolve_cd_in_worktrees("worktree/src", Unix, &unix_roots),
             Some(PathBuf::from("/a/worktree/src")),
-            "a root-relative path to a subdirectory resolves to the absolute path"
+            "指向子目录的根相对路径解析为绝对路径"
         );
         assert_eq!(
             resolve_cd_in_worktrees("worktree/src/../doc", Unix, &unix_roots),
             Some(PathBuf::from("/a/worktree/doc")),
-            "a root-relative path to a subdirectory with `..` resolves to a clean absolute path"
+            "带有 `..` 的指向子目录的根相对路径解析为干净的绝对路径"
         );
         assert_eq!(
             resolve_cd_in_worktrees("worktree/../escape", Unix, &unix_roots),
             None,
-            "a root-relative path that escapes the worktree via `..` is rejected"
+            "拒绝通过 `..` 逃逸出工作树的根相对路径"
         );
         assert_eq!(
             resolve_cd_in_worktrees("worktreeextra", Unix, &unix_roots),
             None,
-            "a root-relative path that is not any of the worktree roots is rejected"
+            "拒绝不是任何工作树根的根相对路径"
         );
         assert_eq!(
             resolve_cd_in_worktrees("./worktree", Unix, &unix_roots),
             Some(PathBuf::from("/a/worktree")),
-            "a leading `./` is normalized away"
+            "前导 `./` 被规范化移除"
         );
 
         // Windows paths
         assert_eq!(
             resolve_cd_in_worktrees("C:\\work\\worktree", Windows, &windows_roots),
             Some(PathBuf::from("C:\\work\\worktree")),
-            "Windows-absolute paths to root directories resolve"
+            "指向根目录的 Windows 绝对路径可解析"
         );
         assert_eq!(
             resolve_cd_in_worktrees("C:/work/worktree", Windows, &windows_roots),
             Some(PathBuf::from("C:\\work\\worktree")),
-            "forward-slash separators match a backslash-stored root"
+            "正斜杠分隔符与反斜杠存储的根匹配"
         );
         assert_eq!(
             resolve_cd_in_worktrees("c:\\work\\worktree", Windows, &windows_roots),
             Some(PathBuf::from("C:\\work\\worktree")),
-            "drive letters match case-insensitively"
+            "驱动器号不区分大小写匹配"
         );
         assert_eq!(
             resolve_cd_in_worktrees("C:/work/worktree/src", Windows, &windows_roots),
             Some(PathBuf::from("C:\\work\\worktree\\src")),
-            "Windows-absolute paths to subdirectories resolve regardless of separator style"
+            "指向子目录的 Windows 绝对路径无论分隔符样式如何均可解析"
         );
         assert_eq!(
             resolve_cd_in_worktrees("worktree\\src", Windows, &windows_roots),
             Some(PathBuf::from("C:\\work\\worktree\\src")),
-            "Windows-relative paths to subdirectories resolve to the absolute path"
+            "指向子目录的 Windows 相对路径解析为绝对路径"
         );
         assert_eq!(
             resolve_cd_in_worktrees("worktree/src", Windows, &windows_roots),
             Some(PathBuf::from("C:\\work\\worktree\\src")),
-            "forward-slash relative paths resolve under a Windows path style"
+            "正斜杠相对路径在 Windows 路径样式下解析"
         );
         assert_eq!(
             resolve_cd_in_worktrees("C:\\work\\worktree\\..\\escape", Windows, &windows_roots),
             None,
-            "a Windows-absolute path that escapes its worktree via `..` is rejected"
+            "拒绝通过 `..` 逃逸出其工作树的 Windows 绝对路径"
         );
     }
 
@@ -1550,27 +1550,27 @@ mod tests {
 
         let title = format_initial_title(Ok(input));
 
-        assert!(title.contains("nix run"), "Should show nix run command");
-        assert!(title.contains("sleep 5"), "Should show sleep command");
-        assert!(title.contains("cat /tmp"), "Should show cat command");
+        assert!(title.contains("nix run"), "应显示 nix run 命令");
+        assert!(title.contains("sleep 5"), "应显示 sleep 命令");
+        assert!(title.contains("cat /tmp"), "应显示 cat 命令");
         assert!(
             title.contains("pkill"),
-            "Critical: pkill command MUST be visible"
+            "关键:pkill 命令必须可见"
         );
 
         assert!(
-            !title.contains("more line"),
-            "Should NOT contain truncation text"
+            !title.contains("更多行"),
+            "不应包含截断文本"
         );
         assert!(
             !title.contains("…") && !title.contains("..."),
-            "Should NOT contain ellipsis"
+            "不应包含省略号"
         )
     }
 
     #[test]
     fn test_process_content_user_stopped() {
-        let output = acp::TerminalOutputResponse::new("partial output".to_string(), false);
+        let output = acp::TerminalOutputResponse::new("部分输出".to_string(), false);
 
         let result = process_content(
             output,
@@ -1581,18 +1581,18 @@ mod tests {
         );
 
         assert!(
-            result.contains("user stopped"),
-            "Expected 'user stopped' message, got: {}",
+            result.contains("用户已停止"),
+            "预期收到“用户已停止”消息,实际收到:{}",
             result
         );
         assert!(
-            result.contains("partial output"),
-            "Expected output to be included, got: {}",
+            result.contains("部分输出"),
+            "预期包含输出,实际收到:{}",
             result
         );
         assert!(
-            result.contains("ask them what they would like to do"),
-            "Should instruct agent to ask user, got: {}",
+            result.contains("询问他们想做什么"),
+            "应指示代理询问用户,实际收到:{}",
             result
         );
     }
@@ -1617,27 +1617,27 @@ mod tests {
             let title = format_initial_title(Ok(input));
 
             if cmd.contains("rm -rf") {
-                assert!(title.contains("rm -rf"), "Dangerous rm -rf must be visible");
+                assert!(title.contains("rm -rf"), "危险的 rm -rf 必须可见");
             }
             if cmd.contains("sudo") {
-                assert!(title.contains("sudo"), "sudo command must be visible");
+                assert!(title.contains("sudo"), "sudo 命令必须可见");
             }
             if cmd.contains("curl") && cmd.contains("bash") {
                 assert!(
                     title.contains("curl") && title.contains("bash"),
-                    "Pipe to bash must be visible"
+                    "管道到 bash 必须可见"
                 );
             }
             if cmd.contains("-delete") {
                 assert!(
                     title.contains("-delete"),
-                    "Delete operation must be visible"
+                    "删除操作必须可见"
                 );
             }
 
             assert!(
-                !title.contains("more line"),
-                "Command '{}' should NOT be truncated",
+                !title.contains("更多行"),
+                "命令 '{}' 不应被截断",
                 cmd
             );
         }
@@ -1655,7 +1655,7 @@ mod tests {
         let title = format_initial_title(Ok(input));
 
         assert!(title.contains("echo 'hello world'"));
-        assert!(!title.contains("more line"));
+        assert!(!title.contains("更多行"));
     }
 
     #[test]
@@ -1687,7 +1687,7 @@ mod tests {
         assert!(title.contains("Line 0"));
         assert!(title.contains("Line 49"));
 
-        assert!(!title.contains("more line"));
+        assert!(!title.contains("更多行"));
     }
 
     fn format_initial_title(input: Result<TerminalToolInput, serde_json::Value>) -> String {
@@ -1811,7 +1811,7 @@ mod tests {
 
         let result = process_content(
             output,
-            "printf lines",
+            "printf 行",
             false,
             false,
             TerminalOutputSelection {
@@ -1830,7 +1830,7 @@ mod tests {
 
         let result = process_content(
             output,
-            "failing command",
+            "失败的命令",
             false,
             false,
             TerminalOutputSelection {
@@ -1839,7 +1839,7 @@ mod tests {
             },
         );
 
-        assert!(result.contains("failed with exit code 1"));
+        assert!(result.contains("以退出码 1 失败"));
         assert!(result.contains("three"));
         assert!(!result.contains("one"));
         assert!(!result.contains("two"));
@@ -1851,7 +1851,7 @@ mod tests {
 
         let result = process_content(
             output,
-            "slow command",
+            "慢速命令",
             true,
             false,
             TerminalOutputSelection {
@@ -1860,7 +1860,7 @@ mod tests {
             },
         );
 
-        assert!(result.contains("timed out"));
+        assert!(result.contains("超时"));
         assert!(result.contains("one"));
         assert!(!result.contains("two"));
         assert!(!result.contains("three"));
@@ -1872,7 +1872,7 @@ mod tests {
 
         let result = process_content(
             output,
-            "stopped command",
+            "已停止的命令",
             false,
             true,
             TerminalOutputSelection {
@@ -1881,8 +1881,8 @@ mod tests {
             },
         );
 
-        assert!(result.contains("user stopped"));
-        assert!(result.contains("ask them what they would like to do"));
+        assert!(result.contains("用户已停止"));
+        assert!(result.contains("询问他们想做什么"));
         assert!(result.contains("three"));
         assert!(!result.contains("one"));
         assert!(!result.contains("two"));
@@ -1895,7 +1895,7 @@ mod tests {
 
         let result = process_content(
             output,
-            "printf lines",
+            "printf 行",
             false,
             false,
             TerminalOutputSelection {
@@ -1904,7 +1904,7 @@ mod tests {
             },
         );
 
-        assert!(!result.contains("Showing"));
+        assert!(!result.contains("显示"));
         assert!(!result.contains("first"));
         assert!(!result.contains("last"));
     }
@@ -1922,20 +1922,20 @@ mod tests {
         );
 
         assert!(
-            result.contains("user stopped"),
-            "Expected 'user stopped' message, got: {}",
+            result.contains("用户已停止"),
+            "预期收到“用户已停止”消息,实际收到:{}",
             result
         );
         assert!(
-            result.contains("No output was captured"),
-            "Expected 'No output was captured', got: {}",
+            result.contains("未捕获到输出"),
+            "预期收到“未捕获到输出”,实际收到:{}",
             result
         );
     }
 
     #[test]
     fn test_process_content_timed_out() {
-        let output = acp::TerminalOutputResponse::new("build output here".to_string(), false);
+        let output = acp::TerminalOutputResponse::new("构建输出在此处".to_string(), false);
 
         let result = process_content(
             output,
@@ -1946,13 +1946,13 @@ mod tests {
         );
 
         assert!(
-            result.contains("timed out"),
-            "Expected 'timed out' message for timeout, got: {}",
+            result.contains("超时"),
+            "预期收到“超时”消息,实际收到:{}",
             result
         );
         assert!(
-            result.contains("build output here"),
-            "Expected output to be included, got: {}",
+            result.contains("构建输出在此处"),
+            "预期包含输出,实际收到:{}",
             result
         );
     }
@@ -1970,20 +1970,20 @@ mod tests {
         );
 
         assert!(
-            result.contains("timed out"),
-            "Expected 'timed out' for timeout, got: {}",
+            result.contains("超时"),
+            "预期收到“超时”,实际收到:{}",
             result
         );
         assert!(
-            result.contains("No output was captured"),
-            "Expected 'No output was captured' for empty output, got: {}",
+            result.contains("未捕获到输出"),
+            "预期空输出时显示'未捕获到输出',实际得到: {}",
             result
         );
     }
 
     #[test]
     fn test_process_content_with_success() {
-        let output = acp::TerminalOutputResponse::new("success output".to_string(), false)
+        let output = acp::TerminalOutputResponse::new("成功输出".to_string(), false)
             .exit_status(acp::TerminalExitStatus::new().exit_code(0));
 
         let result = process_content(
@@ -1995,13 +1995,13 @@ mod tests {
         );
 
         assert!(
-            result.contains("success output"),
-            "Expected output to be included, got: {}",
+            result.contains("成功输出"),
+            "预期包含输出,实际收到:{}",
             result
         );
         assert!(
             !result.contains("failed"),
-            "Success should not say 'failed', got: {}",
+            "成功不应显示'失败',实际得到: {}",
             result
         );
     }
@@ -2020,15 +2020,15 @@ mod tests {
         );
 
         assert!(
-            result.contains("executed successfully"),
-            "Expected success message for empty output, got: {}",
+            result.contains("执行成功"),
+            "预期空输出时显示成功消息,实际得到: {}",
             result
         );
     }
 
     #[test]
     fn test_process_content_with_error_exit() {
-        let output = acp::TerminalOutputResponse::new("error output".to_string(), false)
+        let output = acp::TerminalOutputResponse::new("错误输出".to_string(), false)
             .exit_status(acp::TerminalExitStatus::new().exit_code(1));
 
         let result = process_content(
@@ -2040,13 +2040,13 @@ mod tests {
         );
 
         assert!(
-            result.contains("failed with exit code 1"),
-            "Expected failure message, got: {}",
+            result.contains("以退出码 1 失败"),
+            "预期失败消息,实际得到: {}",
             result
         );
         assert!(
-            result.contains("error output"),
-            "Expected output to be included, got: {}",
+            result.contains("错误输出"),
+            "预期包含输出,实际收到:{}",
             result
         );
     }
@@ -2065,15 +2065,15 @@ mod tests {
         );
 
         assert!(
-            result.contains("failed with exit code 1"),
-            "Expected failure message, got: {}",
+            result.contains("以退出码 1 失败"),
+            "预期失败消息,实际得到: {}",
             result
         );
     }
 
     #[test]
     fn test_process_content_unexpected_termination() {
-        let output = acp::TerminalOutputResponse::new("some output".to_string(), false);
+        let output = acp::TerminalOutputResponse::new("一些输出".to_string(), false);
 
         let result = process_content(
             output,
@@ -2084,13 +2084,13 @@ mod tests {
         );
 
         assert!(
-            result.contains("terminated unexpectedly"),
-            "Expected 'terminated unexpectedly' message, got: {}",
+            result.contains("意外终止"),
+            "预期'意外终止'消息,实际得到: {}",
             result
         );
         assert!(
-            result.contains("some output"),
-            "Expected output to be included, got: {}",
+            result.contains("一些输出"),
+            "预期包含输出,实际收到:{}",
             result
         );
     }
@@ -2108,13 +2108,13 @@ mod tests {
         );
 
         assert!(
-            result.contains("terminated unexpectedly"),
-            "Expected 'terminated unexpectedly' message, got: {}",
+            result.contains("意外终止"),
+            "预期'意外终止'消息,实际得到: {}",
             result
         );
         assert!(
-            result.contains("No output was captured"),
-            "Expected 'No output was captured' for empty output, got: {}",
+            result.contains("未捕获到输出"),
+            "预期空输出时显示'未捕获到输出',实际得到: {}",
             result
         );
     }
@@ -2159,21 +2159,21 @@ mod tests {
         });
 
         let result = task.await;
-        let error = result.expect_err("expected invalid terminal command to be rejected");
+        let error = result.expect_err("预期无效的终端命令会被拒绝");
         assert!(
-            error.contains("does not allow shell substitutions or interpolations"),
-            "expected explicit invalid-command message, got: {error}"
+            error.contains("不允许 Shell 替换或插值"),
+            "预期明确的无效命令消息,实际得到: {error}"
         );
         assert!(
             environment.terminal_creation_count() == 0,
-            "terminal should not be created for invalid commands"
+            "无效命令不应创建终端"
         );
         assert!(
             !matches!(
                 rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "invalid command should not request authorization"
+            "无效命令不应请求授权"
         );
         assert!(
             !matches!(
@@ -2182,7 +2182,7 @@ mod tests {
                     acp_thread::ToolCallUpdate::UpdateFields(_)
                 )))
             ),
-            "invalid command should not emit a terminal card update"
+            "无效命令不应发出终端卡片更新"
         );
     }
 
@@ -2233,19 +2233,19 @@ mod tests {
                     .iter()
                     .any(|content| matches!(content, acp::ToolCallContent::Terminal(_)))
             }),
-            "expected terminal content update in unconditional allow-all mode"
+            "预期在无条件允许全部模式下更新终端内容"
         );
 
         let result = task
             .await
-            .expect("command should proceed in unconditional allow-all mode");
+            .expect("命令应在无条件允许全部模式下继续执行");
         assert!(
             environment.terminal_creation_count() == 1,
-            "terminal should be created exactly once"
+            "终端应恰好创建一次"
         );
         assert!(
-            !result.contains("could not be approved"),
-            "unexpected invalid-command rejection output: {result}"
+            !result.contains("无法批准"),
+            "意外的无效命令拒绝输出: {result}"
         );
     }
 
@@ -2290,21 +2290,21 @@ mod tests {
 
         let error = task
             .await
-            .expect_err("hardcoded denial should override unconditional allow-all");
+            .expect_err("硬编码拒绝应覆盖无条件允许全部");
         assert!(
-            error.contains("built-in security rule"),
-            "expected hardcoded denial message, got: {error}"
+            error.contains("内置安全规则"),
+            "预期硬编码拒绝消息,实际得到: {error}"
         );
         assert!(
             environment.terminal_creation_count() == 0,
-            "hardcoded denial should prevent terminal creation"
+            "硬编码拒绝应阻止终端创建"
         );
         assert!(
             !matches!(
                 rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "hardcoded denial should not request authorization"
+            "硬编码拒绝不应请求授权"
         );
     }
 
@@ -2365,19 +2365,19 @@ mod tests {
                     .iter()
                     .any(|content| matches!(content, acp::ToolCallContent::Terminal(_)))
             }),
-            "expected terminal content update for matching env-prefixed allow rule"
+            "预期匹配环境变量前缀允许规则时更新终端内容"
         );
 
         let result = task
             .await
-            .expect("expected env-prefixed command to be allowed");
+            .expect("预期带环境变量前缀的命令被允许");
         assert!(
             environment.terminal_creation_count() == 1,
-            "terminal should be created for allowed env-prefixed command"
+            "应为允许的带环境变量前缀的命令创建终端"
         );
         assert!(
-            result.contains("command output") || result.contains("Command executed successfully."),
-            "unexpected terminal result: {result}"
+            result.contains("命令输出") || result.contains("命令执行成功。"),
+            "意外的终端结果: {result}"
         );
     }
 
@@ -2415,7 +2415,7 @@ mod tests {
         let task = cx.update(|cx| {
             tool.run(
                 crate::ToolInput::resolved(TerminalToolInput {
-                    command: "printf lines".to_string(),
+                    command: "printf 行".to_string(),
                     cd: "root".to_string(),
                     timeout_ms: None,
                     head_lines: Some(1),
@@ -2433,10 +2433,10 @@ mod tests {
                     .iter()
                     .any(|content| matches!(content, acp::ToolCallContent::Terminal(_)))
             }),
-            "expected terminal content update"
+            "预期终端内容更新"
         );
 
-        let result = task.await.expect("terminal command should succeed");
+        let result = task.await.expect("终端命令应成功");
         assert_eq!(result, "```\none\n\nfive\n```");
         assert_eq!(environment.terminal_output_limits(), vec![None]);
     }
@@ -2451,7 +2451,7 @@ mod tests {
         fs.insert_tree("/root", serde_json::json!({})).await;
         let project = project::Project::test(fs, ["/root".as_ref()], cx).await;
 
-        let output = acp::TerminalOutputResponse::new("command output".to_string(), false)
+        let output = acp::TerminalOutputResponse::new("命令输出".to_string(), false)
             .exit_status(acp::TerminalExitStatus::new().exit_code(0));
         let environment = std::rc::Rc::new(cx.update(|cx| {
             crate::tests::FakeThreadEnvironment::default().with_terminal(
@@ -2485,7 +2485,7 @@ mod tests {
         });
 
         rx.expect_update_fields().await;
-        let result = task.await.expect("terminal command should succeed");
+        let result = task.await.expect("终端命令应成功");
         assert_eq!(result, "```\ncommand output\n```");
         assert_eq!(
             environment.terminal_output_limits(),
@@ -2547,7 +2547,7 @@ mod tests {
         let _auth = rx.expect_authorization().await;
         assert!(
             environment.terminal_creation_count() == 0,
-            "confirm flow should not create terminal before authorization"
+            "确认流程不应在授权前创建终端"
         );
     }
 
@@ -2557,27 +2557,27 @@ mod tests {
 
         assert!(
             description.contains("$VAR"),
-            "missing $VAR example: {description}"
+            "缺少 $VAR 示例: {description}"
         );
         assert!(
             description.contains("${VAR}"),
-            "missing ${{VAR}} example: {description}"
+            "缺少 ${{VAR}} 示例: {description}"
         );
         assert!(
             description.contains("$(...)"),
-            "missing $(...) example: {description}"
+            "缺少 $(...) 示例: {description}"
         );
         assert!(
             description.contains("backticks"),
-            "missing backticks example: {description}"
+            "缺少反引号示例: {description}"
         );
         assert!(
             description.contains("$((...))"),
-            "missing $((...)) example: {description}"
+            "缺少 $((...)) 示例: {description}"
         );
         assert!(
             description.contains("<(...)") && description.contains(">(...)"),
-            "missing process substitution examples: {description}"
+            "缺少进程替换示例: {description}"
         );
     }
 
@@ -2586,32 +2586,32 @@ mod tests {
         let schema = <TerminalTool as crate::AgentTool>::input_schema(
             language_model::LanguageModelToolSchemaFormat::JsonSchema,
         );
-        let schema_json = serde_json::to_value(schema).expect("schema should serialize");
+        let schema_json = serde_json::to_value(schema).expect("模式应能序列化");
         let schema_text = schema_json.to_string();
 
         assert!(
             schema_text.contains("$VAR"),
-            "missing $VAR example: {schema_text}"
+            "缺少 $VAR 示例: {schema_text}"
         );
         assert!(
             schema_text.contains("${VAR}"),
-            "missing ${{VAR}} example: {schema_text}"
+            "缺少 ${{VAR}} 示例: {schema_text}"
         );
         assert!(
             schema_text.contains("$(...)"),
-            "missing $(...) example: {schema_text}"
+            "缺少 $(...) 示例: {schema_text}"
         );
         assert!(
             schema_text.contains("backticks"),
-            "missing backticks example: {schema_text}"
+            "缺少反引号示例: {schema_text}"
         );
         assert!(
             schema_text.contains("$((...))"),
-            "missing $((...)) example: {schema_text}"
+            "缺少 $((...)) 示例: {schema_text}"
         );
         assert!(
             schema_text.contains("<(...)") && schema_text.contains(">(...)"),
-            "missing process substitution examples: {schema_text}"
+            "缺少进程替换示例: {schema_text}"
         );
     }
 
@@ -2621,9 +2621,9 @@ mod tests {
 
         assert!(description.contains("head_lines"));
         assert!(description.contains("tail_lines"));
-        assert!(description.contains("Do not pipe output to `head`, `tail`, or similar"));
-        assert!(description.contains("visible to the user in real time"));
-        assert!(description.contains("waste tokens or exceed the context window"));
+        assert!(description.contains("不要将输出通过管道传递给 `head`、`tail` 或类似命令"));
+        assert!(description.contains("对用户实时可见"));
+        assert!(description.contains("浪费令牌或超出上下文窗口"));
     }
 
     #[test]
@@ -2631,14 +2631,14 @@ mod tests {
         let schema = <TerminalTool as crate::AgentTool>::input_schema(
             language_model::LanguageModelToolSchemaFormat::JsonSchema,
         );
-        let schema_json = serde_json::to_value(schema).expect("schema should serialize");
+        let schema_json = serde_json::to_value(schema).expect("模式应能序列化");
         let schema_text = schema_json.to_string();
 
         assert!(schema_text.contains("head_lines"));
         assert!(schema_text.contains("tail_lines"));
-        assert!(schema_text.contains("Do not pipe output to `head`"));
-        assert!(schema_text.contains("Do not pipe output to `tail`"));
-        assert!(schema_text.contains("waste tokens or exceed the context window"));
+        assert!(schema_text.contains("不要将输出通过管道传递给 `head`"));
+        assert!(schema_text.contains("不要将输出通过管道传递给 `tail`"));
+        assert!(schema_text.contains("浪费令牌或超出上下文窗口"));
     }
 
     async fn assert_rejected_before_terminal_creation(
@@ -2681,19 +2681,19 @@ mod tests {
         let result = task.await;
         let error = result.unwrap_err();
         assert!(
-            error.contains("does not allow shell substitutions or interpolations"),
-            "command {command:?} should be rejected with substitution message, got: {error}"
+            error.contains("不允许 Shell 替换或插值"),
+            "命令 {command:?} 应因替换消息被拒绝,实际得到: {error}"
         );
         assert!(
             environment.terminal_creation_count() == 0,
-            "no terminal should be created for rejected command {command:?}"
+            "不应为被拒绝的命令 {command:?} 创建终端"
         );
         assert!(
             !matches!(
                 rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "rejected command {command:?} should not request authorization"
+            "被拒绝的命令 {command:?} 不应请求授权"
         );
     }
 
@@ -2853,19 +2853,19 @@ mod tests {
                     .iter()
                     .any(|content| matches!(content, acp::ToolCallContent::Terminal(_)))
             }),
-            "terminal-specific allow-all should bypass substitution rejection"
+            "终端特定的允许全部应绕过替换拒绝"
         );
 
         let result = task
             .await
-            .expect("terminal-specific allow-all should let the command proceed");
+            .expect("终端特定的允许全部应让命令继续执行");
         assert!(
             environment.terminal_creation_count() == 1,
-            "terminal should be created exactly once"
+            "终端应恰好创建一次"
         );
         assert!(
-            !result.contains("could not be approved"),
-            "unexpected rejection output: {result}"
+            !result.contains("无法批准"),
+            "意外的拒绝输出: {result}"
         );
     }
 
@@ -2921,16 +2921,16 @@ mod tests {
 
         let error = task
             .await
-            .expect_err("different env-var value should not match allow pattern");
+            .expect_err("不同的环境变量值不应匹配允许模式");
         assert!(
-            error.contains("could not be approved")
+            error.contains("无法批准")
                 || error.contains("denied")
                 || error.contains("disabled"),
-            "expected denial for mismatched env value, got: {error}"
+            "预期不匹配的环境变量值被拒绝,实际得到: {error}"
         );
         assert!(
             environment.terminal_creation_count() == 0,
-            "terminal should not be created for non-matching env value"
+            "不应为不匹配的环境变量值创建终端"
         );
     }
 
@@ -2993,19 +2993,19 @@ mod tests {
                     .iter()
                     .any(|content| matches!(content, acp::ToolCallContent::Terminal(_)))
             }),
-            "multi-assignment pattern should match and produce terminal content"
+            "多赋值模式应匹配并产生终端内容"
         );
 
         let result = task
             .await
-            .expect("multi-assignment command matching pattern should be allowed");
+            .expect("匹配模式的多赋值命令应被允许");
         assert!(
             environment.terminal_creation_count() == 1,
-            "terminal should be created for matching multi-assignment command"
+            "应为匹配的多赋值命令创建终端"
         );
         assert!(
-            result.contains("command output") || result.contains("Command executed successfully."),
-            "unexpected terminal result: {result}"
+            result.contains("命令输出") || result.contains("命令执行成功。"),
+            "意外的终端结果: {result}"
         );
     }
 
@@ -3071,19 +3071,19 @@ mod tests {
                     .iter()
                     .any(|content| matches!(content, acp::ToolCallContent::Terminal(_)))
             }),
-            "quoted whitespace value should match pattern with quoted form"
+            "带引号的空白值应匹配带引号形式的模式"
         );
 
         let result = task
             .await
-            .expect("quoted whitespace env value matching pattern should be allowed");
+            .expect("匹配模式的带引号空白环境变量值应被允许");
         assert!(
             environment.terminal_creation_count() == 1,
-            "terminal should be created for matching quoted-value command"
+            "应为匹配的带引号值命令创建终端"
         );
         assert!(
-            result.contains("command output") || result.contains("Command executed successfully."),
-            "unexpected terminal result: {result}"
+            result.contains("命令输出") || result.contains("命令执行成功。"),
+            "意外的终端结果: {result}"
         );
     }
 
@@ -3209,23 +3209,23 @@ mod tests {
             .expect("input schema should serialize");
         assert!(
             schema.contains("allow_hosts"),
-            "schema should advertise allow_hosts: {schema}"
+            "模式应声明 allow_hosts: {schema}"
         );
         assert!(
             schema.contains("allow_all_hosts"),
-            "schema should advertise allow_all_hosts: {schema}"
+            "模式应声明 allow_all_hosts: {schema}"
         );
         assert!(
             schema.contains("fs_write_paths"),
-            "schema should advertise fs_write_paths: {schema}"
+            "模式应声明 fs_write_paths: {schema}"
         );
         assert!(
             schema.contains("allow_fs_write_all"),
-            "schema should advertise allow_fs_write_all: {schema}"
+            "模式应声明 allow_fs_write_all: {schema}"
         );
         assert!(
             schema.contains("unsandboxed"),
-            "schema should advertise unsandboxed: {schema}"
+            "模式应声明 unsandboxed: {schema}"
         );
     }
 
@@ -3234,12 +3234,12 @@ mod tests {
         // The model is expected to omit the sandbox fields entirely on most
         // calls. Make sure deserialization doesn't reject the minimal
         // payload and that the fields default to empty/`None` (which the tool
-        // interprets as "no escalation requested").
+        // interprets as "未请求权限提升").
         let input: SandboxedTerminalToolInput = serde_json::from_value(serde_json::json!({
             "command": "echo hi",
             "cd": ".",
         }))
-        .expect("minimal input should deserialize");
+        .expect("最小输入应能反序列化");
         assert!(input.allow_hosts.is_empty());
         assert_eq!(input.allow_all_hosts, None);
         assert!(input.fs_write_paths.is_empty());
@@ -3254,7 +3254,7 @@ mod tests {
             "cd": ".",
             "allow_fs_write": true,
         }))
-        .expect("legacy allow_fs_write should deserialize");
+        .expect("旧版 allow_fs_write 应能反序列化");
 
         assert_eq!(input.allow_fs_write_all, Some(true));
     }
@@ -3291,16 +3291,16 @@ mod tests {
             "command": "echo hi",
             "cd": "root",
             "allow_fs_write": true,
-            "reason": "needs to write outside the project",
+            "reason": "需要在项目外写入",
         }))
-        .expect("legacy allow_fs_write should deserialize");
+        .expect("旧版 allow_fs_write 应能反序列化");
 
         let task = cx.update(|cx| tool.run(crate::ToolInput::resolved(input), event_stream, cx));
 
         let authorization = receiver.expect_authorization().await;
         let details =
             acp_thread::sandbox_authorization_details_from_meta(&authorization.tool_call.meta)
-                .expect("legacy allow_fs_write should request sandbox authorization details");
+                .expect("旧版 allow_fs_write 应请求沙箱授权详情");
         assert!(details.network_hosts.is_empty());
         assert!(!details.network_all_hosts);
         assert!(details.allow_fs_write_all);
@@ -3308,7 +3308,7 @@ mod tests {
         assert!(details.write_paths.is_empty());
 
         let acp_thread::PermissionOptions::Flat(options) = &authorization.options else {
-            panic!("expected flat sandbox permission options");
+            panic!("预期扁平沙箱权限选项");
         };
         let options = options
             .iter()
@@ -3323,18 +3323,18 @@ mod tests {
         assert_eq!(
             options,
             vec![
-                ("allow", "Allow once", acp::PermissionOptionKind::AllowOnce),
+                ("allow", "允许一次", acp::PermissionOptionKind::AllowOnce),
                 (
                     "allow_thread",
-                    "Allow for this thread",
+                    "允许此对话线程",
                     acp::PermissionOptionKind::AllowAlways,
                 ),
                 (
                     "allow_always",
-                    "Allow always",
+                    "始终允许",
                     acp::PermissionOptionKind::AllowAlways,
                 ),
-                ("deny", "Deny", acp::PermissionOptionKind::RejectOnce),
+                ("deny", "拒绝", acp::PermissionOptionKind::RejectOnce),
             ]
         );
 
@@ -3344,12 +3344,12 @@ mod tests {
                 acp::PermissionOptionId::new("deny"),
                 acp::PermissionOptionKind::RejectOnce,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
 
         let result = task
             .await
-            .expect("denied sandbox request returns model-readable output");
-        assert!(result.contains("user denied the requested sandbox permissions"));
+            .expect("被拒绝的沙箱请求返回模型可读的输出");
+        assert!(result.contains("用户拒绝了请求的沙箱权限"));
         assert_eq!(environment.terminal_creation_count(), 0);
     }
 
@@ -3385,9 +3385,9 @@ mod tests {
             "allow_all_hosts": true,
             "allow_fs_write_all": true,
             "unsandboxed": true,
-            "reason": "needs full access for this task",
+            "reason": "此任务需要完全访问权限",
         }))
-        .expect("unsandboxed input should deserialize");
+        .expect("unsandboxed 输入应能反序列化");
 
         let task = cx.update(|cx| tool.run(crate::ToolInput::resolved(input), event_stream, cx));
 
@@ -3397,7 +3397,7 @@ mod tests {
         assert_eq!(authorization.tool_call.fields.title, None);
         let details =
             acp_thread::sandbox_authorization_details_from_meta(&authorization.tool_call.meta)
-                .expect("unsandboxed should request sandbox authorization details");
+                .expect("unsandboxed 应请求沙箱授权详情");
         assert!(details.network_hosts.is_empty());
         assert!(!details.network_all_hosts);
         assert!(!details.allow_fs_write_all);
@@ -3405,7 +3405,7 @@ mod tests {
         assert!(details.write_paths.is_empty());
 
         let acp_thread::PermissionOptions::Flat(options) = &authorization.options else {
-            panic!("expected flat sandbox permission options");
+            panic!("预期扁平沙箱权限选项");
         };
         let options = options
             .iter()
@@ -3420,18 +3420,18 @@ mod tests {
         assert_eq!(
             options,
             vec![
-                ("allow", "Allow once", acp::PermissionOptionKind::AllowOnce),
+                ("allow", "允许一次", acp::PermissionOptionKind::AllowOnce),
                 (
                     "allow_thread",
-                    "Allow for this thread",
+                    "允许此对话线程",
                     acp::PermissionOptionKind::AllowAlways,
                 ),
                 (
                     "allow_always",
-                    "Allow always",
+                    "始终允许",
                     acp::PermissionOptionKind::AllowAlways,
                 ),
-                ("deny", "Deny", acp::PermissionOptionKind::RejectOnce),
+                ("deny", "拒绝", acp::PermissionOptionKind::RejectOnce),
             ]
         );
 
@@ -3441,16 +3441,16 @@ mod tests {
                 acp::PermissionOptionId::new("deny"),
                 acp::PermissionOptionKind::RejectOnce,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
 
         let result = task
             .await
-            .expect("denied sandbox request returns model-readable output");
-        assert!(result.contains("user denied permission to run outside the sandbox"));
+            .expect("被拒绝的沙箱请求返回模型可读的输出");
+        assert!(result.contains("用户拒绝了在沙箱外运行的权限"));
         assert_eq!(environment.terminal_creation_count(), 0);
     }
 
-    /// Regression test: choosing "Allow always" on a sandbox prompt must persist
+    /// Regression test: choosing "始终允许" on a sandbox prompt must persist
     /// the grant to settings *only* — it must not also cache an in-memory thread
     /// grant. Otherwise removing the entry from settings.json wouldn't revoke it
     /// within the same conversation, and a later identical command would run
@@ -3491,7 +3491,7 @@ mod tests {
             "reason": "needs to write build artifacts",
         });
 
-        // ---- First call: the user picks "Allow always".
+        // ---- First call: the user picks "始终允许".
         let environment = std::rc::Rc::new(cx.update(|cx| {
             crate::tests::FakeThreadEnvironment::default().with_terminal(
                 crate::tests::FakeTerminalHandle::new_with_immediate_exit(cx, 0),
@@ -3514,7 +3514,7 @@ mod tests {
                 acp::PermissionOptionId::new("allow_always"),
                 acp::PermissionOptionKind::AllowAlways,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
         task.await.expect("granted command should run");
         assert_eq!(environment.terminal_creation_count(), 1);
 
@@ -3567,11 +3567,11 @@ mod tests {
                 acp::PermissionOptionId::new("deny"),
                 acp::PermissionOptionKind::RejectOnce,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
         let result = task2
             .await
-            .expect("denied sandbox request returns model-readable output");
-        assert!(result.contains("user denied the requested sandbox permissions"));
+            .expect("被拒绝的沙箱请求返回模型可读的输出");
+        assert!(result.contains("用户拒绝了请求的沙箱权限"));
         assert_eq!(environment2.terminal_creation_count(), 0);
     }
 
@@ -3615,7 +3615,7 @@ mod tests {
         (tool, event_stream, receiver, environment)
     }
 
-    /// A standing "run unsandboxed for this thread" grant makes an ordinary
+    /// A standing "为此对话线程在沙箱外运行" grant makes an ordinary
     /// command (one that requests no escalation) run without a sandbox, and the
     /// model is told so in the output.
     #[gpui::test]

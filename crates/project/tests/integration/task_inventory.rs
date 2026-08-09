@@ -57,14 +57,14 @@ mod test_inventory {
                 .await
                 .into_iter()
                 .find(|(_, task)| task.label == task_name)
-                .unwrap_or_else(|| panic!("Failed to find task with name {task_name}"));
+                .unwrap_or_else(|| panic!("找不到名为 {task_name} 的任务"));
 
             let id_base = task_source_kind.to_id_base();
             inventory.update(&mut cx, |inventory, _| {
                 inventory.task_scheduled(
                     task_source_kind.clone(),
                     task.resolve_task(&id_base, &TaskContext::default())
-                        .unwrap_or_else(|| panic!("Failed to resolve task with name {task_name}")),
+                        .unwrap_or_else(|| panic!("无法解析名为 {task_name} 的任务")),
                 )
             });
         })
@@ -87,13 +87,13 @@ mod test_inventory {
                 .await
                 .into_iter()
                 .find(|(_, task)| task.label == task_name)
-                .unwrap_or_else(|| panic!("Failed to find task with name {task_name}"));
+                .unwrap_or_else(|| panic!("找不到名为 {task_name} 的任务"));
             let id_base = task_source_kind.to_id_base();
             inventory.update(&mut cx, |inventory, _| {
                 inventory.task_scheduled(
                     task_source_kind.clone(),
                     task.resolve_task(&id_base, &TaskContext::default())
-                        .unwrap_or_else(|| panic!("Failed to resolve task with name {task_name}")),
+                        .unwrap_or_else(|| panic!("无法解析名为 {task_name} 的任务")),
                 );
             });
         })
@@ -127,12 +127,12 @@ async fn test_task_list_sorting(cx: &mut TestAppContext) {
     let initial_tasks = resolved_task_names(&inventory, None, cx).await;
     assert!(
         initial_tasks.is_empty(),
-        "No tasks expected for empty inventory, but got {initial_tasks:?}"
+        "空清单不应有任务,但实际为 {initial_tasks:?}"
     );
     let initial_tasks = task_template_names(&inventory, None, cx).await;
     assert!(
         initial_tasks.is_empty(),
-        "No tasks expected for empty inventory, but got {initial_tasks:?}"
+        "空清单不应有任务,但实际为 {initial_tasks:?}"
     );
     cx.run_until_parked();
     let expected_initial_state = [
@@ -159,7 +159,7 @@ async fn test_task_list_sorting(cx: &mut TestAppContext) {
     assert_eq!(
         resolved_task_names(&inventory, None, cx).await,
         &expected_initial_state,
-        "Tasks with equal amount of usages should be sorted alphanumerically"
+        "使用次数相同的任务应按字母数字顺序排序"
     );
 
     register_task_used(&inventory, "2_task", cx).await;
@@ -193,7 +193,7 @@ async fn test_task_list_sorting(cx: &mut TestAppContext) {
             "2_task".to_string(),
             "1_a_task".to_string(),
         ],
-        "Most recently used task should be at the top"
+        "最近使用的任务应排在顶部"
     );
 
     let worktree_id = WorktreeId::from_usize(0);
@@ -217,7 +217,7 @@ async fn test_task_list_sorting(cx: &mut TestAppContext) {
             "2_task".to_string(),
             "1_a_task".to_string(),
         ],
-        "Most recently used task should be at the top"
+        "最近使用的任务应排在顶部"
     );
     assert_eq!(
         resolved_task_names(&inventory, Some(worktree_id), cx).await,
@@ -239,7 +239,7 @@ async fn test_task_list_sorting(cx: &mut TestAppContext) {
             "2_task".to_string(),
             "1_a_task".to_string(),
         ],
-        "Most recently used worktree task should be at the top"
+        "最近使用的工作树任务应排在顶部"
     );
 
     inventory.update(cx, |inventory, _| {
@@ -278,7 +278,7 @@ async fn test_task_list_sorting(cx: &mut TestAppContext) {
             "10_hello".to_string(),
             "11_hello".to_string(),
         ],
-        "After global tasks update, worktree task usage is not erased and it's the first still; global task is back to regular order as its file was updated"
+        "全局任务更新后,工作树任务的使用记录不会被清除,且仍排在首位;全局任务因其文件已更新而恢复常规顺序"
     );
 
     register_task_used(&inventory, "11_hello", cx).await;
@@ -516,7 +516,7 @@ async fn test_inventory_static_task_filters(cx: &mut TestAppContext) {
     assert_eq!(
         list_tasks_sorted_by_last_used(&inventory, None, cx).await,
         worktree_independent_tasks,
-        "Without a worktree, only worktree-independent tasks should be listed"
+        "没有工作树时,只应列出与工作树无关的任务"
     );
     assert_eq!(
         list_tasks_sorted_by_last_used(&inventory, Some(worktree_1), cx).await,
@@ -540,7 +540,7 @@ async fn test_inventory_static_task_filters(cx: &mut TestAppContext) {
     assert_eq!(
         list_tasks(&inventory, None, cx).await,
         worktree_independent_tasks,
-        "Without a worktree, only worktree-independent tasks should be listed"
+        "没有工作树时,只应列出与工作树无关的任务"
     );
     assert_eq!(
         list_tasks(&inventory, Some(worktree_1), cx).await,
@@ -580,7 +580,7 @@ async fn test_zed_tasks_take_precedence_over_vscode(cx: &mut TestAppContext) {
     assert_eq!(
         task_template_names(&inventory, Some(worktree_id), cx).await,
         vec!["vscode_task"],
-        "With only .vscode tasks, they should appear"
+        "只有 .vscode 任务时,它们应显示出来"
     );
 
     inventory.update(cx, |inventory, _| {
@@ -597,14 +597,14 @@ async fn test_zed_tasks_take_precedence_over_vscode(cx: &mut TestAppContext) {
     assert_eq!(
         task_template_names(&inventory, Some(worktree_id), cx).await,
         vec!["zed_task"],
-        "With both .zed and .vscode tasks, only .zed tasks should appear"
+        "同时存在 .zed 和 .vscode 任务时,只应显示 .zed 任务"
     );
 
     register_worktree_task_used(&inventory, worktree_id, "zed_task", cx).await;
     let resolved = resolved_task_names(&inventory, Some(worktree_id), cx).await;
     assert!(
         !resolved.iter().any(|name| name == "vscode_task"),
-        "Previously used .vscode tasks should not appear when .zed tasks exist, got: {resolved:?}"
+        "存在 .zed 任务时,之前使用的 .vscode 任务不应显示,实际为: {resolved:?}"
     );
 }
 

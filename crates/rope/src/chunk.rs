@@ -417,7 +417,7 @@ impl<'a> ChunkSlice<'a> {
     pub fn point_to_offset(&self, point: Point) -> usize {
         if point.row > self.lines().row {
             debug_panic!(
-                "point {:?} extends beyond rows for string {:?}",
+                "点 {:?} 超出了字符串 {:?} 的行范围",
                 point,
                 self.text
             );
@@ -427,7 +427,7 @@ impl<'a> ChunkSlice<'a> {
         let row_offset_range = self.offset_range_for_row(point.row);
         if point.column > row_offset_range.len() as u32 {
             debug_panic!(
-                "point {:?} extends beyond row for string {:?}",
+                "点 {:?} 超出了字符串 {:?} 的行范围",
                 point,
                 self.text
             );
@@ -459,7 +459,7 @@ impl<'a> ChunkSlice<'a> {
     pub fn point_to_offset_utf16(&self, point: Point) -> OffsetUtf16 {
         if point.row > self.lines().row {
             debug_panic!(
-                "point {:?} extends beyond rows for string {:?}",
+                "点 {:?} 超出了字符串 {:?} 的行范围",
                 point,
                 self.text
             );
@@ -520,7 +520,7 @@ impl<'a> ChunkSlice<'a> {
         if point.row > lines.row {
             if !clip {
                 debug_panic!(
-                    "point {:?} is beyond this chunk's extent {:?}",
+                    "点 {:?} 超出了此块的范围 {:?}",
                     point,
                     self.text
                 );
@@ -533,7 +533,7 @@ impl<'a> ChunkSlice<'a> {
         if point.column > line.last_line_len_utf16() {
             if !clip {
                 debug_panic!(
-                    "point {:?} is beyond the end of the line in chunk {:?}",
+                    "点 {:?} 超出了块 {:?} 中行的末尾",
                     point,
                     self.text
                 );
@@ -551,7 +551,7 @@ impl<'a> ChunkSlice<'a> {
                 }
                 if !clip {
                     debug_panic!(
-                        "point {:?} is within character in chunk {:?}",
+                        "点 {:?} 位于块 {:?} 中的字符内",
                         point,
                         self.text,
                     );
@@ -737,7 +737,7 @@ fn nth_set_bit(v: u128, n: usize) -> usize {
 fn panic_char_boundary(text: &str, offset: usize) -> ! {
     if offset > text.len() {
         panic!(
-            "byte index {} is out of bounds of `{:?}` (length: {})",
+            "字节索引 {} 超出 `{:?}` 的范围(长度:{})",
             offset,
             text,
             text.len()
@@ -749,7 +749,7 @@ fn panic_char_boundary(text: &str, offset: usize) -> ! {
     let ch = text.get(char_start..).unwrap().chars().next().unwrap();
     let char_range = char_start..char_start + ch.len_utf8();
     panic!(
-        "byte index {} is not a char boundary; it is inside {:?} (bytes {:?})",
+        "字节索引 {} 不是字符边界;它位于 {:?}(字节 {:?})内部",
         offset, ch, char_range,
     );
 }
@@ -760,7 +760,7 @@ fn panic_char_boundary(text: &str, offset: usize) -> ! {
 fn log_err_char_boundary(text: &str, offset: usize) {
     if offset >= text.len() {
         log::error!(
-            "byte index {} is out of bounds of `{:?}` (length: {})",
+            "字节索引 {} 超出 `{:?}` 的范围(长度:{})",
             offset,
             text,
             text.len()
@@ -773,7 +773,7 @@ fn log_err_char_boundary(text: &str, offset: usize) {
     let ch = text.get(char_start..).unwrap().chars().next().unwrap();
     let char_range = char_start..char_start + ch.len_utf8();
     log::error!(
-        "byte index {} is not a char boundary; it is inside {:?} (bytes {:?})",
+        "字节索引 {} 不是字符边界;它位于 {:?}(字节 {:?})内部",
         offset,
         ch,
         char_range,
@@ -827,7 +827,7 @@ mod tests {
     #[gpui::test(iterations = 100)]
     fn test_random_chunks(mut rng: StdRng) {
         let text = random_string_with_utf8_len(&mut rng, MAX_BASE);
-        log::info!("Chunk: {:?}", text);
+        log::info!("块:{:?}", text);
         let chunk = Chunk::new(&text);
         verify_chunk(chunk.as_slice(), &text);
 
@@ -848,7 +848,7 @@ mod tests {
                 end -= 1;
             }
             let range = start..end;
-            log::info!("Range: {:?}", range);
+            log::info!("范围:{:?}", range);
             let text_slice = &text[range.clone()];
             let chunk_slice = chunk.slice(range);
             verify_chunk(chunk_slice, text_slice);
@@ -960,61 +960,61 @@ mod tests {
         let mut point = Point::zero();
         let mut point_utf16 = PointUtf16::zero();
 
-        log::info!("Verifying chunk {:?}", text);
+        log::info!("正在验证块 {:?}", text);
         assert_eq!(chunk.offset_to_point(0), Point::zero());
 
         let mut expected_tab_positions = Vec::new();
 
         for (char_offset, c) in text.chars().enumerate() {
             let expected_point = chunk.offset_to_point(offset);
-            assert_eq!(point, expected_point, "mismatch at offset {}", offset);
+            assert_eq!(point, expected_point, "偏移量 {} 处不匹配", offset);
             assert_eq!(
                 chunk.point_to_offset(point),
                 offset,
-                "mismatch at point {:?}",
+                "点 {:?} 处不匹配",
                 point
             );
             assert_eq!(
                 chunk.offset_to_offset_utf16(offset),
                 offset_utf16,
-                "mismatch at offset {}",
+                "偏移量 {} 处不匹配",
                 offset
             );
             assert_eq!(
                 chunk.offset_utf16_to_offset(offset_utf16),
                 offset,
-                "mismatch at offset_utf16 {:?}",
+                "offset_utf16 {:?} 处不匹配",
                 offset_utf16
             );
             assert_eq!(
                 chunk.point_to_point_utf16(point),
                 point_utf16,
-                "mismatch at point {:?}",
+                "点 {:?} 处不匹配",
                 point
             );
             assert_eq!(
                 chunk.point_utf16_to_offset(point_utf16, false),
                 offset,
-                "mismatch at point_utf16 {:?}",
+                "point_utf16 {:?} 处不匹配",
                 point_utf16
             );
             assert_eq!(
                 chunk.unclipped_point_utf16_to_point(Unclipped(point_utf16)),
                 point,
-                "mismatch for unclipped_point_utf16_to_point at {:?}",
+                "unclipped_point_utf16_to_point 在 {:?} 处不匹配",
                 point_utf16
             );
 
             assert_eq!(
                 chunk.clip_point(point, Bias::Left),
                 point,
-                "incorrect left clip at {:?}",
+                "在 {:?} 处左裁剪不正确",
                 point
             );
             assert_eq!(
                 chunk.clip_point(point, Bias::Right),
                 point,
-                "incorrect right clip at {:?}",
+                "在 {:?} 处右裁剪不正确",
                 point
             );
 
@@ -1023,13 +1023,13 @@ mod tests {
                 assert_eq!(
                     chunk.clip_point(test_point, Bias::Left),
                     point,
-                    "incorrect left clip within multi-byte char at {:?}",
+                    "在多字节字符 {:?} 内左裁剪不正确",
                     test_point
                 );
                 assert_eq!(
                     chunk.clip_point(test_point, Bias::Right),
                     Point::new(point.row, point.column + c.len_utf8() as u32),
-                    "incorrect right clip within multi-byte char at {:?}",
+                    "在多字节字符 {:?} 内右裁剪不正确",
                     test_point
                 );
             }
@@ -1042,19 +1042,19 @@ mod tests {
                 assert_eq!(
                     chunk.unclipped_point_utf16_to_point(test_point),
                     point,
-                    "incorrect unclipped_point_utf16_to_point within multi-byte char at {:?}",
+                    "在多字节字符 {:?} 内 unclipped_point_utf16_to_point 不正确",
                     test_point
                 );
                 assert_eq!(
                     chunk.clip_point_utf16(test_point, Bias::Left),
                     point_utf16,
-                    "incorrect left clip_point_utf16 within multi-byte char at {:?}",
+                    "在多字节字符 {:?} 内左 clip_point_utf16 不正确",
                     test_point
                 );
                 assert_eq!(
                     chunk.clip_point_utf16(test_point, Bias::Right),
                     PointUtf16::new(point_utf16.row, point_utf16.column + c.len_utf16() as u32),
-                    "incorrect right clip_point_utf16 within multi-byte char at {:?}",
+                    "在多字节字符 {:?} 内右 clip_point_utf16 不正确",
                     test_point
                 );
 
@@ -1062,13 +1062,13 @@ mod tests {
                 assert_eq!(
                     chunk.clip_offset_utf16(test_offset, Bias::Left),
                     offset_utf16,
-                    "incorrect left clip_offset_utf16 within multi-byte char at {:?}",
+                    "在多字节字符 {:?} 内左 clip_offset_utf16 不正确",
                     test_offset
                 );
                 assert_eq!(
                     chunk.clip_offset_utf16(test_offset, Bias::Right),
                     OffsetUtf16(offset_utf16.0 + c.len_utf16()),
-                    "incorrect right clip_offset_utf16 within multi-byte char at {:?}",
+                    "在多字节字符 {:?} 内右 clip_offset_utf16 不正确",
                     test_offset
                 );
             }
@@ -1095,77 +1095,77 @@ mod tests {
         }
 
         let final_point = chunk.offset_to_point(offset);
-        assert_eq!(point, final_point, "mismatch at final offset {}", offset);
+        assert_eq!(point, final_point, "最终偏移量 {} 处不匹配", offset);
         assert_eq!(
             chunk.point_to_offset(point),
             offset,
-            "mismatch at point {:?}",
+            "点 {:?} 处不匹配",
             point
         );
         assert_eq!(
             chunk.offset_to_offset_utf16(offset),
             offset_utf16,
-            "mismatch at offset {}",
+            "偏移量 {} 处不匹配",
             offset
         );
         assert_eq!(
             chunk.offset_utf16_to_offset(offset_utf16),
             offset,
-            "mismatch at offset_utf16 {:?}",
+            "offset_utf16 {:?} 处不匹配",
             offset_utf16
         );
         assert_eq!(
             chunk.point_to_point_utf16(point),
             point_utf16,
-            "mismatch at final point {:?}",
+            "最终点 {:?} 处不匹配",
             point
         );
         assert_eq!(
             chunk.point_utf16_to_offset(point_utf16, false),
             offset,
-            "mismatch at final point_utf16 {:?}",
+            "最终 point_utf16 {:?} 处不匹配",
             point_utf16
         );
         assert_eq!(
             chunk.unclipped_point_utf16_to_point(Unclipped(point_utf16)),
             point,
-            "mismatch for unclipped_point_utf16_to_point at final point {:?}",
+            "unclipped_point_utf16_to_point 在最终点 {:?} 处不匹配",
             point_utf16
         );
         assert_eq!(
             chunk.clip_point(point, Bias::Left),
             point,
-            "incorrect left clip at final point {:?}",
+            "在最终点 {:?} 处左裁剪不正确",
             point
         );
         assert_eq!(
             chunk.clip_point(point, Bias::Right),
             point,
-            "incorrect right clip at final point {:?}",
+            "在最终点 {:?} 处右裁剪不正确",
             point
         );
         assert_eq!(
             chunk.clip_point_utf16(Unclipped(point_utf16), Bias::Left),
             point_utf16,
-            "incorrect left clip_point_utf16 at final point {:?}",
+            "在最终点 {:?} 处左 clip_point_utf16 不正确",
             point_utf16
         );
         assert_eq!(
             chunk.clip_point_utf16(Unclipped(point_utf16), Bias::Right),
             point_utf16,
-            "incorrect right clip_point_utf16 at final point {:?}",
+            "在最终点 {:?} 处右 clip_point_utf16 不正确",
             point_utf16
         );
         assert_eq!(
             chunk.clip_offset_utf16(offset_utf16, Bias::Left),
             offset_utf16,
-            "incorrect left clip_offset_utf16 at final offset {:?}",
+            "在最终偏移量 {:?} 处左 clip_offset_utf16 不正确",
             offset_utf16
         );
         assert_eq!(
             chunk.clip_offset_utf16(offset_utf16, Bias::Right),
             offset_utf16,
-            "incorrect right clip_offset_utf16 at final offset {:?}",
+            "在最终偏移量 {:?} 处右 clip_offset_utf16 不正确",
             offset_utf16
         );
 

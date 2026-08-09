@@ -50,7 +50,7 @@ pub fn init_env_filter(filter: env_config::EnvFilter) {
         LEVEL_ENABLED_MAX_STATIC.store(level_max as u8, Ordering::Release)
     }
     if ENV_FILTER.set(filter).is_err() {
-        panic!("Environment filter cannot be initialized twice");
+        panic!("环境过滤器不能初始化两次");
     }
 }
 
@@ -107,7 +107,7 @@ pub fn refresh_from_settings(settings: &HashMap<String, String>) {
         });
         *global_map = map_new;
     }
-    log::trace!("Log configuration updated");
+    log::trace!("日志配置已更新");
 }
 
 fn level_filter_from_str(level_str: &str) -> Option<log::LevelFilter> {
@@ -153,7 +153,7 @@ fn scope_alloc_from_scope_str(scope_str: &str) -> Option<ScopeAlloc> {
     }
     if scope_iter.next().is_some() {
         crate::warn!(
-            "Invalid scope key, too many nested scopes: '{scope_str}'. Max depth is {SCOPE_DEPTH_MAX}",
+            "无效的作用域键,嵌套作用域过多:'{scope_str}'。最大深度为 {SCOPE_DEPTH_MAX}",
         );
         return None;
     }
@@ -292,7 +292,7 @@ impl ScopeMap {
                     assert_eq!(
                         sub_items_start + 1,
                         sub_items_end,
-                        "Expected one item: got: {:?}",
+                        "预期一个项目:实际为:{:?}",
                         &items[items_range]
                     );
                     enabled = Some(items[sub_items_start].1);
@@ -709,55 +709,55 @@ mod tests {
         assert_eq!(
             map.is_enabled(&scope_from_scope_str("p.q.r"), None, Level::Trace),
             EnabledStatus::Enabled,
-            "KV should override default filters for scopes"
+            "KV 应覆盖作用域的默认过滤器"
         );
         assert_eq!(
             map.is_enabled(&scope_from_scope_str("m.n.o"), None, Level::Warn),
             EnabledStatus::Enabled,
-            "KV should override env filters for scopes"
+            "KV 应覆盖作用域的环境过滤器"
         );
         assert_eq!(
             map.is_enabled(&scope_from_scope_str("m.n.o"), None, Level::Debug),
             EnabledStatus::Disabled,
-            "KV correctly limits log level"
+            "KV 正确限制日志级别"
         );
 
         // ENV overrides default but not KV for scopes
         assert_eq!(
             map.is_enabled(&scope_from_scope_str("a.b.c"), None, Level::Trace),
             EnabledStatus::Enabled,
-            "ENV should override default filters for scopes"
+            "ENV 应覆盖作用域的默认过滤器"
         );
 
         // Default is used when no override exists for scopes
         assert_eq!(
             map.is_enabled(&scope_from_scope_str("x.y.z"), None, Level::Warn),
             EnabledStatus::Enabled,
-            "Default filters should work when not overridden"
+            "默认过滤器在未被覆盖时应正常工作"
         );
         assert_eq!(
             map.is_enabled(&scope_from_scope_str("x.y.z"), None, Level::Info),
             EnabledStatus::Disabled,
-            "Default filters correctly limit log level"
+            "默认过滤器正确限制日志级别"
         );
 
         // KV overrides all for modules
         assert_eq!(
             map.is_enabled(&scope_new(&[""]), Some("crate::module::env"), Level::Trace),
             EnabledStatus::Enabled,
-            "KV should override env filters for modules"
+            "KV 应覆盖模块的环境过滤器"
         );
         assert_eq!(
             map.is_enabled(&scope_new(&[""]), Some("crate::module::kv"), Level::Trace),
             EnabledStatus::Enabled,
-            "KV module filters should work"
+            "KV 模块过滤器应正常工作"
         );
 
         // ENV overrides default for modules
         assert_eq!(
             map.is_enabled(&scope_new(&[""]), Some("crate::module::env"), Level::Debug),
             EnabledStatus::Enabled,
-            "ENV should override default for modules"
+            "ENV 应覆盖模块的默认过滤器"
         );
 
         // Default is used when no override exists for modules
@@ -768,7 +768,7 @@ mod tests {
                 Level::Error
             ),
             EnabledStatus::Enabled,
-            "Default filters should work for modules"
+            "默认过滤器应适用于模块"
         );
         assert_eq!(
             map.is_enabled(
@@ -777,13 +777,13 @@ mod tests {
                 Level::Warn
             ),
             EnabledStatus::Disabled,
-            "Default filters correctly limit log level for modules"
+            "默认过滤器正确限制模块的日志级别"
         );
 
         assert_eq!(
             map.is_enabled(&scope_new(&[""]), Some("crate::module::user"), Level::Error),
             EnabledStatus::Disabled,
-            "Module turned off in default filters is not enabled"
+            "在默认过滤器中关闭的模块不会被启用"
         );
 
         assert_eq!(
@@ -793,7 +793,7 @@ mod tests {
                 Level::Error
             ),
             EnabledStatus::Disabled,
-            "Module turned off in default filters is not enabled, even with crate name as scope"
+            "在默认过滤器中关闭的模块不会被启用,即使使用 crate 名称作为作用域"
         );
 
         // Test non-conflicting but similar paths
@@ -802,19 +802,19 @@ mod tests {
         assert_eq!(
             map.is_enabled(&scope_from_scope_str("a.b.c.d"), None, Level::Trace),
             EnabledStatus::Enabled,
-            "Scope a.b.c should inherit from a.b env filter"
+            "作用域 a.b.c 应从 a.b 环境过滤器继承"
         );
         assert_eq!(
             map.is_enabled(&scope_from_scope_str("a.b.c"), None, Level::Trace),
             EnabledStatus::Enabled,
-            "Scope a.b.c.d should use env filter level (trace)"
+            "作用域 a.b.c.d 应使用环境过滤器级别(trace)"
         );
 
         // Test that similar module paths don't conflict
         assert_eq!(
             map.is_enabled(&scope_new(&[""]), Some("crate::module"), Level::Error),
             EnabledStatus::NotConfigured,
-            "Module crate::module should not be affected by crate::module::default filter"
+            "模块 crate::module 不应受 crate::module::default 过滤器影响"
         );
         assert_eq!(
             map.is_enabled(
@@ -836,7 +836,7 @@ mod tests {
         assert_eq!(
             map.is_enabled(&scope_new(&[""]), Some("crate::submodule"), Level::Error),
             EnabledStatus::Disabled,
-            "crate::submodule should be disabled by disabling `crate` filter"
+            "crate::submodule 应通过禁用 `crate` 过滤器来禁用"
         );
     }
 }

@@ -276,7 +276,7 @@ impl PickerDelegate for OutlineViewDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Search buffer symbols...".into()
+        "搜索缓冲区符号...".into()
     }
 
     fn match_count(&self) -> usize {
@@ -582,7 +582,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             Vec::<u32>::new(),
-            "Initially opened outline view should have no highlights"
+            "初始打开的大纲视图不应有高亮"
         );
         assert_single_caret_at_row(&editor, 0, cx);
 
@@ -597,7 +597,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             vec![3, 4, 5, 6],
-            "Second struct's rows should be highlighted"
+            "第二个结构体的行应被高亮"
         );
         assert_single_caret_at_row(&editor, 1, cx);
 
@@ -606,7 +606,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             vec![1],
-            "First struct's row should be highlighted"
+            "第一个结构体的行应被高亮"
         );
         assert_single_caret_at_row(&editor, 1, cx);
 
@@ -615,7 +615,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             Vec::<u32>::new(),
-            "No rows should be highlighted after outline view is cancelled and closed"
+            "大纲视图取消并关闭后,不应有行被高亮"
         );
         assert_single_caret_at_row(&editor, 1, cx);
 
@@ -624,7 +624,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             Vec::<u32>::new(),
-            "Reopened outline view should have no highlights"
+            "重新打开的大纲视图不应有高亮"
         );
         assert_single_caret_at_row(&editor, 1, cx);
 
@@ -641,7 +641,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             Vec::<u32>::new(),
-            "No rows should be highlighted after outline view is confirmed and closed"
+            "大纲视图确认并关闭后,不应有行被高亮"
         );
         // On confirm, should place the caret on the first row of the highlighted rows range.
         assert_single_caret_at_row(&editor, expected_first_highlighted_row, cx);
@@ -736,7 +736,7 @@ mod tests {
             });
         assert_eq!(
             selected_candidate_id, expected_deepest_containing_candidate_id,
-            "Empty query should select the deepest symbol containing the cursor"
+            "空查询应选择包含光标的最深符号"
         );
 
         cx.dispatch_action(menu::Cancel);
@@ -751,7 +751,7 @@ mod tests {
         });
         assert_eq!(
             selected_candidate_id, 0,
-            "Empty query should fall back to the first symbol when cursor is outside all symbol ranges"
+            "当光标在所有符号范围之外时,空查询应回退到第一个符号"
         );
     }
 
@@ -916,15 +916,15 @@ mod tests {
 
         assert!(
             scored_match_count > 1,
-            "Expected multiple scored matches for `f` in outline filtering"
+            "在大纲过滤中,`f` 应有多个得分匹配"
         );
         assert_eq!(
             selected_id, first_scored_id,
-            "Filtered query should pick the first scored match when scores tie"
+            "过滤查询在得分相同时应选择第一个得分匹配"
         );
         assert_ne!(
             selected_id, last_scored_id,
-            "Selection should not default to the last scored match"
+            "选择不应默认落在最后一个得分匹配上"
         );
 
         set_single_caret_at_row(&editor, 12, cx);
@@ -940,15 +940,15 @@ mod tests {
 
         assert!(
             scored_match_count > 1,
-            "Expected multiple scored matches for `f` in outline filtering"
+            "在大纲过滤中,`f` 应有多个得分匹配"
         );
         assert_eq!(
             selected_id, first_scored_id,
-            "Filtered selection should stay score-ordered and not switch based on cursor proximity"
+            "过滤后的选择应保持得分排序,不应根据光标接近度切换"
         );
         assert_ne!(
             selected_id, last_scored_id,
-            "Selection should not default to the last scored match"
+            "选择不应默认落在最后一个得分匹配上"
         );
     }
 
@@ -1147,7 +1147,7 @@ mod tests {
         assert_eq!(
             tree_sitter_names,
             vec!["struct Foo", "bar", "baz"],
-            "Step 1: tree-sitter outlines should be displayed by default"
+            "步骤 1:默认应显示 tree-sitter 大纲"
         );
         cx.dispatch_action(menu::Cancel);
         cx.run_until_parked();
@@ -1166,12 +1166,12 @@ mod tests {
         assert_eq!(
             lsp_names,
             vec!["struct Foo", "bar", "lsp_only_field"],
-            "Step 2: LSP-provided symbols should be displayed"
+            "步骤 2:应显示 LSP 提供的符号"
         );
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             Vec::<u32>::new(),
-            "Step 2: initially opened outline view should have no highlights"
+            "步骤 2:初始打开的大纲视图不应有高亮"
         );
         assert_single_caret_at_row(&editor, 0, cx);
 
@@ -1179,7 +1179,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             vec![1],
-            "Step 2: bar's row should be highlighted after SelectNext"
+            "步骤 2:选择下一个后,bar 的行应被高亮"
         );
         assert_single_caret_at_row(&editor, 0, cx);
 
@@ -1202,7 +1202,7 @@ mod tests {
         assert_eq!(
             restored_names,
             vec!["struct Foo", "bar", "baz"],
-            "Step 3: tree-sitter outlines should be restored after switching back"
+            "步骤 3:切换回来后应恢复 tree-sitter 大纲"
         );
     }
 
@@ -1222,12 +1222,12 @@ mod tests {
         });
         assert!(
             selections.len() == 1,
-            "Expected one caret selection but got: {selections:?}"
+            "预期一个光标选区,但得到:{selections:?}"
         );
         let selection = &selections[0];
         assert!(
             selection.start == selection.end,
-            "Expected a single caret selection, but got: {selection:?}"
+            "预期单个光标选区,但得到:{selection:?}"
         );
         assert_eq!(selection.start.row, buffer_row);
     }

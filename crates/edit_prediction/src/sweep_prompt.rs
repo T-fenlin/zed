@@ -57,7 +57,7 @@ pub fn request_prediction(
         _ => None,
     }) else {
         return Task::ready(Err(anyhow!(
-            "Unsupported edit prediction provider for Sweep prompt mode"
+            "Sweep 提示模式不支持的编辑预测提供程序"
         )));
     };
 
@@ -147,7 +147,7 @@ pub fn request_prediction(
             &http_client,
         )
         .await
-        .context("sweep prompt request failed")?;
+        .context("sweep 提示请求失败")?;
         let response_received_at = Instant::now();
         Ok((
             request_id,
@@ -245,25 +245,25 @@ pub fn build_prompt(input: &SweepPromptInput) -> String {
 }
 
 fn validate_prompt_input(input: &SweepPromptInput) -> Result<()> {
-    validate_prompt_field("file path", &input.file_path.display().to_string())?;
-    validate_prompt_field("original window", &input.original_window)?;
-    validate_prompt_field("current window", &input.current_window)?;
+    validate_prompt_field("文件路径", &input.file_path.display().to_string())?;
+    validate_prompt_field("原始窗口", &input.original_window)?;
+    validate_prompt_field("当前窗口", &input.current_window)?;
 
     for recent_change in &input.recent_changes {
         validate_prompt_field(
-            "recent change path",
+            "最近更改路径",
             &recent_change.file_path.display().to_string(),
         )?;
-        validate_prompt_field("recent change original", &recent_change.original)?;
-        validate_prompt_field("recent change updated", &recent_change.updated)?;
+        validate_prompt_field("最近更改原始内容", &recent_change.original)?;
+        validate_prompt_field("最近更改更新内容", &recent_change.updated)?;
     }
 
     for related_file in &input.related_files {
         validate_prompt_field(
-            "related file path",
+            "相关文件路径",
             &related_file.file_path.display().to_string(),
         )?;
-        validate_prompt_field("related file content", &related_file.content)?;
+        validate_prompt_field("相关文件内容", &related_file.content)?;
     }
 
     Ok(())
@@ -274,7 +274,7 @@ fn validate_prompt_field(field_name: &str, value: &str) -> Result<()> {
         .iter()
         .any(|reserved_token| value.contains(reserved_token))
     {
-        anyhow::bail!("sweep prompt {field_name} contains reserved tokens");
+        anyhow::bail!("sweep 提示的 {field_name} 包含保留标记");
     }
 
     Ok(())
@@ -478,7 +478,7 @@ mod tests {
 
             let original_window =
                 original_window_for_current_window(window, Some(&stored_event), &current_snapshot)
-                    .expect("expected original window");
+                    .expect("预期原始窗口");
 
             assert_eq!(original_window, "zero\none\ntwo");
             buffer
@@ -522,8 +522,8 @@ mod tests {
     fn test_build_prompt_uses_run_model_ordering() {
         let prompt = build_prompt(&SweepPromptInput {
             file_path: Path::new("src/main.rs").into(),
-            original_window: "old window".to_string(),
-            current_window: "current window".to_string(),
+            original_window: "旧窗口".to_string(),
+            current_window: "当前窗口".to_string(),
             recent_changes: vec![RecentChangeBlock {
                 file_path: Path::new("src/lib.rs").into(),
                 original: "old".to_string(),

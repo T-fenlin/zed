@@ -235,7 +235,7 @@ impl GitBlame {
                         .iter()
                         .any(|(_, entry_id, _)| project_entry_id == Some(*entry_id))
                     {
-                        log::debug!("Updated buffers. Regenerating blame data...",);
+                        log::debug!("缓冲区已更新。正在重新生成追溯数据...",);
                         git_blame.generate(cx);
                     }
                 }
@@ -248,7 +248,7 @@ impl GitBlame {
                 GitStoreEvent::RepositoryUpdated(_, _, _)
                 | GitStoreEvent::RepositoryAdded
                 | GitStoreEvent::RepositoryRemoved(_) => {
-                    log::debug!("Status of git repositories updated. Regenerating blame data...",);
+                    log::debug!("Git 仓库状态已更新。正在重新生成追溯数据...",);
                     this.generate(cx);
                 }
                 _ => {}
@@ -534,8 +534,8 @@ impl GitBlame {
                     buffers
                         .iter()
                         .map(|buffer| {
-                            let buffer = buffer.upgrade().context("buffer was dropped")?;
-                            let project = project.upgrade().context("project was dropped")?;
+                            let buffer = buffer.upgrade().context("缓冲区已被释放")?;
+                            let project = project.upgrade().context("项目已被释放")?;
                             let id = buffer.read(cx).remote_id();
                             let snapshot = buffer.read(cx).snapshot();
                             let buffer_edits = buffer.update(cx, |buffer, _| buffer.subscribe());
@@ -665,7 +665,7 @@ impl GitBlame {
                             .collect::<Vec<_>>();
                         let all_errors = all_errors.join(", ");
                         if this.user_triggered {
-                            log::error!("failed to get git blame data: {all_errors}");
+                            log::error!("获取 Git 追溯数据失败: {all_errors}");
                             cx.emit(project::Event::Toast {
                                 notification_id: "git-blame".into(),
                                 message: all_errors,
@@ -674,7 +674,7 @@ impl GitBlame {
                         } else {
                             // If we weren't triggered by a user, we just log errors in the background, instead of sending
                             // notifications.
-                            log::debug!("failed to get git blame data: {all_errors}");
+                            log::debug!("获取 Git 追溯数据失败: {all_errors}");
                         }
                     })
                 }
@@ -836,7 +836,7 @@ mod tests {
             event,
             project::Event::Toast {
                 notification_id: "git-blame".into(),
-                message: "Failed to blame \"file.txt\": failed to get blame for \"file.txt\""
+                message: "无法追溯 \"file.txt\":获取 \"file.txt\" 的追溯信息失败"
                     .to_string(),
                 link: None
             }
@@ -1223,7 +1223,7 @@ mod tests {
             let newline_ix = buffer_initial_text.clip_offset(newline_ix, Bias::Right);
             buffer_initial_text.replace(newline_ix..newline_ix, "\n");
         }
-        log::info!("initial buffer text: {:?}", buffer_initial_text);
+        log::info!("初始缓冲区文本: {:?}", buffer_initial_text);
 
         fs.insert_tree(
             path!("/my-repo"),
@@ -1235,7 +1235,7 @@ mod tests {
         .await;
 
         let blame_entries = gen_blame_entries(buffer_initial_text.max_point().row, &mut rng);
-        log::info!("initial blame entries: {:?}", blame_entries);
+        log::info!("初始追溯条目: {:?}", blame_entries);
         fs.set_blame_for_repo(
             Path::new(path!("/my-repo/.git")),
             vec![(
@@ -1267,17 +1267,17 @@ mod tests {
                     cx.executor().run_until_parked();
                 }
                 20..=69 => {
-                    log::info!("editing buffer");
+                    log::info!("正在编辑缓冲区");
                     buffer.update(cx, |buffer, cx| {
                         buffer.randomly_edit(&mut rng, max_edits_per_operation, cx);
-                        log::info!("buffer text: {:?}", buffer.text());
+                        log::info!("缓冲区文本: {:?}", buffer.text());
                     });
 
                     let blame_entries = gen_blame_entries(
                         buffer.read_with(cx, |buffer, _| buffer.max_point().row),
                         &mut rng,
                     );
-                    log::info!("regenerating blame entries: {:?}", blame_entries);
+                    log::info!("正在重新生成追溯条目: {:?}", blame_entries);
 
                     fs.set_blame_for_repo(
                         Path::new(path!("/my-repo/.git")),
@@ -1345,7 +1345,7 @@ mod tests {
                 |store: &mut settings::SettingsStore, cx| {
                     store
                         .set_user_settings(r#"{"git": {"inline_blame": {"enabled": false}}}"#, cx)
-                        .expect("failed to set user settings");
+                        .expect("无法设置用户设置");
                 },
             );
         });
@@ -1392,7 +1392,7 @@ mod tests {
         editor.update(cx, |editor, _cx| {
             assert!(
                 editor.blame().is_none(),
-                "blame should not be loaded initially"
+                "初始不应加载追溯信息"
             );
         });
 
@@ -1407,11 +1407,11 @@ mod tests {
             editor.blame_hover(&crate::BlameHover, window, cx);
             assert!(
                 editor.blame().is_some(),
-                "blame entity should be created after blame_hover"
+                "应在 blame_hover 之后创建追溯实体"
             );
             assert!(
                 editor.pending_blame_hover_observation.is_some(),
-                "should have registered an observation to wait for blame data"
+                "应已注册观察以等待追溯数据"
             );
         });
 
@@ -1422,11 +1422,11 @@ mod tests {
         editor.update(cx, |editor, cx| {
             assert!(
                 editor.pending_blame_hover_observation.is_none(),
-                "observation should be consumed after blame data is generated"
+                "生成追溯数据后应消费观察"
             );
             assert!(
                 editor.blame().unwrap().read(cx).has_generated_entries(),
-                "blame should have generated entries"
+                "追溯应已生成条目"
             );
         });
     }

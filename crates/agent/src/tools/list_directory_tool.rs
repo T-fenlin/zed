@@ -96,13 +96,13 @@ impl ListDirectoryTool {
 
         let mut output = String::new();
         if !folders.is_empty() {
-            writeln!(output, "# Folders:\n{}", folders.join("\n")).unwrap();
+            writeln!(output, "# 文件夹:\n{}", folders.join("\n")).unwrap();
         }
         if !files.is_empty() {
-            writeln!(output, "\n# Files:\n{}", files.join("\n")).unwrap();
+            writeln!(output, "\n# 文件:\n{}", files.join("\n")).unwrap();
         }
         if output.is_empty() {
-            writeln!(output, "{input_path} is empty.").unwrap();
+            writeln!(output, "{input_path} 为空。").unwrap();
         }
         Ok(output)
     }
@@ -116,7 +116,7 @@ impl ListDirectoryTool {
         let worktree = project
             .read(cx)
             .worktree_for_id(project_path.worktree_id, cx)
-            .with_context(|| format!("{input_path} is not in a known worktree"))?;
+            .with_context(|| format!("{input_path} 不在已知的工作树中"))?;
 
         let global_settings = WorktreeSettings::get_global(cx);
         let worktree_settings = WorktreeSettings::get(Some(project_path.into()), cx);
@@ -124,11 +124,11 @@ impl ListDirectoryTool {
         let worktree_root_name = worktree.read(cx).root_name();
 
         let Some(entry) = worktree_snapshot.entry_for_path(&project_path.path) else {
-            return Err(anyhow!("Path not found: {}", input_path));
+            return Err(anyhow!("找不到路径:{}", input_path));
         };
 
         if !entry.is_dir() {
-            return Err(anyhow!("{input_path} is not a directory."));
+            return Err(anyhow!("{input_path} 不是目录。"));
         }
 
         let mut folders = Vec::new();
@@ -163,15 +163,15 @@ impl ListDirectoryTool {
         let mut output = String::new();
 
         if !folders.is_empty() {
-            writeln!(output, "# Folders:\n{}", folders.join("\n")).unwrap();
+            writeln!(output, "# 文件夹:\n{}", folders.join("\n")).unwrap();
         }
 
         if !files.is_empty() {
-            writeln!(output, "\n# Files:\n{}", files.join("\n")).unwrap();
+            writeln!(output, "\n# 文件:\n{}", files.join("\n")).unwrap();
         }
 
         if output.is_empty() {
-            writeln!(output, "{input_path} is empty.").unwrap();
+            writeln!(output, "{input_path} 为空。").unwrap();
         }
 
         Ok(output)
@@ -195,9 +195,9 @@ impl AgentTool for ListDirectoryTool {
     ) -> SharedString {
         if let Ok(input) = input {
             let path = MarkdownInlineCode(&input.path);
-            format!("List the {path} directory's contents").into()
+            format!("列出 {path} 目录的内容").into()
         } else {
-            "List directory".into()
+            "列出目录".into()
         }
     }
 
@@ -270,20 +270,20 @@ impl AgentTool for ListDirectoryTool {
                 let worktree = project
                     .worktree_for_id(project_path.worktree_id, cx)
                     .with_context(|| {
-                        format!("{} is not in a known worktree", &input.path)
+                        format!("{} 不在已知的工作树中", &input.path)
                     })?;
 
                 let global_settings = WorktreeSettings::get_global(cx);
                 if global_settings.is_path_excluded(&project_path.path) {
                     anyhow::bail!(
-                        "Cannot list directory because its path matches the user's global `file_scan_exclusions` setting: {}",
+                        "无法列出目录,因为其路径匹配用户的全局 `file_scan_exclusions` 设置:{}",
                         &input.path
                     );
                 }
 
                 if global_settings.is_path_private(&project_path.path) {
                     anyhow::bail!(
-                        "Cannot list directory because its path matches the user's global `private_files` setting: {}",
+                        "无法列出目录,因为其路径匹配用户的全局 `private_files` 设置:{}",
                         &input.path
                     );
                 }
@@ -291,24 +291,24 @@ impl AgentTool for ListDirectoryTool {
                 let worktree_settings = WorktreeSettings::get(Some((&project_path).into()), cx);
                 if worktree_settings.is_path_excluded(&project_path.path) {
                     anyhow::bail!(
-                        "Cannot list directory because its path matches the user's worktree `file_scan_exclusions` setting: {}",
+                        "无法列出目录,因为其路径匹配用户工作树的 `file_scan_exclusions` 设置:{}",
                         &input.path
                     );
                 }
 
                 if worktree_settings.is_path_private(&project_path.path) {
                     anyhow::bail!(
-                        "Cannot list directory because its path matches the user's worktree `private_paths` setting: {}",
+                        "无法列出目录,因为其路径匹配用户工作树的 `private_paths` 设置:{}",
                         &input.path
                     );
                 }
 
                 let worktree_snapshot = worktree.read(cx).snapshot();
                 let Some(entry) = worktree_snapshot.entry_for_path(&project_path.path) else {
-                    anyhow::bail!("Path not found: {}", input.path);
+                    anyhow::bail!("找不到路径:{}", input.path);
                 };
                 if !entry.is_dir() {
-                    anyhow::bail!("{} is not a directory.", input.path);
+                    anyhow::bail!("{} 不是目录。", input.path);
                 }
 
                 anyhow::Ok(())
@@ -460,8 +460,8 @@ mod tests {
             })
             .await
             .unwrap();
-        assert!(!output.contains("# Folders:"));
-        assert!(output.contains("# Files:"));
+        assert!(!output.contains("# 文件夹:"));
+        assert!(output.contains("# 文件:"));
         assert!(output.contains(&platform_paths("project/tests/integration_test.rs")));
     }
 
@@ -494,7 +494,7 @@ mod tests {
             })
             .await
             .unwrap();
-        assert_eq!(output, "project/empty_dir is empty.\n");
+        assert_eq!(output, "项目/empty_dir 为空。\n");
     }
 
     #[gpui::test]
@@ -526,7 +526,7 @@ mod tests {
                 )
             })
             .await;
-        assert!(output.unwrap_err().contains("Path not found"));
+        assert!(output.unwrap_err().contains("未找到路径"));
 
         // Test trying to list a file instead of directory
         let input = ListDirectoryToolInput {
@@ -541,7 +541,7 @@ mod tests {
                 )
             })
             .await;
-        assert!(output.unwrap_err().contains("is not a directory"));
+        assert!(output.unwrap_err().contains("不是目录"));
     }
 
     #[gpui::test]
@@ -614,21 +614,21 @@ mod tests {
             .unwrap();
 
         // Should include normal directories
-        assert!(output.contains("normal_dir"), "Should list normal_dir");
-        assert!(output.contains("visible_dir"), "Should list visible_dir");
+        assert!(output.contains("normal_dir"), "应列出 normal_dir");
+        assert!(output.contains("visible_dir"), "应列出 visible_dir");
 
         // Should NOT include excluded or private files
         assert!(
             !output.contains(".secretdir"),
-            "Should not list .secretdir (file_scan_exclusions)"
+            "不应列出 .secretdir(file_scan_exclusions)"
         );
         assert!(
             !output.contains(".mymetadata"),
-            "Should not list .mymetadata (file_scan_exclusions)"
+            "不应列出 .mymetadata(file_scan_exclusions)"
         );
         assert!(
             !output.contains(".mysecrets"),
-            "Should not list .mysecrets (private_files)"
+            "不应列出 .mysecrets(private_files)"
         );
 
         // Trying to list an excluded directory should fail
@@ -646,7 +646,7 @@ mod tests {
             .await;
         assert!(
             output.unwrap_err().contains("file_scan_exclusions"),
-            "Error should mention file_scan_exclusions"
+            "错误信息应提及 file_scan_exclusions"
         );
 
         // Listing a directory should exclude private files within it
@@ -665,22 +665,22 @@ mod tests {
             .unwrap();
 
         // Should include normal files
-        assert!(output.contains("normal.txt"), "Should list normal.txt");
+        assert!(output.contains("normal.txt"), "应列出 normal.txt");
 
         // Should NOT include private files
         assert!(
             !output.contains("privatekey"),
-            "Should not list .privatekey files (private_files)"
+            "不应列出 .privatekey 文件(private_files)"
         );
         assert!(
             !output.contains("mysensitive"),
-            "Should not list .mysensitive files (private_files)"
+            "不应列出 .mysensitive 文件(private_files)"
         );
 
         // Should NOT include subdirectories that match exclusions
         assert!(
             !output.contains(".hidden_subdir"),
-            "Should not list .hidden_subdir (file_scan_exclusions)"
+            "不应列出 .hidden_subdir(file_scan_exclusions)"
         );
     }
 
@@ -774,14 +774,14 @@ mod tests {
             })
             .await
             .unwrap();
-        assert!(output.contains("main.rs"), "Should list main.rs");
+        assert!(output.contains("main.rs"), "应列出 main.rs");
         assert!(
             !output.contains("secret.rs"),
-            "Should not list secret.rs (local private_files)"
+            "不应列出 secret.rs(本地 private_files)"
         );
         assert!(
             !output.contains("config.toml"),
-            "Should not list config.toml (local private_files)"
+            "不应列出 config.toml(本地 private_files)"
         );
 
         // Test listing worktree1/tests - should exclude fixture.sql based on local settings
@@ -798,10 +798,10 @@ mod tests {
             })
             .await
             .unwrap();
-        assert!(output.contains("test.rs"), "Should list test.rs");
+        assert!(output.contains("test.rs"), "应列出 test.rs");
         assert!(
             !output.contains("fixture.sql"),
-            "Should not list fixture.sql (local file_scan_exclusions)"
+            "不应列出 fixture.sql(本地 file_scan_exclusions)"
         );
 
         // Test listing worktree2/lib - should exclude private.js and data.json based on local settings
@@ -818,14 +818,14 @@ mod tests {
             })
             .await
             .unwrap();
-        assert!(output.contains("public.js"), "Should list public.js");
+        assert!(output.contains("public.js"), "应列出 public.js");
         assert!(
             !output.contains("private.js"),
-            "Should not list private.js (local private_files)"
+            "不应列出 private.js(本地 private_files)"
         );
         assert!(
             !output.contains("data.json"),
-            "Should not list data.json (local private_files)"
+            "不应列出 data.json(本地 private_files)"
         );
 
         // Test listing worktree2/docs - should exclude internal.md based on local settings
@@ -842,10 +842,10 @@ mod tests {
             })
             .await
             .unwrap();
-        assert!(output.contains("README.md"), "Should list README.md");
+        assert!(output.contains("README.md"), "应列出 README.md");
         assert!(
             !output.contains("internal.md"),
-            "Should not list internal.md (local file_scan_exclusions)"
+            "不应列出 internal.md(本地 file_scan_exclusions)"
         );
 
         // Test trying to list an excluded directory directly
@@ -861,7 +861,7 @@ mod tests {
                 )
             })
             .await;
-        assert!(output.unwrap_err().contains("Cannot list directory"),);
+        assert!(output.unwrap_err().contains("无法列出目录"),);
     }
 
     #[gpui::test]
@@ -912,8 +912,8 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("points outside the project"),
-            "Authorization title should mention symlink escape, got: {title}",
+            title.contains("指向项目外部"),
+            "授权标题应提及符号链接逃逸,实际为: {title}",
         );
 
         auth.response
@@ -926,7 +926,7 @@ mod tests {
         let result = task.await;
         assert!(
             result.is_ok(),
-            "Tool should succeed after authorization: {result:?}"
+            "授权后工具应成功: {result:?}"
         );
     }
 
@@ -981,7 +981,7 @@ mod tests {
         let result = task.await;
         assert!(
             result.is_err(),
-            "Tool should fail when authorization is denied"
+            "授权被拒绝时工具应失败"
         );
     }
 
@@ -1043,12 +1043,12 @@ mod tests {
 
         assert!(
             result.is_err(),
-            "Expected list_directory to fail on private path"
+            "预期 list_directory 在私有路径上失败"
         );
         let error = result.unwrap_err();
         assert!(
             error.contains("private"),
-            "Expected private path validation error, got: {error}"
+            "预期私有路径验证错误,实际为:{error}"
         );
 
         let event = event_rx.try_recv();
@@ -1057,7 +1057,7 @@ mod tests {
                 event,
                 Ok(Ok(crate::thread::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "No authorization should be requested when validation fails before listing",
+            "在列出前验证失败时不应请求授权",
         );
     }
 
@@ -1094,7 +1094,7 @@ mod tests {
 
         assert!(
             result.is_ok(),
-            "Normal path should succeed without authorization"
+            "正常路径无需授权即可成功"
         );
 
         let event = event_rx.try_recv();
@@ -1103,7 +1103,7 @@ mod tests {
                 event,
                 Ok(Ok(crate::thread::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "No authorization should be requested for normal paths",
+            "正常路径不应请求授权",
         );
     }
 
@@ -1149,7 +1149,7 @@ mod tests {
 
         assert!(
             result.is_ok(),
-            "Intra-project symlink should succeed without authorization: {result:?}",
+            "项目内符号链接无需授权即可成功:{result:?}",
         );
 
         let event = event_rx.try_recv();
@@ -1158,7 +1158,7 @@ mod tests {
                 event,
                 Ok(Ok(crate::thread::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "No authorization should be requested for intra-project symlinks",
+            "项目内符号链接不应请求授权",
         );
     }
 
@@ -1202,20 +1202,20 @@ mod tests {
         // Output should include both the file siblings of SKILL.md and the
         // nested resource directory — listed by their absolute paths.
         assert!(
-            output.contains("# Folders:"),
-            "expected folders section: {output}"
+            output.contains("# 文件夹:"),
+            "预期的文件夹部分:{output}"
         );
         assert!(
             output.contains("scripts"),
-            "expected nested directory: {output}"
+            "预期的嵌套目录:{output}"
         );
         assert!(
             output.contains("SKILL.md"),
-            "expected SKILL.md to appear: {output}"
+            "预期 SKILL.md 出现:{output}"
         );
         assert!(
             output.contains("rubric.md"),
-            "expected rubric.md to appear: {output}"
+            "预期 rubric.md 出现:{output}"
         );
     }
 
@@ -1247,7 +1247,7 @@ mod tests {
 
         assert!(
             result.is_err(),
-            "path outside skills dir should be rejected"
+            "技能目录之外的路径应被拒绝"
         );
     }
 }

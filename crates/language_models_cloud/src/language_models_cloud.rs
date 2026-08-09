@@ -78,7 +78,7 @@ pub async fn authenticated_llm_request<TP: CloudLlmTokenProvider>(
     if !needs_llm_token_refresh(&response) && response.status() != StatusCode::UNAUTHORIZED {
         return Ok(response);
     }
-    log::info!("LLM token rejected; refreshing and retrying request");
+    log::info!("LLM 令牌被拒绝;正在刷新并重试请求");
     let token = token_provider.refresh_token(auth_context).await?;
     http_client.send(build_request(&token)?).await
 }
@@ -246,7 +246,7 @@ fn needs_llm_token_refresh(response: &Response<AsyncBody>) -> bool {
 }
 
 #[derive(Debug, Error)]
-#[error("cloud language model request failed with status {status}: {body}")]
+#[error("云端语言模型请求失败,状态码 {status}:{body}")]
 struct ApiError {
     status: StatusCode,
     body: String,
@@ -259,7 +259,7 @@ struct ApiError {
 /// ```json
 /// {
 ///   "code": "upstream_http_error",
-///   "message": "Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers, reset reason: connection timeout",
+///   "message": "从 Anthropic API 收到错误:上游连接错误或重置,重置原因:连接超时",
 ///   "upstream_status": 503
 /// }
 /// ```
@@ -433,7 +433,7 @@ impl<TP: CloudLlmTokenProvider + 'static> LanguageModel for CloudLanguageModel<T
         if !self.supports_explicit_compaction() {
             return async {
                 Err(LanguageModelCompletionError::Other(anyhow::anyhow!(
-                    "this cloud model does not support explicit compaction"
+                    "此云端模型不支持显式压缩"
                 )))
             }
             .boxed();
@@ -897,7 +897,7 @@ impl<TP: CloudLlmTokenProvider + 'static> CloudModelProvider<TP> {
                     .body(AsyncBody::empty())?)
             })
             .await
-            .context("failed to send list models request")?;
+            .context("发送模型列表请求失败")?;
 
         if response.status().is_success() {
             let mut body = String::new();
@@ -1201,7 +1201,7 @@ mod tests {
             }
         );
         let language_model::CompactedContext::ProviderState(state) = result.context else {
-            panic!("expected provider compaction state");
+            panic!("预期的提供方压缩状态");
         };
         assert_eq!(
             open_ai::responses::provider_compaction_items(&state, &OPEN_AI_PROVIDER_ID).unwrap(),
@@ -1231,7 +1231,7 @@ mod tests {
                     "role": "user",
                     "content": [{
                         "type": "input_text",
-                        "text": "Retain this context."
+                        "text": "保留此上下文。"
                     }]
                 }],
                 "prompt_cache_key": "thread-123",
@@ -1256,7 +1256,7 @@ mod tests {
                         "output": [{
                             "type": "message",
                             "role": "assistant",
-                            "content": "This is not an opaque compaction item."
+                            "content": "这不是一个不透明的压缩项。"
                         }],
                         "usage": {
                             "input_tokens": 100,
@@ -1277,15 +1277,15 @@ mod tests {
 
         assert!(
             matches!(&error, LanguageModelCompletionError::Other(_)),
-            "expected invalid canonical output to be rejected, got {error:?}"
+            "期望拒绝无效的规范输出,实际得到 {error:?}"
         );
-        assert!(error.to_string().contains("compaction item"));
+        assert!(error.to_string().contains("压缩项"));
     }
 
     #[test]
     fn test_api_error_conversion_with_upstream_http_error() {
         // upstream_http_error with 503 status should become ServerOverloaded
-        let error_body = r#"{"code":"upstream_http_error","message":"Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers, reset reason: connection timeout","upstream_status":503}"#;
+        let error_body = r#"{"code":"upstream_http_error","message":"从 Anthropic API 收到错误:上游连接错误或重置,重置原因:连接超时","upstream_status":503}"#;
 
         let api_error = ApiError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
@@ -1299,17 +1299,17 @@ mod tests {
             LanguageModelCompletionError::UpstreamProviderError { message, .. } => {
                 assert_eq!(
                     message,
-                    "Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers, reset reason: connection timeout"
+                    "从 Anthropic API 收到错误:上游连接错误或重置,重置原因:连接超时"
                 );
             }
             _ => panic!(
-                "Expected UpstreamProviderError for upstream 503, got: {:?}",
+                "对于上游 503,期望 UpstreamProviderError,实际得到:{:?}",
                 completion_error
             ),
         }
 
         // upstream_http_error with 500 status should become ApiInternalServerError
-        let error_body = r#"{"code":"upstream_http_error","message":"Received an error from the OpenAI API: internal server error","upstream_status":500}"#;
+        let error_body = r#"{"code":"upstream_http_error","message":"从 OpenAI API 收到错误:内部服务器错误","upstream_status":500}"#;
 
         let api_error = ApiError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
@@ -1323,17 +1323,17 @@ mod tests {
             LanguageModelCompletionError::UpstreamProviderError { message, .. } => {
                 assert_eq!(
                     message,
-                    "Received an error from the OpenAI API: internal server error"
+                    "从 OpenAI API 收到错误:内部服务器错误"
                 );
             }
             _ => panic!(
-                "Expected UpstreamProviderError for upstream 500, got: {:?}",
+                "对于上游 500,期望 UpstreamProviderError,实际得到:{:?}",
                 completion_error
             ),
         }
 
         // upstream_http_error with 429 status should become RateLimitExceeded
-        let error_body = r#"{"code":"upstream_http_error","message":"Received an error from the Google API: rate limit exceeded","upstream_status":429}"#;
+        let error_body = r#"{"code":"upstream_http_error","message":"从 Google API 收到错误:超出速率限制","upstream_status":429}"#;
 
         let api_error = ApiError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
@@ -1347,17 +1347,17 @@ mod tests {
             LanguageModelCompletionError::UpstreamProviderError { message, .. } => {
                 assert_eq!(
                     message,
-                    "Received an error from the Google API: rate limit exceeded"
+                    "从 Google API 收到错误:超出速率限制"
                 );
             }
             _ => panic!(
-                "Expected UpstreamProviderError for upstream 429, got: {:?}",
+                "对于上游 429,期望 UpstreamProviderError,实际得到:{:?}",
                 completion_error
             ),
         }
 
         // Regular 500 error without upstream_http_error should remain ApiInternalServerError for Zed
-        let error_body = "Regular internal server error";
+        let error_body = "常规内部服务器错误";
 
         let api_error = ApiError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
@@ -1370,16 +1370,16 @@ mod tests {
         match completion_error {
             LanguageModelCompletionError::ApiInternalServerError { provider, message } => {
                 assert_eq!(provider, PROVIDER_NAME);
-                assert_eq!(message, "Regular internal server error");
+                assert_eq!(message, "常规内部服务器错误");
             }
             _ => panic!(
-                "Expected ApiInternalServerError for regular 500, got: {:?}",
+                "对于常规 500,期望 ApiInternalServerError,实际得到:{:?}",
                 completion_error
             ),
         }
 
         // upstream_http_429 format should be converted to UpstreamProviderError
-        let error_body = r#"{"code":"upstream_http_429","message":"Upstream Anthropic rate limit exceeded.","retry_after":30.5}"#;
+        let error_body = r#"{"code":"upstream_http_429","message":"超出上游 Anthropic 速率限制。","retry_after":30.5}"#;
 
         let api_error = ApiError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
@@ -1395,18 +1395,18 @@ mod tests {
                 status,
                 retry_after,
             } => {
-                assert_eq!(message, "Upstream Anthropic rate limit exceeded.");
+                assert_eq!(message, "超出上游 Anthropic 速率限制。");
                 assert_eq!(status, StatusCode::TOO_MANY_REQUESTS);
                 assert_eq!(retry_after, Some(Duration::from_secs_f64(30.5)));
             }
             _ => panic!(
-                "Expected UpstreamProviderError for upstream_http_429, got: {:?}",
+                "对于 upstream_http_429,期望 UpstreamProviderError,实际得到:{:?}",
                 completion_error
             ),
         }
 
         // Invalid JSON in error body should fall back to regular error handling
-        let error_body = "Not JSON at all";
+        let error_body = "根本不是 JSON";
 
         let api_error = ApiError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
@@ -1421,7 +1421,7 @@ mod tests {
                 assert_eq!(provider, PROVIDER_NAME);
             }
             _ => panic!(
-                "Expected ApiInternalServerError for invalid JSON, got: {:?}",
+                "对于无效 JSON,期望 ApiInternalServerError,实际得到:{:?}",
                 completion_error
             ),
         }
@@ -1431,7 +1431,7 @@ mod tests {
     fn test_response_stream_error_maps_to_structured_variant() {
         // Read/deserialize failures mid-stream must keep their structured
         // variant rather than collapsing into `Other` (the source of the
-        // generic "Request failed." message).
+        // generic "请求失败。" message).
         let read = ResponseStreamError::Read(std::io::Error::from(std::io::ErrorKind::BrokenPipe))
             .into_completion_error(PROVIDER_NAME);
         assert!(
@@ -1439,11 +1439,11 @@ mod tests {
                 read,
                 LanguageModelCompletionError::ApiReadResponseError { .. }
             ),
-            "Expected ApiReadResponseError, got: {read:?}"
+            "期望 ApiReadResponseError,实际得到:{read:?}"
         );
 
         let deserialize = ResponseStreamError::Deserialize(
-            serde_json::from_str::<serde_json::Value>("not json").unwrap_err(),
+            serde_json::from_str::<serde_json::Value>("不是 JSON").unwrap_err(),
         )
         .into_completion_error(PROVIDER_NAME);
         assert!(
@@ -1451,7 +1451,7 @@ mod tests {
                 deserialize,
                 LanguageModelCompletionError::DeserializeResponse { .. }
             ),
-            "Expected DeserializeResponse, got: {deserialize:?}"
+            "期望 DeserializeResponse,实际得到:{deserialize:?}"
         );
     }
 
@@ -1460,7 +1460,7 @@ mod tests {
             thread_id: Some("thread-123".to_string()),
             messages: vec![LanguageModelRequestMessage {
                 role: Role::User,
-                content: vec![MessageContent::Text("Retain this context.".to_string())],
+                content: vec![MessageContent::Text("保留此上下文。".to_string())],
                 cache: false,
                 reasoning_details: None,
             }],

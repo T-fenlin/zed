@@ -12,19 +12,19 @@ fn test_add() {
     assert_eq!(
         search_history.current(&cursor),
         None,
-        "No current selection should be set for the default search history"
+        "默认搜索历史不应设置当前选中项"
     );
 
     search_history.add(&mut cursor, "rust".to_string());
     assert_eq!(
         search_history.current(&cursor),
         Some("rust"),
-        "Newly added item should be selected"
+        "新添加的项应被选中"
     );
 
     // check if duplicates are not added
     search_history.add(&mut cursor, "rust".to_string());
-    assert_eq!(search_history.len(), 1, "Should not add a duplicate");
+    assert_eq!(search_history.len(), 1, "不应添加重复项");
     assert_eq!(search_history.current(&cursor), Some("rust"));
 
     // check if new string containing the previous string replaces it
@@ -32,7 +32,7 @@ fn test_add() {
     assert_eq!(
         search_history.len(),
         1,
-        "Should replace previous item if it's a substring"
+        "如果新字符串包含前一项,则应替换前一项"
     );
     assert_eq!(search_history.current(&cursor), Some("rustlang"));
 
@@ -41,7 +41,7 @@ fn test_add() {
     search_history.previous(&mut cursor, "");
     assert_eq!(search_history.current(&cursor), Some("rustlang"));
     search_history.add(&mut cursor, "rustlang".to_string());
-    assert_eq!(search_history.len(), 3, "Should add item");
+    assert_eq!(search_history.len(), 3, "应添加该项");
     assert_eq!(search_history.current(&cursor), Some("rustlang"));
 
     // push enough items to test SEARCH_HISTORY_LIMIT
@@ -59,7 +59,7 @@ fn test_next_and_previous() {
     assert_eq!(
         search_history.next(&mut cursor),
         None,
-        "Default search history should not have a next item"
+        "默认搜索历史不应有下一项"
     );
 
     search_history.add(&mut cursor, "Rust".to_string());
@@ -105,7 +105,7 @@ fn test_reset_selection() {
     assert_eq!(
         search_history.previous(&mut cursor, ""),
         Some("TypeScript"),
-        "Should start from the end after reset on previous item query"
+        "重置后查询上一项时应从末尾开始"
     );
 
     search_history.previous(&mut cursor, "");

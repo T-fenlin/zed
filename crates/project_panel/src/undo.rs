@@ -265,12 +265,12 @@ impl UndoManager {
     pub fn undo(&mut self) -> Result<()> {
         self.tx
             .try_send(UndoMessage::Undo)
-            .context("Undo and redo task can not keep up")
+            .context("撤销和重做任务无法跟上操作速度")
     }
     pub fn redo(&mut self) -> Result<()> {
         self.tx
             .try_send(UndoMessage::Redo)
-            .context("Undo and redo task can not keep up")
+            .context("撤销和重做任务无法跟上操作速度")
     }
     pub fn record(&mut self, changes: impl IntoIterator<Item = Change>) -> Result<()> {
         // In a collab session, undoing or redoing can send `TrashProjectEntry`
@@ -286,7 +286,7 @@ impl UndoManager {
 
         self.tx
             .try_send(UndoMessage::Changed(changes.into_iter().collect()))
-            .context("Undo and redo task can not keep up")
+            .context("撤销和重做任务无法跟上操作速度")
     }
     /// just for the UI, an undo may still fail if there are concurrent file
     /// operations happening.
@@ -316,10 +316,10 @@ impl UndoMessage {
     fn error_title(&self) -> &'static str {
         match self {
             UndoMessage::Changed(_) => {
-                "this is a bug in the manage_undo_and_redo task please report"
+                "这是 manage_undo_and_redo 任务中的一个错误,请报告"
             }
-            UndoMessage::Undo => "Undo Failed",
-            UndoMessage::Redo => "Redo Failed",
+            UndoMessage::Undo => "撤销失败",
+            UndoMessage::Redo => "重做失败",
         }
     }
 }
@@ -513,7 +513,7 @@ impl Inner {
         cx: &mut AsyncApp,
     ) -> Result<CreatedEntry> {
         let Some(workspace) = self.workspace.upgrade() else {
-            return Err(anyhow!("Failed to obtain workspace."));
+            return Err(anyhow!("无法获取工作区。"));
         };
 
         let (from_name, to_name) = workspace.update(cx, |workspace, cx| {
@@ -542,7 +542,7 @@ impl Inner {
                     .entry_for_path(from, cx)
                     .map(|entry| entry.id)
                     .with_context(|| {
-                        format!("Failed to {operation} `{from_name}`. It no longer exists.")
+                        format!("无法{operation} `{from_name}`。它已不存在。")
                     })?;
 
                 Ok(project.rename_entry(entry_id, to.clone(), cx))
@@ -561,7 +561,7 @@ impl Inner {
 
             if already_exists {
                 anyhow!(
-                    "Failed to {operation} `{from_name}` to `{to_name}`. A file or folder already exists there."
+                    "无法将 `{from_name}` {operation}到 `{to_name}`。该位置已存在同名文件或文件夹。"
                 )
             } else {
                 err
@@ -571,7 +571,7 @@ impl Inner {
 
     async fn trash(&self, project_path: &ProjectPath, cx: &mut AsyncApp) -> Result<TrashId> {
         let Some(workspace) = self.workspace.upgrade() else {
-            return Err(anyhow!("Failed to obtain workspace."));
+            return Err(anyhow!("无法获取工作区。"));
         };
 
         let name = workspace.update(cx, |workspace, cx| {
@@ -586,17 +586,17 @@ impl Inner {
                 let entry_id = project
                     .entry_for_path(project_path, cx)
                     .map(|entry| entry.id)
-                    .with_context(|| format!("Failed to trash `{name}`. It no longer exists."))?;
+                    .with_context(|| format!("无法将 `{name}` 移入回收站。它已不存在。"))?;
 
                 project
                     .trash_entry(entry_id, cx)
-                    .with_context(|| format!("Failed to trash `{name}`."))
+                    .with_context(|| format!("无法将 `{name}` 移入回收站。"))
             })
         })?;
 
         match task.await {
             Ok(trash_id) => Ok(trash_id),
-            Err(err) => Err(err).context(format!("Failed to trash `{name}`.")),
+            Err(err) => Err(err).context(format!("无法将 `{name}` 移入回收站。")),
         }
     }
 
@@ -607,7 +607,7 @@ impl Inner {
         cx: &mut AsyncApp,
     ) -> Result<ProjectPath> {
         let Some(workspace) = self.workspace.upgrade() else {
-            return Err(anyhow!("Failed to obtain workspace."));
+            return Err(anyhow!("无法获取工作区。"));
         };
 
         let name = workspace
@@ -648,9 +648,9 @@ impl Inner {
             .await
             .map_err(|err| match err.downcast_ref::<TrashRestoreError>() {
                 Some(TrashRestoreError::Collision { .. }) => anyhow!(
-                    "Failed to restore `{name}`. Something already exists at its original location."
+                    "无法恢复 `{name}`。其原始位置已存在同名文件或文件夹。"
                 ),
-                _ => anyhow!("Failed to restore `{name}`. It may have been permanently deleted."),
+                _ => anyhow!("无法恢复 `{name}`。它可能已被永久删除。"),
             })
     }
 

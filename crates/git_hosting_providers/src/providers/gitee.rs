@@ -42,7 +42,7 @@ impl Gitee {
         let mut response = client
             .send(request.body(AsyncBody::default())?)
             .await
-            .with_context(|| format!("error fetching Gitee commit details at {:?}", url))?;
+            .with_context(|| format!("获取 Gitee 提交详情时出错,位置:{:?}", url))?;
 
         let mut body = Vec::new();
         response.body_mut().read_to_end(&mut body).await?;
@@ -50,7 +50,7 @@ impl Gitee {
         if response.status().is_client_error() {
             let text = String::from_utf8_lossy(body.as_slice());
             bail!(
-                "status error {}, response: {text:?}",
+                "状态错误 {}, 响应: {text:?}",
                 response.status().as_u16()
             );
         }
@@ -59,7 +59,7 @@ impl Gitee {
 
         serde_json::from_str::<CommitDetails>(body_str)
             .map(|commit| commit.author)
-            .context("failed to deserialize Gitee commit details")
+            .context("无法解析 Gitee 提交详情")
     }
 }
 

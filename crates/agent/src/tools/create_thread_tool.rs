@@ -40,7 +40,7 @@ use crate::{AgentTool, SiblingThreadRequest, ThreadEnvironment, ToolCallEventStr
 /// Set `use_new_worktree` to true to spawn the sibling inside a brand-new
 /// workspace (a new tab) backed by linked git worktrees of each git
 /// repository in the current project. This mirrors what the user gets when
-/// they manually pick "Create worktree" from the worktree picker.
+/// they manually pick "创建工作树" from the worktree picker.
 ///
 /// - The new workspace opens in its own tab; switch to it manually to see
 ///   the sibling's progress.
@@ -60,7 +60,7 @@ use crate::{AgentTool, SiblingThreadRequest, ThreadEnvironment, ToolCallEventStr
 #[serde(rename_all = "snake_case")]
 pub struct CreateThreadToolInput {
     /// Short descriptive title for the new thread, shown in the sidebar
-    /// (e.g., "Investigate flaky login test").
+    /// (e.g., "调查不稳定的登录测试").
     pub title: String,
 
     /// The initial prompt to send to the new thread. Include all the context the
@@ -86,7 +86,7 @@ pub struct CreateThreadToolInput {
 
     /// Optional name for the new worktree directory. When omitted, the
     /// editor generates a random non-colliding name (matching the
-    /// manual "Create worktree" UI behavior). Only used when
+    /// manual "创建工作树" UI behavior). Only used when
     /// `use_new_worktree` is true.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub worktree_name: Option<String>,
@@ -119,7 +119,7 @@ pub enum CreateThreadToolOutput {
 impl From<CreateThreadToolOutput> for LanguageModelToolResultContent {
     fn from(output: CreateThreadToolOutput) -> Self {
         serde_json::to_string(&output)
-            .unwrap_or_else(|e| format!("Failed to serialize create_thread output: {e}"))
+            .unwrap_or_else(|e| format!("序列化 create_thread 输出失败:{e}"))
             .into()
     }
 }
@@ -150,12 +150,12 @@ impl AgentTool for CreateThreadTool {
         _cx: &mut App,
     ) -> SharedString {
         match input {
-            Ok(i) => format!("Create thread: {}", i.title).into(),
+            Ok(i) => format!("创建线程:{}", i.title).into(),
             Err(value) => value
                 .get("title")
                 .and_then(|v| v.as_str())
-                .map(|s| format!("Create thread: {s}").into())
-                .unwrap_or_else(|| "Create thread".into()),
+                .map(|s| format!("创建线程:{s}").into())
+                .unwrap_or_else(|| "创建线程".into()),
         }
     }
 
@@ -170,7 +170,7 @@ impl AgentTool for CreateThreadTool {
                 .recv()
                 .await
                 .map_err(|e| CreateThreadToolOutput::Error {
-                    error: format!("Failed to receive tool input: {e}"),
+                    error: format!("接收工具输入失败:{e}"),
                 })?;
 
             let title: SharedString = input.title.clone().into();

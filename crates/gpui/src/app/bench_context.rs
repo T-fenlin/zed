@@ -80,7 +80,7 @@ impl BenchReport {
     /// Creates a report whose per-frame budget is one frame at `fps` when
     /// counting frame budget overruns.
     pub fn with_fps(fps: u64) -> Self {
-        assert!(fps > 0, "frame rate must be greater than zero");
+        assert!(fps > 0, "帧率必须大于零");
         Self::with_frame_budget_nanos(NANOS_PER_SECOND / fps as u128)
     }
 
@@ -147,14 +147,14 @@ impl BenchReport {
             return;
         }
 
-        let benchmark_name = benchmark_name.unwrap_or("unknown benchmark");
-        eprintln!("GPUI bench report (all observed iterations): {benchmark_name}");
-        eprintln!("  note: includes Criterion warmup/calibration");
-        self.print_histogram("window dirty-to-draw", &frame_snapshot.dirty_to_draw);
-        self.print_histogram("window draw", &frame_snapshot.draw);
+        let benchmark_name = benchmark_name.unwrap_or("未知基准测试");
+        eprintln!("GPUI 基准测试报告(所有观察到的迭代):{benchmark_name}");
+        eprintln!("  注意:包含 Criterion 预热/校准");
+        self.print_histogram("窗口脏标记到绘制", &frame_snapshot.dirty_to_draw);
+        self.print_histogram("窗口绘制", &frame_snapshot.draw);
         if !frame_snapshot.invalidations_per_frame.is_empty() {
             eprintln!(
-                "  invalidations per frame: mean {:.2}, max {}",
+                "  每帧失效次数:平均值 {:.2},最大值 {}",
                 frame_snapshot.invalidations_per_frame.mean(),
                 frame_snapshot.invalidations_per_frame.max()
             );
@@ -168,34 +168,34 @@ impl BenchReport {
 
         let max_foreground_time = Duration::from_nanos(histogram.max());
         eprintln!("  {name}:");
-        eprintln!("    samples: {}", histogram.len());
+        eprintln!("    样本数:{}", histogram.len());
         eprintln!(
-            "    mean: {}",
+            "    平均值:{}",
             format_duration(Duration::from_nanos(histogram.mean() as u64))
         );
         eprintln!(
-            "    p50: {}",
+            "    p50:{}",
             format_duration(Duration::from_nanos(histogram.value_at_quantile(0.50)))
         );
         eprintln!(
-            "    p90: {}",
+            "    p90:{}",
             format_duration(Duration::from_nanos(histogram.value_at_quantile(0.90)))
         );
         eprintln!(
-            "    p95: {}",
+            "    p95:{}",
             format_duration(Duration::from_nanos(histogram.value_at_quantile(0.95)))
         );
         eprintln!(
-            "    p99: {}",
+            "    p99:{}",
             format_duration(Duration::from_nanos(histogram.value_at_quantile(0.99)))
         );
-        eprintln!("    max: {}", format_duration(max_foreground_time));
+        eprintln!("    最大值:{}", format_duration(max_foreground_time));
         eprintln!(
-            "    frame budget overruns total: {}",
+            "    帧预算超限总数:{}",
             self.total_budget_overruns(histogram)
         );
         eprintln!(
-            "    frame budget overruns max: {}",
+            "    帧预算超限最大值:{}",
             self.budget_overruns(max_foreground_time)
         );
     }
@@ -210,9 +210,9 @@ struct WindowFrameSnapshot {
 impl WindowFrameSnapshot {
     fn new() -> Self {
         Self {
-            dirty_to_draw: Histogram::new(3).expect("3 significant digits is valid"),
-            draw: Histogram::new(3).expect("3 significant digits is valid"),
-            invalidations_per_frame: Histogram::new(3).expect("3 significant digits is valid"),
+            dirty_to_draw: Histogram::new(3).expect("3 位有效数字是有效的"),
+            draw: Histogram::new(3).expect("3 位有效数字是有效的"),
+            invalidations_per_frame: Histogram::new(3).expect("3 位有效数字是有效的"),
         }
     }
 
@@ -273,7 +273,7 @@ impl<Output> Drop for MeasuredTaskOutput<Output> {
         let frame_trace_scope = self
             .frame_trace_scope
             .take()
-            .expect("measured task output should retain its frame trace scope");
+            .expect("测量任务输出应保留其帧跟踪范围");
         self.report
             .record_frame_timings(frame_trace_scope.finish().iter());
     }
@@ -299,7 +299,7 @@ where
     foreground_executor
         .dispatcher()
         .as_threaded()
-        .expect("BenchAppContext requires a ThreadedDispatcher")
+        .expect("BenchAppContext 需要 ThreadedDispatcher")
         .run_until(|| output.borrow_mut().take())
 }
 
@@ -411,7 +411,7 @@ impl<'a, 'measurement> BenchAppContext<'a, 'measurement> {
         self.background_executor
             .dispatcher()
             .as_threaded()
-            .expect("validated in BenchAppContext::build")
+            .expect("在 BenchAppContext::build 中验证")
             .run_until_idle();
     }
 
@@ -423,7 +423,7 @@ impl<'a, 'measurement> BenchAppContext<'a, 'measurement> {
         self.background_executor
             .dispatcher()
             .as_threaded()
-            .expect("validated in BenchAppContext::build")
+            .expect("在 BenchAppContext::build 中验证")
             .run_until(ready)
     }
 
@@ -533,7 +533,7 @@ impl<'a, 'measurement> BenchAppContext<'a, 'measurement> {
             .with_window(view.entity_id(), |window, _| {
                 window.window_handle().window_id()
             })
-            .expect("cannot benchmark renderer for entity without a current window");
+            .expect("无法为没有当前窗口的实体进行渲染器基准测试");
 
         let dispatcher = self.background_executor.dispatcher().clone();
         let collector = FrameTraceScope::start();
@@ -543,19 +543,19 @@ impl<'a, 'measurement> BenchAppContext<'a, 'measurement> {
             // production too, so run it inside the measured interval.
             dispatcher
                 .as_threaded()
-                .expect("validated in BenchAppContext::build")
+                .expect("在 BenchAppContext::build 中验证")
                 .run_ready_main_tasks();
             self.with_window(view.entity_id(), |window, cx| {
                 view.update(cx, |view, cx| update(view, window, cx));
             })
-            .expect("cannot benchmark renderer for entity without a current window");
+            .expect("无法为没有当前窗口的实体进行渲染器基准测试");
             // Submit the frame drawn by the update's effect flush, mirroring
             // production where every drawn frame is presented. With a headless
             // renderer this includes scene submission to the GPU.
             self.with_window(view.entity_id(), |window, _| {
                 window.present_if_needed();
             })
-            .expect("cannot benchmark renderer for entity without a current window");
+            .expect("无法为没有当前窗口的实体进行渲染器基准测试");
         };
         bencher.iter(&mut benchmark);
 
@@ -584,7 +584,7 @@ impl<'a, 'measurement> BenchAppContext<'a, 'measurement> {
                     },
                     |_, cx| cx.new(|_| Empty),
                 )
-                .expect("failed to open benchmark window")
+                .expect("无法打开基准测试窗口")
                 .into();
             window
         };
@@ -598,7 +598,7 @@ impl<'a, 'measurement> BenchAppContext<'a, 'measurement> {
 
     fn take_bencher(&self, benchmark_kind: &str) -> &'a mut criterion::Bencher<'measurement> {
         self.bencher.borrow_mut().take().unwrap_or_else(|| {
-            panic!("cannot start {benchmark_kind}: benchmark measurement is already running")
+            panic!("无法启动 {benchmark_kind}:基准测试测量已在运行")
         })
     }
 
@@ -606,7 +606,7 @@ impl<'a, 'measurement> BenchAppContext<'a, 'measurement> {
         let previous = self.bencher.borrow_mut().replace(bencher);
         assert!(
             previous.is_none(),
-            "benchmark bencher was unexpectedly present after measurement"
+            "测量后基准测试器意外存在"
         );
     }
 
@@ -625,7 +625,7 @@ impl<'a, 'measurement> BenchAppContext<'a, 'measurement> {
         let dispatcher = self.background_executor.dispatcher();
         let dispatcher = dispatcher
             .as_threaded()
-            .expect("validated in BenchAppContext::build");
+            .expect("在 BenchAppContext::build 中验证");
 
         drop(self.app);
         drop(self.foreground_executor);
@@ -637,7 +637,7 @@ impl<'a, 'measurement> BenchAppContext<'a, 'measurement> {
             dispatcher.run_until_idle();
         }
         panic!(
-            "benchmark teardown kept scheduling timers: {}",
+            "基准测试清理仍在调度定时器:{}",
             dispatcher.debug_state()
         );
     }
@@ -676,7 +676,7 @@ impl AppContext for BenchAppContext<'_, '_> {
     where
         T: 'static,
     {
-        panic!("Cannot use as_mut with BenchAppContext. Call update() instead.")
+        panic!("无法将 as_mut 与 BenchAppContext 一起使用。请改用 更新()。")
     }
 
     fn read_entity<T, R>(&self, handle: &Entity<T>, read: impl FnOnce(&T, &App) -> R) -> R
@@ -763,7 +763,7 @@ impl<'a, 'measurement> BenchWindowContext<'a, 'measurement> {
     pub fn update<R>(&mut self, update: impl FnOnce(&mut Window, &mut App) -> R) -> R {
         self.cx
             .update_window(self.window, |_, window, cx| update(window, cx))
-            .expect("benchmark window was unexpectedly closed")
+            .expect("基准测试窗口意外关闭")
     }
 }
 
@@ -771,7 +771,7 @@ impl AppContext for BenchWindowContext<'_, '_> {
     fn new<T: 'static>(&mut self, build_entity: impl FnOnce(&mut Context<T>) -> T) -> Entity<T> {
         self.window
             .update(&mut self.cx, |_, _, cx| cx.new(build_entity))
-            .expect("benchmark window was unexpectedly closed")
+            .expect("基准测试窗口意外关闭")
     }
 
     fn reserve_entity<T: 'static>(&mut self) -> Reservation<T> {
@@ -787,7 +787,7 @@ impl AppContext for BenchWindowContext<'_, '_> {
             .update(&mut self.cx, |_, _, cx| {
                 cx.insert_entity(reservation, build_entity)
             })
-            .expect("benchmark window was unexpectedly closed")
+            .expect("基准测试窗口意外关闭")
     }
 
     fn update_entity<T: 'static, R>(
@@ -873,7 +873,7 @@ impl VisualContext for BenchWindowContext<'_, '_> {
                 entity.update(app, |entity, cx| update(entity, window, cx))
             })
             .ok_or_else(|| {
-                anyhow!("entity has no current window; use `update` instead of `update_in`")
+                anyhow!("实体没有当前窗口;请使用 `更新` 而不是 `更新_in`")
             })
     }
 
@@ -925,20 +925,20 @@ mod tests {
             .spawn(async move {
                 sender
                     .send(())
-                    .expect("foreground receiver should remain alive");
+                    .expect("前台接收器应保持活动状态");
             })
             .detach();
         let expected_output = Rc::new(42);
         let task_output = expected_output.clone();
         let task = foreground_executor.spawn(async move {
-            receiver.await.expect("background task should send a value");
+            receiver.await.expect("后台任务应发送一个值");
             task_output
         });
 
         let output = run_task_to_completion(&foreground_executor, task);
         assert!(
             Rc::ptr_eq(&output, &expected_output),
-            "task runner should preserve non-Send foreground output"
+            "任务运行器应保留非 Send 前台输出"
         );
     }
 }

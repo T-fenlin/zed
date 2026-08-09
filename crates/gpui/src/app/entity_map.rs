@@ -167,7 +167,7 @@ impl EntityMap {
     fn assert_valid_context(&self, entity: &AnyEntity) {
         debug_assert!(
             Weak::ptr_eq(&entity.entity_map, &Arc::downgrade(&self.ref_counts)),
-            "used a entity with the wrong context"
+            "使用了错误上下文的实体"
         );
     }
 
@@ -192,7 +192,7 @@ impl EntityMap {
                 debug_assert_eq!(
                     count.load(SeqCst),
                     0,
-                    "dropped an entity that was referenced"
+                    "丢弃了仍被引用的实体"
                 );
                 accessed_entities.remove(&entity_id);
                 // If the EntityId was allocated with `Context::reserve`,
@@ -206,7 +206,7 @@ impl EntityMap {
 #[track_caller]
 fn double_lease_panic<T>(operation: &str) -> ! {
     panic!(
-        "cannot {operation} {} while it is already being updated",
+        "无法在 {} 正在更新时执行 {operation}",
         std::any::type_name::<T>()
     )
 }
@@ -234,7 +234,7 @@ impl<T: 'static> core::ops::DerefMut for Lease<T> {
 impl<T> Drop for Lease<T> {
     fn drop(&mut self) {
         if self.entity.is_some() && !panicking() {
-            panic!("Leases must be ended with EntityMap::end_lease")
+            panic!("租约必须通过 EntityMap::end_lease 结束")
         }
     }
 }
@@ -315,9 +315,9 @@ impl Clone for AnyEntity {
             let count = entity_map
                 .counts
                 .get(self.entity_id)
-                .expect("detected over-release of a entity");
+                .expect("检测到实体过度释放");
             let prev_count = count.fetch_add(1, SeqCst);
-            assert_ne!(prev_count, 0, "Detected over-release of a entity.");
+            assert_ne!(prev_count, 0, "检测到实体过度释放。");
         }
 
         Self {
@@ -343,9 +343,9 @@ impl Drop for AnyEntity {
             let count = entity_map
                 .counts
                 .get(self.entity_id)
-                .expect("detected over-release of a handle.");
+                .expect("检测到句柄过度释放。");
             let prev_count = count.fetch_sub(1, SeqCst);
-            assert_ne!(prev_count, 0, "Detected over-release of a entity.");
+            assert_ne!(prev_count, 0, "检测到实体过度释放。");
             if prev_count == 1 {
                 // We were the last reference to this entity, so we can remove it.
                 let mut entity_map = RwLockUpgradableReadGuard::upgrade(entity_map);
@@ -659,7 +659,7 @@ impl AnyWeakEntity {
             .is_some()
         {
             panic!(
-                "entity was recently dropped but resources are retained until the end of the effect cycle."
+                "实体最近被丢弃,但资源会保留到效果周期结束。"
             )
         }
     }
@@ -782,7 +782,7 @@ impl<T: 'static> WeakEntity<T> {
     where
         C: AppContext,
     {
-        let entity = self.upgrade().context("entity released")?;
+        let entity = self.upgrade().context("实体已释放")?;
         Ok(cx.update_entity(&entity, update))
     }
 
@@ -797,11 +797,11 @@ impl<T: 'static> WeakEntity<T> {
     where
         C: AppContext,
     {
-        let entity = self.upgrade().context("entity released")?;
+        let entity = self.upgrade().context("实体已释放")?;
         cx.with_window(entity.entity_id(), |window, app| {
             entity.update(app, |entity, cx| update(entity, window, cx))
         })
-        .context("entity has no current window")
+        .context("实体没有当前窗口")
     }
 
     /// Reads the entity referenced by this handle with the given function if
@@ -811,7 +811,7 @@ impl<T: 'static> WeakEntity<T> {
     where
         C: AppContext,
     {
-        let entity = self.upgrade().context("entity released")?;
+        let entity = self.upgrade().context("实体已释放")?;
         Ok(cx.read_entity(&entity, read))
     }
 
@@ -1011,16 +1011,16 @@ impl LeakDetector {
                 if let Some(mut backtrace) = backtrace {
                     backtrace.resolve();
                     let backtrace = BacktraceFormatter(backtrace);
-                    writeln!(out, "Leaked handle:\n{:?}", backtrace).unwrap();
+                    writeln!(out, "泄漏的句柄:\n{:?}", backtrace).unwrap();
                 } else {
                     writeln!(
                         out,
-                        "Leaked handle: (export LEAK_BACKTRACE to find allocation site)"
+                        "泄漏的句柄:(导出 LEAK_BACKTRACE 以查找分配位置)"
                     )
                     .unwrap();
                 }
             }
-            panic!("Handles for {} leaked:\n{out}", data.type_name);
+            panic!("{} 的句柄泄漏:\n{out}", data.type_name);
         }
     }
 
@@ -1061,14 +1061,14 @@ impl LeakDetector {
                     let backtrace = BacktraceFormatter(backtrace);
                     writeln!(
                         out,
-                        "Leaked handle for entity {} ({entity_id:?}):\n{:?}",
+                        "实体 {} ({entity_id:?}) 的句柄泄漏:\n{:?}",
                         data.type_name, backtrace
                     )
                     .unwrap();
                 } else {
                     writeln!(
                         out,
-                        "Leaked handle for entity {} ({entity_id:?}): (export LEAK_BACKTRACE to find allocation site)",
+                        "实体 {} ({entity_id:?}) 的句柄泄漏:(导出 LEAK_BACKTRACE 以查找分配位置)",
                         data.type_name
                     )
                     .unwrap();
@@ -1077,7 +1077,7 @@ impl LeakDetector {
         }
 
         if !out.is_empty() {
-            panic!("New entity leaks detected since snapshot:\n{out}");
+            panic!("自快照以来检测到新的实体泄漏:\n{out}");
         }
     }
 }
@@ -1099,21 +1099,21 @@ impl Drop for LeakDetector {
                     let backtrace = BacktraceFormatter(backtrace);
                     writeln!(
                         out,
-                        "Leaked handle for entity {} ({entity_id:?}):\n{:?}",
+                        "实体 {} ({entity_id:?}) 的句柄泄漏:\n{:?}",
                         data.type_name, backtrace
                     )
                     .unwrap();
                 } else {
                     writeln!(
                         out,
-                        "Leaked handle for entity {} ({entity_id:?}): (export LEAK_BACKTRACE to find allocation site)",
+                        "实体 {} ({entity_id:?}) 的句柄泄漏:(导出 LEAK_BACKTRACE 以查找分配位置)",
                         data.type_name
                     )
                     .unwrap();
                 }
             }
         }
-        panic!("Exited with leaked handles:\n{out}");
+        panic!("退出时存在泄漏的句柄:\n{out}");
     }
 }
 

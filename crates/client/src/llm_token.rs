@@ -108,7 +108,7 @@ impl RefreshLlmTokenListener {
             .map(|organization| organization.id.clone());
         cx.spawn(async move |this, cx| {
             let organization_id =
-                organization_id.ok_or_else(|| anyhow!("No organization selected."))?;
+                organization_id.ok_or_else(|| anyhow!("未选择组织。"))?;
 
             match mode {
                 TokenRefreshMode::Refresh => {

@@ -27,7 +27,7 @@ impl CaptureInput {
             .description()
             .map(|desc| desc.name().to_string())
             .unwrap_or("<unknown>".to_string());
-        log::info!("Using microphone: {}", name);
+        log::info!("正在使用麦克风: {}", name);
 
         let samples = Arc::new(Mutex::new(Vec::new()));
         let stream = start_capture(device, config.clone(), samples.clone())?;
@@ -43,9 +43,9 @@ impl CaptureInput {
 
     pub fn finish(self) -> Result<PathBuf> {
         let name = self.name;
-        let mut path = env::current_dir().context("Could not get current dir")?;
+        let mut path = env::current_dir().context("无法获取当前目录")?;
         path.push(&format!("test_recording_{name}.wav"));
-        log::info!("Test recording written to: {}", path.display());
+        log::info!("测试录音已写入:{}", path.display());
         write_out(self.samples, self.config, &path)?;
         Ok(path)
     }
@@ -67,13 +67,13 @@ fn start_capture(
                 };
                 samples
                     .try_lock()
-                    .expect("Only locked after stream ends")
+                    .expect("仅在流结束后锁定")
                     .extend_from_slice(&data);
             },
-            |err| log::error!("error capturing audio track: {:?}", err),
+            |err| log::error!("捕获音频轨道时出错: {:?}", err),
             Some(Duration::from_millis(100)),
         )
-        .context("failed to build input stream")?;
+        .context("无法构建输入流")?;
 
     stream.play()?;
     Ok(stream)
@@ -87,16 +87,16 @@ fn write_out(
     let samples = std::mem::take(
         &mut *samples
             .try_lock()
-            .expect("Stream has ended, callback cant hold the lock"),
+            .expect("流已结束,回调无法持有锁"),
     );
     let samples: Vec<f32> = SampleTypeConverter::<_, f32>::new(samples.into_iter()).collect();
     let mut samples = SamplesBuffer::new(
-        NonZero::new(config.channels()).expect("config channel is never zero"),
-        NonZero::new(config.sample_rate()).expect("config sample_rate is never zero"),
+        NonZero::new(config.channels()).expect("配置声道数永远不会为零"),
+        NonZero::new(config.sample_rate()).expect("配置采样率永远不会为零"),
         samples,
     );
     match rodio::wav_to_file(&mut samples, path) {
         Ok(_) => Ok(()),
-        Err(e) => Err(anyhow::anyhow!("Failed to write wav file: {}", e)),
+        Err(e) => Err(anyhow::anyhow!("写入 WAV 文件失败:{}", e)),
     }
 }

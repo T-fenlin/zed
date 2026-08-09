@@ -116,7 +116,7 @@ pub fn migration_result() -> Option<MigrationResult> {
 /// skills. Migrated skills are model-disabled, so the model never sees
 /// this string — it exists only because the SKILL.md schema requires a
 /// non-empty `description`.
-const PLACEHOLDER_DESCRIPTION: &str = "(no description)";
+const PLACEHOLDER_DESCRIPTION: &str = "(无描述)";
 
 /// Returns `true` if a previous launch has already completed the
 /// rules-to-skills migration check.
@@ -153,7 +153,7 @@ static MIGRATION_TASK_SPAWNED: AtomicBool = AtomicBool::new(false);
 /// has already started it.
 pub fn migrate_rules_to_skills_if_needed(fs: Arc<dyn Fs>, cx: &mut App) {
     if migration_done() {
-        log::info!("Rules-to-skills migration already marked done; skipping startup migration");
+        log::info!("规则到技能迁移已标记完成;跳过启动迁移");
         return;
     }
     // Atomically claim the right to spawn the migration task. If another
@@ -164,7 +164,7 @@ pub fn migrate_rules_to_skills_if_needed(fs: Arc<dyn Fs>, cx: &mut App) {
         .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
         .is_err()
     {
-        log::info!("Rules-to-skills migration already running; skipping duplicate startup request");
+        log::info!("规则到技能迁移已在运行;跳过重复的启动请求");
         return;
     }
 
@@ -175,14 +175,14 @@ pub fn rerun_rules_to_skills_migration(
     fs: Arc<dyn Fs>,
     cx: &mut App,
 ) -> Task<Result<MigrationResult>> {
-    log::info!("Forcing rules-to-skills migration rerun from command");
+    log::info!("从命令强制重新运行规则到技能迁移");
     spawn_rules_to_skills_migration(fs, cx)
 }
 
 fn spawn_rules_to_skills_migration(fs: Arc<dyn Fs>, cx: &mut App) -> Task<Result<MigrationResult>> {
     let prompt_store = PromptStore::global(cx);
     cx.spawn(async move |cx| {
-        let prompt_store = prompt_store.await.context("loading prompt store")?;
+        let prompt_store = prompt_store.await.context("加载提示词存储")?;
         run_rules_to_skills_migration(fs.as_ref(), &prompt_store, cx).await
     })
 }
@@ -193,7 +193,7 @@ async fn run_rules_to_skills_migration(
     cx: &mut AsyncApp,
 ) -> Result<MigrationResult> {
     log::info!(
-        "Starting rules-to-skills migration; skills_dir={}, agents_md={}, prompts_dir={}",
+        "开始规则到技能迁移;技能目录={},AGENTS.md={},提示词目录={}",
         global_skills_dir().display(),
         paths::agents_file().display(),
         paths::prompts_dir().display()
@@ -202,7 +202,7 @@ async fn run_rules_to_skills_migration(
     // Snapshot the (id, title) pairs for every user rule, split by
     // whether it's a Default rule or not. BuiltIn prompts (e.g. the
     // commit-message prompt) are excluded — they're not user-facing
-    // "Rules" in the agent sense.
+    // "规则" in the agent sense.
     let (default_rules, non_default_rules) = prompt_store.read_with(cx, |store, _| {
         let mut default = Vec::new();
         let mut non_default = Vec::new();
@@ -222,7 +222,7 @@ async fn run_rules_to_skills_migration(
         (default, non_default)
     });
     log::info!(
-        "Rules-to-skills migration found {} non-default rules and {} default rules",
+        "规则到技能迁移发现 {} 条非默认规则和 {} 条默认规则",
         non_default_rules.len(),
         default_rules.len()
     );
@@ -251,7 +251,7 @@ async fn run_rules_to_skills_migration(
     write_migration_result(&result).await;
     mark_migration_done().await;
     log::info!(
-        "Finished rules-to-skills migration; skill_names={}, agents_md_names={}, customized_builtins={}",
+        "规则到技能迁移完成;技能名称={},AGENTS.md 名称={},自定义内置={}",
         result.skill_names.len(),
         result.agents_md_names.len(),
         result.customized_builtins.len()
@@ -271,7 +271,7 @@ fn is_customized_builtin_body(builtin: BuiltInPrompt, body: &str) -> bool {
 /// Convert every non-Default user rule into a global Agent Skill on disk.
 /// Returns the titles of rules that were successfully migrated (i.e. the
 /// ones the user will recognize when the announcement modal lists
-/// "these Rules have been migrated to Skills").
+/// "这些规则已迁移到技能").
 async fn migrate_non_default_rules_to_skills(
     fs: &dyn Fs,
     prompt_store: &Entity<PromptStore>,
@@ -301,7 +301,7 @@ async fn migrate_non_default_rules_to_skills(
         {
             Ok(()) => migrated.push(title),
             Err(err) => {
-                log::warn!("Failed to write skill for rule {title:?}: {err:#}");
+                log::warn!("为规则 {title:?} 写入技能失败:{err:#}");
             }
         }
     }
@@ -369,8 +369,8 @@ async fn migrate_default_rules_to_agents_md(
         match append_default_rules_to_agents_md(fs, agents_md_path, &entries_for_append).await {
             Ok(appended_indices) => appended_indices,
             Err(err) => {
-                log::warn!("Failed to append default rules to AGENTS.md: {err:#}");
-                // Treat a write failure as "nothing was actually migrated" so the
+                log::warn!("将默认规则追加到 AGENTS.md 失败:{err:#}");
+                // Treat a write failure as "实际上没有迁移任何内容" so the
                 // announcement modal doesn't lie about what's in AGENTS.md.
                 return (Vec::new(), Vec::new());
             }
@@ -403,7 +403,7 @@ async fn load_rule_body(
     match task.await {
         Ok(body) => Some(body),
         Err(err) => {
-            log::warn!("Skipping rule {title:?}: failed to load body: {err:#}");
+            log::warn!("跳过规则 {title:?}:加载正文失败:{err:#}");
             None
         }
     }
@@ -423,7 +423,7 @@ async fn append_default_rules_to_agents_md(
     }
 
     // `fs.load` errors when the file is missing OR unreadable; treat both
-    // as "no existing content" so the file gets (re-)created from the
+    // as "无现有内容" so the file gets (re-)created from the
     // migrated text.
     let existing_trimmed = fs
         .load(agents_md_path)
@@ -440,7 +440,7 @@ async fn append_default_rules_to_agents_md(
             .is_some_and(|existing| existing.contains(section.trim()))
         {
             log::info!(
-                "Skipping AGENTS.md migration entry {:?}: matching section already exists",
+                "跳过 AGENTS.md 迁移条目 {:?}:匹配的章节已存在",
                 rule.0
             );
             continue;
@@ -493,7 +493,7 @@ async fn write_migration_result(result: &MigrationResult) {
     let json = match serde_json::to_string(result) {
         Ok(json) => json,
         Err(err) => {
-            log::warn!("Failed to serialize rules-to-skills migration result: {err:#}");
+            log::warn!("序列化规则到技能迁移结果失败:{err:#}");
             return;
         }
     };
@@ -660,7 +660,7 @@ mod tests {
             &content,
             SkillSource::Global,
         )
-        .expect("migrated SKILL.md should parse");
+        .expect("迁移后的 SKILL.md 应能解析");
         assert_eq!(skill.name, "my-rule");
         assert_eq!(skill.description, PLACEHOLDER_DESCRIPTION);
         assert!(skill.disable_model_invocation);
@@ -706,13 +706,13 @@ mod tests {
         let written = fs
             .load(&skills_dir.join("my-rule").join(SKILL_FILE_NAME))
             .await
-            .expect("SKILL.md should exist");
+            .expect("SKILL.md 应存在");
         let skill = parse_skill_frontmatter(
             &skills_dir.join("my-rule").join(SKILL_FILE_NAME),
             &written,
             SkillSource::Global,
         )
-        .expect("written SKILL.md should parse");
+        .expect("写入的 SKILL.md 应能解析");
         assert_eq!(skill.name, "my-rule");
         assert!(skill.disable_model_invocation);
     }
@@ -802,7 +802,7 @@ mod tests {
         let migrated = fs
             .load(&skills_dir.join("my-rule-2").join(SKILL_FILE_NAME))
             .await
-            .expect("migrated SKILL.md should have landed at the suffixed path");
+            .expect("迁移后的 SKILL.md 应位于带后缀的路径");
         assert!(migrated.contains("Migrated body."));
         assert!(migrated.contains("disable-model-invocation: true"));
     }

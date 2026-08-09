@@ -55,7 +55,7 @@ where
     }
 
     let raw_value = serde_json::Value::deserialize(deserializer)
-        .map_err(|error| D::Error::custom(format!("invalid JSON: {error}")))?;
+        .map_err(|error| D::Error::custom(format!("无效的 JSON: {error}")))?;
 
     match T::deserialize(&raw_value) {
         Ok(value) => Ok(value),

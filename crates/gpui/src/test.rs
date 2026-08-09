@@ -118,7 +118,7 @@ pub fn run_test(
                 Ok(_) => break,
                 Err(error) => {
                     if attempt < max_retries {
-                        println!("attempt {} failed, retrying", attempt);
+                        println!("第 {} 次尝试失败,正在重试", attempt);
                         attempt += 1;
                         // The panic payload might itself trigger an unwind on drop:
                         // https://doc.rust-lang.org/std/panic/fn.catch_unwind.html#notes
@@ -127,7 +127,7 @@ pub fn run_test(
                         if is_multiple_runs {
                             eprintln!("failing seed: {seed}");
                             eprintln!(
-                                "You can rerun from this seed by setting the environmental variable SEED to {seed}"
+                                "您可以通过设置环境变量 SEED 为 {seed} 来从该种子重新运行"
                             );
                         }
                         if let Some(on_fail_fn) = on_fail_fn {
@@ -147,11 +147,11 @@ fn calculate_seeds(
 ) -> (impl Iterator<Item = u64> + '_, bool) {
     let iterations = env::var("ITERATIONS")
         .ok()
-        .map(|var| var.parse().expect("invalid ITERATIONS variable"))
+        .map(|var| var.parse().expect("无效的 ITERATIONS 变量"))
         .unwrap_or(iterations);
 
     let env_num = env::var("SEED")
-        .map(|seed| seed.parse().expect("invalid SEED variable as integer"))
+        .map(|seed| seed.parse().expect("无效的 SEED 变量,应为整数"))
         .ok();
 
     let empty_range = || 0..0;

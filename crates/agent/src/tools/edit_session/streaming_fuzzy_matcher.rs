@@ -771,11 +771,11 @@ mod tests {
                 let tool = cx
                     .update(|cx| working_set.tool(&tool_name, cx))
                     .map_err(|err| {
-                        anyhow!("Failed to look up tool '{}': {}", tool_name, err)
+                        anyhow!("查找工具 '{}' 失败: {}", tool_name, err)
                     })?;
 
                 let Some(tool) = tool else {
-                    return Err(anyhow!("Tool '{}' not found", tool_name));
+                    return Err(anyhow!("未找到工具 '{}'", tool_name));
                 };
 
                 let project = project.clone();
@@ -783,7 +783,7 @@ mod tests {
                 let messages = messages.clone();
                 let tool_result = cx
                     .update(|cx| tool.run(invocation.input, &messages, project, action_log, cx))
-                    .map_err(|err| anyhow!("Failed to start tool '{}': {}", tool_name, err))?;
+                    .map_err(|err| anyhow!("启动工具 '{}' 失败: {}", tool_name, err))?;
 
                 tasks.push(tool_result.output);
             "#},
@@ -824,7 +824,7 @@ mod tests {
         let query = "return 42;\n";
 
         // Test with line hint pointing to second function (around line 5)
-        let best_match = matcher.push(query, Some(5)).expect("Failed to match query");
+        let best_match = matcher.push(query, Some(5)).expect("无法匹配查询");
 
         let matched_text = snapshot
             .text_for_range(best_match.clone())
@@ -833,7 +833,7 @@ mod tests {
         assert_eq!(
             best_match,
             63..77,
-            "Expected to match `second_function` based on the line hint"
+            "根据行提示,应匹配 `second_function`"
         );
 
         let mut matcher = StreamingFuzzyMatcher::new(snapshot.clone());
@@ -842,7 +842,7 @@ mod tests {
         let best_match = matcher.select_best_match();
         assert!(
             best_match.is_none(),
-            "Best match should be None when query cannot be uniquely resolved"
+            "当查询无法唯一解析时,最佳匹配应为 None"
         );
     }
 
@@ -861,10 +861,10 @@ mod tests {
 
         assert_eq!(matcher.push("keyboard WASD, voxel-based", None), None);
         let SearchMatches::Exact(matches) = matcher.finish() else {
-            panic!("expected an exact match");
+            panic!("预期为精确匹配");
         };
         let [search_match] = matches.as_slice() else {
-            panic!("expected one match, got {}", matches.len());
+            panic!("预期一个匹配,实际得到 {}", matches.len());
         };
         assert_eq!(
             snapshot
@@ -886,10 +886,10 @@ mod tests {
 
         matcher.push("foo\n", None);
         let SearchMatches::Exact(matches) = matcher.finish() else {
-            panic!("expected an exact match");
+            panic!("预期为精确匹配");
         };
         let [search_match] = matches.as_slice() else {
-            panic!("expected one match, got {}", matches.len());
+            panic!("预期一个匹配,实际得到 {}", matches.len());
         };
         assert_eq!(
             snapshot
@@ -906,10 +906,10 @@ mod tests {
 
         matcher.push("\n", None);
         let SearchMatches::Exact(matches) = matcher.finish() else {
-            panic!("expected an exact match");
+            panic!("预期为精确匹配");
         };
         let [search_match] = matches.as_slice() else {
-            panic!("expected one match, got {}", matches.len());
+            panic!("预期一个匹配,实际得到 {}", matches.len());
         };
         assert_eq!(search_match.range, 1..1);
     }
@@ -938,10 +938,10 @@ mod tests {
 
         assert_eq!(matcher.push("fragment\nnext", None), None);
         let SearchMatches::Exact(matches) = matcher.finish() else {
-            panic!("expected an exact match");
+            panic!("预期为精确匹配");
         };
         let [search_match] = matches.as_slice() else {
-            panic!("expected one match, got {}", matches.len());
+            panic!("预期一个匹配,实际得到 {}", matches.len());
         };
         assert_eq!(
             snapshot
@@ -990,18 +990,18 @@ mod tests {
 
         assert!(
             matched.len() == 1,
-            "Expected exactly one match, got {}: {:?}",
+            "预期恰好一个匹配,实际得到 {}: {:?}",
             matched.len(),
             matched_text,
         );
 
         let Some(matched_text) = matched_text else {
-            panic!("expected a match");
+            panic!("预期一个匹配");
         };
         pretty_assertions::assert_eq!(
             matched_text,
             "}\n\n\n\nfn render_search",
-            "Match should include the render_search line",
+            "匹配应包含 render_search 行",
         );
     }
 
@@ -1028,7 +1028,7 @@ mod tests {
         if expected_ranges.is_empty() {
             assert!(
                 actual_ranges.is_empty(),
-                "Expected no match for query: {:?}, but found: {:?}",
+                "预期查询 {:?} 无匹配,但找到了: {:?}",
                 query,
                 actual_ranges
             );
@@ -1087,10 +1087,10 @@ mod tests {
             None,
         );
         let SearchMatches::Fuzzy(matches) = matcher.finish() else {
-            panic!("expected a fuzzy match");
+            panic!("预期为模糊匹配");
         };
         let [search_match] = matches.as_slice() else {
-            panic!("expected one match, got {}", matches.len());
+            panic!("预期一个匹配,实际得到 {}", matches.len());
         };
         assert_eq!(search_match.line_pairs, [(0, 3), (1, 5), (2, 6), (3, 7)]);
     }
@@ -1121,10 +1121,10 @@ mod tests {
         // substring of the buffer, so the fuzzy extension path is exercised.
         matcher.push("} \n\n\n\nfn render_search", None);
         let SearchMatches::Fuzzy(matches) = matcher.finish() else {
-            panic!("expected a fuzzy match");
+            panic!("预期为模糊匹配");
         };
         let [search_match] = matches.as_slice() else {
-            panic!("expected one match, got {}", matches.len());
+            panic!("预期一个匹配,实际得到 {}", matches.len());
         };
         assert_eq!(
             search_match.line_pairs,

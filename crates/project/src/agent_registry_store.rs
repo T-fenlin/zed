@@ -307,9 +307,9 @@ impl AgentRegistryStore {
             let bytes = fs
                 .load_bytes(&cache_path)
                 .await
-                .context("reading cached registry")?;
+                .context("读取缓存的注册表")?;
             let index: RegistryIndex =
-                serde_json::from_slice(&bytes).context("parsing cached registry")?;
+                serde_json::from_slice(&bytes).context("解析缓存的注册表")?;
 
             let executor = cx.background_executor().clone();
             let agents =
@@ -338,17 +338,17 @@ async fn fetch_registry_index(
     let (status, body) =
         fetch_url_body(http_client, REGISTRY_URL, REGISTRY_FETCH_TIMEOUT, executor)
             .await
-            .context("fetching ACP registry")?;
+            .context("获取 ACP 注册表")?;
 
     if status.is_client_error() {
         let text = String::from_utf8_lossy(body.as_slice());
         bail!(
-            "registry status error {}, response: {text:?}",
+            "注册表状态错误 {},响应: {text:?}",
             status.as_u16()
         );
     }
 
-    let index: RegistryIndex = serde_json::from_slice(&body).context("parsing ACP registry")?;
+    let index: RegistryIndex = serde_json::from_slice(&body).context("解析 ACP 注册表")?;
     Ok(RegistryFetchResult {
         index,
         raw_body: body,
@@ -494,7 +494,7 @@ async fn resolve_icon_path(
         if let Err(error) = download_icon(fs.clone(), http_client, &icon_url, entry, executor).await
         {
             log::warn!(
-                "Failed to download ACP registry icon for {}: {error:#}",
+                "下载 {} 的 ACP 注册表图标失败: {error:#}",
                 entry.id
             );
         }
@@ -519,11 +519,11 @@ async fn download_icon(
     let (status, body) =
         fetch_url_body(http_client, icon_url, REGISTRY_ICON_FETCH_TIMEOUT, executor)
             .await
-            .with_context(|| format!("fetching icon for {}", entry.id))?;
+            .with_context(|| format!("获取 {} 的图标", entry.id))?;
 
     if status.is_client_error() {
         let text = String::from_utf8_lossy(body.as_slice());
-        bail!("icon status error {}, response: {text:?}", status.as_u16());
+        bail!("图标状态错误 {},响应: {text:?}", status.as_u16());
     }
 
     let icon_path = registry_cache_dir()
@@ -543,7 +543,7 @@ async fn fetch_url_body(
         let mut response = http_client
             .get(url, AsyncBody::default(), true)
             .await
-            .with_context(|| format!("requesting {url}"))?;
+            .with_context(|| format!("请求 {url}"))?;
 
         let status = response.status();
         let mut body = Vec::new();
@@ -551,7 +551,7 @@ async fn fetch_url_body(
             .body_mut()
             .read_to_end(&mut body)
             .await
-            .with_context(|| format!("reading response from {url}"))?;
+            .with_context(|| format!("读取来自 {url} 的响应"))?;
 
         Ok((status, body))
     }
@@ -559,7 +559,7 @@ async fn fetch_url_body(
     .await
     .map_err(|_| {
         anyhow!(
-            "timed out after {}s while fetching {url}",
+            "获取 {url} 时在 {} 秒后超时",
             timeout.as_secs()
         )
     })?

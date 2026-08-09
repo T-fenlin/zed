@@ -66,7 +66,7 @@ impl Scheduler for PlatformScheduler {
         #[cfg(target_family = "wasm")]
         {
             let _ = (&future, &timeout);
-            panic!("Cannot block on wasm")
+            panic!("无法在 wasm 上阻塞")
         }
         #[cfg(not(target_family = "wasm"))]
         {
@@ -201,16 +201,16 @@ mod tests {
             false
         }
         fn dispatch(&self, _runnable: RunnableVariant, _priority: Priority) {
-            panic!("SmokeDispatcher should not be asked to dispatch in this test");
+            panic!("在此测试中不应要求 SmokeDispatcher 进行调度");
         }
         fn dispatch_on_main_thread(&self, _runnable: RunnableVariant, _priority: Priority) {
-            panic!("SmokeDispatcher does not implement a main thread");
+            panic!("SmokeDispatcher 未实现主线程");
         }
         fn dispatch_after(&self, _duration: Duration, _runnable: RunnableVariant) {
-            panic!("SmokeDispatcher does not implement timers");
+            panic!("SmokeDispatcher 未实现定时器");
         }
         fn spawn_realtime(&self, _f: Box<dyn FnOnce() + Send>) {
-            panic!("SmokeDispatcher does not implement realtime");
+            panic!("SmokeDispatcher 未实现实时调度");
         }
     }
 
@@ -235,11 +235,11 @@ mod tests {
         assert_ne!(
             dedicated_thread_id,
             std::thread::current().id(),
-            "dedicated future ran on the test thread"
+            "专用 future 在测试线程上运行"
         );
         assert!(
             elapsed >= Duration::from_millis(40),
-            "expected the dedicated thread to genuinely sleep, elapsed = {:?}",
+            "预期专用线程真正休眠,已用时间 = {:?}",
             elapsed
         );
     }
@@ -283,21 +283,21 @@ mod tests {
                 // Announce that the future is live on the dedicated thread.
                 started_tx
                     .send(())
-                    .expect("started signal must be received");
+                    .expect("必须收到启动信号");
                 // Park forever. Dropping the `Task` must cancel us here so
                 // the code below this `await` never runs.
                 futures::future::pending::<()>().await;
                 *observed_post_await_write.lock() = true;
                 after_park_tx
                     .send(())
-                    .expect("after-park signal must be received");
+                    .expect("必须收到驻留后信号");
             })
         };
 
         // Wait until the dedicated future is actually parked at the await.
         started_rx
             .recv_timeout(Duration::from_secs(2))
-            .expect("dedicated future failed to start");
+            .expect("专用 future 启动失败");
 
         // Drop the root Task: this must cancel the future.
         drop(task);
@@ -308,11 +308,11 @@ mod tests {
             after_park_rx
                 .recv_timeout(Duration::from_millis(100))
                 .is_err(),
-            "dedicated future advanced past the await after its Task was dropped"
+            "专用 future 在其 Task 被丢弃后越过了 await"
         );
         assert!(
             !*observed_post_await_write.lock(),
-            "dedicated future ran code past the cancellation point"
+            "专用 future 在取消点之后运行了代码"
         );
     }
 
@@ -345,18 +345,18 @@ mod tests {
             let _guard = DropSignal { tx: Some(drop_tx) };
             started_tx
                 .send(std::thread::current().id())
-                .expect("started signal must be received");
+                .expect("必须收到启动信号");
             // Future returns immediately. The dedicated thread should then
             // drop the future (firing _guard), exit the recv loop, and exit.
         });
 
         let dedicated_thread_id = started_rx
             .recv_timeout(Duration::from_secs(2))
-            .expect("dedicated future failed to start");
+            .expect("专用 future 启动失败");
         assert_ne!(
             dedicated_thread_id,
             std::thread::current().id(),
-            "dedicated future ran on the test thread"
+            "专用 future 在测试线程上运行"
         );
 
         // Drive the root task to completion so its body finishes.
@@ -367,10 +367,10 @@ mod tests {
         // keeping the future alive past task completion, this would hang.
         let drop_thread_id = drop_rx
             .recv_timeout(Duration::from_secs(2))
-            .expect("dedicated future's captured state was not dropped after task completion");
+            .expect("任务完成后,专用 future 的捕获状态未被丢弃");
         assert_eq!(
             drop_thread_id, dedicated_thread_id,
-            "dedicated future's captured state must be dropped on the dedicated thread, not elsewhere"
+            "专用 future 的捕获状态必须在专用线程上丢弃,而不是在其他地方"
         );
     }
 
@@ -396,10 +396,10 @@ mod tests {
                     // designed to provide.
                     gate_rx
                         .recv()
-                        .expect("gate sender dropped before child resumed");
+                        .expect("门控发送者在子任务恢复前被丢弃");
                     child_done_tx
                         .send(std::thread::current().id())
-                        .expect("child_done receiver dropped");
+                        .expect("child_done 接收器被丢弃");
                 })
                 .detach();
             // Root finishes here. The detached child must keep the
@@ -414,20 +414,20 @@ mod tests {
             child_done_rx
                 .recv_timeout(Duration::from_millis(50))
                 .is_err(),
-            "detached child finished before being released"
+            "分离的子任务在释放前已完成"
         );
 
         // Release the gate. The detached child should now complete on the
         // dedicated thread.
-        gate_tx.send(()).expect("gate receiver dropped");
+        gate_tx.send(()).expect("门控接收器被丢弃");
 
         let child_thread_id = child_done_rx
             .recv_timeout(Duration::from_secs(2))
-            .expect("detached child failed to complete after gate was released");
+            .expect("门控释放后,分离的子任务未能完成");
         assert_ne!(
             child_thread_id,
             std::thread::current().id(),
-            "detached child ran on the test thread instead of the dedicated thread"
+            "分离的子任务在测试线程上运行,而不是在专用线程上"
         );
     }
 }

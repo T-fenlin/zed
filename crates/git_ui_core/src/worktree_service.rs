@@ -57,7 +57,7 @@ impl RemoteBranchName {
     }
 }
 
-/// A "create new worktree" option offered to the user. The set of targets is
+/// A "新建工作树" option offered to the user. The set of targets is
 /// derived from repository state by [`worktree_create_targets`] so that the
 /// worktree picker and the sidebar's new-thread menu stay in sync.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -88,7 +88,7 @@ impl WorktreeCreateTarget {
             WorktreeCreateTarget::DefaultBranch(default_branch) => default_branch.display_name(),
             WorktreeCreateTarget::CurrentBranch => {
                 if has_multiple_repositories {
-                    "current branches".to_string()
+                    "当前分支".to_string()
                 } else {
                     current_branch_name.unwrap_or("HEAD").to_string()
                 }
@@ -97,7 +97,7 @@ impl WorktreeCreateTarget {
     }
 }
 
-/// Determines which "create new worktree" options to surface for the given
+/// Determines which "新建工作树" options to surface for the given
 /// repository state: prefer the remote default branch when it differs from the
 /// current branch, and otherwise offer the current branch.
 pub fn worktree_create_targets(
@@ -161,7 +161,7 @@ impl fmt::Display for WorktreeFetchError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             formatter,
-            "git fetch {} failed while creating worktree from {}: {}",
+            "从 {} 创建工作树时 git fetch {} 失败:{}",
             self.remote_name,
             self.remote_branch_name(),
             self.source
@@ -201,7 +201,7 @@ impl WorktreeFetchFailedToast {
             branch_target,
             focused_dock,
             remote_branch_name: fetch_error.remote_branch_name(),
-            operation: format!("fetch {}", fetch_error.remote_name).into(),
+            operation: format!("获取 {}", fetch_error.remote_name).into(),
             output: fetch_error.output(),
             focus_handle: cx.focus_handle(),
         }
@@ -253,13 +253,13 @@ impl Render for WorktreeFetchFailedToast {
                     .color(Color::Error),
             )
             .child(Label::new(format!(
-                "git fetch failed for {}",
+                "git fetch 失败:{}",
                 self.remote_branch_name
             )))
             .child(
                 Button::new(
                     "use-local-worktree-base",
-                    format!("Use local {}", self.remote_branch_name),
+                    format!("使用本地 {}", self.remote_branch_name),
                 )
                 .color(Color::Muted)
                 .on_click(cx.listener(move |_, _event, window, cx| {
@@ -285,7 +285,7 @@ impl Render for WorktreeFetchFailedToast {
                 })),
             )
             .child(
-                Button::new("view-worktree-fetch-log", "Show Error Logs")
+                Button::new("view-worktree-fetch-log", "显示错误日志")
                     .color(Color::Muted)
                     .on_click(cx.listener(move |_, _event, window, cx| {
                         cx.emit(DismissEvent);
@@ -355,7 +355,7 @@ pub fn classify_worktrees(
 }
 
 /// Resolves a branch target into the ref the new worktree should be based on.
-/// Returns `None` for `CurrentBranch`, meaning "use the current HEAD".
+/// Returns `None` for `CurrentBranch`, meaning "使用当前 HEAD".
 pub fn resolve_worktree_branch_target(branch_target: &NewWorktreeBranchTarget) -> Option<String> {
     match branch_target {
         NewWorktreeBranchTarget::CurrentBranch => None,
@@ -408,7 +408,7 @@ async fn fetch_remote_for_worktree_base(
 ) -> anyhow::Result<()> {
     if askpass_delegates.len() != git_repos.len() {
         return Err(anyhow!(
-            "Unable to fetch {remote_name}: missing credential prompt delegate"
+            "无法获取 {remote_name}:缺少凭据提示代理"
         ));
     }
 
@@ -449,7 +449,7 @@ async fn fetch_remote_for_worktree_base(
 /// resolve to the same target path via [`Repository::path_for_new_linked_worktree`],
 /// so we create the new worktree only once and remap every contributing
 /// work directory onto it. Without this dedup, the second `git worktree add`
-/// fails with "already exists".
+/// fails with "已存在".
 fn start_worktree_creations(
     git_repos: &[Entity<Repository>],
     worktree_name: Option<String>,
@@ -482,7 +482,7 @@ fn start_worktree_creations(
             let new_path =
                 repo.path_for_new_linked_worktree(&worktree_name, worktree_directory_setting)?;
             if existing_worktree_paths.contains(&new_path) {
-                anyhow::bail!("A worktree already exists at {}", new_path.display());
+                anyhow::bail!("工作树已存在于 {}", new_path.display());
             }
             let work_dir = repo.work_directory_abs_path.clone();
             // Only the first repo that resolves to a given target path
@@ -537,7 +537,7 @@ pub async fn await_and_rollback_on_failure(
             }
             Err(_canceled) => {
                 if first_error.is_none() {
-                    first_error = Some(anyhow!("Worktree creation was canceled"));
+                    first_error = Some(anyhow!("工作树创建已取消"));
                 }
             }
         }
@@ -570,14 +570,14 @@ pub async fn await_and_rollback_on_failure(
                 Ok(Ok(())) => {}
                 Ok(Err(rollback_err)) => {
                     log::error!(
-                        "git worktree remove failed for {}: {rollback_err}",
+                        "git 工作树 remove 失败:{}:{rollback_err}",
                         path.display()
                     );
                     git_remove_failed = true;
                 }
                 Err(canceled) => {
                     log::error!(
-                        "git worktree remove failed for {}: {canceled}",
+                        "git 工作树 remove 失败:{}:{canceled}",
                         path.display()
                     );
                     git_remove_failed = true;
@@ -585,7 +585,7 @@ pub async fn await_and_rollback_on_failure(
             }
         } else {
             log::error!(
-                "failed to dispatch git worktree remove for {}",
+                "无法调度 git 工作树 remove:{}",
                 path.display()
             );
             git_remove_failed = true;
@@ -602,13 +602,13 @@ pub async fn await_and_rollback_on_failure(
                 )
                 .await
             {
-                let msg = format!("{}: failed to remove directory: {fs_err}", path.display());
+                let msg = format!("{}:无法删除目录:{fs_err}", path.display());
                 log::error!("{}", msg);
                 rollback_failures.push(msg);
             }
         }
     }
-    let mut error_message = format!("Failed to create worktree: {err}");
+    let mut error_message = format!("创建工作树失败:{err}");
     if !rollback_failures.is_empty() {
         error_message.push_str("\n\nFailed to clean up: ");
         error_message.push_str(&rollback_failures.join(", "));
@@ -755,12 +755,12 @@ fn create_worktree_workspace_inner(
 
     if project.read(cx).repositories(cx).is_empty() {
         return Task::ready(Err(anyhow!(
-            "create_worktree: no git repository in the project"
+            "create_worktree:项目中没有 git 仓库"
         )));
     }
     if project.read(cx).is_via_collab() {
         return Task::ready(Err(anyhow!(
-            "create_worktree: not supported in collab projects"
+            "create_worktree:协作项目不支持此操作"
         )));
     }
 
@@ -769,7 +769,7 @@ fn create_worktree_workspace_inner(
     // wrapper [`handle_create_worktree`] swallows the error via
     // `detach_and_log_err`, matching the pre-existing silent return.
     if workspace.active_worktree_creation().label.is_some() {
-        return Task::ready(Err(anyhow!("A worktree creation is already in progress")));
+        return Task::ready(Err(anyhow!("工作树创建已在进行中")));
     }
 
     let previous_state =
@@ -784,11 +784,11 @@ fn create_worktree_workspace_inner(
         let toast_workspace = cx.entity();
         show_error_toast(
             toast_workspace,
-            "worktree create",
-            anyhow!("No git repositories found in the project"),
+            "创建工作树",
+            anyhow!("项目中未找到 git 仓库"),
             cx,
         );
-        return Task::ready(Err(anyhow!("No git repositories found in the project")));
+        return Task::ready(Err(anyhow!("项目中未找到 git 仓库")));
     }
 
     if remote_connection_options.is_some() {
@@ -800,12 +800,12 @@ fn create_worktree_workspace_inner(
             let toast_workspace = cx.entity();
             show_error_toast(
                 toast_workspace,
-                "worktree create",
-                anyhow!("Cannot create worktree: remote connection is not active"),
+                "创建工作树",
+                anyhow!("无法创建工作树:远程连接未激活"),
                 cx,
             );
             return Task::ready(Err(anyhow!(
-                "Cannot create worktree: remote connection is not active"
+                "无法创建工作树:远程连接未激活"
             )));
         }
     }
@@ -857,7 +857,7 @@ fn create_worktree_workspace_inner(
         .await;
 
         if let Err(err) = &result {
-            log::error!("Failed to create worktree: {err}");
+            log::error!("创建工作树失败:{err}");
             workspace_handle
                 .update(cx, |workspace, cx| {
                     workspace.set_active_worktree_creation(None, false, cx);
@@ -874,7 +874,7 @@ fn create_worktree_workspace_inner(
                         });
                         workspace.toggle_status_toast(toast, cx);
                     } else {
-                        show_error_toast(cx.entity(), "worktree create", anyhow!("{err:#}"), cx);
+                        show_error_toast(cx.entity(), "创建工作树", anyhow!("{err:#}"), cx);
                     }
                 })
                 .ok();
@@ -894,11 +894,11 @@ pub fn handle_switch_worktree(
     let project = workspace.project().clone();
 
     if project.read(cx).repositories(cx).is_empty() {
-        log::error!("switch_to_worktree: no git repository in the project");
+        log::error!("switch_to_worktree:项目中没有 git 仓库");
         return;
     }
     if project.read(cx).is_via_collab() {
-        log::error!("switch_to_worktree: not supported in collab projects");
+        log::error!("switch_to_worktree:协作项目不支持此操作");
         return;
     }
 
@@ -940,11 +940,11 @@ pub fn handle_switch_worktree(
         .await;
 
         if let Err(err) = &result {
-            log::error!("Failed to switch worktree: {err}");
+            log::error!("切换工作树失败:{err}");
             workspace_handle
                 .update(cx, |workspace, cx| {
                     workspace.set_active_worktree_creation(None, false, cx);
-                    show_error_toast(cx.entity(), "worktree switch", anyhow!("{err:#}"), cx);
+                    show_error_toast(cx.entity(), "切换工作树", anyhow!("{err:#}"), cx);
                 })
                 .ok();
         }
@@ -1151,7 +1151,7 @@ async fn open_worktree_workspace(
     cx: &mut AsyncWindowContext,
 ) -> anyhow::Result<Entity<Workspace>> {
     let window_handle = window_handle
-        .ok_or_else(|| anyhow!("No window handle available for workspace creation"))?;
+        .ok_or_else(|| anyhow!("没有可用于创建工作区的窗口句柄"))?;
 
     let focused_dock = previous_state.focused_dock;
 
@@ -1409,7 +1409,7 @@ mod tests {
         ) -> Task<Option<anyhow::Result<ExitStatus>>> {
             self.spawned_task_labels
                 .lock()
-                .expect("terminal spawn mutex should not be poisoned")
+                .expect("终端生成互斥锁不应被破坏")
                 .push(task.label);
             Task::ready(Some(Ok(ExitStatus::default())))
         }
@@ -1471,7 +1471,7 @@ mod tests {
                         }),
                         Some(hook_tasks_json),
                     )
-                    .expect("should inject create_worktree hook tasks for linked worktree");
+                    .expect("应为链接的工作树注入 create_worktree 钩子任务");
             });
         });
     }
@@ -1482,7 +1482,7 @@ mod tests {
     ) {
         init_test(cx);
 
-        let hook_tasks_json = r#"[{"label":"setup worktree","command":"echo","hide":"never","hooks":["create_worktree"]}]"#;
+        let hook_tasks_json = r#"[{"label":"设置工作树","command":"echo","hide":"never","hooks":["create_worktree"]}]"#;
         let fs = FakeFs::new(cx.background_executor.clone());
         cx.update(|cx| <dyn Fs>::set_global(fs.clone(), cx));
         fs.insert_tree(
@@ -1558,10 +1558,10 @@ mod tests {
         assert_eq!(
             spawned_task_labels
                 .lock()
-                .expect("terminal spawn mutex should not be poisoned")
+                .expect("终端生成互斥锁不应被破坏")
                 .as_slice(),
-            ["setup worktree"],
-            "create_worktree hook should run once for the created linked worktree"
+            ["设置工作树"],
+            "create_worktree 钩子应为创建的链接工作树运行一次"
         );
 
         active_workspace.update_in(cx, |workspace, window, cx| {
@@ -1581,10 +1581,10 @@ mod tests {
         assert_eq!(
             spawned_task_labels
                 .lock()
-                .expect("terminal spawn mutex should not be poisoned")
+                .expect("终端生成互斥锁不应被破坏")
                 .as_slice(),
-            ["setup worktree"],
-            "switching back to the main worktree should not rerun create_worktree hooks"
+            ["设置工作树"],
+            "切换回主工作树不应重新运行 create_worktree 钩子"
         );
     }
 
@@ -1624,11 +1624,11 @@ mod tests {
                 .worktrees()
                 .next()
                 .map(|wt| wt.read(cx).id())
-                .expect("should have a worktree")
+                .expect("应有一个工作树")
         });
         let trusted_store = cx
             .read(|cx| project::trusted_worktrees::TrustedWorktrees::try_get_global(cx))
-            .expect("trust store should exist");
+            .expect("信任存储应存在");
         trusted_store.update(cx, |store, cx| {
             store.trust(
                 &worktree_store,
@@ -1648,7 +1648,7 @@ mod tests {
         });
         assert!(
             !has_restricted,
-            "main worktree should be trusted after explicit trust"
+            "显式信任后,主工作树应被信任"
         );
 
         let (multi_workspace, cx) =
@@ -1685,7 +1685,7 @@ mod tests {
         });
         assert!(
             !new_has_restricted,
-            "linked worktree should inherit trust from the main worktree"
+            "链接的工作树应继承主工作树的信任"
         );
 
         // The security modal should not be showing
@@ -1695,7 +1695,7 @@ mod tests {
         });
         assert!(
             !has_modal,
-            "security modal should not show for a linked worktree created from a trusted main worktree"
+            "从受信任的主工作树创建的链接工作树不应显示安全模态框"
         );
     }
 
@@ -1776,7 +1776,7 @@ mod tests {
         // Multiple repositories pluralize the current branch.
         assert_eq!(
             WorktreeCreateTarget::CurrentBranch.branch_label(true, Some("feature")),
-            "current branches"
+            "当前分支"
         );
     }
 }

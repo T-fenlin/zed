@@ -1373,7 +1373,7 @@ impl Component for Table {
     }
 
     fn description() -> &'static str {
-        "A table component for displaying data in rows and columns with optional styling."
+        "用于以行和列显示数据并支持可选样式的表格组件。"
     }
 
     fn preview(_window: &mut Window, _cx: &mut App) -> AnyElement {
@@ -1381,78 +1381,78 @@ impl Component for Table {
             .gap_6()
             .children(vec![
                 example_group_with_title(
-                    "Basic Tables",
+                    "基础表格",
                     vec![
                         single_example(
-                            "Simple Table",
+                            "简单表格",
                             Table::new(3)
                                 .width(px(400.))
-                                .header(vec!["Name", "Age", "City"])
+                                .header(vec!["名称", "年龄", "城市"])
                                 .row(vec!["Alice", "28", "New York"])
                                 .row(vec!["Bob", "32", "San Francisco"])
                                 .row(vec!["Charlie", "25", "London"])
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Two Column Table",
+                            "双列表格",
                             Table::new(2)
-                                .header(vec!["Category", "Value"])
+                                .header(vec!["类别", "值"])
                                 .width(px(300.))
-                                .row(vec!["Revenue", "$100,000"])
-                                .row(vec!["Expenses", "$75,000"])
-                                .row(vec!["Profit", "$25,000"])
+                                .row(vec!["收入", "$100,000"])
+                                .row(vec!["支出", "$75,000"])
+                                .row(vec!["利润", "$25,000"])
                                 .into_any_element(),
                         ),
                     ],
                 ),
                 example_group_with_title(
-                    "Styled Tables",
+                    "样式化表格",
                     vec![
                         single_example(
-                            "Default",
+                            "默认",
                             Table::new(3)
                                 .width(px(400.))
-                                .header(vec!["Product", "Price", "Stock"])
-                                .row(vec!["Laptop", "$999", "In Stock"])
-                                .row(vec!["Phone", "$599", "Low Stock"])
-                                .row(vec!["Tablet", "$399", "Out of Stock"])
+                                .header(vec!["产品", "价格", "库存"])
+                                .row(vec!["笔记本电脑", "$999", "有货"])
+                                .row(vec!["手机", "$599", "库存不足"])
+                                .row(vec!["平板电脑", "$399", "缺货"])
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Striped",
+                            "条纹",
                             Table::new(3)
                                 .width(px(400.))
                                 .striped()
-                                .header(vec!["Product", "Price", "Stock"])
-                                .row(vec!["Laptop", "$999", "In Stock"])
-                                .row(vec!["Phone", "$599", "Low Stock"])
-                                .row(vec!["Tablet", "$399", "Out of Stock"])
-                                .row(vec!["Headphones", "$199", "In Stock"])
+                                .header(vec!["产品", "价格", "库存"])
+                                .row(vec!["笔记本电脑", "$999", "有货"])
+                                .row(vec!["手机", "$599", "库存不足"])
+                                .row(vec!["平板电脑", "$399", "缺货"])
+                                .row(vec!["耳机", "$199", "有货"])
                                 .into_any_element(),
                         ),
                     ],
                 ),
                 example_group_with_title(
-                    "Mixed Content Table",
+                    "混合内容表格",
                     vec![single_example(
-                        "Table with Elements",
+                        "包含元素的表格",
                         Table::new(5)
                             .width(px(840.))
-                            .header(vec!["Status", "Name", "Priority", "Deadline", "Action"])
+                            .header(vec!["状态", "名称", "优先级", "截止日期", "操作"])
                             .row(vec![
                                 Indicator::dot().color(Color::Success).into_any_element(),
-                                "Project A".into_any_element(),
-                                "High".into_any_element(),
+                                "项目 A".into_any_element(),
+                                "高".into_any_element(),
                                 "2023-12-31".into_any_element(),
-                                Button::new("view_a", "View")
+                                Button::new("view_a", "查看")
                                     .style(ButtonStyle::Filled)
                                     .full_width()
                                     .into_any_element(),
                             ])
                             .row(vec![
                                 Indicator::dot().color(Color::Warning).into_any_element(),
-                                "Project B".into_any_element(),
-                                "Medium".into_any_element(),
+                                "项目 B".into_any_element(),
+                                "中".into_any_element(),
                                 "2024-03-15".into_any_element(),
                                 Button::new("view_b", "View")
                                     .style(ButtonStyle::Filled)
@@ -1461,10 +1461,10 @@ impl Component for Table {
                             ])
                             .row(vec![
                                 Indicator::dot().color(Color::Error).into_any_element(),
-                                "Project C".into_any_element(),
-                                "Low".into_any_element(),
+                                "项目 C".into_any_element(),
+                                "低".into_any_element(),
                                 "2024-06-30".into_any_element(),
-                                Button::new("view_c", "View")
+                                Button::new("view_c", "查看")
                                     .style(ButtonStyle::Filled)
                                     .full_width()
                                     .into_any_element(),

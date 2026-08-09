@@ -146,7 +146,7 @@ pub(crate) fn open_abs_path_at_point(
                 let metadata = fs.metadata(&abs_path).await?;
                 anyhow::ensure!(
                     metadata.is_some_and(|metadata| !metadata.is_dir),
-                    "no file found at path {abs_path:?}"
+                    "路径 {abs_path:?} 处未找到文件"
                 );
                 workspace
                     .update_in(cx, |workspace, window, cx| {
@@ -183,7 +183,7 @@ pub(crate) fn open_abs_path_at_point(
         .detach_and_log_err(cx);
 }
 
-pub const DEFAULT_THREAD_TITLE: &str = "New Agent Thread";
+pub const DEFAULT_THREAD_TITLE: &str = "新建代理线程";
 const PARALLEL_AGENT_LAYOUT_BACKFILL_KEY: &str = "parallel_agent_layout_backfilled";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -279,7 +279,7 @@ actions!(
         ResetTrialEndUpsell,
         /// Re-enables the fast mode warning for every provider and model.
         ResetFastModeWarnings,
-        /// Opens the "Add Context" menu in the message editor.
+        /// Opens the "添加上下文" menu in the message editor.
         OpenAddContextMenu,
         /// Interrupts the current generation and sends the message immediately.
         SendImmediately,
@@ -467,7 +467,7 @@ impl Agent {
             Self::NativeAgent => "Zed Agent".into(),
             Self::Custom { id, .. } => id.0.clone(),
             #[cfg(any(test, feature = "test-support"))]
-            Self::Stub => "Stub Agent".into(),
+            Self::Stub => "存根代理".into(),
         }
     }
 
@@ -729,12 +729,12 @@ fn rerun_rules_to_skills_migration(
                 rules_to_skills_migration::rerun_rules_to_skills_migration(fs, cx)
             })?;
             let result = migration_task.await?;
-            log::info!("Forced rules-to-skills migration result: {result:?}");
+            log::info!("强制规则到技能迁移结果:{result:?}");
 
             cx.update(|_window, cx| {
                 show_rules_to_skills_migration_toast(
                     &workspace,
-                    "Rules-to-skills migration rerun. Please double-check AGENTS.md and Skills for missing or duplicated prompts.",
+                    "规则到技能迁移已重新运行。请仔细检查 AGENTS.md 和技能,确保没有遗漏或重复的提示词。",
                     cx,
                 );
             })?;
@@ -1029,27 +1029,27 @@ mod tests {
             let filter = CommandPaletteFilter::try_global(cx).unwrap();
             assert!(
                 !filter.is_hidden(&NewThread),
-                "NewThread should be visible by default"
+                "NewThread 默认应可见"
             );
             assert!(
                 !filter.is_hidden(&NewTerminalThread),
-                "NewTerminalThread should be visible by default"
+                "NewTerminalThread 默认应可见"
             );
             assert!(
                 !filter.is_hidden(&zed_actions::assistant::OpenSkillCreator),
-                "OpenSkillCreator should be visible by default"
+                "OpenSkillCreator 默认应可见"
             );
             assert!(
                 !filter.is_hidden(&zed_actions::assistant::CreateSkillFromUrl),
-                "CreateSkillFromUrl should be visible by default"
+                "CreateSkillFromUrl 默认应可见"
             );
             assert!(
                 !filter.is_hidden(&zed_actions::assistant::OpenGlobalAgentsMdRules),
-                "OpenGlobalAgentsMdRules should be visible by default"
+                "OpenGlobalAgentsMdRules 默认应可见"
             );
             assert!(
                 !filter.is_hidden(&zed_actions::assistant::OpenProjectAgentsMdRules),
-                "OpenProjectAgentsMdRules should be visible by default"
+                "OpenProjectAgentsMdRules 默认应可见"
             );
         });
 
@@ -1068,19 +1068,19 @@ mod tests {
             let filter = CommandPaletteFilter::try_global(cx).unwrap();
             assert!(
                 filter.is_hidden(&NewThread),
-                "NewThread should be hidden when agent is disabled"
+                "禁用代理时 NewThread 应隐藏"
             );
             assert!(
                 filter.is_hidden(&NewTerminalThread),
-                "NewTerminalThread should be hidden when agent is disabled"
+                "禁用代理时 NewTerminalThread 应隐藏"
             );
             assert!(
                 filter.is_hidden(&zed_actions::assistant::OpenGlobalAgentsMdRules),
-                "OpenGlobalAgentsMdRules should be hidden when agent is disabled"
+                "禁用代理时 OpenGlobalAgentsMdRules 应隐藏"
             );
             assert!(
                 filter.is_hidden(&zed_actions::assistant::OpenProjectAgentsMdRules),
-                "OpenProjectAgentsMdRules should be hidden when agent is disabled"
+                "禁用代理时 OpenProjectAgentsMdRules 应隐藏"
             );
         });
 
@@ -1103,7 +1103,7 @@ mod tests {
             let filter = CommandPaletteFilter::try_global(cx).unwrap();
             assert!(
                 !filter.is_hidden(&AcceptEditPrediction),
-                "EditPrediction should be visible when provider is Copilot"
+                "提供者为 Copilot 时 EditPrediction 应可见"
             );
         });
 
@@ -1125,7 +1125,7 @@ mod tests {
             let filter = CommandPaletteFilter::try_global(cx).unwrap();
             assert!(
                 filter.is_hidden(&AcceptEditPrediction),
-                "EditPrediction should be hidden when provider is None"
+                "提供者为 None 时 EditPrediction 应隐藏"
             );
         });
     }
@@ -1174,7 +1174,7 @@ mod tests {
             kvp.read_kvp(PARALLEL_AGENT_LAYOUT_BACKFILL_KEY)
                 .unwrap()
                 .is_some(),
-            "flag should be set after backfill"
+            "回填后应设置标志"
         );
     }
 
@@ -1193,11 +1193,11 @@ mod tests {
             kvp.read_kvp(PARALLEL_AGENT_LAYOUT_BACKFILL_KEY)
                 .unwrap()
                 .is_some(),
-            "flag should be set even for new installs"
+            "即使是新安装也应设置标志"
         );
 
         let written = fs.load(paths::settings_file().as_path()).await.unwrap();
-        assert_eq!(written.trim(), "{}", "settings file should be unchanged");
+        assert_eq!(written.trim(), "{}", "设置文件应保持不变");
     }
 
     #[gpui::test]
@@ -1221,7 +1221,7 @@ mod tests {
         let after_second = fs.load(paths::settings_file().as_path()).await.unwrap();
         assert_eq!(
             after_first, after_second,
-            "second call should not change settings"
+            "第二次调用不应更改设置"
         );
     }
 
@@ -1242,17 +1242,17 @@ mod tests {
     #[test]
     fn test_deserialize_new_external_agent_thread() {
         let action = serde_json::from_str::<NewExternalAgentThread>(r#"{"agent":"gemini"}"#)
-            .expect("should deserialize agent id");
+            .expect("应反序列化代理 ID");
         assert_eq!(action.agent, AgentId::from("gemini"));
 
         let action = serde_json::from_str::<NewExternalAgentThread>(
             r#"{"agent":{"custom":{"name":"gemini"}}}"#,
         )
-        .expect("should deserialize legacy custom agent payload");
+        .expect("应反序列化旧版自定义代理负载");
         assert_eq!(action.agent, AgentId::from("gemini"));
 
         let action = serde_json::from_str::<NewExternalAgentThread>(r#"{"agent":"NativeAgent"}"#)
-            .expect("should deserialize legacy native agent payload");
+            .expect("应反序列化旧版原生代理负载");
         assert_eq!(action.agent, Agent::NativeAgent.id());
 
         assert!(serde_json::from_str::<NewExternalAgentThread>(r#"{}"#).is_err());

@@ -31,7 +31,7 @@ impl Render for ExampleWindow {
                 div()
                     .text_sm()
                     .text_color(rgb(0xb0b0b0))
-                    .child("Try to drag the titlebar, and check the Window menu."),
+                    .child("尝试拖动标题栏,并查看窗口菜单。"),
             )
     }
 }
@@ -83,17 +83,17 @@ fn run_example() {
 
         // (label, is_movable, appears_transparent, app_owns_titlebar_drag, col, row)
         let windows = [
-            ("Native titlebar, movable", true, false, false, 0.0, 0.0),
+            ("原生标题栏,可移动", true, false, false, 0.0, 0.0),
             (
-                "Native titlebar, NOT movable",
+                "原生标题栏,不可移动",
                 false,
                 false,
                 false,
                 1.0,
                 0.0,
             ),
-            ("Custom titlebar, movable", true, true, false, 0.0, 1.0),
-            ("Custom titlebar, NOT movable", false, true, false, 1.0, 1.0),
+            ("自定义标题栏,可移动", true, true, false, 0.0, 1.0),
+            ("自定义标题栏,不可移动", false, true, false, 1.0, 1.0),
         ];
 
         for (label, is_movable, appears_transparent, app_owns_titlebar_drag, col, row) in windows {

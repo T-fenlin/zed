@@ -216,7 +216,7 @@ impl PickerDelegate for ModelPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Select a model…".into()
+        "选择一个模型…".into()
     }
 
     fn update_matches(
@@ -404,7 +404,7 @@ fn info_list_to_picker_entries(
 
     let has_favorites = !favorite_models.is_empty();
     if has_favorites {
-        entries.push(ModelPickerEntry::Separator("Favorite".into()));
+        entries.push(ModelPickerEntry::Separator("收藏".into()));
         for model in favorite_models {
             entries.push(ModelPickerEntry::Model((*model).clone(), true));
         }
@@ -413,7 +413,7 @@ fn info_list_to_picker_entries(
     match model_list {
         AgentModelList::Flat(list) => {
             if has_favorites {
-                entries.push(ModelPickerEntry::Separator("All".into()));
+                entries.push(ModelPickerEntry::Separator("全部".into()));
             }
             for model in list {
                 let is_favorite = favorites.contains(&model.id);
@@ -522,13 +522,13 @@ mod tests {
 
     fn assert_models_eq(result: AgentModelList, expected: Vec<(&str, Vec<&str>)>) {
         let AgentModelList::Grouped(groups) = result else {
-            panic!("Expected LanguageModelInfoList::Grouped, got {:?}", result);
+            panic!("期望 LanguageModelInfoList::Grouped,实际为 {:?}", result);
         };
 
         assert_eq!(
             groups.len(),
             expected.len(),
-            "Number of groups doesn't match"
+            "分组数量不匹配"
         );
 
         for (i, (expected_group, expected_models)) in expected.iter().enumerate() {
@@ -536,20 +536,20 @@ mod tests {
             assert_eq!(
                 actual_group.0.as_ref(),
                 *expected_group,
-                "Group at position {} doesn't match expected group",
+                "位置 {} 的分组与预期分组不匹配",
                 i
             );
             assert_eq!(
                 actual_models.len(),
                 expected_models.len(),
-                "Number of models in group {} doesn't match",
+                "分组 {} 中的模型数量不匹配",
                 expected_group
             );
 
             for (j, expected_model_name) in expected_models.iter().enumerate() {
                 assert_eq!(
                     actual_models[j].name, *expected_model_name,
-                    "Model at position {} in group {} doesn't match expected model",
+                    "分组 {} 中位置 {} 的模型与预期模型不匹配",
                     j, expected_group
                 );
             }
@@ -615,7 +615,7 @@ mod tests {
             let models = vec![
                 AgentModelInfo {
                     id: AgentModelId::new("auto"),
-                    name: "Auto".into(),
+                    name: "自动".into(),
                     description: None,
                     icon: None,
                     is_latest: false,
@@ -624,7 +624,7 @@ mod tests {
                 },
                 AgentModelInfo {
                     id: AgentModelId::new("manual"),
-                    name: "Manual".into(),
+                    name: "手动".into(),
                     description: None,
                     icon: None,
                     is_latest: false,
@@ -712,7 +712,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(ModelPickerEntry::Separator(s)) if s == "Favorite"
+            Some(ModelPickerEntry::Separator(s)) if s == "收藏"
         ));
 
         let model_ids = get_entry_model_ids(&entries);
@@ -745,9 +745,9 @@ mod tests {
         for entry in &entries {
             if let ModelPickerEntry::Model(info, is_favorite) = entry {
                 if info.id.as_ref() == "zed/claude" {
-                    assert!(is_favorite, "zed/claude should be a favorite");
+                    assert!(is_favorite, "zed/claude 应为收藏模型");
                 } else {
-                    assert!(!is_favorite, "{} should not be a favorite", info.id);
+                    assert!(!is_favorite, "{} 不应为收藏模型", info.id);
                 }
             }
         }
@@ -774,7 +774,7 @@ mod tests {
     #[gpui::test]
     fn test_favorites_are_not_duplicated_when_repeated_in_other_sections(_cx: &mut TestAppContext) {
         let models = create_model_list(vec![
-            ("Recommended", vec!["zed/claude", "anthropic/claude"]),
+            ("推荐", vec!["zed/claude", "anthropic/claude"]),
             ("Zed", vec!["zed/claude", "zed/gpt-5"]),
             ("Antropic", vec!["anthropic/claude"]),
             ("OpenAI", vec!["openai/gpt-5"]),
@@ -788,9 +788,9 @@ mod tests {
         assert_eq!(
             labels,
             vec![
-                "Favorite",
+                "收藏",
                 "zed/claude",
-                "Recommended",
+                "推荐",
                 "zed/claude",
                 "anthropic/claude",
                 "Zed",
@@ -832,12 +832,12 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(ModelPickerEntry::Separator(s)) if s == "Favorite"
+            Some(ModelPickerEntry::Separator(s)) if s == "收藏"
         ));
 
         assert!(entries.iter().any(|e| matches!(
             e,
-            ModelPickerEntry::Separator(s) if s == "All"
+            ModelPickerEntry::Separator(s) if s == "全部"
         )));
     }
 
@@ -861,7 +861,7 @@ mod tests {
         let models = AgentModelList::Flat(vec![
             acp_thread::AgentModelInfo {
                 id: AgentModelId::new("favorite-model"),
-                name: "Favorite".into(),
+                name: "收藏".into(),
                 description: None,
                 icon: None,
                 is_latest: false,
@@ -870,7 +870,7 @@ mod tests {
             },
             acp_thread::AgentModelInfo {
                 id: AgentModelId::new("regular-model"),
-                name: "Regular".into(),
+                name: "常规".into(),
                 description: None,
                 icon: None,
                 is_latest: false,
@@ -885,9 +885,9 @@ mod tests {
         for entry in &entries {
             if let ModelPickerEntry::Model(info, is_favorite) = entry {
                 if info.id.as_ref() == "favorite-model" {
-                    assert!(*is_favorite, "favorite-model should have is_favorite=true");
+                    assert!(*is_favorite, "favorite-model 的 is_favorite 应为 true");
                 } else if info.id.as_ref() == "regular-model" {
-                    assert!(!*is_favorite, "regular-model should have is_favorite=false");
+                    assert!(!*is_favorite, "regular-model 的 is_favorite 应为 false");
                 }
             }
         }

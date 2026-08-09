@@ -202,7 +202,7 @@ async fn test_basic_following(
         assert_eq!(
             followers_by_leader(project_id, cx),
             &[(peer_id_a, vec![peer_id_b, peer_id_c])],
-            "followers seen by {name}"
+            "跟随者(由 {name} 查看)"
         );
     }
 
@@ -217,7 +217,7 @@ async fn test_basic_following(
         assert_eq!(
             followers_by_leader(project_id, cx),
             &[(peer_id_a, vec![peer_id_b])],
-            "followers seen by {name}"
+            "跟随者(由 {name} 查看)"
         );
     }
 
@@ -232,7 +232,7 @@ async fn test_basic_following(
         assert_eq!(
             followers_by_leader(project_id, cx),
             &[(peer_id_a, vec![peer_id_b, peer_id_c])],
-            "followers seen by {name}"
+            "跟随者(由 {name} 查看)"
         );
     }
 
@@ -254,7 +254,7 @@ async fn test_basic_following(
                 (peer_id_a, vec![peer_id_b, peer_id_c]),
                 (peer_id_c, vec![peer_id_d])
             ],
-            "followers seen by {name}"
+            "跟随者(由 {name} 查看)"
         );
     }
 
@@ -265,7 +265,7 @@ async fn test_basic_following(
     });
     executor.run_until_parked();
     // are you sure you want to leave the call?
-    cx_c.simulate_prompt_answer("Close window and hang up");
+    cx_c.simulate_prompt_answer("关闭窗口并挂断");
     cx_c.cx.update(|_| {
         drop(workspace_c);
     });
@@ -280,7 +280,7 @@ async fn test_basic_following(
         assert_eq!(
             followers_by_leader(project_id, cx),
             &[(peer_id_a, vec![peer_id_b]),],
-            "followers seen by {name}"
+            "跟随者(由 {name} 查看)"
         );
     }
 
@@ -502,9 +502,9 @@ async fn test_basic_following(
         let shared_screen = workspace_a.update(cx_a, |workspace, cx| {
             workspace
                 .active_item(cx)
-                .expect("no active item")
+                .expect("没有活动项目")
                 .downcast::<SharedScreen>()
-                .expect("active item isn't a shared screen")
+                .expect("活动项目不是共享屏幕")
         });
 
         // Client B activates Zed again, which causes the previous editor to become focused again.
@@ -1780,7 +1780,7 @@ async fn test_following_into_excluded_file(
             path!("/a"),
             json!({
                 ".git": {
-                    "COMMIT_EDITMSG": "write your commit message here",
+                    "COMMIT_EDITMSG": "在此输入提交信息",
                 },
                 "1.txt": "one\none\none",
                 "2.txt": "two\ntwo\ntwo",
@@ -1844,7 +1844,7 @@ async fn test_following_into_excluded_file(
     });
     editor_for_excluded_a.update_in(cx_a, |editor, window, cx| {
         editor.select_all(&Default::default(), window, cx);
-        editor.handle_input("new commit message", window, cx);
+        editor.handle_input("新的提交信息", window, cx);
         editor.select_left(&Default::default(), window, cx);
         assert_eq!(
             editor.selections.ranges(&editor.display_snapshot(cx)),
@@ -2048,7 +2048,7 @@ async fn test_following_to_channel_notes_without_a_shared_project(
     channel_notes_1_a.update_in(cx_a, |notes, window, cx| {
         assert_eq!(notes.channel(cx).unwrap().name, "channel-1");
         notes.editor.update(cx, |editor, cx| {
-            editor.insert("Hello from A.", window, cx);
+            editor.insert("来自 A 的问候。", window, cx);
             editor.change_selections(SelectionEffects::no_scroll(), window, cx, |selections| {
                 selections.select_ranges(vec![MultiBufferOffset(3)..MultiBufferOffset(4)]);
             });
@@ -2078,14 +2078,14 @@ async fn test_following_to_channel_notes_without_a_shared_project(
         );
         workspace
             .active_item(cx)
-            .expect("no active item")
+            .expect("没有活动项目")
             .downcast::<ChannelView>()
-            .expect("active item is not a channel view")
+            .expect("活动项目不是频道视图")
     });
     channel_notes_1_b.update(cx_b, |notes, cx| {
         assert_eq!(notes.channel(cx).unwrap().name, "channel-1");
         notes.editor.update(cx, |editor, cx| {
-            assert_eq!(editor.text(cx), "Hello from A.");
+            assert_eq!(editor.text(cx), "来自 A 的问候。");
             assert_eq!(
                 editor
                     .selections
@@ -2113,9 +2113,9 @@ async fn test_following_to_channel_notes_without_a_shared_project(
         );
         workspace
             .active_item(cx)
-            .expect("no active item")
+            .expect("没有活动项目")
             .downcast::<ChannelView>()
-            .expect("active item is not a channel view")
+            .expect("活动项目不是频道视图")
     });
     channel_notes_2_b.update(cx_b, |notes, cx| {
         assert_eq!(notes.channel(cx).unwrap().name, "channel-2");
@@ -2137,7 +2137,7 @@ async fn test_following_to_channel_notes_without_a_shared_project(
     deterministic.run_until_parked();
     workspace_b.update(cx_b, |workspace, cx| {
         assert_eq!(
-            workspace.active_item(cx).expect("no active item").item_id(),
+            workspace.active_item(cx).expect("没有活动项目").item_id(),
             channel_notes_2_b.entity_id()
         );
     });
@@ -2229,7 +2229,7 @@ fn participant_location(
     room.read_with(cx, |room, _| {
         room.remote_participants()
             .get(&user_id)
-            .expect("participant should be present")
+            .expect("参与者应在线")
             .location
     })
 }
@@ -2276,7 +2276,7 @@ async fn test_active_multi_workspace_determines_participant_location(
     let first_multi_workspace = cx_a
         .window_handle()
         .downcast::<MultiWorkspace>()
-        .expect("window should contain a multi-workspace");
+        .expect("窗口应包含多工作区");
     let app_state = client_a.app_state.clone();
     let first_window_second_workspace = first_multi_workspace
         .update(cx_a, |multi_workspace, window, cx| {
@@ -2297,7 +2297,7 @@ async fn test_active_multi_workspace_determines_participant_location(
     let second_multi_workspace = cx_a_second
         .window_handle()
         .downcast::<MultiWorkspace>()
-        .expect("window should contain a multi-workspace");
+        .expect("窗口应包含多工作区");
     let app_state = client_a.app_state.clone();
     let second_window_second_workspace = second_multi_workspace
         .update(cx_a_second, |multi_workspace, window, cx| {
@@ -2325,7 +2325,7 @@ async fn test_active_multi_workspace_determines_participant_location(
         ParticipantLocation::SharedProject {
             project_id: first_shared_project_id,
         },
-        "test should start in the first window's first workspace"
+        "测试应在第一个窗口的第一个工作区中开始"
     );
 
     let mut active_window = Some(LocationWindow::First);
@@ -2442,7 +2442,7 @@ async fn test_active_multi_workspace_determines_participant_location(
         assert_eq!(
             participant_location(&room_b, user_id_a, cx_b),
             expected_location,
-            "participant location should match the active window's active workspace after {action:?}; scenario: {scenario:?}"
+            "执行 {action:?} 后,参与者位置应与活动窗口的活动工作区匹配;场景:{scenario:?}"
         );
     }
 }
@@ -2514,14 +2514,14 @@ async fn test_active_multi_workspace_determines_follower_view(
     workspace_b.update(cx_b, |workspace, cx| {
         let active_item = workspace
             .active_item(cx)
-            .expect("follower should have an active item");
+            .expect("跟随者应有一个活动项目");
         assert_eq!(active_item.tab_content_text(0, cx), "first.txt");
     });
 
     let multi_workspace_a = cx_a
         .window_handle()
         .downcast::<MultiWorkspace>()
-        .expect("window should contain a multi-workspace");
+        .expect("窗口应包含多工作区");
     let app_state = client_a.app_state.clone();
     let second_workspace_a = multi_workspace_a
         .update(cx_a, |multi_workspace, window, cx| {
@@ -2547,7 +2547,7 @@ async fn test_active_multi_workspace_determines_follower_view(
     workspace_b.update(cx_b, |workspace, cx| {
         let active_item = workspace
             .active_item(cx)
-            .expect("follower should have an active item");
+            .expect("跟随者应有一个活动项目");
         assert_eq!(active_item.tab_content_text(0, cx), "second.txt");
     });
     multi_workspace_a
@@ -2567,7 +2567,7 @@ async fn test_active_multi_workspace_determines_follower_view(
     workspace_b.update(cx_b, |workspace, cx| {
         let active_item = workspace
             .active_item(cx)
-            .expect("follower should retain its active item while the host is inactive");
+            .expect("当主持人处于非活动状态时,跟随者应保留其活动项目");
         assert_eq!(active_item.tab_content_text(0, cx), "second.txt");
     });
 
@@ -2581,7 +2581,7 @@ async fn test_active_multi_workspace_determines_follower_view(
         );
         let active_item = workspace
             .active_item(cx)
-            .expect("follower should have the active workspace's item");
+            .expect("跟随者应拥有活动工作区的项目");
         assert_eq!(active_item.tab_content_text(0, cx), "first.txt");
     });
 

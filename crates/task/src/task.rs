@@ -372,7 +372,7 @@ impl From<TaskContext> for SharedTaskContext {
 pub struct RunnableTag(pub SharedString);
 
 pub fn shell_from_proto(proto: proto::Shell) -> anyhow::Result<Shell> {
-    let shell_type = proto.shell_type.context("invalid shell type")?;
+    let shell_type = proto.shell_type.context("无效的 Shell 类型")?;
     let shell = match shell_type {
         proto::shell::ShellType::System(_) => Shell::System,
         proto::shell::ShellType::Program(program) => Shell::Program(program),

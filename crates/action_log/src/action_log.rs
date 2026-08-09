@@ -330,7 +330,7 @@ impl ActionLog {
             let tracked_buffer = this
                 .tracked_buffers
                 .get_mut(buffer)
-                .context("buffer not tracked")?;
+                .context("缓冲区未跟踪")?;
 
             let rebase = cx.background_spawn({
                 let mut base_text = tracked_buffer.diff_base.clone();
@@ -377,7 +377,7 @@ impl ActionLog {
             let tracked_buffer = this
                 .tracked_buffers
                 .get(buffer)
-                .context("buffer not tracked")?;
+                .context("缓冲区未跟踪")?;
             anyhow::Ok(tracked_buffer.snapshot.clone())
         })??;
         let (new_base_text, new_diff_base) = this
@@ -385,7 +385,7 @@ impl ActionLog {
                 let tracked_buffer = this
                     .tracked_buffers
                     .get(buffer)
-                    .context("buffer not tracked")?;
+                    .context("缓冲区未跟踪")?;
                 let old_unreviewed_edits = tracked_buffer.unreviewed_edits.clone();
                 let agent_diff_base = tracked_buffer.diff_base.clone();
                 let git_diff_base = git_diff.read(cx).base_text(cx).as_rope().clone();
@@ -473,7 +473,7 @@ impl ActionLog {
             let tracked_buffer = this
                 .tracked_buffers
                 .get(buffer)
-                .context("buffer not tracked")?;
+                .context("缓冲区未跟踪")?;
             anyhow::Ok(tracked_buffer.diff.clone())
         })??;
         diff.update(cx, |diff, cx| {
@@ -514,7 +514,7 @@ impl ActionLog {
             let tracked_buffer = this
                 .tracked_buffers
                 .get_mut(buffer)
-                .context("buffer not tracked")?;
+                .context("缓冲区未跟踪")?;
             tracked_buffer.diff_base = new_diff_base;
             tracked_buffer.snapshot = buffer_snapshot;
             tracked_buffer.unreviewed_edits = unreviewed_edits;
@@ -779,7 +779,7 @@ impl ActionLog {
                         // from edits made by the AI at this point.
                         // For now, preserve both to avoid data loss.
                         //
-                        // TODO: Better solution (disable "Reject" after user makes some
+                        // TODO: Better solution (disable "拒绝" after user makes some
                         // edit or find a way to differentiate between AI and user edits)
                         Task::ready(Ok(()))
                     }
@@ -1111,7 +1111,7 @@ impl ActionLogMetrics {
 
 fn telemetry_report_accepted_edits(telemetry: &ActionLogTelemetry, metrics: ActionLogMetrics) {
     telemetry::event!(
-        "Agent Edits Accepted",
+        "代理编辑已接受",
         agent = telemetry.agent_telemetry_id,
         session = telemetry.session_id,
         language = metrics.language,
@@ -1122,7 +1122,7 @@ fn telemetry_report_accepted_edits(telemetry: &ActionLogTelemetry, metrics: Acti
 
 fn telemetry_report_rejected_edits(telemetry: &ActionLogTelemetry, metrics: ActionLogMetrics) {
     telemetry::event!(
-        "Agent Edits Rejected",
+        "代理编辑已拒绝",
         agent = telemetry.agent_telemetry_id,
         session = telemetry.session_id,
         language = metrics.language,
@@ -2404,7 +2404,7 @@ mod tests {
             .unwrap();
         cx.run_until_parked();
 
-        // User clicks "Accept All"
+        // User clicks "全部接受"
         action_log.update(cx, |log, cx| log.keep_all_edits(None, cx));
         cx.run_until_parked();
         assert!(fs.is_file(path!("/dir/new_file").as_ref()).await);
@@ -2422,7 +2422,7 @@ mod tests {
         cx.run_until_parked();
         assert_ne!(unreviewed_hunks(&action_log, cx), vec![]);
 
-        // User clicks "Reject All"
+        // User clicks "全部拒绝"
         action_log
             .update(cx, |log, cx| log.reject_all_edits(None, cx))
             .await;
@@ -2439,8 +2439,8 @@ mod tests {
     async fn test_random_diffs(mut rng: StdRng, cx: &mut TestAppContext) {
         init_test(cx);
 
-        let operations = env::var("OPERATIONS")
-            .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+        let operations = env::var("操作")
+            .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
             .unwrap_or(20);
 
         let text = RandomCharIter::new(&mut rng).take(50).collect::<String>();
@@ -2463,7 +2463,7 @@ mod tests {
                 0..25 => {
                     action_log.update(cx, |log, cx| {
                         let range = buffer.read(cx).random_byte_range(0, &mut rng);
-                        log::info!("keeping edits in range {:?}", range);
+                        log::info!("保留 {:?} 范围内的编辑", range);
                         log.keep_edits_in_range(buffer.clone(), range, None, cx)
                     });
                 }
@@ -2471,7 +2471,7 @@ mod tests {
                     action_log
                         .update(cx, |log, cx| {
                             let range = buffer.read(cx).random_byte_range(0, &mut rng);
-                            log::info!("rejecting edits in range {:?}", range);
+                            log::info!("拒绝 {:?} 范围内的编辑", range);
                             let (task, _) =
                                 log.reject_edits_in_ranges(buffer.clone(), vec![range], None, cx);
                             task
@@ -2482,9 +2482,9 @@ mod tests {
                 _ => {
                     let is_agent_edit = rng.random_bool(0.5);
                     if is_agent_edit {
-                        log::info!("agent edit");
+                        log::info!("代理编辑");
                     } else {
-                        log::info!("user edit");
+                        log::info!("用户编辑");
                     }
                     cx.update(|cx| {
                         buffer.update(cx, |buffer, cx| buffer.randomly_edit(&mut rng, 1, cx));
@@ -2507,7 +2507,7 @@ mod tests {
             buffer: &Entity<Buffer>,
             cx: &mut TestAppContext,
         ) {
-            log::info!("quiescing...");
+            log::info!("正在静默...");
             cx.run_until_parked();
             action_log.update(cx, |log, cx| {
                 let tracked_buffer = log.tracked_buffers.get(buffer).unwrap();
@@ -2869,7 +2869,7 @@ mod tests {
         assert_eq!(
             unreviewed_hunks(&action_log, cx),
             vec![],
-            "agent edits should have been accepted after the base text update"
+            "基础文本更新后,代理编辑应已被接受"
         );
     }
 
@@ -3064,12 +3064,12 @@ mod tests {
         assert_eq!(
             unreviewed_hunks(&child_log, cx),
             expected_hunks,
-            "child should track the agent edit"
+            "子级应跟踪代理编辑"
         );
         assert_eq!(
             unreviewed_hunks(&parent_log, cx),
             expected_hunks,
-            "parent should also track the agent edit via linked log forwarding"
+            "父级也应通过链接日志转发跟踪代理编辑"
         );
     }
 
@@ -3116,12 +3116,12 @@ mod tests {
         assert_eq!(
             unreviewed_hunks(&child_log, cx),
             expected_hunks,
-            "child should track the created file"
+            "子级应跟踪创建的文件"
         );
         assert_eq!(
             unreviewed_hunks(&parent_log, cx),
             expected_hunks,
-            "parent should also track the created file via linked log forwarding"
+            "父级也应通过链接日志转发跟踪创建的文件"
         );
     }
 
@@ -3166,12 +3166,12 @@ mod tests {
         assert_eq!(
             unreviewed_hunks(&child_log, cx),
             expected_hunks,
-            "child should track the deleted file"
+            "子级应跟踪删除的文件"
         );
         assert_eq!(
             unreviewed_hunks(&parent_log, cx),
             expected_hunks,
-            "parent should also track the deleted file via linked log forwarding"
+            "父级也应通过链接日志转发跟踪删除的文件"
         );
     }
 
@@ -3226,7 +3226,7 @@ mod tests {
 
             child_log_2.update(cx, |log, cx| log.buffer_read(buffer_b.clone(), cx));
             buffer_b.update(cx, |buffer, cx| {
-                buffer.edit([(0..0, "MODIFIED: ")], None, cx).unwrap();
+                buffer.edit([(0..0, "已修改:")], None, cx).unwrap();
             });
             child_log_2.update(cx, |log, cx| log.buffer_edited(buffer_b.clone(), cx));
         });
@@ -3257,17 +3257,17 @@ mod tests {
         assert_eq!(
             child_1_changed,
             vec![buffer_a.clone()],
-            "child 1 should only track file_a"
+            "子级 1 应仅跟踪 file_a"
         );
         assert_eq!(
             child_2_changed,
             vec![buffer_b.clone()],
-            "child 2 should only track file_b"
+            "子级 2 应仅跟踪 file_b"
         );
         assert_eq!(parent_changed.len(), 2, "parent should track both files");
         assert!(
             parent_changed.contains(&buffer_a) && parent_changed.contains(&buffer_b),
-            "parent should contain both buffer_a and buffer_b"
+            "父级应包含 buffer_a 和 buffer_b"
         );
     }
 
@@ -3292,7 +3292,7 @@ mod tests {
         let abs_path = PathBuf::from(path!("/dir/file"));
         assert!(
             action_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_none()),
-            "file_read_time should be None before buffer_read"
+            "在 buffer_read 之前,file_read_time 应为 None"
         );
 
         cx.update(|cx| {
@@ -3301,7 +3301,7 @@ mod tests {
 
         assert!(
             action_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_some()),
-            "file_read_time should be recorded after buffer_read"
+            "在 buffer_read 之后,应记录 file_read_time"
         );
     }
 
@@ -3326,7 +3326,7 @@ mod tests {
         let abs_path = PathBuf::from(path!("/dir/file"));
         assert!(
             action_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_none()),
-            "file_read_time should be None before buffer_edited"
+            "在 buffer_edited 之前,file_read_time 应为 None"
         );
 
         cx.update(|cx| {
@@ -3335,7 +3335,7 @@ mod tests {
 
         assert!(
             action_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_some()),
-            "file_read_time should be recorded after buffer_edited"
+            "在 buffer_edited 之后,应记录 file_read_time"
         );
     }
 
@@ -3344,7 +3344,7 @@ mod tests {
         init_test(cx);
 
         let fs = FakeFs::new(cx.executor());
-        fs.insert_tree(path!("/dir"), json!({"file": "existing content"}))
+        fs.insert_tree(path!("/dir"), json!({"file": "现有内容"}))
             .await;
         let project = Project::test(fs.clone(), [path!("/dir").as_ref()], cx).await;
         let action_log = cx.new(|_| ActionLog::new(project.clone()));
@@ -3360,7 +3360,7 @@ mod tests {
         let abs_path = PathBuf::from(path!("/dir/file"));
         assert!(
             action_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_none()),
-            "file_read_time should be None before buffer_created"
+            "在 buffer_created 之前,file_read_time 应为 None"
         );
 
         cx.update(|cx| {
@@ -3369,7 +3369,7 @@ mod tests {
 
         assert!(
             action_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_some()),
-            "file_read_time should be recorded after buffer_created"
+            "在 buffer_created 之后,应记录 file_read_time"
         );
     }
 
@@ -3398,7 +3398,7 @@ mod tests {
         });
         assert!(
             action_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_some()),
-            "file_read_time should exist after buffer_read"
+            "在 buffer_read 之后,file_read_time 应存在"
         );
 
         cx.update(|cx| {
@@ -3406,7 +3406,7 @@ mod tests {
         });
         assert!(
             action_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_none()),
-            "file_read_time should be removed after will_delete_buffer"
+            "在 will_delete_buffer 之后,应移除 file_read_time"
         );
     }
 
@@ -3437,11 +3437,11 @@ mod tests {
         });
         assert!(
             child_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_some()),
-            "child should record file_read_time on buffer_read"
+            "子级应在 buffer_read 时记录 file_read_time"
         );
         assert!(
             parent_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_none()),
-            "parent should NOT get file_read_time from child's buffer_read"
+            "父级不应从子级的 buffer_read 获取 file_read_time"
         );
 
         cx.update(|cx| {
@@ -3449,7 +3449,7 @@ mod tests {
         });
         assert!(
             parent_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_none()),
-            "parent should NOT get file_read_time from child's buffer_edited"
+            "父级不应从子级的 buffer_edited 获取 file_read_time"
         );
 
         cx.update(|cx| {
@@ -3457,7 +3457,7 @@ mod tests {
         });
         assert!(
             parent_log.read_with(cx, |log, _| log.file_read_time(&abs_path).is_none()),
-            "parent should NOT get file_read_time from child's buffer_created"
+            "父级不应从子级的 buffer_created 获取 file_read_time"
         );
     }
 

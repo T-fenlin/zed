@@ -430,15 +430,15 @@ impl LoadProgress {
     /// `0→100%` and the label says which stage it is.
     pub fn stage_label(&self) -> &'static str {
         match self.current.as_str() {
-            "text_model" => "Loading weights",
-            "spec_model" => "Loading draft",
-            "mmproj_model" => "Loading projector",
-            _ => "Loading",
+            "text_model" => "正在加载权重",
+            "spec_model" => "正在加载草稿",
+            "mmproj_model" => "正在加载投影器",
+            _ => "正在加载",
         }
     }
 
     /// The full load-status label shown in the model selector, e.g.
-    /// `"Loading weights 42%"`: the current stage plus its own progress rounded
+    /// `"正在加载权重 42%"`: the current stage plus its own progress rounded
     /// to a percentage.
     pub fn progress_label(&self) -> String {
         format!(
@@ -539,7 +539,7 @@ pub async fn stream_chat_completion(
         let mut body = String::new();
         response.body_mut().read_to_string(&mut body).await?;
         anyhow::bail!(
-            "Failed to connect to llama.cpp API: {} {}",
+            "无法连接到 llama.cpp API: {} {}",
             response.status(),
             body,
         );
@@ -571,12 +571,12 @@ pub async fn get_models(
 
     anyhow::ensure!(
         response.status().is_success(),
-        "Failed to connect to llama.cpp API: {} {}",
+        "无法连接到 llama.cpp API: {} {}",
         response.status(),
         body,
     );
     let response: ListModelsResponse =
-        serde_json::from_str(&body).context("Unable to parse llama.cpp models response")?;
+        serde_json::from_str(&body).context("无法解析 llama.cpp 模型响应")?;
     Ok(response.data)
 }
 
@@ -596,7 +596,7 @@ pub async fn get_props(
     // `unsloth/Qwen3.5-2B-GGUF:Q4_1`), so the value is URL-encoded.
     let uri = match model {
         Some(model) => Url::parse_with_params(&format!("{api_url}/props"), [("model", model)])
-            .context("invalid llama.cpp API URL")?
+            .context("无效的 llama.cpp API URL")?
             .to_string(),
         None => format!("{api_url}/props"),
     };
@@ -617,12 +617,12 @@ pub async fn get_props(
 
     anyhow::ensure!(
         response.status().is_success(),
-        "Failed to connect to llama.cpp API: {} {}",
+        "无法连接到 llama.cpp API: {} {}",
         response.status(),
         body,
     );
     let props: Props =
-        serde_json::from_str(&body).context("Unable to parse llama.cpp props response")?;
+        serde_json::from_str(&body).context("无法解析 llama.cpp 属性响应")?;
     Ok(props)
 }
 
@@ -651,7 +651,7 @@ pub async fn stream_model_events(
         let mut body = String::new();
         response.body_mut().read_to_string(&mut body).await?;
         anyhow::bail!(
-            "Failed to open llama.cpp model event stream: {} {}",
+            "无法打开 llama.cpp 模型事件流: {} {}",
             response.status(),
             body,
         );
@@ -835,8 +835,8 @@ mod tests {
         }));
         let progress = weights.load_progress().unwrap();
         assert!((progress.value - 0.4).abs() < 1e-4);
-        assert_eq!(progress.stage_label(), "Loading weights");
-        assert_eq!(progress.progress_label(), "Loading weights 40%");
+        assert_eq!(progress.stage_label(), "正在加载权重");
+        assert_eq!(progress.progress_label(), "正在加载权重 40%");
 
         // The projector stage runs 0→1 on its own (not 90→100%).
         let projector = model_event(serde_json::json!({
@@ -847,7 +847,7 @@ mod tests {
         }));
         let progress = projector.load_progress().unwrap();
         assert!((progress.value - 0.5).abs() < 1e-4);
-        assert_eq!(progress.stage_label(), "Loading projector");
+        assert_eq!(progress.stage_label(), "正在加载投影器");
 
         // Non-loading events carry no progress.
         let loaded = model_event(serde_json::json!({
@@ -875,7 +875,7 @@ mod tests {
                     "delta": {
                         "role": "assistant",
                         "content": null,
-                        "reasoning_content": "thinking...",
+                        "reasoning_content": "思考中...",
                         "tool_calls": [
                             {
                                 "index": 0,
@@ -890,7 +890,7 @@ mod tests {
         });
         let event: ResponseStreamEvent = serde_json::from_value(event).unwrap();
         let delta = &event.choices[0].delta;
-        assert_eq!(delta.reasoning_content.as_deref(), Some("thinking..."));
+        assert_eq!(delta.reasoning_content.as_deref(), Some("思考中..."));
         assert_eq!(delta.tool_calls.as_ref().unwrap().len(), 1);
     }
 

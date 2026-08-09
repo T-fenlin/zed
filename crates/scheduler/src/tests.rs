@@ -150,7 +150,7 @@ fn test_foreground_ordering() {
         traces.insert(trace.take());
     });
 
-    assert!(traces.len() > 1, "Expected at least two traces");
+    assert!(traces.len() > 1, "预期至少有两个跟踪记录");
 }
 
 #[test]
@@ -240,7 +240,7 @@ fn test_randomize_order() {
     assert_eq!(
         deterministic_results.len(),
         1,
-        "Deterministic mode should always produce same execution order"
+        "确定性模式应始终产生相同的执行顺序"
     );
 
     // Test randomized mode: different seeds can produce different execution orders
@@ -255,7 +255,7 @@ fn test_randomize_order() {
     // Randomized mode should produce multiple different execution orders
     assert!(
         randomized_results.len() > 1,
-        "Randomized mode should produce multiple different orders"
+        "随机模式应产生多种不同的顺序"
     );
 }
 
@@ -383,7 +383,7 @@ fn test_many_with_arbitrary_seed() {
         assert_eq!(
             seeds_seen,
             (seed..seed + iterations as u64).collect::<Vec<_>>(),
-            "Expected {iterations} iterations starting at seed {seed}"
+            "预期从种子 {seed} 开始的 {iterations} 次迭代"
         );
     }
 }
@@ -408,7 +408,7 @@ fn test_block_with_timeout() {
         let foreground = scheduler.foreground();
         let future = future::pending::<()>();
         let output = foreground.block_with_timeout(Duration::from_millis(50), future);
-        assert!(output.is_err(), "future should not have finished");
+        assert!(output.is_err(), "future 不应已完成");
     });
 
     // Test case: future makes progress via timer but still times out
@@ -460,7 +460,7 @@ fn test_block_with_timeout() {
             .block_with_timeout(Duration::from_millis(50), task);
         assert!(
             timed_out.is_err(),
-            "expected timeout before advancing the clock enough for the timer"
+            "预期在时钟推进到足以触发定时器之前超时"
         );
 
         // Now explicitly advance time and ensure the returned future can complete.
@@ -496,7 +496,7 @@ fn test_block_does_not_progress_same_session_foreground() {
 
     assert!(
         task2_made_progress_once,
-        "Expected task from different foreground executor to make progress (at least once)"
+        "预期来自不同前台执行器的任务取得进展(至少一次)"
     );
 }
 
@@ -564,16 +564,16 @@ fn test_nondeterministic_wake_detection() {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         scheduler.end_test();
     }));
-    assert!(result.is_err(), "Expected end_test to panic");
+    assert!(result.is_err(), "预期 end_test 会触发 panic");
     let panic_payload = result.unwrap_err();
     let panic_message = panic_payload
         .downcast_ref::<String>()
         .map(|s| s.as_str())
         .or_else(|| panic_payload.downcast_ref::<&str>().copied())
-        .unwrap_or("<unknown panic>");
+        .unwrap_or("<未知 panic>");
     assert!(
-        panic_message.contains("Your test is not deterministic"),
-        "Expected panic message to contain non-determinism error, got: {}",
+        panic_message.contains("您的测试不是确定性的"),
+        "预期 panic 消息包含非确定性错误,实际为:{}",
         panic_message
     );
 }
@@ -671,16 +671,16 @@ fn test_nondeterministic_waker_drop_detection() {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         scheduler.end_test();
     }));
-    assert!(result.is_err(), "Expected end_test to panic");
+    assert!(result.is_err(), "预期 end_test 会触发 panic");
     let panic_payload = result.unwrap_err();
     let panic_message = panic_payload
         .downcast_ref::<String>()
         .map(|s| s.as_str())
         .or_else(|| panic_payload.downcast_ref::<&str>().copied())
-        .unwrap_or("<unknown panic>");
+        .unwrap_or("<未知 panic>");
     assert!(
-        panic_message.contains("Your test is not deterministic"),
-        "Expected panic message to contain non-determinism error, got: {}",
+        panic_message.contains("您的测试不是确定性的"),
+        "预期 panic 消息包含非确定性错误,实际为:{}",
         panic_message
     );
 }
@@ -879,7 +879,7 @@ fn test_spawn_dedicated_determinism_under_many() {
 
     assert_eq!(
         outcomes, outcomes_replay,
-        "per-seed outcomes should be reproducible"
+        "每个种子的结果应该是可重现的"
     );
 
     // Sanity: at least one seed produced a non-monotonic trace,
@@ -892,7 +892,7 @@ fn test_spawn_dedicated_determinism_under_many() {
     });
     assert!(
         any_interleaved,
-        "expected at least one seed to interleave dedicated tasks"
+        "预期至少有一个种子交错执行专用任务"
     );
 }
 
@@ -933,7 +933,7 @@ fn test_spawn_dedicated_dropping_task_cancels_future() {
 
     assert_eq!(
         counter_after, 1,
-        "dropping the dedicated task must cancel the root future before its second write"
+        "丢弃专用任务必须在其第二次写入之前取消根 future"
     );
 }
 
@@ -969,7 +969,7 @@ fn test_spawn_dedicated_detached_child_runs_after_root_completes() {
 
     assert!(
         child_ran,
-        "detached child must complete after the root, not be cancelled with it"
+        "分离的子任务必须在根任务之后完成,而不是随之被取消"
     );
 }
 

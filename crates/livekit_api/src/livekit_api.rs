@@ -85,7 +85,7 @@ impl LiveKitClient {
             self.timestamp_source.as_ref(),
         );
         let url = format!("{}/{}", self.url, path);
-        log::info!("Request {}: {:?}", url, body);
+        log::info!("请求 {}: {:?}", url, body);
         async move {
             let token = token?;
             let response = client
@@ -97,12 +97,12 @@ impl LiveKitClient {
                 .await?;
 
             if response.status().is_success() {
-                log::info!("Response {}: {:?}", url, response.status());
+                log::info!("响应 {}: {:?}", url, response.status());
                 Ok(Res::decode(response.bytes().await?)?)
             } else {
-                log::error!("Response {}: {:?}", url, response.status());
+                log::error!("响应 {}: {:?}", url, response.status());
                 anyhow::bail!(
-                    "POST {} failed with status code {:?}, {:?}",
+                    "POST {} 失败,状态码 {:?}, {:?}",
                     url,
                     response.status(),
                     response.text().await

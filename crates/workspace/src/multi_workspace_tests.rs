@@ -27,7 +27,7 @@ fn setup_multi_workspace<'a>(
     let mut iterator = projects.iter();
     let project = iterator
         .next()
-        .expect("At least one project should be provided")
+        .expect("至少应提供一个项目")
         .clone();
 
     let (multi_workspace, cx) =
@@ -72,11 +72,11 @@ async fn test_sidebar_disabled_when_disable_ai_is_enabled(cx: &mut TestAppContex
     multi_workspace.read_with(cx, |mw, cx| {
         assert!(
             !mw.sidebar_open(),
-            "Sidebar should be closed when disable_ai is true"
+            "当 disable_ai 为 true 时,侧边栏应处于关闭状态"
         );
         assert!(
             !mw.multi_workspace_enabled(cx),
-            "Multi-workspace should be disabled when disable_ai is true"
+            "当 disable_ai 为 true 时,多工作区应被禁用"
         );
     });
 
@@ -86,7 +86,7 @@ async fn test_sidebar_disabled_when_disable_ai_is_enabled(cx: &mut TestAppContex
     multi_workspace.read_with(cx, |mw, _cx| {
         assert!(
             !mw.sidebar_open(),
-            "Sidebar should remain closed when toggled with disable_ai true"
+            "当 disable_ai 为 true 时切换侧边栏,其应保持关闭状态"
         );
     });
 
@@ -98,11 +98,11 @@ async fn test_sidebar_disabled_when_disable_ai_is_enabled(cx: &mut TestAppContex
     multi_workspace.read_with(cx, |mw, cx| {
         assert!(
             mw.multi_workspace_enabled(cx),
-            "Multi-workspace should be enabled after re-enabling AI"
+            "重新启用 AI 后,多工作区应被启用"
         );
         assert!(
             !mw.sidebar_open(),
-            "Sidebar should still be closed after re-enabling AI (not auto-opened)"
+            "重新启用 AI 后,侧边栏仍应处于关闭状态(不会自动打开)"
         );
     });
 
@@ -112,7 +112,7 @@ async fn test_sidebar_disabled_when_disable_ai_is_enabled(cx: &mut TestAppContex
     multi_workspace.read_with(cx, |mw, _cx| {
         assert!(
             mw.sidebar_open(),
-            "Sidebar should open when toggled after re-enabling AI"
+            "重新启用 AI 后切换侧边栏,其应打开"
         );
     });
 }
@@ -172,7 +172,7 @@ async fn test_project_group_keys_initial(cx: &mut TestAppContext) {
 
     multi_workspace.read_with(cx, |mw, _cx| {
         let keys: Vec<ProjectGroupKey> = mw.project_group_keys();
-        assert_eq!(keys.len(), 1, "should have exactly one key on creation");
+        assert_eq!(keys.len(), 1, "创建时应该恰好有一个键");
         assert_eq!(keys[0], expected_key);
     });
 }
@@ -214,7 +214,7 @@ async fn test_project_group_keys_add_workspace(cx: &mut TestAppContext) {
         assert_eq!(
             keys.len(),
             2,
-            "should have two keys after adding a second workspace"
+            "添加第二个工作区后应有两个键"
         );
         assert_eq!(keys[0], key_b);
         assert_eq!(keys[1], key_a);
@@ -238,7 +238,7 @@ async fn test_open_new_window_does_not_open_sidebar_on_existing_window(cx: &mut 
 
     window
         .read_with(cx, |mw, _cx| {
-            assert!(!mw.sidebar_open(), "sidebar should start closed",);
+            assert!(!mw.sidebar_open(), "侧边栏应初始为关闭状态",);
         })
         .unwrap();
 
@@ -291,7 +291,7 @@ async fn test_open_directory_in_empty_workspace_does_not_open_sidebar(cx: &mut T
 
     window
         .read_with(cx, |mw, _cx| {
-            assert!(!mw.sidebar_open(), "sidebar should start closed");
+            assert!(!mw.sidebar_open(), "侧边栏应初始为关闭状态");
         })
         .unwrap();
 
@@ -316,7 +316,7 @@ async fn test_open_directory_in_empty_workspace_does_not_open_sidebar(cx: &mut T
         .read_with(cx, |mw, _cx| {
             assert!(
                 !mw.sidebar_open(),
-                "opening a directory in a blank project via the file picker must not open the sidebar",
+                "通过文件选择器在空白项目中打开目录不得打开侧边栏",
             );
         })
         .unwrap();
@@ -333,7 +333,7 @@ async fn test_project_group_keys_duplicate_not_added(cx: &mut TestAppContext) {
 
     let key_a = project_a.read_with(cx, |p, cx| p.project_group_key(cx));
     let key_a2 = project_a2.read_with(cx, |p, cx| p.project_group_key(cx));
-    assert_eq!(key_a, key_a2, "same root path should produce the same key");
+    assert_eq!(key_a, key_a2, "相同的根路径应产生相同的键");
 
     let (multi_workspace, cx) =
         cx.add_window_view(|window, cx| MultiWorkspace::test_new(project_a, window, cx));
@@ -351,7 +351,7 @@ async fn test_project_group_keys_duplicate_not_added(cx: &mut TestAppContext) {
         assert_eq!(
             keys.len(),
             1,
-            "duplicate key should not be added when a workspace with the same root is inserted"
+            "插入具有相同根路径的工作区时,不应添加重复的键"
         );
     });
 }
@@ -394,14 +394,14 @@ async fn test_adding_worktree_updates_project_group_key(cx: &mut TestAppContext)
     let updated_key = project.read_with(cx, |p, cx| p.project_group_key(cx));
     assert_ne!(
         initial_key, updated_key,
-        "adding a worktree should change the project group key"
+        "添加工作树应更改项目组键"
     );
 
     multi_workspace.read_with(cx, |mw, _cx| {
         let keys = mw.project_group_keys();
         assert!(
             keys.contains(&updated_key),
-            "should contain the updated key; got {keys:?}"
+            "应包含更新后的键;实际为 {keys:?}"
         );
     });
 }
@@ -421,7 +421,7 @@ async fn test_find_or_create_local_workspace_reuses_active_workspace_when_sideba
     let active_workspace = multi_workspace.read_with(cx, |mw, cx| {
         assert!(
             mw.project_groups(cx).is_empty(),
-            "sidebar-closed setup should start with no retained project groups"
+            "侧边栏关闭的设置应初始不保留任何项目组"
         );
         mw.workspace().clone()
     });
@@ -440,24 +440,24 @@ async fn test_find_or_create_local_workspace_reuses_active_workspace_when_sideba
             )
         })
         .await
-        .expect("reopening the same local workspace should succeed");
+        .expect("重新打开相同的本地工作区应成功");
 
     assert_eq!(
         workspace.entity_id(),
         active_workspace_id,
-        "should reuse the current active workspace when the sidebar is closed"
+        "当侧边栏关闭时,应重用当前活动工作区"
     );
 
     multi_workspace.read_with(cx, |mw, _cx| {
         assert_eq!(
             mw.workspace().entity_id(),
             active_workspace_id,
-            "active workspace should remain unchanged after reopening the same path"
+            "重新打开相同路径后,活动工作区应保持不变"
         );
         assert_eq!(
             mw.workspaces().count(),
             1,
-            "reusing the active workspace should not create a second open workspace"
+            "重用活动工作区不应创建第二个打开的工作区"
         );
     });
 }
@@ -505,29 +505,29 @@ async fn test_find_or_create_workspace_uses_project_group_key_when_paths_are_mis
             )
         })
         .await
-        .expect("opening a missing linked-worktree path should fall back to the project group key workspace");
+        .expect("打开缺失的链接工作树路径时,应回退到项目组键对应的工作区");
 
     assert_eq!(
         workspace.entity_id(),
         main_workspace_id,
-        "missing linked-worktree paths should reuse the main worktree workspace from the project group key"
+        "缺失的链接工作树路径应重用项目组键对应的主工作树工作区"
     );
 
     multi_workspace.read_with(cx, |mw, cx| {
         assert_eq!(
             mw.workspace().entity_id(),
             main_workspace_id,
-            "the active workspace should remain the main worktree workspace"
+            "活动工作区应保持为主工作树工作区"
         );
         assert_eq!(
             PathList::new(&mw.workspace().read(cx).root_paths(cx)),
             project_group_key.path_list().clone(),
-            "the activated workspace should use the project group key path list rather than the missing linked-worktree path"
+            "激活的工作区应使用项目组键路径列表,而不是缺失的链接工作树路径"
         );
         assert_eq!(
             mw.workspaces().count(),
             1,
-            "falling back to the project group key should not create a second workspace"
+            "回退到项目组键不应创建第二个工作区"
         );
     });
 }
@@ -563,19 +563,19 @@ async fn test_remove_fallback_via_find_or_create_skips_removed_workspaces(cx: &m
             )
         })
         .await
-        .expect("removing the active workspace should succeed");
-    assert!(removed, "the workspace should have been removed");
+        .expect("移除活动工作区应成功");
+    assert!(removed, "该工作区应已被移除");
 
     multi_workspace.read_with(cx, |mw, _cx| {
         assert_eq!(
             mw.workspace().entity_id(),
             workspace_b.entity_id(),
-            "the non-excluded workspace should become active"
+            "未被排除的工作区应变为活动状态"
         );
         assert!(
             mw.workspaces()
                 .all(|workspace| workspace.entity_id() != workspace_a.entity_id()),
-            "the removed workspace should be gone"
+            "被移除的工作区应已消失"
         );
     });
 }
@@ -621,7 +621,7 @@ async fn test_remove_keeping_the_project_does_not_switch_projects(cx: &mut TestA
         assert_eq!(
             PathList::new(&mw.workspace().read(cx).root_paths(cx)),
             PathList::new(&[PathBuf::from("/root_a")]),
-            "the replacement workspace should be in the removed workspace's project"
+            "替换的工作区应位于被移除工作区的项目中"
         );
     });
 }
@@ -647,7 +647,7 @@ async fn test_find_or_create_local_workspace_reuses_active_workspace_after_sideb
         assert_eq!(
             mw.project_groups(cx).len(),
             1,
-            "opening the sidebar should retain the active workspace in a project group"
+            "打开侧边栏应将活动工作区保留在项目组中"
         );
         mw.workspace().clone()
     });
@@ -666,19 +666,19 @@ async fn test_find_or_create_local_workspace_reuses_active_workspace_after_sideb
             )
         })
         .await
-        .expect("reopening the same retained local workspace should succeed");
+        .expect("重新打开相同的已保留本地工作区应成功");
 
     assert_eq!(
         workspace.entity_id(),
         active_workspace_id,
-        "should reuse the retained active workspace after the sidebar is opened"
+        "打开侧边栏后,应重用已保留的活动工作区"
     );
 
     multi_workspace.read_with(cx, |mw, _cx| {
         assert_eq!(
             mw.workspaces().count(),
             1,
-            "reopening the same retained workspace should not create another workspace"
+            "重新打开相同的已保留工作区不应创建另一个工作区"
         );
     });
 }
@@ -727,7 +727,7 @@ async fn test_close_workspace_prefers_already_loaded_neighboring_workspace(
         assert_eq!(
             keys.len(),
             3,
-            "expected three project groups in the test setup"
+            "测试设置中应有三个项目组"
         );
         assert_eq!(keys[0], project_b_key);
         assert_eq!(
@@ -738,7 +738,7 @@ async fn test_close_workspace_prefers_already_loaded_neighboring_workspace(
         assert_eq!(
             multi_workspace.workspace().entity_id(),
             workspace_a.entity_id(),
-            "workspace A should be active before closing"
+            "关闭前,工作区 A 应为活动状态"
         );
     });
 
@@ -752,29 +752,29 @@ async fn test_close_workspace_prefers_already_loaded_neighboring_workspace(
             )
         })
         .await
-        .expect("closing the active workspace should succeed");
+        .expect("关闭活动工作区应成功");
 
     assert!(
         closed,
-        "close_workspace should report that it removed a workspace"
+        "close_workspace 应报告其移除了一个工作区"
     );
 
     multi_workspace.read_with(cx, |multi_workspace, cx| {
         assert_eq!(
             multi_workspace.workspace().entity_id(),
             workspace_b.entity_id(),
-            "closing workspace A should activate the already-loaded workspace B instead of opening group C"
+            "关闭工作区 A 应激活已加载的工作区 B,而不是打开组 C"
         );
         assert_eq!(
             multi_workspace.workspaces().count(),
             1,
-            "only workspace B should remain loaded after closing workspace A"
+            "关闭工作区 A 后,应仅保留已加载的工作区 B"
         );
         assert!(
             multi_workspace
                 .workspaces_for_project_group(&project_c_key, cx)
                 .is_empty(),
-            "the unloaded neighboring group C should remain unopened"
+            "未加载的相邻组 C 应保持未打开状态"
         );
     });
 }
@@ -801,11 +801,11 @@ async fn test_close_workspace_prefers_workspace_in_same_project_group(cx: &mut T
             .expect("project group A should have a first workspace");
         let second = workspaces
             .next()
-            .expect("project group A should have a second workspace");
+            .expect("项目组 A 应有一个第二个工作区");
 
         assert!(
             workspaces.next().is_none(),
-            "project group A should have exactly two workspaces"
+            "项目组 A 应恰好有两个工作区"
         );
 
         (first, second)
@@ -825,20 +825,20 @@ async fn test_close_workspace_prefers_workspace_in_same_project_group(cx: &mut T
             )
         })
         .await
-        .expect("closing the active workspace should succeed");
+        .expect("关闭活动工作区应成功");
 
-    assert!(closed, "close_workspace should remove the active workspace");
+    assert!(closed, "close_workspace 应移除活动工作区");
     multi_workspace.read_with(cx, |multi_workspace, cx| {
         assert_eq!(
             multi_workspace.workspace(),
             &workspace_a_2,
-            "the second workspace for project group a should be preferred"
+            "应优先选择项目组 a 的第二个工作区"
         );
 
         assert_eq!(
             multi_workspace.workspaces_for_project_group(&key_a, cx),
             vec![workspace_a_2],
-            "only the fallback workspace should remain in project group A"
+            "项目组 A 中应仅保留回退工作区"
         );
     });
 }
@@ -879,12 +879,12 @@ async fn test_close_workspace_opens_unloaded_local_neighbor(cx: &mut TestAppCont
         .await
         .expect("closing the active workspace should succeed");
 
-    assert!(closed, "close_workspace should remove the active workspace");
+    assert!(closed, "close_workspace 应移除活动工作区");
     multi_workspace.read_with(cx, |multi_workspace, cx| {
         assert_eq!(
             multi_workspace.workspace().read(cx).project_group_key(cx),
             key_b,
-            "the unloaded local neighboring group should be opened"
+            "应打开未加载的本地相邻组"
         );
     });
 }
@@ -920,14 +920,14 @@ async fn test_remove_project_group_opens_unloaded_local_neighbor(cx: &mut TestAp
 
     assert!(
         removed,
-        "remove_project_group should remove the active group"
+        "remove_project_group 应移除活动组"
     );
 
     multi_workspace.read_with(cx, |multi_workspace, cx| {
         assert_eq!(
             multi_workspace.workspace().read(cx).project_group_key(cx),
             key_b,
-            "the unloaded local neighboring group should be opened"
+            "应打开未加载的本地相邻组"
         );
     });
 }
@@ -969,12 +969,12 @@ async fn test_remove_project_group_replaces_unretained_active_workspace(cx: &mut
 
         assert!(
             !multi_workspace.active_workspace_is_retained(),
-            "the active workspace should remain provisional"
+            "活动工作区应保持临时状态"
         );
         assert_eq!(
             multi_workspace.project_group_keys(),
             vec![key_a.clone(), remote_key.clone()],
-            "the remote project group should immediately follow the active local group"
+            "远程项目组应立即跟在活动本地组之后"
         );
     });
 
@@ -983,13 +983,13 @@ async fn test_remove_project_group_replaces_unretained_active_workspace(cx: &mut
             multi_workspace.remove_project_group(&key_a, window, cx)
         })
         .await
-        .expect("removing the active project group should succeed");
+        .expect("移除活动项目组应成功");
 
     multi_workspace.read_with(cx, |multi_workspace, cx| {
         assert_ne!(
             multi_workspace.workspace(),
             &workspace_a,
-            "removing the active project group should replace its provisional workspace"
+            "移除活动项目组应替换其临时工作区"
         );
         assert!(
             multi_workspace
@@ -997,12 +997,12 @@ async fn test_remove_project_group_replaces_unretained_active_workspace(cx: &mut
                 .read(cx)
                 .root_paths(cx)
                 .is_empty(),
-            "an unloaded remote neighbor should fall back to an empty workspace"
+            "未加载的远程相邻组应回退到空工作区"
         );
         assert_eq!(
             multi_workspace.project_group_keys(),
             vec![remote_key],
-            "only the remote project group should remain"
+            "应仅保留远程项目组"
         );
     });
 }
@@ -1030,7 +1030,7 @@ async fn test_switching_projects_with_sidebar_closed_retains_old_active_workspac
     });
     assert!(
         workspace_a.read_with(cx, |workspace, _cx| workspace.session_id().is_some()),
-        "initial active workspace should start attached to the session"
+        "初始活动工作区应开始附加到会话"
     );
 
     let workspace_b = multi_workspace.update_in(cx, |mw, window, cx| {
@@ -1042,19 +1042,19 @@ async fn test_switching_projects_with_sidebar_closed_retains_old_active_workspac
         assert_eq!(
             mw.workspace().entity_id(),
             workspace_b.entity_id(),
-            "the new workspace should become active"
+            "新工作区应变为活动状态"
         );
         assert_eq!(
             mw.workspaces().count(),
             2,
-            "the previous active workspace should remain open after switching with the sidebar closed"
+            "在侧边栏关闭的情况下切换后,先前的活动工作区应保持打开状态"
         );
         assert_eq!(mw.project_groups(cx).len(), 2);
     });
 
     assert!(
         workspace_a.read_with(cx, |workspace, _cx| workspace.session_id().is_some()),
-        "the previous active workspace should remain attached when switching away with the sidebar closed"
+        "在侧边栏关闭的情况下切换离开时,先前的活动工作区应保持附加状态"
     );
 }
 
@@ -1096,7 +1096,7 @@ async fn test_remote_project_root_dir_changes_update_groups(cx: &mut TestAppCont
         let keys = mw.project_group_keys();
         assert!(
             keys.contains(&initial_key),
-            "project groups should contain the initial key for the registered workspace"
+            "项目组应包含已注册工作区的初始键"
         );
     });
 
@@ -1145,18 +1145,18 @@ async fn test_remote_project_root_dir_changes_update_groups(cx: &mut TestAppCont
     let updated_key = project_b.read_with(cx, |p, cx| p.project_group_key(cx));
     assert_ne!(
         initial_key, updated_key,
-        "remote worktree update should change the project group key"
+        "远程工作树更新应更改项目组键"
     );
 
     multi_workspace.read_with(cx, |mw, _cx| {
         let keys = mw.project_group_keys();
         assert!(
             keys.contains(&updated_key),
-            "project groups should contain the updated key after remote change; got {keys:?}"
+            "远程更改后,项目组应包含更新后的键;实际为 {keys:?}"
         );
         assert!(
             !keys.contains(&initial_key),
-            "project groups should no longer contain the stale initial key; got {keys:?}"
+            "项目组不应再包含过时的初始键;实际为 {keys:?}"
         );
     });
 }
@@ -1208,7 +1208,7 @@ async fn test_open_project_closes_empty_workspace_but_not_non_empty_ones(cx: &mu
 
     // Cancelling keeps the empty workspace.
     assert!(cx.has_pending_prompt(),);
-    cx.simulate_prompt_answer("Cancel");
+    cx.simulate_prompt_answer("取消");
     cx.run_until_parked();
     assert_eq!(open_task.await.unwrap(), empty_workspace);
     window
@@ -1234,7 +1234,7 @@ async fn test_open_project_closes_empty_workspace_but_not_non_empty_ones(cx: &mu
     cx.run_until_parked();
 
     assert!(cx.has_pending_prompt(),);
-    cx.simulate_prompt_answer("Don't Save");
+    cx.simulate_prompt_answer("不保存");
     cx.run_until_parked();
 
     let workspace_a = open_task.await.unwrap();
@@ -1255,7 +1255,7 @@ async fn test_open_project_closes_empty_workspace_but_not_non_empty_ones(cx: &mu
         .unwrap();
     assert!(
         empty_workspace.read_with(cx, |workspace, _cx| workspace.session_id().is_none()),
-        "the detached empty workspace should no longer be attached to the session",
+        "分离的空工作区不应再附加到会话",
     );
 
     let dirty_item = cx.new(|cx| TestItem::new(cx).with_dirty(true));
@@ -1346,7 +1346,7 @@ async fn test_close_workspace_with_remote_neighbor_does_not_create_local_workspa
             )
         })
         .await
-        .expect("close_workspace should succeed");
+        .expect("close_workspace 应成功");
 
     cx.run_until_parked();
 
@@ -1359,7 +1359,7 @@ async fn test_close_workspace_with_remote_neighbor_does_not_create_local_workspa
             assert!(
                 key.host().is_some()
                     || key.path_list().paths() != [PathBuf::from("/remote/project")],
-                "remote neighbor should not have created a local workspace"
+                "远程相邻组不应创建本地工作区"
             );
         }
     });
@@ -1410,7 +1410,7 @@ async fn test_remove_project_group_with_remote_neighbor_does_not_create_local_wo
             mw.remove_project_group(&key_a, window, cx)
         })
         .await
-        .expect("remove_project_group should succeed");
+        .expect("remove_project_group 应成功");
 
     cx.run_until_parked();
 
@@ -1420,7 +1420,7 @@ async fn test_remove_project_group_with_remote_neighbor_does_not_create_local_wo
             let key = ws.read(cx).project_group_key(cx);
             assert!(
                 key.host().is_some() || key.path_list().paths() != [PathBuf::from("/remote/project")],
-                "remote neighbor should not have created a local workspace after remove_project_group"
+                "remove_project_group 之后,远程相邻组不应创建本地工作区"
             );
         }
     });
@@ -1457,41 +1457,41 @@ async fn test_nearest_retained_workspace(cx: &mut TestAppContext) {
         assert_eq!(
             multi_workspace.project_group_keys(),
             vec![key_d.clone(), key_c.clone(), key_b.clone(), key_a.clone()],
-            "new project groups should be inserted before existing groups"
+            "新项目组应插入到现有组之前"
         );
 
         let group_c_index = multi_workspace
             .project_groups(cx)
             .iter()
             .position(|project_group| project_group.key == key_c)
-            .expect("project group for project-c should exist");
+            .expect("project-c 的项目组应存在");
         let workspace_b = multi_workspace
             .workspaces_for_project_group(&key_b, cx)
             .into_iter()
             .next()
-            .expect("workspace for project-b should exist");
+            .expect("项目-b 的工作区应存在");
         let workspace_d = multi_workspace
             .workspaces_for_project_group(&key_d, cx)
             .into_iter()
             .next()
-            .expect("workspace for project-d should exist");
+            .expect("项目-d 的工作区应存在");
         let retained_workspaces_a = multi_workspace
             .workspaces_for_project_group(&key_a, cx);
         assert_eq!(
             retained_workspaces_a.len(),
             2,
-            "project group A should retain both workspaces"
+            "项目组 A 应保留两个工作区"
         );
         let workspace_a_1 = retained_workspaces_a
             .first()
-            .expect("project group A should have a retained workspace")
+            .expect("项目组 A 应有一个已保留的工作区")
             .clone();
         let workspace_a_2 = multi_workspace
             .last_active_workspace_for_group(&key_a, cx)
-            .expect("project group A should have a last active workspace");
+            .expect("项目组 A 应有一个最后活动的工作区");
         assert_ne!(
             workspace_a_1, workspace_a_2,
-            "project group A's last active workspace should differ from its first retained workspace"
+            "项目组 A 的最后活动工作区应与其第一个保留的工作区不同"
         );
 
         // Since Project Group B is the one after C, it is preferred over
@@ -1499,7 +1499,7 @@ async fn test_nearest_retained_workspace(cx: &mut TestAppContext) {
         assert_eq!(
             multi_workspace.nearest_retained_workspace(group_c_index, &[], cx),
             Some(workspace_b.clone()),
-            "the following project group should be preferred at equal distance"
+            "距离相等时,应优先选择后面的项目组"
         );
 
         // With Project Group B being excluded, Project Group D is picked as it
@@ -1511,7 +1511,7 @@ async fn test_nearest_retained_workspace(cx: &mut TestAppContext) {
                 cx,
             ),
             Some(workspace_d.clone()),
-            "the preceding project group should be used when the following workspace is excluded"
+            "当后面的工作区被排除时,应使用前面的项目组"
         );
 
         // With both adjacent Project Groups excluded, the search expands and
@@ -1524,7 +1524,7 @@ async fn test_nearest_retained_workspace(cx: &mut TestAppContext) {
                 cx
             ),
             Some(workspace_a_2.clone()),
-            "the farther group's last active workspace should be preferred"
+            "应优先选择更远组的最后活动工作区"
         );
 
         // With the group's most recently activated workspace excluded, the
@@ -1540,7 +1540,7 @@ async fn test_nearest_retained_workspace(cx: &mut TestAppContext) {
                 cx
             ),
             Some(workspace_a_1.clone()),
-            "the previously activated workspace should be used when the last active one is excluded"
+            "当最后活动的工作区被排除时,应使用先前激活的工作区"
         );
 
         // Excluding every neighboring workspace exhausts the search.
@@ -1556,7 +1556,7 @@ async fn test_nearest_retained_workspace(cx: &mut TestAppContext) {
                 cx
             ),
             None,
-            "no workspace should be returned when every candidate is excluded"
+            "当所有候选都被排除时,不应返回任何工作区"
         );
     });
 }
@@ -1589,7 +1589,7 @@ async fn test_nearest_retained_workspace_skips_disconnected_workspace(cx: &mut T
         assert_eq!(
             multi_workspace.nearest_retained_workspace(group_a_index, &[], cx),
             None,
-            "a disconnected workspace should not be selected as a fallback"
+            "不应选择断开连接的工作区作为回退"
         );
     });
 }

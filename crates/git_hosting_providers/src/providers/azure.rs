@@ -125,7 +125,7 @@ impl GitHostingProvider for Azure {
         let mut url = self
             .base_url()
             .join(&format!("{owner}/_git/{repo}/commit/{sha}"))
-            .expect("failed to build commit permalink");
+            .expect("无法构建提交永久链接");
         url.set_query(None);
         url
     }
@@ -141,7 +141,7 @@ impl GitHostingProvider for Azure {
         let mut permalink = self
             .base_url()
             .join(&format!("{owner}/_git/{repo}"))
-            .expect("failed to build permalink");
+            .expect("无法构建永久链接");
 
         let mut query = format!("path=/{path}&version=GC{sha}");
         if let Some(selection) = selection {
@@ -341,7 +341,7 @@ mod tests {
 
         let url = Azure
             .build_create_pull_request_url(&remote, "feature/my-branch")
-            .expect("url should be constructed");
+            .expect("应构造 URL");
 
         assert_eq!(
             url.as_str(),
@@ -358,7 +358,7 @@ mod tests {
             repo: "myrepo".into(),
         };
 
-        let message = "This does not contain a pull request";
+        let message = "此内容不包含拉取请求";
         assert!(Azure.extract_pull_request(&remote, message).is_none());
 
         let message = indoc! {r#"
@@ -374,7 +374,7 @@ mod tests {
             "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/123"
         );
 
-        let message = "Merged PR 456: Fix bug in authentication";
+        let message = "已合并 PR 456:修复身份验证中的错误";
         let pull_request = Azure.extract_pull_request(&remote, message).unwrap();
         assert_eq!(pull_request.number, 456);
         assert_eq!(
@@ -382,7 +382,7 @@ mod tests {
             "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/456"
         );
 
-        let message = "This mentions PR 789 but not at the start";
+        let message = "此消息提到了 PR 789,但不在开头";
         assert!(Azure.extract_pull_request(&remote, message).is_none());
     }
 }

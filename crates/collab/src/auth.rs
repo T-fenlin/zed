@@ -22,7 +22,7 @@ pub async fn validate_header<B>(mut req: Request<B>, next: Next<B>) -> impl Into
         .ok_or_else(|| {
             Error::http(
                 StatusCode::UNAUTHORIZED,
-                "missing authorization header".to_string(),
+                "缺少授权头".to_string(),
             )
         })?
         .split_whitespace();
@@ -33,25 +33,25 @@ pub async fn validate_header<B>(mut req: Request<B>, next: Next<B>) -> impl Into
     if first == "dev-server-token" {
         Err(Error::http(
             StatusCode::UNAUTHORIZED,
-            "Dev servers were removed in Zed 0.157 please upgrade to SSH remoting".to_string(),
+            "开发服务器已在 Zed 0.157 中移除,请升级到 SSH 远程连接".to_string(),
         ))?;
     }
 
     let user_id = UserId(first.parse().map_err(|_| {
         Error::http(
             StatusCode::BAD_REQUEST,
-            "missing user id in authorization header".to_string(),
+            "授权头中缺少用户 ID".to_string(),
         )
     })?);
 
     let access_token = auth_header.next().ok_or_else(|| {
         Error::http(
             StatusCode::BAD_REQUEST,
-            "missing access token in authorization header".to_string(),
+            "授权头中缺少访问令牌".to_string(),
         )
     })?;
 
-    let http_client = state.http_client.clone().expect("no HTTP client");
+    let http_client = state.http_client.clone().expect("没有 HTTP 客户端");
 
     let response = http_client
         .get(format!("{}/client/users/me", state.config.zed_cloud_url()))
@@ -59,12 +59,12 @@ pub async fn validate_header<B>(mut req: Request<B>, next: Next<B>) -> impl Into
         .header("Authorization", format!("{user_id} {access_token}"))
         .send()
         .await
-        .context("failed to validate access token")?;
+        .context("无法验证访问令牌")?;
     if let Ok(response) = response.error_for_status() {
         let response_body: GetAuthenticatedUserResponse = response
             .json()
             .await
-            .context("failed to parse response body")?;
+            .context("无法解析响应体")?;
 
         let user = User {
             id: UserId(response_body.user.legacy_user_id),
@@ -82,6 +82,6 @@ pub async fn validate_header<B>(mut req: Request<B>, next: Next<B>) -> impl Into
 
     Err(Error::http(
         StatusCode::UNAUTHORIZED,
-        "invalid credentials".to_string(),
+        "无效的凭据".to_string(),
     ))
 }

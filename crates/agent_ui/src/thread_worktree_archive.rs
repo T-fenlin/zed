@@ -272,10 +272,10 @@ async fn verify_created_by_zed(root: &RootPlan, cx: &mut AsyncApp) -> Result<()>
     });
     let created_at = receiver
         .await
-        .map_err(|_| anyhow!("worktree creation time check was canceled"))?
+        .map_err(|_| anyhow!("工作树创建时间检查已取消"))?
         .with_context(|| {
             format!(
-                "refusing to delete worktree at {}: failed to verify that Zed created it",
+                "拒绝删除 {} 处的工作树:无法确认该工作树由 Zed 创建",
                 root.root_path.display()
             )
         })?;
@@ -309,7 +309,7 @@ async fn remove_root_after_worktree_removal(
 ) -> Result<()> {
     for task in release_tasks {
         if let Err(error) = task.await {
-            log::error!("Failed waiting for worktree release: {error:#}");
+            log::error!("等待工作树释放失败:{error:#}");
         }
     }
 
@@ -327,12 +327,12 @@ async fn remove_root_after_worktree_removal(
     });
     let result = receiver
         .await
-        .map_err(|_| anyhow!("git worktree metadata cleanup was canceled"))?;
+        .map_err(|_| anyhow!("git 工作树元数据清理已取消"))?;
     // `project` may be a live workspace project or a temporary one created
     // by `find_or_create_repository`. In the temporary case we must keep it
     // alive until the repo removes the worktree
     drop(project);
-    result.context("git worktree metadata cleanup failed")?;
+    result.context("git 工作树元数据清理失败")?;
     Ok(())
 }
 
@@ -397,7 +397,7 @@ async fn find_or_create_repository(
     }
 
     let app_state =
-        current_app_state(cx).context("no app state available for temporary project")?;
+        current_app_state(cx).context("临时项目没有可用的应用状态")?;
 
     // For remote paths, create a fresh RemoteClient through the connection
     // pool (reusing the existing SSH transport) and build a temporary
@@ -407,12 +407,12 @@ async fn find_or_create_repository(
         let remote_client = cx
             .update(|cx| {
                 if !remote::has_active_connection(&connection, cx) {
-                    anyhow::bail!("cannot open repository on disconnected remote machine");
+                    anyhow::bail!("无法在已断开的远程机器上打开仓库");
                 }
                 Ok(remote_connection::connect_reusing_pool(connection, cx))
             })?
             .await?
-            .context("remote connection was canceled")?;
+            .context("远程连接已取消")?;
 
         cx.update(|cx| {
             Project::remote(
@@ -461,12 +461,12 @@ async fn find_or_create_repository(
                 })
                 .cloned()
         })
-        .context("failed to resolve temporary repository handle")?;
+        .context("无法解析临时仓库句柄")?;
 
     let barrier = repo.update(cx, |repo: &mut Repository, _cx| repo.barrier());
     barrier
         .await
-        .map_err(|_| anyhow!("temporary repository barrier canceled"))?;
+        .map_err(|_| anyhow!("临时仓库屏障已取消"))?;
     Ok((repo, temp_project))
 }
 
@@ -486,8 +486,8 @@ async fn rollback_root(root: &RootPlan, cx: &mut AsyncApp) {
 /// This creates two detached commits (via [`create_archive_checkpoint`] on
 /// the `GitRepository` trait) that capture the staged and unstaged state
 /// without moving any branch ref. The commits are:
-///   - "WIP staged": a tree matching the current index, parented on HEAD
-///   - "WIP unstaged": a tree with all files (including untracked),
+///   - "WIP 已暂存": a tree matching the current index, parented on HEAD
+///   - "WIP 未暂存": a tree with all files (including untracked),
 ///     parented on the staged commit
 ///
 /// After creating the commits, this function:
@@ -502,16 +502,16 @@ pub async fn persist_worktree_state(root: &RootPlan, cx: &mut AsyncApp) -> Resul
     let original_commit_hash = worktree_repo
         .update(cx, |repo, _cx| repo.head_sha())
         .await
-        .map_err(|_| anyhow!("head_sha canceled"))?
-        .context("failed to read original HEAD SHA")?
-        .context("HEAD SHA is None")?;
+        .map_err(|_| anyhow!("head_sha 已取消"))?
+        .context("无法读取原始 HEAD SHA")?
+        .context("HEAD SHA 为空")?;
 
     // Create two detached WIP commits without moving the branch.
     let checkpoint_rx = worktree_repo.update(cx, |repo, _cx| repo.create_archive_checkpoint());
     let (staged_commit_hash, unstaged_commit_hash) = checkpoint_rx
         .await
-        .map_err(|_| anyhow!("create_archive_checkpoint canceled"))?
-        .context("failed to create archive checkpoint")?;
+        .map_err(|_| anyhow!("create_archive_checkpoint 已取消"))?
+        .context("无法创建归档检查点")?;
 
     // Create DB record
     let store = cx.update(|cx| ThreadMetadataStore::global(cx));
@@ -539,7 +539,7 @@ pub async fn persist_worktree_state(root: &RootPlan, cx: &mut AsyncApp) -> Resul
             )
         })
         .await
-        .context("failed to create archived worktree DB record");
+        .context("无法创建已归档工作树的数据库记录");
     let archived_worktree_id = match db_result {
         Ok(id) => id,
         Err(error) => {
@@ -580,7 +580,7 @@ pub async fn persist_worktree_state(root: &RootPlan, cx: &mut AsyncApp) -> Resul
                      {delete_error:#}"
                 );
             }
-            return Err(error.context("failed to link thread to archived worktree"));
+            return Err(error.context("无法将对话线程链接到已归档工作树"));
         }
     }
 
@@ -591,14 +591,14 @@ pub async fn persist_worktree_state(root: &RootPlan, cx: &mut AsyncApp) -> Resul
     let (main_repo, _temp_project) =
         find_or_create_repository(&root.main_repo_path, root.remote_connection.as_ref(), cx)
             .await
-            .context("could not open main repo to create archive ref")?;
+            .context("无法打开主仓库以创建归档引用")?;
     let rx = main_repo.update(cx, |repo, _cx| {
         repo.update_ref(ref_name.clone(), unstaged_commit_hash.clone())
     });
     rx.await
-        .map_err(|_| anyhow!("update_ref canceled"))
+        .map_err(|_| anyhow!("update_ref 已取消"))
         .and_then(|r| r)
-        .with_context(|| format!("failed to create ref {ref_name} on main repo"))?;
+        .with_context(|| format!("无法在主仓库上创建引用 {ref_name}"))?;
     // See note in `remove_root_after_worktree_removal`: this may be a live
     // or temporary project; dropping only matters in the temporary case.
     drop(_temp_project);
@@ -632,7 +632,7 @@ pub async fn rollback_persist(archived_worktree_id: i64, root: &RootPlan, cx: &m
         })
         .await
     {
-        log::error!("Failed to delete archived worktree DB record during rollback: {error:#}");
+        log::error!("回滚期间删除已归档工作树的数据库记录失败:{error:#}");
     }
 }
 
@@ -651,7 +651,7 @@ pub async fn restore_worktree_via_git(
         find_or_create_repository(&row.main_repo_path, remote_connection, cx).await?;
 
     let worktree_path = &row.worktree_path;
-    let app_state = current_app_state(cx).context("no app state available")?;
+    let app_state = current_app_state(cx).context("没有可用的应用状态")?;
     let already_exists = app_state.fs.metadata(worktree_path).await?.is_some();
 
     let created_new_worktree = if already_exists {
@@ -663,8 +663,8 @@ pub async fn restore_worktree_via_git(
         if !is_git_worktree {
             let rx = main_repo.update(cx, |repo, _cx| repo.repair_worktrees());
             rx.await
-                .map_err(|_| anyhow!("worktree repair was canceled"))?
-                .context("failed to repair worktrees")?;
+                .map_err(|_| anyhow!("工作树修复已取消"))?
+                .context("无法修复工作树")?;
         }
         false
     } else {
@@ -674,8 +674,8 @@ pub async fn restore_worktree_via_git(
             repo.create_worktree_detached(worktree_path.clone(), row.original_commit_hash.clone())
         });
         rx.await
-            .map_err(|_| anyhow!("worktree creation was canceled"))?
-            .context("failed to create worktree")?;
+            .map_err(|_| anyhow!("工作树创建已取消"))?
+            .context("无法创建工作树")?;
         true
     };
 
@@ -730,7 +730,7 @@ pub async fn restore_worktree_via_git(
 
                         if let Err(error) = detach_result.map_err(|e| anyhow!("{e}")).flatten() {
                             log::warn!(
-                                "Failed to detach HEAD at {}: {error:#}",
+                                "无法在 {} 处分离 HEAD:{error:#}",
                                 row.original_commit_hash
                             );
                         }
@@ -752,7 +752,7 @@ pub async fn restore_worktree_via_git(
                 // We weren't able to check out the branch, most likely because it was deleted.
                 // This is fine; users will often delete old branches! We'll try to recreate it.
                 log::debug!(
-                    "change_branch('{branch_name}') failed: {checkout_error:#}, trying create_branch"
+                    "change_branch('{branch_name}') 失败:{checkout_error:#},正在尝试 create_branch"
                 );
                 let create_result = wt_repo
                     .update(cx, |repo, _cx| {
@@ -782,11 +782,11 @@ pub async fn restore_worktree_via_git(
     });
     if let Err(error) = restore_rx
         .await
-        .map_err(|_| anyhow!("restore_archive_checkpoint canceled"))
+        .map_err(|_| anyhow!("restore_archive_checkpoint 已取消"))
         .and_then(|r| r)
     {
         remove_new_worktree_on_error(created_new_worktree, &main_repo, worktree_path, cx).await;
-        return Err(error.context("failed to restore archive checkpoint"));
+        return Err(error.context("无法恢复归档检查点"));
     }
 
     if created_new_worktree {
@@ -833,8 +833,8 @@ pub async fn cleanup_archived_worktree_record(
         let rx = main_repo.update(cx, |repo, _cx| repo.delete_ref(ref_name));
         match rx.await {
             Ok(Ok(())) => {}
-            Ok(Err(error)) => log::warn!("Failed to delete archive ref: {error}"),
-            Err(_) => log::warn!("Archive ref deletion was canceled"),
+            Ok(Err(error)) => log::warn!("删除归档引用失败:{error}"),
+            Err(_) => log::warn!("归档引用删除已取消"),
         }
         // See note in `remove_root_after_worktree_removal`: this may be a
         // live or temporary project; dropping only matters in the temporary
@@ -871,7 +871,7 @@ pub async fn cleanup_thread_archived_worktrees(thread_id: ThreadId, cx: &mut Asy
     let archived_worktrees = match archived_worktrees {
         Ok(rows) => rows,
         Err(error) => {
-            log::error!("Failed to fetch archived worktrees for thread {thread_id:?}: {error:#}");
+            log::error!("无法获取对话线程 {thread_id:?} 的已归档工作树:{error:#}");
             return;
         }
     };
@@ -886,7 +886,7 @@ pub async fn cleanup_thread_archived_worktrees(thread_id: ThreadId, cx: &mut Asy
         })
         .await
     {
-        log::error!("Failed to unlink thread {thread_id:?} from archived worktrees: {error:#}");
+        log::error!("无法将对话线程 {thread_id:?} 与已归档工作树解除链接:{error:#}");
         return;
     }
 
@@ -903,7 +903,7 @@ pub async fn cleanup_thread_archived_worktrees(thread_id: ThreadId, cx: &mut Asy
             }
             Err(error) => {
                 log::error!(
-                    "Failed to check if archived worktree {} is still referenced: {error:#}",
+                    "无法检查已归档工作树 {} 是否仍被引用:{error:#}",
                     row.id
                 );
             }
@@ -1026,7 +1026,7 @@ mod tests {
             );
             assert!(
                 plan.is_none(),
-                "build_root_plan should return None for a main worktree",
+                "build_root_plan 对于主工作树应返回 None",
             );
         });
     }
@@ -1092,7 +1092,7 @@ mod tests {
             );
             assert!(
                 plan.is_some(),
-                "build_root_plan should return Some for a linked worktree",
+                "build_root_plan 对于链接工作树应返回 Some",
             );
             let plan = plan.unwrap();
             assert_eq!(
@@ -1429,7 +1429,7 @@ mod tests {
                     cx,
                 )
             })
-            .expect("should produce a root plan for the linked worktree");
+            .expect("应为链接工作树生成根计划");
 
         assert!(
             fs.is_dir(Path::new("/worktrees/project/feature/project"))
@@ -1438,7 +1438,7 @@ mod tests {
 
         // Remove the root.
         let task = cx.update(|cx| cx.spawn(async move |cx| remove_root(root, cx).await));
-        task.await.expect("remove_root should succeed");
+        task.await.expect("remove_root 应成功");
 
         cx.run_until_parked();
 
@@ -1446,7 +1446,7 @@ mod tests {
         assert!(
             !fs.is_dir(Path::new("/worktrees/project/feature/project"))
                 .await,
-            "linked worktree directory should be removed from FakeFs"
+            "链接工作树目录应从 FakeFs 中移除"
         );
     }
 
@@ -1510,7 +1510,7 @@ mod tests {
                     cx,
                 )
             })
-            .expect("should produce a root plan for the linked worktree");
+            .expect("应为链接工作树生成根计划");
 
         // Manually remove the worktree directory from FakeFs before calling
         // remove_root, simulating the directory being deleted externally.
@@ -1535,7 +1535,7 @@ mod tests {
         // handles a missing working tree directory.
         let task = cx.update(|cx| cx.spawn(async move |cx| remove_root(root, cx).await));
         task.await
-            .expect("remove_root should succeed even when directory is already gone");
+            .expect("即使目录已不存在,remove_root 也应成功");
     }
 
     #[gpui::test]
@@ -1613,15 +1613,15 @@ mod tests {
                     cx,
                 )
             })
-            .expect("should produce a root plan while the record exists");
+            .expect("记录存在时应生成根计划");
 
         let task = cx.update(|cx| cx.spawn(async move |cx| remove_root(root, cx).await));
         let error = task
             .await
-            .expect_err("remove_root should refuse to delete a recreated worktree");
+            .expect_err("remove_root 应拒绝删除重新创建的工作树");
         assert!(
-            error.to_string().contains("not the worktree Zed created"),
-            "unexpected error: {error:#}"
+            error.to_string().contains("不是 Zed 创建的工作树"),
+            "意外错误: {error:#}"
         );
 
         cx.run_until_parked();
@@ -1630,7 +1630,7 @@ mod tests {
         assert!(
             fs.is_dir(Path::new("/worktrees/project/feature/project"))
                 .await,
-            "worktree directory should not be deleted on creation time mismatch"
+            "创建时间不匹配时不应删除工作树目录"
         );
 
         // The stale record should be forgotten, so subsequent archival
@@ -1639,12 +1639,12 @@ mod tests {
             assert!(
                 git_ui_core::created_worktrees::recorded_created_at(worktree_path, None, cx)
                     .is_none(),
-                "stale created-worktree record should be removed"
+                "过期的已创建工作树记录应被移除"
             );
             let plan = build_root_plan(worktree_path, None, std::slice::from_ref(&workspace), cx);
             assert!(
                 plan.is_none(),
-                "build_root_plan should return None after the stale record is removed"
+                "移除过期记录后 build_root_plan 应返回 None"
             );
         });
     }
@@ -1711,24 +1711,24 @@ mod tests {
                     cx,
                 )
             })
-            .expect("should produce a root plan for the linked worktree");
+            .expect("应为链接工作树生成根计划");
 
         // Make deleting the worktree directory fail, while leaving the
         // worktree itself intact so the created-by-Zed verification passes.
         let worktree_path = Path::new("/worktrees/project/feature/project");
-        fs.set_remove_dir_error(worktree_path, "simulated remove_dir failure".to_string());
+        fs.set_remove_dir_error(worktree_path, "模拟的 remove_dir 失败".to_string());
 
         let task = cx.update(|cx| cx.spawn(async move |cx| remove_root(root, cx).await));
         let result = task.await;
 
         assert!(
             result.is_err(),
-            "remove_root should return an error when fs.remove_dir fails"
+            "当 fs.remove_dir 失败时 remove_root 应返回错误"
         );
         let error_message = format!("{:#}", result.unwrap_err());
         assert!(
-            error_message.contains("failed to delete worktree directory"),
-            "error should mention the directory deletion failure, got: {error_message}"
+            error_message.contains("无法删除工作树目录"),
+            "错误信息应提及目录删除失败,实际为:{error_message}"
         );
 
         cx.run_until_parked();
@@ -1741,7 +1741,7 @@ mod tests {
         });
         assert!(
             has_worktree,
-            "rollback should have re-added the worktree to the project"
+            "回滚应将工作树重新添加到项目中"
         );
     }
 }

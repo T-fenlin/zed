@@ -830,8 +830,8 @@ impl CodeCell {
         cx: &mut Context<Self>,
     ) {
         self.outputs.push(Output::ErrorOutput(ErrorView {
-            ename: "Kernel Error".to_string(),
-            evalue: "cell could not be executed".to_string(),
+            ename: "内核错误".to_string(),
+            evalue: "无法执行单元格".to_string(),
             traceback: cx.new(|cx| TerminalOutput::from(error_message, window, cx)),
         }));
         self.execution_start_time = None;
@@ -852,7 +852,7 @@ impl CodeCell {
         } else {
             let minutes = (total_secs / 60.0).floor() as u64;
             let secs = total_secs % 60.0;
-            format!("{}m {:.1}s", minutes, secs)
+            format!("{}分 {:.1}秒", minutes, secs)
         }
     }
 
@@ -1177,7 +1177,7 @@ impl Render for CodeCell {
                                                                 .text_color(
                                                                     cx.theme().colors().text_muted,
                                                                 )
-                                                                .child("Running..."),
+                                                                .child("运行中..."),
                                                         )
                                                         .into_any_element()
                                                 } else if let Some(duration_text) =

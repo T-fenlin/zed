@@ -44,7 +44,7 @@ pub(crate) fn capture_prediction_context(
         let uncommitted_diff_snapshot = match uncommitted_diff_task.await {
             Ok(snapshot) => Some(snapshot),
             Err(error) => {
-                log::debug!("failed to capture uncommitted diff: {error:?}");
+                log::debug!("捕获未提交差异失败: {error:?}");
                 None
             }
         };
@@ -85,7 +85,7 @@ pub(crate) fn capture_prediction_context(
         let editable_context = match editable_context_task.await {
             Ok(editable_context) => editable_context,
             Err(error) => {
-                log::debug!("failed to capture editable context: {error:?}");
+                log::debug!("捕获可编辑上下文失败: {error:?}");
                 Vec::new()
             }
         };
@@ -119,7 +119,7 @@ pub fn uncommitted_diffs_for_events(
                     .into_owned();
                 Some((root_name, worktree.abs_path(), path_style))
             })
-            .context("failed to find worktree for uncommitted diff capture")
+            .context("找不到用于捕获未提交差异的工作树")
             .map_err(Arc::new)?;
 
         let events_with_paths = events
@@ -150,7 +150,7 @@ pub fn uncommitted_diffs_for_events(
                     project.open_buffer(project_path.clone(), cx)
                 })
                 .await
-                .context("failed to open buffer for uncommitted diff capture")
+                .context("打开缓冲区以捕获未提交差异失败")
                 .map_err(Arc::new)?;
             let buffer_id = buffer.read_with(cx, |buffer, _| buffer.remote_id());
             let file_context = stored_event.file_context.clone();
@@ -174,7 +174,7 @@ pub fn uncommitted_diffs_for_events(
                             git_store.open_uncommitted_diff(buffer.clone(), cx)
                         })
                         .await
-                        .context("failed to open uncommitted diff for capture")
+                        .context("打开未提交差异以进行捕获失败")
                         .map_err(Arc::new)?;
                     if let Some(file_context) = file_context {
                         file_context.update(cx, |file_context, _| {

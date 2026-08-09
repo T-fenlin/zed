@@ -66,11 +66,11 @@
 //!
 //! #### Synthetic children
 //!
-//! Additionally, some nodes can register "synthetic children" using
+//! Additionally, some nodes can register "合成子节点" using
 //! [`Element::a11y_synthetic_children`]. Normally, one accesskit node is pushed
 //! for every [`Element`] with a role and id. However, sometimes a single
 //! element may want to produce many accesskit nodes. These extra nodes are
-//! referred to as "synthetic children" of the element providing a non-default
+//! referred to as "合成子节点" of the element providing a non-default
 //! [`Element::a11y_synthetic_children`] implementation.
 //!
 //! The user is provided a builder-style API using [`A11ySubtreeBuilder`], which
@@ -229,7 +229,7 @@ impl A11y {
         // A focused node must have been registered as focusable this frame.
         if !self.focus_ids.contains_key(&node_id) {
             if cfg!(debug_assertions) {
-                panic!("set_focus called for a node that was not registered with set_focusable");
+                panic!("对未通过 set_focusable 注册的节点调用了 set_focus");
             } else {
                 log::warn!(
                     "a11y: set_focus called for a node that was not registered with \
@@ -246,7 +246,7 @@ impl A11y {
             // The element registered a focus handle and an id, but never got a
             // node because it has no role.
             if let Some(focus_id) = self.focus_ids.get(&node_id).copied() {
-                self.note_focus_without_node(focus_id, "it has an id but no role");
+                self.note_focus_without_node(focus_id, "该节点有 ID 但没有角色");
             }
         }
     }
@@ -256,9 +256,9 @@ impl A11y {
         // not the focused node itself.
         if self.nodes.node_is_focused(node_id) {
             if cfg!(debug_assertions) {
-                panic!("set_active_descendant called on the focused node");
+                panic!("对聚焦节点调用了 set_active_descendant");
             } else {
-                log::warn!("a11y: set_active_descendant called on the focused node ({node_id:?})");
+                log::warn!("a11y: 对聚焦节点调用了 set_active_descendant ({node_id:?})");
             }
             return;
         }
@@ -360,7 +360,7 @@ impl<'a> A11ySubtreeBuilder<'a> {
     pub fn parent_node(&mut self) -> &mut accesskit::Node {
         self.nodes
             .current_node_mut()
-            .expect("A11ySubtreeBuilder exists only while its element's node is on the stack")
+            .expect("A11ySubtreeBuilder 仅在其元素的节点位于栈上时存在")
     }
 }
 
@@ -375,7 +375,7 @@ pub(crate) struct A11yNodeBuilder {
     /// what is reported to accesskit - see [`Self::active_descendant`]
     focus: Option<NodeId>,
     /// If a node calls `.aria_active_descendant()`, AND an ancestor is focused,
-    /// override it as the focused node. This supports the "active descendant"
+    /// override it as the focused node. This supports the "活动后代"
     /// pattern, which allows a focused container to act as if a descendant is
     /// focused.
     active_descendant: Option<NodeId>,
@@ -405,12 +405,12 @@ impl A11yNodeBuilder {
 
     #[must_use]
     fn can_push(&mut self, id: NodeId) -> bool {
-        debug_assert!(!self.ids_stack.is_empty(), "node pushed before push_root");
+        debug_assert!(!self.ids_stack.is_empty(), "在 push_root 之前推入了节点");
 
         if !self.seen_ids.insert(id) {
             debug_assert!(
                 false,
-                "Duplicate a11y node id: {id:?}. In a release build, this node would be silently discarded from the a11y tree."
+                "重复的 a11y 节点 ID: {id:?}。在发布构建中,此节点将被静默地从 a11y 树中丢弃。"
             );
             return false;
         }
@@ -459,7 +459,7 @@ impl A11yNodeBuilder {
     /// Pop the current node off the stack and finalize it into the all_nodes
     /// list.
     pub(crate) fn pop(&mut self) {
-        debug_assert!(self.ids_stack.len() > 1, "pop would remove the root node");
+        debug_assert!(self.ids_stack.len() > 1, "pop 将移除根节点");
 
         if let (Some(id), Some(node)) = (self.ids_stack.pop(), self.nodes_stack.pop()) {
             self.all_nodes.push((id, node));
@@ -512,7 +512,7 @@ impl A11yNodeBuilder {
             .is_some_and(|existing| existing != id)
         {
             if cfg!(debug_assertions) {
-                panic!("active descendant claimed by multiple nodes in one frame");
+                panic!("一帧内多个节点声明了活动后代");
             } else {
                 log::warn!(
                     "a11y: multiple nodes claimed the active descendant this frame; \
@@ -526,7 +526,7 @@ impl A11yNodeBuilder {
     pub(crate) fn set_focus(&mut self, id: NodeId) {
         if self.focus.is_some() {
             if cfg!(debug_assertions) {
-                panic!("set_focus called more than once in a single frame");
+                panic!("在单帧内多次调用了 set_focus");
             } else {
                 log::warn!(
                     "a11y: set_focus called more than once in a single frame; \
@@ -561,9 +561,9 @@ impl A11yNodeBuilder {
             Some(id) if self.has_node(id) => id,
             Some(id) => {
                 if cfg!(debug_assertions) {
-                    panic!("active_descendant set to {id:?}, which is not in the tree");
+                    panic!("active_descendant 设置为 {id:?},但该节点不在树中");
                 } else {
-                    log::warn!("active_descendant set to {id:?}, which is not in the tree");
+                    log::warn!("active_descendant 设置为 {id:?},但该节点不在树中");
                     self.focus.unwrap_or(ROOT_NODE_ID)
                 }
             }

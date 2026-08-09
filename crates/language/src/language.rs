@@ -159,14 +159,14 @@ where
 }
 
 static WASM_ENGINE: LazyLock<wasmtime::Engine> = LazyLock::new(|| {
-    wasmtime::Engine::new(&wasmtime::Config::new()).expect("Failed to create Wasmtime engine")
+    wasmtime::Engine::new(&wasmtime::Config::new()).expect("创建 Wasmtime 引擎失败")
 });
 
 /// A shared grammar for plain text, exposed for reuse by downstream crates.
 pub static PLAIN_TEXT: LazyLock<Arc<Language>> = LazyLock::new(|| {
     Arc::new(Language::new(
         LanguageConfig {
-            name: "Plain Text".into(),
+            name: "纯文本".into(),
             soft_wrap: Some(SoftWrap::EditorWidth),
             autoclose_before: ")]}".into(),
             matcher: (LanguageMatcher {
@@ -302,7 +302,7 @@ pub struct Location {
 }
 
 /// Context provided to LSP adapters when a user responds to a ShowMessageRequest prompt.
-/// This allows adapters to intercept preference selections (like "Always" or "Never")
+/// This allows adapters to intercept preference selections (like "始终" or "从不")
 /// and potentially persist them to Zed's settings.
 #[derive(Debug, Clone)]
 pub struct PromptResponseContext {
@@ -681,7 +681,7 @@ pub trait LspAdapter: 'static + Send + Sync + DynLspInstaller {
     }
 
     /// Called when a user responds to a ShowMessageRequest from this language server.
-    /// This allows adapters to intercept preference selections (like "Always" or "Never")
+    /// This allows adapters to intercept preference selections (like "始终" or "从不")
     /// for settings that should be persisted to Zed's settings file.
     fn process_prompt_response(&self, _context: &PromptResponseContext, _cx: &mut AsyncApp) {}
 }
@@ -762,7 +762,7 @@ where
     ) -> Result<LanguageServerBinary> {
         let name = self.name();
 
-        log::debug!("fetching latest version of language server {:?}", name.0);
+        log::debug!("正在获取语言服务器 {:?} 的最新版本", name.0);
         delegate.update_status(name.clone(), BinaryStatus::CheckingForUpdate);
 
         let latest_version = self
@@ -774,11 +774,11 @@ where
             .spawn(self.check_if_version_installed(&latest_version, &container_dir, &delegate))
             .await
         {
-            log::debug!("language server {:?} is already installed", name.0);
+            log::debug!("语言服务器 {:?} 已安装", name.0);
             delegate.update_status(name.clone(), BinaryStatus::None);
             Ok(binary)
         } else {
-            log::debug!("downloading language server {:?}", name.0);
+            log::debug!("正在下载语言服务器 {:?}", name.0);
             delegate.update_status(name.clone(), BinaryStatus::Downloading);
             let binary = cx
                 .background_executor()
@@ -816,7 +816,7 @@ where
                     .await
             {
                 log::info!(
-                    "found user-installed language server for {}. path: {:?}, arguments: {:?}",
+                    "找到用户安装的 {} 语言服务器。路径: {:?}, 参数: {:?}",
                     self.name().0,
                     binary.path,
                     binary.arguments
@@ -832,7 +832,7 @@ where
 
             if !binary_options.allow_binary_download {
                 return (
-                    Err(anyhow::anyhow!("downloading language servers disabled")),
+                    Err(anyhow::anyhow!("已禁用语言服务器下载")),
                     None,
                 );
             }
@@ -840,7 +840,7 @@ where
             let Some(container_dir) = delegate.language_server_download_dir(&self.name()).await
             else {
                 return (
-                    Err(anyhow::anyhow!("no language server download dir defined")),
+                    Err(anyhow::anyhow!("未定义语言服务器下载目录")),
                     None,
                 );
             };
@@ -849,7 +849,7 @@ where
                 .cached_server_binary(container_dir.to_path_buf(), delegate.as_ref())
                 .await
                 .context(
-                    "did not find existing language server binary, falling back to downloading",
+                    "未找到现有的语言服务器二进制文件,将回退到下载",
                 );
             let download_binary = async move {
                 let mut binary = self
@@ -979,7 +979,7 @@ impl Language {
     pub fn with_queries(mut self, queries: LanguageQueries) -> Result<Self> {
         if let Some(grammar) = self.grammar.take() {
             let grammar =
-                Arc::try_unwrap(grammar).map_err(|_| anyhow::anyhow!("cannot mutate grammar"))?;
+                Arc::try_unwrap(grammar).map_err(|_| anyhow::anyhow!("无法修改语法"))?;
             let grammar = grammar.with_queries(queries, &mut self.config)?;
             self.grammar = Some(Arc::new(grammar));
         }
@@ -1025,7 +1025,7 @@ impl Language {
     pub fn with_override_query(mut self, source: &str) -> Result<Self> {
         if let Some(grammar_arc) = self.grammar.take() {
             let grammar = Arc::try_unwrap(grammar_arc)
-                .map_err(|_| anyhow::anyhow!("cannot mutate grammar"))?;
+                .map_err(|_| anyhow::anyhow!("无法修改语法"))?;
             let grammar = grammar.with_override_query(
                 source,
                 &self.config.name,
@@ -1048,7 +1048,7 @@ impl Language {
     ) -> Result<Self> {
         if let Some(grammar_arc) = self.grammar.take() {
             let grammar = Arc::try_unwrap(grammar_arc)
-                .map_err(|_| anyhow::anyhow!("cannot mutate grammar"))?;
+                .map_err(|_| anyhow::anyhow!("无法修改语法"))?;
             self.grammar = Some(Arc::new(build(grammar)?));
         }
         Ok(self)
@@ -1060,7 +1060,7 @@ impl Language {
     ) -> Result<Self> {
         if let Some(grammar_arc) = self.grammar.take() {
             let grammar = Arc::try_unwrap(grammar_arc)
-                .map_err(|_| anyhow::anyhow!("cannot mutate grammar"))?;
+                .map_err(|_| anyhow::anyhow!("无法修改语法"))?;
             self.grammar = Some(Arc::new(build(grammar, &self.config.name)?));
         }
         Ok(self)
@@ -1374,7 +1374,7 @@ pub(crate) fn parse_text(grammar: &Grammar, text: &Rope, old_tree: Option<Tree>)
     with_parser(|parser| {
         parser
             .set_language(&grammar.ts_language)
-            .expect("incompatible grammar");
+            .expect("不兼容的语法");
         let mut chunks = text.chunks_in_range(0..text.len());
         parser
             .parse_with_options(
@@ -1570,7 +1570,7 @@ pub fn point_from_lsp(point: lsp::Position) -> Unclipped<PointUtf16> {
 pub fn range_to_lsp(range: Range<PointUtf16>) -> Result<lsp::Range> {
     anyhow::ensure!(
         range.start <= range.end,
-        "Inverted range provided to an LSP request: {:?}-{:?}",
+        "向 LSP 请求提供了反向范围: {:?}-{:?}",
         range.start,
         range.end
     );
@@ -1589,7 +1589,7 @@ pub fn range_from_lsp(range: lsp::Range) -> Range<Unclipped<PointUtf16>> {
         // range_from_lsp calls (especially during completions), that can hang the main thread.
         //
         // See issue #36223.
-        zlog::debug!("range_from_lsp called with inverted range {start:?}-{end:?}");
+        zlog::debug!("range_from_lsp 被调用时使用了反向范围 {start:?}-{end:?}");
         mem::swap(&mut start, &mut end);
     }
     start..end
@@ -1618,7 +1618,7 @@ fn test_language(name: &str, grammar: tree_sitter::Language) -> Arc<Language> {
     Arc::new(
         Language::new(grammars::load_config(name), Some(grammar))
             .with_queries(grammars::load_queries(name))
-            .unwrap_or_else(|error| panic!("could not parse queries for language {name}: {error}")),
+            .unwrap_or_else(|error| panic!("无法解析语言 {name} 的查询: {error}")),
     )
 }
 
@@ -1706,7 +1706,7 @@ mod tests {
         });
         assert!(
             cancelled.is_none(),
-            "first parse should be cancelled by the progress callback"
+            "第一次解析应被进度回调取消"
         );
 
         // Deliberately do NOT call `set_language` here: tree-sitter's
@@ -1728,14 +1728,14 @@ mod tests {
                     None,
                     None,
                 )
-                .expect("parse of small_input should succeed")
+                .expect("small_input 的解析应成功")
         });
 
         assert_eq!(tree.root_node().byte_range(), 0..small_input.len());
         assert_eq!(tree.root_node().kind(), "source_file");
         assert!(
             !tree.root_node().has_error(),
-            "tree should be error-free, got: {}",
+            "树应无错误,实际为: {}",
             tree.root_node().to_sexp()
         );
     }
@@ -1773,7 +1773,7 @@ mod tests {
             languages.language_names(),
             &[
                 LanguageName::new_static("JSON"),
-                LanguageName::new_static("Plain Text"),
+                LanguageName::new_static("纯文本"),
                 LanguageName::new_static("Rust"),
             ]
         );
@@ -1786,7 +1786,7 @@ mod tests {
             languages.language_names(),
             &[
                 LanguageName::new_static("JSON"),
-                LanguageName::new_static("Plain Text"),
+                LanguageName::new_static("纯文本"),
                 LanguageName::new_static("Rust"),
             ]
         );
@@ -1799,13 +1799,13 @@ mod tests {
             languages.language_names(),
             &[
                 LanguageName::new_static("JSON"),
-                LanguageName::new_static("Plain Text"),
+                LanguageName::new_static("纯文本"),
                 LanguageName::new_static("Rust"),
             ]
         );
 
         // Loading an unknown language returns an error.
-        assert!(languages.language_for_name("Unknown").await.is_err());
+        assert!(languages.language_for_name("未知").await.is_err());
     }
 
     #[gpui::test]
@@ -1855,7 +1855,7 @@ mod tests {
                 regular_completion_item_1.label,
                 regular_completion_item_1.detail.unwrap()
             ),
-            "LSP completion items with both detail and label_details.description should prefer detail"
+            "同时具有 detail 和 label_details.description 的 LSP 补全项应优先使用 detail"
         );
         assert_eq!(
             CodeLabel::fallback_for_completion(&regular_completion_item_2, None).text,
@@ -1870,7 +1870,7 @@ mod tests {
                     .as_ref()
                     .unwrap()
             ),
-            "LSP completion items without detail but with label_details.description should use that"
+            "没有 detail 但有 label_details.description 的 LSP 补全项应使用后者"
         );
         assert_eq!(
             CodeLabel::fallback_for_completion(
@@ -1889,18 +1889,18 @@ mod tests {
                     .as_ref()
                     .unwrap()
             ),
-            "LSP completion items with both detail and label_details.description should prefer description only if the detail duplicates the completion label"
+            "同时具有 detail 和 label_details.description 的 LSP 补全项,仅当 detail 与补全标签重复时才应优先使用 description"
         );
         assert_eq!(
             CodeLabel::fallback_for_completion(&completion_item_with_duplicate_detail, None).text,
             regular_completion_item_1.label,
-            "LSP completion items with duplicate label and detail, should omit the detail"
+            "标签和 detail 重复的 LSP 补全项应省略 detail"
         );
         assert_eq!(
             CodeLabel::fallback_for_completion(&completion_item_with_duplicate_description, None)
                 .text,
             regular_completion_item_2.label,
-            "LSP completion items with duplicate label and detail, should omit the detail"
+            "标签和 detail 重复的 LSP 补全项应省略 detail"
         );
     }
 

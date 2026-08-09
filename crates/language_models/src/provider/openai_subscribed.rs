@@ -13,7 +13,7 @@ use std::sync::Arc;
 use ui::{ConfiguredApiCard, prelude::*};
 
 const SUBSCRIPTION_DESCRIPTION: &str =
-    "Sign in with your ChatGPT Plus or Pro subscription to use OpenAI models in Zed's agent.";
+    "使用你的 ChatGPT Plus 或 Pro 订阅登录,即可在 Zed 的代理中使用 OpenAI 模型。";
 
 pub struct OpenAiSubscribedProvider {
     state: Entity<State>,
@@ -102,7 +102,7 @@ impl LanguageModelProvider for OpenAiSubscribedProvider {
         let title = if is_authenticated {
             None
         } else {
-            Some("Configure ChatGPT".into())
+            Some("配置 ChatGPT".into())
         };
         let description = if is_authenticated {
             None
@@ -142,7 +142,7 @@ impl LanguageModelProvider for OpenAiSubscribedProvider {
 
     fn fast_mode_confirmation(&self, _cx: &App) -> Option<FastModeConfirmation> {
         Some(FastModeConfirmation {
-            title: "Enable Fast Mode for OpenAI?".into(),
+            title: "为 OpenAI 启用快速模式?".into(),
             message: "Fast mode sends requests using OpenAI's Priority processing tier, which \
                 targets significantly lower latency than the standard tier and is billed at a \
                 premium per-token rate."
@@ -165,15 +165,15 @@ impl Render for ConfigurationView {
         if state.is_authenticated() {
             let label = state
                 .email()
-                .map(|e| format!("Signed in as {e}"))
-                .unwrap_or_else(|| "Signed in".to_string());
+                .map(|e| format!("以 {e} 身份登录"))
+                .unwrap_or_else(|| "已登录".to_string());
 
             let state_entity = self.state.clone();
 
             return v_flex()
                 .child(
                     ConfiguredApiCard::new("openai-subscribed-sign-out", SharedString::from(label))
-                        .button_label("Sign Out")
+                        .button_label("退出登录")
                         .on_click(cx.listener(move |_this, _, _window, cx| {
                             state_entity
                                 .update(cx, |state, cx| state.sign_out(cx))
@@ -188,9 +188,9 @@ impl Render for ConfigurationView {
 
         let is_signing_in = state.is_signing_in();
         let button_label = if is_signing_in {
-            "Signing in…"
+            "正在登录…"
         } else {
-            "Sign In"
+            "登录"
         };
 
         v_flex()

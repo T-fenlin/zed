@@ -194,38 +194,38 @@ impl Component for Tab {
         v_flex()
             .gap_6()
             .children(vec![example_group_with_title(
-                "Variations",
+                "变体",
                 vec![
                     single_example(
-                        "Default",
-                        Tab::new("default").child("Default Tab").into_any_element(),
+                        "默认",
+                        Tab::new("default").child("默认标签页").into_any_element(),
                     ),
                     single_example(
-                        "Selected",
+                        "已选中",
                         Tab::new("selected")
                             .toggle_state(true)
-                            .child("Selected Tab")
+                            .child("已选中标签页")
                             .into_any_element(),
                     ),
                     single_example(
-                        "First",
+                        "第一个",
                         Tab::new("first")
                             .position(TabPosition::First)
-                            .child("First Tab")
+                            .child("第一个标签页")
                             .into_any_element(),
                     ),
                     single_example(
-                        "Middle",
+                        "中间",
                         Tab::new("middle")
                             .position(TabPosition::Middle(Ordering::Equal))
-                            .child("Middle Tab")
+                            .child("中间标签页")
                             .into_any_element(),
                     ),
                     single_example(
-                        "Last",
+                        "最后一个",
                         Tab::new("last")
                             .position(TabPosition::Last)
-                            .child("Last Tab")
+                            .child("最后一个标签页")
                             .into_any_element(),
                     ),
                 ],

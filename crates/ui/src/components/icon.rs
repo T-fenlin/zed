@@ -312,9 +312,9 @@ impl Component for Icon {
             .gap_6()
             .children(vec![
                 example_group_with_title(
-                    "Sizes",
+                    "尺寸",
                     vec![single_example(
-                        "XSmall, Small, Default, Large",
+                        "极小、小、默认、大",
                         h_flex()
                             .gap_1()
                             .child(Icon::new(IconName::Star).size(IconSize::XSmall))
@@ -325,7 +325,7 @@ impl Component for Icon {
                     )],
                 ),
                 example_group(vec![single_example(
-                    "All Icons",
+                    "全部图标",
                     h_flex()
                         .image_cache(gpui::retain_all("all icons"))
                         .flex_wrap()

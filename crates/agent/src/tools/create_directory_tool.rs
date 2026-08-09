@@ -96,9 +96,9 @@ impl AgentTool for CreateDirectoryTool {
         _cx: &mut App,
     ) -> SharedString {
         if let Ok(input) = input {
-            format!("Create directory {}", MarkdownInlineCode(&input.path)).into()
+            format!("创建目录 {}", MarkdownInlineCode(&input.path)).into()
         } else {
-            "Create directory".into()
+            "创建目录".into()
         }
     }
 
@@ -179,7 +179,7 @@ impl AgentTool for CreateDirectoryTool {
                 match decision {
                     ToolPermissionDecision::Allow => None,
                     ToolPermissionDecision::Confirm => Some(cx.update(|cx| {
-                        let title = format!("Create directory {}", MarkdownInlineCode(&input.path));
+                        let title = format!("创建目录 {}", MarkdownInlineCode(&input.path));
                         let context =
                             crate::ToolPermissionContext::new(Self::NAME, vec![input.path.clone()]);
                         authorize_with_sensitive_settings(
@@ -201,33 +201,33 @@ impl AgentTool for CreateDirectoryTool {
             if let Some(global_skill_directory) = global_skill_directory {
                 futures::select! {
                     result = fs.create_dir(&global_skill_directory).fuse() => {
-                        result.map_err(|e| format!("Creating directory {destination_path}: {e}"))?;
+                        result.map_err(|e| format!("创建目录 {destination_path}: {e}"))?;
                     }
                     _ = event_stream.cancelled_by_user().fuse() => {
-                        return Err("Create directory cancelled by user".to_string());
+                        return Err("用户已取消创建目录".to_string());
                     }
                 }
 
-                return Ok(format!("Created directory {destination_path}"));
+                return Ok(format!("已创建目录 {destination_path}"));
             }
 
             let create_entry = project.update(cx, |project, cx| {
                 match project.find_project_path(&input.path, cx) {
                     Some(project_path) => Ok(project.create_entry(project_path, true, cx)),
-                    None => Err("Path to create was outside the project".to_string()),
+                    None => Err("要创建的路径位于项目之外".to_string()),
                 }
             })?;
 
             futures::select! {
                 result = create_entry.fuse() => {
-                    result.map_err(|e| format!("Creating directory {destination_path}: {e}"))?;
+                    result.map_err(|e| format!("创建目录 {destination_path}: {e}"))?;
                 }
                 _ = event_stream.cancelled_by_user().fuse() => {
-                    return Err("Create directory cancelled by user".to_string());
+                    return Err("用户已取消创建目录".to_string());
                 }
             }
 
-            Ok(format!("Created directory {destination_path}"))
+            Ok(format!("已创建目录 {destination_path}"))
         })
     }
 }
@@ -249,13 +249,13 @@ async fn create_out_of_project_directory(
     // Narrowing a grant to a brand-new directory only makes sense when the
     // project's terminal commands are sandboxed, and only on platforms that can
     // grant a not-yet-existing directory. Otherwise keep the historical
-    // "outside the project" rejection.
+    // "项目之外" rejection.
     let sandboxing = project.read_with(cx, |project, cx| {
         crate::sandboxing::sandboxing_enabled_for_project(project, cx)
     });
     let platform_supported = cfg!(any(target_os = "linux", target_os = "macos"));
     if !sandboxing || !platform_supported {
-        return Err("Path to create was outside the project".to_string());
+        return Err("要创建的路径位于项目之外".to_string());
     }
 
     let Some(reason) = input
@@ -274,12 +274,12 @@ async fn create_out_of_project_directory(
     let reason = reason.to_string();
 
     let absolute = resolve_absolute_path(project, &input.path, cx)
-        .ok_or_else(|| format!("Couldn't resolve `{}` to an absolute path.", input.path))?;
+        .ok_or_else(|| format!("无法将 `{}` 解析为绝对路径。", input.path))?;
 
     let prepared = cx
         .background_spawn(async move { sandbox::GrantableWriteDir::prepare(&absolute) })
         .await
-        .map_err(|error| format!("Creating directory {}: {error}", input.path))?;
+        .map_err(|error| format!("创建目录 {}: {error}", input.path))?;
 
     let canonical = prepared.canonical_path().to_path_buf();
     // The directory was just created and its inode pinned, so persist the
@@ -299,13 +299,13 @@ async fn create_out_of_project_directory(
             let display = canonical.display().to_string();
             cx.background_spawn(async move { prepared.finalize() })
                 .await
-                .map_err(|error| format!("Creating directory {display}: {error}"))?;
-            Ok(format!("Created directory {display}"))
+                .map_err(|error| format!("创建目录 {display}: {error}"))?;
+            Ok(format!("已创建目录 {display}"))
         }
         Err(error) => {
             // Roll back exactly what we created; leave the user no litter.
             cx.background_spawn(async move { prepared.discard() }).await;
-            Err(format!("Create directory cancelled: {error}"))
+            Err(format!("创建目录已取消: {error}"))
         }
     }
 }
@@ -390,14 +390,14 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("agent skills"),
-            "Authorization title should mention agent skills, got: {title}",
+            title.contains("代理技能"),
+            "授权标题应提及代理技能,实际为: {title}",
         );
         assert!(
             auth.options
                 .first_option_of_kind(acp::PermissionOptionKind::AllowAlways)
                 .is_none(),
-            "agent skills prompt must not offer an \"Always allow\" option: {:?}",
+            "代理技能提示不得提供“始终允许”选项:{:?}",
             auth.options,
         );
         auth.response
@@ -405,12 +405,12 @@ mod tests {
                 acp::PermissionOptionId::new("allow"),
                 acp::PermissionOptionKind::AllowOnce,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
 
         let result = task.await;
         assert!(
             result.is_ok(),
-            "Tool should create global skill directory: {result:?}"
+            "工具应创建全局技能目录: {result:?}"
         );
         assert!(fs.is_dir(&created_path).await);
     }
@@ -427,7 +427,7 @@ mod tests {
         let tool = Arc::new(CreateDirectoryTool::new(project));
         let outside_path = agent_skills::global_skills_dir()
             .parent()
-            .expect("global skills directory should have a parent")
+            .expect("全局技能目录应具有父目录")
             .join("not-skills");
 
         let (event_stream, mut event_rx) = ToolCallEventStream::test();
@@ -446,7 +446,7 @@ mod tests {
 
         assert!(
             result.is_err(),
-            "Tool should reject paths outside the project and global skills directory"
+            "工具应拒绝项目及全局技能目录之外的路径"
         );
         assert!(!fs.is_dir(&outside_path).await);
         assert!(
@@ -454,7 +454,7 @@ mod tests {
                 event_rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "Non-skill global path should not emit an agent-skills authorization prompt",
+            "非技能全局路径不应发出代理技能授权提示",
         );
     }
 
@@ -503,8 +503,8 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("points outside the project") || title.contains("symlink"),
-            "Authorization title should mention symlink escape, got: {title}",
+            title.contains("指向项目外部") || title.contains("symlink"),
+            "授权标题应提及符号链接逃逸,实际为: {title}",
         );
 
         auth.response
@@ -517,7 +517,7 @@ mod tests {
         let result = task.await;
         assert!(
             result.is_ok(),
-            "Tool should succeed after authorization: {result:?}"
+            "授权后工具应成功: {result:?}"
         );
     }
 
@@ -570,7 +570,7 @@ mod tests {
         let result = task.await;
         assert!(
             result.is_err(),
-            "Tool should fail when authorization is denied"
+            "授权被拒绝时工具应失败"
         );
     }
 
@@ -626,8 +626,8 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("points outside the project") || title.contains("symlink"),
-            "Authorization title should mention symlink escape, got: {title}",
+            title.contains("指向项目外部") || title.contains("symlink"),
+            "授权标题应提及符号链接逃逸,实际为: {title}",
         );
 
         auth.response
@@ -642,13 +642,13 @@ mod tests {
                 event_rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "Expected a single authorization prompt",
+            "预期只有一次授权提示",
         );
 
         let result = task.await;
         assert!(
             result.is_ok(),
-            "Tool should succeed after one authorization: {result:?}"
+            "工具应在一次授权后成功: {result:?}"
         );
     }
 
@@ -707,13 +707,13 @@ mod tests {
             })
             .await;
 
-        assert!(result.is_err(), "Tool should fail when policy denies");
+        assert!(result.is_err(), "策略拒绝时工具应失败");
         assert!(
             !matches!(
                 event_rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "Deny policy should not emit symlink authorization prompt",
+            "拒绝策略不应发出符号链接授权提示",
         );
     }
 
@@ -743,7 +743,7 @@ mod tests {
             tool.run(
                 ToolInput::resolved(CreateDirectoryToolInput {
                     path: path_input,
-                    reason: Some("scratch space for the build".into()),
+                    reason: Some("构建的临时空间".into()),
                 }),
                 event_stream,
                 cx,
@@ -752,7 +752,7 @@ mod tests {
 
         let auth = event_rx.expect_authorization().await;
         let details = acp_thread::sandbox_authorization_details_from_meta(&auth.tool_call.meta)
-            .expect("out-of-project create should request a sandbox write grant");
+            .expect("项目外创建应请求沙箱写入授权");
         // The grant is for exactly the new directory, not its parent, and
         // carries the resolved canonical established when it was created.
         let expected_canonical = scratch.path().canonicalize().unwrap().join("new_grant_dir");
@@ -770,10 +770,10 @@ mod tests {
             .unwrap();
 
         let result = task.await;
-        assert!(result.is_ok(), "expected success, got {result:?}");
+        assert!(result.is_ok(), "预期成功,实际为 {result:?}");
         assert!(
             target.is_dir(),
-            "the new directory should have been created"
+            "新目录应已创建"
         );
     }
 
@@ -800,7 +800,7 @@ mod tests {
             tool.run(
                 ToolInput::resolved(CreateDirectoryToolInput {
                     path: path_input,
-                    reason: Some("scratch space".into()),
+                    reason: Some("临时空间".into()),
                 }),
                 event_stream,
                 cx,
@@ -816,10 +816,10 @@ mod tests {
             .unwrap();
 
         let result = task.await;
-        assert!(result.is_err(), "denied create should fail");
+        assert!(result.is_err(), "被拒绝的创建应失败");
         assert!(
             !target.exists(),
-            "denied create should leave no directory behind"
+            "被拒绝的创建不应留下任何目录"
         );
     }
 }

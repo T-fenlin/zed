@@ -11395,7 +11395,7 @@ impl LspStore {
     ) -> Task<anyhow::Result<ProjectTransaction>> {
         let logger = zlog::scoped!("format");
         if self.as_local().is_some() {
-            zlog::trace!(logger => "Formatting locally");
+            zlog::trace!(logger => "本地格式化");
             let logger = zlog::scoped!(logger => "local");
             let buffers = buffers
                 .into_iter()
@@ -11434,7 +11434,7 @@ impl LspStore {
                 }
                 zlog::trace!(logger => "Formatting {:?} buffers", formattable_buffers.len());
 
-                let format_timer = zlog::time!(logger => "Formatting buffers");
+                let format_timer = zlog::time!(logger => "正在格式化缓冲区");
                 let result = LocalLspStore::format_locally(
                     lsp_store.clone(),
                     formattable_buffers,
@@ -11455,7 +11455,7 @@ impl LspStore {
                 result
             })
         } else if let Some((client, project_id)) = self.upstream_client() {
-            zlog::trace!(logger => "Formatting remotely");
+            zlog::trace!(logger => "远程格式化");
             let logger = zlog::scoped!(logger => "remote");
 
             let buffer_ranges = match &target {
@@ -11471,8 +11471,8 @@ impl LspStore {
 
             let buffer_store = self.buffer_store();
             cx.spawn(async move |lsp_store, cx| {
-                zlog::trace!(logger => "Sending remote format request");
-                let request_timer = zlog::time!(logger => "remote format request");
+                zlog::trace!(logger => "正在发送远程格式化请求");
+                let request_timer = zlog::time!(logger => "远程格式化请求");
                 let result = client
                     .request(proto::FormatBuffers {
                         project_id,
@@ -11506,7 +11506,7 @@ impl LspStore {
                     .await
             })
         } else {
-            zlog::trace!(logger => "Not formatting");
+            zlog::trace!(logger => "不进行格式化");
             Task::ready(Ok(ProjectTransaction::default()))
         }
     }

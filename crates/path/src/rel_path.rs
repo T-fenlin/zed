@@ -57,7 +57,7 @@ impl RelPath {
     /// not allocate unless it's necessary to reformat the path.
     #[track_caller]
     pub fn new<'a>(path: &'a Path, path_style: PathStyle) -> Result<Cow<'a, Self>> {
-        let mut path = path.to_str().context("non utf-8 path")?;
+        let mut path = path.to_str().context("非 UTF-8 路径")?;
 
         let (prefixes, suffixes): (&[_], &[_]) = match path_style {
             PathStyle::Unix => (&["./"], &['/']),
@@ -74,7 +74,7 @@ impl RelPath {
         }
 
         if is_absolute(&path, path_style) {
-            return Err(anyhow!("absolute path not allowed: {path:?}"));
+            return Err(anyhow!("不允许绝对路径: {path:?}"));
         }
 
         let mut string = Cow::Borrowed(path);
@@ -98,7 +98,7 @@ impl RelPath {
                     "." => {}
                     ".." => {
                         if !normalized.pop() {
-                            return Err(anyhow!("path is not relative: {result:?}"));
+                            return Err(anyhow!("路径不是相对路径: {result:?}"));
                         }
                     }
                     other => normalized.push(RelPath::from_str(other)),
@@ -124,7 +124,7 @@ impl RelPath {
         let path = path.as_ref();
         match Self::new(path, PathStyle::Unix)? {
             Cow::Borrowed(path) => Ok(path),
-            Cow::Owned(_) => Err(anyhow!("invalid relative path {path:?}")),
+            Cow::Owned(_) => Err(anyhow!("无效的相对路径 {path:?}")),
         }
     }
 
@@ -360,7 +360,7 @@ impl RelPathBuf {
                 && !component.contains('/')
                 && component != "."
                 && component != "..",
-            "invalid relative path component: {component:?}"
+            "无效的相对路径组件: {component:?}"
         );
 
         if !self.is_empty() {
@@ -751,7 +751,7 @@ mod tests {
                     RelPath::from_unix_str(lhs)
                         .unwrap()
                         .cmp(RelPath::from_unix_str(rhs).unwrap()),
-                    "ordering mismatch for {:?} vs {:?}",
+                    "排序不匹配: {:?} 与 {:?}",
                     lhs,
                     rhs,
                 );

@@ -17,12 +17,12 @@ pub enum MessageToClient {
 impl MessageToClient {
     pub fn serialize(&self) -> Result<Vec<u8>> {
         let mut buffer = Vec::new();
-        ciborium::into_writer(self, &mut buffer).context("failed to serialize message")?;
+        ciborium::into_writer(self, &mut buffer).context("消息序列化失败")?;
 
         Ok(buffer)
     }
 
     pub fn deserialize(data: &[u8]) -> Result<Self> {
-        ciborium::from_reader(data).context("failed to deserialize message")
+        ciborium::from_reader(data).context("消息反序列化失败")
     }
 }

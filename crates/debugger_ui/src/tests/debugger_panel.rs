@@ -366,7 +366,7 @@ async fn test_handle_successful_run_in_terminal_reverse_request(
 
     assert!(
         send_response.load(std::sync::atomic::Ordering::SeqCst),
-        "Expected to receive response from reverse request"
+        "预期收到反向请求的响应"
     );
 
     workspace
@@ -422,7 +422,7 @@ async fn test_handle_start_debugging_request(
                 Ok(())
             });
             client.on_request::<dap::requests::Attach, _>(move |_, _| {
-                assert!(false, "should not get attach request");
+                assert!(false, "不应收到附加请求");
                 Ok(())
             });
         }
@@ -551,7 +551,7 @@ async fn test_handle_error_run_in_terminal_reverse_request(
 
     assert!(
         send_response.load(std::sync::atomic::Ordering::SeqCst),
-        "Expected to receive response from reverse request"
+        "预期收到反向请求的响应"
     );
 
     workspace
@@ -661,7 +661,7 @@ async fn test_handle_start_debugging_reverse_request(
 
     assert!(
         send_response.load(std::sync::atomic::Ordering::SeqCst),
-        "Expected to receive response from reverse request"
+        "预期收到反向请求的响应"
     );
 }
 
@@ -1054,12 +1054,12 @@ async fn test_debug_panel_item_thread_status_reset_on_failure(
             assert_eq!(
                 running_state
                     .thread_status(cx)
-                    .expect("There should be an active thread selected"),
+                    .expect("应有一个选中的活动线程"),
                 match *operation {
                     "continue_thread" => ThreadStatus::Running,
                     _ => ThreadStatus::Stepping,
                 },
-                "Thread status was not set to correct intermediate state after {} request",
+                "在 {} 请求后,线程状态未设置为正确的中间状态",
                 operation
             );
         });
@@ -1070,9 +1070,9 @@ async fn test_debug_panel_item_thread_status_reset_on_failure(
             assert_eq!(
                 running_state
                     .thread_status(cx)
-                    .expect("There should be an active thread selected"),
+                    .expect("应有一个选中的活动线程"),
                 ThreadStatus::Stopped,
-                "Thread status not reset to Stopped after failed {}",
+                "在 {} 失败后,线程状态未重置为已停止",
                 operation
             );
 
@@ -1107,7 +1107,7 @@ async fn test_send_breakpoints_when_editor_has_been_saved(
     let project_path = Path::new(path!("/project"));
     let worktree = project
         .update(cx, |project, cx| project.find_worktree(project_path, cx))
-        .expect("This worktree should exist in project")
+        .expect("此工作树应存在于项目中")
         .0;
 
     let worktree_id = workspace
@@ -1190,7 +1190,7 @@ async fn test_send_breakpoints_when_editor_has_been_saved(
 
     assert!(
         called_set_breakpoints.load(std::sync::atomic::Ordering::SeqCst),
-        "SetBreakpoint request must be called"
+        "必须调用设置断点请求"
     );
 
     let called_set_breakpoints = Arc::new(AtomicBool::new(false));
@@ -1244,7 +1244,7 @@ async fn test_send_breakpoints_when_editor_has_been_saved(
 
     assert!(
         called_set_breakpoints.load(std::sync::atomic::Ordering::SeqCst),
-        "SetBreakpoint request must be called after editor is saved"
+        "编辑器保存后必须调用设置断点请求"
     );
 }
 
@@ -1262,7 +1262,7 @@ async fn test_unsetting_breakpoints_on_clear_breakpoint_action(
         json!({
             "main.rs": "First line\nSecond line\nThird line\nFourth line",
             "second.rs": "First line\nSecond line\nThird line\nFourth line",
-            "no_breakpoints.rs": "Used to ensure that we don't unset breakpoint in files with no breakpoints"
+            "no_breakpoints.rs": "用于确保我们不会在没有断点的文件中取消设置断点"
         }),
     )
     .await;
@@ -1273,7 +1273,7 @@ async fn test_unsetting_breakpoints_on_clear_breakpoint_action(
     let project_path = Path::new(path!("/project"));
     let worktree = project
         .update(cx, |project, cx| project.find_worktree(project_path, cx))
-        .expect("This worktree should exist in project")
+        .expect("此工作树应存在于项目中")
         .0;
 
     let worktree_id = workspace
@@ -1339,18 +1339,18 @@ async fn test_unsetting_breakpoints_on_clear_breakpoint_action(
         move |_, args| {
             assert!(
                 args.breakpoints.is_none_or(|bps| bps.is_empty()),
-                "Send empty breakpoint sets to clear them from DAP servers"
+                "发送空断点集以从 DAP 服务器清除它们"
             );
 
             match args
                 .source
                 .path
-                .expect("We should always send a breakpoint's path")
+                .expect("我们应始终发送断点的路径")
                 .as_str()
             {
                 path!("/project/main.rs") | path!("/project/second.rs") => {}
                 _ => {
-                    panic!("Unset breakpoints for path that doesn't have any")
+                    panic!("为没有任何断点的路径取消设置断点")
                 }
             }
 
@@ -1391,7 +1391,7 @@ async fn test_debug_session_is_shutdown_when_attach_and_launch_request_fails(
         client.on_request::<dap::requests::Initialize, _>(|_, _| {
             Err(ErrorResponse {
                 error: Some(Message {
-                    format: "failed to launch".to_string(),
+                    format: "启动失败".to_string(),
                     id: 1,
                     variables: None,
                     send_telemetry: None,
@@ -1409,7 +1409,7 @@ async fn test_debug_session_is_shutdown_when_attach_and_launch_request_fails(
     project.update(cx, |project, cx| {
         assert!(
             project.dap_store().read(cx).sessions().count() == 0,
-            "Session wouldn't exist if it was shutdown"
+            "如果会话已关闭,它就不会存在"
         );
     });
 }
@@ -1471,7 +1471,7 @@ async fn test_we_send_arguments_from_user_config(
 
     assert!(
         launch_handler_called.load(Ordering::SeqCst),
-        "Launch request handler was not called"
+        "未调用启动请求处理器"
     );
 }
 
@@ -1496,7 +1496,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
     let project_path = Path::new(path!("/project"));
     let worktree = project
         .update(cx, |project, cx| project.find_worktree(project_path, cx))
-        .expect("This worktree should exist in project")
+        .expect("此工作树应存在于项目中")
         .0;
 
     let worktree_id = workspace
@@ -1561,7 +1561,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
         Ok(dap::StackTraceResponse {
             stack_frames: vec![dap::StackFrame {
                 id: 1,
-                name: "frame 1".into(),
+                name: "帧 1".into(),
                 source: Some(dap::Source {
                     name: Some("main.rs".into()),
                     path: Some(path!("/project/main.rs").into()),
@@ -1605,7 +1605,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
         assert_eq!(
             active_debug_lines.len(),
             1,
-            "There should be only one active debug line"
+            "应只有一条活动的调试行"
         );
 
         let point = editor
@@ -1621,7 +1621,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
 
         assert!(
             active_debug_lines.is_empty(),
-            "There shouldn't be any active debug lines"
+            "不应有任何活动的调试行"
         );
     });
 
@@ -1635,7 +1635,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
             Ok(dap::StackTraceResponse {
                 stack_frames: vec![dap::StackFrame {
                     id: 2,
-                    name: "frame 2".into(),
+                    name: "帧 2".into(),
                     source: Some(dap::Source {
                         name: Some("second.rs".into()),
                         path: Some(path!("/project/second.rs").into()),
@@ -1680,7 +1680,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
         assert_eq!(
             active_debug_lines.len(),
             1,
-            "There should be only one active debug line"
+            "应只有一条活动的调试行"
         );
 
         let point = editor
@@ -1696,13 +1696,13 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
 
         assert!(
             active_debug_lines.is_empty(),
-            "There shouldn't be any active debug lines"
+            "不应有任何活动的调试行"
         );
     });
 
     assert!(
         handled_second_stacktrace.load(Ordering::SeqCst),
-        "Second stacktrace request handler was not called"
+        "未调用第二个堆栈跟踪请求处理器"
     );
 
     client
@@ -1719,7 +1719,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
 
         assert!(
             active_debug_lines.is_empty(),
-            "There shouldn't be any active debug lines"
+            "不应有任何活动的调试行"
         );
     });
 
@@ -1728,7 +1728,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
 
         assert!(
             active_debug_lines.is_empty(),
-            "There shouldn't be any active debug lines"
+            "不应有任何活动的调试行"
         );
     });
 
@@ -1746,7 +1746,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
 
         assert!(
             active_debug_lines.is_empty(),
-            "There shouldn't be any active debug lines after session shutdown"
+            "会话关闭后不应有任何活动的调试行"
         );
     });
 
@@ -1755,7 +1755,7 @@ async fn test_active_debug_line_setting(executor: BackgroundExecutor, cx: &mut T
 
         assert!(
             active_debug_lines.is_empty(),
-            "There shouldn't be any active debug lines after session shutdown"
+            "会话关闭后不应有任何活动的调试行"
         );
     });
 }
@@ -1800,7 +1800,7 @@ async fn test_debug_adapters_shutdown_on_app_quit(
             panel.read_with(cx, |panel, _| {
                 assert!(
                     panel.sessions().next().is_some(),
-                    "Debug session should be active"
+                    "调试会话应处于活动状态"
                 );
             });
         })
@@ -1812,7 +1812,7 @@ async fn test_debug_adapters_shutdown_on_app_quit(
 
     assert!(
         disconnect_request_received.load(Ordering::SeqCst),
-        "Disconnect request should have been sent to the adapter on app shutdown"
+        "应用关闭时,应已向适配器发送断开连接请求"
     );
 }
 
@@ -1841,7 +1841,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
     let project_path = Path::new(path!("/project"));
     let worktree = project
         .update(cx, |project, cx| project.find_worktree(project_path, cx))
-        .expect("This worktree should exist in project")
+        .expect("此工作树应存在于项目中")
         .0;
 
     let worktree_id = workspace
@@ -1966,7 +1966,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             assert_eq!(
                 path.path.file_name().unwrap(),
                 "second.rs",
-                "Pane A should have second.rs active",
+                "窗格 A 应激活 second.rs",
             );
         })
         .unwrap();
@@ -1980,7 +1980,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             assert_eq!(
                 path.path.file_name().unwrap(),
                 "main.rs",
-                "Pane B should have main.rs active",
+                "窗格 B 应激活 main.rs",
             );
         })
         .unwrap();
@@ -2010,7 +2010,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
         Ok(dap::StackTraceResponse {
             stack_frames: vec![dap::StackFrame {
                 id: 1,
-                name: "frame 1".into(),
+                name: "帧 1".into(),
                 source: Some(dap::Source {
                     name: Some("main.rs".into()),
                     path: Some(path!("/project/main.rs").into()),
@@ -2083,7 +2083,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             }
             assert_eq!(
                 total_active_debug_lines, 1,
-                "There should be exactly one active debug line across all editors in all panes"
+                "所有窗格中的所有编辑器中应恰好有一条活动的调试行"
             );
         })
         .unwrap();
@@ -2102,7 +2102,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             assert_eq!(
                 active_debug_lines.len(),
                 1,
-                "Pane B's main.rs editor should have the active debug line"
+                "窗格 B 的 main.rs 编辑器应具有活动的调试行"
             );
         })
         .unwrap();
@@ -2117,7 +2117,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
         Ok(dap::StackTraceResponse {
             stack_frames: vec![dap::StackFrame {
                 id: 2,
-                name: "frame 2".into(),
+                name: "帧 2".into(),
                 source: Some(dap::Source {
                     name: Some("second.rs".into()),
                     path: Some(path!("/project/second.rs").into()),
@@ -2165,7 +2165,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             assert_eq!(
                 pane_b_path.path.file_name().unwrap(),
                 "second.rs",
-                "Pane B should have switched to second.rs because it is the persistent debug pane",
+                "窗格 B 应已切换到 second.rs,因为它是持久调试窗格",
             );
 
             let active_debug_lines: Vec<_> = pane_b_editor
@@ -2176,7 +2176,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             assert_eq!(
                 active_debug_lines.len(),
                 1,
-                "Pane B's second.rs editor should have the active debug line"
+                "窗格 B 的 second.rs 编辑器应具有活动的调试行"
             );
         })
         .unwrap();
@@ -2197,7 +2197,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             }
             assert_eq!(
                 total_active_debug_lines, 1,
-                "There should be exactly one active debug line across all editors after second stop"
+                "第二次停止后,所有编辑器中应恰好有一条活动的调试行"
             );
         })
         .unwrap();
@@ -2236,7 +2236,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             assert_eq!(
                 pane_c_path.path.file_name().unwrap(),
                 "second.rs",
-                "Pane C should have second.rs after moving it from pane B",
+                "将 second.rs 从窗格 B 移动后,窗格 C 应具有 second.rs",
             );
         })
         .unwrap();
@@ -2250,7 +2250,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
         Ok(dap::StackTraceResponse {
             stack_frames: vec![dap::StackFrame {
                 id: 3,
-                name: "frame 3".into(),
+                name: "帧 3".into(),
                 source: Some(dap::Source {
                     name: Some("main.rs".into()),
                     path: Some(path!("/project/main.rs").into()),
@@ -2310,7 +2310,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             assert_eq!(
                 active_debug_lines.len(),
                 1,
-                "Pane C's main.rs editor should have the active debug line"
+                "窗格 C 的 main.rs 编辑器应具有活动的调试行"
             );
         })
         .unwrap();
@@ -2331,7 +2331,7 @@ async fn test_breakpoint_jumps_only_in_proper_split_view(
             }
             assert_eq!(
                 total_active_debug_lines, 1,
-                "There should be exactly one active debug line across all editors after third stop"
+                "第三次停止后,所有编辑器中应恰好有一条活动的调试行"
             );
         })
         .unwrap();
@@ -2471,16 +2471,16 @@ async fn test_adapter_shutdown_with_child_sessions_on_app_quit(
 
     assert!(
         both_disconnected,
-        "Both parent and child sessions should receive disconnect requests"
+        "父会话和子会话都应收到断开连接请求"
     );
 
     assert!(
         parent_disconnect_called.load(Ordering::SeqCst),
-        "Parent session should have received disconnect request"
+        "父会话应已收到断开连接请求"
     );
     assert!(
         child_disconnect_called.load(Ordering::SeqCst),
-        "Child session should have received disconnect request"
+        "子会话应已收到断开连接请求"
     );
 }
 
@@ -2540,7 +2540,7 @@ async fn test_restart_request_is_not_sent_more_than_once_until_response(
     assert_eq!(
         restart_count.load(Ordering::SeqCst),
         1,
-        "Only one restart request should be sent while a restart is in-flight"
+        "重启进行中时,应仅发送一个重启请求"
     );
 
     session.update(cx, |session, cx| {
@@ -2552,6 +2552,6 @@ async fn test_restart_request_is_not_sent_more_than_once_until_response(
     assert_eq!(
         restart_count.load(Ordering::SeqCst),
         2,
-        "A second restart should be allowed after the first one completes"
+        "第一次重启完成后,应允许第二次重启"
     );
 }

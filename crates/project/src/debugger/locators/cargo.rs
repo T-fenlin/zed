@@ -37,12 +37,12 @@ async fn find_best_executable(
             },
             async {
                 executor.timer(Duration::from_secs(3)).await;
-                anyhow::bail!("Timed out waiting for executable stdout")
+                anyhow::bail!("等待可执行文件输出超时")
             },
         );
 
         if let Err(err) = exec_result.await {
-            log::warn!("Failed to list tests for {executable}: {err}");
+            log::warn!("无法列出 {executable} 的测试:{err}");
         } else {
             for line in test_lines.lines() {
                 if line.contains(&test_name) {
@@ -121,7 +121,7 @@ impl DapLocator for CargoLocator {
         let cwd = build_config
             .cwd
             .clone()
-            .context("Couldn't get cwd from debug config which is needed for locators")?;
+            .context("无法从调试配置中获取定位器所需的当前工作目录")?;
         let builder = ShellBuilder::new(&build_config.shell, cfg!(windows)).non_interactive();
         let mut child = builder
             .build_smol_command(
@@ -145,7 +145,7 @@ impl DapLocator for CargoLocator {
         }
 
         let status = child.status().await?;
-        anyhow::ensure!(status.success(), "Cargo command failed");
+        anyhow::ensure!(status.success(), "Cargo 命令失败");
 
         let is_test = build_config
             .args
@@ -179,7 +179,7 @@ impl DapLocator for CargoLocator {
             .collect::<Vec<_>>();
         anyhow::ensure!(
             !executables.is_empty(),
-            "Couldn't get executable in cargo locator"
+            "无法在 Cargo 定位器中获取可执行文件"
         );
 
         let mut test_name = None;
@@ -205,7 +205,7 @@ impl DapLocator for CargoLocator {
         };
 
         let Some(executable) = executable.or_else(|| executables.first().cloned()) else {
-            anyhow::bail!("Couldn't get executable in cargo locator");
+            anyhow::bail!("无法在 Cargo 定位器中获取可执行文件");
         };
 
         let args = build_test_binary_args(test_name.as_deref(), is_test, is_ignored);

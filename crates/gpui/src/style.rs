@@ -1344,7 +1344,7 @@ mod tests {
         assert_eq!(
             style_a,
             HighlightStyle::default(),
-            "Combining empty styles should not produce a non-empty style."
+            "合并空样式不应产生非空样式。"
         );
 
         let mut style_b = HighlightStyle {
@@ -1368,13 +1368,13 @@ mod tests {
         let style_a = style_a.highlight(style_b);
         assert_eq!(
             style_a, expected_style,
-            "Blending an empty style with another style should return the other style"
+            "将空样式与另一样式混合应返回另一样式。"
         );
 
         let style_b = style_b.highlight(Default::default());
         assert_eq!(
             style_b, expected_style,
-            "Blending a style with an empty style should not change the style."
+            "将样式与空样式混合不应改变该样式。"
         );
 
         let mut style_c = expected_style;
@@ -1417,7 +1417,7 @@ mod tests {
         let style_c = style_c.highlight(style_d);
         assert_eq!(
             style_c, expected_style,
-            "Blending styles should blend properties where possible and override all others"
+            "混合样式时,应尽可能混合属性,并覆盖所有其他属性。"
         );
     }
 

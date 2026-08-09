@@ -11,7 +11,7 @@ async fn test_fake_worktree_lifecycle(cx: &mut TestAppContext) {
         .await;
     let repo = fs
         .open_repo(Path::new("/project/.git"), None)
-        .expect("should open fake repo");
+        .expect("应能打开模拟仓库");
 
     // Initially only the main worktree exists
     let worktrees = repo.worktrees().await.unwrap();
@@ -183,7 +183,7 @@ async fn test_checkpoints(executor: BackgroundExecutor) {
         .unwrap();
     assert!(
         diff.is_empty(),
-        "identical checkpoints should produce empty diff"
+        "相同的检查点应产生空差异"
     );
 
     // diff_checkpoints: different checkpoints produce non-empty diff
@@ -192,5 +192,5 @@ async fn test_checkpoints(executor: BackgroundExecutor) {
         .await
         .unwrap();
     assert!(diff.contains("b"), "diff should mention changed file 'b'");
-    assert!(diff.contains("c"), "diff should mention added file 'c'");
+    assert!(diff.contains("c"), "差异应提及新增的文件 'c'");
 }

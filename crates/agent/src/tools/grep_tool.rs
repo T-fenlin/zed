@@ -97,18 +97,18 @@ impl AgentTool for GrepTool {
                 let page = input.page();
                 let regex_str = MarkdownInlineCode(&input.regex);
                 let case_info = if input.case_sensitive {
-                    " (case-sensitive)"
+                    " (区分大小写)"
                 } else {
                     ""
                 };
 
                 if page > 1 {
-                    format!("Get page {page} of search results for regex {regex_str}{case_info}")
+                    format!("获取正则表达式 {regex_str}{case_info} 搜索结果第 {page} 页")
                 } else {
-                    format!("Search files for regex {regex_str}{case_info}")
+                    format!("搜索文件,正则表达式为 {regex_str}{case_info}")
                 }
             }
-            Err(_) => "Search with regex".into(),
+            Err(_) => "使用正则表达式搜索".into(),
         }
         .into()
     }
@@ -140,7 +140,7 @@ impl AgentTool for GrepTool {
                         .collect::<Vec<_>>(),
                     path_style,
                 )
-                .map_err(|error| format!("invalid include glob pattern: {error}"))?;
+                .map_err(|error| format!("无效的包含 glob 模式:{error}"))?;
 
                 // Exclude global file_scan_exclusions and private_files settings
                 let exclude_matcher = {
@@ -151,7 +151,7 @@ impl AgentTool for GrepTool {
                         .chain(global_settings.private_files.sources());
 
                     PathMatcher::new(exclude_patterns, path_style)
-                        .map_err(|error| format!("invalid exclude pattern: {error}"))?
+                        .map_err(|error| format!("无效的排除模式:{error}"))?
                 };
 
                 let query = SearchQuery::regex(
@@ -189,7 +189,7 @@ impl AgentTool for GrepTool {
                 let search_result = futures::select! {
                     result = rx.next().fuse() => result,
                     _ = event_stream.cancelled_by_user().fuse() => {
-                        return Err("Search cancelled by user".to_string());
+                        return Err("用户已取消搜索".to_string());
                     }
                 };
 
@@ -375,7 +375,7 @@ impl AgentTool for GrepTool {
             }
 
             if matches_found == 0 {
-                Ok("No matches found".into())
+                Ok("未找到匹配项".into())
             } else if has_more_matches {
                 Ok(format!(
                     "Showing matches {}-{} (there were more matches found; use offset: {} to see next page):\n{output}",
@@ -436,14 +436,14 @@ mod tests {
         };
 
         let result = run_grep_tool(input, project.clone(), cx).await;
-        assert!(result.contains("main.rs"), "Should find matches in main.rs");
+        assert!(result.contains("main.rs"), "应在 main.rs 中找到匹配项");
         assert!(
             result.contains("helper.rs"),
-            "Should find matches in helper.rs"
+            "应在 helper.rs 中找到匹配项"
         );
         assert!(
             !result.contains("test_main.rs"),
-            "Should not include test_main.rs even though it's a .rs file (because it doesn't have the pattern)"
+            "不应包含 test_main.rs,即使它是 .rs 文件(因为它不包含该模式)"
         );
 
         // Test with include pattern for src directory only
@@ -457,15 +457,15 @@ mod tests {
         let result = run_grep_tool(input, project.clone(), cx).await;
         assert!(
             result.contains("main.rs"),
-            "Should find matches in src/main.rs"
+            "应在 src/main.rs 中找到匹配项"
         );
         assert!(
             result.contains("helper.rs"),
-            "Should find matches in src/utils/helper.rs"
+            "应在 src/utils/helper.rs 中找到匹配项"
         );
         assert!(
             !result.contains("test_main.rs"),
-            "Should not include test_main.rs as it's not in src directory"
+            "不应包含 test_main.rs,因为它不在 src 目录中"
         );
 
         // Test with empty include pattern (should default to all files)
@@ -477,14 +477,14 @@ mod tests {
         };
 
         let result = run_grep_tool(input, project.clone(), cx).await;
-        assert!(result.contains("main.rs"), "Should find matches in main.rs");
+        assert!(result.contains("main.rs"), "应在 main.rs 中找到匹配项");
         assert!(
             result.contains("helper.rs"),
-            "Should find matches in helper.rs"
+            "应在 helper.rs 中找到匹配项"
         );
         assert!(
             result.contains("test_main.rs"),
-            "Should include test_main.rs"
+            "应包含 test_main.rs"
         );
     }
 
@@ -515,7 +515,7 @@ mod tests {
         let result = run_grep_tool(input, project.clone(), cx).await;
         assert!(
             result.contains("UPPERCASE"),
-            "Case-insensitive search should match uppercase"
+            "不区分大小写的搜索应匹配大写"
         );
 
         // Test case-sensitive search
@@ -529,7 +529,7 @@ mod tests {
         let result = run_grep_tool(input, project.clone(), cx).await;
         assert!(
             !result.contains("UPPERCASE"),
-            "Case-sensitive search should not match uppercase"
+            "区分大小写的搜索不应匹配大写"
         );
 
         // Test case-sensitive search
@@ -544,7 +544,7 @@ mod tests {
 
         assert!(
             !result.contains("lowercase"),
-            "Case-sensitive search should match lowercase"
+            "区分大小写的搜索应匹配小写"
         );
 
         // Test case-sensitive search for lowercase pattern
@@ -558,7 +558,7 @@ mod tests {
         let result = run_grep_tool(input, project.clone(), cx).await;
         assert!(
             result.contains("lowercase"),
-            "Case-sensitive search should match lowercase text"
+            "区分大小写的搜索应匹配小写文本"
         );
     }
 
@@ -593,19 +593,19 @@ mod tests {
             case_sensitive: false,
         };
         let task = cx.update(|cx| tool.run(ToolInput::resolved(input), event_stream, cx));
-        let output = task.await.expect("grep tool should succeed");
+        let output = task.await.expect("grep 工具应成功执行");
         let update = events.expect_update_fields().await;
 
         // Model-facing output is unchanged: matches are rendered as markdown, but
         // the clickable `file://` URIs only live in the tool-call UI content.
-        assert!(output.contains("## Matches in"));
+        assert!(output.contains("## 匹配于"));
         assert!(
             !output.contains("file://"),
             "model-facing output should not embed file:// links, got:\n{output}"
         );
 
         // Pull the ResourceLink blocks (the clickable links) out of the content.
-        let content = update.content.expect("expected content blocks");
+        let content = update.content.expect("预期内容块");
         let links = content
             .iter()
             .filter_map(|block| match block {
@@ -616,7 +616,7 @@ mod tests {
                 _ => None,
             })
             .collect::<Vec<_>>();
-        assert_eq!(links.len(), 2, "expected one resource link per match");
+        assert_eq!(links.len(), 2, "每个匹配项应有一个资源链接");
 
         let selection_uri = |abs_path: &str| {
             MentionUri::Selection {
@@ -633,7 +633,7 @@ mod tests {
             links.iter().any(|link| {
                 link.name.replace('\\', "/") == "root/src/alpha.txt#L1" && link.uri == alpha_uri
             }),
-            "missing clickable link for alpha.txt, got: {links:?}"
+            "缺少 alpha.txt 的可点击链接,实际链接:{links:?}"
         );
 
         let beta_uri = selection_uri(path!("/root/beta.txt"));
@@ -642,12 +642,12 @@ mod tests {
                 .iter()
                 .any(|link| link.name.replace('\\', "/") == "root/beta.txt#L1"
                     && link.uri == beta_uri),
-            "missing clickable link for beta.txt, got: {links:?}"
+            "缺少 beta.txt 的可点击链接,实际链接:{links:?}"
         );
 
         // Each match also reports a location so the panel can reveal the file at
         // the matched (0-based) row.
-        let locations = update.locations.expect("expected locations");
+        let locations = update.locations.expect("预期位置");
         assert_eq!(locations.len(), 2);
         assert!(
             locations.iter().any(|location| {
@@ -655,7 +655,7 @@ mod tests {
                     == path!("/root/src/alpha.txt").replace('\\', "/")
                     && location.line == Some(0)
             }),
-            "missing location for alpha.txt, got: {locations:?}"
+            "缺少 alpha.txt 的位置,实际位置:{locations:?}"
         );
         assert!(
             locations.iter().any(|location| {
@@ -663,7 +663,7 @@ mod tests {
                     == path!("/root/beta.txt").replace('\\', "/")
                     && location.line == Some(0)
             }),
-            "missing location for beta.txt, got: {locations:?}"
+            "缺少 beta.txt 的位置,实际位置:{locations:?}"
         );
     }
 
@@ -695,11 +695,11 @@ mod tests {
             case_sensitive: false,
         };
         let task = cx.update(|cx| tool.run(ToolInput::resolved(input), event_stream, cx));
-        task.await.expect("grep tool should succeed");
+        task.await.expect("grep 工具应成功执行");
         let update = events.expect_update_fields().await;
 
         // Find the snippet text block emitted alongside the clickable link.
-        let content = update.content.expect("expected content blocks");
+        let content = update.content.expect("预期内容块");
         let snippet = content
             .iter()
             .find_map(|block| match block {
@@ -709,7 +709,7 @@ mod tests {
                 },
                 _ => None,
             })
-            .expect("expected a snippet text block in the tool-call content");
+            .expect("工具调用内容中应包含代码片段文本块");
 
         // The snippet embeds a three-backtick fence, so the wrapping fence must be
         // at least four backticks long to avoid breaking out of the code block.
@@ -737,7 +737,7 @@ mod tests {
             serde_json::json!({
                 "test_syntax.rs": r#"
                     fn top_level_function() {
-                        println!("This is at the top level");
+                        println!("位于顶层");
                     }
 
                     mod feature_module {
@@ -746,7 +746,7 @@ mod tests {
                                 first_arg: String,
                                 second_arg: i32,
                             ) {
-                                println!("Function in nested module");
+                                println!("嵌套模块中的函数");
                                 println!("{first_arg}");
                                 println!("{second_arg}");
                             }
@@ -762,23 +762,23 @@ mod tests {
                         fn method_with_block() {
                             let condition = true;
                             if condition {
-                                println!("Inside if block");
+                                println!("在 if 块内");
                             }
                         }
 
                         fn long_function() {
-                            println!("Line 1");
-                            println!("Line 2");
-                            println!("Line 3");
-                            println!("Line 4");
-                            println!("Line 5");
-                            println!("Line 6");
-                            println!("Line 7");
-                            println!("Line 8");
-                            println!("Line 9");
-                            println!("Line 10");
-                            println!("Line 11");
-                            println!("Line 12");
+                            println!("第 1 行");
+                            println!("第 2 行");
+                            println!("第 3 行");
+                            println!("第 4 行");
+                            println!("第 5 行");
+                            println!("第 6 行");
+                            println!("第 7 行");
+                            println!("第 8 行");
+                            println!("第 9 行");
+                            println!("第 10 行");
+                            println!("第 11 行");
+                            println!("第 12 行");
                         }
                     }
 
@@ -788,7 +788,7 @@ mod tests {
 
                     impl Processor for MyStruct {
                         fn process(&self, input: &str) -> String {
-                            format!("Processed: {}", input)
+                            format!("已处理:{}", input)
                         }
                     }
                 "#.unindent().trim(),
@@ -811,7 +811,7 @@ mod tests {
 
         // Test: Line at the top level of the file
         let input = GrepToolInput {
-            regex: "This is at the top level".to_string(),
+            regex: "位于顶层".to_string(),
             include_pattern: Some("**/*.rs".to_string()),
             offset: 0,
             case_sensitive: false,
@@ -826,7 +826,7 @@ mod tests {
             ### fn top_level_function › L1-3
             ```
             fn top_level_function() {
-                println!("This is at the top level");
+                println!("位于顶层");
             }
             ```
             "#
@@ -840,7 +840,7 @@ mod tests {
 
         // Test: Line inside a function body
         let input = GrepToolInput {
-            regex: "Function in nested module".to_string(),
+            regex: "嵌套模块中的函数".to_string(),
             include_pattern: Some("**/*.rs".to_string()),
             offset: 0,
             case_sensitive: false,
@@ -855,7 +855,7 @@ mod tests {
             ### mod feature_module › pub mod nested_module › pub fn nested_function › L10-14
             ```
                     ) {
-                        println!("Function in nested module");
+                        println!("嵌套模块中的函数");
                         println!("{first_arg}");
                         println!("{second_arg}");
                     }
@@ -889,7 +889,7 @@ mod tests {
                         first_arg: String,
                         second_arg: i32,
                     ) {
-                        println!("Function in nested module");
+                        println!("嵌套模块中的函数");
                         println!("{first_arg}");
                         println!("{second_arg}");
                     }
@@ -906,7 +906,7 @@ mod tests {
 
         // Test: Line inside an if block
         let input = GrepToolInput {
-            regex: "Inside if block".to_string(),
+            regex: "在 if 块内".to_string(),
             include_pattern: Some("**/*.rs".to_string()),
             offset: 0,
             case_sensitive: false,
@@ -921,7 +921,7 @@ mod tests {
             ### impl MyStruct › fn method_with_block › L26-28
             ```
                     if condition {
-                        println!("Inside if block");
+                        println!("在 if 块内");
                     }
             ```
             "#
@@ -936,7 +936,7 @@ mod tests {
 
         // Test: Line in the middle of a long function - should show message about remaining lines
         let input = GrepToolInput {
-            regex: "Line 5".to_string(),
+            regex: "第 5 行".to_string(),
             include_pattern: Some("**/*.rs".to_string()),
             offset: 0,
             case_sensitive: false,
@@ -951,16 +951,16 @@ mod tests {
             ### impl MyStruct › fn long_function › L31-41
             ```
                 fn long_function() {
-                    println!("Line 1");
-                    println!("Line 2");
-                    println!("Line 3");
-                    println!("Line 4");
-                    println!("Line 5");
-                    println!("Line 6");
-                    println!("Line 7");
-                    println!("Line 8");
-                    println!("Line 9");
-                    println!("Line 10");
+                    println!("第 1 行");
+                    println!("第 2 行");
+                    println!("第 3 行");
+                    println!("第 4 行");
+                    println!("第 5 行");
+                    println!("第 6 行");
+                    println!("第 7 行");
+                    println!("第 8 行");
+                    println!("第 9 行");
+                    println!("第 10 行");
             ```
 
             3 lines remaining in ancestor node. Read the file to see all.
@@ -976,7 +976,7 @@ mod tests {
 
         // Test: Line in the long function
         let input = GrepToolInput {
-            regex: "Line 12".to_string(),
+            regex: "第 12 行".to_string(),
             include_pattern: Some("**/*.rs".to_string()),
             offset: 0,
             case_sensitive: false,
@@ -990,9 +990,9 @@ mod tests {
 
             ### impl MyStruct › fn long_function › L41-45
             ```
-                    println!("Line 10");
-                    println!("Line 11");
-                    println!("Line 12");
+                    println!("第 10 行");
+                    println!("第 11 行");
+                    println!("第 12 行");
                 }
             }
             ```
@@ -1023,7 +1023,7 @@ mod tests {
                     result
                 }
             }
-            Err(e) => panic!("Failed to run grep tool: {}", e),
+            Err(e) => panic!("运行 grep 工具失败:{}", e),
         }
     }
 
@@ -1101,7 +1101,7 @@ mod tests {
         let paths = extract_paths_from_results(&result);
         assert!(
             paths.is_empty(),
-            "grep_tool should not find files outside the project worktree"
+            "grep 工具不应找到项目工作树之外的文件"
         );
 
         // Searching within the project should succeed
@@ -1119,7 +1119,7 @@ mod tests {
         let paths = extract_paths_from_results(&result);
         assert!(
             paths.iter().any(|p| p.contains("allowed_file.rs")),
-            "grep_tool should be able to search files inside worktrees"
+            "grep 工具应能搜索工作树内的文件"
         );
 
         // Searching files that match file_scan_exclusions should return no results
@@ -1137,7 +1137,7 @@ mod tests {
         let paths = extract_paths_from_results(&result);
         assert!(
             paths.is_empty(),
-            "grep_tool should not search files in .secretdir (file_scan_exclusions)"
+            "grep 工具不应搜索 .secretdir 中的文件(file_scan_exclusions)"
         );
 
         let result = run_grep_tool(
@@ -1154,7 +1154,7 @@ mod tests {
         let paths = extract_paths_from_results(&result);
         assert!(
             paths.is_empty(),
-            "grep_tool should not search .mymetadata files (file_scan_exclusions)"
+            "grep 工具不应搜索 .mymetadata 文件(file_scan_exclusions)"
         );
 
         // Searching private files should return no results
@@ -1172,7 +1172,7 @@ mod tests {
         let paths = extract_paths_from_results(&result);
         assert!(
             paths.is_empty(),
-            "grep_tool should not search .mysecrets (private_files)"
+            "grep 工具不应搜索 .mysecrets(private_files)"
         );
 
         let result = run_grep_tool(
@@ -1190,7 +1190,7 @@ mod tests {
 
         assert!(
             paths.is_empty(),
-            "grep_tool should not search .privatekey files (private_files)"
+            "grep 工具不应搜索 .privatekey 文件(private_files)"
         );
 
         let result = run_grep_tool(
@@ -1207,7 +1207,7 @@ mod tests {
         let paths = extract_paths_from_results(&result);
         assert!(
             paths.is_empty(),
-            "grep_tool should not search .mysensitive files (private_files)"
+            "grep 工具不应搜索 .mysensitive 文件(private_files)"
         );
 
         // Searching a normal file should still work, even with private_files configured
@@ -1225,7 +1225,7 @@ mod tests {
         let paths = extract_paths_from_results(&result);
         assert!(
             paths.iter().any(|p| p.contains("normal_file.rs")),
-            "Should be able to search normal files"
+            "应能搜索普通文件"
         );
 
         // Path traversal attempts with .. in include_pattern should not escape project
@@ -1243,7 +1243,7 @@ mod tests {
         let paths = extract_paths_from_results(&result);
         assert!(
             paths.is_empty(),
-            "grep_tool should not allow escaping project boundaries with relative paths"
+            "grep 工具不应允许使用相对路径逃逸项目边界"
         );
     }
 
@@ -1338,41 +1338,41 @@ mod tests {
         // Should find matches in non-private files
         assert!(
             paths.iter().any(|p| p.contains("main.rs")),
-            "Should find 'secret' in worktree1/src/main.rs"
+            "应在 worktree1/src/main.rs 中找到 'secret'"
         );
         assert!(
             paths.iter().any(|p| p.contains("test.rs")),
-            "Should find 'secret' in worktree1/tests/test.rs"
+            "应在 worktree1/tests/test.rs 中找到 'secret'"
         );
         assert!(
             paths.iter().any(|p| p.contains("public.js")),
-            "Should find 'secret' in worktree2/lib/public.js"
+            "应在 worktree2/lib/public.js 中找到 'secret'"
         );
         assert!(
             paths.iter().any(|p| p.contains("README.md")),
-            "Should find 'secret' in worktree2/docs/README.md"
+            "应在 worktree2/docs/README.md 中找到 'secret'"
         );
 
         // Should NOT find matches in private/excluded files based on worktree settings
         assert!(
             !paths.iter().any(|p| p.contains("secret.rs")),
-            "Should not search in worktree1/src/secret.rs (local private_files)"
+            "不应在 worktree1/src/secret.rs 中搜索(本地 private_files)"
         );
         assert!(
             !paths.iter().any(|p| p.contains("fixture.sql")),
-            "Should not search in worktree1/tests/fixture.sql (local file_scan_exclusions)"
+            "不应在 worktree1/tests/fixture.sql 中搜索(本地 file_scan_exclusions)"
         );
         assert!(
             !paths.iter().any(|p| p.contains("private.js")),
-            "Should not search in worktree2/lib/private.js (local private_files)"
+            "不应在 worktree2/lib/private.js 中搜索(本地 private_files)"
         );
         assert!(
             !paths.iter().any(|p| p.contains("data.json")),
-            "Should not search in worktree2/lib/data.json (local private_files)"
+            "不应在 worktree2/lib/data.json 中搜索(本地 private_files)"
         );
         assert!(
             !paths.iter().any(|p| p.contains("internal.md")),
-            "Should not search in worktree2/docs/internal.md (local file_scan_exclusions)"
+            "不应在 worktree2/docs/internal.md 中搜索(本地 file_scan_exclusions)"
         );
 
         // Test with `include_pattern` specific to one worktree
@@ -1393,19 +1393,19 @@ mod tests {
         // Should only find matches in worktree1 *.rs files (excluding private ones)
         assert!(
             paths.iter().any(|p| p.contains("main.rs")),
-            "Should find match in worktree1/src/main.rs"
+            "应在 worktree1/src/main.rs 中找到匹配项"
         );
         assert!(
             paths.iter().any(|p| p.contains("test.rs")),
-            "Should find match in worktree1/tests/test.rs"
+            "应在 worktree1/tests/test.rs 中找到匹配项"
         );
         assert!(
             !paths.iter().any(|p| p.contains("secret.rs")),
-            "Should not find match in excluded worktree1/src/secret.rs"
+            "不应在被排除的 worktree1/src/secret.rs 中找到匹配项"
         );
         assert!(
             paths.iter().all(|p| !p.contains("worktree2")),
-            "Should not find any matches in worktree2"
+            "不应在 worktree2 中找到任何匹配项"
         );
     }
 
@@ -1413,9 +1413,9 @@ mod tests {
     fn extract_paths_from_results(results: &str) -> Vec<String> {
         results
             .lines()
-            .filter(|line| line.starts_with("## Matches in "))
+            .filter(|line| line.starts_with("## 匹配于 "))
             .map(|line| {
-                line.strip_prefix("## Matches in ")
+                line.strip_prefix("## 匹配于 ")
                     .unwrap()
                     .trim()
                     .to_string()

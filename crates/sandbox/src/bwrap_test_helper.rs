@@ -17,7 +17,7 @@
 
 #[cfg(not(target_os = "linux"))]
 fn main() {
-    eprintln!("bwrap_test_helper is only supported on Linux");
+    eprintln!("bwrap_test_helper 仅在 Linux 上受支持");
     std::process::exit(1);
 }
 
@@ -70,7 +70,7 @@ mod imp {
         };
 
         if let Err(error) = result {
-            eprintln!("[sandbox_test]: FAILED: {error:#}");
+            eprintln!("[sandbox_test]: 失败: {error:#}");
             std::process::exit(1);
         }
     }
@@ -175,15 +175,15 @@ mod imp {
         }
 
         let checks_path =
-            std::env::var("ZED_SANDBOX_CHECKS").context("ZED_SANDBOX_CHECKS must be set")?;
+            std::env::var("ZED_SANDBOX_CHECKS").context("必须设置 ZED_SANDBOX_CHECKS")?;
         let raw = std::fs::read_to_string(&checks_path)
-            .with_context(|| format!("failed to read checks file {checks_path}"))?;
+            .with_context(|| format!("无法读取检查文件 {checks_path}"))?;
         let specs: Vec<Check> =
-            serde_json::from_str(&raw).context("failed to parse checks JSON")?;
+            serde_json::from_str(&raw).context("无法解析检查 JSON")?;
         let echo_port =
             std::env::var("ZED_TEST_ECHO_PORT").unwrap_or_else(|_| DEFAULT_ECHO_PORT.to_string());
 
-        println!("[sandbox_test]: running {} check(s)", specs.len());
+        println!("[sandbox_test]: 正在运行 {} 项检查", specs.len());
 
         let mut checks = Checks::new();
         for spec in &specs {
@@ -203,10 +203,10 @@ mod imp {
                     // A granted directory must exist before its inode can be
                     // pinned, so create it up front, then capture it.
                     std::fs::create_dir_all(path)
-                        .with_context(|| format!("failed to create writable path {path}"))?;
+                        .with_context(|| format!("无法创建可写路径 {path}"))?;
                     writable_paths.push(
                         HostFilesystemLocation::capture(path)
-                            .with_context(|| format!("failed to capture writable path {path}"))?,
+                            .with_context(|| format!("无法捕获可写路径 {path}"))?,
                     );
                 }
                 let protected_paths = capture_protected_paths(&check.protected_paths);
@@ -260,17 +260,17 @@ mod imp {
             check.fs, check.network_access
         );
         let op = if let Some(path) = &check.read {
-            format!("read {path}")
+            format!("读取 {path}")
         } else if let Some(path) = &check.write {
-            format!("write {path}")
+            format!("写入 {path}")
         } else if let Some(host) = &check.network {
-            format!("network {host}")
+            format!("网络 {host}")
         } else if let Some(path) = &check.socket_path {
-            format!("socket_connect {path}")
+            format!("连接套接字 {path}")
         } else if let Some(expected) = check.can_create {
-            format!("can_create == {expected}")
+            format!("可创建 == {expected}")
         } else {
-            "<no operation>".to_string()
+            "<无操作>".to_string()
         };
         format!("[{policy}] {op}")
     }
@@ -291,13 +291,13 @@ mod imp {
                     .map(|expected| error_matches(error, expected))
                     .unwrap_or(true),
             };
-            checks.check(&format!("{label} (got {outcome:?})"), passed);
+            checks.check(&format!("{label} (得到 {outcome:?})"), passed);
             return Ok(());
         }
 
         let succeeds = check
             .succeeds
-            .with_context(|| format!("check {label:?} has an operation but no `succeeds`"))?;
+            .with_context(|| format!("检查 {label:?} 有操作但没有 `succeeds`"))?;
 
         // Create any regular-file fixtures before the policy is built, so a
         // protected path routed through one (e.g. `<file>/.git`) reports
@@ -306,11 +306,11 @@ mod imp {
             let path = Path::new(path);
             if let Some(parent) = path.parent() {
                 std::fs::create_dir_all(parent).with_context(|| {
-                    format!("failed to create parent of seed file {}", path.display())
+                    format!("无法创建种子文件的父目录 {}", path.display())
                 })?;
             }
             std::fs::write(path, b"seed\n")
-                .with_context(|| format!("failed to create seed file {}", path.display()))?;
+                .with_context(|| format!("无法创建种子文件 {}", path.display()))?;
         }
 
         let actual = if let Some(path) = &check.read {
@@ -322,7 +322,7 @@ mod imp {
         } else if let Some(path) = &check.socket_path {
             run_socket_connect(check, path)?
         } else {
-            bail!("check {label:?} has no operation");
+            bail!("检查 {label:?} 没有操作");
         };
 
         checks.check(&label, actual == succeeds);
@@ -336,10 +336,10 @@ mod imp {
         let path = Path::new(path);
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)
-                .with_context(|| format!("failed to create parent of {}", path.display()))?;
+                .with_context(|| format!("无法创建 {} 的父目录", path.display()))?;
         }
         std::fs::write(path, b"sandbox-test\n")
-            .with_context(|| format!("failed to seed readable file {}", path.display()))?;
+            .with_context(|| format!("无法初始化可读文件 {}", path.display()))?;
 
         // Build the policy only after the fixtures exist: capturing a
         // `HostFilesystemLocation` pins the inode, so the path must be present.
@@ -352,7 +352,7 @@ mod imp {
         )
     }
 
-    /// Attempt to write a host file from inside the sandbox. "Succeeded" means
+    /// Attempt to write a host file from inside the sandbox. "成功" means
     /// the command exited 0 *and* the bytes actually landed on the host file —
     /// a write that only hits the sandbox's ephemeral tmpfs counts as blocked,
     /// since it never escaped the sandbox.
@@ -363,7 +363,7 @@ mod imp {
             // sandbox's write permission, not a missing directory. This also
             // makes a protected parent exist before the policy captures it.
             std::fs::create_dir_all(parent)
-                .with_context(|| format!("failed to create parent of {}", path.display()))?;
+                .with_context(|| format!("无法创建 {} 的父目录", path.display()))?;
         }
         // Start from a clean slate so `exists()` afterwards is meaningful.
         let _ = std::fs::remove_file(path);
@@ -423,7 +423,7 @@ mod imp {
     }
 
     fn sandbox_err(error: SandboxError) -> anyhow::Error {
-        anyhow::anyhow!("failed to create sandbox: {error}")
+        anyhow::anyhow!("无法创建沙箱: {error}")
     }
 
     /// Inner command: prove (or fail to prove) reachability of an echo server.
@@ -433,7 +433,7 @@ mod imp {
     /// no proxy we connect directly. Either way, a clean round-trip means the
     /// destination was reachable under the active network policy.
     fn run_echo_check(target: Option<&str>) -> Result<()> {
-        let target = target.context("echo check requires a host:port argument")?;
+        let target = target.context("回显检查需要 host:port 参数")?;
         let proxy = std::env::var("HTTP_PROXY")
             .ok()
             .filter(|value| !value.trim().is_empty())
@@ -452,22 +452,22 @@ mod imp {
                     .trim_end_matches('/')
                     .to_string();
                 let mut stream = TcpStream::connect(&proxy_addr)
-                    .with_context(|| format!("failed to connect to proxy {proxy_addr}"))?;
+                    .with_context(|| format!("无法连接到代理 {proxy_addr}"))?;
                 stream.set_read_timeout(Some(Duration::from_secs(10)))?;
                 write!(
                     stream,
                     "CONNECT {target} HTTP/1.1\r\nHost: {target}\r\n\r\n"
                 )
-                .context("failed to send CONNECT to proxy")?;
+                .context("无法向代理发送 CONNECT 请求")?;
                 let status = read_status_line(&mut stream)?;
                 if !status.contains(" 200") {
-                    bail!("proxy refused CONNECT to {target}: {status:?}");
+                    bail!("代理拒绝 CONNECT 到 {target}: {status:?}");
                 }
                 stream
             }
             None => {
                 let stream = TcpStream::connect(target)
-                    .with_context(|| format!("failed to connect to {target}"))?;
+                    .with_context(|| format!("无法连接到 {target}"))?;
                 stream.set_read_timeout(Some(Duration::from_secs(10)))?;
                 stream
             }
@@ -475,16 +475,16 @@ mod imp {
 
         stream
             .write_all(b"ping\n")
-            .context("failed to write to echo server")?;
+            .context("无法写入回显服务器")?;
         let mut buffer = [0u8; 32];
         let read = stream
             .read(&mut buffer)
-            .context("failed to read from echo server")?;
+            .context("无法从回显服务器读取")?;
         let echoed = String::from_utf8_lossy(&buffer[..read]);
         if echoed.contains("ping") {
             Ok(())
         } else {
-            bail!("echo server returned unexpected data: {echoed:?}");
+            bail!("回显服务器返回了意外数据: {echoed:?}");
         }
     }
 
@@ -493,27 +493,27 @@ mod imp {
     ///
     /// Any failure — `socket(AF_UNIX)` being denied (how the seccomp guard will
     /// manifest, as `EPERM`), `connect()` failing, or a bad round-trip — exits
-    /// non-zero, so the caller reads it as "not connected". A clean round-trip
+    /// non-zero, so the caller reads it as "未连接". A clean round-trip
     /// (exit 0) means the socket outside the sandbox was reachable.
     fn run_unix_connect_check(path: Option<&str>) -> Result<()> {
         use std::os::unix::net::UnixStream;
 
-        let path = path.context("unix connect check requires a socket path argument")?;
+        let path = path.context("Unix 连接检查需要套接字路径参数")?;
         let mut stream = UnixStream::connect(path)
-            .with_context(|| format!("failed to connect to unix socket {path}"))?;
+            .with_context(|| format!("无法连接到 Unix 套接字 {path}"))?;
         stream.set_read_timeout(Some(Duration::from_secs(10)))?;
         stream
             .write_all(b"ping\n")
-            .context("failed to write to unix socket")?;
+            .context("无法写入 Unix 套接字")?;
         let mut buffer = [0u8; 32];
         let read = stream
             .read(&mut buffer)
-            .context("failed to read from unix socket")?;
+            .context("无法从 Unix 套接字读取")?;
         let echoed = String::from_utf8_lossy(&buffer[..read]);
         if echoed.contains("ping") {
             Ok(())
         } else {
-            bail!("unix socket returned unexpected data: {echoed:?}");
+            bail!("Unix 套接字返回了意外数据: {echoed:?}");
         }
     }
 
@@ -526,7 +526,7 @@ mod imp {
         loop {
             let read = stream
                 .read(&mut byte)
-                .context("failed reading proxy reply")?;
+                .context("无法读取代理回复")?;
             if read == 0 {
                 break;
             }
@@ -535,7 +535,7 @@ mod imp {
                 break;
             }
             if header.len() > 64 * 1024 {
-                bail!("proxy reply headers too large");
+                bail!("代理回复头过大");
             }
         }
         let text = String::from_utf8_lossy(&header);
@@ -559,20 +559,20 @@ mod imp {
         fn check(&mut self, description: &str, condition: bool) {
             if condition {
                 self.passed += 1;
-                println!("[sandbox_test]: PASS: {description}");
+                println!("[sandbox_test]: 通过: {description}");
             } else {
                 self.failed += 1;
-                println!("[sandbox_test]: FAIL: {description}");
+                println!("[sandbox_test]: 失败: {description}");
             }
         }
 
         fn finish(self) -> Result<()> {
             println!(
-                "[sandbox_test]: summary: {} passed, {} failed",
+                "[sandbox_test]: 摘要: {} 通过, {} 失败",
                 self.passed, self.failed
             );
             if self.failed > 0 {
-                bail!("{} sandbox assertion(s) failed", self.failed);
+                bail!("{} 个沙箱断言失败", self.failed);
             }
             Ok(())
         }
@@ -587,15 +587,15 @@ mod imp {
             cwd: None,
         };
         let output = futures::executor::block_on(sandbox.execute(&command))
-            .map_err(|error| anyhow::anyhow!("failed to run sandboxed command: {error}"))?;
+            .map_err(|error| anyhow::anyhow!("无法运行沙箱命令: {error}"))?;
         Ok(output.status.success())
     }
 
     fn current_exe_str() -> Result<String> {
         Ok(std::env::current_exe()
-            .context("failed to resolve current executable")?
+            .context("无法解析当前可执行文件")?
             .to_str()
-            .context("current executable path is not valid UTF-8")?
+            .context("当前可执行文件路径不是有效的 UTF-8")?
             .to_string())
     }
 

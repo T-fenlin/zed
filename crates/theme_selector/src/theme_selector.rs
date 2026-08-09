@@ -238,7 +238,7 @@ impl ThemeSelectorDelegate {
                     Some(theme)
                 }
                 Err(error) => {
-                    log::error!("error loading theme {}: {}", mat.string, error);
+                    log::error!("加载主题 {} 时出错:{}", mat.string, error);
                     None
                 }
             }
@@ -383,7 +383,7 @@ impl PickerDelegate for ThemeSelectorDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Select Theme...".into()
+        "选择主题...".into()
     }
 
     fn match_count(&self) -> usize {
@@ -402,7 +402,7 @@ impl PickerDelegate for ThemeSelectorDelegate {
         let theme_appearance = self.new_theme.appearance;
         let system_appearance = SystemAppearance::global(cx).0;
 
-        telemetry::event!("Settings Changed", setting = "theme", value = theme_name);
+        telemetry::event!("设置已更改", setting = "theme", value = theme_name);
 
         update_settings_file(self.fs.clone(), cx, move |settings, _| {
             theme_settings::set_theme(settings, theme_name, theme_appearance, system_appearance);
@@ -543,7 +543,7 @@ impl PickerDelegate for ThemeSelectorDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("docs", "View Theme Docs")
+                    Button::new("docs", "查看主题文档")
                         .end_icon(
                             Icon::new(IconName::ArrowUpRight)
                                 .size(IconSize::Small)
@@ -554,7 +554,7 @@ impl PickerDelegate for ThemeSelectorDelegate {
                         })),
                 )
                 .child(
-                    Button::new("more-themes", "Install Themes").on_click(cx.listener({
+                    Button::new("more-themes", "安装主题").on_click(cx.listener({
                         move |_, _, window, cx| {
                             window.dispatch_action(
                                 Box::new(Extensions {
@@ -642,7 +642,7 @@ mod tests {
         workspace.update(cx, |workspace, cx| {
             workspace
                 .active_modal::<ThemeSelector>(cx)
-                .expect("theme selector should be open")
+                .expect("主题选择器应处于打开状态")
                 .read(cx)
                 .picker
                 .clone()
@@ -658,7 +658,7 @@ mod tests {
                 .delegate
                 .matches
                 .get(picker.delegate.selected_index)
-                .expect("selected index should point to a match")
+                .expect("所选索引应指向匹配项")
                 .string
                 .clone()
         })
@@ -709,12 +709,12 @@ mod tests {
         assert_eq!(
             selected_theme_name(&picker, cx),
             "Test Light",
-            "selected theme should be preserved after clearing an empty filter"
+            "清除空过滤器后应保留所选主题"
         );
         assert_eq!(
             previewed_theme_name(&picker, cx),
             "Test Light",
-            "previewed theme should be preserved after clearing an empty filter"
+            "清除空过滤器后应保留预览主题"
         );
     }
 }

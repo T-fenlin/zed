@@ -56,7 +56,7 @@ impl VsCodeSettings {
         }
         let Some(path) = path else {
             return Err(anyhow!(
-                "No settings file found, expected to find it in one of the following paths:\n{}",
+                "未找到设置文件,预期在以下路径之一中找到:\n{}",
                 candidate_paths
                     .into_iter()
                     .map(|path| path.to_string_lossy().into_owned())
@@ -66,14 +66,14 @@ impl VsCodeSettings {
         };
         let content = fs.load(&path).await.with_context(|| {
             format!(
-                "Error loading {} settings file from {}",
+                "从 {} 加载 {} 设置文件时出错",
                 source,
                 path.display()
             )
         })?;
         let content = serde_json_lenient::from_str(&content).with_context(|| {
             format!(
-                "Error parsing {} settings file from {}",
+                "解析来自 {} 的 {} 设置文件时出错",
                 source,
                 path.display()
             )

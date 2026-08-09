@@ -74,15 +74,15 @@ where
     S: FnOnce(Pin<Box<dyn Future<Output = ()> + Send + 'static>>),
     P: FnOnce(u32) -> PathBuf,
 {
-    let exe = env::current_exe().expect("unable to find ourselves");
+    let exe = env::current_exe().expect("无法找到自身");
     let socket_path = socket_path(process::id());
     let mut _crash_handler = spawn_crash_handler(&exe, &socket_path);
-    info!("spawning crash handler process");
+    info!("正在启动崩溃处理进程");
     let mut elapsed = Duration::ZERO;
     let retry_frequency = Duration::from_millis(100);
     let client = loop {
         if let Ok(client) = Client::with_name(SocketName::Path(&socket_path)) {
-            info!("connected to crash handler process after {elapsed:?}");
+            info!("在 {elapsed:?} 后连接到崩溃处理进程");
             break client;
         }
         elapsed += retry_frequency;
@@ -100,7 +100,7 @@ where
             )
         })
     });
-    info!("panic handler registered");
+    info!("恐慌处理器已注册");
     let handler = CrashHandler::attach(unsafe {
         let client = client.clone();
         let handler = move |crash_context: &crash_handler::CrashContext| {
@@ -121,7 +121,7 @@ where
                 client.ping().ok();
                 let r = client.request_dump(crash_context);
                 if let Err(e) = &r {
-                    eprintln!("failed to request dump: {:?}", e);
+                    eprintln!("请求转储失败: {:?}", e);
                 }
                 #[cfg(target_os = "macos")]
                 macos::resume_all_other_threads();
@@ -133,9 +133,9 @@ where
         };
         crash_handler::make_crash_event(handler)
     })
-    .expect("failed to attach signal handler");
+    .expect("无法附加信号处理器");
 
-    info!("crash signal handlers installed");
+    info!("崩溃信号处理器已安装");
     send_crash_server_message(&client, CrashServerMessage::Init(crash_init));
 
     #[cfg(all(target_os = "linux", target_env = "gnu"))]
@@ -152,7 +152,7 @@ where
     #[cfg(target_os = "linux")]
     handler.set_ptracer(Some(_crash_handler.id()));
 
-    info!("crash handler registered");
+    info!("崩溃处理器已注册");
     spawn(Box::pin({
         let client = client.clone();
         async move {
@@ -161,12 +161,12 @@ where
                 if let Err(e) = client.ping() {
                     #[cfg(not(target_os = "windows"))]
                     log::error!(
-                        "ping failed: {:?}, process exit status: {:?}",
+                        "ping 失败: {:?},进程退出状态: {:?}",
                         e,
                         _crash_handler.try_status()
                     );
                     #[cfg(target_os = "windows")]
-                    log::error!("ping failed: {:?}", e,);
+                    log::error!("ping 失败: {:?}", e,);
                     break;
                 };
                 wait_timer(Duration::from_secs(10)).await;
@@ -237,13 +237,13 @@ fn send_crash_server_message(crash_client: &Arc<Client>, message: CrashServerMes
     let data = match serde_json::to_vec(&message) {
         Ok(data) => data,
         Err(err) => {
-            log::warn!("Failed to serialize crash server message: {:?}", err);
+            log::warn!("无法序列化崩溃服务器消息: {:?}", err);
             return;
         }
     };
 
     if let Err(err) = crash_client.send_message(0, data) {
-        log::warn!("Failed to send data to crash server {:?}", err);
+        log::warn!("无法向崩溃服务器发送数据 {:?}", err);
     }
 }
 
@@ -319,7 +319,7 @@ fn abort_message_read_len(size: u32) -> Option<usize> {
 
     let size = size as usize;
     if size == 0 || !size.is_multiple_of(PAGE_MULTIPLE) {
-        log::warn!("__abort_msg size field {size} is not page-rounded; layout may have changed");
+        log::warn!("__abort_msg 大小字段 {size} 未按页对齐;布局可能已更改");
         return None;
     }
     Some(size.min(MAX_READ) - size_of::<u32>())
@@ -353,14 +353,14 @@ fn read_process_memory(pid: u32, address: u64, len: usize) -> Option<Vec<u8>> {
         unsafe { libc::process_vm_readv(pid as libc::pid_t, &local, 1, &remote, 1, 0) };
     if bytes_read < 0 {
         log::warn!(
-            "process_vm_readv of {len} bytes at {address:#x} in pid {pid} failed: {}",
+            "在 pid {pid} 中读取 {address:#x} 处的 {len} 字节失败: {}",
             io::Error::last_os_error()
         );
         return None;
     }
     if bytes_read as usize != len {
         log::warn!(
-            "process_vm_readv short read at {address:#x} in pid {pid}: {bytes_read} of {len} bytes"
+            "在 pid {pid} 中读取 {address:#x} 处数据不完整: 读取了 {bytes_read} 字节,共 {len} 字节"
         );
         return None;
     }
@@ -376,7 +376,7 @@ impl minidumper::ServerHandler for CrashServer {
                     .initialization_params
                     .lock()
                     .as_ref()
-                    .expect("Missing initialization data")
+                    .expect("缺少初始化数据")
                     .session_id,
             )
             .with_extension("dmp");
@@ -408,7 +408,7 @@ impl minidumper::ServerHandler for CrashServer {
         let gpus = match system_specs::read_gpu_info_from_sys_class_drm() {
             Ok(gpus) => gpus,
             Err(err) => {
-                log::warn!("Failed to collect GPU information for crash report: {err}");
+                log::warn!("无法收集崩溃报告的 GPU 信息: {err}");
                 vec![]
             }
         };
@@ -426,7 +426,7 @@ impl minidumper::ServerHandler for CrashServer {
                 .initialization_params
                 .lock()
                 .clone()
-                .expect("not initialized"),
+                .expect("未初始化"),
             panic: self.panic_info.lock().clone(),
             minidump_error,
             abort_message,
@@ -447,7 +447,7 @@ impl minidumper::ServerHandler for CrashServer {
 
     fn on_message(&self, _: u32, buffer: Vec<u8>) {
         let message: CrashServerMessage =
-            serde_json::from_slice(&buffer).expect("invalid init data");
+            serde_json::from_slice(&buffer).expect("无效的初始化数据");
         match message {
             CrashServerMessage::Init(init_data) => {
                 self.initialization_params.lock().replace(init_data);
@@ -498,7 +498,7 @@ fn strip_user_string_from_panic(message: &str) -> String {
             .any(|prefix| message.starts_with(prefix))
         && let Some(open) = message.find('`')
     {
-        return format!("{} `<redacted>`", &message[..open]);
+        return format!("{} `<已编辑>`", &message[..open]);
     }
     message.to_owned()
 }
@@ -511,16 +511,16 @@ pub fn panic_hook(crash_client: Arc<Client>, message: &str, location: Option<&Lo
         .unwrap_or_default();
 
     let current_thread = std::thread::current();
-    let thread_name = current_thread.name().unwrap_or("<unnamed>");
+    let thread_name = current_thread.name().unwrap_or("<未命名>");
 
-    let location = location.map_or_else(|| "<unknown>".to_owned(), |location| location.to_string());
-    log::error!("thread '{thread_name}' panicked at {location}:\n{message}...");
+    let location = location.map_or_else(|| "<未知>".to_owned(), |location| location.to_string());
+    log::error!("线程 '{thread_name}' 在 {location} 处发生恐慌:\n{message}...");
 
     send_crash_server_message(
         &crash_client,
         CrashServerMessage::Panic(CrashPanic { message, span }),
     );
-    log::error!("triggering a crash to generate a minidump...");
+    log::error!("正在触发崩溃以生成迷你转储...");
 
     #[cfg(target_os = "macos")]
     macos::set_panic_thread_id();
@@ -584,7 +584,7 @@ fn spawn_crash_handler(exe: &Path, socket_name: &Path) -> async_process::Child {
         .arg("--crash-handler")
         .arg(&socket_name)
         .spawn()
-        .expect("unable to spawn server process")
+        .expect("无法生成服务器进程")
 }
 
 #[cfg(target_os = "windows")]
@@ -631,7 +631,7 @@ fn spawn_crash_handler(exe: &Path, socket_name: &Path) {
             &startup_info,
             &mut process_info,
         )
-        .expect("unable to spawn server process");
+        .expect("无法生成服务器进程");
 
         windows::Win32::Foundation::CloseHandle(process_info.hProcess).ok();
         windows::Win32::Foundation::CloseHandle(process_info.hThread).ok();
@@ -640,7 +640,7 @@ fn spawn_crash_handler(exe: &Path, socket_name: &Path) {
 
 pub fn crash_server(socket: &Path, logs_dir: PathBuf) {
     let Ok(mut server) = Server::with_name(SocketName::Path(socket)) else {
-        log::info!("Couldn't create socket, there may already be a running crash server");
+        log::info!("无法创建套接字,可能已有崩溃服务器在运行");
         return;
     };
 
@@ -675,7 +675,7 @@ pub fn crash_server(socket: &Path, logs_dir: PathBuf) {
             &shutdown,
             Some(CRASH_HANDLER_PING_TIMEOUT),
         )
-        .expect("failed to run server");
+        .expect("无法运行服务器");
 }
 
 #[cfg(test)]

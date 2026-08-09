@@ -2642,7 +2642,7 @@ async fn test_single_file_worktrees_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(0, 4), lsp::Position::new(0, 5)),
                         severity: Some(lsp::DiagnosticSeverity::ERROR),
-                        message: "error 1".to_string(),
+                        message: "错误 1".to_string(),
                         ..Default::default()
                     }],
                 },
@@ -2661,7 +2661,7 @@ async fn test_single_file_worktrees_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(0, 4), lsp::Position::new(0, 5)),
                         severity: Some(DiagnosticSeverity::WARNING),
-                        message: "error 2".to_string(),
+                        message: "错误 2".to_string(),
                         ..Default::default()
                     }],
                 },
@@ -2753,7 +2753,7 @@ async fn test_omitted_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(0, 4), lsp::Position::new(0, 5)),
                         severity: Some(lsp::DiagnosticSeverity::ERROR),
-                        message: "unused variable 'b'".to_string(),
+                        message: "未使用的变量 'b'".to_string(),
                         ..Default::default()
                     }],
                 },
@@ -2772,7 +2772,7 @@ async fn test_omitted_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(0, 8), lsp::Position::new(0, 9)),
                         severity: Some(lsp::DiagnosticSeverity::ERROR),
-                        message: "unknown variable 'c'".to_string(),
+                        message: "未知变量 'c'".to_string(),
                         ..Default::default()
                     }],
                 },
@@ -2802,7 +2802,7 @@ async fn test_omitted_diagnostics(cx: &mut gpui::TestAppContext) {
                 ("b", Some(DiagnosticSeverity::ERROR)),
                 (" = 2;", None),
             ],
-            "Gigitnored buffers should still get in-buffer diagnostics",
+            "被 Git 忽略的缓冲区仍应获得缓冲区内的诊断信息",
         );
     });
     let other_buffer = project
@@ -2823,7 +2823,7 @@ async fn test_omitted_diagnostics(cx: &mut gpui::TestAppContext) {
                 ("c", Some(DiagnosticSeverity::ERROR)),
                 (";", None),
             ],
-            "Buffers from hidden projects should still get in-buffer diagnostics"
+            "来自隐藏项目的缓冲区仍应获得缓冲区内的诊断信息"
         );
     });
 
@@ -2915,7 +2915,7 @@ async fn test_disk_based_diagnostics_progress(cx: &mut gpui::TestAppContext) {
         diagnostics: vec![lsp::Diagnostic {
             range: lsp::Range::new(lsp::Position::new(0, 9), lsp::Position::new(0, 10)),
             severity: Some(lsp::DiagnosticSeverity::ERROR),
-            message: "undefined variable 'A'".to_string(),
+            message: "未定义的变量 'A'".to_string(),
             ..Default::default()
         }],
     });
@@ -2951,7 +2951,7 @@ async fn test_disk_based_diagnostics_progress(cx: &mut gpui::TestAppContext) {
                 range: Point::new(0, 9)..Point::new(0, 10),
                 diagnostic: &Diagnostic {
                     severity: lsp::DiagnosticSeverity::ERROR,
-                    message: "undefined variable 'A'".to_string(),
+                    message: "未定义的变量 'A'".to_string(),
                     group_id: 0,
                     is_primary: true,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -3114,7 +3114,7 @@ async fn test_restarting_server_with_diagnostics_published(cx: &mut gpui::TestAp
         diagnostics: vec![lsp::Diagnostic {
             range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 0)),
             severity: Some(lsp::DiagnosticSeverity::ERROR),
-            message: "the message".to_string(),
+            message: "消息".to_string(),
             ..Default::default()
         }],
     });
@@ -3127,7 +3127,7 @@ async fn test_restarting_server_with_diagnostics_published(cx: &mut gpui::TestAp
                 .diagnostics_in_range::<_, usize>(0..1, false)
                 .map(|entry| entry.diagnostic.message.clone())
                 .collect::<Vec<_>>(),
-            ["the message".to_string()]
+            ["消息".to_string()]
         );
     });
     project.update(cx, |project, cx| {
@@ -3575,7 +3575,7 @@ async fn test_updating_lsp_settings_sends_one_did_change_configuration(
     assert_eq!(
         did_change_count.load(atomic::Ordering::SeqCst),
         1,
-        "expected exactly one workspace/didChangeConfiguration after a settings change"
+        "设置更改后应恰好收到一次工作区/didChangeConfiguration 通知"
     );
 }
 
@@ -3636,14 +3636,14 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(0, 9), lsp::Position::new(0, 10)),
                 severity: Some(DiagnosticSeverity::ERROR),
-                message: "undefined variable 'A'".to_string(),
+                message: "未定义的变量 'A'".to_string(),
                 source: Some("disk".to_string()),
                 ..Default::default()
             },
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(1, 9), lsp::Position::new(1, 11)),
                 severity: Some(DiagnosticSeverity::ERROR),
-                message: "undefined variable 'BB'".to_string(),
+                message: "未定义的变量 'BB'".to_string(),
                 source: Some("disk".to_string()),
                 ..Default::default()
             },
@@ -3651,7 +3651,7 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: lsp::Range::new(lsp::Position::new(2, 9), lsp::Position::new(2, 12)),
                 severity: Some(DiagnosticSeverity::ERROR),
                 source: Some("disk".to_string()),
-                message: "undefined variable 'CCC'".to_string(),
+                message: "未定义的变量 'CCC'".to_string(),
                 ..Default::default()
             },
         ],
@@ -3671,7 +3671,7 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostic: Diagnostic {
                         source: Some("disk".into()),
                         severity: DiagnosticSeverity::ERROR,
-                        message: "undefined variable 'BB'".to_string(),
+                        message: "未定义的变量 'BB'".to_string(),
                         is_disk_based: true,
                         group_id: 1,
                         is_primary: true,
@@ -3684,7 +3684,7 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostic: Diagnostic {
                         source: Some("disk".into()),
                         severity: DiagnosticSeverity::ERROR,
-                        message: "undefined variable 'CCC'".to_string(),
+                        message: "未定义的变量 'CCC'".to_string(),
                         is_disk_based: true,
                         group_id: 2,
                         is_primary: true,
@@ -3724,14 +3724,14 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(0, 9), lsp::Position::new(0, 10)),
                 severity: Some(DiagnosticSeverity::ERROR),
-                message: "undefined variable 'A'".to_string(),
+                message: "未定义的变量 'A'".to_string(),
                 source: Some("disk".to_string()),
                 ..Default::default()
             },
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(0, 9), lsp::Position::new(0, 12)),
                 severity: Some(DiagnosticSeverity::WARNING),
-                message: "unreachable statement".to_string(),
+                message: "不可达语句".to_string(),
                 source: Some("disk".to_string()),
                 ..Default::default()
             },
@@ -3751,7 +3751,7 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostic: Diagnostic {
                         source: Some("disk".into()),
                         severity: DiagnosticSeverity::WARNING,
-                        message: "unreachable statement".to_string(),
+                        message: "不可达语句".to_string(),
                         is_disk_based: true,
                         group_id: 4,
                         is_primary: true,
@@ -3764,7 +3764,7 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostic: Diagnostic {
                         source: Some("disk".into()),
                         severity: DiagnosticSeverity::ERROR,
-                        message: "undefined variable 'A'".to_string(),
+                        message: "未定义的变量 'A'".to_string(),
                         is_disk_based: true,
                         group_id: 3,
                         is_primary: true,
@@ -3818,14 +3818,14 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(1, 9), lsp::Position::new(1, 11)),
                 severity: Some(DiagnosticSeverity::ERROR),
-                message: "undefined variable 'BB'".to_string(),
+                message: "未定义的变量 'BB'".to_string(),
                 source: Some("disk".to_string()),
                 ..Default::default()
             },
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(0, 9), lsp::Position::new(0, 10)),
                 severity: Some(DiagnosticSeverity::WARNING),
-                message: "undefined variable 'A'".to_string(),
+                message: "未定义的变量 'A'".to_string(),
                 source: Some("disk".to_string()),
                 ..Default::default()
             },
@@ -3845,7 +3845,7 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostic: Diagnostic {
                         source: Some("disk".into()),
                         severity: DiagnosticSeverity::WARNING,
-                        message: "undefined variable 'A'".to_string(),
+                        message: "未定义的变量 'A'".to_string(),
                         is_disk_based: true,
                         group_id: 6,
                         is_primary: true,
@@ -3858,7 +3858,7 @@ async fn test_transforming_diagnostics(cx: &mut gpui::TestAppContext) {
                     diagnostic: Diagnostic {
                         source: Some("disk".into()),
                         severity: DiagnosticSeverity::ERROR,
-                        message: "undefined variable 'BB'".to_string(),
+                        message: "未定义的变量 'BB'".to_string(),
                         is_disk_based: true,
                         group_id: 5,
                         is_primary: true,
@@ -3906,7 +3906,7 @@ async fn test_empty_diagnostic_ranges(cx: &mut gpui::TestAppContext) {
                                 ..Unclipped(PointUtf16::new(0, 10)),
                             diagnostic: Diagnostic {
                                 severity: DiagnosticSeverity::ERROR,
-                                message: "syntax error 1".to_string(),
+                                message: "语法错误 1".to_string(),
                                 source_kind: DiagnosticSourceKind::Pushed,
                                 ..Diagnostic::default()
                             },
@@ -3916,7 +3916,7 @@ async fn test_empty_diagnostic_ranges(cx: &mut gpui::TestAppContext) {
                                 ..Unclipped(PointUtf16::new(1, 10)),
                             diagnostic: Diagnostic {
                                 severity: DiagnosticSeverity::ERROR,
-                                message: "syntax error 2".to_string(),
+                                message: "语法错误 2".to_string(),
                                 source_kind: DiagnosticSourceKind::Pushed,
                                 ..Diagnostic::default()
                             },
@@ -3972,7 +3972,7 @@ async fn test_diagnostics_from_multiple_language_servers(cx: &mut gpui::TestAppC
                     diagnostic: Diagnostic {
                         severity: DiagnosticSeverity::ERROR,
                         is_primary: true,
-                        message: "syntax error a1".to_string(),
+                        message: "语法错误 a1".to_string(),
                         source_kind: DiagnosticSourceKind::Pushed,
                         ..Diagnostic::default()
                     },
@@ -3991,7 +3991,7 @@ async fn test_diagnostics_from_multiple_language_servers(cx: &mut gpui::TestAppC
                     diagnostic: Diagnostic {
                         severity: DiagnosticSeverity::ERROR,
                         is_primary: true,
-                        message: "syntax error b1".to_string(),
+                        message: "语法错误 b1".to_string(),
                         source_kind: DiagnosticSourceKind::Pushed,
                         ..Diagnostic::default()
                     },
@@ -4035,7 +4035,7 @@ async fn test_diagnostic_summaries_cleared_on_worktree_entry_removal(
                     diagnostic: Diagnostic {
                         severity: DiagnosticSeverity::ERROR,
                         is_primary: true,
-                        message: "error in a".to_string(),
+                        message: "a 中的错误".to_string(),
                         source_kind: DiagnosticSourceKind::Pushed,
                         ..Diagnostic::default()
                     },
@@ -4054,7 +4054,7 @@ async fn test_diagnostic_summaries_cleared_on_worktree_entry_removal(
                     diagnostic: Diagnostic {
                         severity: DiagnosticSeverity::WARNING,
                         is_primary: true,
-                        message: "warning in b".to_string(),
+                        message: "b 中的警告".to_string(),
                         source_kind: DiagnosticSourceKind::Pushed,
                         ..Diagnostic::default()
                     },
@@ -4115,7 +4115,7 @@ async fn test_diagnostic_summaries_cleared_on_server_restart(cx: &mut gpui::Test
         diagnostics: vec![lsp::Diagnostic {
             range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 1)),
             severity: Some(lsp::DiagnosticSeverity::ERROR),
-            message: "error before restart".to_string(),
+            message: "重启前的错误".to_string(),
             ..Default::default()
         }],
     });
@@ -4153,7 +4153,7 @@ async fn test_diagnostic_summaries_cleared_on_server_restart(cx: &mut gpui::Test
     }
     assert!(
         received_diagnostics_updated,
-        "DiagnosticsUpdated event should be emitted when a language server is stopped"
+        "语言服务器停止时应发出 DiagnosticsUpdated 事件"
     );
 
     project.update(cx, |project, cx| {
@@ -4239,7 +4239,7 @@ async fn test_diagnostic_summaries_cleared_on_buffer_reload(cx: &mut gpui::TestA
         diagnostics: vec![lsp::Diagnostic {
             range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 3)),
             severity: Some(lsp::DiagnosticSeverity::ERROR),
-            message: "error in a".to_string(),
+            message: "a 中的错误".to_string(),
             ..Default::default()
         }],
     });
@@ -4261,7 +4261,7 @@ async fn test_diagnostic_summaries_cleared_on_buffer_reload(cx: &mut gpui::TestA
     // which in turn triggers pull_diagnostics_for_buffer.
     fs.save(
         path!("/dir/a.rs").as_ref(),
-        &"fixed content".into(),
+        &"已修复的内容".into(),
         LineEnding::Unix,
     )
     .await
@@ -4271,7 +4271,7 @@ async fn test_diagnostic_summaries_cleared_on_buffer_reload(cx: &mut gpui::TestA
     let pulls_after = pull_count.load(atomic::Ordering::SeqCst);
     assert!(
         pulls_after > pulls_before,
-        "Expected document diagnostic pull after buffer reload (before={pulls_before}, after={pulls_after})"
+        "缓冲区重新加载后应触发文档诊断拉取(之前={pulls_before},之后={pulls_after})"
     );
 }
 
@@ -4319,7 +4319,7 @@ async fn test_diagnostic_summaries_cleared_on_buffer_close_without_workspace_dia
                                                     lsp::Position::new(0, 3),
                                                 ),
                                                 severity: Some(lsp::DiagnosticSeverity::ERROR),
-                                                message: "pulled error no-ws".to_string(),
+                                                message: "拉取错误(无工作区)".to_string(),
                                                 ..Default::default()
                                             }],
                                         },
@@ -4422,7 +4422,7 @@ async fn test_diagnostic_summaries_retained_on_buffer_close_with_workspace_diagn
                                                     lsp::Position::new(0, 3),
                                                 ),
                                                 severity: Some(lsp::DiagnosticSeverity::ERROR),
-                                                message: "pulled error ws".to_string(),
+                                                message: "拉取错误(有工作区)".to_string(),
                                                 ..Default::default()
                                             }],
                                         },
@@ -4520,7 +4520,7 @@ async fn test_workspace_diagnostics_pull_timeout_releases_waiters(cx: &mut gpui:
                 fake_server.set_request_handler::<lsp::request::WorkspaceDiagnosticRequest, _, _>(
                     move |_, _| async move {
                         future::pending::<()>().await;
-                        Err(anyhow::anyhow!("should never respond"))
+                        Err(anyhow::anyhow!("不应响应"))
                     },
                 );
             })),
@@ -4549,7 +4549,7 @@ async fn test_workspace_diagnostics_pull_timeout_releases_waiters(cx: &mut gpui:
     let refreshed = pull_task.await;
     assert!(
         !refreshed,
-        "pull should report a failed refresh when the server never responds"
+        "当服务器无响应时,拉取应报告刷新失败"
     );
 }
 
@@ -4595,7 +4595,7 @@ async fn test_workspace_diagnostics_refresh_is_answered_before_pulling(
                                 document_pulls_received.fetch_add(1, atomic::Ordering::Release);
                                 async move {
                                     future::pending::<()>().await;
-                                    Err(anyhow::anyhow!("should never respond"))
+                                    Err(anyhow::anyhow!("不应响应"))
                                 }
                             }
                         });
@@ -4603,7 +4603,7 @@ async fn test_workspace_diagnostics_refresh_is_answered_before_pulling(
                         .set_request_handler::<lsp::request::WorkspaceDiagnosticRequest, _, _>(
                             move |_, _| async move {
                                 future::pending::<()>().await;
-                                Err(anyhow::anyhow!("should never respond"))
+                                Err(anyhow::anyhow!("不应响应"))
                             },
                         );
                 }
@@ -4631,13 +4631,13 @@ async fn test_workspace_diagnostics_refresh_is_answered_before_pulling(
 
     refresh_response
         .now_or_never()
-        .expect("workspace/diagnostic/refresh must be answered without awaiting diagnostic pulls from the same server")
+        .expect("工作区/diagnostic/refresh 必须在等待同一服务器的诊断拉取之前得到响应")
         .into_response()
-        .expect("workspace/diagnostic/refresh should succeed");
+        .expect("工作区/诊断/refresh 应成功");
     assert_eq!(
         document_pulls_received.load(atomic::Ordering::Acquire),
         1,
-        "the refresh should still trigger a document diagnostics pull for the open buffer"
+        "刷新仍应触发打开缓冲区的文档诊断拉取"
     );
 }
 
@@ -5143,7 +5143,7 @@ async fn test_edits_from_lsp_with_crlf_line_endings(cx: &mut gpui::TestAppContex
         })
         .await
         .unwrap();
-    assert!(edits.is_empty(), "expected no edits, got {edits:?}");
+    assert!(edits.is_empty(), "预期无编辑,实际得到 {edits:?}");
 
     // The same whole-document CRLF edit, but with an actual change on one
     // line, must produce an edit for just that change.
@@ -5827,7 +5827,7 @@ async fn test_apply_code_actions_with_commands(cx: &mut gpui::TestAppContext) {
         .set_request_handler::<lsp::request::CodeActionRequest, _, _>(|_, _| async move {
             Ok(Some(vec![
                 lsp::CodeActionOrCommand::CodeAction(lsp::CodeAction {
-                    title: "The code action".into(),
+                    title: "代码操作".into(),
                     data: Some(serde_json::json!({
                         "command": "_the/command",
                     })),
@@ -5853,7 +5853,7 @@ async fn test_apply_code_actions_with_commands(cx: &mut gpui::TestAppContext) {
         |mut action, _| async move {
             if action.data.is_some() {
                 action.command = Some(lsp::Command {
-                    title: "The command".into(),
+                    title: "命令".into(),
                     command: "_the/command".into(),
                     arguments: Some(vec![json!("the-argument")]),
                 });
@@ -5955,13 +5955,13 @@ async fn test_rename_file_to_new_directory(cx: &mut gpui::TestAppContext) {
     worktree.read_with(cx, |worktree, _| {
         assert!(
             worktree.entry_for_path(rel_path("test.txt")).is_none(),
-            "Old file should have been removed"
+            "旧文件应已被删除"
         );
         assert!(
             worktree
                 .entry_for_path(rel_path("dir1/dir2/dir3/test.txt"))
                 .is_some(),
-            "Whole directory hierarchy and the new file should have been created"
+            "整个目录层级和新文件应已创建"
         );
     });
     assert_eq!(
@@ -5973,7 +5973,7 @@ async fn test_rename_file_to_new_directory(cx: &mut gpui::TestAppContext) {
             .unwrap()
             .text,
         expected_contents,
-        "Moved file's contents should be preserved"
+        "移动文件的内容应保持不变"
     );
 
     let entry_id = worktree.read_with(cx, |worktree, _| {
@@ -5996,19 +5996,19 @@ async fn test_rename_file_to_new_directory(cx: &mut gpui::TestAppContext) {
     worktree.read_with(cx, |worktree, _| {
         assert!(
             worktree.entry_for_path(rel_path("test.txt")).is_none(),
-            "First file should not reappear"
+            "第一个文件不应再次出现"
         );
         assert!(
             worktree
                 .entry_for_path(rel_path("dir1/dir2/dir3/test.txt"))
                 .is_none(),
-            "Old file should have been removed"
+            "旧文件应已被删除"
         );
         assert!(
             worktree
                 .entry_for_path(rel_path("dir1/dir2/test.txt"))
                 .is_some(),
-            "No error should have occurred after moving into existing directory"
+            "移动到已存在的目录后不应发生错误"
         );
     });
     assert_eq!(
@@ -6020,7 +6020,7 @@ async fn test_rename_file_to_new_directory(cx: &mut gpui::TestAppContext) {
             .unwrap()
             .text,
         expected_contents,
-        "Moved file's contents should be preserved"
+        "移动文件的内容应保持不变"
     );
 }
 
@@ -6032,7 +6032,7 @@ async fn test_save_file(cx: &mut gpui::TestAppContext) {
     fs.insert_tree(
         path!("/dir"),
         json!({
-            "file1": "the old contents",
+            "file1": "旧内容",
         }),
     )
     .await;
@@ -6043,7 +6043,7 @@ async fn test_save_file(cx: &mut gpui::TestAppContext) {
         .await
         .unwrap();
     buffer.update(cx, |buffer, cx| {
-        assert_eq!(buffer.text(), "the old contents");
+        assert_eq!(buffer.text(), "旧内容");
         buffer.edit([(0..0, "a line of text.\n".repeat(10 * 1024))], None, cx);
     });
 
@@ -6148,7 +6148,7 @@ async fn test_file_changes_multiple_times_on_disk(cx: &mut gpui::TestAppContext)
     fs.insert_tree(
         path!("/dir"),
         json!({
-            "file1": "the original contents",
+            "file1": "原始内容",
         }),
     )
     .await;
@@ -6164,7 +6164,7 @@ async fn test_file_changes_multiple_times_on_disk(cx: &mut gpui::TestAppContext)
     // to be detected by the worktree, so that the buffer starts reloading.
     fs.save(
         path!("/dir/file1").as_ref(),
-        &"the first contents".into(),
+        &"第一个内容".into(),
         Default::default(),
     )
     .await
@@ -6175,7 +6175,7 @@ async fn test_file_changes_multiple_times_on_disk(cx: &mut gpui::TestAppContext)
     // previous file change may still be in progress.
     fs.save(
         path!("/dir/file1").as_ref(),
-        &"the second contents".into(),
+        &"第二个内容".into(),
         Default::default(),
     )
     .await
@@ -6186,8 +6186,8 @@ async fn test_file_changes_multiple_times_on_disk(cx: &mut gpui::TestAppContext)
     let on_disk_text = fs.load(Path::new(path!("/dir/file1"))).await.unwrap();
     buffer.read_with(cx, |buffer, _| {
         assert_eq!(buffer.text(), on_disk_text);
-        assert!(!buffer.is_dirty(), "buffer should not be dirty");
-        assert!(!buffer.has_conflict(), "buffer should not be dirty");
+        assert!(!buffer.is_dirty(), "缓冲区不应为脏状态");
+        assert!(!buffer.has_conflict(), "缓冲区不应为脏状态");
     });
 }
 
@@ -6199,7 +6199,7 @@ async fn test_edit_buffer_while_it_reloads(cx: &mut gpui::TestAppContext) {
     fs.insert_tree(
         path!("/dir"),
         json!({
-            "file1": "the original contents",
+            "file1": "原始内容",
         }),
     )
     .await;
@@ -6215,7 +6215,7 @@ async fn test_edit_buffer_while_it_reloads(cx: &mut gpui::TestAppContext) {
     // to be detected by the worktree, so that the buffer starts reloading.
     fs.save(
         path!("/dir/file1").as_ref(),
-        &"the first contents".into(),
+        &"第一个内容".into(),
         Default::default(),
     )
     .await
@@ -6239,14 +6239,14 @@ async fn test_edit_buffer_while_it_reloads(cx: &mut gpui::TestAppContext) {
         if buffer_text == on_disk_text {
             assert!(
                 !buffer.is_dirty() && !buffer.has_conflict(),
-                "buffer shouldn't be dirty. text: {buffer_text:?}, disk text: {on_disk_text:?}",
+                "缓冲区不应为脏状态。文本:{buffer_text:?},磁盘文本:{on_disk_text:?}",
             );
         }
         // If the file change occurred while the buffer was processing the first
         // change, the buffer will be in a conflicting state.
         else {
-            assert!(buffer.is_dirty(), "buffer should report that it is dirty. text: {buffer_text:?}, disk text: {on_disk_text:?}");
-            assert!(buffer.has_conflict(), "buffer should report that it is dirty. text: {buffer_text:?}, disk text: {on_disk_text:?}");
+            assert!(buffer.is_dirty(), "缓冲区应报告为脏状态。文本:{buffer_text:?},磁盘文本:{on_disk_text:?}");
+            assert!(buffer.has_conflict(), "缓冲区应报告为脏状态。文本:{buffer_text:?},磁盘文本:{on_disk_text:?}");
         }
     });
 }
@@ -6259,7 +6259,7 @@ async fn test_save_in_single_file_worktree(cx: &mut gpui::TestAppContext) {
     fs.insert_tree(
         path!("/dir"),
         json!({
-            "file1": "the old contents",
+            "file1": "旧内容",
         }),
     )
     .await;
@@ -6305,7 +6305,7 @@ async fn test_save_as(cx: &mut gpui::TestAppContext) {
         buffer.edit([(0..0, "abc")], None, cx);
         assert!(buffer.is_dirty());
         assert!(!buffer.has_conflict());
-        assert_eq!(buffer.language().unwrap().name(), "Plain Text");
+        assert_eq!(buffer.language().unwrap().name(), "纯文本");
     });
     project
         .update(cx, |project, cx| {
@@ -6350,7 +6350,7 @@ async fn test_save_as_existing_file(cx: &mut gpui::TestAppContext) {
     fs.insert_tree(
         path!("/dir"),
         json!({
-                "data_a.txt": "data about a"
+                "data_a.txt": "关于 a 的数据"
         }),
     )
     .await;
@@ -6399,7 +6399,7 @@ async fn test_save_as_existing_file(cx: &mut gpui::TestAppContext) {
         .unwrap();
 
     original_buffer.update(cx, |buffer, cx| {
-        assert_eq!(buffer.text(), "data about a");
+        assert_eq!(buffer.text(), "关于 a 的数据");
         assert_eq!(
             buffer.file().unwrap().full_path(cx),
             Path::new("dir/data_a.txt")
@@ -6439,7 +6439,7 @@ async fn test_rescan_and_remote_updates(cx: &mut gpui::TestAppContext) {
             let tree = project.worktrees(cx).next().unwrap();
             tree.read(cx)
                 .entry_for_path(rel_path(path))
-                .unwrap_or_else(|| panic!("no entry for path {}", path))
+                .unwrap_or_else(|| panic!("路径 {} 没有条目", path))
                 .id
         })
     };
@@ -6645,7 +6645,7 @@ async fn test_buffer_identity_across_renames(cx: &mut gpui::TestAppContext) {
             let tree = project.worktrees(cx).next().unwrap();
             tree.read(cx)
                 .entry_for_path(rel_path(path))
-                .unwrap_or_else(|| panic!("no entry for path {}", path))
+                .unwrap_or_else(|| panic!("路径 {} 没有条目", path))
                 .id
         })
     };
@@ -6923,7 +6923,7 @@ async fn test_dirty_buffer_reloads_after_undo(cx: &mut gpui::TestAppContext) {
     fs.insert_tree(
         path!("/dir"),
         json!({
-            "file.txt": "version 1",
+            "file.txt": "版本 1",
         }),
     )
     .await;
@@ -6935,25 +6935,25 @@ async fn test_dirty_buffer_reloads_after_undo(cx: &mut gpui::TestAppContext) {
         .unwrap();
 
     buffer.read_with(cx, |buffer, _| {
-        assert_eq!(buffer.text(), "version 1");
+        assert_eq!(buffer.text(), "版本 1");
         assert!(!buffer.is_dirty());
     });
 
     // User makes an edit, making the buffer dirty.
     buffer.update(cx, |buffer, cx| {
-        buffer.edit([(0..0, "user edit: ")], None, cx);
+        buffer.edit([(0..0, "用户编辑:")], None, cx);
     });
 
     buffer.read_with(cx, |buffer, _| {
         assert!(buffer.is_dirty());
-        assert_eq!(buffer.text(), "user edit: version 1");
+        assert_eq!(buffer.text(), "用户编辑:版本 1");
     });
 
     // External tool writes new content while buffer is dirty.
     // file_updated() updates the File but suppresses ReloadNeeded.
     fs.save(
         path!("/dir/file.txt").as_ref(),
-        &"version 2 from external tool".into(),
+        &"来自外部工具的版本 2".into(),
         Default::default(),
     )
     .await
@@ -6962,7 +6962,7 @@ async fn test_dirty_buffer_reloads_after_undo(cx: &mut gpui::TestAppContext) {
 
     buffer.read_with(cx, |buffer, _| {
         assert!(buffer.has_conflict());
-        assert_eq!(buffer.text(), "user edit: version 1");
+        assert_eq!(buffer.text(), "用户编辑:版本 1");
     });
 
     // User undoes their edit. Buffer becomes clean, but disk has different
@@ -6977,8 +6977,8 @@ async fn test_dirty_buffer_reloads_after_undo(cx: &mut gpui::TestAppContext) {
     buffer.read_with(cx, |buffer, _| {
         assert_eq!(
             buffer.text(),
-            "version 2 from external tool",
-            "buffer should reload from disk after undo makes it clean"
+            "来自外部工具的版本 2",
+            "撤销使缓冲区变干净后,应从磁盘重新加载"
         );
         assert!(!buffer.is_dirty());
     });
@@ -7230,7 +7230,7 @@ async fn test_line_ending_user_settings_on_format(cx: &mut gpui::TestAppContext)
             json!({
                 "crlf_file.rs": "one\r\ntwo\r\nthree\r\n",
                 "lf_file.rs": "one\ntwo\nthree\n",
-                "no_newline.rs": "single line",
+                "no_newline.rs": "单行",
             }),
         )
         .await;
@@ -7268,7 +7268,7 @@ async fn test_line_ending_editorconfig_on_format_and_save(cx: &mut gpui::TestApp
 
     let cases = [
         (
-            "editorconfig lf",
+            "editorconfig LF",
             "lf",
             "crlf_file.rs",
             LineEnding::Windows,
@@ -7280,7 +7280,7 @@ async fn test_line_ending_editorconfig_on_format_and_save(cx: &mut gpui::TestApp
             "one\ntwo\nthree\n",
         ),
         (
-            "editorconfig crlf",
+            "editorconfig CRLF",
             "crlf",
             "lf_file.rs",
             LineEnding::Unix,
@@ -7310,7 +7310,7 @@ async fn test_line_ending_editorconfig_on_format_and_save(cx: &mut gpui::TestApp
                     ".editorconfig": format!("root = true\n[*.rs]\nend_of_line = {editorconfig_end_of_line}\n"),
                     "crlf_file.rs": "one\r\ntwo\r\nthree\r\n",
                     "lf_file.rs": "one\ntwo\nthree\n",
-                    "no_newline.rs": "single line",
+                    "no_newline.rs": "单行",
                 }),
             )
             .await;
@@ -7389,7 +7389,7 @@ async fn test_line_ending_initialization_for_new_buffers(cx: &mut gpui::TestAppC
         });
 
         let local_buffer = project.update(cx, |project, cx| {
-            project.create_local_buffer("single line", None, false, cx)
+            project.create_local_buffer("单行", None, false, cx)
         });
         local_buffer.update(cx, |buffer, _| {
             assert_eq!(buffer.line_ending(), expected_line_ending);
@@ -7439,7 +7439,7 @@ async fn assert_line_endings_after_format(
             assert_eq!(
                 buffer.line_ending(),
                 *expected_line_ending,
-                "unexpected line ending for {path} in {case_name}"
+                "{case_name} 中 {path} 的换行符不符合预期"
             );
         });
     }
@@ -7479,33 +7479,33 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(1, 8), lsp::Position::new(1, 9)),
                 severity: Some(DiagnosticSeverity::WARNING),
-                message: "error 1".to_string(),
+                message: "错误 1".to_string(),
                 related_information: Some(vec![lsp::DiagnosticRelatedInformation {
                     location: lsp::Location {
                         uri: buffer_uri.clone(),
                         range: lsp::Range::new(lsp::Position::new(1, 8), lsp::Position::new(1, 9)),
                     },
-                    message: "error 1 hint 1".to_string(),
+                    message: "错误 1 提示 1".to_string(),
                 }]),
                 ..Default::default()
             },
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(1, 8), lsp::Position::new(1, 9)),
                 severity: Some(DiagnosticSeverity::HINT),
-                message: "error 1 hint 1".to_string(),
+                message: "错误 1 提示 1".to_string(),
                 related_information: Some(vec![lsp::DiagnosticRelatedInformation {
                     location: lsp::Location {
                         uri: buffer_uri.clone(),
                         range: lsp::Range::new(lsp::Position::new(1, 8), lsp::Position::new(1, 9)),
                     },
-                    message: "original diagnostic".to_string(),
+                    message: "原始诊断".to_string(),
                 }]),
                 ..Default::default()
             },
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(2, 8), lsp::Position::new(2, 17)),
                 severity: Some(DiagnosticSeverity::ERROR),
-                message: "error 2".to_string(),
+                message: "错误 2".to_string(),
                 related_information: Some(vec![
                     lsp::DiagnosticRelatedInformation {
                         location: lsp::Location {
@@ -7515,7 +7515,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                                 lsp::Position::new(1, 15),
                             ),
                         },
-                        message: "error 2 hint 1".to_string(),
+                        message: "错误 2 提示 1".to_string(),
                     },
                     lsp::DiagnosticRelatedInformation {
                         location: lsp::Location {
@@ -7525,7 +7525,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                                 lsp::Position::new(1, 15),
                             ),
                         },
-                        message: "error 2 hint 2".to_string(),
+                        message: "错误 2 提示 2".to_string(),
                     },
                 ]),
                 ..Default::default()
@@ -7533,26 +7533,26 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(1, 13), lsp::Position::new(1, 15)),
                 severity: Some(DiagnosticSeverity::HINT),
-                message: "error 2 hint 1".to_string(),
+                message: "错误 2 提示 1".to_string(),
                 related_information: Some(vec![lsp::DiagnosticRelatedInformation {
                     location: lsp::Location {
                         uri: buffer_uri.clone(),
                         range: lsp::Range::new(lsp::Position::new(2, 8), lsp::Position::new(2, 17)),
                     },
-                    message: "original diagnostic".to_string(),
+                    message: "原始诊断".to_string(),
                 }]),
                 ..Default::default()
             },
             lsp::Diagnostic {
                 range: lsp::Range::new(lsp::Position::new(1, 13), lsp::Position::new(1, 15)),
                 severity: Some(DiagnosticSeverity::HINT),
-                message: "error 2 hint 2".to_string(),
+                message: "错误 2 提示 2".to_string(),
                 related_information: Some(vec![lsp::DiagnosticRelatedInformation {
                     location: lsp::Location {
                         uri: buffer_uri,
                         range: lsp::Range::new(lsp::Position::new(2, 8), lsp::Position::new(2, 17)),
                     },
-                    message: "original diagnostic".to_string(),
+                    message: "原始诊断".to_string(),
                 }]),
                 ..Default::default()
             },
@@ -7583,7 +7583,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(1, 8)..Point::new(1, 9),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::WARNING,
-                    message: "error 1".to_string(),
+                    message: "错误 1".to_string(),
                     group_id: 1,
                     is_primary: true,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7594,7 +7594,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(1, 8)..Point::new(1, 9),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::HINT,
-                    message: "error 1 hint 1".to_string(),
+                    message: "错误 1 提示 1".to_string(),
                     group_id: 1,
                     is_primary: false,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7605,7 +7605,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(1, 13)..Point::new(1, 15),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::HINT,
-                    message: "error 2 hint 1".to_string(),
+                    message: "错误 2 提示 1".to_string(),
                     group_id: 0,
                     is_primary: false,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7616,7 +7616,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(1, 13)..Point::new(1, 15),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::HINT,
-                    message: "error 2 hint 2".to_string(),
+                    message: "错误 2 提示 2".to_string(),
                     group_id: 0,
                     is_primary: false,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7627,7 +7627,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(2, 8)..Point::new(2, 17),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::ERROR,
-                    message: "error 2".to_string(),
+                    message: "错误 2".to_string(),
                     group_id: 0,
                     is_primary: true,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7644,7 +7644,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(1, 13)..Point::new(1, 15),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::HINT,
-                    message: "error 2 hint 1".to_string(),
+                    message: "错误 2 提示 1".to_string(),
                     group_id: 0,
                     is_primary: false,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7655,7 +7655,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(1, 13)..Point::new(1, 15),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::HINT,
-                    message: "error 2 hint 2".to_string(),
+                    message: "错误 2 提示 2".to_string(),
                     group_id: 0,
                     is_primary: false,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7666,7 +7666,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(2, 8)..Point::new(2, 17),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::ERROR,
-                    message: "error 2".to_string(),
+                    message: "错误 2".to_string(),
                     group_id: 0,
                     is_primary: true,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7683,7 +7683,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(1, 8)..Point::new(1, 9),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::WARNING,
-                    message: "error 1".to_string(),
+                    message: "错误 1".to_string(),
                     group_id: 1,
                     is_primary: true,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7694,7 +7694,7 @@ async fn test_grouped_diagnostics(cx: &mut gpui::TestAppContext) {
                 range: Point::new(1, 8)..Point::new(1, 9),
                 diagnostic: Diagnostic {
                     severity: DiagnosticSeverity::HINT,
-                    message: "error 1 hint 1".to_string(),
+                    message: "错误 1 提示 1".to_string(),
                     group_id: 1,
                     is_primary: false,
                     source_kind: DiagnosticSourceKind::Pushed,
@@ -7799,7 +7799,7 @@ async fn test_lsp_rename_notifications(cx: &mut gpui::TestAppContext) {
                             character: 3,
                         },
                     },
-                    new_text: "This is not a drill".to_owned(),
+                    new_text: "这不是演习".to_owned(),
                 })],
                 text_document: lsp::OptionalVersionedTextDocumentIdentifier {
                     uri: Uri::from_str(uri!("file:///dir/two/two.rs")).unwrap(),
@@ -7984,7 +7984,7 @@ async fn test_rename(cx: &mut gpui::TestAppContext) {
 }
 
 // Regression test for https://github.com/zed-industries/zed/issues/59077:
-// a "rename symbol" whose workspace edit also renames the file used to swap the
+// a "重命名符号" whose workspace edit also renames the file used to swap the
 // two files' contents. The edited content must end up in the renamed file.
 #[gpui::test]
 async fn test_rename_that_also_renames_file(cx: &mut gpui::TestAppContext) {
@@ -8068,7 +8068,7 @@ async fn test_rename_that_also_renames_file(cx: &mut gpui::TestAppContext) {
     );
     assert!(
         fs.load(Path::new(path!("/dir/one.rs"))).await.is_err(),
-        "old file should not exist after the rename"
+        "重命名后旧文件不应存在"
     );
 
     // The buffer should follow the rename to the new path, hold the edited
@@ -8078,11 +8078,11 @@ async fn test_rename_that_also_renames_file(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             buffer.file().unwrap().path().as_ref(),
             rel_path("three.rs"),
-            "buffer should be associated with the renamed file"
+            "缓冲区应与重命名后的文件关联"
         );
         assert!(
             !buffer.is_dirty(),
-            "buffer should be saved after the rename"
+            "重命名后应保存缓冲区"
         );
     });
 }
@@ -8270,7 +8270,7 @@ async fn test_search_with_inclusions(cx: &mut gpui::TestAppContext) {
         .await
         .unwrap()
         .is_empty(),
-        "If no inclusions match, no files should be returned"
+        "如果没有匹配的包含项,则不应返回任何文件"
     );
 
     assert_eq!(
@@ -8295,7 +8295,7 @@ async fn test_search_with_inclusions(cx: &mut gpui::TestAppContext) {
             (path!("dir/one.rs").to_string(), vec![8..12]),
             (path!("dir/two.rs").to_string(), vec![8..12]),
         ]),
-        "Rust only search should give only Rust files"
+        "仅搜索 Rust 应只返回 Rust 文件"
     );
 
     assert_eq!(
@@ -8321,7 +8321,7 @@ async fn test_search_with_inclusions(cx: &mut gpui::TestAppContext) {
             (path!("dir/one.ts").to_string(), vec![14..18]),
             (path!("dir/two.ts").to_string(), vec![14..18]),
         ]),
-        "TypeScript only search should give only TypeScript files, even if other inclusions don't match anything"
+        "仅搜索 TypeScript 应只返回 TypeScript 文件,即使其他包含项不匹配任何内容"
     );
 
     assert_eq!(
@@ -8352,7 +8352,7 @@ async fn test_search_with_inclusions(cx: &mut gpui::TestAppContext) {
             (path!("dir/one.ts").to_string(), vec![14..18]),
             (path!("dir/two.rs").to_string(), vec![8..12]),
         ]),
-        "Rust and typescript search should give both Rust and TypeScript files, even if other inclusions don't match anything"
+        "搜索 Rust 和 TypeScript 应同时返回 Rust 和 TypeScript 文件,即使其他包含项不匹配任何内容"
     );
 }
 
@@ -8399,7 +8399,7 @@ async fn test_search_with_exclusions(cx: &mut gpui::TestAppContext) {
             (path!("dir/two.rs").to_string(), vec![8..12]),
             (path!("dir/two.ts").to_string(), vec![14..18]),
         ]),
-        "If no exclusions match, all files should be returned"
+        "如果没有匹配的排除项,则应返回所有文件"
     );
 
     assert_eq!(
@@ -8424,7 +8424,7 @@ async fn test_search_with_exclusions(cx: &mut gpui::TestAppContext) {
             (path!("dir/one.ts").to_string(), vec![14..18]),
             (path!("dir/two.ts").to_string(), vec![14..18]),
         ]),
-        "Rust exclusion search should give only TypeScript files"
+        "排除 Rust 的搜索应只返回 TypeScript 文件"
     );
 
     assert_eq!(
@@ -8450,7 +8450,7 @@ async fn test_search_with_exclusions(cx: &mut gpui::TestAppContext) {
             (path!("dir/one.rs").to_string(), vec![8..12]),
             (path!("dir/two.rs").to_string(), vec![8..12]),
         ]),
-        "TypeScript exclusion search should give only Rust files, even if other exclusions don't match anything"
+        "排除 TypeScript 的搜索应只返回 Rust 文件,即使其他排除项不匹配任何内容"
     );
 
     assert!(
@@ -8476,7 +8476,7 @@ async fn test_search_with_exclusions(cx: &mut gpui::TestAppContext) {
         .await
         .unwrap()
         .is_empty(),
-        "Rust and typescript exclusion should give no files, even if other exclusions don't match anything"
+        "排除 Rust 和 TypeScript 的搜索应不返回任何文件,即使其他排除项不匹配任何内容"
     );
 }
 
@@ -8528,7 +8528,7 @@ async fn test_search_with_buffer_exclusions(cx: &mut gpui::TestAppContext) {
             (path!("dir/two.rs").to_string(), vec![8..12]),
             (path!("dir/two.ts").to_string(), vec![14..18]),
         ]),
-        "If no exclusions match, all files should be returned"
+        "如果没有匹配的排除项,则应返回所有文件"
     );
 
     assert_eq!(
@@ -8553,7 +8553,7 @@ async fn test_search_with_buffer_exclusions(cx: &mut gpui::TestAppContext) {
             (path!("dir/one.ts").to_string(), vec![14..18]),
             (path!("dir/two.ts").to_string(), vec![14..18]),
         ]),
-        "Rust exclusion search should give only TypeScript files"
+        "排除 Rust 的搜索应只返回 TypeScript 文件"
     );
 
     assert_eq!(
@@ -8578,7 +8578,7 @@ async fn test_search_with_buffer_exclusions(cx: &mut gpui::TestAppContext) {
             (path!("dir/one.rs").to_string(), vec![8..12]),
             (path!("dir/two.rs").to_string(), vec![8..12]),
         ]),
-        "TypeScript exclusion search should give only Rust files, even if other exclusions don't match anything"
+        "排除 TypeScript 的搜索应只返回 Rust 文件,即使其他排除项不匹配任何内容"
     );
 
     assert!(
@@ -8604,7 +8604,7 @@ async fn test_search_with_buffer_exclusions(cx: &mut gpui::TestAppContext) {
         .await
         .unwrap()
         .is_empty(),
-        "Rust and typescript exclusion should give no files, even if other exclusions don't match anything"
+        "排除 Rust 和 TypeScript 的搜索应不返回任何文件,即使其他排除项不匹配任何内容"
     );
 }
 
@@ -8645,7 +8645,7 @@ async fn test_search_with_exclusions_and_inclusions(cx: &mut gpui::TestAppContex
         .await
         .unwrap()
         .is_empty(),
-        "If both no exclusions and inclusions match, exclusions should win and return nothing"
+        "如果排除项和包含项都匹配,排除项应优先并返回空结果"
     );
 
     assert!(
@@ -8667,7 +8667,7 @@ async fn test_search_with_exclusions_and_inclusions(cx: &mut gpui::TestAppContex
         .await
         .unwrap()
         .is_empty(),
-        "If both TypeScript exclusions and inclusions match, exclusions should win and return nothing files."
+        "如果 TypeScript 排除项和包含项都匹配,排除项应优先并返回空结果。"
     );
 
     assert!(
@@ -8691,7 +8691,7 @@ async fn test_search_with_exclusions_and_inclusions(cx: &mut gpui::TestAppContex
         .await
         .unwrap()
         .is_empty(),
-        "Non-matching inclusions and exclusions should not change that."
+        "不匹配的包含项和排除项不应改变这一点。"
     );
 
     assert_eq!(
@@ -8718,7 +8718,7 @@ async fn test_search_with_exclusions_and_inclusions(cx: &mut gpui::TestAppContex
             (path!("dir/one.ts").to_string(), vec![14..18]),
             (path!("dir/two.ts").to_string(), vec![14..18]),
         ]),
-        "Non-intersecting TypeScript inclusions and Rust exclusions should return TypeScript files"
+        "不重叠的 TypeScript 包含项和 Rust 排除项应返回 TypeScript 文件"
     );
 }
 
@@ -8771,7 +8771,7 @@ async fn test_search_multiple_worktrees_with_inclusions(cx: &mut gpui::TestAppCo
         .await
         .unwrap(),
         HashMap::from_iter([(path!("worktree-a/haystack.rs").to_string(), vec![3..9])]),
-        "should only return results from included worktree"
+        "应只返回来自包含的工作树的结果"
     );
     assert_eq!(
         search(
@@ -8792,7 +8792,7 @@ async fn test_search_multiple_worktrees_with_inclusions(cx: &mut gpui::TestAppCo
         .await
         .unwrap(),
         HashMap::from_iter([(path!("worktree-b/haystack.rs").to_string(), vec![3..9])]),
-        "should only return results from included worktree"
+        "应只返回来自包含的工作树的结果"
     );
 
     assert_eq!(
@@ -8817,7 +8817,7 @@ async fn test_search_multiple_worktrees_with_inclusions(cx: &mut gpui::TestAppCo
             (path!("worktree-a/haystack.ts").to_string(), vec![3..9]),
             (path!("worktree-b/haystack.ts").to_string(), vec![3..9])
         ]),
-        "should return results from both worktrees"
+        "应返回来自两个工作树的结果"
     );
 }
 
@@ -8870,7 +8870,7 @@ async fn test_search_in_gitignored_dirs(cx: &mut gpui::TestAppContext) {
         .await
         .unwrap(),
         HashMap::from_iter([(path!("dir/package.json").to_string(), vec![8..11])]),
-        "Only one non-ignored file should have the query"
+        "只有一个未被忽略的文件应包含该查询"
     );
 
     let project = Project::test(fs.clone(), [path!("/dir").as_ref()], cx).await;
@@ -8913,7 +8913,7 @@ async fn test_search_in_gitignored_dirs(cx: &mut gpui::TestAppContext) {
                 vec![8..11]
             ),
         ]),
-        "Unrestricted search with ignored directories should find every file with the query"
+        "不受限制的搜索(包含被忽略的目录)应找到所有包含该查询的文件"
     );
 
     let files_to_include =
@@ -8942,7 +8942,7 @@ async fn test_search_in_gitignored_dirs(cx: &mut gpui::TestAppContext) {
             path!("dir/node_modules/prettier/package.json").to_string(),
             vec![9..12]
         )]),
-        "With search including ignored prettier directory and excluding TS files, only one file should be found"
+        "当搜索包含被忽略的 prettier 目录并排除 TS 文件时,应只找到一个文件"
     );
 }
 
@@ -8998,17 +8998,17 @@ async fn test_visibility_for_paths_in_gitignored_dirs(cx: &mut gpui::TestAppCont
             assert_eq!(
                 project.visibility_for_paths(std::slice::from_ref(path), true, cx),
                 None,
-                "{path:?} should not be considered contained"
+                "{path:?} 不应被视为包含在内"
             );
             assert_eq!(
                 project.visibility_for_paths(std::slice::from_ref(path), false, cx),
                 None,
-                "{path:?} should not be considered contained"
+                "{path:?} 不应被视为包含在内"
             );
             assert_eq!(
                 project.visibility_for_subpaths(std::slice::from_ref(path), cx),
                 None,
-                "{path:?} should not be considered a contained subpath"
+                "{path:?} 不应被视为包含的子路径"
             );
         }
     });
@@ -9222,14 +9222,14 @@ async fn test_multiple_language_server_hovers(cx: &mut gpui::TestAppContext) {
     for i in 0..language_server_names.len() {
         let new_server = language_servers[i].next().await.unwrap_or_else(|| {
             panic!(
-                "Failed to get language server #{i} with name {}",
+                "获取名为 {} 的语言服务器 #{i} 失败",
                 &language_server_names[i]
             )
         });
         let new_server_name = new_server.server.name();
         assert!(
             !servers_with_hover_requests.contains_key(&new_server_name),
-            "Unexpected: initialized server with the same name twice. Name: `{new_server_name}`"
+            "意外:使用相同名称初始化了两次服务器。名称:`{new_server_name}`"
         );
         match new_server_name.as_ref() {
             "TailwindServer" | "TypeScriptServer" => {
@@ -9241,7 +9241,7 @@ async fn test_multiple_language_server_hovers(cx: &mut gpui::TestAppContext) {
                             async move {
                                 Ok(Some(lsp::Hover {
                                     contents: lsp::HoverContents::Scalar(
-                                        lsp::MarkedString::String(format!("{name} hover")),
+                                        lsp::MarkedString::String(format!("{name} 悬停提示")),
                                     ),
                                     range: None,
                                 }))
@@ -9262,11 +9262,11 @@ async fn test_multiple_language_server_hovers(cx: &mut gpui::TestAppContext) {
                 let _never_handled = new_server
                     .set_request_handler::<lsp::request::HoverRequest, _, _>(|_, _| async move {
                         panic!(
-                            "Should not call for hovers server with no corresponding capabilities"
+                            "不应为没有相应能力的服务器调用悬停提示"
                         )
                     });
             }
-            unexpected => panic!("Unexpected server name: {unexpected}"),
+            unexpected => panic!("意外的服务器名称: {unexpected}"),
         }
     }
 
@@ -9278,12 +9278,12 @@ async fn test_multiple_language_server_hovers(cx: &mut gpui::TestAppContext) {
             hover_request
                 .next()
                 .await
-                .expect("All hover requests should have been triggered")
+                .expect("所有悬停请求都应已触发")
         },
     ))
     .await;
     assert_eq!(
-        vec!["TailwindServer hover", "TypeScriptServer hover"],
+        vec!["TailwindServer 悬停提示", "TypeScriptServer 悬停提示"],
         hover_task
             .await
             .into_iter()
@@ -9291,7 +9291,7 @@ async fn test_multiple_language_server_hovers(cx: &mut gpui::TestAppContext) {
             .map(|hover| hover.contents.iter().map(|block| &block.text).join("|"))
             .sorted()
             .collect::<Vec<_>>(),
-        "Should receive hover responses from all related servers with hover capabilities"
+        "应收到所有具有悬停提示能力的相关服务器的悬停提示响应"
     );
 }
 
@@ -9334,7 +9334,7 @@ async fn test_hovers_with_empty_parts(cx: &mut gpui::TestAppContext) {
     let fake_server = fake_language_servers
         .next()
         .await
-        .expect("failed to get the language server");
+        .expect("获取语言服务器失败");
 
     let mut request_handled = fake_server.set_request_handler::<lsp::request::HoverRequest, _, _>(
         move |_, _| async move {
@@ -9355,7 +9355,7 @@ async fn test_hovers_with_empty_parts(cx: &mut gpui::TestAppContext) {
     let () = request_handled
         .next()
         .await
-        .expect("All hover requests should have been triggered");
+        .expect("所有悬停请求都应已触发");
     assert_eq!(
         Vec::<String>::new(),
         hover_task
@@ -9365,7 +9365,7 @@ async fn test_hovers_with_empty_parts(cx: &mut gpui::TestAppContext) {
             .map(|hover| hover.contents.iter().map(|block| &block.text).join("|"))
             .sorted()
             .collect::<Vec<_>>(),
-        "Empty hover parts should be ignored"
+        "空的悬停提示部分应被忽略"
     );
 }
 
@@ -9408,18 +9408,18 @@ async fn test_code_actions_only_kinds(cx: &mut gpui::TestAppContext) {
     let fake_server = fake_language_servers
         .next()
         .await
-        .expect("failed to get the language server");
+        .expect("获取语言服务器失败");
 
     let mut request_handled = fake_server
         .set_request_handler::<lsp::request::CodeActionRequest, _, _>(move |_, _| async move {
             Ok(Some(vec![
                 lsp::CodeActionOrCommand::CodeAction(lsp::CodeAction {
-                    title: "organize imports".to_string(),
+                    title: "整理导入".to_string(),
                     kind: Some(CodeActionKind::SOURCE_ORGANIZE_IMPORTS),
                     ..lsp::CodeAction::default()
                 }),
                 lsp::CodeActionOrCommand::CodeAction(lsp::CodeAction {
-                    title: "fix code".to_string(),
+                    title: "修复代码".to_string(),
                     kind: Some(CodeActionKind::SOURCE_FIX_ALL),
                     ..lsp::CodeAction::default()
                 }),
@@ -9438,7 +9438,7 @@ async fn test_code_actions_only_kinds(cx: &mut gpui::TestAppContext) {
     let () = request_handled
         .next()
         .await
-        .expect("The code action request should have been triggered");
+        .expect("代码操作请求应已触发");
 
     let code_actions = code_actions_task.await.unwrap().unwrap();
     assert_eq!(code_actions.len(), 1);
@@ -9497,7 +9497,7 @@ async fn test_code_actions_without_requested_kinds_do_not_send_only_filter(
     let fake_server = fake_language_servers
         .next()
         .await
-        .expect("failed to get the language server");
+        .expect("获取语言服务器失败");
 
     let mut request_handled = fake_server.set_request_handler::<
         lsp::request::CodeActionRequest,
@@ -9506,11 +9506,11 @@ async fn test_code_actions_without_requested_kinds_do_not_send_only_filter(
     >(move |params, _| async move {
         assert_eq!(
             params.context.only, None,
-            "Code action requests without explicit kind filters should not send `context.only`"
+            "没有显式类型过滤器的代码操作请求不应发送 `上下文.only`"
         );
         Ok(Some(vec![lsp::CodeActionOrCommand::CodeAction(
             lsp::CodeAction {
-                title: "Add test".to_string(),
+                title: "添加测试".to_string(),
                 kind: Some("source.addTest".into()),
                 ..lsp::CodeAction::default()
             },
@@ -9524,7 +9524,7 @@ async fn test_code_actions_without_requested_kinds_do_not_send_only_filter(
     let () = request_handled
         .next()
         .await
-        .expect("The code action request should have been triggered");
+        .expect("代码操作请求应已触发");
 
     let code_actions = code_actions_task.await.unwrap().unwrap();
     assert_eq!(code_actions.len(), 1);
@@ -9617,7 +9617,7 @@ async fn test_multiple_language_server_actions(cx: &mut gpui::TestAppContext) {
     for i in 0..language_server_names.len() {
         let new_server = language_server_rxs[i].next().await.unwrap_or_else(|| {
             panic!(
-                "Failed to get language server #{i} with name {}",
+                "获取名为 {} 的语言服务器 #{i} 失败",
                 &language_server_names[i]
             )
         });
@@ -9625,7 +9625,7 @@ async fn test_multiple_language_server_actions(cx: &mut gpui::TestAppContext) {
 
         assert!(
             !servers_with_actions_requests.contains_key(&new_server_name),
-            "Unexpected: initialized server with the same name twice. Name: `{new_server_name}`"
+            "意外:使用相同名称初始化了两次服务器。名称:`{new_server_name}`"
         );
         match new_server_name.0.as_ref() {
             "TailwindServer" | "TypeScriptServer" => {
@@ -9637,7 +9637,7 @@ async fn test_multiple_language_server_actions(cx: &mut gpui::TestAppContext) {
                             async move {
                                 Ok(Some(vec![lsp::CodeActionOrCommand::CodeAction(
                                     lsp::CodeAction {
-                                        title: format!("{name} code action"),
+                                        title: format!("{name} 代码操作"),
                                         ..lsp::CodeAction::default()
                                     },
                                 )]))
@@ -9658,11 +9658,11 @@ async fn test_multiple_language_server_actions(cx: &mut gpui::TestAppContext) {
                 let _never_handled = new_server
                     .set_request_handler::<lsp::request::CodeActionRequest, _, _>(|_, _| async move {
                         panic!(
-                            "Should not call for code actions server with no corresponding capabilities"
+                            "不应为没有相应能力的服务器调用代码操作"
                         )
                     });
             }
-            unexpected => panic!("Unexpected server name: {unexpected}"),
+            unexpected => panic!("意外的服务器名称: {unexpected}"),
         }
     }
 
@@ -9676,12 +9676,12 @@ async fn test_multiple_language_server_actions(cx: &mut gpui::TestAppContext) {
             code_actions_request
                 .next()
                 .await
-                .expect("All code actions requests should have been triggered")
+                .expect("所有代码操作请求都应已触发")
         },
     ))
     .await;
     assert_eq!(
-        vec!["TailwindServer code action", "TypeScriptServer code action"],
+        vec!["TailwindServer 代码操作", "TypeScriptServer 代码操作"],
         code_actions_task
             .await
             .unwrap()
@@ -9690,7 +9690,7 @@ async fn test_multiple_language_server_actions(cx: &mut gpui::TestAppContext) {
             .map(|code_action| code_action.lsp_action.title().to_owned())
             .sorted()
             .collect::<Vec<_>>(),
-        "Should receive code actions responses from all related servers with hover capabilities"
+        "应收到所有具有悬停提示能力的相关服务器的代码操作响应"
     );
 }
 
@@ -9749,7 +9749,7 @@ async fn test_reordering_worktrees(cx: &mut gpui::TestAppContext) {
             let second = worktree_b.read(cx);
             project.move_worktree(first.id(), second.id(), cx)
         })
-        .expect("moving first after second");
+        .expect("将第一个移动到第二个之后");
 
     // check the state after moving
     project.update(cx, |project, cx| {
@@ -9774,7 +9774,7 @@ async fn test_reordering_worktrees(cx: &mut gpui::TestAppContext) {
             let first = worktree_b.read(cx);
             project.move_worktree(first.id(), second.id(), cx)
         })
-        .expect("moving second before first");
+        .expect("将第二个移动到第一个之前");
 
     // check the state after moving
     project.update(cx, |project, cx| {
@@ -9799,7 +9799,7 @@ async fn test_reordering_worktrees(cx: &mut gpui::TestAppContext) {
             let third = worktree_c.read(cx);
             project.move_worktree(second.id(), third.id(), cx)
         })
-        .expect("moving second after third");
+        .expect("将第二个移动到第三个之后");
 
     // check the state after moving
     project.update(cx, |project, cx| {
@@ -9824,7 +9824,7 @@ async fn test_reordering_worktrees(cx: &mut gpui::TestAppContext) {
             let second = worktree_b.read(cx);
             project.move_worktree(third.id(), second.id(), cx)
         })
-        .expect("moving third before second");
+        .expect("将第三个移动到第二个之前");
 
     // check the state after moving
     project.update(cx, |project, cx| {
@@ -9849,7 +9849,7 @@ async fn test_reordering_worktrees(cx: &mut gpui::TestAppContext) {
             let third = worktree_c.read(cx);
             project.move_worktree(first.id(), third.id(), cx)
         })
-        .expect("moving first after third");
+        .expect("将第一个移动到第三个之后");
 
     // check the state after moving
     project.update(cx, |project, cx| {
@@ -9874,7 +9874,7 @@ async fn test_reordering_worktrees(cx: &mut gpui::TestAppContext) {
             let first = worktree_b.read(cx);
             project.move_worktree(third.id(), first.id(), cx)
         })
-        .expect("moving third before first");
+        .expect("将第三个移动到第一个之前");
 
     // check the state after moving
     project.update(cx, |project, cx| {
@@ -10045,7 +10045,7 @@ async fn test_reopening_unstaged_diff_after_drop(cx: &mut gpui::TestAppContext) 
                 .read(cx)
                 .get_unstaged_diff(buffer_id, cx)
                 .is_none(),
-            "unstaged diff should have been released"
+            "未暂存的差异应已释放"
         );
     });
 
@@ -10067,7 +10067,7 @@ async fn test_reopening_unstaged_diff_after_drop(cx: &mut gpui::TestAppContext) 
         assert_eq!(
             registered.as_ref(),
             Some(&unstaged_diff),
-            "reopened unstaged diff should be registered in the git store"
+            "重新打开的未暂存差异应在 git 存储中注册"
         );
     });
 
@@ -10110,7 +10110,7 @@ async fn test_staged_diff_for_buffer(cx: &mut gpui::TestAppContext) {
     let file_contents = r#"
         // print goodbye
         fn main() {
-            println!("working copy only");
+            println!("仅工作副本");
         }
     "#
     .unindent();
@@ -10290,7 +10290,7 @@ async fn test_base_text_buffers_released_when_diffs_dropped(cx: &mut gpui::TestA
     weak_head_text_buffer.assert_released();
     assert!(
         weak_index_text_buffer.upgrade().is_some(),
-        "index text buffer should stay alive while the unstaged diff is open"
+        "当未暂存的差异打开时,索引文本缓冲区应保持存活"
     );
 
     drop(unstaged_diff);
@@ -10748,7 +10748,7 @@ async fn test_staging_hunks(cx: &mut gpui::TestAppContext) {
     // Simulate a problem writing to the git index.
     fs.set_error_message_for_index_write(
         "/dir/.git".as_ref(),
-        Some("failed to write git index".into()),
+        Some("写入 git 索引失败".into()),
     );
 
     // Stage another hunk.
@@ -10940,7 +10940,7 @@ async fn test_uncommitted_diff_opened_before_unstaged_diff(cx: &mut gpui::TestAp
         assert_eq!(
             diff.secondary_diff(),
             Some(unstaged_diff.clone()),
-            "the unstaged diff returned to callers should be the uncommitted diff's secondary"
+            "返回给调用者的未暂存差异应是未提交差异的次要差异"
         );
     });
     project.read_with(cx, |project, cx| {
@@ -10951,7 +10951,7 @@ async fn test_uncommitted_diff_opened_before_unstaged_diff(cx: &mut gpui::TestAp
                 .read(cx)
                 .get_unstaged_diff(buffer_id, cx),
             Some(unstaged_diff.clone()),
-            "the unstaged diff returned to callers should be the registered one"
+            "返回给调用者的未暂存差异应是已注册的那个"
         );
     });
 
@@ -11332,7 +11332,7 @@ async fn test_restaging_hunk_after_optimistic_unstage(cx: &mut gpui::TestAppCont
             .await
             .unwrap(),
         file_contents,
-        "the re-stage should have overridden the in-flight unstage"
+        "重新暂存应已覆盖进行中的取消暂存"
     );
 
     fs.unpause_events_and_flush();
@@ -11367,7 +11367,7 @@ async fn test_staging_random_hunks(
     cx: &mut gpui::TestAppContext,
 ) {
     let operations = env::var("OPERATIONS")
-        .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+        .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
         .unwrap_or(20);
 
     use DiffHunkSecondaryStatus::*;
@@ -11472,7 +11472,7 @@ async fn test_staging_random_hunks(
 
         let range = hunk.buffer_range.clone();
         if hunk.status().has_secondary_hunk() {
-            log::info!("staging hunk at {row}");
+            log::info!("正在暂存位于 {row} 的代码块");
             project
                 .update(cx, |project, cx| {
                     let unstaged_diff = uncommitted_diff.read(cx).secondary_diff().unwrap();
@@ -11481,7 +11481,7 @@ async fn test_staging_random_hunks(
                 .unwrap();
             hunk.secondary_status = SecondaryHunkRemovalPending;
         } else {
-            log::info!("unstaging hunk at {row}");
+            log::info!("正在取消暂存位于 {row} 的代码块");
             project
                 .update(cx, |project, cx| {
                     project.unstage_uncommitted_hunks(
@@ -11539,7 +11539,7 @@ async fn test_staging_random_hunks_with_edits(
     cx: &mut gpui::TestAppContext,
 ) {
     let operations = env::var("OPERATIONS")
-        .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+        .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
         .unwrap_or(30);
 
     init_test(cx);
@@ -11550,7 +11550,7 @@ async fn test_staging_random_hunks_with_edits(
                 .index_contents
                 .get(&repo_path("file.txt"))
                 .cloned()
-                .expect("file is always present in the index")
+                .expect("文件始终存在于索引中")
         })
         .unwrap()
     }
@@ -11611,7 +11611,7 @@ async fn test_staging_random_hunks_with_edits(
                         DiffHunkSecondaryStatus::SecondaryHunkAdditionPending
                             | DiffHunkSecondaryStatus::SecondaryHunkRemovalPending
                     ),
-                    "{name} hunk at {range:?} still has pending status {status:?} after settling"
+                    "{name} 位于 {range:?} 的代码块在稳定后仍有待处理状态 {status:?}"
                 );
             }
             let full_range = Anchor::min_max_range_for_buffer(buffer_snapshot.remote_id());
@@ -11625,7 +11625,7 @@ async fn test_staging_random_hunks_with_edits(
                 .collect::<Vec<_>>();
             assert_eq!(
                 raw_ranges, cooked_ranges,
-                "{name} still has suppressed hunks after settling"
+                "{name} 在稳定后仍有被抑制的代码块"
             );
         })
     }
@@ -11706,7 +11706,7 @@ async fn test_staging_random_hunks_with_edits(
             0..20 => {
                 let snapshot = buffer.read_with(cx, |buffer, _| buffer.text_snapshot());
                 let (range, rows) = random_row_range(&snapshot, &mut rng);
-                log::info!("staging rows {rows:?}");
+                log::info!("正在暂存行 {rows:?}");
                 project
                     .update(cx, |project, cx| {
                         project.stage_hunks(buffer.clone(), unstaged_diff.clone(), vec![range], cx)
@@ -11716,7 +11716,7 @@ async fn test_staging_random_hunks_with_edits(
             20..35 => {
                 let snapshot = buffer.read_with(cx, |buffer, _| buffer.text_snapshot());
                 let (range, rows) = random_row_range(&snapshot, &mut rng);
-                log::info!("unstaging rows {rows:?} via the uncommitted diff");
+                log::info!("通过未提交的差异取消暂存行 {rows:?}");
                 project
                     .update(cx, |project, cx| {
                         project.unstage_uncommitted_hunks(
@@ -11731,7 +11731,7 @@ async fn test_staging_random_hunks_with_edits(
             35..50 => {
                 let snapshot = index_buffer.read_with(cx, |buffer, _| buffer.text_snapshot());
                 let (range, rows) = random_row_range(&snapshot, &mut rng);
-                log::info!("unstaging index rows {rows:?} via the staged diff");
+                log::info!("通过已暂存的差异取消暂存索引行 {rows:?}");
                 project
                     .update(cx, |project, cx| {
                         project.unstage_staged_hunks(staged_diff.clone(), vec![range], cx)
@@ -11772,7 +11772,7 @@ async fn test_staging_random_hunks_with_edits(
                         (start..end, new_text)
                     }
                 };
-                log::info!("editing buffer: {range:?} -> {new_text:?}");
+                log::info!("正在编辑缓冲区:{range:?} -> {new_text:?}");
                 buffer.update(cx, |buffer, cx| buffer.edit([(range, new_text)], None, cx));
             }
             // Commits and whole-file round-trip checkpoints. The round trips
@@ -11794,7 +11794,7 @@ async fn test_staging_random_hunks_with_edits(
                     0 => {
                         let new_head = disk_index_text(&fs);
                         commit_count += 1;
-                        log::info!("committing (commit {commit_count})");
+                        log::info!("正在提交(提交 {commit_count})");
                         fs.set_head_for_repo(
                             path!("/dir/.git").as_ref(),
                             &[("file.txt", new_head.clone())],
@@ -11805,7 +11805,7 @@ async fn test_staging_random_hunks_with_edits(
                     // Stage everything and commit it, like `git add -A &&
                     // git commit`.
                     1 => {
-                        log::info!("checkpoint: stage-all, then commit");
+                        log::info!("检查点:全部暂存,然后提交");
                         if events_paused {
                             fs.unpause_events_and_flush();
                             events_paused = false;
@@ -11826,10 +11826,10 @@ async fn test_staging_random_hunks_with_edits(
                         let buffer_text = buffer.read_with(cx, |buffer, _| buffer.text());
                         assert_eq!(
                             disk, buffer_text,
-                            "after staging everything, the index must equal the worktree"
+                            "暂存所有内容后,索引必须等于工作树"
                         );
                         commit_count += 1;
-                        log::info!("committing (commit {commit_count})");
+                        log::info!("正在提交(提交 {commit_count})");
                         fs.set_head_for_repo(
                             path!("/dir/.git").as_ref(),
                             &[("file.txt", disk.clone())],
@@ -11840,7 +11840,7 @@ async fn test_staging_random_hunks_with_edits(
                     // Unstage everything via the staged diff, which by
                     // definition covers every index-vs-HEAD difference.
                     2 => {
-                        log::info!("checkpoint: unstage-all");
+                        log::info!("检查点:全部取消暂存");
                         if events_paused {
                             fs.unpause_events_and_flush();
                             events_paused = false;
@@ -11859,7 +11859,7 @@ async fn test_staging_random_hunks_with_edits(
                         let disk = disk_index_text(&fs);
                         assert_eq!(
                             disk, committed_text,
-                            "after unstaging everything, the index must equal HEAD"
+                            "取消暂存所有内容后,索引必须等于 HEAD"
                         );
                     }
                     // Unstage everything and immediately re-stage everything
@@ -11867,7 +11867,7 @@ async fn test_staging_random_hunks_with_edits(
                     // the in-flight unstage (the footprint mechanism), leaving
                     // the index equal to the worktree.
                     _ => {
-                        log::info!("checkpoint: unstage-all then stage-all");
+                        log::info!("检查点:全部取消暂存,然后全部暂存");
                         if events_paused {
                             fs.unpause_events_and_flush();
                             events_paused = false;
@@ -11897,18 +11897,18 @@ async fn test_staging_random_hunks_with_edits(
                         let buffer_text = buffer.read_with(cx, |buffer, _| buffer.text());
                         assert_eq!(
                             disk, buffer_text,
-                            "re-staging everything must supersede the in-flight unstage"
+                            "重新暂存所有内容必须覆盖进行中的取消暂存"
                         );
                     }
                 }
             }
             82..90 => {
                 if events_paused {
-                    log::info!("unpausing fs events");
+                    log::info!("正在恢复文件系统事件");
                     fs.unpause_events_and_flush();
                     events_paused = false;
                 } else {
-                    log::info!("pausing fs events");
+                    log::info!("正在暂停文件系统事件");
                     fs.pause_events();
                     events_paused = true;
                 }
@@ -11933,9 +11933,9 @@ async fn test_staging_random_hunks_with_edits(
     }
     cx.run_until_parked();
 
-    assert_settled(&unstaged_diff, "unstaged diff", cx);
-    assert_settled(&staged_diff, "staged diff", cx);
-    assert_settled(&uncommitted_diff, "uncommitted diff", cx);
+    assert_settled(&unstaged_diff, "未暂存的差异", cx);
+    assert_settled(&staged_diff, "已暂存的差异", cx);
+    assert_settled(&uncommitted_diff, "未提交的差异", cx);
 
     let old_unstaged_state = capture_diff_state(&unstaged_diff, cx);
     let old_staged_state = capture_diff_state(&staged_diff, cx);
@@ -11948,21 +11948,21 @@ async fn test_staging_random_hunks_with_edits(
     assert_eq!(
         old_unstaged_state.1.as_deref(),
         Some(disk_index_text.as_str()),
-        "unstaged diff base text differs from the index on disk"
+        "未暂存差异的基础文本与磁盘上的索引不同"
     );
     assert_eq!(
         old_staged_state.0, disk_index_text,
-        "staged diff buffer differs from the index on disk"
+        "已暂存差异的缓冲区与磁盘上的索引不同"
     );
     assert_eq!(
         old_staged_state.1.as_deref(),
         Some(committed_text.as_str()),
-        "staged diff base text differs from HEAD"
+        "已暂存差异的基础文本与 HEAD 不同"
     );
     assert_eq!(
         old_uncommitted_state.1.as_deref(),
         Some(committed_text.as_str()),
-        "uncommitted diff base text differs from HEAD"
+        "未提交差异的基础文本与 HEAD 不同"
     );
 
     // Differential check: a from-scratch computation over (HEAD, index,
@@ -12004,33 +12004,33 @@ async fn test_staging_random_hunks_with_edits(
     assert_ne!(
         unstaged_diff.entity_id(),
         old_entity_ids[0],
-        "the unstaged diff was not actually closed"
+        "未暂存的差异实际上并未关闭"
     );
     assert_ne!(
         staged_diff.entity_id(),
         old_entity_ids[1],
-        "the staged diff was not actually closed"
+        "已暂存的差异实际上并未关闭"
     );
     assert_ne!(
         uncommitted_diff.entity_id(),
         old_entity_ids[2],
-        "the uncommitted diff was not actually closed"
+        "未提交的差异实际上并未关闭"
     );
 
     assert_eq!(
         capture_diff_state(&unstaged_diff, cx),
         old_unstaged_state,
-        "reopened unstaged diff differs from the settled one"
+        "重新打开的未暂存差异与已稳定的不同"
     );
     assert_eq!(
         capture_diff_state(&staged_diff, cx),
         old_staged_state,
-        "reopened staged diff differs from the settled one"
+        "重新打开的已暂存差异与已稳定的不同"
     );
     assert_eq!(
         capture_diff_state(&uncommitted_diff, cx),
         old_uncommitted_state,
-        "reopened uncommitted diff differs from the settled one"
+        "重新打开的未提交差异与已稳定的不同"
     );
 }
 
@@ -12130,7 +12130,7 @@ async fn test_staging_hunk_preserve_executable_permission(cx: &mut gpui::TestApp
     perms.set_mode(0o755);
     std::fs::set_permissions(&file_path, perms).unwrap();
     git_add("foo", &repo);
-    git_commit("Initial commit", &repo);
+    git_commit("初始提交", &repo);
     std::fs::write(&file_path, file_contents).unwrap();
 
     let project = Project::test(
@@ -12369,7 +12369,7 @@ async fn test_git_repository_status(cx: &mut gpui::TestAppContext) {
     git_add("a.txt", &repo);
     git_add("c.txt", &repo);
     git_add("d.txt", &repo);
-    git_commit("Initial commit", &repo);
+    git_commit("初始提交", &repo);
     std::fs::remove_file(work_dir.join("d.txt")).unwrap();
     std::fs::write(work_dir.join("a.txt"), "aa").unwrap();
 
@@ -12656,7 +12656,7 @@ async fn test_git_events_after_project_excludes_dot_git(cx: &mut gpui::TestAppCo
     let work_dir = root.path().join("project");
     let repo = git_init(&work_dir);
     git_add("a.txt", &repo);
-    git_commit("Initial commit", &repo);
+    git_commit("初始提交", &repo);
     git_branch("other-branch", &repo);
 
     let project = Project::test(
@@ -12724,7 +12724,7 @@ async fn test_git_events_after_project_excludes_dot_git(cx: &mut gpui::TestAppCo
 
         futures::select_biased! {
             _ = events.next() => {}
-            _ = timeout => panic!("timed out waiting for repository HEAD update after .git was excluded"),
+            _ = timeout => panic!("等待仓库 HEAD 更新超时,因为 .git 被排除"),
         }
     }
 }
@@ -12746,7 +12746,7 @@ async fn test_git_status_postprocessing(cx: &mut gpui::TestAppContext) {
     let repo = git_init(work_dir.as_path());
     // a.txt exists in HEAD and the working copy but is deleted in the index.
     git_add("a.txt", &repo);
-    git_commit("Initial commit", &repo);
+    git_commit("初始提交", &repo);
     git_remove_index("a.txt".as_ref(), &repo);
     // `sub` is a nested git repository.
     let _sub = git_init(&work_dir.join("sub"));
@@ -13655,7 +13655,7 @@ async fn test_conflicted_cherry_pick(cx: &mut gpui::TestAppContext) {
     // Attempt to manually simulate what `git cherry-pick --continue` would do.
     git_commit("whatevs", &repo);
     std::fs::remove_file(root.path().join("project/.git/CHERRY_PICK_HEAD"))
-        .expect("Failed to remove CHERRY_PICK_HEAD");
+        .expect("无法移除 CHERRY_PICK_HEAD");
     pretty_assertions::assert_eq!(git_status(&repo), collections::HashMap::default());
     tree.flush_fs_events(cx).await;
     let conflicts = repository.update(cx, |repository, _| {
@@ -13866,7 +13866,7 @@ async fn test_file_status(cx: &mut gpui::TestAppContext) {
     git_add(A_TXT, &repo);
     git_add(E_TXT, &repo);
     git_add(DOTGITIGNORE, &repo);
-    git_commit("Initial commit", &repo);
+    git_commit("初始提交", &repo);
 
     let project = Project::test(Arc::new(RealFs::new(None, cx.executor())), [root_path], cx).await;
 
@@ -14149,7 +14149,7 @@ async fn test_ignored_dirs_events(cx: &mut gpui::TestAppContext) {
     let repo = git_init(work_dir.as_path());
     git_add("src/main.rs", &repo);
     git_add(".gitignore", &repo);
-    git_commit("Initial commit", &repo);
+    git_commit("初始提交", &repo);
 
     let project = Project::test(Arc::new(RealFs::new(None, cx.executor())), [root_path], cx).await;
     let repository_updates = Arc::new(Mutex::new(Vec::new()));
@@ -14204,7 +14204,7 @@ async fn test_ignored_dirs_events(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         repository_updates.lock().drain(..).collect::<Vec<_>>(),
         vec![RepositoryEvent::StatusesChanged,],
-        "Initial worktree scan should produce a repo update event"
+        "初始工作树扫描应产生仓库更新事件"
     );
     assert_eq!(
         project_events.lock().drain(..).collect::<Vec<_>>(),
@@ -14216,7 +14216,7 @@ async fn test_ignored_dirs_events(cx: &mut gpui::TestAppContext) {
                 PathChange::Loaded
             ),
         ],
-        "Initial project changes should show that all not-ignored and all opened files are loaded"
+        "初始项目更改应显示所有未忽略的文件和所有已打开的文件均已加载"
     );
 
     let deps_dir = work_dir.join("target").join("debug").join("deps");
@@ -14254,7 +14254,7 @@ async fn test_ignored_dirs_events(cx: &mut gpui::TestAppContext) {
                 (rel_path("project/target/debug"), true),
                 (rel_path("project/target/debug/important_text.txt"), true),
             ],
-            "No stray temp files should be left after the flycheck changes"
+            "flycheck 更改后不应留下多余的临时文件"
         );
     });
 
@@ -14265,7 +14265,7 @@ async fn test_ignored_dirs_events(cx: &mut gpui::TestAppContext) {
             .cloned()
             .collect::<Vec<_>>(),
         Vec::new(),
-        "No further RepositoryUpdated events should happen, as only ignored dirs' contents was changed",
+        "不应再发生 RepositoryUpdated 事件,因为只有被忽略目录的内容发生了变化",
     );
     assert_eq!(
         project_events.lock().as_slice(),
@@ -14374,7 +14374,7 @@ async fn test_odd_events_for_ignored_dirs(
             RepositoryEvent::StatusesChanged,
             RepositoryEvent::StatusesChanged,
         ],
-        "Initial worktree scan should produce a repo update event"
+        "初始工作树扫描应产生仓库更新事件"
     );
     assert_eq!(
         project_events.lock().drain(..).collect::<Vec<_>>(),
@@ -14384,7 +14384,7 @@ async fn test_odd_events_for_ignored_dirs(
             ("target/debug/deps".to_string(), PathChange::Loaded),
             ("target/debug/foo.txt".to_string(), PathChange::Loaded),
         ],
-        "All non-ignored entries and all opened firs should be getting a project event",
+        "所有未忽略的条目和所有已打开的文件都应收到项目事件",
     );
 
     // Emulate a flycheck spawn: it emits a `INODE_META_MOD`-flagged FS event on target/debug/deps, then creates and removes temp files inside.
@@ -14403,12 +14403,12 @@ async fn test_odd_events_for_ignored_dirs(
             .cloned()
             .collect::<Vec<_>>(),
         Vec::new(),
-        "No further RepositoryUpdated events should happen, as only ignored dirs received FS events",
+        "不应再发生 RepositoryUpdated 事件,因为只有被忽略的目录收到了 FS 事件",
     );
     assert_eq!(
         project_events.lock().as_slice(),
         Vec::new(),
-        "No further project events should happen, as only ignored dirs received FS events",
+        "不应再发生项目事件,因为只有被忽略的目录收到了 FS 事件",
     );
 }
 
@@ -14459,7 +14459,7 @@ async fn test_repos_in_invisible_worktrees(
             })
         })
         .await
-        .expect("failed to create worktree");
+        .expect("无法创建工作树");
     project
         .update(cx, |project, cx| project.git_scans_complete(cx))
         .await;
@@ -14720,7 +14720,7 @@ async fn test_git_worktrees_and_submodules(cx: &mut gpui::TestAppContext) {
         );
         assert!(
             repo.read(cx).linked_worktree_path().is_some(),
-            "linked worktree should be detected as a linked worktree"
+            "链接的工作树应被检测为链接的工作树"
         );
         let barrier = repo.update(cx, |repo, _| repo.barrier());
         (repo.clone(), barrier)
@@ -14773,7 +14773,7 @@ async fn test_git_worktrees_and_submodules(cx: &mut gpui::TestAppContext) {
         );
         assert!(
             repo.read(cx).linked_worktree_path().is_none(),
-            "submodule should not be detected as a linked worktree"
+            "子模块不应被检测为链接的工作树"
         );
         let barrier = repo.update(cx, |repo, _| repo.barrier());
         (repo.clone(), barrier)
@@ -14897,7 +14897,7 @@ async fn test_buffer_changed_file_path_updates_git_diff(cx: &mut gpui::TestAppCo
 
     unstaged_diff.update(cx, |unstaged_diff, cx| {
         let base_text = unstaged_diff.base_text_string(cx).unwrap();
-        assert_eq!(base_text, file_1_staged, "Should start with file_1 staged");
+        assert_eq!(base_text, file_1_staged, "应以 file_1 已暂存开始");
     });
 
     // Save the buffer as `file_2.rs`, which should trigger the
@@ -14923,11 +14923,11 @@ async fn test_buffer_changed_file_path_updates_git_diff(cx: &mut gpui::TestAppCo
         let base_text = unstaged_diff.base_text_string(cx).unwrap();
         assert_eq!(
             base_text, file_2_staged,
-            "Diff bases should be automatically updated to file_2 staged content"
+            "差异基准应自动更新为 file_2 的已暂存内容"
         );
 
         let hunks: Vec<_> = unstaged_diff.snapshot(cx).hunks(&snapshot).collect();
-        assert!(!hunks.is_empty(), "Should have diff hunks for file_2");
+        assert!(!hunks.is_empty(), "应包含 file_2 的差异代码块");
     });
 
     let uncommitted_diff = project
@@ -14943,7 +14943,7 @@ async fn test_buffer_changed_file_path_updates_git_diff(cx: &mut gpui::TestAppCo
         let base_text = uncommitted_diff.base_text_string(cx).unwrap();
         assert_eq!(
             base_text, file_2_committed,
-            "Uncommitted diff should compare against file_2 committed content"
+            "未提交的差异应与 file_2 的已提交内容进行比较"
         );
     });
 }
@@ -15105,7 +15105,7 @@ async fn test_initial_scan_complete(cx: &mut gpui::TestAppContext) {
     let created_repos_len = repos_created.borrow().len();
     assert_eq!(
         created_repos_len, 2,
-        "Expected 2 repositories to be created during scan, got {}",
+        "预期扫描期间创建 2 个仓库,实际为 {}",
         created_repos_len
     );
 
@@ -15114,7 +15114,7 @@ async fn test_initial_scan_complete(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             git_store.repositories().len(),
             2,
-            "Expected 2 repositories in GitStore"
+            "预期 GitStore 中有 2 个仓库"
         );
     });
 }
@@ -15176,7 +15176,7 @@ fn python_lang(fs: Arc<FakeFs>) -> Arc<Language> {
                 let venv_path = worktree_root.join(ancestor.as_std_path()).join(".venv");
                 if self.0.is_dir(&venv_path).await {
                     toolchains.push(Toolchain {
-                        name: SharedString::new_static("Python Venv"),
+                        name: SharedString::new_static("Python 虚拟环境"),
                         path: venv_path.to_string_lossy().into_owned().into(),
                         language_name: LanguageName(SharedString::new_static("Python")),
                         as_json: serde_json::Value::Null,
@@ -15193,13 +15193,13 @@ fn python_lang(fs: Arc<FakeFs>) -> Arc<Language> {
             _: PathBuf,
             _: Option<HashMap<String, String>>,
         ) -> anyhow::Result<Toolchain> {
-            Err(anyhow::anyhow!("Not implemented"))
+            Err(anyhow::anyhow!("未实现"))
         }
         fn meta(&self) -> ToolchainMetadata {
             ToolchainMetadata {
-                term: SharedString::new_static("Virtual Environment"),
+                term: SharedString::new_static("虚拟环境"),
                 new_toolchain_placeholder: SharedString::new_static(
-                    "A path to the python3 executable within a virtual environment, or path to virtual environment itself",
+                    "虚拟环境中 python3 可执行文件的路径,或虚拟环境本身的路径",
                 ),
                 manifest_name: ManifestName::from(SharedString::new_static("pyproject.toml")),
             }
@@ -15294,7 +15294,7 @@ fn assert_entry_git_state(
     assert_eq!(tree.abs_path(), repository.work_directory_abs_path);
     let entry = tree
         .entry_for_path(&rel_path(path))
-        .unwrap_or_else(|| panic!("entry {path} not found"));
+        .unwrap_or_else(|| panic!("条目 {path} 未找到"));
     let status = repository
         .status_for_path(&repo_path(path))
         .map(|entry| entry.status);
@@ -15307,11 +15307,11 @@ fn assert_entry_git_state(
     });
     assert_eq!(
         status, expected,
-        "expected {path} to have git status: {expected:?}"
+        "预期 {path} 的 git 状态为: {expected:?}"
     );
     assert_eq!(
         entry.is_ignored, is_ignored,
-        "expected {path} to have is_ignored: {is_ignored}"
+        "预期 {path} 的 is_ignored 为: {is_ignored}"
     );
 }
 
@@ -15337,10 +15337,10 @@ fn git_init(path: &Path) -> PathBuf {
     let output = git_cmd(path)
         .args(["init", "-b", "main"])
         .output()
-        .expect("Failed to run git init");
+        .expect("无法运行 git init");
     assert!(
         output.status.success(),
-        "git init failed: {}",
+        "git init 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
     path.to_path_buf()
@@ -15353,10 +15353,10 @@ fn git_add<P: AsRef<Path>>(path: P, work_dir: &Path) {
         .args(["add"])
         .arg(path.as_ref())
         .output()
-        .expect("Failed to run git add");
+        .expect("无法运行 git add");
     assert!(
         output.status.success(),
-        "git add failed: {}",
+        "git add 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
@@ -15368,10 +15368,10 @@ fn git_remove_index(path: &Path, work_dir: &Path) {
         .args(["rm", "--cached"])
         .arg(path)
         .output()
-        .expect("Failed to run git rm");
+        .expect("无法运行 git rm");
     assert!(
         output.status.success(),
-        "git rm --cached failed: {}",
+        "git rm --cached 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
@@ -15382,10 +15382,10 @@ fn git_commit(msg: &str, work_dir: &Path) {
     let output = git_cmd(work_dir)
         .args(["commit", "-m", msg])
         .output()
-        .expect("Failed to run git commit");
+        .expect("无法运行 git 提交");
     assert!(
         output.status.success(),
-        "git commit failed: {}",
+        "git 提交 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
@@ -15396,10 +15396,10 @@ fn git_stash(work_dir: &Path) {
     let output = git_cmd(work_dir)
         .args(["stash"])
         .output()
-        .expect("Failed to run git stash");
+        .expect("无法运行 git stash");
     assert!(
         output.status.success(),
-        "git stash failed: {}",
+        "git stash 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
@@ -15411,10 +15411,10 @@ fn git_reset(offset: usize, work_dir: &Path) {
     let output = git_cmd(work_dir)
         .args(["reset", "--soft", &target])
         .output()
-        .expect("Failed to run git reset");
+        .expect("无法运行 git reset");
     assert!(
         output.status.success(),
-        "git reset failed: {}",
+        "git reset 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
@@ -15426,10 +15426,10 @@ fn git_branch(name: &str, work_dir: &Path) {
     let output = git_cmd(work_dir)
         .args(["branch", name])
         .output()
-        .expect("Failed to run git branch");
+        .expect("无法运行 git 分支");
     assert!(
         output.status.success(),
-        "git branch failed: {}",
+        "git 分支 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
@@ -15441,10 +15441,10 @@ fn git_checkout(name: &str, work_dir: &Path) {
     let output = git_cmd(work_dir)
         .args(["checkout", name])
         .output()
-        .expect("Failed to run git checkout");
+        .expect("无法运行 git checkout");
     assert!(
         output.status.success(),
-        "git checkout failed: {}",
+        "git checkout 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
@@ -15456,10 +15456,10 @@ fn git_rev_parse(rev: &str, work_dir: &Path) -> String {
     let output = git_cmd(work_dir)
         .args(["rev-parse", rev])
         .output()
-        .expect("Failed to run git rev-parse");
+        .expect("无法运行 git rev-parse");
     assert!(
         output.status.success(),
-        "git rev-parse failed: {}",
+        "git rev-parse 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
     String::from_utf8(output.stdout).unwrap().trim().to_string()
@@ -15472,10 +15472,10 @@ fn git_cherry_pick_expect_conflict(commit: &str, work_dir: &Path) {
     let output = git_cmd(work_dir)
         .args(["cherry-pick", "--no-commit", commit])
         .output()
-        .expect("Failed to run git cherry-pick");
+        .expect("无法运行 git cherry-pick");
     assert!(
         !output.status.success(),
-        "git cherry-pick unexpectedly succeeded"
+        "git cherry-pick 意外成功"
     );
 }
 
@@ -15486,10 +15486,10 @@ fn git_status(work_dir: &Path) -> collections::HashMap<String, String> {
     let output = git_cmd(work_dir)
         .args(["status", "--porcelain=v1"])
         .output()
-        .expect("Failed to run git status");
+        .expect("无法运行 git status");
     assert!(
         output.status.success(),
-        "git status failed: {}",
+        "git status 失败: {}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8(output.stdout).unwrap();
@@ -15575,7 +15575,7 @@ async fn test_find_project_path_abs(
         let found_path = project.find_project_path(abs_path, cx);
         assert!(
             found_path.is_some(),
-            "Should find project path for nonexistent file in worktree"
+            "应能在工作树中找到不存在文件的项目路径"
         );
 
         // Test with an absolute path outside any worktree
@@ -15583,7 +15583,7 @@ async fn test_find_project_path_abs(
         let found_path = project.find_project_path(abs_path, cx);
         assert!(
             found_path.is_none(),
-            "Should not find project path for path outside any worktree"
+            "不应在任何工作树之外找到项目路径"
         );
     });
 }
@@ -15788,8 +15788,8 @@ async fn test_optimistic_hunks_in_staged_files(cx: &mut gpui::TestAppContext) {
         match hunk.secondary_status {
             HasSecondaryHunk => {}
             SecondaryHunkRemovalPending => break,
-            NoSecondaryHunk => panic!("hunk was not optimistically staged"),
-            _ => panic!("unexpected hunk state"),
+            NoSecondaryHunk => panic!("代码块未被乐观暂存"),
+            _ => panic!("意外的代码块状态"),
         }
     }
     uncommitted_diff.read_with(cx, |diff, cx| {
@@ -15888,7 +15888,7 @@ async fn test_read_only_files_setting(cx: &mut gpui::TestAppContext) {
         .unwrap();
 
     regular_buffer.read_with(cx, |buffer, _| {
-        assert!(!buffer.read_only(), "Regular file should not be read-only");
+        assert!(!buffer.read_only(), "普通文件不应为只读");
     });
 
     // Open a file matching *.gen.rs pattern - should be read-only
@@ -15902,7 +15902,7 @@ async fn test_read_only_files_setting(cx: &mut gpui::TestAppContext) {
     gen_buffer.read_with(cx, |buffer, _| {
         assert!(
             buffer.read_only(),
-            "File matching *.gen.rs pattern should be read-only"
+            "匹配 *.gen.rs 模式的文件应为只读"
         );
     });
 
@@ -15917,7 +15917,7 @@ async fn test_read_only_files_setting(cx: &mut gpui::TestAppContext) {
     generated_buffer.read_with(cx, |buffer, _| {
         assert!(
             buffer.read_only(),
-            "File in generated directory should be read-only"
+            "生成目录中的文件应为只读"
         );
     });
 }
@@ -15962,7 +15962,7 @@ async fn test_read_only_files_empty_setting(cx: &mut gpui::TestAppContext) {
     main_buffer.read_with(cx, |buffer, _| {
         assert!(
             !buffer.read_only(),
-            "Files should not be read-only when read_only_files is empty"
+            "当 read_only_files 为空时,文件不应为只读"
         );
     });
 
@@ -15976,7 +15976,7 @@ async fn test_read_only_files_empty_setting(cx: &mut gpui::TestAppContext) {
     generated_buffer.read_with(cx, |buffer, _| {
         assert!(
             !buffer.read_only(),
-            "Generated files should not be read-only when read_only_files is empty"
+            "当 read_only_files 为空时,生成的文件不应为只读"
         );
     });
 }
@@ -16014,7 +16014,7 @@ async fn test_os_read_only_files_open_as_read_only(cx: &mut gpui::TestAppContext
     buffer.read_with(cx, |buffer, _| {
         assert!(
             buffer.read_only(),
-            "OS read-only files should open as read-only"
+            "操作系统只读文件应以只读方式打开"
         );
     });
 }
@@ -16058,7 +16058,7 @@ async fn test_read_only_files_with_lock_files(cx: &mut gpui::TestAppContext) {
         .unwrap();
 
     cargo_lock.read_with(cx, |buffer, _| {
-        assert!(buffer.read_only(), "Cargo.lock should be read-only");
+        assert!(buffer.read_only(), "Cargo.lock 应为只读");
     });
 
     // Cargo.toml should be read-write
@@ -16070,7 +16070,7 @@ async fn test_read_only_files_with_lock_files(cx: &mut gpui::TestAppContext) {
         .unwrap();
 
     cargo_toml.read_with(cx, |buffer, _| {
-        assert!(!buffer.read_only(), "Cargo.toml should not be read-only");
+        assert!(!buffer.read_only(), "Cargo.toml 不应为只读");
     });
 
     // package-lock.json should be read-only
@@ -16082,7 +16082,7 @@ async fn test_read_only_files_with_lock_files(cx: &mut gpui::TestAppContext) {
         .unwrap();
 
     package_lock.read_with(cx, |buffer, _| {
-        assert!(buffer.read_only(), "package-lock.json should be read-only");
+        assert!(buffer.read_only(), "package-lock.json 应为只读");
     });
 
     // package.json should be read-write
@@ -16094,7 +16094,7 @@ async fn test_read_only_files_with_lock_files(cx: &mut gpui::TestAppContext) {
         .unwrap();
 
     package_json.read_with(cx, |buffer, _| {
-        assert!(!buffer.read_only(), "package.json should not be read-only");
+        assert!(!buffer.read_only(), "package.json 不应为只读");
     });
 }
 
@@ -16111,7 +16111,7 @@ mod disable_ai_settings_tests {
             // Test 1: Default is false (AI enabled)
             assert!(
                 !DisableAiSettings::get_global(cx).disable_ai,
-                "Default should allow AI"
+                "默认应允许 AI"
             );
         });
 
@@ -16131,7 +16131,7 @@ mod disable_ai_settings_tests {
         cx.update(|cx| {
             assert!(
                 DisableAiSettings::get_global(cx).disable_ai,
-                "Local false cannot override global true"
+                "局部 false 不能覆盖全局 true"
             );
         });
 
@@ -16143,7 +16143,7 @@ mod disable_ai_settings_tests {
         cx.update(|cx| {
             assert!(
                 DisableAiSettings::get_global(cx).disable_ai,
-                "Local false cannot override global true"
+                "局部 false 不能覆盖全局 true"
             );
         });
     }
@@ -16159,7 +16159,7 @@ mod disable_ai_settings_tests {
             // Default should allow AI
             assert!(
                 !DisableAiSettings::get_global(cx).disable_ai,
-                "Default should allow AI"
+                "默认应允许 AI"
             );
         });
 
@@ -16190,12 +16190,12 @@ mod disable_ai_settings_tests {
             let settings = DisableAiSettings::get(Some(settings_location), cx);
             assert!(
                 settings.disable_ai,
-                "Project-level disable_ai=true should disable AI for files in that project"
+                "项目级 disable_ai=true 应禁用该项目中文件的 AI"
             );
             // Global should now also be true since project-level disable_ai is merged into global
             assert!(
                 DisableAiSettings::get_global(cx).disable_ai,
-                "Global setting should be affected by project-level disable_ai=true"
+                "全局设置应受项目级 disable_ai=true 影响"
             );
         });
 
@@ -16216,12 +16216,12 @@ mod disable_ai_settings_tests {
             let settings = DisableAiSettings::get(Some(settings_location), cx);
             assert!(
                 !settings.disable_ai,
-                "Project-level disable_ai=false should allow AI"
+                "项目级 disable_ai=false 应允许 AI"
             );
             // Global should also be false now
             assert!(
                 !DisableAiSettings::get_global(cx).disable_ai,
-                "Global setting should be false when project-level is false"
+                "当项目级设置为 false 时,全局设置应为 false"
             );
         });
 
@@ -16244,7 +16244,7 @@ mod disable_ai_settings_tests {
             let settings = DisableAiSettings::get(Some(settings_location), cx);
             assert!(
                 settings.disable_ai,
-                "Project-level false cannot override user-level true (SaturatingBool)"
+                "项目级 false 不能覆盖用户级 true(SaturatingBool)"
             );
         });
     }
@@ -16366,7 +16366,7 @@ async fn test_staging_hunks_with_ambiguous_placement(cx: &mut gpui::TestAppConte
                 .index_contents
                 .get(&repo_path("test.txt"))
                 .cloned()
-                .expect("file is present in the index")
+                .expect("文件存在于索引中")
         })
         .unwrap()
     }
@@ -16414,7 +16414,7 @@ async fn test_staging_hunks_with_ambiguous_placement(cx: &mut gpui::TestAppConte
     );
     let table_contains_offset = committed_contents
         .find("function table:append")
-        .expect("committed text contains table:append");
+        .expect("提交的文本包含 table:append");
     let expected_index = &committed_contents[table_contains_offset..];
     assert_eq!(index_text(&fs), expected_index);
 

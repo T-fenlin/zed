@@ -14,7 +14,7 @@ use crate::connection::Connection;
 
 impl Connection {
     fn eager_exec(&self, sql: &str) -> anyhow::Result<()> {
-        let sql_str = CString::new(sql).context("Error creating cstr")?;
+        let sql_str = CString::new(sql).context("创建 C 字符串时出错")?;
         unsafe {
             sqlite3_exec(
                 self.sqlite3,
@@ -125,7 +125,7 @@ impl Connection {
 
         if !foreign_key_info.is_empty() {
             log::info!(
-                "Found {} foreign key relationships to check",
+                "发现 {} 个需要检查的外键关系",
                 foreign_key_info.len()
             );
         }

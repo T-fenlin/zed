@@ -76,17 +76,17 @@ async fn install_script(cx: &AsyncApp) -> Result<Option<PathBuf>> {
 
     // The privileged write failed, most commonly because the user is not an
     // admin.
-    anyhow::bail!("error running osascript: {}", stderr.trim());
+    anyhow::bail!("运行 osascript 时出错:{}", stderr.trim());
 }
 
 pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
-    const LINUX_PROMPT_DETAIL: &str = "If you installed Zed from our official release add ~/.local/bin to your PATH.\n\nIf you installed Zed from a different source like your package manager, then you may need to create an alias/symlink manually.\n\nDepending on your package manager, the CLI might be named zeditor, zedit, zed-editor or something else.";
+    const LINUX_PROMPT_DETAIL: &str = "如果你从官方发布版安装了 Zed,请将 ~/.local/bin 添加到你的 PATH。\n\n如果你从其他来源(如包管理器)安装了 Zed,则可能需要手动创建别名或符号链接。\n\n根据你的包管理器,CLI 可能名为 zeditor、zedit、zed-编辑器 或其他名称。";
 
     cx.spawn_in(window, async move |workspace, cx| {
         if cfg!(any(target_os = "linux", target_os = "freebsd")) {
             let prompt = cx.prompt(
                 PromptLevel::Warning,
-                "CLI should already be installed",
+                "CLI 应该已经安装",
                 Some(LINUX_PROMPT_DETAIL),
                 &["OK"],
             );
@@ -98,7 +98,7 @@ pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
             // The user dismissed the administrator prompt; nothing to do.
             Ok(None) => return Ok(()),
             Err(error) => {
-                log::error!("failed to install zed CLI: {error:#}");
+                log::error!("安装 zed CLI 失败:{error:#}");
                 workspace.update(cx, |workspace, cx| {
                     struct CliInstallFailed;
 
@@ -108,11 +108,11 @@ pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
                         |cx| {
                             cx.new(|cx| {
                                 MessageNotification::new(
-                                    "You can add `zed` to your PATH manually.",
+                                    "你可以手动将 `zed` 添加到 PATH。",
                                     cx,
                                 )
-                                .with_title("Couldn't install the Zed CLI")
-                                .more_info_message("Show me how")
+                                .with_title("无法安装 Zed CLI")
+                                .more_info_message("告诉我怎么做")
                                 .more_info_url(CANT_INSTALL_DOCS_URL)
                             })
                         },
@@ -129,7 +129,7 @@ pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
                 Toast::new(
                     NotificationId::unique::<InstalledZedCli>(),
                     format!(
-                        "Installed `zed` to {}. You can launch {} from your terminal.",
+                        "已将 `zed` 安装到 {}。你可以从终端启动 {}。",
                         path.to_string_lossy(),
                         ReleaseChannel::global(cx).display_name()
                     ),
@@ -140,5 +140,5 @@ pub fn install_cli_binary(window: &mut Window, cx: &mut Context<Workspace>) {
         register_zed_scheme(cx).await.log_err();
         Ok(())
     })
-    .detach_and_prompt_err("Cannot install the Zed CLI", window, cx, |_, _, _| None);
+    .detach_and_prompt_err("无法安装 Zed CLI", window, cx, |_, _, _| None);
 }

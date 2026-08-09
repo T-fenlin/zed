@@ -56,7 +56,7 @@ impl CloudLlmTokenProvider for ClientTokenProvider {
         let llm_api_token = self.llm_api_token.clone();
         Box::pin(async move {
             let organization_id =
-                organization_id.ok_or_else(|| anyhow!("No organization selected."))?;
+                organization_id.ok_or_else(|| anyhow!("未选择组织。"))?;
             client
                 .cached_llm_token(&llm_api_token, organization_id)
                 .await
@@ -71,7 +71,7 @@ impl CloudLlmTokenProvider for ClientTokenProvider {
         let llm_api_token = self.llm_api_token.clone();
         Box::pin(async move {
             let organization_id =
-                organization_id.ok_or_else(|| anyhow!("No organization selected."))?;
+                organization_id.ok_or_else(|| anyhow!("未选择组织。"))?;
             client
                 .refresh_llm_token(&llm_api_token, organization_id)
                 .await
@@ -348,7 +348,7 @@ impl LanguageModelProvider for CloudLanguageModelProvider {
                         | client::Status::Connected { .. }
                 ) {
                     return Err(AuthenticateError::Other(anyhow!(
-                        "sign-in did not complete: {current_status:?}"
+                        "登录未完成:{current_status:?}"
                     )));
                 }
                 futures::select_biased! {
@@ -380,11 +380,11 @@ impl LanguageModelProvider for CloudLanguageModelProvider {
             None
         } else {
             match state.user_store.read(cx).plan() {
-                Some(Plan::ZedPro) => Some("Subscribed to Pro".into()),
-                Some(Plan::ZedProTrial) => Some("Subscribed to Pro Trial".into()),
-                Some(Plan::ZedStudent) => Some("Subscribed to Student".into()),
-                Some(Plan::ZedBusiness) => Some("Subscribed to Business".into()),
-                Some(Plan::ZedVip) => Some("Subscribed to VIP".into()),
+                Some(Plan::ZedPro) => Some("已订阅 Pro".into()),
+                Some(Plan::ZedProTrial) => Some("已订阅 Pro 试用版".into()),
+                Some(Plan::ZedStudent) => Some("已订阅学生版".into()),
+                Some(Plan::ZedBusiness) => Some("已订阅商业版".into()),
+                Some(Plan::ZedVip) => Some("已订阅 VIP".into()),
                 Some(Plan::ZedFree) | None => None,
             }
         };
@@ -405,7 +405,7 @@ impl LanguageModelProvider for CloudLanguageModelProvider {
     }
 
     fn authentication_error_message(&self) -> SharedString {
-        "Failed to sign in with your Zed account (401).".into()
+        "使用你的 Zed 账户登录失败 (401)。".into()
     }
 
     fn missing_credentials_error_message(&self) -> SharedString {
@@ -416,7 +416,7 @@ impl LanguageModelProvider for CloudLanguageModelProvider {
 
     fn fast_mode_confirmation(&self, _cx: &App) -> Option<FastModeConfirmation> {
         Some(FastModeConfirmation {
-            title: "Enable Fast Mode for Zed?".into(),
+            title: "为 Zed 启用快速模式?".into(),
             message: "Fast mode routes requests through the upstream provider's fast mode or priority tier. The \
                 upstream provider's premium per-token pricing applies and is passed through to \
                 your Zed billing."
@@ -443,32 +443,32 @@ fn zed_ai_description(
     eligible_for_trial: bool,
 ) -> &'static str {
     if !is_connected {
-        return "Sign in to have access to Zed's complete agentic experience with hosted models.";
+        return "登录以体验 Zed 完整的智能体功能与托管模型。";
     }
 
     match plan {
         Some(Plan::ZedPro) => {
-            "You have access to Zed's hosted models through your Pro subscription."
+            "你可以通过 Pro 订阅使用 Zed 的托管模型。"
         }
-        Some(Plan::ZedProTrial) => "You have access to Zed's hosted models through your Pro trial.",
+        Some(Plan::ZedProTrial) => "你可以通过 Pro 试用版使用 Zed 的托管模型。",
         Some(Plan::ZedStudent) => {
-            "You have access to Zed's hosted models through your Student subscription."
+            "你可以通过学生订阅使用 Zed 的托管模型。"
         }
         Some(Plan::ZedBusiness) => {
             if is_zed_model_provider_enabled {
-                "You have access to Zed's hosted models through your organization."
+                "你可以通过你的组织使用 Zed 的托管模型。"
             } else {
-                "Zed's hosted models are disabled by your organization's configuration."
+                "Zed 的托管模型已被你的组织配置禁用。"
             }
         }
         Some(Plan::ZedVip) => {
-            "You have access to Zed's hosted models through your VIP subscription."
+            "你可以通过 VIP 订阅使用 Zed 的托管模型。"
         }
         Some(Plan::ZedFree) | None => {
             if eligible_for_trial {
-                "Subscribe for access to Zed's hosted models. Start with a 14 day free trial."
+                "订阅以使用 Zed 的托管模型。从 14 天免费试用开始。"
             } else {
-                "Subscribe for access to Zed's hosted models."
+                "订阅以使用 Zed 的托管模型。"
             }
         }
     }
@@ -489,7 +489,7 @@ impl RenderOnce for ZedAiConfiguration {
         );
 
         let manage_subscription_buttons = if has_paid_plan {
-            Button::new("manage_settings", "Manage Subscription")
+            Button::new("manage_settings", "管理订阅")
                 .when(!self.compact, |this| {
                     this.full_width().label_size(LabelSize::Small)
                 })
@@ -498,7 +498,7 @@ impl RenderOnce for ZedAiConfiguration {
                 .on_click(|_, _, cx| cx.open_url(&zed_urls::account_url(cx)))
                 .into_any_element()
         } else if self.plan.is_none() || self.eligible_for_trial {
-            Button::new("start_trial", "Start 14-day Free Pro Trial")
+            Button::new("start_trial", "开始 14 天免费 Pro 试用")
                 .when(!self.compact, |this| {
                     this.full_width().label_size(LabelSize::Small)
                 })
@@ -507,7 +507,7 @@ impl RenderOnce for ZedAiConfiguration {
                 .on_click(|_, _, cx| cx.open_url(&zed_urls::start_trial_url(cx)))
                 .into_any_element()
         } else {
-            Button::new("upgrade", "Upgrade to Pro")
+            Button::new("upgrade", "升级到 Pro")
                 .when(!self.compact, |this| {
                     this.full_width().label_size(LabelSize::Small)
                 })
@@ -522,7 +522,7 @@ impl RenderOnce for ZedAiConfiguration {
                 .gap_2()
                 .when(!self.compact, |this| this.child(Label::new(description)))
                 .child(
-                    Button::new("sign_in", "Sign In to use Zed AI")
+                    Button::new("sign_in", "登录以使用 Zed AI")
                         .start_icon(
                             Icon::new(IconName::Github)
                                 .size(IconSize::Small)
@@ -542,7 +542,7 @@ impl RenderOnce for ZedAiConfiguration {
             .map(|this| {
                 if self.account_too_young {
                     this.child(YoungAccountBanner).child(
-                        Button::new("upgrade", "Upgrade to Pro")
+                        Button::new("upgrade", "升级到 Pro")
                             .style(ui::ButtonStyle::Tinted(ui::TintColor::Accent))
                             .when(!self.compact, |this| this.full_width())
                             .on_click(|_, _, cx| {
@@ -836,7 +836,7 @@ mod tests {
     async fn provided_models_surface_disabled_reason(cx: &mut TestAppContext) {
         let (_client, _user_store, provider) = cx.update(init_test);
         let model_id = cloud_llm_client::LanguageModelId(Arc::from("disabled-model"));
-        let disabled_reason = "This model is temporarily unavailable.";
+        let disabled_reason = "此模型暂时不可用。";
 
         cx.update(|cx| {
             let cloud_model_provider = provider.state.read(cx).provider.clone();
@@ -925,11 +925,11 @@ mod tests {
 
 impl Component for ZedAiConfiguration {
     fn name() -> &'static str {
-        "AI Configuration Content"
+        "AI 配置内容"
     }
 
     fn sort_name() -> &'static str {
-        "AI Configuration Content"
+        "AI 配置内容"
     }
 
     fn scope() -> ComponentScope {
@@ -968,7 +968,7 @@ impl Component for ZedAiConfiguration {
             .gap_4()
             .children(vec![
                 single_example(
-                    "Not connected",
+                    "未连接",
                     configuration(PreviewConfiguration {
                         plan: None,
                         is_connected: false,
@@ -977,7 +977,7 @@ impl Component for ZedAiConfiguration {
                     }),
                 ),
                 single_example(
-                    "Accept Terms of Service",
+                    "接受服务条款",
                     configuration(PreviewConfiguration {
                         plan: None,
                         is_connected: true,
@@ -986,7 +986,7 @@ impl Component for ZedAiConfiguration {
                     }),
                 ),
                 single_example(
-                    "No Plan - Not eligible for trial",
+                    "无套餐 - 不符合试用条件",
                     configuration(PreviewConfiguration {
                         plan: None,
                         is_connected: true,
@@ -995,7 +995,7 @@ impl Component for ZedAiConfiguration {
                     }),
                 ),
                 single_example(
-                    "No Plan - Eligible for trial",
+                    "无套餐 - 符合试用条件",
                     configuration(PreviewConfiguration {
                         plan: None,
                         is_connected: true,
@@ -1004,7 +1004,7 @@ impl Component for ZedAiConfiguration {
                     }),
                 ),
                 single_example(
-                    "Free Plan",
+                    "免费方案",
                     configuration(PreviewConfiguration {
                         plan: Some(Plan::ZedFree),
                         is_connected: true,
@@ -1013,7 +1013,7 @@ impl Component for ZedAiConfiguration {
                     }),
                 ),
                 single_example(
-                    "Zed Pro Trial Plan",
+                    "Zed Pro 试用套餐",
                     configuration(PreviewConfiguration {
                         plan: Some(Plan::ZedProTrial),
                         is_connected: true,
@@ -1022,7 +1022,7 @@ impl Component for ZedAiConfiguration {
                     }),
                 ),
                 single_example(
-                    "Zed Pro Plan",
+                    "Zed Pro 套餐",
                     configuration(PreviewConfiguration {
                         plan: Some(Plan::ZedPro),
                         is_connected: true,
@@ -1031,7 +1031,7 @@ impl Component for ZedAiConfiguration {
                     }),
                 ),
                 single_example(
-                    "Business Plan - Zed models enabled",
+                    "商业套餐 - Zed 模型已启用",
                     configuration(PreviewConfiguration {
                         plan: Some(Plan::ZedBusiness),
                         is_connected: true,
@@ -1040,7 +1040,7 @@ impl Component for ZedAiConfiguration {
                     }),
                 ),
                 single_example(
-                    "Business Plan - Zed models disabled",
+                    "商业套餐 - Zed 模型已禁用",
                     configuration(PreviewConfiguration {
                         plan: Some(Plan::ZedBusiness),
                         is_connected: true,

@@ -19,7 +19,7 @@ impl Snippet {
         let mut text = String::with_capacity(source.len());
         let mut tabstops = BTreeMap::new();
         parse_snippet(source, false, &mut text, &mut tabstops)
-            .context("failed to parse snippet")?;
+            .context("无法解析代码片段")?;
 
         let len = text.len() as isize;
         let final_tabstop = tabstops.remove(&0);
@@ -114,7 +114,7 @@ fn parse_tabstop<'a>(
         if source.starts_with('}') {
             source = &source[1..];
         } else {
-            anyhow::bail!("expected a closing brace");
+            anyhow::bail!("应为右花括号");
         }
     } else {
         let (index, rest) = parse_int(source)?;
@@ -137,7 +137,7 @@ fn parse_int(source: &str) -> Result<(usize, &str)> {
     let len = source
         .find(|c: char| !c.is_ascii_digit())
         .unwrap_or(source.len());
-    anyhow::ensure!(len > 0, "expected an integer");
+    anyhow::ensure!(len > 0, "应为整数");
     let (prefix, suffix) = source.split_at(len);
     Ok((prefix.parse()?, suffix))
 }
@@ -180,7 +180,7 @@ fn parse_choices<'a>(
 
                 anyhow::ensure!(
                     chunk_end.is_some(),
-                    "Placeholder choice doesn't contain closing pipe-character '|'"
+                    "占位符选项缺少闭合的管道符 '|'"
                 );
 
                 let (chunk, rest) = source.split_at(chunk_end.unwrap());
@@ -257,7 +257,7 @@ mod tests {
     #[test]
     fn test_snippet_with_choice_placeholders() {
         let snippet = Snippet::parse("type ${1|i32, u32|} = $2")
-            .expect("Should be able to unpack choice placeholders");
+            .expect("应能解析选项占位符");
 
         assert_eq!(snippet.text, "type i32 = ");
         assert_eq!(tabstops(&snippet), &[vec![5..8], vec![11..11],]);
@@ -267,7 +267,7 @@ mod tests {
         );
 
         let snippet = Snippet::parse(r"${1|\$\{1\|one\,two\,tree\|\}|}")
-            .expect("Should be able to parse choice with escape characters");
+            .expect("应能解析包含转义字符的选项");
 
         assert_eq!(snippet.text, "${1|one,two,tree|}");
         assert_eq!(tabstops(&snippet), &[vec![0..18], vec![18..18]]);

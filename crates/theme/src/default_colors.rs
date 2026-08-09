@@ -2023,7 +2023,7 @@ pub(crate) fn teal() -> ColorScaleSet {
 
 pub(crate) fn jade() -> ColorScaleSet {
     StaticColorScaleSet {
-        scale: "Jade",
+        scale: "翡翠绿",
         light: [
             "#fbfefdff",
             "#f4fbf7ff",
@@ -2087,7 +2087,7 @@ pub(crate) fn jade() -> ColorScaleSet {
 
 pub(crate) fn green() -> ColorScaleSet {
     StaticColorScaleSet {
-        scale: "Green",
+        scale: "绿色",
         light: [
             "#fbfefcff",
             "#f4fbf6ff",
@@ -2151,7 +2151,7 @@ pub(crate) fn green() -> ColorScaleSet {
 
 pub(crate) fn grass() -> ColorScaleSet {
     StaticColorScaleSet {
-        scale: "Grass",
+        scale: "草绿",
         light: [
             "#fbfefbff",
             "#f5fbf5ff",
@@ -2215,7 +2215,7 @@ pub(crate) fn grass() -> ColorScaleSet {
 
 pub(crate) fn lime() -> ColorScaleSet {
     StaticColorScaleSet {
-        scale: "Lime",
+        scale: "酸橙绿",
         light: [
             "#fcfdfaff",
             "#f8faf3ff",
@@ -2279,7 +2279,7 @@ pub(crate) fn lime() -> ColorScaleSet {
 
 pub(crate) fn mint() -> ColorScaleSet {
     StaticColorScaleSet {
-        scale: "Mint",
+        scale: "薄荷绿",
         light: [
             "#f9fefdff",
             "#f2fbf9ff",

@@ -330,24 +330,24 @@ mod tests {
         let initial_len = info.system.read().processes().len();
         assert!(
             initial_len <= 2,
-            "creating a terminal retained {initial_len} process entries"
+            "创建终端保留了 {initial_len} 个进程条目"
         );
 
         for _ in 0..3 {
             let mut child = std::process::Command::new("sleep")
                 .arg("30")
                 .spawn()
-                .expect("failed to spawn child process");
+                .expect("无法生成子进程");
             info.pid_getter = ProcessIdGetter::new(-1, child.id());
             assert!(info.load_for_test().is_some());
-            child.kill().expect("failed to kill child process");
-            child.wait().expect("failed to wait for child process");
+            child.kill().expect("无法终止子进程");
+            child.wait().expect("无法等待子进程");
         }
 
         let churned_len = info.system.read().processes().len();
         assert!(
             churned_len <= 2,
-            "foreground process churn retained {churned_len} process entries"
+            "前台进程频繁切换保留了 {churned_len} 个进程条目"
         );
     }
 }

@@ -218,7 +218,7 @@ impl HeadlessProject {
                 toolchain_store
                     .read(cx)
                     .as_local_store()
-                    .expect("Toolchain store to be local")
+                    .expect("工具链存储必须是本地的")
                     .clone(),
                 environment.clone(),
                 manifest_tree,
@@ -492,7 +492,7 @@ impl HeadlessProject {
                 let mut parent = path
                     .parent()
                     .ok_or(e)
-                    .with_context(|| format!("{path:?} does not exist"))?;
+                    .with_context(|| format!("{path:?} 不存在"))?;
                 if parent == Path::new("") {
                     parent = util::paths::home_dir();
                 }
@@ -624,7 +624,7 @@ impl HeadlessProject {
 
         let worktree = worktree_store
             .read_with(&cx, |store, cx| store.worktree_for_id(worktree_id, cx))
-            .context("worktree not found")?;
+            .context("未找到工作树")?;
 
         let load_task = worktree.update(&mut cx, |worktree, cx| {
             worktree.load_binary_file(path.as_ref(), cx)
@@ -679,7 +679,7 @@ impl HeadlessProject {
     ) -> Result<proto::Ack> {
         let trusted_worktrees = cx
             .update(|cx| TrustedWorktrees::try_get_global(cx))
-            .context("missing trusted worktrees")?;
+            .context("缺少受信任的工作树")?;
         let worktree_store = this.read_with(&cx, |project, _| project.worktree_store.clone());
         trusted_worktrees.update(&mut cx, |trusted_worktrees, cx| {
             trusted_worktrees.trust(
@@ -703,7 +703,7 @@ impl HeadlessProject {
     ) -> Result<proto::Ack> {
         let trusted_worktrees = cx
             .update(|cx| TrustedWorktrees::try_get_global(cx))
-            .context("missing trusted worktrees")?;
+            .context("缺少受信任的工作树")?;
         let worktree_store = this.read_with(&cx, |project, _| project.worktree_store.downgrade());
         trusted_worktrees.update(&mut cx, |trusted_worktrees, cx| {
             let restricted_paths = envelope
@@ -747,7 +747,7 @@ impl HeadlessProject {
 
         let worktree = worktree_store
             .read_with(&cx, |store, cx| store.worktree_for_id(worktree_id, cx))
-            .context("worktree not found")?;
+            .context("未找到工作树")?;
 
         let download_task = worktree.update(&mut cx, |worktree: &mut Worktree, cx| {
             worktree.load_binary_file(path.as_ref(), cx)
@@ -846,10 +846,10 @@ impl HeadlessProject {
             let log_store = cx
                 .try_global::<GlobalLogStore>()
                 .map(|global_log_store| global_log_store.0.clone())
-                .context("lsp logs store is missing")?;
+                .context("缺少 LSP 日志存储")?;
             let toggled_log_kind =
                 match proto::toggle_lsp_logs::LogType::from_i32(envelope.payload.log_type)
-                    .context("invalid log type")?
+                    .context("无效的日志类型")?
                 {
                     proto::toggle_lsp_logs::LogType::Log => LogKind::Logs,
                     proto::toggle_lsp_logs::LogType::Trace => LogKind::Trace,
@@ -1010,7 +1010,7 @@ impl HeadlessProject {
         // We need to manage the child process lifecycle
         let child = if !envelope.payload.command.is_empty() {
             spawn_kernel(&envelope.payload.command, &envelope.payload.args).context(format!(
-                "failed to spawn kernel process (command: {})",
+                "无法启动内核进程(命令:{})",
                 envelope.payload.command
             ))?
         } else if let Some(venv_python) = working_directory
@@ -1019,13 +1019,13 @@ impl HeadlessProject {
         {
             let path_str = venv_python.to_string_lossy().to_string();
             spawn_kernel(&path_str, &[]).context(format!(
-                "failed to spawn kernel process (venv: {})",
+                "无法启动内核进程(虚拟环境:{})",
                 path_str
             ))?
         } else {
             spawn_kernel("python3", &[])
                 .or_else(|_| spawn_kernel("python", &[]))
-                .context("failed to spawn kernel process (tried python3 and python)")?
+                .context("无法启动内核进程(已尝试 python3 和 python)")?
         };
 
         this.update(&mut cx.clone(), |this, _cx| {
@@ -1061,7 +1061,7 @@ impl HeadlessProject {
         let peer_id = envelope.original_sender_id.unwrap_or(envelope.sender_id);
         let message = envelope.payload;
         let query = SearchQuery::from_proto(
-            message.query.context("missing query field")?,
+            message.query.context("缺少查询字段")?,
             PathStyle::local(),
         )?;
 
@@ -1224,7 +1224,7 @@ impl HeadlessProject {
         _envelope: TypedEnvelope<proto::Ping>,
         _cx: AsyncApp,
     ) -> Result<proto::Ack> {
-        log::debug!("Received ping from client");
+        log::debug!("收到来自客户端的 ping");
         Ok(proto::Ack {})
     }
 
@@ -1316,7 +1316,7 @@ impl HeadlessProject {
         envelope: TypedEnvelope<proto::GetDirectoryEnvironment>,
         mut cx: AsyncApp,
     ) -> Result<proto::DirectoryEnvironment> {
-        let shell = task::shell_from_proto(envelope.payload.shell.context("missing shell")?)?;
+        let shell = task::shell_from_proto(envelope.payload.shell.context("缺少 Shell")?)?;
         let directory = PathBuf::from(envelope.payload.directory);
         let environment = this
             .update(&mut cx, |this, cx| {
@@ -1325,7 +1325,7 @@ impl HeadlessProject {
                 })
             })
             .await
-            .context("failed to get directory environment")?
+            .context("无法获取目录环境")?
             .into_iter()
             .collect();
         Ok(proto::DirectoryEnvironment { environment })

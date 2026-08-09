@@ -68,7 +68,7 @@ impl SystemNotificationState {
                             let Some(action_id) = response_action_id(transport_id, &action_ids)
                             else {
                                 log::warn!(
-                                    "system notification returned unknown action {transport_id:?}"
+                                    "系统通知返回了未知操作 {transport_id:?}"
                                 );
                                 return;
                             };
@@ -79,10 +79,10 @@ impl SystemNotificationState {
                         .unbounded_send(SystemNotificationResponse { tag, action_id })
                         .ok();
                 }),
-                Err(error) => log::warn!("failed to show system notification: {error}"),
+                Err(error) => log::warn!("显示系统通知失败:{error}"),
             });
         if let Err(error) = spawn_result {
-            log::warn!("failed to spawn system notification thread: {error}");
+            log::warn!("创建系统通知线程失败:{error}");
         }
     }
 

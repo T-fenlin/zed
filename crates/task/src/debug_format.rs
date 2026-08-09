@@ -72,7 +72,7 @@ impl<'de> Deserialize<'de> for AttachRequest {
 
         // Skip creating an AttachRequest if process_id is None
         if helper.process_id.is_none() {
-            return Err(serde::de::Error::custom("process_id is required"));
+            return Err(serde::de::Error::custom("需要提供进程 ID"));
         }
 
         Ok(AttachRequest {
@@ -142,7 +142,7 @@ impl DebugRequest {
                     proto::DebugAttachRequest {
                         process_id: attach_request
                             .process_id
-                            .expect("The process ID to be already filled out."),
+                            .expect("进程 ID 必须已填写。"),
                     },
                 )),
             },
@@ -150,7 +150,7 @@ impl DebugRequest {
     }
 
     pub fn from_proto(val: proto::DebugRequest) -> Result<DebugRequest> {
-        let request = val.request.context("Missing debug request")?;
+        let request = val.request.context("缺少调试请求")?;
         match request {
             proto::debug_request::Request::DebugLaunchRequest(proto::DebugLaunchRequest {
                 program,
@@ -356,8 +356,8 @@ impl DebugTaskFile {
 
         serde_json::json!({
             "$schema": meta_schema,
-            "title": "Debug Configurations",
-            "description": "Configuration for debug scenarios",
+            "title": "调试配置",
+            "description": "调试场景的配置",
             "allowTrailingCommas": true,
             "type": "array",
             "items": {
@@ -373,28 +373,28 @@ impl DebugTaskFile {
                 "properties": {
                     "adapter": {
                         "type": "string",
-                        "description": "The name of the debug adapter"
+                        "description": "调试适配器的名称"
                     },
                     "label": {
                         "type": "string",
-                        "description": "The name of the debug configuration"
+                        "description": "调试配置的名称"
                     },
                     "build": build_task_definition_ref,
                     "tcp_connection": {
                         "type": "object",
-                        "description": "Optional TCP connection information for connecting to an already running debug adapter",
+                        "description": "用于连接已运行的调试适配器的可选 TCP 连接信息",
                         "properties": {
                             "port": {
                                 "type": "integer",
-                                "description": "The port that the debug adapter is listening on (default: auto-find open port)"
+                                "description": "调试适配器监听的端口(默认:自动查找开放端口)"
                             },
                             "host": {
                                 "type": "string",
-                                "description": "The host that the debug adapter is listening to, as an IPv4 or IPv6 address (default: 127.0.0.1)"
+                                "description": "调试适配器监听的主机,作为 IPv4 或 IPv6 地址(默认:127.0.0.1)"
                             },
                             "timeout": {
                                 "type": "integer",
-                                "description": "The max amount of time in milliseconds to connect to a tcp DAP before returning an error (default: 2000ms)"
+                                "description": "连接到 TCP DAP 并在返回错误之前等待的最长时间(毫秒)(默认:2000 毫秒)"
                             }
                         }
                     }
@@ -430,7 +430,7 @@ mod tests {
                 assert_eq!("rust", task_template.command);
                 assert_eq!(vec!["build"], task_template.args);
             }
-            _ => panic!("Expected Template variant"),
+            _ => panic!("预期 Template 变体"),
         }
         assert_eq!(json!({}), deserialized.config);
         assert_eq!("CodeLLDB", deserialized.adapter.as_ref());
@@ -455,7 +455,7 @@ mod tests {
     #[test]
     fn test_launch_scenario_deserialization() {
         let json = r#"{
-            "label": "Launch program",
+            "label": "启动程序",
             "adapter": "CodeLLDB",
             "request": "launch",
             "program": "target/debug/myapp",
@@ -469,13 +469,13 @@ mod tests {
             deserialized.config
         );
         assert_eq!("CodeLLDB", deserialized.adapter.as_ref());
-        assert_eq!("Launch program", deserialized.label.as_ref());
+        assert_eq!("启动程序", deserialized.label.as_ref());
     }
 
     #[test]
     fn test_attach_scenario_deserialization() {
         let json = r#"{
-            "label": "Attach to process",
+            "label": "附加到进程",
             "adapter": "CodeLLDB",
             "process_id": 1234,
             "request": "attach"
@@ -488,7 +488,7 @@ mod tests {
             deserialized.config
         );
         assert_eq!("CodeLLDB", deserialized.adapter.as_ref());
-        assert_eq!("Attach to process", deserialized.label.as_ref());
+        assert_eq!("附加到进程", deserialized.label.as_ref());
     }
 
     #[test]
@@ -499,7 +499,7 @@ mod tests {
         let deserialized: BuildTaskDefinition = serde_json::from_str(json).unwrap();
         match deserialized {
             BuildTaskDefinition::ByName(name) => assert_eq!("my_build_task", name.as_ref()),
-            _ => panic!("Expected ByName variant"),
+            _ => panic!("预期 ByName 变体"),
         }
 
         let json = r#"{
@@ -513,22 +513,22 @@ mod tests {
                 assert_eq!("cargo", task_template.command);
                 assert_eq!(vec!["build", "--release"], task_template.args);
             }
-            _ => panic!("Expected Template variant"),
+            _ => panic!("预期 Template 变体"),
         }
 
         let json = r#"{
-            "label": "Build Release",
+            "label": "构建发布版",
             "command": "cargo",
             "args": ["build", "--release"]
         }"#;
         let deserialized: BuildTaskDefinition = serde_json::from_str(json).unwrap();
         match deserialized {
             BuildTaskDefinition::Template { task_template, .. } => {
-                assert_eq!("Build Release", task_template.label);
+                assert_eq!("构建发布版", task_template.label);
                 assert_eq!("cargo", task_template.command);
                 assert_eq!(vec!["build", "--release"], task_template.args);
             }
-            _ => panic!("Expected Template variant"),
+            _ => panic!("预期 Template 变体"),
         }
     }
 }

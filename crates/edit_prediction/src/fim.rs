@@ -55,7 +55,7 @@ pub fn request_prediction(
         }
         _ => None,
     }) else {
-        return Task::ready(Err(anyhow!("Unsupported edit prediction provider for FIM")));
+        return Task::ready(Err(anyhow!("FIM 不支持的编辑预测提供者")));
     };
 
     let api_key = load_open_ai_compatible_api_key_if_needed(provider, cx);
@@ -145,7 +145,7 @@ pub fn request_prediction(
     });
 
     cx.spawn(async move |cx: &mut gpui::AsyncApp| {
-        let output = result.await.context("fim edit prediction failed")?;
+        let output = result.await.context("FIM 编辑预测失败")?;
         anyhow::Ok(Some(
             EditPredictionResult::new(
                 EditPredictionId(output.request_id.into()),

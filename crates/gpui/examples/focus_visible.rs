@@ -19,15 +19,15 @@ impl Example {
         let items = vec![
             (
                 cx.focus_handle().tab_index(1).tab_stop(true),
-                "Button with .focus() - always shows border when focused",
+                "使用 .focus() 的按钮 - 聚焦时始终显示边框",
             ),
             (
                 cx.focus_handle().tab_index(2).tab_stop(true),
-                "Button with .focus_visible() - only shows border with keyboard",
+                "使用 .focus_visible() 的按钮 - 仅键盘操作时显示边框",
             ),
             (
                 cx.focus_handle().tab_index(3).tab_stop(true),
-                "Button with both .focus() and .focus_visible()",
+                "同时使用 .focus() 和 .focus_visible() 的按钮",
             ),
         ];
 
@@ -38,20 +38,20 @@ impl Example {
             focus_handle,
             items,
             message: SharedString::from(
-                "Try clicking vs tabbing! Click shows no border, Tab shows border.",
+                "试试点击与标签页键切换!点击不显示边框,标签页键显示边框。",
             ),
         }
     }
 
     fn on_tab(&mut self, _: &Tab, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_next(cx);
-        self.message = SharedString::from("Pressed Tab - focus-visible border should appear!");
+        self.message = SharedString::from("按下标签页键 - 应显示 focus-visible 边框!");
     }
 
     fn on_tab_prev(&mut self, _: &TabPrev, window: &mut Window, cx: &mut Context<Self>) {
         window.focus_prev(cx);
         self.message =
-            SharedString::from("Pressed Shift-Tab - focus-visible border should appear!");
+            SharedString::from("按下 Shift-标签页 - 应显示 focus-visible 边框!");
     }
 
     fn on_quit(&mut self, _: &Quit, _window: &mut Window, cx: &mut Context<Self>) {
@@ -94,7 +94,7 @@ impl Render for Example {
                     .text_2xl()
                     .font_weight(gpui::FontWeight::BOLD)
                     .text_color(gpui::rgb(0x111827))
-                    .child("CSS focus-visible Demo"),
+                    .child("CSS focus-visible 演示"),
             )
             .child(
                 div()
@@ -119,7 +119,7 @@ impl Render for Example {
                                     .text_sm()
                                     .font_weight(gpui::FontWeight::BOLD)
                                     .text_color(gpui::rgb(0x374151))
-                                    .child("1. Regular .focus() - always visible:"),
+                                    .child("1. 常规 .focus() - 始终可见:"),
                             )
                             .child(
                                 button_base("button1", self.items[0].1)
@@ -129,7 +129,7 @@ impl Render for Example {
                                     })
                                     .on_click(cx.listener(|this, _, _, cx| {
                                         this.message =
-                                            "Clicked button 1 - focus border is visible!".into();
+                                            "点击了按钮 1 - 焦点边框可见!".into();
                                         cx.notify();
                                     })),
                             ),
@@ -144,7 +144,7 @@ impl Render for Example {
                                     .text_sm()
                                     .font_weight(gpui::FontWeight::BOLD)
                                     .text_color(gpui::rgb(0x374151))
-                                    .child("2. New .focus_visible() - only keyboard:"),
+                                    .child("2. 新增 .focus_visible() - 仅键盘操作:"),
                             )
                             .child(
                                 button_base("button2", self.items[1].1)
@@ -154,7 +154,7 @@ impl Render for Example {
                                     })
                                     .on_click(cx.listener(|this, _, _, cx| {
                                         this.message =
-                                            "Clicked button 2 - no border! Try Tab instead.".into();
+                                            "点击了按钮 2 - 无边框!请改用标签页键。".into();
                                         cx.notify();
                                     })),
                             ),
@@ -170,7 +170,7 @@ impl Render for Example {
                                     .font_weight(gpui::FontWeight::BOLD)
                                     .text_color(gpui::rgb(0x374151))
                                     .child(
-                                        "3. Both .focus() (yellow) and .focus_visible() (green):",
+                                        "3. 同时使用 .focus()(黄色)和 .focus_visible()(绿色):",
                                     ),
                             )
                             .child(
@@ -184,7 +184,7 @@ impl Render for Example {
                                     })
                                     .on_click(cx.listener(|this, _, _, cx| {
                                         this.message =
-                                            "Clicked button 3 - yellow border. Tab shows green!"
+                                            "点击了按钮 3 - 黄色边框。标签页键显示绿色!"
                                                 .into();
                                         cx.notify();
                                     })),

@@ -69,7 +69,7 @@ async fn perform_web_search(
     organization_id: Option<OrganizationId>,
     body: WebSearchBody,
 ) -> Result<WebSearchResponse> {
-    let organization_id = organization_id.ok_or_else(|| anyhow!("No organization selected."))?;
+    let organization_id = organization_id.ok_or_else(|| anyhow!("未选择组织。"))?;
 
     let url = client.http_client().build_zed_llm_url("/web_search", &[])?;
     let body = serde_json::to_string(&body)?;
@@ -92,6 +92,6 @@ async fn perform_web_search(
         let status = response.status();
         let mut body = String::new();
         response.body_mut().read_to_string(&mut body).await?;
-        anyhow::bail!("error performing web search.\nStatus: {status:?}\nBody: {body}");
+        anyhow::bail!("执行网络搜索时出错。\n状态:{status:?}\n响应体:{body}");
     }
 }

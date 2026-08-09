@@ -2793,7 +2793,7 @@ Sentence ending file2.rs.
                         target: Some(
                             lsp::Uri::from_str("https://opensource.org/licenses/MIT").unwrap(),
                         ),
-                        tooltip: Some("Open license".to_string()),
+                        tooltip: Some("打开许可证".to_string()),
                         data: None,
                     }]))
                 },
@@ -2946,7 +2946,7 @@ Sentence ending file2.rs.
                         target: Some(
                             lsp::Uri::from_str("https://opensource.org/licenses/MIT").unwrap(),
                         ),
-                        tooltip: Some("Open license".to_string()),
+                        tooltip: Some("打开许可证".to_string()),
                         data: None,
                     }]))
                 },
@@ -3044,7 +3044,7 @@ Sentence ending file2.rs.
                         target: Some(
                             lsp::Uri::from_str("https://opensource.org/licenses/MIT").unwrap(),
                         ),
-                        tooltip: Some("Open license".to_string()),
+                        tooltip: Some("打开许可证".to_string()),
                         data: None,
                     }]))
                 },
@@ -3073,10 +3073,10 @@ Sentence ending file2.rs.
                 .find_map(|popover| {
                     let parsed = popover.parsed_content.as_ref()?;
                     let text = parsed.read(cx).parsed_markdown().source().to_string();
-                    (text == "Open license").then_some(text)
+                    (text == "打开许可证").then_some(text)
                 })
                 .expect("doc-link tooltip should appear in info_popovers on plain hover");
-            assert_eq!(tooltip_text, "Open license");
+            assert_eq!(tooltip_text, "打开许可证");
         });
 
         // Move the mouse off the link; `show_hover` re-fires for the new
@@ -3093,7 +3093,7 @@ Sentence ending file2.rs.
                 popover
                     .parsed_content
                     .as_ref()
-                    .map(|parsed| *parsed.read(cx).parsed_markdown().source() == "Open license")
+                    .map(|parsed| *parsed.read(cx).parsed_markdown().source() == "打开许可证")
                     .unwrap_or(false)
             });
             assert!(
@@ -3153,7 +3153,7 @@ Sentence ending file2.rs.
                         target: Some(
                             lsp::Uri::from_str("https://opensource.org/licenses/MIT").unwrap(),
                         ),
-                        tooltip: Some("Resolved tooltip".to_string()),
+                        tooltip: Some("已解析的悬停提示".to_string()),
                         data: None,
                     })
                 },
@@ -3183,10 +3183,10 @@ Sentence ending file2.rs.
                 .find_map(|popover| {
                     let parsed = popover.parsed_content.as_ref()?;
                     let text = parsed.read(cx).parsed_markdown().source().to_string();
-                    (text == "Resolved tooltip").then_some(text)
+                    (text == "已解析的悬停提示").then_some(text)
                 })
                 .expect("resolved doc-link tooltip should appear in info_popovers");
-            assert_eq!(tooltip_text, "Resolved tooltip");
+            assert_eq!(tooltip_text, "已解析的悬停提示");
         });
     }
 
@@ -3234,7 +3234,7 @@ Sentence ending file2.rs.
                         target: Some(
                             lsp::Uri::from_str("https://opensource.org/licenses/MIT").unwrap(),
                         ),
-                        tooltip: Some("Open license".to_string()),
+                        tooltip: Some("打开许可证".to_string()),
                         data: None,
                     }]))
                 },

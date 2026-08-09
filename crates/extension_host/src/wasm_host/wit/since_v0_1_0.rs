@@ -309,7 +309,7 @@ impl http_client::Host for WasmState {
             let mut response = self.host.http_client.send(request).await?;
 
             if response.status().is_client_error() || response.status().is_server_error() {
-                bail!("failed to fetch '{url}': status code {}", response.status())
+                bail!("无法获取 '{url}': 状态码 {}", response.status())
             }
             convert_response(&mut response).await
         })
@@ -473,7 +473,7 @@ impl ExtensionImports for WasmState {
                         })?)
                     }
                     _ => {
-                        bail!("Unknown settings category: {}", category);
+                        bail!("未知的设置类别:{}", category);
                     }
                 })
             }
@@ -524,11 +524,11 @@ impl ExtensionImports for WasmState {
                 .http_client
                 .get(&url, Default::default(), true)
                 .await
-                .context("downloading release")?;
+                .context("正在下载发布版本")?;
 
             anyhow::ensure!(
                 response.status().is_success(),
-                "download failed with status {}",
+                "下载失败,状态码 {}",
                 response.status()
             );
             let mut body = BufReader::new(response.body_mut());
@@ -564,7 +564,7 @@ impl ExtensionImports for WasmState {
                     futures::pin_mut!(body);
                     extract_zip(&destination_path, body)
                         .await
-                        .with_context(|| format!("unzipping {path:?} archive"))?;
+                        .with_context(|| format!("正在解压 {path:?} 压缩包"))?;
                 }
             }
 
@@ -582,7 +582,7 @@ impl ExtensionImports for WasmState {
 
         make_file_executable(&path)
             .await
-            .with_context(|| format!("setting permissions for path {path:?}"))
+            .with_context(|| format!("正在为路径 {path:?} 设置权限"))
             .to_wasmtime_result()
     }
 }

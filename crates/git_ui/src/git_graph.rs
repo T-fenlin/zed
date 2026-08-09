@@ -147,7 +147,7 @@ impl PickerDelegate for CommitTagPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Copy Tag".into()
+        "复制标签".into()
     }
 
     fn match_count(&self) -> usize {
@@ -304,7 +304,7 @@ impl ChangedFileEntry {
                 } else {
                     format!("{}/{}", dir_path, file_name).into()
                 };
-                move |_, cx| Tooltip::with_meta("View Changes", None, meta.clone(), cx)
+                move |_, cx| Tooltip::with_meta("查看更改", None, meta.clone(), cx)
             })
             .on_click({
                 let entry = self.clone();
@@ -385,7 +385,7 @@ impl ChangedFileDirectoryEntry {
             )
             .tooltip({
                 let name = self.name.clone();
-                move |_, cx| Tooltip::with_meta("Toggle Folder", None, name.clone(), cx)
+                move |_, cx| Tooltip::with_meta("切换文件夹", None, name.clone(), cx)
             })
             .on_click(move |_, _, cx| {
                 git_graph
@@ -612,7 +612,7 @@ fn timestamp_format() -> &'static [BorrowedFormatItem<'static>] {
 
 fn format_timestamp(timestamp: i64) -> String {
     let Ok(datetime) = OffsetDateTime::from_unix_timestamp(timestamp) else {
-        return "Unknown".to_string();
+        return "未知".to_string();
     };
 
     let local_offset = UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC);
@@ -1472,7 +1472,7 @@ impl GitGraph {
 
         let search_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Search commits…", window, cx);
+            editor.set_placeholder_text("搜索提交…", window, cx);
             editor
         });
 
@@ -1831,7 +1831,7 @@ impl GitGraph {
                     author_name = data.author_name.clone();
                     formatted_time = format_timestamp(data.commit_timestamp);
                 } else {
-                    subject = "Loading…".into();
+                    subject = "加载中…".into();
                     author_name = "".into();
                 }
 
@@ -2122,7 +2122,7 @@ impl GitGraph {
         if self.selected_entry_idx == Some(idx) || idx >= self.graph_data.commits.len() {
             debug_assert!(
                 idx < self.graph_data.commits.len(),
-                "attempted to select out of bounds index: {idx}, commits.len: {}",
+                "尝试选择超出范围的索引: {idx}, commits.len: {}",
                 self.graph_data.commits.len()
             );
             return;
@@ -2207,7 +2207,7 @@ impl GitGraph {
             }
             _ => {
                 debug_panic!(
-                    "Fetched commit data asynchronously, but was not given a listener or cached commit data."
+                    "异步获取了提交数据,但未提供监听器或缓存的提交数据。"
                 );
             }
         };
@@ -2493,9 +2493,9 @@ impl GitGraph {
     ) {
         let is_path_history = matches!(self.log_source, LogSource::Path(_));
         let columns: &[&str] = if is_path_history {
-            &["Description", "Date", "Author", "Commit"]
+            &["描述", "日期", "作者", "提交"]
         } else {
-            &["Graph", "Description", "Date", "Author", "Commit"]
+            &["图表", "描述", "日期", "作者", "提交"]
         };
 
         let filter = self.column_visibility.clone();
@@ -2508,7 +2508,7 @@ impl GitGraph {
         let focus_handle = self.focus_handle.clone();
         let git_graph = cx.entity();
         let context_menu = ContextMenu::build(window, cx, |mut context_menu, _window, _cx| {
-            context_menu = context_menu.context(focus_handle).header("Columns");
+            context_menu = context_menu.context(focus_handle).header("列");
             for (col_idx, label) in columns.iter().enumerate() {
                 let is_visible = !filter.get(col_idx).copied().unwrap_or(false);
                 // Disable hiding the last remaining visible column.
@@ -2583,7 +2583,7 @@ impl GitGraph {
                             })
                             .tooltip(move |_window, cx| {
                                 Tooltip::for_action_in(
-                                    "Match Case Sensitivity",
+                                    "区分大小写",
                                     &ToggleCaseSensitive,
                                     &focus_handle,
                                     cx,
@@ -2602,7 +2602,7 @@ impl GitGraph {
                             .icon_size(IconSize::Small)
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Select Previous Match",
+                                    "选择上一个匹配项",
                                     &SelectPreviousMatch,
                                     &focus_handle,
                                     cx,
@@ -2625,7 +2625,7 @@ impl GitGraph {
                             .icon_size(IconSize::Small)
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Select Next Match",
+                                    "选择下一个匹配项",
                                     &SelectNextMatch,
                                     &focus_handle,
                                     cx,
@@ -2732,7 +2732,7 @@ impl GitGraph {
                 data.author_email.clone(),
                 Some(data.commit_timestamp),
             ),
-            CommitDataState::Loading(_) => ("Loading…".into(), "".into(), None),
+            CommitDataState::Loading(_) => ("加载中…".into(), "".into(), None),
         };
 
         let date_string = commit_timestamp
@@ -2811,9 +2811,9 @@ impl GitGraph {
             .toggle_state(self.changed_files_view_mode.is_tree())
             .tooltip({
                 let tooltip = if is_tree_view {
-                    "Show Flat View"
+                    "显示平铺视图"
                 } else {
-                    "Show Tree View"
+                    "显示树状视图"
                 };
                 move |_, cx| Tooltip::for_action(tooltip, &ToggleChangedFilesView, cx)
             })
@@ -2887,9 +2887,9 @@ impl GitGraph {
                                 let is_copied = copied_state.read(cx).is_copied();
 
                                 let (icon, icon_color, tooltip_label) = if is_copied {
-                                    (IconName::Check, Color::Success, "Email Copied!")
+                                    (IconName::Check, Color::Success, "邮箱已复制!")
                                 } else {
-                                    (IconName::Envelope, Color::Muted, "Copy Email")
+                                    (IconName::Envelope, Color::Muted, "复制邮箱")
                                 };
 
                                 let copy_email = author_email.clone();
@@ -2938,9 +2938,9 @@ impl GitGraph {
                                 let is_copied = copied_state.read(cx).is_copied();
 
                                 let (icon, icon_color, tooltip_label) = if is_copied {
-                                    (IconName::Check, Color::Success, "Commit SHA Copied!")
+                                    (IconName::Check, Color::Success, "提交 SHA 已复制!")
                                 } else {
-                                    (IconName::Hash, Color::Muted, "Copy Commit SHA")
+                                    (IconName::Hash, Color::Muted, "复制提交 SHA")
                                 };
 
                                 Button::new("sha-button", &full_sha)
@@ -2998,7 +2998,7 @@ impl GitGraph {
                                 this.child(
                                     Button::new(
                                         "view-on-provider",
-                                        format!("View on {}", provider_name),
+                                        format!("在 {} 上查看", provider_name),
                                     )
                                     .start_icon(
                                         Icon::new(icon).size(IconSize::Small).color(Color::Muted),
@@ -3036,12 +3036,12 @@ impl GitGraph {
                                     .gap_1()
                                     .child(
                                         Label::new(format!(
-                                            "{} Changed {}",
+                                            "{} 更改了 {} 个文件",
                                             changed_files_count,
                                             if changed_files_count == 1 {
-                                                "File"
+                                                "文件"
                                             } else {
-                                                "Files"
+                                                "文件"
                                             }
                                         ))
                                         .size(LabelSize::Small)
@@ -3153,7 +3153,7 @@ impl GitGraph {
             .child(Divider::horizontal())
             .child(
                 h_flex().p_1p5().w_full().child(
-                    Button::new("view-commit", "View Commit")
+                    Button::new("view-commit", "查看提交")
                         .full_width()
                         .start_icon(
                             Icon::new(IconName::GitCommit)
@@ -3726,11 +3726,11 @@ impl Render for GitGraph {
 
         let content = if commit_count == 0 {
             let message = if let Some(error) = &error {
-                format!("Error loading: {}", error)
+                format!("加载错误: {}", error)
             } else if is_loading {
-                "Loading".to_string()
+                "正在加载".to_string()
             } else {
-                "No commits found".to_string()
+                "未找到提交".to_string()
             };
             let label = Label::new(message)
                 .color(Color::Muted)
@@ -3805,20 +3805,20 @@ impl Render for GitGraph {
                                     if !is_path_history {
                                         TableRow::from_vec(
                                             vec![
-                                                Label::new("Graph")
+                                                Label::new("图表")
                                                     .color(Color::Muted)
                                                     .truncate()
                                                     .into_any_element(),
-                                                Label::new("Description")
+                                                Label::new("描述")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Date")
+                                                Label::new("日期")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Author")
+                                                Label::new("作者")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Commit")
+                                                Label::new("提交")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],
@@ -3827,16 +3827,16 @@ impl Render for GitGraph {
                                     } else {
                                         TableRow::from_vec(
                                             vec![
-                                                Label::new("Description")
+                                                Label::new("描述")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Date")
+                                                Label::new("日期")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Author")
+                                                Label::new("作者")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Commit")
+                                                Label::new("提交")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],
@@ -4134,9 +4134,9 @@ impl Item for GitGraph {
             move |_, _| {
                 v_flex()
                     .child(Label::new(if path_history_path.is_some() {
-                        "Path History"
+                        "路径历史"
                     } else {
-                        "Git Graph"
+                        "Git 图表"
                     }))
                     .when_some(path_history_path.clone(), |this, path| {
                         this.child(Label::new(path).color(Color::Muted).size(LabelSize::Small))
@@ -4165,7 +4165,7 @@ impl Item for GitGraph {
                     .file_name()
                     .map(|name| name.to_string_lossy().to_string())
             })
-            .map_or_else(|| "Git Graph".into(), |name| SharedString::from(name))
+            .map_or_else(|| "Git 图表".into(), |name| SharedString::from(name))
     }
 
     fn show_toolbar(&self) -> bool {
@@ -4217,7 +4217,7 @@ impl workspace::SerializableItem for GitGraph {
             hidden_columns,
         )) = db.get_git_graph(item_id, workspace_id).ok().flatten()
         else {
-            return Task::ready(Err(anyhow::anyhow!("No git graph to deserialize")));
+            return Task::ready(Err(anyhow::anyhow!("没有可反序列化的 git 图表")));
         };
 
         let state = persistence::SerializedGitGraphState {
@@ -4251,7 +4251,7 @@ impl workspace::SerializableItem for GitGraph {
                 });
 
                 let Some(repo_id) = repo_id else {
-                    return Err(anyhow::anyhow!("Repository not found for path: {:?}", path));
+                    return Err(anyhow::anyhow!("未找到路径 {:?} 对应的仓库", path));
                 };
 
                 let log_source = persistence::deserialize_log_source(&state);
@@ -4749,7 +4749,7 @@ mod tests {
     ) -> Result<()> {
         if graph.commits.len() != commits.len() {
             bail!(
-                "Commit count mismatch: graph has {} commits, expected {}",
+                "提交数量不匹配:图表有 {} 个提交,预期 {} 个",
                 graph.commits.len(),
                 commits.len()
             );
@@ -4760,7 +4760,7 @@ mod tests {
         {
             if graph_commit.data.sha != expected_commit.sha {
                 bail!(
-                    "Commit order mismatch at index {}: graph has {:?}, expected {:?}",
+                    "索引 {} 处提交顺序不匹配:图表为 {:?},预期 {:?}",
                     idx,
                     graph_commit.data.sha,
                     expected_commit.sha
@@ -4775,15 +4775,15 @@ mod tests {
         for line in &graph.lines {
             let child_row = *oid_to_row
                 .get(&line.child)
-                .context("Line references non-existent child commit")?;
+                .context("线条引用了不存在的子提交")?;
 
             let parent_row = *oid_to_row
                 .get(&line.parent)
-                .context("Line references non-existent parent commit")?;
+                .context("线条引用了不存在的父提交")?;
 
             if child_row >= parent_row {
                 bail!(
-                    "child_row ({}) must be < parent_row ({})",
+                    "child_row ({}) 必须小于 parent_row ({})",
                     child_row,
                     parent_row
                 );
@@ -4791,7 +4791,7 @@ mod tests {
 
             if line.full_interval.start != child_row {
                 bail!(
-                    "full_interval.start ({}) != child_row ({})",
+                    "full_interval.start ({}) 不等于 child_row ({})",
                     line.full_interval.start,
                     child_row
                 );
@@ -4799,7 +4799,7 @@ mod tests {
 
             if line.full_interval.end != parent_row {
                 bail!(
-                    "full_interval.end ({}) != parent_row ({})",
+                    "full_interval.end ({}) 不等于 parent_row ({})",
                     line.full_interval.end,
                     parent_row
                 );
@@ -4813,7 +4813,7 @@ mod tests {
 
                 if segment_end_row != line.full_interval.end {
                     bail!(
-                        "last segment ends at row {} but full_interval.end is {}",
+                        "最后一段结束于行 {},但 full_interval.end 为 {}",
                         segment_end_row,
                         line.full_interval.end
                     );
@@ -4831,16 +4831,16 @@ mod tests {
         for line in &graph.lines {
             let child_row = *oid_to_row
                 .get(&line.child)
-                .context("Line references non-existent child commit")?;
+                .context("线条引用了不存在的子提交")?;
 
             let parent_row = *oid_to_row
                 .get(&line.parent)
-                .context("Line references non-existent parent commit")?;
+                .context("线条引用了不存在的父提交")?;
 
             let child_lane = graph.commits[child_row].lane;
             if line.child_column != child_lane {
                 bail!(
-                    "child_column ({}) != child's lane ({})",
+                    "child_column ({}) 不等于子节点的车道 ({})",
                     line.child_column,
                     child_lane
                 );
@@ -4856,7 +4856,7 @@ mod tests {
             let parent_lane = graph.commits[parent_row].lane;
             if current_column != parent_lane {
                 bail!(
-                    "ending column ({}) != parent's lane ({})",
+                    "结束列 ({}) 不等于父节点的车道 ({})",
                     current_column,
                     parent_lane
                 );
@@ -4869,7 +4869,7 @@ mod tests {
     fn verify_segment_continuity(graph: &GraphData) -> Result<()> {
         for line in &graph.lines {
             if line.segments.is_empty() {
-                bail!("Line has no segments");
+                bail!("线条没有分段");
             }
 
             let mut current_row = line.full_interval.start;
@@ -4882,7 +4882,7 @@ mod tests {
 
                 if segment_end_row < current_row {
                     bail!(
-                        "segment {} ends at row {} which is before current row {}",
+                        "分段 {} 结束于行 {},早于当前行 {}",
                         idx,
                         segment_end_row,
                         current_row
@@ -5018,7 +5018,7 @@ mod tests {
 
             if !found_edges.insert(edge) {
                 bail!(
-                    "Duplicate line found for edge {:?} -> {:?}",
+                    "发现边 {:?} -> {:?} 的重复线条",
                     line.child,
                     line.parent
                 );
@@ -5026,7 +5026,7 @@ mod tests {
 
             if !expected_edges.contains(&edge) {
                 bail!(
-                    "Orphan line found: {:?} -> {:?} is not in the commit graph",
+                    "发现孤立线条:{:?} -> {:?} 不在提交图中",
                     line.child,
                     line.parent
                 );
@@ -5035,14 +5035,14 @@ mod tests {
 
         for (child, parent) in &expected_edges {
             if !found_edges.contains(&(*child, *parent)) {
-                bail!("Missing line for edge {:?} -> {:?}", child, parent);
+                bail!("缺少边 {:?} -> {:?} 的线条", child, parent);
             }
         }
 
         assert_eq!(
             expected_edges.symmetric_difference(&found_edges).count(),
             0,
-            "The symmetric difference should be zero"
+            "对称差应为零"
         );
 
         Ok(())
@@ -5068,11 +5068,11 @@ mod tests {
 
             let child_row = *oid_to_row
                 .get(&line.child)
-                .context("Line references non-existent child commit")?;
+                .context("线条引用了不存在的子提交")?;
 
             let parent_row = *oid_to_row
                 .get(&line.parent)
-                .context("Line references non-existent parent commit")?;
+                .context("线条引用了不存在的父提交")?;
 
             let parent_lane = graph.commits[parent_row].lane;
 
@@ -5093,7 +5093,7 @@ mod tests {
 
             if has_commits_in_path {
                 bail!(
-                    "Merge line from {:?} to {:?} curves directly to parent lane {} but there are commits in that lane between rows {} and {}",
+                    "从 {:?} 到 {:?} 的合并线直接弯曲到父车道 {},但该车道在行 {} 和 {} 之间存在提交",
                     line.child,
                     line.parent,
                     parent_lane,
@@ -5107,7 +5107,7 @@ mod tests {
             if curve_ends_at_parent {
                 if line.segments.len() != 1 {
                     bail!(
-                        "Merge line from {:?} to {:?} curves directly to parent (curve_row == parent_row), but has {} segments instead of 1 [MergeCurve]",
+                        "从 {:?} 到 {:?} 的合并线直接弯曲到父节点(curve_row == parent_row),但有 {} 个分段而不是 1 个 [MergeCurve]",
                         line.child,
                         line.parent,
                         line.segments.len()
@@ -5116,7 +5116,7 @@ mod tests {
             } else {
                 if line.segments.len() != 2 {
                     bail!(
-                        "Merge line from {:?} to {:?} curves directly to parent lane without overlap, but has {} segments instead of 2 [MergeCurve, Straight]",
+                        "从 {:?} 到 {:?} 的合并线直接弯曲到父车道且无重叠,但有 {} 个分段而不是 2 个 [MergeCurve, Straight]",
                         line.child,
                         line.parent,
                         line.segments.len()
@@ -5130,7 +5130,7 @@ mod tests {
 
                 if !is_straight_segment {
                     bail!(
-                        "Merge line from {:?} to {:?} curves directly to parent lane without overlap, but second segment is not a Straight segment",
+                        "从 {:?} 到 {:?} 的合并线直接弯曲到父车道且无重叠,但第二个分段不是直线段",
                         line.child,
                         line.parent
                     );
@@ -5147,15 +5147,15 @@ mod tests {
     ) -> Result<()> {
         let oid_to_row = build_oid_to_row_map(graph);
 
-        verify_commit_order(graph, commits).context("commit order")?;
-        verify_line_endpoints(graph, &oid_to_row).context("line endpoints")?;
-        verify_column_correctness(graph, &oid_to_row).context("column correctness")?;
-        verify_segment_continuity(graph).context("segment continuity")?;
-        verify_merge_line_optimality(graph, &oid_to_row).context("merge line optimality")?;
+        verify_commit_order(graph, commits).context("提交顺序")?;
+        verify_line_endpoints(graph, &oid_to_row).context("线条端点")?;
+        verify_column_correctness(graph, &oid_to_row).context("列正确性")?;
+        verify_segment_continuity(graph).context("分段连续性")?;
+        verify_merge_line_optimality(graph, &oid_to_row).context("合并线最优性")?;
         verify_keep_shared_parents_on_leftmost_lane(graph)
-            .context("keep shared parents on leftmost lane")?;
+            .context("将共享父节点保留在最左侧车道")?;
         verify_coverage(graph).context("coverage")?;
-        verify_line_overlaps(graph).context("line overlaps")?;
+        verify_line_overlaps(graph).context("线条重叠")?;
         Ok(())
     }
 
@@ -5250,7 +5250,7 @@ mod tests {
             assert_eq!(
                 num_commits,
                 commits.len(),
-                "seed={}: Generate random commit dag didn't generate the correct amount of commits",
+                "seed={}:生成随机提交 DAG 未生成正确数量的提交",
                 seed
             );
 
@@ -5299,7 +5299,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         repository.update(cx, |repo, cx| {
@@ -5354,7 +5354,7 @@ mod tests {
             assert_eq!(project.repositories(cx).len(), 2);
             project
                 .active_repository(cx)
-                .expect("should have an active repository")
+                .expect("应有一个活动仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -5378,7 +5378,7 @@ mod tests {
         });
 
         assert_eq!(commit_count, 0);
-        assert!(!is_loading, "empty graph data should stop loading");
+        assert!(!is_loading, "空图数据应停止加载");
     }
 
     #[gpui::test]
@@ -5407,7 +5407,7 @@ mod tests {
                 if let GitStoreEvent::RepositoryUpdated(_, repository_event, true) = event {
                     observed_repository_events
                         .lock()
-                        .expect("repository event mutex should be available")
+                        .expect("仓库事件互斥锁应可用")
                         .push(repository_event.clone());
                 }
             })
@@ -5417,7 +5417,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         repository.update(cx, |repo, cx| {
@@ -5431,12 +5431,12 @@ mod tests {
 
         let observed_repository_events = observed_repository_events
             .lock()
-            .expect("repository event mutex should be available");
+            .expect("仓库事件互斥锁应可用");
         assert!(
             observed_repository_events
                 .iter()
                 .any(|event| matches!(event, RepositoryEvent::HeadChanged)),
-            "initial repository scan should emit HeadChanged"
+            "初始仓库扫描应发出 HeadChanged 事件"
         );
         let commit_count_after = repository.read_with(cx, |repo, _| {
             repo.get_graph_data(LogSource::default(), LogOrder::default())
@@ -5446,7 +5446,7 @@ mod tests {
         assert_eq!(
             commits.len(),
             commit_count_after,
-            "initial_graph_data should remain populated after events emitted by initial repository scan"
+            "初始仓库扫描发出事件后,initial_graph_data 应保持填充状态"
         );
     }
 
@@ -5466,7 +5466,7 @@ mod tests {
 
         fs.set_graph_error(
             Path::new("/project/.git"),
-            Some("fatal: bad default revision 'HEAD'".to_string()),
+            Some("致命错误:默认修订版本 'HEAD' 无效".to_string()),
         );
 
         let project = Project::test(fs.clone(), [Path::new("/project")], cx).await;
@@ -5474,7 +5474,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         repository.update(cx, |repo, cx| {
@@ -5490,12 +5490,12 @@ mod tests {
 
         assert!(
             error.is_some(),
-            "graph data should contain an error after initial_graph_data fails"
+            "initial_graph_data 失败后,图数据应包含错误"
         );
         let error_message = error.unwrap();
         assert!(
-            error_message.contains("bad default revision"),
-            "error should contain the git error message, got: {}",
+            error_message.contains("无效的默认修订版本"),
+            "错误应包含 git 错误消息,实际为:{}",
             error_message
         );
     }
@@ -5549,7 +5549,7 @@ mod tests {
 
             (
                 first_repository.expect("should have repository for /project_a"),
-                second_repository.expect("should have repository for /project_b"),
+                second_repository.expect("应有 /project_b 的仓库"),
             )
         });
         first_repository.update(cx, |repository, cx| repository.set_as_active_repository(cx));
@@ -5578,7 +5578,7 @@ mod tests {
             git_graph.read_with(&*cx, |graph, _| graph.graph_data.commits.len());
         assert!(
             initial_commit_count > 0,
-            "graph data should have been loaded, got 0 commits"
+            "图数据应已加载,实际为 0 个提交"
         );
 
         git_graph.update(cx, |graph, cx| {
@@ -5590,7 +5590,7 @@ mod tests {
             git_graph.read_with(&*cx, |graph, _| graph.graph_data.commits.len());
         assert_eq!(
             commit_count_after_clear, 0,
-            "graph_data should be cleared after switching away"
+            "切换离开后 graph_data 应被清除"
         );
 
         git_graph.update(cx, |graph, cx| {
@@ -5611,7 +5611,7 @@ mod tests {
         assert_eq!(
             reloaded_commit_count,
             commits.len(),
-            "graph data should be reloaded after switching back"
+            "切换回来后图数据应重新加载"
         );
     }
 
@@ -5650,7 +5650,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have active repository")
+                .expect("应有一个活动仓库")
         });
         let tracked1_repo_path = RepoPath::new(&"tracked1.txt").unwrap();
         let tracked2_repo_path = RepoPath::new(&"tracked2.txt").unwrap();
@@ -5658,25 +5658,25 @@ mod tests {
             .read_with(cx, |repository, cx| {
                 repository.repo_path_to_project_path(&tracked1_repo_path, cx)
             })
-            .expect("tracked1 should resolve to project path");
+            .expect("tracked1 应解析为项目路径");
         let tracked2 = repository
             .read_with(cx, |repository, cx| {
                 repository.repo_path_to_project_path(&tracked2_repo_path, cx)
             })
-            .expect("tracked2 should resolve to project path");
+            .expect("tracked2 应解析为项目路径");
 
         let workspace_window = cx.add_window(|window, cx| {
             workspace::MultiWorkspace::test_new(project.clone(), window, cx)
         });
         let workspace = workspace_window
             .read_with(cx, |multi, _| multi.workspace().clone())
-            .expect("workspace should exist");
+            .expect("工作区应存在");
 
         let (weak_workspace, async_window_cx) = workspace_window
             .update(cx, |multi, window, cx| {
                 (multi.workspace().downgrade(), window.to_async(cx))
             })
-            .expect("window should be available");
+            .expect("窗口应可用");
         cx.background_executor.allow_parking();
         let git_panel = cx
             .foreground_executor()
@@ -5685,7 +5685,7 @@ mod tests {
                 weak_workspace,
                 async_window_cx,
             ))
-            .expect("git panel should load");
+            .expect("Git 面板应加载");
         cx.background_executor.forbid_parking();
 
         workspace_window
@@ -5695,7 +5695,7 @@ mod tests {
                     workspace.add_panel(git_panel.clone(), window, cx);
                 });
             })
-            .expect("workspace window should be available");
+            .expect("工作区窗口应可用");
         cx.executor().advance_clock(Duration::from_millis(100));
         cx.run_until_parked();
 
@@ -5708,13 +5708,13 @@ mod tests {
                     panel.focus_handle(cx).focus(window, cx);
                 });
             })
-            .expect("workspace window should be available");
+            .expect("工作区窗口应可用");
         cx.run_until_parked();
         workspace_window
             .update(cx, |_, window, cx| {
                 window.dispatch_action(Box::new(git::FileHistory), cx);
             })
-            .expect("workspace window should be available");
+            .expect("工作区窗口应可用");
         cx.run_until_parked();
 
         workspace.read_with(cx, |workspace, cx| {
@@ -5735,13 +5735,13 @@ mod tests {
                     panel.focus_handle(cx).focus(window, cx);
                 });
             })
-            .expect("workspace window should be available");
+            .expect("工作区窗口应可用");
         cx.run_until_parked();
         workspace_window
             .update(cx, |_, window, cx| {
                 window.dispatch_action(Box::new(git::FileHistory), cx);
             })
-            .expect("workspace window should be available");
+            .expect("工作区窗口应可用");
         cx.run_until_parked();
 
         workspace.read_with(cx, |workspace, cx| {
@@ -5756,11 +5756,11 @@ mod tests {
         let tracked1_buffer = project
             .update(cx, |project, cx| project.open_buffer(tracked1.clone(), cx))
             .await
-            .expect("tracked1 buffer should open");
+            .expect("tracked1 缓冲区应打开");
         let tracked2_buffer = project
             .update(cx, |project, cx| project.open_buffer(tracked2.clone(), cx))
             .await
-            .expect("tracked2 buffer should open");
+            .expect("tracked2 缓冲区应打开");
         workspace_window
             .update(cx, |multi, window, cx| {
                 let workspace = multi.workspace();
@@ -5796,7 +5796,7 @@ mod tests {
                     let snapshot = editor.buffer().read(cx).snapshot(cx);
                     let second_excerpt_point = snapshot
                         .range_for_buffer(tracked2_buffer.read(cx).remote_id())
-                        .expect("tracked2 excerpt should exist")
+                        .expect("tracked2 摘录应存在")
                         .start;
                     let anchor = snapshot.anchor_before(second_excerpt_point);
                     editor.change_selections(
@@ -5810,14 +5810,14 @@ mod tests {
                     window.focus(&editor.focus_handle(cx), cx);
                 });
             })
-            .expect("workspace window should be available");
+            .expect("工作区窗口应可用");
         cx.run_until_parked();
 
         workspace_window
             .update(cx, |_, window, cx| {
                 window.dispatch_action(Box::new(git::FileHistory), cx);
             })
-            .expect("workspace window should be available");
+            .expect("工作区窗口应可用");
         cx.run_until_parked();
 
         workspace.read_with(cx, |workspace, cx| {
@@ -5826,7 +5826,7 @@ mod tests {
             let latest = graphs
                 .into_iter()
                 .max_by_key(|graph| graph.entity_id())
-                .expect("expected a git graph");
+                .expect("预期有一个 git 图表");
             assert_eq!(
                 latest.read(cx).log_source,
                 LogSource::Path(tracked2_repo_path)
@@ -5846,7 +5846,7 @@ mod tests {
             log_source_value: Some("src/main.rs".to_string()),
             log_order: Some(persistence::LOG_ORDER_TOPO),
             selected_sha: Some(sha.to_string()),
-            search_query: Some("fix bug".to_string()),
+            search_query: Some("修复错误".to_string()),
             search_case_sensitive: Some(true),
             hidden_columns: None,
         };
@@ -5863,7 +5863,7 @@ mod tests {
             state.selected_sha.as_deref(),
             Some(sha.to_string()).as_deref()
         );
-        assert_eq!(state.search_query.as_deref(), Some("fix bug"));
+        assert_eq!(state.search_query.as_deref(), Some("修复错误"));
         assert_eq!(state.search_case_sensitive, Some(true));
 
         let all_state = SerializedGitGraphState {
@@ -5967,7 +5967,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -5996,7 +5996,7 @@ mod tests {
         cx.run_until_parked();
 
         let commit_count = git_graph.read_with(&*cx, |graph, _| graph.graph_data.commits.len());
-        assert!(commit_count > 0, "graph should have loaded commits, got 0");
+        assert!(commit_count > 0, "图表应已加载提交,实际为 0");
 
         let target_sha = commits[5].sha;
         git_graph.update(cx, |graph, _| {
@@ -6016,9 +6016,9 @@ mod tests {
         let workspace_id = workspace_db
             .next_id()
             .await
-            .expect("should create workspace id");
+            .expect("应创建工作区 ID");
         let db = cx.read(|cx| persistence::GitGraphsDb::global(cx));
-        // Hide the "Date" column (index 2 in the non-path-history layout).
+        // Hide the "日期" column (index 2 in the non-path-history layout).
         let hidden_columns =
             persistence::serialize_hidden_columns(&[false, false, true, false, false]);
         db.save_git_graph(
@@ -6029,12 +6029,12 @@ mod tests {
             None,
             Some(persistence::LOG_ORDER_DATE),
             selected_sha.clone(),
-            Some("some query".to_string()),
+            Some("某些查询".to_string()),
             Some(true),
             Some(hidden_columns),
         )
         .await
-        .expect("save should succeed");
+        .expect("保存应成功");
 
         let restored_graph = cx
             .update(|window, cx| {
@@ -6048,7 +6048,7 @@ mod tests {
                 )
             })
             .await
-            .expect("deserialization should succeed");
+            .expect("反序列化应成功");
         cx.run_until_parked();
 
         cx.draw(
@@ -6062,14 +6062,14 @@ mod tests {
             restored_graph.read_with(&*cx, |graph, _| graph.graph_data.commits.len());
         assert_eq!(
             restored_commit_count, commit_count,
-            "restored graph should have the same number of commits"
+            "恢复的图表应具有相同数量的提交"
         );
 
         restored_graph.read_with(&*cx, |graph, _| {
             assert_eq!(
                 graph.log_source,
                 LogSource::All,
-                "log_source should be restored"
+                "log_source 应被恢复"
             );
 
             let restored_selected_sha = graph
@@ -6078,26 +6078,26 @@ mod tests {
                 .map(|c| c.data.sha.to_string());
             assert_eq!(
                 restored_selected_sha, selected_sha,
-                "selected commit should be restored via pending_select_sha"
+                "应通过 pending_select_sha 恢复选中的提交"
             );
 
             assert_eq!(
                 graph.search_state.case_sensitive, true,
-                "search case sensitivity should be restored"
+                "搜索区分大小写设置应被恢复"
             );
 
             assert_eq!(
                 graph.column_visibility.as_slice(),
                 &[false, false, true, false, false],
-                "hidden columns should be restored"
+                "隐藏的列应被恢复"
             );
         });
 
         restored_graph.read_with(&*cx, |graph, cx| {
             let editor_text = graph.search_state.editor.read(cx).text(cx);
             assert_eq!(
-                editor_text, "some query",
-                "search query text should be restored in editor"
+                editor_text, "某些查询",
+                "编辑器中的搜索查询文本应被恢复"
             );
         });
     }
@@ -6144,11 +6144,11 @@ mod tests {
                     CommitData {
                         sha: first_sha,
                         parents: smallvec![target_sha],
-                        author_name: "Author".into(),
+                        author_name: "作者".into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 1,
-                        subject: "Add feature".into(),
-                        message: "Add feature".into(),
+                        subject: "添加功能".into(),
+                        message: "添加功能".into(),
                     },
                     false,
                 ),
@@ -6156,11 +6156,11 @@ mod tests {
                     CommitData {
                         sha: target_sha,
                         parents: smallvec![third_sha],
-                        author_name: "Author".into(),
+                        author_name: "作者".into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 2,
-                        subject: "Fix branch loading".into(),
-                        message: "Fix branch loading".into(),
+                        subject: "修复分支加载".into(),
+                        message: "修复分支加载".into(),
                     },
                     false,
                 ),
@@ -6168,11 +6168,11 @@ mod tests {
                     CommitData {
                         sha: third_sha,
                         parents: smallvec![],
-                        author_name: "Author".into(),
+                        author_name: "作者".into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 3,
-                        subject: "Update docs".into(),
-                        message: "Update docs".into(),
+                        subject: "更新文档".into(),
+                        message: "更新文档".into(),
                     },
                     false,
                 ),
@@ -6185,7 +6185,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
             workspace::MultiWorkspace::test_new(project.clone(), window, cx)
@@ -6267,7 +6267,7 @@ mod tests {
                 entries: vec![git::stash::StashEntry {
                     index: 0,
                     oid: initial_stash,
-                    message: "initial stash".to_string(),
+                    message: "初始暂存".to_string(),
                     branch: Some("main".to_string()),
                     timestamp: 1,
                 }]
@@ -6282,7 +6282,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -6332,7 +6332,7 @@ mod tests {
                 entries: vec![git::stash::StashEntry {
                     index: 0,
                     oid: updated_stash,
-                    message: "updated stash".to_string(),
+                    message: "更新后的暂存".to_string(),
                     branch: Some("main".to_string()),
                     timestamp: 1,
                 }]
@@ -6388,7 +6388,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -6413,7 +6413,7 @@ mod tests {
         git_graph.update_in(cx, |graph, window, cx| {
             assert!(
                 graph.graph_data.commits.len() >= 10,
-                "graph should load dummy commits"
+                "图表应加载虚拟提交"
             );
 
             let row_height = GitGraph::row_height(window, cx);
@@ -6435,7 +6435,7 @@ mod tests {
             assert_eq!(
                 absolute_calc_row,
                 Some(1),
-                "Row calculation should yield absolute row exactly"
+                "行计算应精确得出绝对行号"
             );
         });
     }
@@ -6475,7 +6475,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -6508,7 +6508,7 @@ mod tests {
             let commit_count = graph.graph_data.commits.len();
             assert!(
                 commit_count > 0,
-                "need at least one commit to measure item height"
+                "至少需要一个提交来测量项目高度"
             );
 
             let table_state = graph.table_interaction_state.read(cx);
@@ -6564,7 +6564,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -6632,7 +6632,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -6665,7 +6665,7 @@ mod tests {
         let picker = workspace.update(cx, |workspace, cx| {
             workspace
                 .active_modal::<CommitTagPicker>(cx)
-                .expect("commit tag picker is not open")
+                .expect("提交标签选择器未打开")
                 .read(cx)
                 .picker
                 .clone()
@@ -6699,8 +6699,8 @@ mod tests {
         )
         .await;
 
-        let first_sha = Oid::from_bytes(&[1; 20]).expect("valid commit SHA");
-        let second_sha = Oid::from_bytes(&[2; 20]).expect("valid commit SHA");
+        let first_sha = Oid::from_bytes(&[1; 20]).expect("有效的提交 SHA");
+        let second_sha = Oid::from_bytes(&[2; 20]).expect("有效的提交 SHA");
         fs.set_graph_commits(
             Path::new("/project/.git"),
             vec![
@@ -6723,11 +6723,11 @@ mod tests {
                     CommitData {
                         sha,
                         parents: smallvec![],
-                        author_name: "Author".into(),
+                        author_name: "作者".into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 1_700_000_000,
-                        subject: "Commit subject".into(),
-                        message: "Commit message".into(),
+                        subject: "提交主题".into(),
+                        message: "提交信息".into(),
                     },
                     false,
                 )
@@ -6740,7 +6740,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
             workspace::MultiWorkspace::test_new(project.clone(), window, cx)
@@ -6812,7 +6812,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -6975,7 +6975,7 @@ mod tests {
         .await;
 
         let commit_sha = Oid::try_from("abcdef1234567890abcdef1234567890abcdef12")
-            .expect("commit SHA should be valid");
+            .expect("提交 SHA 应有效");
         fs.set_graph_commits(
             Path::new("/project/.git"),
             vec![Arc::new(InitialGraphCommitData {
@@ -6991,7 +6991,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("project should have an active repository")
+                .expect("项目应有一个活动仓库")
         });
         let task_inventory = project.read_with(cx, |project, cx| {
             project
@@ -6999,7 +6999,7 @@ mod tests {
                 .read(cx)
                 .task_inventory()
                 .cloned()
-                .expect("project should have a task inventory")
+                .expect("项目应有一个任务清单")
         });
 
         task_inventory.update(cx, |inventory, _| {
@@ -7010,34 +7010,34 @@ mod tests {
                         &serde_json::to_string(&json!([
                             // Tagged global task that should be scheduled from the Git graph context menu.
                             {
-                                "label": "Git Show $ZED_GIT_SHA_SHORT",
+                                "label": "Git 显示 $ZED_GIT_SHA_SHORT",
                                 "command": "git",
                                 "args": ["show", "$ZED_GIT_SHA"],
                                 "cwd": "$ZED_GIT_REPOSITORY_PATH",
                                 "env": {
-                                    "REPOSITORY": "$ZED_GIT_REPOSITORY_NAME",
+                                    "仓库": "$ZED_GIT_REPOSITORY_NAME",
                                 },
                                 "tags": [GIT_COMMAND_TASK_TAG],
                             },
                             // Untagged task that should not appear in the Git graph context menu.
                             {
-                                "label": "Git Status",
+                                "label": "Git 状态",
                                 "command": "git",
                                 "args": ["status"],
                             },
                             // Tagged task that still should not appear because Git graph task contexts
                             // do not provide editor-specific variables.
                             {
-                                "label": "Print File $ZED_FILE",
+                                "label": "打印文件 $ZED_FILE",
                                 "command": "echo",
                                 "args": ["$ZED_FILE"],
                                 "tags": [GIT_COMMAND_TASK_TAG],
                             },
                         ]))
-                        .expect("tasks JSON should serialize"),
+                        .expect("任务 JSON 应可序列化"),
                     ),
                 )
-                .expect("tasks should parse");
+                .expect("任务应可解析");
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -7073,14 +7073,14 @@ mod tests {
             git_graph
                 .context_menu
                 .as_ref()
-                .expect("context menu should be open")
+                .expect("上下文菜单应打开")
                 .menu
                 .clone()
         });
         context_menu.update_in(cx, |context_menu, window, cx| {
             context_menu
                 .select_last(window, cx)
-                .expect("custom Git task should be selectable");
+                .expect("自定义 Git 任务应可选择");
             context_menu.confirm(&menu::Confirm, window, cx);
         });
         cx.run_until_parked();
@@ -7088,14 +7088,14 @@ mod tests {
         let (task_source_kind, resolved_task) = task_inventory.read_with(&*cx, |inventory, _| {
             inventory
                 .last_scheduled_task(None)
-                .expect("custom Git task should be scheduled")
+                .expect("自定义 Git 任务应被调度")
         });
 
         assert!(
             matches!(task_source_kind, TaskSourceKind::AbsPath { .. }),
-            "scheduled task should come from global tasks"
+            "调度的任务应来自全局任务"
         );
-        assert_eq!(resolved_task.resolved_label, "Git Show abcdef1");
+        assert_eq!(resolved_task.resolved_label, "Git 显示 abcdef1");
         assert_eq!(resolved_task.resolved.command, Some("git".to_string()));
         assert_eq!(
             resolved_task.resolved.args,
@@ -7109,7 +7109,7 @@ mod tests {
             Some(Path::new("/project").to_path_buf())
         );
         assert_eq!(
-            resolved_task.resolved.env.get("REPOSITORY"),
+            resolved_task.resolved.env.get("仓库"),
             Some(&"project".to_string())
         );
     }
@@ -7129,7 +7129,7 @@ mod tests {
         .await;
 
         let commit_sha = Oid::try_from("abcdef1234567890abcdef1234567890abcdef12")
-            .expect("commit SHA should be valid");
+            .expect("提交 SHA 应有效");
         fs.set_graph_commits(
             Path::new("/project/.git"),
             vec![Arc::new(InitialGraphCommitData {
@@ -7145,7 +7145,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("project should have an active repository")
+                .expect("项目应有一个活动仓库")
         });
         let task_inventory = project.read_with(cx, |project, cx| {
             project
@@ -7153,7 +7153,7 @@ mod tests {
                 .read(cx)
                 .task_inventory()
                 .cloned()
-                .expect("project should have a task inventory")
+                .expect("项目应有一个任务清单")
         });
 
         task_inventory.update(cx, |inventory, _| {
@@ -7163,17 +7163,17 @@ mod tests {
                     Some(
                         &serde_json::to_string(&json!([
                             {
-                                "label": "Check out $ZED_GIT_REF",
+                                "label": "检出 $ZED_GIT_REF",
                                 "command": "git",
                                 "args": ["checkout", "$ZED_GIT_REF"],
                                 "cwd": "$ZED_GIT_REPOSITORY_PATH",
                                 "tags": [GIT_COMMAND_TASK_TAG],
                             },
                         ]))
-                        .expect("tasks JSON should serialize"),
+                        .expect("任务 JSON 应可序列化"),
                     ),
                 )
-                .expect("tasks should parse");
+                .expect("任务应可解析");
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -7215,14 +7215,14 @@ mod tests {
             git_graph
                 .context_menu
                 .as_ref()
-                .expect("context menu should be open")
+                .expect("上下文菜单应打开")
                 .menu
                 .clone()
         });
         context_menu.update_in(cx, |context_menu, window, cx| {
             context_menu
                 .select_last(window, cx)
-                .expect("custom Git task should be selectable");
+                .expect("自定义 Git 任务应可选择");
             context_menu.confirm(&menu::Confirm, window, cx);
         });
         cx.run_until_parked();
@@ -7230,10 +7230,10 @@ mod tests {
         let (_task_source_kind, resolved_task) = task_inventory.read_with(&*cx, |inventory, _| {
             inventory
                 .last_scheduled_task(None)
-                .expect("custom Git task should be scheduled")
+                .expect("自定义 Git 任务应被调度")
         });
 
-        assert_eq!(resolved_task.resolved_label, "Check out feature-x");
+        assert_eq!(resolved_task.resolved_label, "检出 feature-x");
         assert_eq!(
             resolved_task.resolved.args,
             vec!["checkout".to_string(), "feature-x".to_string()]
@@ -7285,10 +7285,10 @@ mod tests {
                 CommitData {
                     sha: commit_sha,
                     parents: smallvec![],
-                    author_name: "Author".into(),
+                    author_name: "作者".into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
-                    subject: "Fix crash".into(),
+                    subject: "修复崩溃".into(),
                     message: "Fix crash\n\nThis fixes a crash that occurred when...".into(),
                 },
                 false,
@@ -7301,7 +7301,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
@@ -7333,11 +7333,11 @@ mod tests {
             let message = graph
                 .selected_commit_message
                 .as_ref()
-                .expect("selected_commit_message should be Some");
+                .expect("selected_commit_message 应为 Some");
             assert_eq!(message.sha, commit_sha);
             let source = message.message.read_with(app, |m, _| m.source().to_owned());
-            assert!(source.contains("Fix crash"));
-            assert!(source.contains("This fixes a crash"));
+            assert!(source.contains("修复崩溃"));
+            assert!(source.contains("这修复了一个崩溃"));
         });
     }
 
@@ -7352,7 +7352,7 @@ mod tests {
         )
         .await;
 
-        let commit_sha = Oid::from_bytes(&[1; 20]).expect("commit SHA should be valid");
+        let commit_sha = Oid::from_bytes(&[1; 20]).expect("提交 SHA 应有效");
         let commits = vec![Arc::new(InitialGraphCommitData {
             sha: commit_sha,
             parents: smallvec![],
@@ -7363,7 +7363,7 @@ mod tests {
         let message = (0..40)
             .map(|line_number| {
                 format!(
-                    "Line {line_number}: This commit message is long enough to require scrolling."
+                    "第 {line_number} 行:此提交消息足够长,需要滚动。"
                 )
             })
             .collect::<Vec<_>>()
@@ -7374,10 +7374,10 @@ mod tests {
                 CommitData {
                     sha: commit_sha,
                     parents: smallvec![],
-                    author_name: "Author".into(),
+                    author_name: "作者".into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
-                    subject: "Long commit message".into(),
+                    subject: "长提交消息".into(),
                     message: message.into(),
                 },
                 false,
@@ -7390,7 +7390,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
             workspace::MultiWorkspace::test_new(project.clone(), window, cx)
@@ -7417,9 +7417,9 @@ mod tests {
         git_graph.update(cx, |graph, cx| {
             graph.selected_commit_diff = Some(CommitDiff {
                 files: vec![CommitFile {
-                    path: RepoPath::new("file.txt").expect("repository path should be valid"),
+                    path: RepoPath::new("file.txt").expect("仓库路径应有效"),
                     old_text: Some("content".into()),
-                    new_text: Some("updated content".into()),
+                    new_text: Some("更新后的内容".into()),
                     is_binary: false,
                 }],
             });
@@ -7440,7 +7440,7 @@ mod tests {
                     graph
                         .selected_commit_message
                         .as_ref()
-                        .expect("selected commit message should be loaded")
+                        .expect("选中的提交消息应被加载")
                         .scroll_handle
                         .clone(),
                     graph.changed_files_scroll_handle.clone(),
@@ -7457,17 +7457,17 @@ mod tests {
 
         assert!(
             message_bounds.size.height <= maximum_message_height,
-            "commit message viewport height ({}) should not exceed its maximum ({})",
+            "提交消息视口高度 ({}) 不应超过其最大值 ({})",
             message_bounds.size.height,
             maximum_message_height,
         );
         assert!(
             message_scroll_handle.max_offset().y > px(0.),
-            "long commit message should be scrollable"
+            "长提交消息应可滚动"
         );
         assert!(
             message_bounds.bottom() <= changed_files_bounds.top(),
-            "commit message viewport {message_bounds:?} should not overlap changed files {changed_files_bounds:?}"
+            "提交消息视口 {message_bounds:?} 不应与更改的文件 {changed_files_bounds:?} 重叠"
         );
     }
 
@@ -7495,10 +7495,10 @@ mod tests {
                 CommitData {
                     sha: commit_sha,
                     parents: smallvec![],
-                    author_name: "Author".into(),
+                    author_name: "作者".into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
-                    subject: "Fix crash".into(),
+                    subject: "修复崩溃".into(),
                     message: "Fix crash\n\nBody text.".into(),
                 },
                 false,
@@ -7511,7 +7511,7 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {

@@ -38,7 +38,7 @@ fn to_tab_point_benchmark(c: &mut Criterion) {
 
     let inputs = [1024].into_iter().map(create_tab_map).collect_vec();
 
-    let mut group = c.benchmark_group("To tab point");
+    let mut group = c.benchmark_group("转换为制表符点");
 
     for (batch_size, snapshot, fold_point) in inputs {
         group.bench_with_input(
@@ -86,7 +86,7 @@ fn to_fold_point_benchmark(c: &mut Criterion) {
 
     let inputs = [1024].into_iter().map(create_tab_map).collect_vec();
 
-    let mut group = c.benchmark_group("To fold point");
+    let mut group = c.benchmark_group("转换为折叠点");
 
     for (batch_size, snapshot, tab_point) in inputs {
         group.bench_with_input(
@@ -183,7 +183,7 @@ fn create_highlight_endpoints_benchmark(c: &mut Criterion) {
     });
     let snapshot = cx.update(|cx| map.update(cx, |map, cx| map.snapshot(cx)));
 
-    let mut group = c.benchmark_group("Create highlight endpoints");
+    let mut group = c.benchmark_group("创建高亮端点");
     group.sample_size(10);
     group.measurement_time(Duration::from_secs(10));
     group.bench_with_input(

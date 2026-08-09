@@ -39,15 +39,15 @@ impl AgentServer for NativeAgentServer {
         let fs = self.fs.clone();
         let thread_store = self.thread_store.clone();
         cx.spawn(async move |cx| {
-            log::debug!("Creating templates for native agent");
+            log::debug!("正在为原生代理创建模板");
             let templates = Templates::new();
 
-            log::debug!("Creating native agent entity");
+            log::debug!("正在创建原生代理实体");
             let agent = cx.update(|cx| NativeAgent::new(thread_store, templates, fs, cx));
 
             // Create the connection wrapper
             let connection = NativeAgentConnection(agent);
-            log::debug!("NativeAgentServer connection established successfully");
+            log::debug!("原生代理服务器连接建立成功");
 
             Ok(Rc::new(connection) as Rc<dyn acp_thread::AgentConnection>)
         })

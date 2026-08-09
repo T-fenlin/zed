@@ -21,7 +21,7 @@ use simplelog::SimpleLogger;
 actions!(livekit_client, [Quit]);
 
 fn main() {
-    SimpleLogger::init(LevelFilter::Info, Default::default()).expect("could not initialize logger");
+    SimpleLogger::init(LevelFilter::Info, Default::default()).expect("无法初始化日志记录器");
 
     gpui_platform::application().run(|cx| {
         #[cfg(any(test, feature = "test-support"))]
@@ -35,7 +35,7 @@ fn main() {
         cx.activate(true);
         cx.on_action(quit);
         cx.bind_keys([KeyBinding::new("cmd-q", Quit, None)]);
-        cx.set_menus([Menu::new("Zed").items([MenuItem::action("Quit", Quit)])]);
+        cx.set_menus([Menu::new("Zed").items([MenuItem::action("退出", Quit)])]);
 
         let livekit_url = std::env::var("LIVEKIT_URL").unwrap_or("http://localhost:7880".into());
         let livekit_key = std::env::var("LIVEKIT_KEY").unwrap_or("devkey".into());
@@ -97,7 +97,7 @@ impl LivekitWindow {
                 .await
                 .unwrap_or_else(|err| {
                     eprintln!(
-                        "Failed to connect to {url}: {err}.\nTry `foreman start` to run the livekit server"
+                        "无法连接到 {url}: {err}。\n请尝试运行 `foreman start` 来启动 livekit 服务器"
                     );
 
                     std::process::exit(1)
@@ -327,17 +327,17 @@ impl Render for LivekitWindow {
                     button()
                         .id("toggle-mute")
                         .child(if let Some(track) = &self.microphone_track {
-                            if track.is_muted() { "Unmute" } else { "Mute" }
+                            if track.is_muted() { "取消静音" } else { "静音" }
                         } else {
-                            "Publish mic"
+                            "发布麦克风"
                         })
                         .on_click(cx.listener(|this, _, window, cx| this.toggle_mute(window, cx))),
                     button()
                         .id("toggle-screen-share")
                         .child(if self.screen_share_track.is_none() {
-                            "Share screen"
+                            "共享屏幕"
                         } else {
-                            "Unshare screen"
+                            "停止共享屏幕"
                         })
                         .on_click(
                             cx.listener(|this, _, window, cx| this.toggle_screen_share(window, cx)),
@@ -360,9 +360,9 @@ impl Render for LivekitWindow {
                             .px_2()
                             .bg(rgb(0x8888ff))
                             .child(SharedString::from(if state.speaking {
-                                format!("{} (speaking)", &identity.0)
+                                format!("{}(正在发言)", &identity.0)
                             } else if state.muted {
-                                format!("{} (muted)", &identity.0)
+                                format!("{}(已静音)", &identity.0)
                             } else {
                                 identity.0.clone()
                             }))
@@ -371,9 +371,9 @@ impl Render for LivekitWindow {
                                     button()
                                         .id(identity.0.clone())
                                         .child(if state.0.is_enabled() {
-                                            "Deafen"
+                                            "静音收听"
                                         } else {
-                                            "Undeafen"
+                                            "取消静音收听"
                                         })
                                         .on_click(cx.listener({
                                             let identity = identity.clone();

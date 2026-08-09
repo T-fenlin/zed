@@ -126,7 +126,7 @@ impl PendingRequests {
         callback_tx: oneshot::Sender<Result<Response>>,
     ) -> anyhow::Result<()> {
         let Some(inner) = self.inner.as_mut() else {
-            bail!("client is closed")
+            bail!("客户端已关闭")
         };
         inner.insert(sequence_id, callback_tx);
         Ok(())
@@ -137,13 +137,13 @@ impl PendingRequests {
         sequence_id: u64,
     ) -> anyhow::Result<Option<oneshot::Sender<Result<Response>>>> {
         let Some(inner) = self.inner.as_mut() else {
-            bail!("client is closed");
+            bail!("客户端已关闭");
         };
         Ok(inner.remove(&sequence_id))
     }
 
     pub(crate) fn shutdown(&mut self) {
-        self.flush(anyhow!("transport shutdown"));
+        self.flush(anyhow!("传输层已关闭"));
         self.inner = None;
     }
 }
@@ -205,7 +205,7 @@ impl TransportDelegate {
                     Ok(()) => {
                         pending_requests
                             .lock()
-                            .flush(anyhow!("debugger shutdown unexpectedly"));
+                            .flush(anyhow!("调试器意外关闭"));
                     }
                     Err(e) => {
                         pending_requests.lock().flush(e);
@@ -216,7 +216,7 @@ impl TransportDelegate {
             tasks.push(cx.background_spawn(async move {
                 match Self::send_to_server(input, client_rx, log_handler).await {
                     Ok(()) => {}
-                    Err(e) => log::error!("Error handling debugger input: {e}"),
+                    Err(e) => log::error!("处理调试器输入时出错:{e}"),
                 }
             }));
         }
@@ -232,9 +232,9 @@ impl TransportDelegate {
 
     pub(crate) async fn send_message(&self, message: Message) -> Result<()> {
         if let Some(server_tx) = self.server_tx.lock().await.as_ref() {
-            server_tx.send(message).await.context("sending message")
+            server_tx.send(message).await.context("发送消息")
         } else {
-            anyhow::bail!("Server tx already dropped")
+            anyhow::bail!("服务器发送端已释放")
         }
     }
 
@@ -320,7 +320,7 @@ impl TransportDelegate {
             }
         };
 
-        log::debug!("Handle adapter input dropped");
+        log::debug!("适配器输入处理已结束");
 
         result
     }
@@ -342,16 +342,16 @@ impl TransportDelegate {
                 Self::receive_server_message(&mut reader, &mut recv_buffer, log_handlers.as_ref())
                     .await;
             match result {
-                ConnectionResult::Timeout => anyhow::bail!("Timed out when connecting to debugger"),
+                ConnectionResult::Timeout => anyhow::bail!("连接调试器超时"),
                 ConnectionResult::ConnectionReset => {
-                    log::info!("Debugger closed the connection");
+                    log::info!("调试器已关闭连接");
                     return Ok(());
                 }
                 ConnectionResult::Result(Ok(Message::Response(res))) => {
                     let tx = pending_requests.lock().remove(res.request_seq)?;
                     if let Some(tx) = tx {
                         if let Err(e) = tx.send(Self::process_response(res)) {
-                            log::trace!("Did not send response `{:?}` for a cancelled", e);
+                            log::trace!("未为已取消的请求发送响应 `{:?}`", e);
                         }
                     } else {
                         message_handler(Message::Response(res))
@@ -362,7 +362,7 @@ impl TransportDelegate {
             }
         };
 
-        log::debug!("Handle adapter output dropped");
+        log::debug!("适配器输出处理已结束");
 
         result
     }
@@ -382,7 +382,7 @@ impl TransportDelegate {
             };
 
             anyhow::bail!(
-                "Received error response from adapter. Response: {:?}",
+                "收到来自适配器的错误响应。响应:{:?}",
                 response
             );
         }
@@ -410,14 +410,14 @@ impl TransportDelegate {
             }
 
             if let Some(("Content-Length", value)) = buffer.trim().split_once(": ") {
-                match value.parse().context("invalid content length") {
+                match value.parse().context("无效的内容长度") {
                     Ok(length) => content_length = Some(length),
                     Err(e) => return ConnectionResult::Result(Err(e)),
                 }
             }
         }
 
-        let content_length = match content_length.context("missing content length") {
+        let content_length = match content_length.context("缺少内容长度") {
             Ok(length) => length,
             Err(e) => return ConnectionResult::Result(Err(e)),
         };
@@ -426,18 +426,18 @@ impl TransportDelegate {
         if let Err(e) = reader
             .read_exact(&mut content)
             .await
-            .with_context(|| "reading after a loop")
+            .with_context(|| "循环后读取")
         {
             return ConnectionResult::Result(Err(e));
         }
 
-        let message_str = match std::str::from_utf8(&content).context("invalid utf8 from server") {
+        let message_str = match std::str::from_utf8(&content).context("来自服务器的无效 UTF-8") {
             Ok(str) => str,
             Err(e) => return ConnectionResult::Result(Err(e)),
         };
 
         let message =
-            serde_json::from_str::<Message>(message_str).context("deserializing server message");
+            serde_json::from_str::<Message>(message_str).context("反序列化服务器消息");
 
         if let Some(log_handlers) = log_handlers {
             let command = match &message {
@@ -504,7 +504,7 @@ impl TcpTransport {
         let connection_args = binary
             .connection
             .as_ref()
-            .context("No connection arguments provided")?;
+            .context("未提供连接参数")?;
 
         let host = connection_args.host;
         let port = connection_args.port;
@@ -524,7 +524,7 @@ impl TcpTransport {
             command.envs(&binary.envs);
 
             let mut p = Child::spawn(command, Stdio::null(), Stdio::piped(), Stdio::piped())
-                .with_context(|| "failed to start debug adapter.")?;
+                .with_context(|| "启动调试适配器失败。")?;
 
             stdout_task = p.stdout.take().map(|stdout| {
                 cx.background_executor()
@@ -550,7 +550,7 @@ impl TcpTransport {
             .unwrap_or_else(|| cx.update(|cx| DebuggerSettings::get_global(cx).timeout));
 
         log::info!(
-            "Debug adapter has connected to TCP server {}:{}",
+            "调试适配器已连接到 TCP 服务器 {}:{}",
             host,
             port
         );
@@ -603,7 +603,7 @@ impl Transport for TcpTransport {
         executor.clone().spawn(async move {
             select! {
                 _ = executor.timer(Duration::from_millis(timeout)).fuse() => {
-                    anyhow::bail!("Connection to TCP DAP timeout {address}");
+                    anyhow::bail!("连接到 TCP DAP 超时 {address}");
                 },
                 result = executor.clone().spawn(async move {
                     loop {
@@ -624,7 +624,7 @@ impl Transport for TcpTransport {
                                         } else {
                                             String::from_utf8_lossy(&output.stderr).to_string()
                                         };
-                                        anyhow::bail!("{output}\nerror: process exited before debugger attached.");
+                                        anyhow::bail!("{output}\n错误:调试器附加前进程已退出。");
                                     }
                                 }
 
@@ -660,7 +660,7 @@ impl StdioTransport {
     ) -> Result<Self> {
         let Some(binary_command) = &binary.command else {
             bail!(
-                "When using the `stdio` transport, the path to a debug adapter binary must be set by Zed."
+                "使用 `stdio` 传输时,必须由 Zed 设置调试适配器可执行文件的路径。"
             );
         };
         let mut command = util::command::new_std_command(&binary_command);
@@ -711,8 +711,8 @@ impl Transport for StdioTransport {
         let result = util::maybe!({
             let mut process = self.process.lock();
             Ok((
-                Box::new(process.stdin.take().context("Cannot reconnect")?) as _,
-                Box::new(process.stdout.take().context("Cannot reconnect")?) as _,
+                Box::new(process.stdin.take().context("无法重新连接")?) as _,
+                Box::new(process.stdout.take().context("无法重新连接")?) as _,
             ))
         });
         Task::ready(result)
@@ -832,10 +832,10 @@ impl FakeTransport {
         loop {
             match TransportDelegate::receive_server_message(&mut reader, &mut buffer, None).await {
                 ConnectionResult::Timeout => {
-                    anyhow::bail!("Timed out when connecting to debugger");
+                    anyhow::bail!("连接调试器超时");
                 }
                 ConnectionResult::ConnectionReset => {
-                    log::info!("Debugger closed the connection");
+                    log::info!("调试器已关闭连接");
                     break Ok(());
                 }
                 ConnectionResult::Result(Err(e)) => break Err(e),
@@ -863,12 +863,12 @@ impl FakeTransport {
                                 {
                                     handle(request.seq, request.arguments.unwrap_or(json!({})))
                                 } else {
-                                    panic!("No request handler for {}", request.command);
+                                    panic!("没有用于 {} 的请求处理器", request.command);
                                 };
                                 let response = match response {
                                     RequestHandling::Respond(response) => response,
                                     RequestHandling::Exit => {
-                                        break Err(anyhow!("exit in response to request"));
+                                        break Err(anyhow!("响应请求时退出"));
                                     }
                                 };
                                 let success = response.success;
@@ -920,7 +920,7 @@ impl FakeTransport {
                             {
                                 handle(response);
                             } else {
-                                log::error!("No response handler for {}", response.command);
+                                log::error!("没有用于 {} 的响应处理器", response.command);
                             }
                         }
                     }
@@ -981,8 +981,8 @@ impl Transport for FakeTransport {
                 stdout_reader,
             } => util::maybe!({
                 Ok((
-                    Box::new(stdin_writer.take().context("Cannot reconnect")?) as _,
-                    Box::new(stdout_reader.take().context("Cannot reconnect")?) as _,
+                    Box::new(stdin_writer.take().context("无法重新连接")?) as _,
+                    Box::new(stdout_reader.take().context("无法重新连接")?) as _,
                 ))
             }),
             FakeTransportKind::Tcp { executor, .. } => {

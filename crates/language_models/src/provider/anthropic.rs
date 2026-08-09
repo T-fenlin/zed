@@ -105,7 +105,7 @@ impl State {
         let api_url = AnthropicLanguageModelProvider::api_url(cx);
         let Some(api_key) = self.api_key_state.key(&api_url) else {
             return Task::ready(Err(anyhow::anyhow!(
-                "cannot fetch Anthropic models without an API key"
+                "没有 API 密钥无法获取 Anthropic 模型"
             )));
         };
         let extra_headers = AnthropicLanguageModelProvider::settings(cx)
@@ -290,7 +290,7 @@ impl LanguageModelProvider for AnthropicLanguageModelProvider {
 
     fn fast_mode_confirmation(&self, _cx: &App) -> Option<FastModeConfirmation> {
         Some(FastModeConfirmation {
-            title: "Enable Fast Mode for Anthropic?".into(),
+            title: "为 Anthropic 启用快速模式?".into(),
             message: "Fast mode lets requests use your Anthropic Priority Tier capacity, which \
                 Anthropic prioritizes over standard requests during peak load. Requires a \
                 Priority Tier commitment with Anthropic; without one, requests behave the same \

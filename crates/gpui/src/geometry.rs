@@ -2624,7 +2624,7 @@ pub struct Percentage(pub f32);
 pub fn percentage(value: f32) -> Percentage {
     debug_assert!(
         (0.0..=1.0).contains(&value),
-        "Percentage must be between 0 and 1"
+        "百分比必须在 0 和 1 之间"
     );
     Percentage(value)
 }
@@ -2772,7 +2772,7 @@ impl TryFrom<&'_ str> for Pixels {
     fn try_from(value: &'_ str) -> Result<Self, Self::Error> {
         value
             .strip_suffix("px")
-            .context("expected 'px' suffix")
+            .context("需要 'px' 后缀")
             .and_then(|number| Ok(number.parse()?))
             .map(Self)
     }
@@ -3282,7 +3282,7 @@ impl TryFrom<&'_ str> for Rems {
     fn try_from(value: &'_ str) -> Result<Self, Self::Error> {
         value
             .strip_suffix("rem")
-            .context("expected 'rem' suffix")
+            .context("需要 'rem' 后缀")
             .and_then(|number| Ok(number.parse()?))
             .map(Self)
     }
@@ -3391,7 +3391,7 @@ impl Debug for AbsoluteLength {
     }
 }
 
-const EXPECTED_ABSOLUTE_LENGTH: &str = "number with 'px' or 'rem' suffix";
+const EXPECTED_ABSOLUTE_LENGTH: &str = "带 'px' 或 'rem' 后缀的数字";
 
 impl TryFrom<&'_ str> for AbsoluteLength {
     type Error = anyhow::Error;
@@ -3403,7 +3403,7 @@ impl TryFrom<&'_ str> for AbsoluteLength {
             Ok(Self::Rems(rems))
         } else {
             Err(anyhow!(
-                "invalid AbsoluteLength '{value}', expected {EXPECTED_ABSOLUTE_LENGTH}"
+                "无效的 AbsoluteLength '{value}',需要 {EXPECTED_ABSOLUTE_LENGTH}"
             ))
         }
     }
@@ -3519,7 +3519,7 @@ impl Display for DefiniteLength {
     }
 }
 
-const EXPECTED_DEFINITE_LENGTH: &str = "expected number with 'px', 'rem', or '%' suffix";
+const EXPECTED_DEFINITE_LENGTH: &str = "需要带 'px'、'rem' 或 '%' 后缀的数字";
 
 impl TryFrom<&'_ str> for DefiniteLength {
     type Error = anyhow::Error;
@@ -3527,14 +3527,14 @@ impl TryFrom<&'_ str> for DefiniteLength {
     fn try_from(value: &'_ str) -> Result<Self, Self::Error> {
         if let Some(percentage) = value.strip_suffix('%') {
             let fraction: f32 = percentage.parse::<f32>().with_context(|| {
-                format!("invalid DefiniteLength '{value}', expected {EXPECTED_DEFINITE_LENGTH}")
+                format!("无效的 DefiniteLength '{value}',需要 {EXPECTED_DEFINITE_LENGTH}")
             })?;
             Ok(DefiniteLength::Fraction(fraction / 100.0))
         } else if let Ok(absolute_length) = value.try_into() {
             Ok(DefiniteLength::Absolute(absolute_length))
         } else {
             Err(anyhow!(
-                "invalid DefiniteLength '{value}', expected {EXPECTED_DEFINITE_LENGTH}"
+                "无效的 DefiniteLength '{value}',需要 {EXPECTED_DEFINITE_LENGTH}"
             ))
         }
     }
@@ -3630,7 +3630,7 @@ impl Display for Length {
     }
 }
 
-const EXPECTED_LENGTH: &str = "expected 'auto' or number with 'px', 'rem', or '%' suffix";
+const EXPECTED_LENGTH: &str = "需要 'auto' 或带 'px'、'rem' 或 '%' 后缀的数字";
 
 impl TryFrom<&'_ str> for Length {
     type Error = anyhow::Error;
@@ -3642,7 +3642,7 @@ impl TryFrom<&'_ str> for Length {
             Ok(Length::Definite(definite_length))
         } else {
             Err(anyhow!(
-                "invalid Length '{value}', expected {EXPECTED_LENGTH}"
+                "无效的 Length '{value}',需要 {EXPECTED_LENGTH}"
             ))
         }
     }

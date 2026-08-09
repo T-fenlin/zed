@@ -134,7 +134,7 @@ impl GoToLine {
         let line_editor_change = cx.subscribe_in(&line_editor, window, Self::on_line_editor_event);
 
         let current_text = format!(
-            "Current Line: {} of {} (column {})",
+            "当前行:{} / {}(列 {})",
             line,
             last_line + 1,
             column
@@ -313,13 +313,13 @@ impl Render for GoToLine {
             } else {
                 self.current_line.saturating_sub(offset.unsigned_abs())
             };
-            format!("Go to line {target_line} ({offset:+} from current)").into()
+            format!("转到第 {target_line} 行({offset:+} 相对于当前行)").into()
         } else {
             match self.line_and_char_from_query(cx) {
                 Some((line, Some(character))) => {
-                    format!("Go to line {line}, character {character}").into()
+                    format!("转到第 {line} 行,第 {character} 列").into()
                 }
-                Some((line, None)) => format!("Go to line {line}").into(),
+                Some((line, None)) => format!("转到第 {line} 行").into(),
                 None => self.current_text.clone(),
             }
         };
@@ -417,7 +417,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             Vec::<u32>::new(),
-            "Initially opened go to line modal should not highlight any rows"
+            "初始打开的行跳转弹窗不应高亮任何行"
         );
         assert_single_caret_at_row(&editor, 0, cx);
 
@@ -425,7 +425,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             vec![0],
-            "Go to line modal should highlight a row, corresponding to the query"
+            "行跳转弹窗应高亮与查询对应的行"
         );
         assert_single_caret_at_row(&editor, 0, cx);
 
@@ -433,7 +433,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             vec![13],
-            "If the query is too large, the last row should be highlighted"
+            "如果查询超出范围,应高亮最后一行"
         );
         assert_single_caret_at_row(&editor, 0, cx);
 
@@ -443,7 +443,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             Vec::<u32>::new(),
-            "After cancelling and closing the modal, no rows should be highlighted"
+            "取消并关闭弹窗后,不应高亮任何行"
         );
         assert_single_caret_at_row(&editor, 0, cx);
 
@@ -451,7 +451,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             Vec::<u32>::new(),
-            "Reopened modal should not highlight any rows"
+            "重新打开的弹窗不应高亮任何行"
         );
         assert_single_caret_at_row(&editor, 0, cx);
 
@@ -468,7 +468,7 @@ mod tests {
         assert_eq!(
             highlighted_display_rows(&editor, cx),
             Vec::<u32>::new(),
-            "After confirming and closing the modal, no rows should be highlighted"
+            "确认并关闭弹窗后,不应高亮任何行"
         );
         // On confirm, should place the caret on the highlighted row.
         assert_single_caret_at_row(&editor, expected_highlighted_row, cx);
@@ -479,7 +479,7 @@ mod tests {
         init_test(cx);
         let cx = cx.add_empty_window();
         let file_content = (1..=60)
-            .map(|line| format!("line {line}"))
+            .map(|line| format!("第 {line} 行"))
             .collect::<Vec<_>>()
             .join("\n");
         let buffer = cx.new(|cx| Buffer::local(file_content, cx));
@@ -577,10 +577,10 @@ mod tests {
                     .status_bar()
                     .read(cx)
                     .item_of_type::<CursorPosition>()
-                    .expect("missing cursor position item")
+                    .expect("缺少光标位置项")
                     .read(cx)
                     .selection_stats(),
-                "No selections should be initially"
+                "初始不应有选中内容"
             );
         });
         editor.update_in(cx, |editor, window, cx| {
@@ -598,10 +598,10 @@ mod tests {
                     .status_bar()
                     .read(cx)
                     .item_of_type::<CursorPosition>()
-                    .expect("missing cursor position item")
+                    .expect("缺少光标位置项")
                     .read(cx)
                     .selection_stats(),
-                "After selecting a text with multibyte unicode characters, the character count should be correct"
+                "选中包含多字节 Unicode 字符的文本后,字符计数应正确"
             );
         });
     }
@@ -658,7 +658,7 @@ mod tests {
         assert_eq!(
             user_caret_position(1, 1),
             current_position(&workspace, cx),
-            "Beginning of the line should be at first line, before any characters"
+            "行首应位于第一行,在任何字符之前"
         );
 
         for (i, c) in text.chars().enumerate() {
@@ -670,7 +670,7 @@ mod tests {
             assert_eq!(
                 user_caret_position(1, i + 1),
                 current_position(&workspace, cx),
-                "Wrong position for char '{c}' in string '{text}'",
+                "字符串 '{text}' 中字符 '{c}' 的位置错误",
             );
         }
 
@@ -681,7 +681,7 @@ mod tests {
         assert_eq!(
             user_caret_position(1, text.chars().count() as u32 + 1),
             current_position(&workspace, cx),
-            "After reaching the end of the text, position should not change when moving right"
+            "到达文本末尾后,向右移动时位置不应改变"
         );
     }
 
@@ -744,7 +744,7 @@ mod tests {
             assert_eq!(
                 point,
                 current_position(&workspace, cx),
-                "When going to {point:?}, expecting the cursor to be at char '{c}' in string '{text}'",
+                "当转到 {point:?} 时,期望光标位于字符串 '{text}' 中的字符 '{c}' 处",
             );
         }
 
@@ -758,7 +758,7 @@ mod tests {
         assert_eq!(
             user_caret_position(1, text.chars().count() as u32 + 1),
             current_position(&workspace, cx),
-            "When going into too large point, should go to the end of the text"
+            "当转到超出范围的位置时,应跳转到文本末尾"
         );
     }
 
@@ -771,10 +771,10 @@ mod tests {
                 .status_bar()
                 .read(cx)
                 .item_of_type::<CursorPosition>()
-                .expect("missing cursor position item")
+                .expect("缺少光标位置项")
                 .read(cx)
                 .position()
-                .expect("No position found")
+                .expect("未找到位置")
         })
     }
 
@@ -797,7 +797,7 @@ mod tests {
                 go_to_line_view.line_editor.update(cx, |line_editor, cx| {
                     line_editor
                         .placeholder_text(cx)
-                        .expect("No placeholder text")
+                        .expect("无占位文本")
                 }),
                 format!(
                     "{}:{}",
@@ -870,15 +870,15 @@ mod tests {
         });
         assert!(
             selections.len() == 1,
-            "Expected one caret selection but got: {selections:?}"
+            "预期一个光标选区,但得到:{selections:?}"
         );
         let selection = selections
             .into_iter()
             .next()
-            .expect("checked selection count");
+            .expect("已检查选区数量");
         assert!(
             selection.start == selection.end,
-            "Expected a single caret selection, but got: {selection:?}"
+            "预期单个光标选区,但得到:{selection:?}"
         );
         selection
     }
@@ -946,7 +946,7 @@ mod tests {
             editor.update(cx, |editor, cx| editor.scroll_position(cx));
         assert_eq!(
             scroll_position_after_auto_dismiss, scroll_position_after_input,
-            "Dismissing via outside click should maintain new scroll position"
+            "通过外部点击关闭应保持新的滚动位置"
         );
     }
 
@@ -1002,7 +1002,7 @@ mod tests {
             editor.update(cx, |editor, cx| editor.scroll_position(cx));
         assert_eq!(
             scroll_position_after_cancel, scroll_position_after_input,
-            "Cancel should maintain new scroll position"
+            "取消应保持新的滚动位置"
         );
     }
 
@@ -1058,7 +1058,7 @@ mod tests {
             editor.update(cx, |editor, cx| editor.scroll_position(cx));
         assert_eq!(
             scroll_position_after_confirm, scroll_position_after_input,
-            "Confirm should maintain new scroll position"
+            "确认应保持新的滚动位置"
         );
     }
 }

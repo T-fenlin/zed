@@ -150,7 +150,7 @@ pub(crate) fn request_prediction_with_zeta(
                 if allow_jump && custom_server_settings.is_none() && raw_config.is_none() {
                     let cursor_point = snapshot.offset_to_point(cursor_offset);
                     let editable_context = editable_context
-                        .context("missing editable context task")?
+                        .context("缺少可编辑上下文任务")?
                         .await?;
                     let active_buffer_diagnostics = active_buffer_diagnostics(
                         &snapshot,
@@ -214,7 +214,7 @@ pub(crate) fn request_prediction_with_zeta(
                     .ok();
             }
 
-            log::trace!("Sending edit prediction request");
+            log::trace!("正在发送编辑预测请求");
 
             let (full_context_offset_range, prompt_input, formatted_prompt) = match request_input {
                 RequestInput::V3 {
@@ -405,7 +405,7 @@ pub(crate) fn request_prediction_with_zeta(
                 return Ok((None, None));
             };
 
-            log::trace!("Got edit prediction response");
+            log::trace!("已收到编辑预测响应");
 
             let (new_editable_region, cursor_offset_in_output, editable_range_in_excerpt) =
                 if let Some(output) = output {
@@ -540,7 +540,7 @@ pub(crate) fn request_prediction_with_zeta(
                             ));
                         }
                         Err(error) => {
-                            log::error!("failed to apply edit prediction patch: {error:?}");
+                            log::error!("应用编辑预测补丁失败:{error:?}");
                             return Ok(Some(EditPredictionResult::new_rejected(
                                 id,
                                 &fallback_buffer,
@@ -672,7 +672,7 @@ fn handle_api_response<T>(
                             ErrorSeverity::Critical
                         }
                         fn primary_action(&self) -> ErrorAction {
-                            ErrorAction::link("Update Zed", "https://zed.dev/releases")
+                            ErrorAction::link("更新 Zed", "https://zed.dev/releases")
                         }
                     }
 

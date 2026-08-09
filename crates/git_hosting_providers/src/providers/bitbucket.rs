@@ -83,18 +83,18 @@ impl Bitbucket {
     pub fn from_remote_url(remote_url: &str) -> Result<Self> {
         let host = get_host_from_git_remote_url(remote_url)?;
         if host == "bitbucket.org" {
-            bail!("the BitBucket instance is not self-hosted");
+            bail!("该 BitBucket 实例不是自托管的");
         }
 
         // TODO: detecting self hosted instances by checking whether "bitbucket" is in the url or not
         // is not very reliable. See https://github.com/zed-industries/zed/issues/26393 for more
         // information.
         if !host.contains("bitbucket") {
-            bail!("not a BitBucket URL");
+            bail!("不是 BitBucket URL");
         }
 
         Ok(Self::new(
-            "BitBucket Self-Hosted",
+            "BitBucket 自托管",
             Url::parse(&format!("https://{}", host))?,
         ))
     }
@@ -113,7 +113,7 @@ impl Bitbucket {
         client: &Arc<dyn HttpClient>,
     ) -> Result<Option<String>> {
         let Some(host) = self.base_url.host_str() else {
-            bail!("failed to get host from bitbucket base url");
+            bail!("无法从 Bitbucket 基础 URL 获取主机");
         };
         let is_self_hosted = self.is_self_hosted();
         let url = if is_self_hosted {
@@ -131,7 +131,7 @@ impl Bitbucket {
         let mut response = client
             .send(request.body(AsyncBody::default())?)
             .await
-            .with_context(|| format!("error fetching BitBucket commit details at {:?}", url))?;
+            .with_context(|| format!("获取 BitBucket 提交详情时出错:{:?}", url))?;
 
         let mut body = Vec::new();
         response.body_mut().read_to_end(&mut body).await?;
@@ -139,7 +139,7 @@ impl Bitbucket {
         if response.status().is_client_error() {
             let text = String::from_utf8_lossy(body.as_slice());
             bail!(
-                "status error {}, response: {text:?}",
+                "状态错误 {}, 响应: {text:?}",
                 response.status().as_u16()
             );
         }
@@ -153,7 +153,7 @@ impl Bitbucket {
             serde_json::from_str::<CommitDetails>(body_str)
                 .map(|commit| commit.author.user.links.avatar.map(|link| link.href))
         }
-        .context("failed to deserialize BitBucket commit details")
+        .context("无法反序列化 BitBucket 提交详情")
     }
 }
 
@@ -565,7 +565,7 @@ mod tests {
 
         let url = Bitbucket::public_instance()
             .build_create_pull_request_url(&remote, "feature/my-branch")
-            .expect("url should be constructed");
+            .expect("应构造 URL");
 
         assert_eq!(
             url.as_str(),
@@ -584,7 +584,7 @@ mod tests {
             Bitbucket::from_remote_url("https://bitbucket.company.com/zed-industries/zed.git")
                 .unwrap()
                 .build_create_pull_request_url(&remote, "feature/my-branch")
-                .expect("url should be constructed");
+                .expect("应构造 URL");
 
         assert_eq!(
             url.as_str(),
@@ -604,7 +604,7 @@ mod tests {
         let bitbucket = Bitbucket::public_instance();
 
         // Test message without PR reference
-        let message = "This does not contain a pull request";
+        let message = "此内容不包含拉取请求";
         assert!(bitbucket.extract_pull_request(&remote, message).is_none());
 
         // Pull request number at end of first line
@@ -636,7 +636,7 @@ mod tests {
                 .unwrap();
 
         // Test message without PR reference
-        let message = "This does not contain a pull request";
+        let message = "此内容不包含拉取请求";
         assert!(bitbucket.extract_pull_request(&remote, message).is_none());
 
         // Pull request number at end of first line

@@ -93,7 +93,7 @@ fn build_application() -> Application {
 }
 
 fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
-    let message = "Zed failed to launch";
+    let message = "Zed 启动失败";
     let error_details = errors
         .into_iter()
         .flat_map(|(kind, paths)| {
@@ -101,10 +101,10 @@ fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
             let mut error_kind_details = match paths.len() {
                 0 => return None,
                 1 => format!(
-                    "{kind} when creating directory {:?}",
+                    "创建目录 {:?} 时发生 {kind}",
                     paths.first().expect("match arm checks for a single entry")
                 ),
-                _many => format!("{kind} when creating directories {paths:?}"),
+                _many => format!("创建目录 {paths:?} 时发生 {kind}"),
             };
 
             #[cfg(unix)]
@@ -132,7 +132,7 @@ fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
                             gpui::PromptLevel::Critical,
                             message,
                             Some(&error_details),
-                            &["Exit"],
+                            &["退出"],
                             cx,
                         );
 
@@ -155,7 +155,7 @@ fn fail_to_open_window_async(e: anyhow::Error, cx: &mut AsyncApp) {
 
 fn fail_to_open_window(e: anyhow::Error, _cx: &mut App) {
     eprintln!(
-        "Zed failed to open a window: {e:?}. See https://zed.dev/docs/linux for troubleshooting steps."
+        "Zed 无法打开窗口:{e:?}。请参阅 https://zed.dev/docs/linux 获取故障排除步骤。"
     );
     #[cfg(not(any(target_os = "linux", target_os = "freebsd")))]
     {
@@ -175,10 +175,10 @@ fn fail_to_open_window(e: anyhow::Error, _cx: &mut App) {
             proxy
                 .add_notification(
                     notification_id,
-                    Notification::new("Zed failed to launch")
+                    Notification::new("Zed 启动失败")
                         .body(Some(
                             format!(
-                                "{e:?}. See https://zed.dev/docs/linux for troubleshooting steps."
+                                "{e:?}。请参阅 https://zed.dev/docs/linux 获取故障排除步骤。"
                             )
                             .as_str(),
                         ))
@@ -230,19 +230,19 @@ fn main() {
             .etw_zed_pid
             .and_then(|pid| if pid >= 0 { Some(pid as u32) } else { None });
         let Some(output_path) = args.etw_output else {
-            eprintln!("--etw-output is required for --record-etw-trace");
+            eprintln!("--record-etw-trace 需要 --etw-output");
             process::exit(1);
         };
 
         let Some(etw_socket) = args.etw_socket else {
-            eprintln!("--etw-socket is required for --record-etw-trace");
+            eprintln!("--record-etw-trace 需要 --etw-socket");
             process::exit(1);
         };
 
         if let Err(error) =
             etw_tracing::record_etw_trace(zed_pid, &output_path, etw_socket.as_str())
         {
-            eprintln!("ETW trace recording failed: {error:#}");
+            eprintln!("ETW 跟踪记录失败:{error:#}");
             process::exit(1);
         }
         return;
@@ -277,7 +277,7 @@ fn main() {
     match util::get_zed_cli_path() {
         Ok(path) => askpass::set_askpass_program(path),
         Err(err) => {
-            eprintln!("Error: {}", err);
+            eprintln!("错误:{}", err);
             if std::option_env!("ZED_BUNDLE").is_some() {
                 process::exit(1);
             }
@@ -297,7 +297,7 @@ fn main() {
     } else {
         let result = zlog::init_output_file(paths::log_file(), Some(paths::old_log_file()));
         if let Err(err) = result {
-            eprintln!("Could not open log file: {}... Defaulting to stdout", err);
+            eprintln!("无法打开日志文件:{}... 将默认输出到标准输出", err);
             zlog::init_output_stdout();
         };
     }
@@ -316,7 +316,7 @@ fn main() {
             client::telemetry::os_name(),
             client::telemetry::os_version(),
         );
-        println!("Zed System Specs (from CLI):\n{}", system_specs);
+        println!("Zed 系统规格(来自命令行):\n{}", system_specs);
         return;
     }
 
@@ -328,7 +328,7 @@ fn main() {
         .unwrap();
 
     log::info!(
-        "========== starting zed version {}, sha {} ==========",
+        "========== 正在启动 zed 版本 {},sha {} ==========",
         app_version,
         app_commit_sha
             .as_ref()
@@ -378,7 +378,7 @@ fn main() {
         }
     };
     if failed_single_instance_check {
-        println!("zed is already running");
+        println!("zed 已在运行");
         return;
     }
 
@@ -402,7 +402,7 @@ fn main() {
                     commit_sha: app_commit_sha
                         .as_ref()
                         .map(|sha| sha.full())
-                        .unwrap_or_else(|| "no sha".to_owned()),
+                        .unwrap_or_else(|| "无 sha".to_owned()),
                 },
                 {
                     let background_executor1 = app.background_executor();
@@ -423,13 +423,13 @@ fn main() {
     let git_binary_path =
         if cfg!(target_os = "macos") && option_env!("ZED_BUNDLE").as_deref() == Some("true") {
             app.path_for_auxiliary_executable("git")
-                .context("could not find git binary path")
+                .context("找不到 git 可执行文件路径")
                 .log_err()
         } else {
             None
         };
     if let Some(git_binary_path) = &git_binary_path {
-        log::info!("Using git binary path: {:?}", git_binary_path);
+        log::info!("正在使用 git 可执行文件路径:{:?}", git_binary_path);
     }
 
     let fs = Arc::new(RealFs::new(git_binary_path, app.background_executor()));
@@ -480,7 +480,7 @@ fn main() {
         let db_trusted_paths = match workspace::WorkspaceDb::global(cx).fetch_trusted_worktrees() {
             Ok(trusted_paths) => trusted_paths,
             Err(e) => {
-                log::error!("Failed to do initial trusted worktrees fetch: {e:#}");
+                log::error!("初始可信工作树获取失败:{e:#}");
                 HashMap::default()
             }
         };
@@ -509,7 +509,7 @@ fn main() {
             let _guard = Tokio::handle(cx).enter();
 
             ReqwestClient::proxy_and_user_agent(proxy_url, &user_agent)
-                .expect("could not start HTTP client")
+                .expect("无法启动 HTTP 客户端")
         };
         cx.set_http_client(Arc::new(http));
 
@@ -628,14 +628,14 @@ fn main() {
         if let (Some(system_id), Some(installation_id)) = (&system_id, &installation_id) {
             match (&system_id, &installation_id) {
                 (IdType::New(_), IdType::New(_)) => {
-                    telemetry::event!("App First Opened");
-                    telemetry::event!("App First Opened For Release Channel");
+                    telemetry::event!("应用首次打开");
+                    telemetry::event!("应用首次为发布频道打开");
                 }
                 (IdType::Existing(_), IdType::New(_)) => {
-                    telemetry::event!("App First Opened For Release Channel");
+                    telemetry::event!("应用首次为发布频道打开");
                 }
                 (_, IdType::Existing(_)) => {
-                    telemetry::event!("App Opened");
+                    telemetry::event!("应用已打开");
                 }
             }
         }
@@ -830,12 +830,12 @@ fn main() {
         })
         .detach();
         telemetry::event!(
-            "Settings Changed",
+            "设置已更改",
             setting = "theme",
             value = cx.theme().name.to_string()
         );
         telemetry::event!(
-            "Settings Changed",
+            "设置已更改",
             setting = "keymap",
             value = BaseKeymap::get_global(cx).to_string()
         );
@@ -1102,10 +1102,10 @@ fn handle_open_request(request: OpenRequest, app_state: Arc<AppState>, cx: &mut 
                                     .await?;
                             let json_schema_value: serde_json::Value =
                                 serde_json::from_str(&json_schema_content)
-                                    .context("Failed to parse JSON Schema")?;
+                                    .context("解析 JSON Schema 失败")?;
                             let json_schema_content =
                                 serde_json::to_string_pretty(&json_schema_value)
-                                    .context("Failed to serialize JSON Schema as JSON")?;
+                                    .context("将 JSON Schema 序列化为 JSON 失败")?;
                             let buffer_task = workspace.update(cx, |workspace, cx| {
                                 workspace.project().update(cx, |project, cx| {
                                     project.create_buffer(json, false, cx)
@@ -1139,7 +1139,7 @@ fn handle_open_request(request: OpenRequest, app_state: Arc<AppState>, cx: &mut 
                             })
                         }
                         .await;
-                        res.context("Failed to open builtin JSON Schema").log_err();
+                        res.context("打开内置 JSON Schema 失败").log_err();
                     })
                     .detach();
                 });
@@ -1229,8 +1229,8 @@ fn handle_open_request(request: OpenRequest, app_state: Arc<AppState>, cx: &mut 
                                     let Some(repo) =
                                         workspace.project().read(cx).active_repository(cx)
                                     else {
-                                        log::error!("no active repository found for commit view");
-                                        return Err(anyhow::anyhow!("no active repository found"));
+                                        log::error!("提交视图未找到活动仓库");
+                                        return Err(anyhow::anyhow!("未找到活动仓库"));
                                     };
 
                                     git_ui::commit_view::CommitView::open(
@@ -1294,7 +1294,7 @@ fn handle_open_request(request: OpenRequest, app_state: Arc<AppState>, cx: &mut 
             .await?;
             for result in results.into_iter().flatten() {
                 if let Err(err) = result {
-                    log::error!("Error opening path: {err:#}");
+                    log::error!("打开路径时出错:{err:#}");
                 }
             }
             anyhow::Ok(())
@@ -1469,17 +1469,17 @@ pub(crate) async fn restore_or_create_workspace(
             };
 
             if let Err(error) = result {
-                log::error!("Failed to restore workspace: {error:#}");
+                log::error!("恢复工作区失败:{error:#}");
                 error_count += 1;
             }
         }
 
         if error_count > 0 {
             let message = if error_count == 1 {
-                "Failed to restore 1 workspace. Check logs for details.".to_string()
+                "无法恢复 1 个工作区。查看日志了解详情。".to_string()
             } else {
                 format!(
-                    "Failed to restore {} workspaces. Check logs for details.",
+                    "无法恢复 {} 个工作区。查看日志了解详情。",
                     error_count
                 )
             };
@@ -1507,7 +1507,7 @@ pub(crate) async fn restore_or_create_workspace(
             // If we couldn't show a toast (no windows opened successfully),
             // open a fallback empty workspace and show the error there
             if !toast_shown {
-                log::error!("All workspace restorations failed. Opening fallback empty workspace.");
+                log::error!("所有工作区恢复失败。正在打开备用的空工作区。");
                 cx.update(|cx| {
                     workspace::open_new(
                         Default::default(),
@@ -1723,7 +1723,7 @@ struct Args {
 
     /// Open the project in a dev container.
     ///
-    /// Automatically triggers "Reopen in Dev Container" if a `.devcontainer/`
+    /// Automatically triggers "在开发容器中重新打开" if a `.devcontainer/`
     /// configuration is found in the project directory.
     #[arg(long)]
     dev_container: bool,
@@ -1863,11 +1863,11 @@ fn load_user_themes_in_background(fs: Arc<dyn fs::Fs>, cx: &mut App) {
                 .map(|m| m.is_dir)
             {
                 Some(is_dir) => {
-                    anyhow::ensure!(is_dir, "Themes dir path {themes_dir:?} is not a directory")
+                    anyhow::ensure!(is_dir, "主题目录路径 {themes_dir:?} 不是目录")
                 }
                 None => {
                     fs.create_dir(themes_dir).await.with_context(|| {
-                        format!("Failed to create themes dir at path {themes_dir:?}")
+                        format!("在路径 {themes_dir:?} 创建主题目录失败")
                     })?;
                 }
             }
@@ -1875,7 +1875,7 @@ fn load_user_themes_in_background(fs: Arc<dyn fs::Fs>, cx: &mut App) {
             let mut theme_paths = fs
                 .read_dir(themes_dir)
                 .await
-                .with_context(|| format!("reading themes from {themes_dir:?}"))?;
+                .with_context(|| format!("正在从 {themes_dir:?} 读取主题"))?;
 
             while let Some(theme_path) = theme_paths.next().await {
                 let Some(theme_path) = theme_path.log_err() else {
@@ -1974,7 +1974,7 @@ fn dump_all_gpui_actions() {
     let mut actions = gpui::generate_list_of_all_registered_actions()
         .map(|action| {
             let schema = (action.json_schema)(&mut generator)
-                .map(|s| serde_json::to_value(s).expect("Failed to serialize action schema"));
+                .map(|s| serde_json::to_value(s).expect("序列化操作 schema 失败"));
             ActionDef {
                 name: action.name,
                 human_name: command_palette::humanize_action_name(action.name),
@@ -1989,7 +1989,7 @@ fn dump_all_gpui_actions() {
     actions.sort_by_key(|a| a.name);
 
     let schema_definitions = serde_json::to_value(generator.definitions())
-        .expect("Failed to serialize schema definitions");
+        .expect("序列化 schema 定义失败");
 
     let output = serde_json::json!({
         "actions": actions,
@@ -2013,10 +2013,10 @@ fn check_for_conpty_dll() {
     if let Ok(hmodule) = unsafe { LoadLibraryW(w!("conpty.dll")) } {
         unsafe {
             FreeLibrary(hmodule)
-                .context("Failed to free conpty.dll")
+                .context("释放 conpty.dll 失败")
                 .log_err();
         }
     } else {
-        log::warn!("Failed to load conpty.dll. Terminal will work with reduced functionality.");
+        log::warn!("加载 conpty.dll 失败。终端将以受限功能运行。");
     }
 }

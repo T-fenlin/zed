@@ -59,7 +59,7 @@ impl Gitlab {
     pub fn from_remote_url(remote_url: &str) -> Result<Self> {
         let host = get_host_from_git_remote_url(remote_url)?;
         if host == "gitlab.com" {
-            bail!("the GitLab instance is not self-hosted");
+            bail!("该 GitLab 实例不是自托管的");
         }
 
         // TODO: detecting self hosted instances by checking whether "gitlab" is in the url or not
@@ -70,7 +70,7 @@ impl Gitlab {
         }
 
         Ok(Self::new(
-            "GitLab Self-Hosted",
+            "GitLab 自托管",
             Url::parse(&format!("https://{}", host))?,
         ))
     }
@@ -83,7 +83,7 @@ impl Gitlab {
         client: &Arc<dyn HttpClient>,
     ) -> Result<Option<AvatarInfo>> {
         let Some(host) = self.base_url.host_str() else {
-            bail!("failed to get host from gitlab base url");
+            bail!("无法从 GitLab 基础 URL 获取主机名");
         };
         let project_path = format!("{}/{}", repo_owner, repo);
         let project_path_encoded = urlencoding::encode(&project_path);
@@ -98,7 +98,7 @@ impl Gitlab {
         let mut response = client
             .send(request.body(AsyncBody::default())?)
             .await
-            .with_context(|| format!("error fetching GitLab commit details at {:?}", url))?;
+            .with_context(|| format!("获取 GitLab 提交详情时出错,位置:{:?}", url))?;
 
         let mut body = Vec::new();
         response.body_mut().read_to_end(&mut body).await?;
@@ -106,7 +106,7 @@ impl Gitlab {
         if response.status().is_client_error() {
             let text = String::from_utf8_lossy(body.as_slice());
             bail!(
-                "status error {}, response: {text:?}",
+                "状态错误 {}, 响应: {text:?}",
                 response.status().as_u16()
             );
         }
@@ -115,7 +115,7 @@ impl Gitlab {
 
         let author_email = serde_json::from_str::<CommitDetails>(body_str)
             .map(|commit| commit.author_email)
-            .context("failed to deserialize GitLab commit details")?;
+            .context("无法反序列化 GitLab 提交详情")?;
 
         let avatar_info_url = format!("https://{host}/api/v4/avatar?email={author_email}");
 
@@ -126,7 +126,7 @@ impl Gitlab {
         let mut response = client
             .send(request.body(AsyncBody::default())?)
             .await
-            .with_context(|| format!("error fetching GitLab avatar info at {:?}", url))?;
+            .with_context(|| format!("获取 GitLab 头像信息时出错,位置:{:?}", url))?;
 
         let mut body = Vec::new();
         response.body_mut().read_to_end(&mut body).await?;
@@ -134,7 +134,7 @@ impl Gitlab {
         if response.status().is_client_error() {
             let text = String::from_utf8_lossy(body.as_slice());
             bail!(
-                "status error {}, response: {text:?}",
+                "状态错误 {}, 响应: {text:?}",
                 response.status().as_u16()
             );
         }
@@ -142,7 +142,7 @@ impl Gitlab {
         let body_str = std::str::from_utf8(&body)?;
 
         serde_json::from_str::<Option<AvatarInfo>>(body_str)
-            .context("failed to deserialize GitLab avatar info")
+            .context("无法反序列化 GitLab 头像信息")
     }
 }
 
@@ -441,7 +441,7 @@ mod tests {
 
         let url = provider
             .build_create_pull_request_url(&remote, "feature/cool stuff")
-            .expect("create PR url should be constructed");
+            .expect("应能构造创建 PR 的 URL");
 
         assert_eq!(
             url.as_str(),
@@ -509,10 +509,10 @@ mod tests {
         );
 
         let base_url = Url::parse("https://gitlab.zed.com").unwrap();
-        let github = Gitlab::new("GitLab Self-Hosted", base_url);
+        let github = Gitlab::new("GitLab 自托管", base_url);
         let url = github
             .build_create_pull_request_url(&remote, "feature/new-feature")
-            .expect("should be able to build pull request url");
+            .expect("应能构造拉取请求 URL");
 
         assert_eq!(
             url.as_str(),
@@ -564,7 +564,7 @@ mod tests {
     #[test]
     fn test_extract_merge_request_self_hosted() {
         let base_url = Url::parse("https://gitlab.my-company.com").unwrap();
-        let provider = Gitlab::new("GitLab Self-Hosted", base_url);
+        let provider = Gitlab::new("GitLab 自托管", base_url);
 
         let remote = ParsedGitRemote {
             owner: "team".into(),

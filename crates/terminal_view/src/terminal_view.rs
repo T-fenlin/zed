@@ -528,39 +528,39 @@ impl TerminalView {
         let context_menu = ContextMenu::build(window, cx, |menu, _, _| {
             menu.context(self.focus_handle.clone())
                 .when(self.shows_workspace_actions(), |menu| {
-                    menu.action("New Terminal", Box::new(NewTerminal::default()))
+                    menu.action("新建终端", Box::new(NewTerminal::default()))
                         .action(
-                            "New Center Terminal",
+                            "新建居中终端",
                             Box::new(NewCenterTerminal::default()),
                         )
                         .separator()
                 })
-                .action("Copy", Box::new(Copy))
+                .action("复制", Box::new(Copy))
                 .when(
                     !matches!(self.mode, TerminalMode::Embedded { .. }),
                     |menu| {
-                        menu.action("Paste", Box::new(Paste))
-                            .action("Paste Text", Box::new(PasteText))
+                        menu.action("粘贴", Box::new(Paste))
+                            .action("粘贴文本", Box::new(PasteText))
                     },
                 )
-                .action("Select All", Box::new(SelectAll))
+                .action("全选", Box::new(SelectAll))
                 .when(
                     !matches!(self.mode, TerminalMode::Embedded { .. }),
-                    |menu| menu.action("Clear", Box::new(Clear)),
+                    |menu| menu.action("清除", Box::new(Clear)),
                 )
                 .when(
                     assistant_enabled && !matches!(self.mode, TerminalMode::Embedded { .. }),
                     |menu| {
                         menu.separator()
-                            .action("Inline Assist", Box::new(InlineAssist::default()))
+                            .action("内联助手", Box::new(InlineAssist::default()))
                             .when(has_selection && self.shows_workspace_actions(), |menu| {
-                                menu.action("Add to Agent Thread", Box::new(AddSelectionToThread))
+                                menu.action("添加到助手对话线程", Box::new(AddSelectionToThread))
                             })
                     },
                 )
                 .when(self.shows_workspace_actions(), |menu| {
                     menu.separator().action(
-                        "Close Terminal Tab",
+                        "关闭终端标签页",
                         Box::new(CloseActiveItem {
                             save_intent: None,
                             close_pinned: true,
@@ -1091,7 +1091,7 @@ impl TerminalView {
                 .size(ButtonSize::Compact)
                 .icon_color(Color::Default)
                 .shape(ui::IconButtonShape::Square)
-                .tooltip(move |_window, cx| Tooltip::for_action("Rerun task", &RerunTask, cx))
+                .tooltip(move |_window, cx| Tooltip::for_action("重新运行任务", &RerunTask, cx))
                 .on_click(move |_, window, cx| {
                     window.dispatch_action(Box::new(terminal_rerun_override(&task_id)), cx);
                 }),
@@ -1446,7 +1446,7 @@ impl Item for TerminalView {
                     .child(Label::new(title.clone()))
                     .child(h_flex().flex_grow_1().child(Divider::horizontal()))
                     .child(
-                        Label::new(format!("Process ID (PID): {}", pid))
+                        Label::new(format!("进程 ID (PID): {}", pid))
                             .color(Color::Muted)
                             .size(LabelSize::Small),
                     )
@@ -1725,7 +1725,7 @@ impl Item for TerminalView {
     ) -> Vec<(SharedString, Box<dyn gpui::Action>)> {
         let terminal = self.terminal.read(cx);
         if terminal.task().is_none() {
-            vec![("Rename".into(), Box::new(RenameTerminal))]
+            vec![("重命名".into(), Box::new(RenameTerminal))]
         } else {
             Vec::new()
         }
@@ -1821,7 +1821,7 @@ impl Item for TerminalView {
         if self.terminal().read(cx).task().is_none() {
             if let Some((new_id, old_id)) = workspace.database_id().zip(self.workspace_id) {
                 log::debug!(
-                    "Updating workspace id for the terminal, old: {old_id:?}, new: {new_id:?}",
+                    "正在更新终端的工作区 ID,旧 ID: {old_id:?},新 ID: {new_id:?}",
                 );
                 let db = TerminalDb::global(cx);
                 let entity_id = cx.entity_id().as_u64();

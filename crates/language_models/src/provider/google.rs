@@ -264,7 +264,7 @@ impl GoogleLanguageModel {
         });
 
         async move {
-            let api_key = api_key.context("Missing Google API key")?;
+            let api_key = api_key.context("缺少 Google API 密钥")?;
             let request = google_ai::stream_generate_content(
                 http_client.as_ref(),
                 &api_url,
@@ -272,7 +272,7 @@ impl GoogleLanguageModel {
                 request,
                 &extra_headers,
             );
-            request.await.context("failed to stream completion")
+            request.await.context("流式补全失败")
         }
         .boxed()
     }

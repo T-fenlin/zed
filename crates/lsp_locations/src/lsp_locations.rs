@@ -115,7 +115,7 @@ async fn run_picker_query(
     match query.await {
         Ok(locations) => Some(locations),
         Err(error) => {
-            log::error!("LSP {kind:?} query failed: {error:#}");
+            log::error!("LSP {kind:?} 查询失败:{error:#}");
             workspace
                 .update(cx, |workspace, cx| workspace.show_error(error, cx))
                 .log_err();
@@ -168,9 +168,9 @@ pub enum LspPickerKind {
 impl LspPickerKind {
     fn placeholder(self) -> &'static str {
         match self {
-            LspPickerKind::References => "Filter references…",
-            LspPickerKind::Definition => "Filter definitions…",
-            LspPickerKind::Implementation => "Filter implementations…",
+            LspPickerKind::References => "筛选引用…",
+            LspPickerKind::Definition => "筛选定义…",
+            LspPickerKind::Implementation => "筛选实现…",
         }
     }
 
@@ -178,9 +178,9 @@ impl LspPickerKind {
     /// appear to silently do nothing.
     fn empty_message(self) -> &'static str {
         match self {
-            LspPickerKind::References => "No references found",
-            LspPickerKind::Definition => "No definitions found",
-            LspPickerKind::Implementation => "No implementations found",
+            LspPickerKind::References => "未找到引用",
+            LspPickerKind::Definition => "未找到定义",
+            LspPickerKind::Implementation => "未找到实现",
         }
     }
 
@@ -249,7 +249,7 @@ impl LspLocationsPicker {
 
             // Count on the built matches (not raw locations): they are deduped by
             // range and exclude fileless results, so a single distinct result
-            // jumps directly and a fileless-only result reports "no results"
+            // jumps directly and a fileless-only result reports "无结果"
             // instead of opening a blank picker.
             let Some(mut matches) =
                 run_picker_matches(kind, &editor, &workspace, &project, cx).await

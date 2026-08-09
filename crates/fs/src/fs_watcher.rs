@@ -218,7 +218,7 @@ fn register_existing_path(
 ) -> anyhow::Result<Option<FsWatcherRegistration>> {
     let mode = if requires_poll_watcher(path.as_ref()) {
         log::info!(
-            "Using poll watcher ({}ms interval) for {}",
+            "正在为 {} 使用轮询监视器(间隔 {} 毫秒)",
             poll_interval().as_millis(),
             path.display()
         );
@@ -289,7 +289,7 @@ fn detect_requires_poll_watcher_linux(path: &Path) -> bool {
         || fs_type == FUSE_SUPER_MAGIC
     {
         log::info!(
-            "Detected network/virtual filesystem (type 0x{:x}) at {}, using poll watcher",
+            "在 0x{:x} 类型的网络/虚拟文件系统(位于 {})检测到,正在使用轮询监视器",
             fs_type,
             path.display()
         );
@@ -298,7 +298,7 @@ fn detect_requires_poll_watcher_linux(path: &Path) -> bool {
 
     if is_wsl_drvfs_path(path) {
         log::info!(
-            "Detected WSL drvfs mount at {}, using poll watcher",
+            "在 {} 检测到 WSL drvfs 挂载,正在使用轮询监视器",
             path.display()
         );
         return true;
@@ -541,7 +541,7 @@ async fn poll_path_until_created(
             }
             Ok(None) => {}
             Err(error) => {
-                log::warn!("failed to watch newly-created path {path:?}: {error}; retrying");
+                log::warn!("监视新创建的路径 {path:?} 失败:{error};正在重试");
             }
         }
     }
@@ -595,7 +595,7 @@ fn push_notify_event(
 
     if event.need_rescan() {
         if !watcher_logging_rate_limited() {
-            log::warn!("filesystem watcher lost sync for {watched_root:?}; scheduling rescan");
+            log::warn!("文件系统监视器与 {watched_root:?} 失去同步;正在计划重新扫描");
         }
 
         path_events.retain(|path_event| path_event.path != watched_root);
@@ -617,7 +617,7 @@ fn watcher_logging_rate_limited() -> bool {
 
     if started.elapsed().as_secs() < 1 {
         if *emitted < 20 {
-            log::warn!("filesystem watcher lost sync for many files, not logging more");
+            log::warn!("文件系统监视器与多个文件失去同步,不再记录更多日志");
             return true;
         } else {
             *emitted += 1;
@@ -895,7 +895,7 @@ impl GlobalWatcher {
         let event = match event {
             Ok(event) => event,
             Err(error) => {
-                log::warn!("watcher error for {mode:?}: {error}");
+                log::warn!("监视器错误({mode:?}):{error}");
                 return;
             }
         };
@@ -912,7 +912,7 @@ impl GlobalWatcher {
                     .map(|registration| registration.callback.clone())
                     .collect::<Vec<_>>();
                 log::warn!(
-                    "filesystem watcher lost sync for {mode:?}; scheduling rescans for {} registrations",
+                    "文件系统监视器与 {mode:?} 失去同步;正在为 {} 个注册项计划重新扫描",
                     callbacks.len()
                 );
                 callbacks
@@ -975,7 +975,7 @@ impl GlobalWatcher {
         state.cooldown_until = Some(now + *NATIVE_WATCH_LIMIT_COOLDOWN);
         if should_log {
             log::warn!(
-                "OS file watch limit reached while watching {path:?}; skipping new native file watcher registrations for {} seconds",
+                "监视 {path:?} 时达到操作系统文件监视上限;将在 {} 秒内跳过新的原生文件监视器注册",
                 NATIVE_WATCH_LIMIT_COOLDOWN.as_secs()
             );
         }
@@ -997,7 +997,7 @@ impl GlobalWatcher {
                 self.native_watcher
                     .lock()
                     .as_mut()
-                    .expect("native watcher initialized")
+                    .expect("原生监视器已初始化")
                     .watch(
                         path,
                         if cfg!(any(target_os = "windows", target_os = "macos")) {
@@ -1012,7 +1012,7 @@ impl GlobalWatcher {
                 self.poll_watcher
                     .lock()
                     .as_mut()
-                    .expect("poll watcher initialized")
+                    .expect("轮询监视器已初始化")
                     .watch(path, notify::RecursiveMode::Recursive)?;
             }
         }
@@ -1121,7 +1121,7 @@ fn global_watcher() -> &'static GlobalWatcher {
                     global_watcher().dispatch_batch(first, &event_rx);
                 }
             })
-            .expect("failed to spawn fs watcher dispatch thread");
+            .expect("无法生成文件系统监视器调度线程");
         GlobalWatcher {
             state: Mutex::new(WatcherState {
                 watchers: Default::default(),
@@ -1185,7 +1185,7 @@ mod tests {
             if backend.watched_paths.remove(&path) {
                 Ok(())
             } else {
-                Err(notify::Error::generic("path was not watched"))
+                Err(notify::Error::generic("路径未被监视"))
             }
         }
     }
@@ -1241,12 +1241,12 @@ mod tests {
 
         let parent_registration = watcher
             .add(parent.as_ref().into(), WatcherMode::Poll, false, |_| {})
-            .expect("add parent watch")
-            .expect("parent watch registered");
+            .expect("添加父级监视")
+            .expect("父级监视已注册");
         let child_registration = watcher
             .add(child.as_ref().into(), WatcherMode::Poll, false, |_| {})
-            .expect("add covered child watch")
-            .expect("child watch registered");
+            .expect("添加被覆盖的子级监视")
+            .expect("子级监视已注册");
 
         watcher.remove(parent_registration);
         watcher.remove(child_registration);
@@ -1258,7 +1258,7 @@ mod tests {
 
     #[gpui::test]
     async fn pending_path_is_registered_once_created(cx: &mut gpui::TestAppContext) {
-        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let temp_dir = tempfile::tempdir().expect("创建临时目录");
         let path = temp_dir.path().join("file.txt");
 
         let (tx, rx) = async_channel::unbounded();
@@ -1267,7 +1267,7 @@ mod tests {
 
         watcher
             .add(&path)
-            .expect("add path that does not exist yet");
+            .expect("添加尚不存在的路径");
         assert!(
             watcher
                 .pending_registrations
@@ -1276,14 +1276,14 @@ mod tests {
         );
         assert!(watcher.registrations.lock().is_empty());
 
-        std::fs::write(&path, b"contents").expect("create path");
+        std::fs::write(&path, b"contents").expect("创建路径");
 
         // poll_path_until_created stats the path on smol's blocking pool, which
         // the deterministic executor cannot drive; park until the poll task
         // signals the event channel.
         cx.executor().allow_parking();
         cx.executor().advance_clock(poll_interval());
-        rx.recv().await.expect("receive watcher event");
+        rx.recv().await.expect("接收监视器事件");
 
         assert!(
             !watcher
@@ -1319,10 +1319,10 @@ mod tests {
 
         let first_registration = watcher
             .add(first_path.clone(), WatcherMode::Native, false, |_| {})
-            .expect("native watch limit is handled");
+            .expect("原生监视上限已处理");
         let second_registration = watcher
             .add(second_path, WatcherMode::Native, false, |_| {})
-            .expect("native watch limit backoff is handled");
+            .expect("原生监视上限退避已处理");
 
         assert!(first_registration.is_none());
         assert!(second_registration.is_none());
@@ -1355,7 +1355,7 @@ mod tests {
                     },
                 )
                 .expect("add watch")
-                .expect("watch registered");
+                .expect("监视已注册");
         }
         (watcher, fired)
     }
@@ -1600,8 +1600,8 @@ mod tests {
                     false,
                     move |_| fired.lock().push(()),
                 )
-                .expect("add watch")
-                .expect("watch registered");
+                .expect("添加监视")
+                .expect("监视已注册");
         }
 
         watcher.dispatch(
@@ -1616,14 +1616,14 @@ mod tests {
     fn test_coalesce_pending_rescans() {
         let test_cases = [
             TestCase {
-                name: "coalesces descendant rescans under pending ancestor",
+                name: "合并待处理祖先下的后代重新扫描",
                 pending_paths: vec![rescan("/root")],
                 path_events: vec![rescan("/root/child"), rescan("/root/child/grandchild")],
                 expected_pending_paths: vec![rescan("/root")],
                 expected_path_events: vec![],
             },
             TestCase {
-                name: "new ancestor rescan replaces pending descendant rescans",
+                name: "新的祖先重新扫描替换待处理的后代重新扫描",
                 pending_paths: vec![
                     changed("/other"),
                     rescan("/root/child"),
@@ -1634,14 +1634,14 @@ mod tests {
                 expected_path_events: vec![rescan("/root")],
             },
             TestCase {
-                name: "same path rescan replaces pending non-rescan event",
+                name: "相同路径的重新扫描替换待处理的非重新扫描事件",
                 pending_paths: vec![changed("/root")],
                 path_events: vec![rescan("/root")],
                 expected_pending_paths: vec![],
                 expected_path_events: vec![rescan("/root")],
             },
             TestCase {
-                name: "unrelated rescans are preserved",
+                name: "不相关的重新扫描被保留",
                 pending_paths: vec![rescan("/root-a")],
                 path_events: vec![rescan("/root-b")],
                 expected_pending_paths: vec![rescan("/root-a")],
@@ -1664,12 +1664,12 @@ mod tests {
 
             assert_eq!(
                 pending_paths, test_case.expected_pending_paths,
-                "pending_paths mismatch for case: {}",
+                "待处理路径不匹配,情况:{}",
                 test_case.name
             );
             assert_eq!(
                 path_events, test_case.expected_path_events,
-                "path_events mismatch for case: {}",
+                "路径事件不匹配,情况:{}",
                 test_case.name
             );
         }

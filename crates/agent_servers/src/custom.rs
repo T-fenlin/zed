@@ -223,13 +223,32 @@ impl AgentServer for CustomAgentServer {
         }
 
         let mut extra_env = load_proxy_env(cx);
+// [ZED_GLOBALIZATION_PATCH] 透传 Claude Code 相关系统环境变量
+        for var_name in [
+            "ANTHROPIC_API_KEY",
+            "ANTHROPIC_BASE_URL",
+            "CLAUDE_CODE_USE_BEDROCK",
+            "CLAUDE_CODE_USE_VERTEX",
+        ] {
+            if let Ok(val) = std::env::var(var_name) {
+                extra_env.insert(var_name.into(), val);
+            }
+        }
+        for (key, val) in std::env::vars() {
+            if key.starts_with("AWS_")
+                || key.starts_with("GOOGLE_CLOUD_")
+                || key == "CLOUD_ML_REGION"
+            {
+                extra_env.insert(key, val);
+            }
+        }
         if delegate.store.read(cx).no_browser() {
             extra_env.insert("NO_BROWSER".to_owned(), "1".to_owned());
         }
         if is_registry_agent {
             match agent_id.as_ref() {
                 CLAUDE_AGENT_ID => {
-                    extra_env.insert("ANTHROPIC_API_KEY".into(), "".into());
+                    // [ZED_GLOBALIZATION_PATCH] 已删除强制清空 ANTHROPIC_API_KEY
                 }
                 CODEX_ID => {
                     if let Ok(api_key) = std::env::var("CODEX_API_KEY") {
@@ -255,7 +274,7 @@ impl AgentServer for CustomAgentServer {
             let command = store
                 .update(cx, |store, cx| {
                     let agent = store.get_external_agent(&agent_id).with_context(|| {
-                        format!("Custom agent server `{}` is not registered", agent_id)
+                        format!("自定义代理服务器 `{}` 未注册", agent_id)
                     })?;
                     if let Some(new_version_available_tx) = delegate.new_version_available {
                         agent.set_new_version_available_tx(new_version_available_tx);

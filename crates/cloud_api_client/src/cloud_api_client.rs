@@ -30,32 +30,32 @@ enum Authentication {
 #[derive(Debug, Error)]
 pub enum ClientApiError {
     /// 401 — credentials are invalid or expired.
-    #[error("Unauthorized")]
+    #[error("未授权")]
     Unauthorized,
     /// No credentials have been set on the client.
-    #[error("not signed in")]
+    #[error("未登录")]
     NotSignedIn,
     /// Connection-level failure: DNS, TCP, TLS, timeout, etc.
     /// The HTTP request never received a response.
-    #[error("connection to {host} failed")]
+    #[error("无法连接到 {host}")]
     ConnectionFailed {
         host: String,
         #[source]
         source: anyhow::Error,
     },
     /// Server returned a non-success HTTP status (other than 401).
-    #[error("{host} returned {status}")]
+    #[error("{host} 返回了 {status}")]
     ServerError {
         host: String,
         status: StatusCode,
         body: String,
     },
     /// Failed to read or parse the response body after a successful HTTP status.
-    #[error("invalid response")]
+    #[error("无效响应")]
     InvalidResponse(#[source] anyhow::Error),
     /// Failed to build the HTTP request (URL construction, serialization, etc.).
     /// This typically indicates a programming error.
-    #[error("failed to build request")]
+    #[error("构建请求失败")]
     RequestBuildFailed(#[source] anyhow::Error),
 }
 
@@ -213,7 +213,7 @@ impl CloudApiClient {
 
         let body = match Self::read_response_body(&mut response).await {
             Ok(body) => body,
-            Err(error) => format!("failed to read response body: {error}"),
+            Err(error) => format!("读取响应体失败:{error}"),
         };
         Err(ClientApiError::ServerError { host, status, body })
     }
@@ -262,7 +262,7 @@ impl CloudApiClient {
                 Ok(false)
             } else {
                 Err(anyhow!(
-                    "Failed to get authenticated user.\nStatus: {:?}\nBody: {body}",
+                    "获取已认证用户失败。\n状态:{:?}\n响应体:{body}",
                     response.status()
                 ))
             }

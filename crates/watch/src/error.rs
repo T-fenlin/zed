@@ -7,7 +7,7 @@ pub struct NoReceiverError;
 
 impl fmt::Display for NoReceiverError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "all receivers were dropped")
+        write!(fmt, "所有接收器均已丢弃")
     }
 }
 
@@ -18,7 +18,7 @@ pub struct NoSenderError;
 
 impl fmt::Display for NoSenderError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "sender was dropped")
+        write!(fmt, "发送器已被丢弃")
     }
 }
 

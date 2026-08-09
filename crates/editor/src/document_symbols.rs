@@ -493,7 +493,7 @@ mod tests {
             assert_eq!(
                 outline_symbol_names(editor),
                 vec!["struct Foo", "bar"],
-                "cursor is inside Foo > bar, so we expect the containing chain"
+                "光标位于 Foo > bar 内部,因此我们期望包含链"
             );
         });
     }
@@ -534,7 +534,7 @@ mod tests {
             assert_eq!(
                 outline_symbol_names(editor),
                 vec!["fn main"],
-                "Tree-sitter should produce 'fn main'"
+                "Tree-sitter 应生成 'fn main'"
             );
         });
 
@@ -549,7 +549,7 @@ mod tests {
             assert_eq!(
                 outline_symbol_names(editor),
                 vec!["lsp_main_symbol"],
-                "After switching to LSP, should see LSP symbols"
+                "切换到 LSP 后,应看到 LSP 符号"
             );
         });
 
@@ -564,7 +564,7 @@ mod tests {
             assert_eq!(
                 outline_symbol_names(editor),
                 vec!["fn main"],
-                "After switching back to tree-sitter, should see tree-sitter symbols again"
+                "切换回 tree-sitter 后,应再次看到 tree-sitter 符号"
             );
         });
     }
@@ -610,7 +610,7 @@ mod tests {
         cx.run_until_parked();
 
         let first_count = request_count.load(atomic::Ordering::Acquire);
-        assert_eq!(first_count, 1, "Should have made exactly one request");
+        assert_eq!(first_count, 1, "应恰好发出一个请求");
 
         // Move cursor within the same buffer version — should use cache
         cx.update_editor(|editor, window, cx| {
@@ -623,7 +623,7 @@ mod tests {
         assert_eq!(
             first_count,
             request_count.load(atomic::Ordering::Acquire),
-            "Moving cursor without editing should use cached symbols"
+            "不编辑而移动光标应使用缓存的符号"
         );
     }
 
@@ -792,19 +792,19 @@ mod tests {
             for (range, _style) in &symbol.highlight_ranges {
                 assert!(
                     symbol.text.is_char_boundary(range.start),
-                    "highlight range start {} is not a char boundary in {:?}",
+                    "高亮范围起始位置 {} 在 {:?} 中不是字符边界",
                     range.start,
                     symbol.text
                 );
                 assert!(
                     symbol.text.is_char_boundary(range.end),
-                    "highlight range end {} is not a char boundary in {:?}",
+                    "高亮范围结束位置 {} 在 {:?} 中不是字符边界",
                     range.end,
                     symbol.text
                 );
                 assert!(
                     range.end <= symbol.text.len(),
-                    "highlight range end {} exceeds text length {} for {:?}",
+                    "高亮范围结束位置 {} 超出文本长度 {},文本为 {:?}",
                     range.end,
                     symbol.text.len(),
                     symbol.text
@@ -844,7 +844,7 @@ mod tests {
             // (no symbols to show in breadcrumbs)
             assert!(
                 editor.outline_symbols_at_cursor.is_none(),
-                "Empty LSP response should result in no outline symbols"
+                "空的 LSP 响应应导致没有大纲符号"
             );
         });
     }
@@ -888,14 +888,14 @@ mod tests {
             assert_eq!(
                 outline_symbol_names(editor),
                 vec!["fn main"],
-                "With document_symbols off, should use tree-sitter"
+                "关闭 document_symbols 时,应使用 tree-sitter"
             );
         });
 
         assert_eq!(
             request_count.load(atomic::Ordering::Acquire),
             0,
-            "Should not have made any LSP document symbol requests when setting is off"
+            "关闭该设置时,不应发出任何 LSP 文档符号请求"
         );
     }
 
@@ -941,7 +941,7 @@ mod tests {
             editor
                 .project
                 .as_ref()
-                .expect("editor should have a project")
+                .expect("编辑器应有一个项目")
                 .read(cx)
                 .languages()
                 .set_theme(cx.theme().clone());
@@ -956,16 +956,16 @@ mod tests {
             let symbol_segment = breadcrumbs
                 .iter()
                 .find(|b| b.text.as_ref() == "fn main")
-                .expect("Should have 'fn main' breadcrumb");
+                .expect("应有 'fn main' 面包屑导航");
             let keyword_highlight = symbol_segment
                 .highlights
                 .iter()
                 .find(|(range, _)| &symbol_segment.text[range.clone()] == "fn")
-                .expect("Should have a highlight for the 'fn' keyword");
+                .expect("应为 'fn' 关键字设置高亮");
             assert_eq!(
                 keyword_highlight.1.color,
                 Some(red_color),
-                "The 'fn' keyword should have red color"
+                "'fn' 关键字应为红色"
             );
         });
 
@@ -1001,7 +1001,7 @@ mod tests {
             editor
                 .project
                 .as_ref()
-                .expect("editor should have a project")
+                .expect("编辑器应有一个项目")
                 .read(cx)
                 .languages()
                 .set_theme(cx.theme().clone());
@@ -1011,20 +1011,20 @@ mod tests {
         cx.update_editor(|editor, _window, cx| {
             let breadcrumbs = editor
                 .breadcrumbs_inner(cx)
-                .expect("Should have breadcrumbs after theme change");
+                .expect("主题更改后应有面包屑导航");
             let symbol_segment = breadcrumbs
                 .iter()
                 .find(|b| b.text.as_ref() == "fn main")
-                .expect("Should have 'fn main' breadcrumb after theme change");
+                .expect("主题更改后应有 'fn main' 面包屑导航");
             let keyword_highlight = symbol_segment
                 .highlights
                 .iter()
                 .find(|(range, _)| &symbol_segment.text[range.clone()] == "fn")
-                .expect("Should have a highlight for the 'fn' keyword after theme change");
+                .expect("主题更改后应为 'fn' 关键字设置高亮");
             assert_eq!(
                 keyword_highlight.1.color,
                 Some(blue_color),
-                "The 'fn' keyword should have blue color after theme change"
+                "主题更改后 'fn' 关键字应为蓝色"
             );
         });
     }
@@ -1060,14 +1060,14 @@ mod tests {
             assert_eq!(
                 breadcrumb_texts(editor, cx),
                 vec![path!("dir/file.rs").to_string()],
-                "Breadcrumbs should fall back to the file name when the language server returns no symbols"
+                "当语言服务器不返回符号时,面包屑导航应回退到文件名"
             );
 
-            editor.set_breadcrumb_header("Last 1000 lines in the log".to_string());
+            editor.set_breadcrumb_header("日志中的最后 1000 行".to_string());
             assert_eq!(
                 breadcrumb_texts(editor, cx),
-                vec!["Last 1000 lines in the log".to_string()],
-                "A custom breadcrumb header should never disappear"
+                vec!["日志中的最后 1000 行".to_string()],
+                "自定义面包屑导航标题不应消失"
             );
         });
     }
@@ -1098,7 +1098,7 @@ mod tests {
             assert_eq!(
                 breadcrumb_texts(editor, cx),
                 vec![path!("dir/file.rs").to_string(), "fn main".to_string()],
-                "With tree-sitter symbols, breadcrumbs should show the file name and the symbol"
+                "使用 tree-sitter 符号时,面包屑导航应显示文件名和符号"
             );
         });
 
@@ -1127,12 +1127,12 @@ mod tests {
             assert_eq!(
                 breadcrumb_texts(editor, cx),
                 vec![path!("dir/file.rs").to_string()],
-                "After enabling LSP symbols that return nothing, breadcrumbs should keep the file name"
+                "启用不返回任何内容的 LSP 符号后,面包屑导航应保留文件名"
             );
         });
         assert!(
             breadcrumb_updates.load(atomic::Ordering::Acquire) > 0,
-            "Breadcrumbs should refresh on the setting change, without extra selection changes"
+            "面包屑导航应在设置更改时刷新,而无需额外的选择更改"
         );
 
         breadcrumb_updates.store(0, atomic::Ordering::Release);
@@ -1145,12 +1145,12 @@ mod tests {
             assert_eq!(
                 breadcrumb_texts(editor, cx),
                 vec![path!("dir/file.rs").to_string(), "fn main".to_string()],
-                "After disabling LSP symbols, tree-sitter breadcrumbs should return"
+                "禁用 LSP 符号后,tree-sitter 面包屑导航应恢复"
             );
         });
         assert!(
             breadcrumb_updates.load(atomic::Ordering::Acquire) > 0,
-            "Breadcrumbs should refresh on the setting change, without extra selection changes"
+            "面包屑导航应在设置更改时刷新,而无需额外的选择更改"
         );
     }
 }

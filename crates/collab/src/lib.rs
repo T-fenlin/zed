@@ -72,12 +72,12 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
             Error::Http(code, message, headers) => {
-                log::error!("HTTP error {}: {}", code, &message);
+                log::error!("HTTP 错误 {}: {}", code, &message);
                 (code, headers, message).into_response()
             }
             Error::Database(error) => {
                 log::error!(
-                    "HTTP error {}: {:?}",
+                    "HTTP 错误 {}: {:?}",
                     StatusCode::INTERNAL_SERVER_ERROR,
                     &error
                 );
@@ -85,7 +85,7 @@ impl IntoResponse for Error {
             }
             Error::Internal(error) => {
                 log::error!(
-                    "HTTP error {}: {:?}",
+                    "HTTP 错误 {}: {:?}",
                     StatusCode::INTERNAL_SERVER_ERROR,
                     &error
                 );
@@ -246,7 +246,7 @@ impl AppState {
         let http_client = reqwest::Client::builder()
             .user_agent(user_agent)
             .build()
-            .context("failed to construct HTTP client")?;
+            .context("无法构造 HTTP 客户端")?;
 
         let db = Arc::new(db);
         let this = Self {
@@ -276,11 +276,11 @@ async fn build_blob_store_client(config: &Config) -> anyhow::Result<aws_sdk_s3::
         config
             .blob_store_access_key
             .clone()
-            .context("missing blob_store_access_key")?,
+            .context("缺少 blob_store_access_key")?,
         config
             .blob_store_secret_key
             .clone()
-            .context("missing blob_store_secret_key")?,
+            .context("缺少 blob_store_secret_key")?,
         None,
         None,
         "env",
@@ -291,13 +291,13 @@ async fn build_blob_store_client(config: &Config) -> anyhow::Result<aws_sdk_s3::
             config
                 .blob_store_url
                 .as_ref()
-                .context("missing blob_store_url")?,
+                .context("缺少 blob_store_url")?,
         )
         .region(Region::new(
             config
                 .blob_store_region
                 .clone()
-                .context("missing blob_store_region")?,
+                .context("缺少 blob_store_region")?,
         ))
         .credentials_provider(keys)
         .load()
@@ -311,11 +311,11 @@ async fn build_kinesis_client(config: &Config) -> anyhow::Result<aws_sdk_kinesis
         config
             .kinesis_access_key
             .clone()
-            .context("missing kinesis_access_key")?,
+            .context("缺少 kinesis_access_key")?,
         config
             .kinesis_secret_key
             .clone()
-            .context("missing kinesis_secret_key")?,
+            .context("缺少 kinesis_secret_key")?,
         None,
         None,
         "env",
@@ -326,7 +326,7 @@ async fn build_kinesis_client(config: &Config) -> anyhow::Result<aws_sdk_kinesis
             config
                 .kinesis_region
                 .clone()
-                .context("missing kinesis_region")?,
+                .context("缺少 kinesis_region")?,
         ))
         .credentials_provider(keys)
         .load()

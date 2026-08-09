@@ -247,7 +247,7 @@ fn build_case(
         context.run_until_parked();
     }
     let language = futures::executor::block_on(language_task)
-        .unwrap_or_else(|error| panic!("failed to load {language_name}: {error}"));
+        .unwrap_or_else(|error| panic!("无法加载 {language_name}:{error}"));
 
     let buffer = context.new(|cx| Buffer::local(source, cx).with_language(language, cx));
     context.run_until_parked();
@@ -261,12 +261,12 @@ fn build_case(
     if expect_errors {
         assert!(
             error_count > 0,
-            "expected tree-sitter errors for {language_name}/{variant_name}",
+            "预期 {language_name}/{variant_name} 存在 tree-sitter 错误",
         );
     } else {
         assert_eq!(
             error_count, 0,
-            "expected no tree-sitter errors for {language_name}/{variant_name}",
+            "预期 {language_name}/{variant_name} 不存在 tree-sitter 错误",
         );
     }
 

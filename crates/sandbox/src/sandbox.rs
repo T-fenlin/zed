@@ -40,7 +40,7 @@ pub use util::{
 pub use windows_wsl::{ResolvedGrant, resolve_canonical_for_grant};
 
 #[cfg(target_os = "windows")]
-pub(crate) const WSL_SANDBOX_UNAVAILABLE_PREFIX: &str = "Windows sandboxing via WSL is unavailable";
+pub(crate) const WSL_SANDBOX_UNAVAILABLE_PREFIX: &str = "通过 WSL 的 Windows 沙箱不可用";
 
 /// A path *inside the sandbox* — i.e. where a host location is exposed in the
 /// sandboxed process's view of the filesystem (for example, a bind-mount
@@ -203,7 +203,7 @@ fn validate_writable_paths_do_not_overlap_protected_paths(
         for protected_path in protected_paths {
             if writable_path_overlaps_protected_path(writable_path, protected_path) {
                 return Err(SandboxError::InvalidRequest(format!(
-                    "writable sandbox path `{}` overlaps protected path `{}`",
+                    "可写沙箱路径 `{}` 与受保护路径 `{}` 重叠",
                     writable_path.untrusted_path_display(),
                     protected_path.untrusted_path_display()
                 )));
@@ -253,7 +253,7 @@ fn linux_location_is_equal_or_descendant(
     }
 
     let Ok(mut current) = location.linux_dup_fd() else {
-        log::warn!("failed to duplicate sandbox location fd while checking protected path overlap");
+        log::warn!("检查受保护路径重叠时,复制沙箱位置文件描述符失败");
         return false;
     };
 
@@ -271,15 +271,15 @@ fn linux_location_is_equal_or_descendant(
         };
 
         let Some(parent_identity) = linux_fd_identity(parent.as_raw_fd()) else {
-            log::warn!("failed to fstat parent fd while checking protected path overlap");
+            log::warn!("检查受保护路径重叠时,获取父文件描述符状态失败");
             return false;
         };
         let Some(current_identity) = linux_fd_identity(current.as_raw_fd()) else {
-            log::warn!("failed to fstat current fd while checking protected path overlap");
+            log::warn!("检查受保护路径重叠时,获取当前文件描述符状态失败");
             return false;
         };
         let Some(ancestor_identity) = linux_fd_identity(ancestor.linux_fd().as_raw_fd()) else {
-            log::warn!("failed to fstat protected fd while checking protected path overlap");
+            log::warn!("检查受保护路径重叠时,获取受保护文件描述符状态失败");
             return false;
         };
 
@@ -424,24 +424,24 @@ impl fmt::Display for SandboxError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SandboxError::UnsupportedPlatform => {
-                write!(formatter, "sandboxing is not supported on this platform")
+                write!(formatter, "此平台不支持沙箱")
             }
             SandboxError::BwrapNotFound => {
-                write!(formatter, "no usable `bwrap` binary was found on PATH")
+                write!(formatter, "在 PATH 中未找到可用的 `bwrap` 二进制文件")
             }
             SandboxError::BwrapSetuidRejected => write!(
                 formatter,
-                "the only available `bwrap` is setuid-root, which Zed refuses to run"
+                "唯一可用的 `bwrap` 是 setuid-root,Zed 拒绝运行"
             ),
             SandboxError::SandboxProbeFailed => {
                 write!(
                     formatter,
-                    "`bwrap` is present but failed to create a sandbox"
+                    "`bwrap` 存在,但创建沙箱失败"
                 )
             }
             SandboxError::BridgeExecutableUnavailable(message) => write!(
                 formatter,
-                "failed to resolve sandbox bridge executable: {message}"
+                "解析沙箱桥接可执行文件失败: {message}"
             ),
             SandboxError::WslUnavailable(message) => write!(formatter, "{message}"),
             SandboxError::UnsupportedPolicy(message) => write!(formatter, "{message}"),
@@ -688,7 +688,7 @@ impl Sandbox {
             #[cfg(not(target_os = "linux"))]
             let handle = ProxyHandle::spawn(config);
             let handle = handle.map_err(|error| {
-                SandboxError::Io(format!("failed to start network proxy: {error:#}"))
+                SandboxError::Io(format!("启动网络代理失败: {error:#}"))
             })?;
             spawn_proxy_event_logger(events_rx);
             self.proxy = Some(handle);
@@ -750,7 +750,7 @@ impl Sandbox {
                     // Fail closed: a bind we can't pin a verifiable fd for is
                     // dropped rather than bound unverified.
                     log::warn!(
-                        "[sandbox] could not duplicate fd for writable bind {}: {error}",
+                        "[沙箱] 无法为可写绑定 {} 复制文件描述符: {error}",
                         path.display()
                     );
                 }
@@ -773,7 +773,7 @@ impl Sandbox {
         if !self.fs.allow_fs_write && !writable_fds.is_empty() {
             let sender =
                 linux_bubblewrap::ValidationFdSender::spawn(writable_fds).map_err(|error| {
-                    SandboxError::Io(format!("failed to start sandbox bind validator: {error}"))
+                    SandboxError::Io(format!("启动沙箱绑定验证器失败: {error}"))
                 })?;
             self.validation_fd_sender = Some(sender);
         }
@@ -789,7 +789,7 @@ impl Sandbox {
             .map_err(|error| SandboxError::BridgeExecutableUnavailable(error.to_string()))?;
         let bridge_program = bridge_program.to_str().ok_or_else(|| {
             SandboxError::BridgeExecutableUnavailable(format!(
-                "current executable path contains invalid UTF-8: {}",
+                "当前可执行文件路径包含无效的 UTF-8: {}",
                 bridge_program.display()
             ))
         })?;
@@ -969,7 +969,7 @@ fn resolve_restricted_network(allowed_domains: &[String]) -> Result<NetSetup, Sa
     let mut patterns = Vec::with_capacity(allowed_domains.len());
     for domain in allowed_domains {
         let pattern = HostPattern::parse(domain).map_err(|error| {
-            SandboxError::InvalidRequest(format!("invalid network host '{domain}': {error}"))
+            SandboxError::InvalidRequest(format!("无效的网络主机 '{domain}': {error}"))
         })?;
         patterns.push(pattern);
     }
@@ -986,7 +986,7 @@ fn resolve_restricted_network(_allowed_domains: &[String]) -> Result<NetSetup, S
 #[cfg(target_os = "windows")]
 fn unsupported_restricted_network_on_windows() -> SandboxError {
     SandboxError::UnsupportedPolicy(
-        "restricted host network access is not yet supported for Windows sandboxes".to_string(),
+        "Windows 沙箱尚不支持受限主机网络访问".to_string(),
     )
 }
 
@@ -1017,7 +1017,7 @@ fn upstream_proxy_from_env(env: &HashMap<String, String>) -> Option<UpstreamProx
     match UpstreamProxy::parse(url, no_proxy) {
         Ok(upstream) => upstream,
         Err(error) => {
-            log::warn!("[sandbox/network] ignoring upstream proxy env: {error:#}");
+            log::warn!("[沙箱/网络] 忽略上游代理环境变量: {error:#}");
             None
         }
     }
@@ -1092,7 +1092,7 @@ fn log_proxy_event(event: &ProxyEvent) {
             outcome,
         } => {
             log::debug!(
-                "[sandbox/network] {} {host}:{port} → {outcome:?}",
+                "[沙箱/网络] {} {host}:{port} → {outcome:?}",
                 method.as_str()
             );
         }
@@ -1105,7 +1105,7 @@ fn log_proxy_event(event: &ProxyEvent) {
             duration_ms,
         } => {
             log::debug!(
-                "[sandbox/network] completed {} {host}:{port} sent={bytes_to_remote} recv={bytes_from_remote} duration={duration_ms}ms",
+                "[沙箱/网络] 完成 {} {host}:{port} 发送={bytes_to_remote} 接收={bytes_from_remote} 耗时={duration_ms}毫秒",
                 method.as_str(),
             );
         }
@@ -1137,16 +1137,16 @@ mod tests {
 
     #[test]
     fn restricted_fs_rejects_writable_paths_inside_protected_paths() {
-        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let temp_dir = tempfile::tempdir().expect("创建临时目录");
         let repo_dir = temp_dir.path().join("repo");
         let git_dir = repo_dir.join(".git");
         let hooks_dir = git_dir.join("hooks");
-        std::fs::create_dir_all(&hooks_dir).expect("create git hooks dir");
+        std::fs::create_dir_all(&hooks_dir).expect("创建 Git 钩子目录");
 
-        let protected_git = HostFilesystemLocation::capture(&git_dir).expect("capture git dir");
-        let writable_git = HostFilesystemLocation::capture(&git_dir).expect("capture git dir");
+        let protected_git = HostFilesystemLocation::capture(&git_dir).expect("捕获 Git 目录");
+        let writable_git = HostFilesystemLocation::capture(&git_dir).expect("捕获 Git 目录");
         let writable_hooks =
-            HostFilesystemLocation::capture(&hooks_dir).expect("capture hooks dir");
+            HostFilesystemLocation::capture(&hooks_dir).expect("捕获钩子目录");
 
         for writable_path in [writable_git, writable_hooks] {
             let result = Sandbox::new(SandboxPolicy {
@@ -1166,20 +1166,20 @@ mod tests {
     fn restricted_fs_protected_overlap_check_uses_captured_fds_not_path_text() {
         use std::os::unix::fs as unix_fs;
 
-        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let temp_dir = tempfile::tempdir().expect("创建临时目录");
         let repo_dir = temp_dir.path().join("repo");
         let git_dir = repo_dir.join(".git");
         let real_git_dir = repo_dir.join("real-git");
         let outside_dir = temp_dir.path().join("outside");
         let outside_hooks_dir = outside_dir.join("hooks");
-        std::fs::create_dir_all(&git_dir).expect("create git dir");
-        std::fs::create_dir_all(&outside_hooks_dir).expect("create outside hooks dir");
+        std::fs::create_dir_all(&git_dir).expect("创建 Git 目录");
+        std::fs::create_dir_all(&outside_hooks_dir).expect("创建外部钩子目录");
 
-        let protected_git = HostFilesystemLocation::capture(&git_dir).expect("capture git dir");
-        std::fs::rename(&git_dir, &real_git_dir).expect("move git dir aside");
-        unix_fs::symlink(&outside_dir, &git_dir).expect("replace git dir with symlink");
+        let protected_git = HostFilesystemLocation::capture(&git_dir).expect("捕获 Git 目录");
+        std::fs::rename(&git_dir, &real_git_dir).expect("将 Git 目录移开");
+        unix_fs::symlink(&outside_dir, &git_dir).expect("用符号链接替换 Git 目录");
         let writable_displayed_inside_git =
-            HostFilesystemLocation::capture(git_dir.join("hooks")).expect("capture symlink target");
+            HostFilesystemLocation::capture(git_dir.join("hooks")).expect("捕获符号链接目标");
 
         Sandbox::new(SandboxPolicy {
             fs: SandboxFsPolicy::Restricted {
@@ -1188,19 +1188,19 @@ mod tests {
             },
             network: SandboxNetPolicy::Blocked,
         })
-        .expect("captured writable fd is outside protected metadata");
+        .expect("捕获的可写文件描述符位于受保护元数据之外");
     }
 
     #[test]
     fn fs_merge_unrestricted_dominates_else_unions_paths() {
         // Writable paths are captured as real `HostFilesystemLocation`s (keyed on
         // the inode), so the union/dedup test needs three distinct real dirs.
-        let dir_a = tempfile::tempdir().expect("create temp dir a");
-        let dir_b = tempfile::tempdir().expect("create temp dir b");
+        let dir_a = tempfile::tempdir().expect("创建临时目录 a");
+        let dir_b = tempfile::tempdir().expect("创建临时目录 b");
         let dir_c = tempfile::tempdir().expect("create temp dir c");
-        let dir_d = tempfile::tempdir().expect("create temp dir d");
+        let dir_d = tempfile::tempdir().expect("创建临时目录 d");
         let location = |dir: &tempfile::TempDir| {
-            HostFilesystemLocation::capture(dir.path()).expect("capture temp dir")
+            HostFilesystemLocation::capture(dir.path()).expect("捕获临时目录")
         };
 
         let a = SandboxFsPolicy::Restricted {
@@ -1277,7 +1277,7 @@ mod tests {
         env.insert("NO_PROXY".to_string(), "".to_string());
         env.insert("no_proxy".to_string(), "internal.example".to_string());
 
-        let upstream = upstream_proxy_from_env(&env).expect("should configure an upstream");
+        let upstream = upstream_proxy_from_env(&env).expect("应配置上游代理");
         assert_eq!(upstream.host, "lower");
         assert_eq!(upstream.port, 1111);
         assert!(upstream.bypasses("internal.example", 443));
@@ -1376,7 +1376,7 @@ impl GrantableWriteDir {
             let _ = untrusted_raw_path;
             Err(std::io::Error::new(
                 std::io::ErrorKind::Unsupported,
-                "granting a not-yet-existing write directory is not supported on this platform",
+                "此平台不支持授予尚不存在的写入目录",
             ))
         }
     }
@@ -1388,7 +1388,7 @@ impl GrantableWriteDir {
     }
 
     /// The path exactly as requested, for persisting alongside the canonical
-    /// path and for the "requested → granted" approval disclosure.
+    /// path and for the "请求 → 授予" approval disclosure.
     pub fn untrusted_raw_path(&self) -> &Path {
         &self.untrusted_raw_path
     }

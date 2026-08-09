@@ -66,7 +66,7 @@ impl AppContext for TestAppContext {
     where
         T: 'static,
     {
-        panic!("Cannot use as_mut with a test app context. Try calling update() first")
+        panic!("无法在测试应用上下文中使用 as_mut。请先调用 更新()")
     }
 
     fn read_entity<T, R>(&self, handle: &Entity<T>, read: impl FnOnce(&T, &App) -> R) -> R
@@ -602,11 +602,11 @@ impl TestAppContext {
                     }
 
                     if notifications.next().await.is_none() {
-                        bail!("entity dropped")
+                        bail!("实体已释放")
                     }
                 }
             },
-            timer.map(|_| Err(anyhow!("condition timed out"))),
+            timer.map(|_| Err(anyhow!("条件等待超时"))),
         )
             .race()
             .await
@@ -638,7 +638,7 @@ impl<T: 'static> Entity<T> {
         });
 
         async move {
-            let event = rx.await.expect("no event emitted");
+            let event = rx.await.expect("未发出事件");
             drop(subscription);
             event
         }
@@ -664,7 +664,7 @@ impl<V: 'static> Entity<V> {
         async move {
             rx.recv()
                 .await
-                .expect("entity dropped while test was waiting for its next notification");
+                .expect("测试等待下一条通知时实体已释放");
             drop(subscription);
         }
     }
@@ -712,7 +712,7 @@ impl<V> Entity<V> {
                     if predicate(
                         handle
                             .upgrade()
-                            .expect("view dropped with pending condition")
+                            .expect("存在待处理条件时视图已释放")
                             .read(cx),
                         cx,
                     ) {
@@ -722,7 +722,7 @@ impl<V> Entity<V> {
 
                 rx.recv()
                     .await
-                    .expect("view dropped with pending condition");
+                    .expect("存在待处理条件时视图已释放");
             }
             drop(subscriptions);
         }
@@ -986,7 +986,7 @@ impl AppContext for VisualTestContext {
     fn new<T: 'static>(&mut self, build_entity: impl FnOnce(&mut Context<T>) -> T) -> Entity<T> {
         self.window
             .update(&mut self.cx, |_, _, cx| cx.new(build_entity))
-            .expect("window was unexpectedly closed")
+            .expect("窗口意外关闭")
     }
 
     fn reserve_entity<T: 'static>(&mut self) -> crate::Reservation<T> {
@@ -1002,7 +1002,7 @@ impl AppContext for VisualTestContext {
             .update(&mut self.cx, |_, _, cx| {
                 cx.insert_entity(reservation, build_entity)
             })
-            .expect("window was unexpectedly closed")
+            .expect("窗口意外关闭")
     }
 
     fn update_entity<T, R>(
@@ -1087,7 +1087,7 @@ impl VisualContext for VisualTestContext {
             .update(&mut self.cx, |_, window, cx| {
                 cx.new(|cx| build_entity(window, cx))
             })
-            .expect("window was unexpectedly closed")
+            .expect("窗口意外关闭")
     }
 
     fn update_window_entity<V: 'static, R>(
@@ -1102,7 +1102,7 @@ impl VisualContext for VisualTestContext {
             .with_window(view.entity_id(), |window, app| {
                 view.update(app, |v, cx| update(v, window, cx))
             })
-            .expect("entity has no current window; use `update` instead of `update_in`")
+            .expect("实体没有当前窗口;请使用 `更新` 而不是 `更新_in`")
     }
 
     fn replace_root_view<V>(
@@ -1116,7 +1116,7 @@ impl VisualContext for VisualTestContext {
             .update(&mut self.cx, |_, window, cx| {
                 window.replace_root(cx, build_view)
             })
-            .expect("window was unexpectedly closed")
+            .expect("窗口意外关闭")
     }
 
     fn focus<V: crate::Focusable>(&mut self, view: &Entity<V>) {
@@ -1124,7 +1124,7 @@ impl VisualContext for VisualTestContext {
             .update(&mut self.cx, |_, window, cx| {
                 view.read(cx).focus_handle(cx).focus(window, cx)
             })
-            .expect("window was unexpectedly closed")
+            .expect("窗口意外关闭")
     }
 }
 
@@ -1157,8 +1157,8 @@ mod tests {
         cx.update(|cx| {
             cx.show_system_notification(SystemNotification {
                 tag: "thread-1".into(),
-                title: "Task started".into(),
-                body: "Running tests".into(),
+                title: "任务已开始".into(),
+                body: "正在运行测试".into(),
                 actions: Vec::new(),
             });
         });
@@ -1166,17 +1166,17 @@ mod tests {
         assert!(cx.delivered_system_notifications().is_empty());
 
         cx.update(|cx| {
-            cx.set_app_identity("com.example.tasks", "Tasks");
+            cx.set_app_identity("com.example.tasks", "任务");
             cx.show_system_notification(SystemNotification {
                 tag: "thread-1".into(),
-                title: "Task started".into(),
-                body: "Running tests".into(),
+                title: "任务已开始".into(),
+                body: "正在运行测试".into(),
                 actions: Vec::new(),
             });
             cx.show_system_notification(SystemNotification {
                 tag: "thread-1".into(),
-                title: "Task finished".into(),
-                body: "All tests passed".into(),
+                title: "任务已完成".into(),
+                body: "所有测试均已通过".into(),
                 actions: vec![SystemNotificationAction {
                     id: "open".into(),
                     label: "Open".into(),
@@ -1186,15 +1186,15 @@ mod tests {
 
         assert_eq!(
             cx.app_identity(),
-            Some(("com.example.tasks".into(), "Tasks".into()))
+            Some(("com.example.tasks".into(), "任务".into()))
         );
         assert_eq!(cx.shown_system_notifications().len(), 2);
         assert_eq!(
             cx.delivered_system_notifications(),
             [SystemNotification {
                 tag: "thread-1".into(),
-                title: "Task finished".into(),
-                body: "All tests passed".into(),
+                title: "任务已完成".into(),
+                body: "所有测试均已通过".into(),
                 actions: vec![SystemNotificationAction {
                     id: "open".into(),
                     label: "Open".into(),
@@ -1269,11 +1269,11 @@ mod tests {
     #[gpui::test]
     async fn test_system_notification_response_handler_can_reenter_app(cx: &mut TestAppContext) {
         cx.update(|cx| {
-            cx.set_app_identity("com.example.tasks", "Tasks");
+            cx.set_app_identity("com.example.tasks", "任务");
             cx.show_system_notification(SystemNotification {
                 tag: "thread-1".into(),
-                title: "Task finished".into(),
-                body: "All tests passed".into(),
+                title: "任务已完成".into(),
+                body: "所有测试均已通过".into(),
                 actions: Vec::new(),
             });
             cx.on_system_notification_response(|response, cx| {

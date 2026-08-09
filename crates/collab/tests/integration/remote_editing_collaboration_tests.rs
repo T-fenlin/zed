@@ -561,7 +561,7 @@ async fn test_ssh_collaboration_git_worktrees(
     assert_eq!(
         host_worktrees.len(),
         2,
-        "Host should still have 2 worktrees after rename"
+        "重命名后主机端应仍有 2 个工作树"
     );
     assert_eq!(
         host_worktrees[1].path,
@@ -590,7 +590,7 @@ async fn test_ssh_collaboration_git_worktrees(
     assert_eq!(
         server_worktrees.len(),
         2,
-        "Server should still have 2 worktrees after rename"
+        "重命名后服务器端应仍有 2 个工作树"
     );
     assert_eq!(
         server_worktrees[1].path,
@@ -617,7 +617,7 @@ async fn test_ssh_collaboration_git_worktrees(
     assert_eq!(
         host_worktrees.len(),
         1,
-        "Host should only have the main worktree after removal"
+        "移除后主机端应仅剩主工作树"
     );
 
     let server_worktrees = {
@@ -642,7 +642,7 @@ async fn test_ssh_collaboration_git_worktrees(
     assert_eq!(
         server_worktrees.len(),
         1,
-        "Server should only have the main worktree after removal"
+        "移除后服务器端应仅剩主工作树"
     );
 }
 
@@ -748,7 +748,7 @@ async fn test_ssh_collaboration_formatting_with_prettier(
             p.open_buffer_with_lsp((worktree_id, rel_path("a.ts")), cx)
         })
         .await
-        .expect("user B opens buffer for formatting");
+        .expect("用户 B 打开缓冲区进行格式化");
 
     cx_a.update(|cx| {
         SettingsStore::update_global(cx, |store, cx| {
@@ -781,7 +781,7 @@ async fn test_ssh_collaboration_formatting_with_prettier(
     let fake_language_server = fake_language_servers.next().await.unwrap();
     fake_language_server.set_request_handler::<lsp::request::Formatting, _, _>(|_, _| async move {
         panic!(
-            "Unexpected: prettier should be preferred since it's enabled and language supports it"
+            "意外:Prettier 已启用且语言支持,应优先使用 Prettier"
         )
     });
 
@@ -802,7 +802,7 @@ async fn test_ssh_collaboration_formatting_with_prettier(
     assert_eq!(
         buffer_b.read_with(cx_b, |buffer, _| buffer.text()),
         buffer_text.to_string() + "\n" + prettier_format_suffix,
-        "Prettier formatting was not applied to client buffer after client's request"
+        "客户端请求后,Prettier 格式化未应用于客户端缓冲区"
     );
 
     // User A opens and formats the same buffer too
@@ -811,7 +811,7 @@ async fn test_ssh_collaboration_formatting_with_prettier(
             p.open_buffer((worktree_id, rel_path("a.ts")), cx)
         })
         .await
-        .expect("user A opens buffer for formatting");
+        .expect("用户 A 打开缓冲区进行格式化");
 
     cx_a.update(|cx| {
         SettingsStore::update_global(cx, |store, cx| {
@@ -841,7 +841,7 @@ async fn test_ssh_collaboration_formatting_with_prettier(
     assert_eq!(
         buffer_b.read_with(cx_b, |buffer, _| buffer.text()),
         buffer_text.to_string() + "\n" + prettier_format_suffix + "\n" + prettier_format_suffix,
-        "Prettier formatting was not applied to client buffer after host's request"
+        "主机请求后,Prettier 格式化未应用于客户端缓冲区"
     );
 }
 
@@ -952,15 +952,15 @@ async fn test_ssh_restarting_language_server_replaces_remote_status(
         assert_eq!(
             statuses.len(),
             1,
-            "restarting a remote language server should replace the previous status entry"
+            "重启远程语言服务器应替换先前的状态条目"
         );
         assert_eq!(
             statuses[0].0, restarted_server_id,
-            "restarting a remote language server should publish the replacement server id"
+            "重启远程语言服务器应发布替换后的服务器 ID"
         );
         assert_ne!(
             statuses[0].0, first_server_id,
-            "restarting a remote language server should remove the previous server id"
+            "重启远程语言服务器应移除先前的服务器 ID"
         );
         assert_eq!(statuses[0].1.name.0, "the-language-server");
     });
@@ -980,11 +980,11 @@ async fn test_ssh_restarting_language_server_replaces_remote_status(
         assert_eq!(
             matching_server_ids,
             vec![restarted_server_id],
-            "restarting a remote language server should replace the old log store entry"
+            "重启远程语言服务器应替换旧的日志存储条目"
         );
         assert!(
             !log_store.language_servers.contains_key(&first_server_id),
-            "restarting a remote language server should remove the previous log store entry"
+            "重启远程语言服务器应移除先前的日志存储条目"
         );
     });
 }
@@ -1412,13 +1412,13 @@ async fn test_ssh_remote_worktree_trust(cx_a: &mut TestAppContext, server_cx: &m
     let can_trust_b = trusted_worktrees.update(cx_a, |store, cx| {
         store.can_trust(&worktree_store, worktree_ids[1], cx)
     });
-    assert!(!can_trust_a, "project_a should be restricted initially");
-    assert!(!can_trust_b, "project_b should be restricted initially");
+    assert!(!can_trust_a, "project_a 初始应处于受限状态");
+    assert!(!can_trust_b, "project_b 初始应处于受限状态");
 
     let has_restricted = trusted_worktrees.read_with(cx_a, |store, cx| {
         store.has_restricted_worktrees(&worktree_store, cx)
     });
-    assert!(has_restricted, "should have restricted worktrees");
+    assert!(has_restricted, "应存在受限工作树");
 
     let buffer_before_approval = project_a
         .update(cx_a, |project, cx| {
@@ -1443,7 +1443,7 @@ async fn test_ssh_remote_worktree_trust(cx_a: &mut TestAppContext, server_cx: &m
         assert_eq!(
             LanguageSettings::for_buffer(buffer_before_approval.read(cx), cx).language_servers,
             [ConfiguredLanguageServer::new("...")],
-            "remote .zed/settings.json must not sync before trust approval"
+            "在信任批准前,远程 .zed/设置.json 不得同步"
         )
     });
 
@@ -1455,7 +1455,7 @@ async fn test_ssh_remote_worktree_trust(cx_a: &mut TestAppContext, server_cx: &m
     assert_eq!(
         lsp_inlay_hint_request_count.load(Ordering::Acquire),
         0,
-        "inlay hints must not be queried before trust approval"
+        "在信任批准前不得查询内联提示"
     );
 
     trusted_worktrees.update(cx_a, |store, cx| {
@@ -1471,7 +1471,7 @@ async fn test_ssh_remote_worktree_trust(cx_a: &mut TestAppContext, server_cx: &m
         assert_eq!(
             LanguageSettings::for_buffer(buffer_before_approval.read(cx), cx).language_servers,
             [ConfiguredLanguageServer::new("override-rust-analyzer")],
-            "remote .zed/settings.json should sync after trust approval"
+            "信任批准后,远程 .zed/设置.json 应同步"
         )
     });
     let _fake_language_server = fake_language_server.await.unwrap();
@@ -1482,7 +1482,7 @@ async fn test_ssh_remote_worktree_trust(cx_a: &mut TestAppContext, server_cx: &m
     cx_a.executor().advance_clock(Duration::from_secs(1));
     assert!(
         lsp_inlay_hint_request_count.load(Ordering::Acquire) > 0,
-        "inlay hints should be queried after trust approval"
+        "应在信任批准后查询内联提示"
     );
 
     let can_trust_a = trusted_worktrees.update(cx_a, |store, cx| {
@@ -1491,8 +1491,8 @@ async fn test_ssh_remote_worktree_trust(cx_a: &mut TestAppContext, server_cx: &m
     let can_trust_b = trusted_worktrees.update(cx_a, |store, cx| {
         store.can_trust(&worktree_store, worktree_ids[1], cx)
     });
-    assert!(can_trust_a, "project_a should be trusted after trust()");
-    assert!(!can_trust_b, "project_b should still be restricted");
+    assert!(can_trust_a, "调用 trust() 后 project_a 应被信任");
+    assert!(!can_trust_b, "project_b 仍应处于受限状态");
 
     trusted_worktrees.update(cx_a, |store, cx| {
         store.trust(
@@ -1508,15 +1508,15 @@ async fn test_ssh_remote_worktree_trust(cx_a: &mut TestAppContext, server_cx: &m
     let can_trust_b = trusted_worktrees.update(cx_a, |store, cx| {
         store.can_trust(&worktree_store, worktree_ids[1], cx)
     });
-    assert!(can_trust_a, "project_a should remain trusted");
-    assert!(can_trust_b, "project_b should now be trusted");
+    assert!(can_trust_a, "project_a 应保持受信任状态");
+    assert!(can_trust_b, "project_b 现在应被信任");
 
     let has_restricted_after = trusted_worktrees.read_with(cx_a, |store, cx| {
         store.has_restricted_worktrees(&worktree_store, cx)
     });
     assert!(
         !has_restricted_after,
-        "should have no restricted worktrees after trusting both"
+        "信任两者后,应不存在受限的工作树"
     );
 }
 
@@ -1609,7 +1609,7 @@ async fn test_ssh_document_links_resolve(
                                     target: Some(
                                         lsp::Uri::from_file_path(other_path_for_remote).unwrap(),
                                     ),
-                                    tooltip: Some("Open other.rs".into()),
+                                    tooltip: Some("打开 other.rs".into()),
                                     data: None,
                                 })
                             }
@@ -1644,7 +1644,7 @@ async fn test_ssh_document_links_resolve(
 
     cx_a.run_until_parked();
     let trusted_worktrees =
-        cx_a.update(|cx| TrustedWorktrees::try_get_global(cx).expect("trust global"));
+        cx_a.update(|cx| TrustedWorktrees::try_get_global(cx).expect("全局信任"));
     let worktree_store = project_a.read_with(cx_a, |project, _| project.worktree_store());
     trusted_worktrees.update(cx_a, |store, cx| {
         store.trust(
@@ -1708,21 +1708,21 @@ async fn test_ssh_document_links_resolve(
     assert_eq!(
         fetched.values().map(|links| links.len()).sum::<usize>(),
         1,
-        "Editor should auto-pull a single document link via SSH"
+        "编辑器应通过 SSH 自动拉取单个文档链接"
     );
     assert!(
         document_link_count.load(Ordering::Acquire) >= 1,
-        "Remote LSP should have served the fetch request"
+        "远程 LSP 应已处理获取请求"
     );
 
     let unresolved = fetched
         .values()
         .flat_map(|per_server| per_server.values())
         .next()
-        .expect("local cache should mirror the remote document link");
+        .expect("本地缓存应镜像远程文档链接");
     assert!(
         !unresolved.resolved,
-        "freshly fetched links must come back unresolved"
+        "新获取的链接必须保持未解析状态"
     );
 
     let anchor = buffer.read_with(cx_a, |buffer, _| buffer.anchor_after(10));
@@ -1730,18 +1730,18 @@ async fn test_ssh_document_links_resolve(
         .update(cx_a, |editor, cx| {
             editor.document_links_at(buffer.clone(), anchor, cx)
         })
-        .expect("editor should expose the cached document link at the cursor")
+        .expect("编辑器应在光标处显示缓存的文档链接")
         .await;
     cx_a.run_until_parked();
 
     assert_eq!(
         resolved.len(),
         1,
-        "Editor should surface exactly one resolved link at the cursor"
+        "编辑器应在光标处显示恰好一个已解析的链接"
     );
     assert!(
         resolve_count.load(Ordering::Acquire) >= 1,
-        "Local resolve should be forwarded over SSH and run on the remote LSP"
+        "本地解析应通过 SSH 转发并在远程 LSP 上执行"
     );
 
     let other_uri = lsp::Uri::from_file_path(path!("/code/other.rs"))
@@ -1757,19 +1757,19 @@ async fn test_ssh_document_links_resolve(
     assert_eq!(
         1,
         links.values().map(|m| m.len()).sum::<usize>(),
-        "Local cache should mirror the single document link"
+        "本地缓存应镜像单个文档链接"
     );
     let link = links
         .values()
         .flat_map(|per_server| per_server.values())
         .next()
-        .expect("local cache should contain the mirrored link");
+        .expect("本地缓存应包含镜像的链接");
     assert_eq!(
         link.target.as_deref(),
         Some(other_uri.as_str()),
-        "Local should see the file:// target resolved on the remote"
+        "本地应看到在远程解析的 file:// 目标"
     );
-    assert_eq!(link.tooltip.as_deref(), Some("Open other.rs"));
+    assert_eq!(link.tooltip.as_deref(), Some("打开 other.rs"));
 
     let executor = cx_a.executor();
     client_ssh.update(cx_a, |a, _| {

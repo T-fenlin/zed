@@ -194,7 +194,7 @@ impl KeystrokeInput {
         cx: &mut Context<Self>,
     ) -> CloseKeystrokeResult {
         let Some(keybind_for_close_action) = Self::determine_stop_recording_binding(window) else {
-            log::trace!("No keybinding to stop recording keystrokes in keystroke input");
+            log::trace!("在按键输入中没有停止录制按键的键位绑定");
             self.end_close_keystrokes_capture();
             return CloseKeystrokeResult::None;
         };
@@ -610,9 +610,9 @@ impl Render for KeystrokeInput {
                                     .map(|this| {
                                         this.tooltip(Tooltip::for_action_title(
                                             if self.search {
-                                                "Stop Searching"
+                                                "停止搜索"
                                             } else {
-                                                "Stop Recording"
+                                                "停止录制"
                                             },
                                             &StopRecording,
                                         ))
@@ -629,9 +629,9 @@ impl Render for KeystrokeInput {
                                     .map(|this| {
                                         this.tooltip(Tooltip::for_action_title(
                                             if self.search {
-                                                "Start Searching"
+                                                "开始搜索"
                                             } else {
-                                                "Start Recording"
+                                                "开始录制"
                                             },
                                             &StartRecording,
                                         ))
@@ -650,9 +650,9 @@ impl Render for KeystrokeInput {
                                 .shape(IconButtonShape::Square)
                                 .tooltip(move |_, cx| {
                                     Tooltip::with_meta(
-                                        "Clear Keystrokes",
+                                        "清除按键",
                                         Some(&ClearKeystrokes),
-                                        "Hit it three times to execute",
+                                        "连续按三次以执行",
                                         cx,
                                     )
                                 })
@@ -717,7 +717,7 @@ mod tests {
             };
 
             let mut keystroke = Keystroke::parse(&keystroke_str)
-                .unwrap_or_else(|_| panic!("Invalid keystroke: {}", keystroke_input));
+                .unwrap_or_else(|_| panic!("无效按键: {}", keystroke_input));
 
             // Remove the dummy key if we added it for modifier-only keystrokes
             if keystroke_input.ends_with('-') && keystroke_str.ends_with("_") {
@@ -804,12 +804,12 @@ mod tests {
                 .collect();
 
             let expected_keystrokes = expected_keystrokes
-                .unwrap_or_else(|e: anyhow::Error| panic!("Invalid expected keystroke: {}", e));
+                .unwrap_or_else(|e: anyhow::Error| panic!("无效的预期按键: {}", e));
 
             assert_eq!(
                 actual.len(),
                 expected_keystrokes.len(),
-                "Keystroke count mismatch. Expected: {:?}, Actual: {:?}",
+                "按键数量不匹配。预期: {:?}, 实际: {:?}",
                 expected_keystrokes
                     .iter()
                     .map(|k| k.unparse())
@@ -822,7 +822,7 @@ mod tests {
                 assert_eq!(
                     actual.unparse(),
                     expected.unparse(),
-                    "Keystroke {} mismatch. Expected: '{}', Actual: '{}'",
+                    "按键 {} 不匹配。预期: '{}', 实际: '{}'",
                     i,
                     expected.unparse(),
                     actual.unparse()
@@ -899,7 +899,7 @@ mod tests {
                 .update_in(&mut self.cx, |input, window, _| input.is_recording(window));
             assert_eq!(
                 actual, expected,
-                "Recording state mismatch. Expected: {}, Actual: {}",
+                "录制状态不匹配。预期: {}, 实际: {}",
                 expected, actual
             );
             self
@@ -909,7 +909,7 @@ mod tests {
             let task = self.input.update_in(&mut self.cx, |input, _, _| {
                 input.clear_close_keystrokes_timer.take()
             });
-            let task = task.expect("No close keystroke capture end timer task");
+            let task = task.expect("没有关闭按键捕获结束的定时器任务");
             self.cx
                 .executor()
                 .advance_clock(CLOSE_KEYSTROKE_CAPTURE_END_TIMEOUT);
@@ -922,7 +922,7 @@ mod tests {
         fn parse_modifier_change(&self, modifiers_str: &str) -> Modifiers {
             let mut modifiers = self.current_modifiers;
 
-            assert!(!modifiers_str.is_empty(), "Empty modifier string");
+            assert!(!modifiers_str.is_empty(), "空的修饰键字符串");
 
             let value;
             let split_char;
@@ -934,7 +934,7 @@ mod tests {
             } else {
                 let to_remove = modifiers_str
                     .strip_prefix('-')
-                    .expect("Modifier string must start with '+' or '-'");
+                    .expect("修饰键字符串必须以 '+' 或 '-' 开头");
                 value = false;
                 split_char = '-';
                 remaining = to_remove;
@@ -947,7 +947,7 @@ mod tests {
                     "shift" => modifiers.shift = value,
                     "cmd" | "command" | "platform" => modifiers.platform = value,
                     "fn" | "function" => modifiers.function = value,
-                    _ => panic!("Unknown modifier: {}", modifier),
+                    _ => panic!("未知修饰键: {}", modifier),
                 }
             }
 
@@ -1096,12 +1096,12 @@ mod tests {
             if received_keystrokes_updated {
                 assert_ne!(
                     initial_keystrokes_str, updated_keystrokes_str,
-                    "Received keystrokes_updated event, expected different keystrokes"
+                    "收到 keystrokes_updated 事件,预期不同的按键"
                 );
             } else {
                 assert_eq!(
                     initial_keystrokes_str, updated_keystrokes_str,
-                    "Received no keystrokes_updated event, expected same keystrokes"
+                    "未收到 keystrokes_updated 事件,预期相同的按键"
                 );
             }
 

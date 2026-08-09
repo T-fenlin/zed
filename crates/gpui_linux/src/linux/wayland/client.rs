@@ -433,7 +433,7 @@ impl WaylandClientStatePtr {
     pub fn get_client(&self) -> Rc<RefCell<WaylandClientState>> {
         self.0
             .upgrade()
-            .expect("The pointer should always be valid when dispatching in wayland")
+            .expect("在 wayland 中分发时,指针应始终有效")
     }
 
     pub fn get_serial(&self, kind: SerialKind) -> Serial {
@@ -622,14 +622,14 @@ impl WaylandClientState {
         }
         let Some(focused_window) = self.mouse_focused_window.clone() else {
             log::warn!(
-                "wayland: no focused surface to restore cursor style {:?} after hide; cursor may stay invisible",
+                "wayland: 隐藏后没有聚焦的表面可恢复光标样式 {:?};光标可能保持不可见",
                 style
             );
             return;
         };
         let Some(wl_pointer) = self.wl_pointer.clone() else {
             log::warn!(
-                "wayland: no wl_pointer to restore cursor style {:?} after hide; cursor may stay invisible",
+                "wayland: 隐藏后没有 wl_pointer 可恢复光标样式 {:?};光标可能保持不可见",
                 style
             );
             return;
@@ -676,7 +676,7 @@ fn wl_seat_version(version: u32) -> u32 {
 
     if version < WL_SEAT_MIN_VERSION {
         panic!(
-            "wl_seat below required version: {} < {}",
+            "wl_seat 低于所需版本: {} < {}",
             version, WL_SEAT_MIN_VERSION
         );
     }
@@ -690,7 +690,7 @@ fn wl_output_version(version: u32) -> u32 {
 
     if version < WL_OUTPUT_MIN_VERSION {
         panic!(
-            "wl_output below required version: {} < {}",
+            "wl_output 低于所需版本: {} < {}",
             version, WL_OUTPUT_MIN_VERSION
         );
     }
@@ -972,7 +972,7 @@ impl LinuxClient for WaylandClient {
         let (sources_tx, sources_rx) = futures::channel::oneshot::channel();
         sources_tx
             .send(Err(anyhow::anyhow!(
-                "Wayland screen capture not yet implemented."
+                "Wayland 屏幕捕获尚未实现。"
             )))
             .ok();
         sources_rx
@@ -993,7 +993,7 @@ impl LinuxClient for WaylandClient {
                     .values()
                     .find(|window| window.handle() == options.parent)
                     .cloned()
-                    .ok_or_else(|| anyhow::anyhow!("popup parent window not found"))?;
+                    .ok_or_else(|| anyhow::anyhow!("未找到弹出窗口的父窗口"))?;
                 // A popup grab must reference a press event or the compositor declines it and
                 // immediately dismisses the popup, so use the most recent press serial, or no
                 // grab before any press.
@@ -1072,7 +1072,7 @@ impl LinuxClient for WaylandClient {
             let wl_pointer = state
                 .wl_pointer
                 .clone()
-                .expect("window is focused by pointer");
+                .expect("窗口由指针聚焦");
             let scale = focused_window.primary_output_scale();
             state.cursor.set_icon(
                 &wl_pointer,
@@ -1137,7 +1137,7 @@ impl LinuxClient for WaylandClient {
             .borrow_mut()
             .event_loop
             .take()
-            .expect("App is already running");
+            .expect("应用已在运行");
 
         event_loop
             .run(
@@ -1160,7 +1160,7 @@ impl LinuxClient for WaylandClient {
             state.clipboard.set_primary(item);
             let Some(serial) = state.serial_tracker.selection_serial() else {
                 log::warn!(
-                    "Skipping Wayland primary selection ownership request because no keyboard or pointer press serial has been received"
+                    "由于未收到键盘或指针按下的序列号,跳过 Wayland 主选择所有权请求"
                 );
                 return;
             };
@@ -1185,7 +1185,7 @@ impl LinuxClient for WaylandClient {
             state.clipboard.set(item);
             let Some(serial) = state.serial_tracker.selection_serial() else {
                 log::warn!(
-                    "Skipping Wayland clipboard ownership request because no keyboard or pointer press serial has been received"
+                    "由于未收到键盘或指针按下的序列号,跳过 Wayland 剪贴板所有权请求"
                 );
                 return;
             };
@@ -1609,7 +1609,7 @@ impl Dispatch<xdg_activation_token_v1::XdgActivationTokenV1, ()> for WaylandClie
                     let activation = state.globals.activation.as_ref().unwrap();
                     activation.activate(token, &window.surface());
                 }
-                None => log::error!("activation token received with no pending activation"),
+                None => log::error!("收到激活令牌,但没有待处理的激活"),
             }
         }
 
@@ -1705,7 +1705,7 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for WaylandClientStatePtr {
                 ..
             } => {
                 if format != wl_keyboard::KeymapFormat::XkbV1 {
-                    log::error!("Received keymap format {:?}, expected XkbV1", format);
+                    log::error!("收到键位映射格式 {:?},预期为 XkbV1", format);
                     return;
                 }
                 let xkb_context = xkb::Context::new(xkb::CONTEXT_NO_FLAGS);
@@ -1719,7 +1719,7 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for WaylandClientStatePtr {
                     )
                     .log_err()
                     .flatten()
-                    .expect("Failed to create keymap")
+                    .expect("创建键位映射失败")
                 };
                 state.keymap_state = Some(xkb::State::new(&keymap));
                 state.compose_state = get_xkb_compose_state(&xkb_context);
@@ -2113,7 +2113,7 @@ impl Dispatch<wl_pointer::WlPointer, ()> for WaylandClientStatePtr {
                                 let wl_pointer = state
                                     .wl_pointer
                                     .clone()
-                                    .expect("window is focused by pointer");
+                                    .expect("窗口由指针聚焦");
                                 let scale = window.primary_output_scale();
                                 state.cursor.set_icon(
                                     &wl_pointer,
@@ -2557,7 +2557,7 @@ impl Dispatch<wl_data_device::WlDataDevice, ()> for WaylandClientStatePtr {
                             let file_list = match read_task.await {
                                 Ok(list) => list,
                                 Err(err) => {
-                                    log::error!("error reading drag and drop pipe: {err:?}");
+                                    log::error!("读取拖放管道时出错: {err:?}");
                                     return;
                                 }
                             };
@@ -2568,7 +2568,7 @@ impl Dispatch<wl_data_device::WlDataDevice, ()> for WaylandClientStatePtr {
                                 .filter_map(|url| match url.to_file_path() {
                                     Ok(url) => Some(url),
                                     Err(()) => {
-                                        log::error!("Failed turn {url:?} into a file path");
+                                        log::error!("无法将 {url:?} 转换为文件路径");
                                         None
                                     }
                                 })

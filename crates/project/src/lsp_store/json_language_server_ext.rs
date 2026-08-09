@@ -43,7 +43,7 @@ impl lsp::notification::Notification for SchemaContentsChanged {
 }
 
 pub fn notify_schemas_changed(lsp_store: Entity<LspStore>, uris: &[String], cx: &App) {
-    zlog::trace!(LOGGER => "Notifying schema changes for URIs: {:?}", uris);
+    zlog::trace!(LOGGER => "正在通知 URI 的架构变更:{:?}", uris);
     let servers = lsp_store.read_with(cx, |lsp_store, _| {
         let mut servers = Vec::new();
         let Some(local) = lsp_store.as_local() else {
@@ -64,13 +64,13 @@ pub fn notify_schemas_changed(lsp_store: Entity<LspStore>, uris: &[String], cx: 
     });
     for server in servers {
         for uri in uris {
-            zlog::trace!(LOGGER => "Notifying server {NAME} (id {ID:?}) of schema change for URI: {uri:?}",
+            zlog::trace!(LOGGER => "正在通知服务器 {NAME}(ID {ID:?})URI 的架构变更:{uri:?}",
                 NAME = server.name(),
                 ID = server.server_id()
             );
             if let Err(error) = server.notify::<SchemaContentsChanged>(uri.clone()) {
                 zlog::error!(
-                    LOGGER => "Failed to notify server {NAME} (id {ID:?}) of schema change for URI {uri:?}: {error:#}",
+                    LOGGER => "通知服务器 {NAME}(ID {ID:?})URI {uri:?} 的架构变更失败:{error:#}",
                         NAME = server.name(),
                         ID = server.server_id(),
                 );
@@ -87,17 +87,17 @@ pub fn register_requests(lsp_store: WeakEntity<LspStore>, language_server: &Lang
             let uri = params.clone().pop();
             let lsp_store = lsp_store.clone();
             let resolution = async move {
-                let lsp_store = lsp_store.upgrade().context("LSP store has been dropped")?;
-                let uri = uri.context("No URI")?;
-                let handle_schema_request = handler.context("No schema handler registered")?;
+                let lsp_store = lsp_store.upgrade().context("LSP 存储已被释放")?;
+                let uri = uri.context("无 URI")?;
+                let handle_schema_request = handler.context("未注册架构处理器")?;
                 handle_schema_request(lsp_store, uri, &mut cx).await
             };
             async move {
-                zlog::trace!(LOGGER => "Handling schema request for {:?}", &params);
+                zlog::trace!(LOGGER => "正在处理架构请求:{:?}", &params);
                 let result = resolution.await;
                 match &result {
-                    Ok(content) => {zlog::trace!(LOGGER => "Schema request resolved with {}B schema", content.len());},
-                    Err(err) => {zlog::warn!(LOGGER => "Schema request failed: {}", err);},
+                    Ok(content) => {zlog::trace!(LOGGER => "架构请求已解析,返回 {}B 架构", content.len());},
+                    Err(err) => {zlog::warn!(LOGGER => "架构请求失败:{}", err);},
                 }
                 result
             }

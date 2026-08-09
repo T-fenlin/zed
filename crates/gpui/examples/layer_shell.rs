@@ -5,7 +5,7 @@ fn run_example() {
     example::main();
 
     #[cfg(not(all(target_os = "linux", feature = "wayland")))]
-    panic!("This example requires the `wayland` feature and a linux system.");
+    panic!("此示例需要 `wayland` 功能和 Linux 系统。");
 }
 
 #[cfg(not(target_family = "wasm"))]

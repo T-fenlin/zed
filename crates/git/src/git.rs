@@ -198,7 +198,7 @@ impl Oid {
             SHA256_BYTE_LENGTH => OidFormat::Sha256,
             len => {
                 anyhow::bail!(
-                    "invalid git oid byte length: expected {SHA1_BYTE_LENGTH} for SHA-1 or {SHA256_BYTE_LENGTH} for SHA-256, got {len}"
+                    "无效的 git oid 字节长度:SHA-1 应为 {SHA1_BYTE_LENGTH},SHA-256 应为 {SHA256_BYTE_LENGTH},实际为 {len}"
                 );
             }
         };
@@ -279,7 +279,7 @@ impl FromStr for Oid {
             SHA256_HEX_LENGTH => OidFormat::Sha256,
             len => {
                 anyhow::bail!(
-                    "invalid git oid hex length: expected 1..={SHA1_HEX_LENGTH} for SHA-1 or {SHA256_HEX_LENGTH} for SHA-256, got {len}"
+                    "无效的 git oid 十六进制长度:SHA-1 应为 1..={SHA1_HEX_LENGTH},SHA-256 应为 {SHA256_HEX_LENGTH},实际为 {len}"
                 );
             }
         };
@@ -287,7 +287,7 @@ impl FromStr for Oid {
         let mut bytes = [0u8; SHA256_BYTE_LENGTH];
         for (index, byte) in s.bytes().enumerate() {
             let digit = decode_hex_digit(byte)
-                .ok_or_else(|| anyhow::anyhow!("invalid hex digit at byte {index} for git oid"))?;
+                .ok_or_else(|| anyhow::anyhow!("git oid 中第 {index} 字节处存在无效的十六进制数字"))?;
             if index % 2 == 0 {
                 bytes[index / 2] = digit << 4;
             } else {
@@ -361,7 +361,7 @@ mod tests {
 
     #[test]
     fn parses_short_sha1_oid_by_padding_trailing_nibbles() {
-        let oid = "abc1234".parse::<Oid>().expect("failed to parse oid");
+        let oid = "abc1234".parse::<Oid>().expect("解析 oid 失败");
 
         assert_eq!(oid.as_bytes().len(), SHA1_BYTE_LENGTH);
         assert_eq!(oid.display_short(), "abc1234");
@@ -371,7 +371,7 @@ mod tests {
     #[test]
     fn parses_full_sha256_oid() {
         let sha = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-        let oid = sha.parse::<Oid>().expect("failed to parse oid");
+        let oid = sha.parse::<Oid>().expect("解析 oid 失败");
 
         assert_eq!(oid.as_bytes().len(), SHA256_BYTE_LENGTH);
         assert_eq!(oid.to_string(), sha);

@@ -308,13 +308,13 @@ pub fn text_diff_with_options(
 }
 
 pub fn apply_diff_patch(base_text: &str, patch: &str) -> Result<String, anyhow::Error> {
-    let patch = diffy::Patch::from_str(patch).context("Failed to parse patch")?;
+    let patch = diffy::Patch::from_str(patch).context("无法解析补丁")?;
     let result = diffy::apply(base_text, &patch);
     result.map_err(|err| anyhow!(err))
 }
 
 pub fn apply_reversed_diff_patch(base_text: &str, patch: &str) -> Result<String, anyhow::Error> {
-    let patch = diffy::Patch::from_str(patch).context("Failed to parse patch")?;
+    let patch = diffy::Patch::from_str(patch).context("无法解析补丁")?;
     let reversed = patch.reverse();
     diffy::apply(base_text, &reversed).map_err(|err| anyhow!(err))
 }

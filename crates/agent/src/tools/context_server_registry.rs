@@ -147,7 +147,7 @@ impl ContextServerRegistry {
                         cx.spawn(async move |cx| {
                             this.update(cx, |this, cx| {
                                 log::info!(
-                                    "Received tools/list_changed notification for server {}",
+                                    "收到服务器 {} 的 tools/list_changed 通知",
                                     server_id
                                 );
                                 this.reload_tools_for_server(server_id, cx);
@@ -342,7 +342,7 @@ impl AnyAgentTool for ContextServerTool {
         cx: &mut App,
     ) -> Task<Result<AgentToolOutput, AgentToolOutput>> {
         let Some(server) = self.store.read(cx).get_running_server(&self.server_id) else {
-            return Task::ready(Err(anyhow::anyhow!("Context server not found").into()));
+            return Task::ready(Err(anyhow::anyhow!("未找到上下文服务器").into()));
         };
         let tool_name = self.tool.name.clone();
         let tool_id = mcp_tool_id(&self.server_id.0, &self.tool.name);
@@ -362,7 +362,7 @@ impl AnyAgentTool for ContextServerTool {
                 .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
             let Some(protocol) = server.client() else {
-                return Err(anyhow::anyhow!("Context server not initialized").into());
+                return Err(anyhow::anyhow!("上下文服务器未初始化").into());
             };
 
             let arguments = if let serde_json::Value::Object(map) = input {
@@ -372,7 +372,7 @@ impl AnyAgentTool for ContextServerTool {
             };
 
             log::trace!(
-                "Running tool: {} with arguments: {:?}",
+                "正在运行工具:{},参数:{:?}",
                 tool_name,
                 arguments
             );
@@ -388,7 +388,7 @@ impl AnyAgentTool for ContextServerTool {
             let response = futures::select! {
                 response = request.fuse() => response?,
                 _ = event_stream.cancelled_by_user().fuse() => {
-                    return Err(anyhow::anyhow!("MCP tool cancelled by user").into());
+                    return Err(anyhow::anyhow!("MCP 工具已被用户取消").into());
                 }
             };
 
@@ -431,13 +431,13 @@ impl AnyAgentTool for ContextServerTool {
                             }
                             Ok(None) => {
                                 log::warn!(
-                                    "Skipping MCP tool response image with MIME type `{}` because it cannot be converted for language model input",
+                                    "跳过 MIME 类型为 `{}` 的 MCP 工具响应图片,因为它无法转换为语言模型输入",
                                     mime_type
                                 );
                             }
                             Err(error) => {
                                 log::warn!(
-                                    "Failed to convert MCP tool response image with MIME type `{}` for language model input: {:#}",
+                                    "无法将 MIME 类型为 `{}` 的 MCP 工具响应图片转换为语言模型输入:{:#}",
                                     mime_type,
                                     error
                                 );
@@ -445,13 +445,13 @@ impl AnyAgentTool for ContextServerTool {
                         }
                     }
                     context_server::types::ToolResponseContent::Audio { .. } => {
-                        log::warn!("Ignoring audio content from tool response");
+                        log::warn!("忽略工具响应中的音频内容");
                     }
                     context_server::types::ToolResponseContent::Resource { .. } => {
-                        log::warn!("Ignoring resource content from tool response");
+                        log::warn!("忽略工具响应中的资源内容");
                     }
                     context_server::types::ToolResponseContent::ResourceLink { .. } => {
-                        log::warn!("Ignoring resource link content from tool response");
+                        log::warn!("忽略工具响应中的资源链接内容");
                     }
                 }
             }
@@ -486,9 +486,9 @@ impl AnyAgentTool for ContextServerTool {
 fn format_mcp_initial_title(tool_name: &str, input: &serde_json::Value) -> String {
     if let Some(value) = single_string_arg(input) {
         let preview = truncate_chars(value, MAX_INLINE_ARG_LEN);
-        format!("Run MCP tool `{}` {}", tool_name, MarkdownEscaped(&preview))
+        format!("运行 MCP 工具 `{}` {}", tool_name, MarkdownEscaped(&preview))
     } else {
-        format!("Run MCP tool `{}`", tool_name)
+        format!("运行 MCP 工具 `{}`", tool_name)
     }
 }
 
@@ -519,11 +519,11 @@ pub fn get_prompt(
 ) -> Task<Result<context_server::types::PromptsGetResponse>> {
     let server = cx.update(|cx| server_store.read(cx).get_running_server(server_id));
     let Some(server) = server else {
-        return Task::ready(Err(anyhow::anyhow!("Context server not found")));
+        return Task::ready(Err(anyhow::anyhow!("未找到上下文服务器")));
     };
 
     let Some(protocol) = server.client() else {
-        return Task::ready(Err(anyhow::anyhow!("Context server not initialized")));
+        return Task::ready(Err(anyhow::anyhow!("上下文服务器未初始化")));
     };
 
     let prompt_name = prompt_name.to_string();
@@ -573,7 +573,7 @@ mod tests {
         let input = serde_json::json!({ "url": "https://example.com/page" });
         assert_eq!(
             format_mcp_initial_title("open_url_in_browser", &input),
-            "Run MCP tool `open_url_in_browser` https://example.com/page"
+            "运行 MCP 工具 `open_url_in_browser` https://example.com/page"
         );
     }
 
@@ -582,7 +582,7 @@ mod tests {
         let input = serde_json::json!({});
         assert_eq!(
             format_mcp_initial_title("cleanup", &input),
-            "Run MCP tool `cleanup`"
+            "运行 MCP 工具 `cleanup`"
         );
     }
 
@@ -590,7 +590,7 @@ mod tests {
     fn test_format_mcp_initial_title_null_input() {
         assert_eq!(
             format_mcp_initial_title("cleanup", &serde_json::Value::Null),
-            "Run MCP tool `cleanup`"
+            "运行 MCP 工具 `cleanup`"
         );
     }
 
@@ -599,7 +599,7 @@ mod tests {
         let input = serde_json::json!({ "x": "a", "y": "b" });
         assert_eq!(
             format_mcp_initial_title("do_thing", &input),
-            "Run MCP tool `do_thing`"
+            "运行 MCP 工具 `do_thing`"
         );
     }
 
@@ -608,7 +608,7 @@ mod tests {
         let input = serde_json::json!({ "count": 42 });
         assert_eq!(
             format_mcp_initial_title("tick", &input),
-            "Run MCP tool `tick`"
+            "运行 MCP 工具 `tick`"
         );
     }
 
@@ -619,7 +619,7 @@ mod tests {
         let title = format_mcp_initial_title("search", &input);
         assert!(
             title.ends_with('…'),
-            "expected truncation ellipsis, got: {title}"
+            "预期截断省略号,实际为:{title}"
         );
         // Prefix + backticked name + space + MAX chars + ellipsis — no full 170-char value.
         assert!(title.chars().count() < MAX_INLINE_ARG_LEN + 50);
@@ -630,8 +630,8 @@ mod tests {
         let input = serde_json::json!({ "q": "**bold** _italic_" });
         let title = format_mcp_initial_title("search", &input);
         // Asterisks and underscores must be escaped so the header renders literally.
-        assert!(title.contains("\\*"), "expected \\*, got: {title}");
-        assert!(title.contains("\\_"), "expected \\_, got: {title}");
+        assert!(title.contains("\\*"), "预期 \\*,实际为:{title}");
+        assert!(title.contains("\\_"), "预期 \\_,实际为:{title}");
     }
 
     #[test]
@@ -650,8 +650,8 @@ mod tests {
     #[test]
     fn test_single_string_arg_ignores_empty_string() {
         // An empty string is still a string — we inline it rather than fall back,
-        // which lets callers tell "the server sent an empty arg" apart from
-        // "no args at all".
+        // which lets callers tell "服务器发送了空参数" apart from
+        // "完全没有参数".
         let input = serde_json::json!({ "q": "" });
         assert_eq!(single_string_arg(&input), Some(""));
     }

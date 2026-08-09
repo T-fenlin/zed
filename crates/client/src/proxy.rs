@@ -35,7 +35,7 @@ pub(crate) async fn connect_proxy_stream(
     // insecure connection. Proxies are often used in contexts where security
     // and privacy are critical, so any fallback could expose users to
     // significant risks.
-    let spec = ProxySpec::parse(proxy).context("parsing proxy URL")?;
+    let spec = ProxySpec::parse(proxy).context("解析代理 URL 失败")?;
 
     let target = if spec.remote_dns() {
         Target::Domain(rpc_host.0.to_string(), rpc_host.1)
@@ -45,15 +45,15 @@ pub(crate) async fn connect_proxy_stream(
         let requires_ipv4 = matches!(spec.scheme, ProxyScheme::Socks4 { .. });
         let address = tokio::net::lookup_host(rpc_host)
             .await
-            .with_context(|| format!("failed to lookup domain {}", rpc_host.0))?
+            .with_context(|| format!("无法查找域名 {}", rpc_host.0))?
             .find(|address| !requires_ipv4 || address.is_ipv4())
-            .with_context(|| format!("failed to lookup domain {}", rpc_host.0))?;
+            .with_context(|| format!("无法查找域名 {}", rpc_host.0))?;
         Target::Address(address)
     };
 
     let stream = TcpStream::connect((spec.host.as_str(), spec.port))
         .await
-        .context("Failed to connect to proxy")?;
+        .context("无法连接到代理")?;
 
     let stream: Box<dyn AsyncReadWrite> = if spec.tls() {
         Box::new(connect_tls_to_proxy(stream, &spec.host).await?)
@@ -63,7 +63,7 @@ pub(crate) async fn connect_proxy_stream(
 
     let stream = proxy_handshake::tokio::establish(stream, &spec, &target)
         .await
-        .context("error connecting through proxy")?;
+        .context("通过代理连接时出错")?;
     Ok(Box::new(stream))
 }
 
@@ -84,7 +84,7 @@ async fn connect_tls_to_proxy(
     proxy_domain: &str,
 ) -> Result<tokio_rustls::client::TlsStream<TcpStream>> {
     let proxy_domain = rustls_pki_types::ServerName::try_from(proxy_domain)
-        .context("invalid DNS name for proxy TLS")?
+        .context("代理 TLS 的 DNS 名称无效")?
         .to_owned();
     let tls_connector =
         tokio_rustls::TlsConnector::from(std::sync::Arc::new(http_client_tls::tls_config()));

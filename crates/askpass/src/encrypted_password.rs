@@ -74,7 +74,7 @@ impl EncryptedPassword {
             assert_eq!(
                 self.0.len() % CRYPTPROTECTMEMORY_BLOCK_SIZE as usize,
                 0,
-                "Violated pre-condition (buffer size <{}> must be a multiple of CRYPTPROTECTMEMORY_BLOCK_SIZE <{}>) for CryptUnprotectMemory.",
+                "违反前置条件(缓冲区大小 <{}> 必须是 CRYPTPROTECTMEMORY_BLOCK_SIZE <{}> 的倍数)以调用 CryptUnprotectMemory。",
                 self.0.len(),
                 CRYPTPROTECTMEMORY_BLOCK_SIZE
             );
@@ -85,7 +85,7 @@ impl EncryptedPassword {
                         self.0.len().try_into()?,
                         CRYPTPROTECTMEMORY_SAME_PROCESS,
                     )
-                    .context("while decrypting a SSH password")?
+                    .context("解密 SSH 密码时")?
                 };
 
                 {

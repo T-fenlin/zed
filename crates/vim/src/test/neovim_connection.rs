@@ -83,16 +83,16 @@ impl NeovimConnection {
                 handler,
             )
             .await
-            .expect("Could not connect to neovim process");
+            .expect("无法连接到 neovim 进程");
 
             nvim.ui_attach(100, 100, &UiAttachOptions::default())
                 .await
-                .expect("Could not attach to ui");
+                .expect("无法附加到 UI");
 
             // Makes system act a little more like zed in terms of indentation
             nvim.set_option("smartindent", nvim_rs::Value::Boolean(true))
                 .await
-                .expect("Could not set smartindent on startup");
+                .expect("启动时无法设置 smartindent");
 
             (nvim, join_handle, child)
         })
@@ -150,7 +150,7 @@ impl NeovimConnection {
         self.nvim
             .input(&key)
             .await
-            .expect("Could not input keystroke");
+            .expect("无法输入按键");
     }
 
     #[cfg(not(feature = "neovim"))]
@@ -161,7 +161,7 @@ impl NeovimConnection {
         assert_eq!(
             self.data.pop_front(),
             Some(NeovimData::Key(keystroke_text.to_string())),
-            "operation does not match recorded script. re-record with --features=neovim"
+            "操作与记录的脚本不匹配。请使用 --features=neovim 重新录制"
         );
     }
 
@@ -173,7 +173,7 @@ impl NeovimConnection {
             .nvim
             .get_current_buf()
             .await
-            .expect("Could not get neovim buffer");
+            .expect("无法获取 neovim 缓冲区");
         let lines = text
             .split('\n')
             .map(|line| line.to_string())
@@ -182,25 +182,25 @@ impl NeovimConnection {
         nvim_buffer
             .set_lines(0, -1, false, lines)
             .await
-            .expect("Could not set nvim buffer text");
+            .expect("无法设置 nvim 缓冲区文本");
 
         self.nvim
             .input("<escape>")
             .await
-            .expect("Could not send escape to nvim");
+            .expect("无法向 nvim 发送 escape 键");
         self.nvim
             .input("<escape>")
             .await
-            .expect("Could not send escape to nvim");
+            .expect("无法向 nvim 发送 escape 键");
 
         let nvim_window = self
             .nvim
             .get_current_win()
             .await
-            .expect("Could not get neovim window");
+            .expect("无法获取 neovim 窗口");
 
         if selections.len() != 1 {
-            panic!("must have one selection");
+            panic!("必须有一个选区");
         }
         let selection = &selections[0];
 
@@ -208,19 +208,19 @@ impl NeovimConnection {
         nvim_window
             .set_cursor((cursor.row as i64 + 1, cursor.column as i64))
             .await
-            .expect("Could not set nvim cursor position");
+            .expect("无法设置 nvim 光标位置");
 
         if !selection.is_empty() {
             self.nvim
                 .input("v")
                 .await
-                .expect("could not enter visual mode");
+                .expect("无法进入可视模式");
 
             let cursor = selection.end;
             nvim_window
                 .set_cursor((cursor.row as i64 + 1, cursor.column as i64))
                 .await
-                .expect("Could not set nvim cursor position");
+                .expect("无法设置 nvim 光标位置");
         }
 
         if let Some(NeovimData::Get { mode, state }) = self.data.back()
@@ -247,7 +247,7 @@ impl NeovimConnection {
             Some(NeovimData::Put {
                 state: marked_text.to_string()
             }),
-            "operation does not match recorded script. re-record with --features=neovim"
+            "操作与记录的脚本不匹配。请使用 --features=neovim 重新录制"
         );
     }
 
@@ -273,7 +273,7 @@ impl NeovimConnection {
             Some(NeovimData::SetOption {
                 value: value.to_string(),
             }),
-            "operation does not match recorded script. re-record with --features=neovim"
+            "操作与记录的脚本不匹配。请使用 --features=neovim 重新录制"
         );
     }
 
@@ -296,7 +296,7 @@ impl NeovimConnection {
             Some(NeovimData::Exec {
                 command: value.to_string(),
             }),
-            "operation does not match recorded script. re-record with --features=neovim"
+            "操作与记录的脚本不匹配。请使用 --features=neovim 重新录制"
         );
     }
 
@@ -311,7 +311,7 @@ impl NeovimConnection {
             return value;
         }
 
-        panic!("operation does not match recorded script. re-record with --features=neovim")
+        panic!("操作与记录的脚本不匹配。请使用 --features=neovim 重新录制")
     }
 
     #[cfg(feature = "neovim")]
@@ -346,11 +346,11 @@ impl NeovimConnection {
             .nvim
             .get_current_buf()
             .await
-            .expect("Could not get neovim buffer");
+            .expect("无法获取 neovim 缓冲区");
         let text = nvim_buffer
             .get_lines(0, -1, false)
             .await
-            .expect("Could not get buffer text")
+            .expect("无法获取缓冲区文本")
             .join("\n");
 
         // nvim columns are 1-based, so -1.
@@ -364,7 +364,7 @@ impl NeovimConnection {
             .nvim
             .get_mode()
             .await
-            .expect("Could not get mode")
+            .expect("无法获取模式")
             .into_iter()
             .find_map(|(key, value)| {
                 if key.as_str() == Some("mode") {
@@ -373,7 +373,7 @@ impl NeovimConnection {
                     None
                 }
             })
-            .expect("Could not find mode value");
+            .expect("无法找到模式值");
 
         let mode = match nvim_mode_text.as_ref() {
             "i" => Mode::Insert,
@@ -382,7 +382,7 @@ impl NeovimConnection {
             "V" => Mode::VisualLine,
             "R" => Mode::Replace,
             "\x16" => Mode::VisualBlock,
-            _ => panic!("unexpected vim mode: {nvim_mode_text}"),
+            _ => panic!("意外的 vim 模式: {nvim_mode_text}"),
         };
 
         let mut selections = Vec::new();
@@ -470,7 +470,7 @@ impl NeovimConnection {
         if let Some(NeovimData::Get { state: raw, mode }) = self.data.front() {
             (*mode, raw.to_string())
         } else {
-            panic!("operation does not match recorded script. re-record with --features=neovim");
+            panic!("操作与记录的脚本不匹配。请使用 --features=neovim 重新录制");
         }
     }
 
@@ -485,14 +485,14 @@ impl NeovimConnection {
     fn read_test_data(test_case_id: &str) -> VecDeque<NeovimData> {
         let path = Self::test_data_path(test_case_id);
         let json = std::fs::read_to_string(path).expect(
-            "Could not read test data. Is it generated? Try running test with '--features neovim'",
+            "无法读取测试数据。是否已生成?请尝试使用 '--features neovim' 运行测试",
         );
 
         let mut result = VecDeque::new();
         for line in json.lines() {
             result.push_back(
                 serde_json::from_str(line)
-                    .expect("invalid test data. regenerate it with '--features neovim'"),
+                    .expect("测试数据无效。请使用 '--features neovim' 重新生成"),
             );
         }
         result
@@ -507,8 +507,8 @@ impl NeovimConnection {
             json.push(b'\n');
         }
         std::fs::create_dir_all(path.parent().unwrap())
-            .expect("could not create test data directory");
-        std::fs::write(path, json).expect("could not write out test data");
+            .expect("无法创建测试数据目录");
+        std::fs::write(path, json).expect("无法写出测试数据");
     }
 }
 

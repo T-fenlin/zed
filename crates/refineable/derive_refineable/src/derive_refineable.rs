@@ -44,7 +44,7 @@ pub fn derive_refineable(input: TokenStream) -> TokenStream {
             fields: syn::Fields::Named(FieldsNamed { named, .. }),
             ..
         }) => named.into_iter().collect::<Vec<Field>>(),
-        _ => panic!("This derive macro only supports structs with named fields"),
+        _ => panic!("此派生宏仅支持具有命名字段的结构体"),
     };
 
     let field_names: Vec<_> = fields.iter().map(|f| f.ident.as_ref().unwrap()).collect();
@@ -526,7 +526,7 @@ fn get_wrapper_type(field: &Field, ty: &Type) -> syn::Type {
         let struct_name = if let Type::Path(tp) = ty {
             tp.path.segments.last().unwrap().ident.clone()
         } else {
-            panic!("Expected struct type for a refineable field");
+            panic!("refineable 字段应为结构体类型");
         };
 
         let refinement_struct_name = if struct_name.to_string().ends_with("Refinement") {

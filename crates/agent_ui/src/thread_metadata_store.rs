@@ -82,7 +82,7 @@ pub(crate) fn run_thread_metadata_migrations(connection: &db::sqlez::connection:
             ThreadMetadataDb::MIGRATIONS,
             &mut |_, _, _| false,
         )
-        .expect("thread metadata migrations should succeed");
+        .expect("线程元数据迁移应成功");
 }
 
 pub fn init(cx: &mut App) {
@@ -174,7 +174,7 @@ fn migrate_thread_metadata(cx: &mut App) -> Task<anyhow::Result<()>> {
             }
         }
 
-        log::info!("Migrating {} thread store entries", to_migrate.len());
+        log::info!("正在迁移 {} 条线程存储记录", to_migrate.len());
 
         // Manually save each entry to the database and call reload, otherwise
         // we'll end up triggering lots of reloads after each save
@@ -182,7 +182,7 @@ fn migrate_thread_metadata(cx: &mut App) -> Task<anyhow::Result<()>> {
             db.save(entry).await?;
         }
 
-        log::info!("Finished migrating thread store entries");
+        log::info!("线程存储记录迁移完成");
 
         let _ = store.update(cx, |store, cx| store.reload(cx));
         anyhow::Ok(())
@@ -462,7 +462,7 @@ pub struct ArchivedGitWorktree {
     /// If the path already exists on disk, the worktree is assumed to be
     /// already restored and is used as-is.
     pub worktree_path: PathBuf,
-    /// Absolute path of the main repository ("main worktree") that owned this worktree.
+    /// Absolute path of the main repository ("主工作树") that owned this worktree.
     /// Used when restoring, to reattach the recreated worktree to the correct main repo.
     /// If the main repo isn't found on disk, unarchiving fails because we only store
     /// commit hashes, and without the actual git repo being available, we can't restore
@@ -659,7 +659,7 @@ impl ThreadMetadataStore {
         self.reload_task.take();
 
         let list_task = cx
-            .background_spawn(async move { db.list().context("Failed to fetch sidebar metadata") });
+            .background_spawn(async move { db.list().context("获取侧边栏元数据失败") });
 
         let reload_task = cx
             .spawn(async move |this, cx| {
@@ -795,7 +795,7 @@ impl ThreadMetadataStore {
         if let Some(thread) = self.threads.get(&thread_id) {
             debug_assert!(
                 !thread.archived,
-                "update_working_directories called on archived thread"
+                "对已归档线程调用了 update_working_directories"
             );
             self.save_internal(ThreadMetadata {
                 worktree_paths: WorktreePaths::from_path_lists(
@@ -1527,7 +1527,7 @@ impl ThreadMetadataDb {
             .as_ref()
             .map(serde_json::to_string)
             .transpose()
-            .context("serialize thread metadata remote connection")?;
+            .context("序列化线程元数据远程连接")?;
         let title_override = row.title_override.as_ref().map(|t| t.to_string());
         let thread_id = row.thread_id;
         let archived = row.archived;
@@ -1602,7 +1602,7 @@ impl ThreadMetadataDb {
             i = stmt.bind(&staged_commit_hash, i)?;
             i = stmt.bind(&unstaged_commit_hash, i)?;
             stmt.bind(&original_commit_hash, i)?;
-            stmt.maybe_row::<i64>()?.context("expected RETURNING id")
+            stmt.maybe_row::<i64>()?.context("预期返回 id")
         })
         .await
     }
@@ -1761,7 +1761,7 @@ impl Column for ThreadMetadata {
             .as_deref()
             .map(serde_json::from_str::<RemoteConnectionOptions>)
             .transpose()
-            .context("deserialize thread metadata remote connection")?;
+            .context("反序列化线程元数据远程连接")?;
 
         let worktree_paths = WorktreePaths::from_path_lists(main_worktree_paths, folder_paths)
             .unwrap_or_else(|_| WorktreePaths::default());
@@ -1932,18 +1932,18 @@ mod tests {
     fn test_thread_metadata_title_prefers_override() {
         let mut metadata = make_metadata(
             "session-1",
-            "Agent Generated Title",
+            "代理生成的标题",
             Utc::now(),
             PathList::default(),
         );
-        metadata.title_override = Some("User Title".into());
+        metadata.title_override = Some("用户标题".into());
 
-        assert_eq!(metadata.title().as_deref(), Some("User Title"));
-        assert_eq!(metadata.display_title().as_ref(), "User Title");
+        assert_eq!(metadata.title().as_deref(), Some("用户标题"));
+        assert_eq!(metadata.display_title().as_ref(), "用户标题");
 
         metadata.title_override = None;
-        assert_eq!(metadata.title().as_deref(), Some("Agent Generated Title"));
-        assert_eq!(metadata.display_title().as_ref(), "Agent Generated Title");
+        assert_eq!(metadata.title().as_deref(), Some("代理生成的标题"));
+        assert_eq!(metadata.display_title().as_ref(), "代理生成的标题");
     }
 
     #[gpui::test]
@@ -1951,11 +1951,11 @@ mod tests {
         let now = Utc::now();
         let mut metadata = make_metadata(
             "session-1",
-            "Agent Generated Title",
+            "代理生成的标题",
             now,
             PathList::new(&[Path::new("/project-a")]),
         );
-        metadata.title_override = Some("User Title".into());
+        metadata.title_override = Some("用户标题".into());
 
         let thread = std::thread::current();
         let test_name = thread.name().unwrap_or("unknown_test");
@@ -1968,9 +1968,9 @@ mod tests {
 
         let rows = db.list().unwrap();
         assert_eq!(rows.len(), 1);
-        assert_eq!(rows[0].title.as_deref(), Some("Agent Generated Title"));
-        assert_eq!(rows[0].title_override.as_deref(), Some("User Title"));
-        assert_eq!(rows[0].title().as_deref(), Some("User Title"));
+        assert_eq!(rows[0].title.as_deref(), Some("代理生成的标题"));
+        assert_eq!(rows[0].title_override.as_deref(), Some("用户标题"));
+        assert_eq!(rows[0].title().as_deref(), Some("用户标题"));
     }
 
     #[gpui::test]
@@ -1979,7 +1979,7 @@ mod tests {
 
         let metadata = make_metadata(
             "session-1",
-            "Agent Generated Title",
+            "代理生成的标题",
             Utc::now(),
             PathList::default(),
         );
@@ -1989,7 +1989,7 @@ mod tests {
             let store = ThreadMetadataStore::global(cx);
             store.update(cx, |store, cx| {
                 store.save(metadata, cx);
-                store.set_title_override(thread_id, "User Title".into(), cx);
+                store.set_title_override(thread_id, "用户标题".into(), cx);
             });
         });
 
@@ -1998,10 +1998,10 @@ mod tests {
         cx.update(|cx| {
             let store = ThreadMetadataStore::global(cx);
             let store = store.read(cx);
-            let metadata = store.entry(thread_id).expect("metadata should be cached");
-            assert_eq!(metadata.title.as_deref(), Some("Agent Generated Title"));
-            assert_eq!(metadata.title_override.as_deref(), Some("User Title"));
-            assert_eq!(metadata.display_title().as_ref(), "User Title");
+            let metadata = store.entry(thread_id).expect("元数据应被缓存");
+            assert_eq!(metadata.title.as_deref(), Some("代理生成的标题"));
+            assert_eq!(metadata.title_override.as_deref(), Some("用户标题"));
+            assert_eq!(metadata.display_title().as_ref(), "用户标题");
         });
     }
 
@@ -2011,18 +2011,18 @@ mod tests {
 
         let mut metadata = make_metadata(
             "session-1",
-            "Old Generated Title",
+            "旧生成的标题",
             Utc::now(),
             PathList::default(),
         );
-        metadata.title_override = Some("User Title".into());
+        metadata.title_override = Some("用户标题".into());
         let thread_id = metadata.thread_id;
 
         cx.update(|cx| {
             let store = ThreadMetadataStore::global(cx);
             store.update(cx, |store, cx| {
                 store.save(metadata, cx);
-                store.set_generated_title(thread_id, "New Generated Title".into(), cx);
+                store.set_generated_title(thread_id, "新生成的标题".into(), cx);
             });
         });
 
@@ -2031,10 +2031,10 @@ mod tests {
         cx.update(|cx| {
             let store = ThreadMetadataStore::global(cx);
             let store = store.read(cx);
-            let metadata = store.entry(thread_id).expect("metadata should be cached");
-            assert_eq!(metadata.title.as_deref(), Some("New Generated Title"));
+            let metadata = store.entry(thread_id).expect("元数据应被缓存");
+            assert_eq!(metadata.title.as_deref(), Some("新生成的标题"));
             assert_eq!(metadata.title_override, None);
-            assert_eq!(metadata.display_title().as_ref(), "New Generated Title");
+            assert_eq!(metadata.display_title().as_ref(), "新生成的标题");
         });
     }
 
@@ -2054,7 +2054,7 @@ mod tests {
 
         db.save(make_metadata(
             "session-1",
-            "First Thread",
+            "第一个线程",
             now,
             first_paths.clone(),
         ))
@@ -2062,7 +2062,7 @@ mod tests {
         .unwrap();
         db.save(make_metadata(
             "session-2",
-            "Second Thread",
+            "第二个线程",
             older,
             second_paths.clone(),
         ))
@@ -2118,7 +2118,7 @@ mod tests {
 
         let initial_metadata = make_metadata(
             "session-1",
-            "First Thread",
+            "第一个线程",
             initial_time,
             first_paths.clone(),
         );
@@ -2126,7 +2126,7 @@ mod tests {
 
         let second_metadata = make_metadata(
             "session-2",
-            "Second Thread",
+            "第二个线程",
             initial_time,
             second_paths.clone(),
         );
@@ -2163,7 +2163,7 @@ mod tests {
             thread_id: session1_thread_id,
             session_id: Some(acp::SessionId::new("session-1")),
             agent_id: agent::ZED_AGENT_ID.clone(),
-            title: Some("First Thread".into()),
+            title: Some("第一个线程".into()),
             title_override: None,
             updated_at: updated_time,
             created_at: Some(updated_time),
@@ -2248,7 +2248,7 @@ mod tests {
             thread_id: ThreadId::new(),
             session_id: Some(acp::SessionId::new("a-session-0")),
             agent_id: agent::ZED_AGENT_ID.clone(),
-            title: Some("Existing Metadata".into()),
+            title: Some("现有元数据".into()),
             title_override: None,
             updated_at: now - chrono::Duration::seconds(10),
             created_at: Some(now - chrono::Duration::seconds(10)),
@@ -2269,25 +2269,25 @@ mod tests {
         let threads_to_save = vec![
             (
                 "a-session-0",
-                "Thread A0 From Native Store",
+                "来自本地存储的线程 A0",
                 project_a_paths.clone(),
                 now,
             ),
             (
                 "a-session-1",
-                "Thread A1",
+                "线程 A1",
                 project_a_paths.clone(),
                 now + chrono::Duration::seconds(1),
             ),
             (
                 "b-session-0",
-                "Thread B0",
+                "线程 B0",
                 project_b_paths.clone(),
                 now + chrono::Duration::seconds(2),
             ),
             (
                 "projectless",
-                "Projectless",
+                "无项目",
                 PathList::default(),
                 now + chrono::Duration::seconds(3),
             ),
@@ -2334,7 +2334,7 @@ mod tests {
                     .is_some_and(|s| s.0.as_ref() == "a-session-0")
             })
             .unwrap();
-        assert_eq!(existing_metadata.display_title(), "Existing Metadata");
+        assert_eq!(existing_metadata.display_title(), "现有元数据");
         assert!(!existing_metadata.archived);
 
         let migrated_session_ids: Vec<_> = list
@@ -2374,7 +2374,7 @@ mod tests {
             thread_id: ThreadId::new(),
             session_id: Some(acp::SessionId::new("existing-session")),
             agent_id: agent::ZED_AGENT_ID.clone(),
-            title: Some("Existing Metadata".into()),
+            title: Some("现有元数据".into()),
             title_override: None,
             updated_at: existing_updated_at,
             created_at: Some(existing_updated_at),
@@ -2398,7 +2398,7 @@ mod tests {
                 store.save_thread(
                     acp::SessionId::new("existing-session"),
                     make_db_thread(
-                        "Updated Native Thread Title",
+                        "已更新的本地线程标题",
                         existing_updated_at + chrono::Duration::seconds(1),
                     ),
                     project_paths.clone(),
@@ -2433,7 +2433,7 @@ mod tests {
         let updated_at = Utc::now();
         let metadata = make_metadata(
             "remote-session",
-            "Remote Thread",
+            "远程线程",
             updated_at,
             folder_paths.clone(),
         );
@@ -2487,7 +2487,7 @@ mod tests {
                 .read(cx)
                 .entry_by_session(&acp::SessionId::new("remote-session"))
                 .cloned()
-                .expect("expected migrated metadata row")
+                .expect("预期迁移后的元数据行")
         });
 
         assert_eq!(
@@ -2514,7 +2514,7 @@ mod tests {
         for i in 0..7 {
             threads_to_save.push((
                 format!("a-session-{i}"),
-                format!("Thread A{i}"),
+                format!("线程 A{i}"),
                 project_a_paths.clone(),
                 now + chrono::Duration::seconds(i as i64),
             ));
@@ -2522,7 +2522,7 @@ mod tests {
         for i in 0..3 {
             threads_to_save.push((
                 format!("b-session-{i}"),
-                format!("Thread B{i}"),
+                format!("线程 B{i}"),
                 project_b_paths.clone(),
                 now + chrono::Duration::seconds(i as i64),
             ));
@@ -2567,14 +2567,14 @@ mod tests {
         for entry in &project_a_entries[..5] {
             assert!(
                 !entry.archived,
-                "Expected {:?} to be unarchived (top 5 most recent)",
+                "预期 {:?} 未被归档(最近 5 条)",
                 entry.session_id
             );
         }
         for entry in &project_a_entries[5..] {
             assert!(
                 entry.archived,
-                "Expected {:?} to be archived (older than top 5)",
+                "预期 {:?} 已被归档(早于最近 5 条)",
                 entry.session_id
             );
         }
@@ -2594,7 +2594,7 @@ mod tests {
     // `migrate_thread_metadata` reads `ThreadStore::entries()` before that
     // reload completes, it observes an empty iterator and no-ops, even though
     // the on-disk legacy DB has threads to migrate. In production this
-    // manifests as "my old threads disappeared after upgrading": the threads
+    // manifests as "升级后我的旧线程消失了": the threads
     // are still in the legacy `threads.db`, but never make it into
     // `sidebar_threads`, so the new sidebar UI can't see them.
     #[gpui::test]
@@ -2610,7 +2610,7 @@ mod tests {
             let save_task = cx.update(|cx| {
                 let thread_store = ThreadStore::global(cx);
                 let session_id = format!("legacy-session-{i}");
-                let title = format!("Legacy Thread {i}");
+                let title = format!("旧版线程 {i}");
                 let updated_at = now + chrono::Duration::seconds(i as i64);
                 let paths = project_paths.clone();
                 thread_store.update(cx, |store, cx| {
@@ -2672,33 +2672,33 @@ mod tests {
         cx.read(|cx| {
             let store = ThreadMetadataStore::global(cx).read(cx);
             assert_eq!(store.entry_ids().count(), 1);
-            let entry = store.entry(thread_id).expect("draft metadata row");
+            let entry = store.entry(thread_id).expect("草稿元数据行");
             assert!(
                 entry.is_draft(),
-                "expected draft row to have session_id=None, got {:?}",
+                "预期草稿行的 session_id 为 None,实际为 {:?}",
                 entry.session_id
             );
         });
 
         // Updating the title while still a draft keeps the row as a draft.
         thread.update_in(&mut vcx, |thread, _window, cx| {
-            thread.set_title("Draft Thread".into(), cx).detach();
+            thread.set_title("草稿线程".into(), cx).detach();
         });
         vcx.run_until_parked();
 
         cx.read(|cx| {
             let store = ThreadMetadataStore::global(cx).read(cx);
-            let entry = store.entry(thread_id).expect("draft metadata row");
-            assert!(entry.is_draft(), "still a draft after title update");
+            let entry = store.entry(thread_id).expect("草稿元数据行");
+            assert!(entry.is_draft(), "标题更新后仍为草稿");
             assert_eq!(
                 entry.title.as_ref().map(|t| t.as_ref()),
-                Some("Draft Thread")
+                Some("草稿线程")
             );
         });
 
         // Pushing content promotes the draft: session_id is now populated.
         thread.update_in(&mut vcx, |thread, _window, cx| {
-            thread.push_user_content_block(None, "Hello".into(), cx);
+            thread.push_user_content_block(None, "你好".into(), cx);
         });
         vcx.run_until_parked();
 
@@ -2727,7 +2727,7 @@ mod tests {
         let thread = panel.read_with(&vcx, |panel, cx| panel.active_agent_thread(cx).unwrap());
 
         thread.update_in(&mut vcx, |thread, _window, cx| {
-            thread.push_user_content_block(None, "Hello".into(), cx);
+            thread.push_user_content_block(None, "你好".into(), cx);
         });
         vcx.run_until_parked();
 
@@ -2771,7 +2771,7 @@ mod tests {
         });
         thread_no_wt.update_in(&mut vcx_no_wt, |thread, _window, cx| {
             thread.push_user_content_block(None, "content".into(), cx);
-            thread.set_title("No Project Thread".into(), cx).detach();
+            thread.set_title("无项目线程".into(), cx).detach();
         });
         vcx_no_wt.run_until_parked();
         let session_without_worktree =
@@ -2788,7 +2788,7 @@ mod tests {
             panel_wt.read_with(&vcx_wt, |panel, cx| panel.active_agent_thread(cx).unwrap());
         thread_wt.update_in(&mut vcx_wt, |thread, _window, cx| {
             thread.push_user_content_block(None, "content".into(), cx);
-            thread.set_title("Project Thread".into(), cx).detach();
+            thread.set_title("项目线程".into(), cx).detach();
         });
         vcx_wt.run_until_parked();
         let session_with_worktree = crate::test_support::active_session_id(&panel_wt, &vcx_wt);
@@ -2799,23 +2799,23 @@ mod tests {
 
             let without_worktree = store
                 .entry_by_session(&session_without_worktree)
-                .expect("missing metadata for thread without project association");
+                .expect("缺少无项目关联线程的元数据");
             assert!(without_worktree.folder_paths().is_empty());
             assert!(
                 without_worktree.archived,
-                "expected thread without project association to be archived"
+                "预期无项目关联的线程已被归档"
             );
 
             let with_worktree = store
                 .entry_by_session(&session_with_worktree)
-                .expect("missing metadata for thread with project association");
+                .expect("缺少有项目关联线程的元数据");
             assert_eq!(
                 *with_worktree.folder_paths(),
                 PathList::new(&[Path::new("/project-a")])
             );
             assert!(
                 !with_worktree.archived,
-                "expected thread with project association to remain unarchived"
+                "预期有项目关联的线程保持未归档"
             );
         });
     }
@@ -2838,7 +2838,7 @@ mod tests {
 
         regular_thread.update_in(&mut vcx, |thread, _window, cx| {
             thread.push_user_content_block(None, "content".into(), cx);
-            thread.set_title("Regular Thread".into(), cx).detach();
+            thread.set_title("普通线程".into(), cx).detach();
         });
         vcx.run_until_parked();
 
@@ -2852,7 +2852,7 @@ mod tests {
             cx.new(|cx| {
                 acp_thread::AcpThread::new(
                     Some(regular_session_id.clone()),
-                    Some("Subagent Thread".into()),
+                    Some("子代理线程".into()),
                     None,
                     connection.clone(),
                     project.clone(),
@@ -2867,7 +2867,7 @@ mod tests {
         cx.update(|cx| {
             subagent_thread.update(cx, |thread, cx| {
                 thread
-                    .set_title("Subagent Thread Title".into(), cx)
+                    .set_title("子代理线程标题".into(), cx)
                     .detach();
             });
         });
@@ -2889,14 +2889,14 @@ mod tests {
             list.len(),
         );
         assert_eq!(list[0].session_id.as_ref().unwrap(), &regular_session_id);
-        assert_eq!(list[0].display_title(), "Regular Thread");
+        assert_eq!(list[0].display_title(), "普通线程");
     }
 
     #[test]
     fn test_dedup_db_operations_keeps_latest_operation_for_session() {
         let now = Utc::now();
 
-        let meta = make_metadata("session-1", "First Thread", now, PathList::default());
+        let meta = make_metadata("session-1", "第一个线程", now, PathList::default());
         let thread_id = meta.thread_id;
         let operations = vec![DbOperation::Upsert(meta), DbOperation::Delete(thread_id)];
 
@@ -2911,11 +2911,11 @@ mod tests {
         let now = Utc::now();
         let later = now + chrono::Duration::seconds(1);
 
-        let old_metadata = make_metadata("session-1", "Old Title", now, PathList::default());
+        let old_metadata = make_metadata("session-1", "旧标题", now, PathList::default());
         let shared_thread_id = old_metadata.thread_id;
         let new_metadata = ThreadMetadata {
             thread_id: shared_thread_id,
-            ..make_metadata("session-1", "New Title", later, PathList::default())
+            ..make_metadata("session-1", "新标题", later, PathList::default())
         };
 
         let deduped = ThreadMetadataStore::dedup_db_operations(vec![
@@ -2931,8 +2931,8 @@ mod tests {
     fn test_dedup_db_operations_preserves_distinct_sessions() {
         let now = Utc::now();
 
-        let metadata1 = make_metadata("session-1", "First Thread", now, PathList::default());
-        let metadata2 = make_metadata("session-2", "Second Thread", now, PathList::default());
+        let metadata1 = make_metadata("session-1", "第一个线程", now, PathList::default());
+        let metadata2 = make_metadata("session-2", "第二个线程", now, PathList::default());
         let deduped = ThreadMetadataStore::dedup_db_operations(vec![
             DbOperation::Upsert(metadata1.clone()),
             DbOperation::Upsert(metadata2.clone()),
@@ -2949,7 +2949,7 @@ mod tests {
 
         let paths = PathList::new(&[Path::new("/project-a")]);
         let now = Utc::now();
-        let metadata = make_metadata("session-1", "Thread 1", now, paths.clone());
+        let metadata = make_metadata("session-1", "线程 1", now, paths.clone());
         let thread_id = metadata.thread_id;
 
         cx.update(|cx| {
@@ -3033,10 +3033,10 @@ mod tests {
         let paths = PathList::new(&[Path::new("/project-a")]);
         let now = Utc::now();
 
-        let metadata1 = make_metadata("session-1", "Active Thread", now, paths.clone());
+        let metadata1 = make_metadata("session-1", "活动线程", now, paths.clone());
         let metadata2 = make_metadata(
             "session-2",
-            "Archived Thread",
+            "已归档线程",
             now - chrono::Duration::seconds(1),
             paths.clone(),
         );
@@ -3093,11 +3093,11 @@ mod tests {
         let remote_b = RemoteConnectionOptions::Mock(remote::MockConnectionOptions { id: 2 });
 
         // Three threads at the same folder_paths but different hosts.
-        let local_thread = make_metadata("local-session", "Local Thread", now, main_paths.clone());
+        let local_thread = make_metadata("local-session", "本地线程", now, main_paths.clone());
 
         let mut remote_a_thread = make_metadata(
             "remote-a-session",
-            "Remote A Thread",
+            "远程 A 线程",
             now - chrono::Duration::seconds(1),
             main_paths.clone(),
         );
@@ -3105,7 +3105,7 @@ mod tests {
 
         let mut remote_b_thread = make_metadata(
             "remote-b-session",
-            "Remote B Thread",
+            "远程 B 线程",
             now - chrono::Duration::seconds(2),
             main_paths.clone(),
         );
@@ -3119,7 +3119,7 @@ mod tests {
             archived: false,
             session_id: Some(acp::SessionId::new("local-linked")),
             agent_id: agent::ZED_AGENT_ID.clone(),
-            title: Some("Local Linked".into()),
+            title: Some("本地链接".into()),
             title_override: None,
             updated_at: now,
             created_at: Some(now),
@@ -3133,7 +3133,7 @@ mod tests {
             archived: false,
             session_id: Some(acp::SessionId::new("remote-linked")),
             agent_id: agent::ZED_AGENT_ID.clone(),
-            title: Some("Remote Linked".into()),
+            title: Some("远程链接".into()),
             title_override: None,
             updated_at: now - chrono::Duration::seconds(1),
             created_at: Some(now - chrono::Duration::seconds(1)),
@@ -3202,16 +3202,16 @@ mod tests {
         let paths = PathList::new(&[Path::new("/project-a")]);
         let now = Utc::now();
 
-        let m1 = make_metadata("session-1", "Thread One", now, paths.clone());
+        let m1 = make_metadata("session-1", "线程一", now, paths.clone());
         let m2 = make_metadata(
             "session-2",
-            "Thread Two",
+            "线程二",
             now - chrono::Duration::seconds(1),
             paths.clone(),
         );
         let m3 = make_metadata(
             "session-3",
-            "Thread Three",
+            "线程三",
             now - chrono::Duration::seconds(2),
             paths,
         );
@@ -3256,7 +3256,7 @@ mod tests {
 
         let paths = PathList::new(&[Path::new("/project-a")]);
         let now = Utc::now();
-        let metadata = make_metadata("session-1", "Thread 1", now, paths.clone());
+        let metadata = make_metadata("session-1", "线程 1", now, paths.clone());
         let thread_id = metadata.thread_id;
 
         cx.update(|cx| {
@@ -3292,7 +3292,7 @@ mod tests {
 
             let thread = store
                 .entry_by_session(&acp::SessionId::new("session-1"))
-                .expect("thread should exist after reload");
+                .expect("重新加载后线程应存在");
             assert!(thread.archived);
 
             let path_entries: Vec<_> = store
@@ -3340,7 +3340,7 @@ mod tests {
 
         let paths = PathList::new(&[Path::new("/project-a")]);
         let now = Utc::now();
-        let metadata = make_metadata("session-1", "Thread 1", now, paths);
+        let metadata = make_metadata("session-1", "线程 1", now, paths);
         let thread_id = metadata.thread_id;
 
         cx.update(|cx| {
@@ -3524,7 +3524,7 @@ mod tests {
             Path::new("/projects/worktree-b"),
             Path::new("/other/unrelated"),
         ]);
-        let meta = make_metadata("session-multi", "Multi Thread", Utc::now(), original_paths);
+        let meta = make_metadata("session-multi", "多线程", Utc::now(), original_paths);
         let thread_id = meta.thread_id;
 
         store.update(cx, |store, cx| {
@@ -3562,7 +3562,7 @@ mod tests {
 
         let original_paths =
             PathList::new(&[Path::new("/projects/worktree-a"), Path::new("/other/path")]);
-        let meta = make_metadata("session-partial", "Partial", Utc::now(), original_paths);
+        let meta = make_metadata("session-partial", "部分", Utc::now(), original_paths);
         let thread_id = meta.thread_id;
 
         store.update(cx, |store, cx| {
@@ -3603,7 +3603,7 @@ mod tests {
             Path::new("/projects/worktree-b"),
             Path::new("/other/unrelated"),
         ]);
-        let meta = make_metadata("session-multi", "Multi Thread", Utc::now(), original_paths);
+        let meta = make_metadata("session-multi", "多线程", Utc::now(), original_paths);
         let thread_id = meta.thread_id;
 
         store.update(cx, |store, cx| {
@@ -3641,7 +3641,7 @@ mod tests {
 
         let original_paths =
             PathList::new(&[Path::new("/projects/worktree-a"), Path::new("/other/path")]);
-        let meta = make_metadata("session-partial", "Partial", Utc::now(), original_paths);
+        let meta = make_metadata("session-partial", "部分", Utc::now(), original_paths);
         let thread_id = meta.thread_id;
 
         store.update(cx, |store, cx| {
@@ -3753,7 +3753,7 @@ mod tests {
         let old_migrations: &[&str] = &ThreadMetadataDb::MIGRATIONS[..7];
         connection
             .migrate(ThreadMetadataDb::NAME, old_migrations, &mut |_, _, _| false)
-            .expect("old migrations should succeed");
+            .expect("旧迁移应成功");
 
         // Insert rows: one with a thread_id, two without.
         connection
@@ -3810,7 +3810,7 @@ mod tests {
             .unwrap()(())
         .unwrap()
         .unwrap();
-        assert_eq!(count, 3, "all 3 rows should survive the migration");
+        assert_eq!(count, 3, "所有 3 行都应保留在迁移后");
 
         let null_count: i64 = connection
             .select_row_bound::<(), i64>(
@@ -3821,7 +3821,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             null_count, 0,
-            "no rows should have NULL thread_id after migration"
+            "迁移后不应有 thread_id 为 NULL 的行"
         );
 
         // The row that already had a thread_id should keep its original value.
@@ -3838,7 +3838,7 @@ mod tests {
                 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
                 0x0F, 0x10
             ],
-            "pre-existing thread_id should be preserved"
+            "预先存在的 thread_id 应被保留"
         );
 
         // The two rows that had NULL thread_ids should now have distinct non-empty blobs.
@@ -3859,16 +3859,16 @@ mod tests {
         assert_eq!(
             generated_tid_1.len(),
             16,
-            "generated thread_id should be 16 bytes"
+            "生成的 thread_id 应为 16 字节"
         );
         assert_eq!(
             generated_tid_2.len(),
             16,
-            "generated thread_id should be 16 bytes"
+            "生成的 thread_id 应为 16 字节"
         );
         assert_ne!(
             generated_tid_1, generated_tid_2,
-            "each generated thread_id should be unique"
+            "每个生成的 thread_id 应唯一"
         );
 
         // The thread_archived_worktrees join row should have migrated
@@ -3881,7 +3881,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             archived_count, 1,
-            "thread_archived_worktrees row should survive migration"
+            "thread_archived_worktrees 行应保留在迁移后"
         );
 
         // The thread_archived_worktrees row should reference the
@@ -3895,7 +3895,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             archived_tid, generated_tid_1,
-            "thread_archived_worktrees should reference the backfilled thread_id"
+            "thread_archived_worktrees 应引用回填的 thread_id"
         );
     }
 
@@ -4055,7 +4055,7 @@ mod tests {
         // Push content so the event handler saves metadata with the
         // project's worktree paths.
         thread.update_in(&mut vcx, |thread, _window, cx| {
-            thread.push_user_content_block(None, "Hello".into(), cx);
+            thread.push_user_content_block(None, "你好".into(), cx);
         });
         vcx.run_until_parked();
 
@@ -4065,7 +4065,7 @@ mod tests {
             let entry = store.entry(thread_id).unwrap();
             assert!(
                 !entry.folder_paths().is_empty(),
-                "thread should have folder paths before archiving"
+                "归档前线程应具有文件夹路径"
             );
             (
                 entry.folder_paths().clone(),
@@ -4101,7 +4101,7 @@ mod tests {
         // In production this happens when an async title-generation task
         // completes after the thread was archived.
         thread.update_in(&mut vcx, |thread, _window, cx| {
-            thread.set_title("Generated title".into(), cx).detach();
+            thread.set_title("生成的标题".into(), cx).detach();
         });
         vcx.run_until_parked();
 
@@ -4109,11 +4109,11 @@ mod tests {
         cx.read(|cx| {
             let store = ThreadMetadataStore::global(cx).read(cx);
             let entry = store.entry(thread_id).unwrap();
-            assert!(entry.archived, "thread should still be archived");
+            assert!(entry.archived, "线程应仍处于归档状态");
             assert_eq!(
                 entry.display_title().as_ref(),
-                "Generated title",
-                "title should still be updated for archived threads"
+                "生成的标题",
+                "已归档线程的标题仍应更新"
             );
             assert_eq!(
                 entry.folder_paths(),
@@ -4148,7 +4148,7 @@ mod tests {
         let thread_id = crate::test_support::active_thread_id(&panel, &vcx);
         thread.update_in(&mut vcx, |thread, _window, cx| {
             thread.push_user_content_block(None, "hello".into(), cx);
-            thread.set_title("Thread".into(), cx).detach();
+            thread.set_title("线程".into(), cx).detach();
         });
         vcx.run_until_parked();
 
@@ -4157,7 +4157,7 @@ mod tests {
             let store = ThreadMetadataStore::global(cx);
             assert!(
                 store.read(cx).entry(thread_id).is_some(),
-                "thread must be in the store while the project is local"
+                "项目为本地时,线程必须存在于存储中"
             );
         });
 
@@ -4172,7 +4172,7 @@ mod tests {
         });
 
         thread.update_in(&mut vcx, |thread, _window, cx| {
-            thread.push_user_content_block(None, "more content".into(), cx);
+            thread.push_user_content_block(None, "更多内容".into(), cx);
         });
         vcx.run_until_parked();
 
@@ -4180,7 +4180,7 @@ mod tests {
             let store = ThreadMetadataStore::global(cx);
             assert!(
                 store.read(cx).entry(thread_id).is_none(),
-                "threads must not be persisted while the project is a collab guest session"
+                "项目为协作访客会话时,线程不得持久化"
             );
         });
     }
@@ -4213,7 +4213,7 @@ mod tests {
         let thread_a = panel.read_with(&vcx, |panel, cx| panel.active_agent_thread(cx).unwrap());
         thread_a.update_in(&mut vcx, |thread, _window, cx| {
             thread.push_user_content_block(None, "hello".into(), cx);
-            thread.set_title("Thread A".into(), cx).detach();
+            thread.set_title("线程 A".into(), cx).detach();
         });
         vcx.run_until_parked();
 
@@ -4223,7 +4223,7 @@ mod tests {
             assert_eq!(
                 entry.folder_paths().paths(),
                 &[std::path::PathBuf::from("/project-a")],
-                "thread A must be saved with /project-a before collab"
+                "协作前对话线程 A 必须与 /项目-a 一起保存"
             );
         });
 
@@ -4266,7 +4266,7 @@ mod tests {
             assert_eq!(
                 entry.folder_paths().paths(),
                 &[std::path::PathBuf::from("/project-a")],
-                "retained thread A's stored path must not be updated while the project is via collab"
+                "项目通过协作连接时,保留的线程 A 存储路径不得更新"
             );
         });
     }

@@ -156,7 +156,7 @@ impl TextSystem {
         }
 
         panic!(
-            "failed to resolve font '{}' or any of the fallbacks: {}",
+            "无法解析字体 '{}' 或任何后备字体: {}",
             font.family,
             self.fallback_font_stack
                 .iter()
@@ -182,7 +182,7 @@ impl TextSystem {
         let glyph_id = self
             .platform_text_system
             .glyph_for_char(font_id, character)
-            .with_context(|| format!("glyph not found for character '{character}'"))?;
+            .with_context(|| format!("未找到字符 '{character}' 的字形"))?;
         let bounds = self
             .platform_text_system
             .typographic_bounds(font_id, glyph_id)?;
@@ -196,7 +196,7 @@ impl TextSystem {
         let glyph_id = self
             .platform_text_system
             .glyph_for_char(font_id, ch)
-            .with_context(|| format!("glyph not found for character '{ch}'"))?;
+            .with_context(|| format!("未找到字符 '{ch}' 的字形"))?;
         let result = self.platform_text_system.advance(font_id, glyph_id)?
             / self.units_per_em(font_id) as f32;
 
@@ -403,7 +403,7 @@ impl WindowTextSystem {
     ) -> ShapedLine {
         debug_assert!(
             text.find('\n').is_none(),
-            "text argument should not contain newlines"
+            "文本参数不应包含换行符"
         );
 
         let mut decoration_runs = SmallVec::<[DecorationRun; 32]>::new();
@@ -485,7 +485,7 @@ impl WindowTextSystem {
                 let text = materialize_text();
                 debug_assert!(
                     text.find('\n').is_none(),
-                    "text argument should not contain newlines"
+                    "文本参数不应包含换行符"
                 );
                 text
             },
@@ -528,7 +528,7 @@ impl WindowTextSystem {
             let mut run_start = line_start;
             while run_start < line_end {
                 let Some(run) = runs.peek_mut() else {
-                    log::warn!("`TextRun`s do not cover the entire to be shaped text");
+                    log::warn!("`TextRun` 未覆盖整个待塑形文本");
                     break;
                 };
 
@@ -959,7 +959,7 @@ impl schemars::JsonSchema for FontWeight {
             "minimum": Self::THIN,
             "maximum": Self::BLACK,
             "default": Self::default(),
-            "description": "Font weight value between 100 (thin) and 900 (black)"
+            "description": "字体粗细值,介于 100(细)和 900(黑)之间"
         })
     }
 }
@@ -1102,7 +1102,7 @@ impl Font {
 /// It is used to define the measurements of a typeface.
 #[derive(Clone, Copy, Debug)]
 pub struct FontMetrics {
-    /// The number of font units that make up the "em square",
+    /// The number of font units that make up the "em 方块",
     /// a scalable grid for determining the size of a typeface.
     pub units_per_em: u32,
 

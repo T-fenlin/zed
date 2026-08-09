@@ -261,7 +261,7 @@ impl MantleAuth {
         match self {
             MantleAuth::ApiKey { api_key } => {
                 let value = HeaderValue::from_str(&format!("Bearer {}", api_key.trim()))
-                    .context("building Mantle bearer token authorization header")?;
+                    .context("构建 Mantle Bearer 令牌授权头")?;
                 request.headers_mut().insert(AUTHORIZATION, value);
             }
             MantleAuth::SigV4 { credentials } => {
@@ -295,7 +295,7 @@ fn sign_mantle_request_sigv4_at(
         && let Some(authority) = request.uri().authority()
     {
         let host = HeaderValue::from_str(authority.as_str())
-            .context("invalid host header derived from Mantle request URI")?;
+            .context("从 Mantle 请求 URI 派生的主机头无效")?;
         request
             .headers_mut()
             .insert(http_client::http::header::HOST, host);
@@ -309,7 +309,7 @@ fn sign_mantle_request_sigv4_at(
         .time(time)
         .settings(SigningSettings::default())
         .build()
-        .context("building Mantle SigV4 signing params")?
+        .context("构建 Mantle SigV4 签名参数")?
         .into();
 
     let method = request.method().as_str();
@@ -321,16 +321,16 @@ fn sign_mantle_request_sigv4_at(
             value
                 .to_str()
                 .map(|value| (name.as_str(), value))
-                .with_context(|| format!("header {name} is not valid UTF-8 and cannot be signed"))
+                .with_context(|| format!("请求头 {name} 不是有效的 UTF-8,无法签名"))
         })
         .collect::<Result<Vec<_>>>()?;
 
     let signable_request =
         SignableRequest::new(method, uri, headers.into_iter(), SignableBody::Bytes(body))
-            .context("constructing Mantle SigV4 request")?;
+            .context("构造 Mantle SigV4 请求")?;
 
     let (instructions, _signature) = sign(signable_request, &signing_params)
-        .context("signing Mantle request with SigV4")?
+        .context("使用 SigV4 签名 Mantle 请求")?
         .into_parts();
     instructions.apply_to_request_http1x(request);
 
@@ -411,7 +411,7 @@ impl State {
                     BedrockAuthMethod::NamedProfile => BedrockAuth::NamedProfile { profile_name },
                     BedrockAuthMethod::SingleSignOn => BedrockAuth::SingleSignOn { profile_name },
                     BedrockAuthMethod::ApiKey => {
-                        // ApiKey method means "use static credentials from keychain/env"
+                        // ApiKey method means "使用来自钥匙串/环境的静态凭据"
                         // Fall through to load them below
                         return self.load_static_credentials(cx);
                     }
@@ -494,10 +494,10 @@ impl State {
                 .ok_or(AuthenticateError::CredentialsNotFound)?;
 
             let credentials_str = String::from_utf8(credentials_bytes)
-                .with_context(|| format!("invalid {PROVIDER_NAME} credentials"))?;
+                .with_context(|| format!("无效的 {PROVIDER_NAME} 凭据"))?;
 
             let credentials: BedrockCredentials =
-                serde_json::from_str(&credentials_str).context("failed to parse credentials")?;
+                serde_json::from_str(&credentials_str).context("解析凭据失败")?;
 
             let auth = credentials
                 .into_auth()
@@ -704,7 +704,7 @@ impl LanguageModelProvider for BedrockLanguageModelProvider {
                     .into()
             })
             .description(InlineDescription::Text(
-                "To use Zed's agent with Bedrock, set a custom authentication strategy in your settings or use static credentials. Mantle-only models (e.g. GPT-5.5, GPT-5.4, Grok 4.3) additionally require IAM permissions for the `bedrock-mantle` endpoint.".into(),
+                "要将 Zed 的助手与 Bedrock 结合使用,请在设置中配置自定义认证策略,或使用静态凭据。仅 Mantle 模型(例如 GPT-5.5、GPT-5.4、Grok 4.3)还需要对 `bedrock-mantle` 端点具有 IAM 权限。".into(),
             )),
         ))
     }
@@ -785,9 +785,9 @@ impl BedrockModel {
 
                 anyhow::Ok(BedrockClient::new(&config))
             })
-            .context("initializing Bedrock client")?;
+            .context("正在初始化 Bedrock 客户端")?;
 
-        self.client.get().context("Bedrock client not initialized")
+        self.client.get().context("Bedrock 客户端未初始化")
     }
 
     fn stream_completion(
@@ -801,9 +801,9 @@ impl BedrockModel {
         let Ok(runtime_client) = self
             .get_or_init_client(cx)
             .cloned()
-            .context("Bedrock client not initialized")
+            .context("Bedrock 客户端未初始化")
         else {
-            return futures::future::ready(Err(BedrockError::Other(anyhow!("App state dropped"))))
+            return futures::future::ready(Err(BedrockError::Other(anyhow!("应用状态已丢失"))))
                 .boxed();
         };
         let extra_headers = self.state.read_with(cx, |_, cx| {
@@ -866,27 +866,27 @@ impl LanguageModel for BedrockModel {
         if self.model.supports_adaptive_thinking() {
             vec![
                 language_model::LanguageModelEffortLevel {
-                    name: "Low".into(),
+                    name: "低".into(),
                     value: "low".into(),
                     is_default: false,
                 },
                 language_model::LanguageModelEffortLevel {
-                    name: "Medium".into(),
+                    name: "中".into(),
                     value: "medium".into(),
                     is_default: false,
                 },
                 language_model::LanguageModelEffortLevel {
-                    name: "High".into(),
+                    name: "高".into(),
                     value: "high".into(),
                     is_default: true,
                 },
                 language_model::LanguageModelEffortLevel {
-                    name: "XHigh".into(),
+                    name: "极高".into(),
                     value: "xhigh".into(),
                     is_default: false,
                 },
                 language_model::LanguageModelEffortLevel {
-                    name: "Max".into(),
+                    name: "最大".into(),
                     value: "max".into(),
                     is_default: false,
                 },
@@ -940,7 +940,7 @@ impl LanguageModel for BedrockModel {
     > {
         if request.contains_custom_tool_input() {
             return async move {
-                Err(anyhow::anyhow!("Bedrock does not support custom tools").into())
+                Err(anyhow::anyhow!("Bedrock 不支持自定义工具").into())
             }
             .boxed();
         }
@@ -980,7 +980,7 @@ impl LanguageModel for BedrockModel {
         let future = self.request_limiter.stream(async move {
             let response = request.await.map_err(|err| match err {
                 BedrockError::Validation(ref msg) => {
-                    if msg.contains("model identifier is invalid") {
+                    if msg.contains("模型标识符无效") {
                         LanguageModelCompletionError::Other(anyhow!(
                             "{display_name} is not available in {region}. \
                                  Try switching to a region where this model is supported."
@@ -1116,10 +1116,10 @@ async fn resolve_mantle_credentials_provider(
             let config = config_builder.load().await;
             config
                 .credentials_provider()
-                .context("no AWS credentials provider is configured")
+                .context("未配置 AWS 凭据提供程序")
         })
         .await
-        .context("resolving AWS credentials for Bedrock Mantle")?;
+        .context("正在解析 Bedrock Mantle 的 AWS 凭据")?;
     Ok(provider.clone())
 }
 
@@ -1157,7 +1157,7 @@ async fn resolve_mantle_auth(
             let credentials = provider
                 .provide_credentials()
                 .await
-                .context("failed to resolve AWS credentials")?;
+                .context("解析 AWS 凭据失败")?;
             Ok(MantleAuth::SigV4 { credentials })
         }
         Some(BedrockAuth::Automatic) | None => {
@@ -1167,7 +1167,7 @@ async fn resolve_mantle_auth(
             let credentials = provider
                 .provide_credentials()
                 .await
-                .context("failed to resolve AWS credentials")?;
+                .context("解析 AWS 凭据失败")?;
             Ok(MantleAuth::SigV4 { credentials })
         }
     }
@@ -1506,7 +1506,7 @@ impl MantleResponseEventMapper {
     fn map_message_added(&mut self, event: OpenAiResponseStreamEvent) {
         debug_assert!(
             self.pending_message_events.is_empty(),
-            "pending message events must be flushed before a new message is added"
+            "在添加新消息之前,必须刷新待处理的消息事件"
         );
         self.pending_message_events = self.open_ai_mapper.map_event(event);
     }
@@ -1973,7 +1973,7 @@ pub fn into_bedrock(
     guardrail_version: Option<String>,
 ) -> Result<bedrock::Request> {
     if request.contains_custom_tool_input() {
-        anyhow::bail!("Bedrock does not support custom tools");
+        anyhow::bail!("Bedrock 不支持自定义工具");
     }
 
     let mut new_messages: Vec<BedrockMessage> = Vec::new();
@@ -2018,7 +2018,7 @@ pub fn into_bedrock(
                                 .text(text)
                                 .set_signature(signature)
                                 .build()
-                                .context("failed to build reasoning block")
+                                .context("构建推理块失败")
                                 .log_err()?;
 
                             Some(BedrockInnerContent::ReasoningContent(
@@ -2056,7 +2056,7 @@ pub fn into_bedrock(
                                 .tool_use_id(tool_use.id.to_string())
                                 .input(input)
                                 .build()
-                                .context("failed to build Bedrock tool use block")
+                                .context("构建 Bedrock 工具使用块失败")
                                 .log_err()
                                 .map(BedrockInnerContent::ToolUse)
                         }
@@ -2091,7 +2091,7 @@ pub fn into_bedrock(
                                                     Err(err) => {
                                                         BedrockToolResultContentBlock::Text(
                                                             format!(
-                                                                "[Failed to build image block: {}]",
+                                                                "[构建图像块失败:{}]",
                                                                 err
                                                             ),
                                                         )
@@ -2100,7 +2100,7 @@ pub fn into_bedrock(
                                             }
                                             Err(err) => {
                                                 BedrockToolResultContentBlock::Text(format!(
-                                                    "[Failed to decode tool result image: {}]",
+                                                    "[解码工具结果图像失败:{}]",
                                                     err
                                                 ))
                                             }
@@ -2118,7 +2118,7 @@ pub fn into_bedrock(
                                     }
                                 })
                                 .build()
-                                .context("failed to build Bedrock tool result block")
+                                .context("构建 Bedrock 工具结果块失败")
                                 .log_err()
                                 .map(BedrockInnerContent::ToolResult)
                         }
@@ -2127,14 +2127,14 @@ pub fn into_bedrock(
 
                             let image_bytes = base64::engine::general_purpose::STANDARD
                                 .decode(image.source.as_bytes())
-                                .context("failed to decode base64 image data")
+                                .context("解码 base64 图像数据失败")
                                 .log_err()?;
 
                             BedrockImageBlock::builder()
                                 .format(BedrockImageFormat::Png)
                                 .source(BedrockImageSource::Bytes(BedrockBlob::new(image_bytes)))
                                 .build()
-                                .context("failed to build Bedrock image block")
+                                .context("构建 Bedrock 图像块失败")
                                 .log_err()
                                 .map(BedrockInnerContent::Image)
                         }
@@ -2145,13 +2145,13 @@ pub fn into_bedrock(
                         CachePointBlock::builder()
                             .r#type(CachePointType::Default)
                             .build()
-                            .context("failed to build cache point block")?,
+                            .context("构建缓存点块失败")?,
                     ));
                 }
                 let bedrock_role = match message.role {
                     Role::User => bedrock::BedrockRole::User,
                     Role::Assistant => bedrock::BedrockRole::Assistant,
-                    Role::System => unreachable!("System role should never occur here"),
+                    Role::System => unreachable!("系统角色不应出现在此处"),
                 };
                 if bedrock_message_content.is_empty() {
                     continue;
@@ -2168,7 +2168,7 @@ pub fn into_bedrock(
                         .role(bedrock_role)
                         .set_content(Some(bedrock_message_content))
                         .build()
-                        .context("failed to build Bedrock message")?,
+                        .context("构建 Bedrock 消息失败")?,
                 );
             }
             Role::System => {
@@ -2189,7 +2189,7 @@ pub fn into_bedrock(
                     input_schema, ..
                 } = &tool.input
                 else {
-                    anyhow::bail!("Bedrock does not support custom tools");
+                    anyhow::bail!("Bedrock 不支持自定义工具");
                 };
                 Ok(BedrockTool::ToolSpec(
                     BedrockToolSpec::builder()
@@ -2199,7 +2199,7 @@ pub fn into_bedrock(
                             input_schema,
                         )))
                         .build()
-                        .context("failed to build Bedrock tool spec")?,
+                        .context("构建 Bedrock 工具规范失败")?,
                 ))
             })
             .collect::<Result<_>>()?
@@ -2215,12 +2215,12 @@ pub fn into_bedrock(
         tool_spec.push(BedrockTool::ToolSpec(
             BedrockToolSpec::builder()
                 .name("_placeholder")
-                .description("Placeholder tool to satisfy Bedrock API requirements when conversation history contains tool usage")
+                .description("当对话历史包含工具使用时,用于满足 Bedrock API 要求的占位工具")
                 .input_schema(BedrockToolInputSchema::Json(value_to_aws_document(
                     &serde_json::json!({"type": "object", "properties": {}}),
                 )))
                 .build()
-                .context("failed to build placeholder tool spec")?,
+                .context("构建占位工具规范失败")?,
         ));
     }
 
@@ -2229,7 +2229,7 @@ pub fn into_bedrock(
             CachePointBlock::builder()
                 .r#type(CachePointType::Default)
                 .build()
-                .context("failed to build cache point block")?,
+                .context("构建缓存点块失败")?,
         ));
     }
 
@@ -2264,7 +2264,7 @@ pub fn into_bedrock(
                 CachePointBlock::builder()
                     .r#type(CachePointType::Default)
                     .build()
-                    .context("failed to build system cache point block")?,
+                    .context("构建系统缓存点块失败")?,
             ));
         }
     }
@@ -2397,7 +2397,7 @@ pub fn map_to_language_model_completion_events(
                                 }
                                 ReasoningContentBlockDelta::RedactedContent(redacted) => {
                                     let content = String::from_utf8(redacted.into_inner())
-                                        .unwrap_or("REDACTED".to_string());
+                                        .unwrap_or("已编辑".to_string());
                                     Some(Ok(LanguageModelCompletionEvent::Thinking {
                                         text: content,
                                         signature: None,
@@ -2514,28 +2514,28 @@ impl ConfigurationView {
 
         let access_key_id_editor = cx.new(|cx| {
             InputField::new(window, cx, Self::PLACEHOLDER_ACCESS_KEY_ID_TEXT)
-                .label("Access Key ID")
+                .label("访问密钥 ID")
                 .tab_index(0)
                 .tab_stop(true)
         });
 
         let secret_access_key_editor = cx.new(|cx| {
             InputField::new(window, cx, Self::PLACEHOLDER_SECRET_ACCESS_KEY_TEXT)
-                .label("Secret Access Key")
+                .label("秘密访问密钥")
                 .tab_index(1)
                 .tab_stop(true)
         });
 
         let session_token_editor = cx.new(|cx| {
             InputField::new(window, cx, Self::PLACEHOLDER_SESSION_TOKEN_TEXT)
-                .label("Session Token (Optional)")
+                .label("会话令牌(可选)")
                 .tab_index(2)
                 .tab_stop(true)
         });
 
         let bearer_token_editor = cx.new(|cx| {
             InputField::new(window, cx, Self::PLACEHOLDER_BEARER_TOKEN_TEXT)
-                .label("Bedrock API Key")
+                .label("Bedrock API 密钥")
                 .tab_index(3)
                 .tab_stop(true)
         });
@@ -2544,7 +2544,7 @@ impl ConfigurationView {
             let state = state.clone();
             async move |this, cx| {
                 if let Some(task) = Some(state.update(cx, |state, cx| state.authenticate(cx))) {
-                    // We don't log an error, because "not signed in" is also an error.
+                    // We don't log an error, because "未登录" is also an error.
                     let _ = task.await;
                 }
                 this.update(cx, |this, cx| {
@@ -2665,34 +2665,34 @@ impl Render for ConfigurationView {
             .and_then(|s| s.authentication_method.clone());
 
         if self.load_credentials_task.is_some() {
-            return div().child(Label::new("Loading credentials...")).into_any();
+            return div().child(Label::new("正在加载凭据...")).into_any();
         }
 
         let configured_label = match &auth {
             Some(BedrockAuth::Automatic) => {
-                "Using automatic credentials (AWS default chain)".into()
+                "使用自动凭据(AWS 默认链)".into()
             }
             Some(BedrockAuth::NamedProfile { profile_name }) => {
-                format!("Using AWS profile: {profile_name}")
+                format!("使用 AWS 配置文件:{profile_name}")
             }
             Some(BedrockAuth::SingleSignOn { profile_name }) => {
-                format!("Using AWS SSO profile: {profile_name}")
+                format!("使用 AWS SSO 配置文件:{profile_name}")
             }
             Some(BedrockAuth::IamCredentials { .. }) if env_var_set => {
                 format!(
-                    "Using IAM credentials from {} and {} environment variables",
+                    "使用来自 {} 和 {} 环境变量的 IAM 凭据",
                     ZED_BEDROCK_ACCESS_KEY_ID_VAR.name, ZED_BEDROCK_SECRET_ACCESS_KEY_VAR.name
                 )
             }
-            Some(BedrockAuth::IamCredentials { .. }) => "Using IAM credentials".into(),
+            Some(BedrockAuth::IamCredentials { .. }) => "使用 IAM 凭据".into(),
             Some(BedrockAuth::ApiKey { .. }) if env_var_set => {
                 format!(
-                    "Using Bedrock API Key from {} environment variable",
+                    "使用来自 {} 环境变量的 Bedrock API 密钥",
                     ZED_BEDROCK_BEARER_TOKEN_VAR.name
                 )
             }
-            Some(BedrockAuth::ApiKey { .. }) => "Using Bedrock API Key".into(),
-            None => "Not authenticated".into(),
+            Some(BedrockAuth::ApiKey { .. }) => "使用 Bedrock API 密钥".into(),
+            None => "未认证".into(),
         };
 
         // Determine if credentials can be reset
@@ -2706,7 +2706,7 @@ impl Render for ConfigurationView {
 
         let tooltip_label = if env_var_set {
             Some(format!(
-                "To reset your credentials, unset the {}, {}, and {} or {} environment variables.",
+                "要重置凭据,请取消设置 {}, {} 和 {} 或 {} 环境变量。",
                 ZED_BEDROCK_ACCESS_KEY_ID_VAR.name,
                 ZED_BEDROCK_SECRET_ACCESS_KEY_VAR.name,
                 ZED_BEDROCK_SESSION_TOKEN_VAR.name,
@@ -2714,7 +2714,7 @@ impl Render for ConfigurationView {
             ))
         } else if is_settings_derived {
             Some(
-                "Authentication method is configured in settings. Edit settings.json to change."
+                "认证方法已在设置中配置。编辑 settings.json 以更改。"
                     .to_string(),
             )
         } else {
@@ -2742,12 +2742,12 @@ impl Render for ConfigurationView {
             .child(Headline::new("Amazon Bedrock").size(HeadlineSize::Small))
             .child(
                 Label::new(
-                    "To use Zed's agent with Bedrock, you can set a custom authentication strategy through your settings file or use static credentials.",
+                    "要将 Zed 的助手与 Bedrock 结合使用,您可以通过设置文件配置自定义认证策略,或使用静态凭据。",
                 )
                 .color(Color::Muted),
             )
             .child(
-                Label::new("But first, to access models on AWS, you need to:")
+                Label::new("但首先,要访问 AWS 上的模型,您需要:")
                     .mt_1()
                     .color(Color::Muted),
             )
@@ -2757,23 +2757,23 @@ impl Render for ConfigurationView {
                         ListBulletItem::new("")
                             .child(
                                 Label::new(
-                                    "Grant permissions to the strategy you'll use according to the:",
+                                    "根据以下内容为您将使用的策略授予权限:",
                                 )
                                 .color(Color::Muted),
                             )
                             .child(ButtonLink::new(
-                                "Prerequisites",
+                                "前提条件",
                                 "https://docs.aws.amazon.com/bedrock/latest/userguide/inference-prereq.html",
                             )),
                     )
                     .child(
                         ListBulletItem::new("")
                             .child(
-                                Label::new("Select the models you would like access to:")
+                                Label::new("选择您希望访问的模型:")
                                     .color(Color::Muted),
                             )
                             .child(ButtonLink::new(
-                                "Bedrock Model Catalog",
+                                "Bedrock 模型目录",
                                 "https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/model-catalog",
                             )),
                     ),
@@ -2790,40 +2790,40 @@ impl ConfigurationView {
                 ListBulletItem::new("")
                     .child(
                         Label::new(
-                            "For access keys: Create an IAM user in the AWS console with programmatic access",
+                            "对于访问密钥:在 AWS 控制台中创建具有编程访问权限的 IAM 用户",
                         )
                         .color(Color::Muted),
                     )
                     .child(ButtonLink::new(
-                        "IAM Console",
+                        "IAM 控制台",
                         "https://us-east-1.console.aws.amazon.com/iam/home?region=us-east-1#/users",
                     )),
             )
             .child(
                 ListBulletItem::new("")
                     .child(
-                        Label::new("For Bedrock API Keys: Generate an API key from the")
+                        Label::new("对于 Bedrock API 密钥:从以下位置生成 API 密钥")
                             .color(Color::Muted),
                     )
                     .child(ButtonLink::new(
-                        "Bedrock Console",
+                        "Bedrock 控制台",
                         "https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys-use.html",
                     )),
             )
             .child(
                 ListBulletItem::new("")
                     .child(
-                        Label::new("Attach the necessary Bedrock permissions to")
+                        Label::new("将必要的 Bedrock 权限附加到")
                             .color(Color::Muted),
                     )
                     .child(ButtonLink::new(
-                        "this user",
+                        "此用户",
                         "https://docs.aws.amazon.com/bedrock/latest/userguide/inference-prereq.html",
                     )),
             )
             .child(
                 ListBulletItem::new(
-                    "Enter either access keys OR a Bedrock API Key below (not both)",
+                    "在下方输入访问密钥或 Bedrock API 密钥(不要同时输入两者)",
                 )
                 .label_color(Color::Muted),
             );
@@ -2833,10 +2833,10 @@ impl ConfigurationView {
             .tab_group()
             .gap_1p5()
             .child(Divider::horizontal())
-            .child(Label::new("Static Credentials").mt_2())
+            .child(Label::new("静态凭据").mt_2())
             .child(
                 Label::new(
-                    "This method uses your AWS access key ID and secret access key, or a Bedrock API Key.",
+                    "此方法使用您的 AWS 访问密钥 ID 和秘密访问密钥,或 Bedrock API 密钥。",
                 )
                 .color(Color::Muted),
             )
@@ -2850,7 +2850,7 @@ impl ConfigurationView {
             )
             .child(
                 Label::new(format!(
-                    "You can also set the {}, {} and {} environment variables (or {} for Bedrock API Key authentication) and restart Zed.",
+                    "您也可以设置 {}, {} 和 {} 环境变量(或设置 {} 以进行 Bedrock API 密钥认证)并重启 Zed。",
                     ZED_BEDROCK_ACCESS_KEY_ID_VAR.name,
                     ZED_BEDROCK_SECRET_ACCESS_KEY_VAR.name,
                     ZED_BEDROCK_REGION_VAR.name,
@@ -2861,7 +2861,7 @@ impl ConfigurationView {
             )
             .child(
                 Label::new(format!(
-                    "Optionally, if your environment uses AWS CLI profiles, you can set {}; if it requires a custom endpoint, you can set {}; and if it requires a Session Token, you can set {}.",
+                    "可选地,如果您的环境使用 AWS CLI 配置文件,您可以设置 {};如果需要自定义端点,可以设置 {};如果需要会话令牌,可以设置 {}。",
                     ZED_AWS_PROFILE_VAR.name,
                     ZED_AWS_ENDPOINT_VAR.name,
                     ZED_BEDROCK_SESSION_TOKEN_VAR.name
@@ -2872,11 +2872,11 @@ impl ConfigurationView {
                 .mb_2p5(),
             )
             .child(Divider::horizontal())
-            .child(Label::new("Using the API key").mt_2().mb_1())
+            .child(Label::new("使用 API 密钥").mt_2().mb_1())
             .child(self.bearer_token_editor.clone())
             .child(
                 Label::new(format!(
-                    "Region is configured via {} environment variable or settings.json (defaults to us-east-1).",
+                    "区域通过 {} 环境变量或 设置.json 配置(默认为 us-east-1)。",
                     ZED_BEDROCK_REGION_VAR.name
                 ))
                 .size(LabelSize::Small)
@@ -2925,7 +2925,7 @@ mod tests {
                 LanguageModelRequest {
                     messages: vec![LanguageModelRequestMessage {
                         role: Role::User,
-                        content: vec![MessageContent::Text("Hi".into())],
+                        content: vec![MessageContent::Text("你好".into())],
                         cache: false,
                         reasoning_details: None,
                     }],
@@ -2948,12 +2948,12 @@ mod tests {
             if expects_explicit_opt_out {
                 assert!(
                     matches!(request.thinking, Some(bedrock::Thinking::Disabled)),
-                    "{model} should send an explicit thinking opt-out"
+                    "{model} 应发送显式的思考退出指令"
                 );
             } else {
                 assert!(
                     request.thinking.is_none(),
-                    "{model} should omit the thinking field entirely"
+                    "{model} 应完全省略思考字段"
                 );
             }
         }
@@ -2964,14 +2964,14 @@ mod tests {
         let request = into_bedrock_request(vec![
             LanguageModelRequestMessage {
                 role: Role::User,
-                content: vec![MessageContent::Text("What's the weather?".into())],
+                content: vec![MessageContent::Text("天气怎么样?".into())],
                 cache: false,
                 reasoning_details: None,
             },
             LanguageModelRequestMessage {
                 role: Role::Assistant,
                 content: vec![MessageContent::Thinking {
-                    text: "Let me think about this...".into(),
+                    text: "让我想想...".into(),
                     signature: None,
                 }],
                 cache: true,
@@ -2979,7 +2979,7 @@ mod tests {
             },
             LanguageModelRequestMessage {
                 role: Role::User,
-                content: vec![MessageContent::Text("Summarize this conversation.".into())],
+                content: vec![MessageContent::Text("总结这段对话。".into())],
                 cache: false,
                 reasoning_details: None,
             },
@@ -2991,7 +2991,7 @@ mod tests {
                     .content()
                     .iter()
                     .any(|block| !matches!(block, BedrockInnerContent::CachePoint(_))),
-                "message must not consist solely of cache points: {:?}",
+                "消息不能仅由缓存点组成:{:?}",
                 message
             );
         }
@@ -3000,7 +3000,7 @@ mod tests {
                 .messages
                 .iter()
                 .all(|message| *message.role() == bedrock::BedrockRole::User),
-            "the assistant message stripped to empty content should be dropped entirely"
+            "被剥离为空内容的助手消息应完全丢弃"
         );
     }
 
@@ -3008,7 +3008,7 @@ mod tests {
     fn test_cache_marked_message_with_content_gets_cache_point() {
         let request = into_bedrock_request(vec![LanguageModelRequestMessage {
             role: Role::User,
-            content: vec![MessageContent::Text("What's the weather?".into())],
+            content: vec![MessageContent::Text("天气怎么样?".into())],
             cache: true,
             reasoning_details: None,
         }]);
@@ -3019,7 +3019,7 @@ mod tests {
                 request.messages[0].content().last(),
                 Some(BedrockInnerContent::CachePoint(_))
             ),
-            "a cache-marked message with content should end with a cache point"
+            "带有内容的缓存标记消息应以缓存点结尾"
         );
     }
 
@@ -3168,7 +3168,7 @@ mod tests {
         events
             .into_iter()
             .flat_map(|event| mapper.map_event(event))
-            .map(|event| event.expect("Mantle response event should map successfully"))
+            .map(|event| event.expect("Mantle 响应事件应成功映射"))
             .collect()
     }
 
@@ -3203,7 +3203,7 @@ mod tests {
                 item_id: "msg_1".to_string(),
                 output_index: 0,
                 content_index: Some(0),
-                delta: "Plan: rename".to_string(),
+                delta: "计划:重命名".to_string(),
             },
             OpenAiResponseStreamEvent::OutputItemDone {
                 output_index: 0,
@@ -3219,13 +3219,13 @@ mod tests {
                 item_id: "msg_2".to_string(),
                 output_index: 1,
                 content_index: Some(0),
-                delta: "Plan: rename".to_string(),
+                delta: "计划:重命名".to_string(),
             },
             OpenAiResponseStreamEvent::OutputTextDelta {
                 item_id: "msg_2".to_string(),
                 output_index: 1,
                 content_index: Some(0),
-                delta: " and regenerate".to_string(),
+                delta: "并重新生成".to_string(),
             },
             OpenAiResponseStreamEvent::OutputItemDone {
                 output_index: 1,
@@ -3243,8 +3243,8 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan: rename".to_string()),
-                LanguageModelCompletionEvent::Text(" and regenerate".to_string()),
+                LanguageModelCompletionEvent::Text("计划:重命名".to_string()),
+                LanguageModelCompletionEvent::Text("并重新生成".to_string()),
                 LanguageModelCompletionEvent::Stop(language_model::StopReason::EndTurn),
             ]
         );
@@ -3264,7 +3264,7 @@ mod tests {
                 item_id: "msg_1".to_string(),
                 output_index: 0,
                 content_index: Some(0),
-                delta: "Plan".to_string(),
+                delta: "计划".to_string(),
             },
             OpenAiResponseStreamEvent::OutputItemDone {
                 output_index: 0,
@@ -3280,7 +3280,7 @@ mod tests {
                 item_id: "msg_2".to_string(),
                 output_index: 1,
                 content_index: Some(0),
-                delta: "Final answer".to_string(),
+                delta: "最终答案".to_string(),
             },
             OpenAiResponseStreamEvent::OutputItemDone {
                 output_index: 1,
@@ -3295,11 +3295,11 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan".to_string()),
+                LanguageModelCompletionEvent::Text("计划".to_string()),
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_2".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Final answer".to_string()),
+                LanguageModelCompletionEvent::Text("最终答案".to_string()),
             ]
         );
     }
@@ -3313,13 +3313,13 @@ mod tests {
         let third_message = mantle_message_item("msg_3");
         let events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Plan"),
+            text_delta("msg_1", 0, "计划"),
             item_done(0, first_message),
             item_added(1, second_message.clone()),
-            text_delta("msg_2", 1, "Plan and go"),
+            text_delta("msg_2", 1, "计划并执行"),
             item_done(1, second_message),
             item_added(2, third_message.clone()),
-            text_delta("msg_3", 2, "Plan and go further"),
+            text_delta("msg_3", 2, "计划并进一步执行"),
             item_done(2, third_message),
         ]);
 
@@ -3329,9 +3329,9 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan".to_string()),
-                LanguageModelCompletionEvent::Text(" and go".to_string()),
-                LanguageModelCompletionEvent::Text(" further".to_string()),
+                LanguageModelCompletionEvent::Text("计划".to_string()),
+                LanguageModelCompletionEvent::Text("并执行".to_string()),
+                LanguageModelCompletionEvent::Text("进一步".to_string()),
             ]
         );
     }
@@ -3342,7 +3342,7 @@ mod tests {
         let second_message = mantle_message_item("msg_2");
         let events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Plan"),
+            text_delta("msg_1", 0, "计划"),
             item_done(0, first_message),
             item_added(1, second_message.clone()),
             OpenAiResponseStreamEvent::ContentPartAdded {
@@ -3351,19 +3351,19 @@ mod tests {
                 content_index: 0,
                 part: serde_json::json!({"type": "output_text", "text": ""}),
             },
-            text_delta("msg_2", 1, "Plan"),
-            text_delta("msg_2", 1, " and continue"),
+            text_delta("msg_2", 1, "计划"),
+            text_delta("msg_2", 1, "并继续"),
             OpenAiResponseStreamEvent::OutputTextDone {
                 item_id: "msg_2".to_string(),
                 output_index: 1,
                 content_index: Some(0),
-                text: "Plan and continue".to_string(),
+                text: "计划并继续".to_string(),
             },
             OpenAiResponseStreamEvent::ContentPartDone {
                 item_id: "msg_2".to_string(),
                 output_index: 1,
                 content_index: 0,
-                part: serde_json::json!({"type": "output_text", "text": "Plan and continue"}),
+                part: serde_json::json!({"type": "output_text", "text": "计划并继续"}),
             },
             item_done(1, second_message),
         ]);
@@ -3374,8 +3374,8 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan".to_string()),
-                LanguageModelCompletionEvent::Text(" and continue".to_string()),
+                LanguageModelCompletionEvent::Text("计划".to_string()),
+                LanguageModelCompletionEvent::Text("并继续".to_string()),
             ]
         );
     }
@@ -3387,11 +3387,11 @@ mod tests {
         let tool_call = mantle_function_call_item("call_1", "get_weather", "server_call_1");
         let events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Plan"),
+            text_delta("msg_1", 0, "计划"),
             item_done(0, first_message),
             item_done(1, tool_call),
             item_added(2, second_message.clone()),
-            text_delta("msg_2", 2, "Plan continued"),
+            text_delta("msg_2", 2, "计划已继续"),
             item_done(2, second_message),
         ]);
 
@@ -3401,11 +3401,11 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan".to_string()),
+                LanguageModelCompletionEvent::Text("计划".to_string()),
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_2".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan continued".to_string()),
+                LanguageModelCompletionEvent::Text("计划已继续".to_string()),
             ]
         );
     }
@@ -3420,7 +3420,7 @@ mod tests {
         let second_message = mantle_message_item("msg_2");
         let events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Plan"),
+            text_delta("msg_1", 0, "计划"),
             item_done(0, first_message),
             item_added(1, tool_call.clone()),
             OpenAiResponseStreamEvent::FunctionCallArgumentsDone {
@@ -3431,7 +3431,7 @@ mod tests {
             },
             item_done(1, tool_call),
             item_added(2, second_message.clone()),
-            text_delta("msg_2", 2, "Plan continued"),
+            text_delta("msg_2", 2, "计划已继续"),
             item_done(2, second_message),
         ]);
 
@@ -3441,7 +3441,7 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan".to_string()),
+                LanguageModelCompletionEvent::Text("计划".to_string()),
                 LanguageModelCompletionEvent::ToolUse(LanguageModelToolUse {
                     id: language_model::LanguageModelToolUseId::from("server_call_1"),
                     name: Arc::<str>::from("get_weather"),
@@ -3455,7 +3455,7 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_2".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan continued".to_string()),
+                LanguageModelCompletionEvent::Text("计划已继续".to_string()),
             ]
         );
     }
@@ -3469,12 +3469,12 @@ mod tests {
         let second_message = mantle_message_item("msg_2");
         let events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Plan"),
+            text_delta("msg_1", 0, "计划"),
             item_done(0, first_message),
             item_added(1, reasoning.clone()),
             item_done(1, reasoning),
             item_added(2, second_message.clone()),
-            text_delta("msg_2", 2, "Plan"),
+            text_delta("msg_2", 2, "计划"),
             item_done(2, second_message),
         ]);
 
@@ -3484,11 +3484,11 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan".to_string()),
+                LanguageModelCompletionEvent::Text("计划".to_string()),
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_2".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan".to_string()),
+                LanguageModelCompletionEvent::Text("计划".to_string()),
             ]
         );
     }
@@ -3502,15 +3502,15 @@ mod tests {
         let third_message = mantle_message_item("msg_3");
         let events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Hello world"),
+            text_delta("msg_1", 0, "你好,世界"),
             item_done(0, first_message),
             // Equal to the previous message.
             item_added(1, second_message.clone()),
-            text_delta("msg_2", 1, "Hello world"),
+            text_delta("msg_2", 1, "你好,世界"),
             item_done(1, second_message),
             // Strict prefix of (shorter than) the previous message.
             item_added(2, third_message.clone()),
-            text_delta("msg_3", 2, "Hello"),
+            text_delta("msg_3", 2, "你好"),
             item_done(2, third_message),
         ]);
 
@@ -3520,15 +3520,15 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Hello world".to_string()),
+                LanguageModelCompletionEvent::Text("你好,世界".to_string()),
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_2".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Hello world".to_string()),
+                LanguageModelCompletionEvent::Text("你好,世界".to_string()),
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_3".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Hello".to_string()),
+                LanguageModelCompletionEvent::Text("你好".to_string()),
             ]
         );
     }
@@ -3541,10 +3541,10 @@ mod tests {
         let second_message = mantle_message_item_with_phase("msg_2", Some("final_answer"));
         let events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Plan: rename"),
+            text_delta("msg_1", 0, "计划:重命名"),
             item_done(0, first_message),
             item_added(1, second_message.clone()),
-            text_delta("msg_2", 1, "Plan: rename and regenerate"),
+            text_delta("msg_2", 1, "计划:重命名并重新生成"),
             item_done(1, second_message),
         ]);
 
@@ -3554,11 +3554,11 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan: rename".to_string()),
+                LanguageModelCompletionEvent::Text("计划:重命名".to_string()),
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_2".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan: rename and regenerate".to_string()),
+                LanguageModelCompletionEvent::Text("计划:重命名并重新生成".to_string()),
             ]
         );
     }
@@ -3571,11 +3571,11 @@ mod tests {
         let second_message = mantle_message_item_with_phase("msg_2", Some("final_answer"));
         let events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Plan: rename"),
+            text_delta("msg_1", 0, "计划:重命名"),
             item_done(0, first_message),
             item_added(1, second_message.clone()),
-            text_delta("msg_2", 1, "Plan: rename"),
-            text_delta("msg_2", 1, " and regenerate"),
+            text_delta("msg_2", 1, "计划:重命名"),
+            text_delta("msg_2", 1, "并重新生成"),
             item_done(1, second_message),
         ]);
 
@@ -3585,8 +3585,8 @@ mod tests {
                 LanguageModelCompletionEvent::StartMessage {
                     message_id: "msg_1".to_string(),
                 },
-                LanguageModelCompletionEvent::Text("Plan: rename".to_string()),
-                LanguageModelCompletionEvent::Text(" and regenerate".to_string()),
+                LanguageModelCompletionEvent::Text("计划:重命名".to_string()),
+                LanguageModelCompletionEvent::Text("并重新生成".to_string()),
             ]
         );
     }
@@ -3606,18 +3606,18 @@ mod tests {
         let first_message = mantle_message_item_with_phase("msg_1", Some("final_answer"));
         let baseline_events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Plan: rename"),
+            text_delta("msg_1", 0, "计划:重命名"),
             item_done(0, first_message.clone()),
         ]);
 
         let second_message = mantle_message_item_with_phase("msg_2", Some("final_answer"));
         let merged_events = map_mantle_response_events(vec![
             item_added(0, first_message.clone()),
-            text_delta("msg_1", 0, "Plan: rename"),
+            text_delta("msg_1", 0, "计划:重命名"),
             item_done(0, first_message),
             item_added(1, second_message.clone()),
-            text_delta("msg_2", 1, "Plan: rename"),
-            text_delta("msg_2", 1, " and regenerate"),
+            text_delta("msg_2", 1, "计划:重命名"),
+            text_delta("msg_2", 1, "并重新生成"),
             item_done(1, second_message),
         ]);
 

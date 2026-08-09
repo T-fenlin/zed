@@ -262,20 +262,20 @@ fn load_shell_from_passwd() -> Result<()> {
             &mut result,
         )
     };
-    anyhow::ensure!(!result.is_null(), "passwd entry for uid {} not found", uid);
+    anyhow::ensure!(!result.is_null(), "未找到 uid {} 的 passwd 条目", uid);
 
     // SAFETY: If `getpwuid_r` doesn't error, we have the entry here.
     let entry = unsafe { pwd.assume_init() };
 
     anyhow::ensure!(
         status == 0,
-        "call to getpwuid_r failed. uid: {}, status: {}",
+        "调用 getpwuid_r 失败。uid: {}, 状态: {}",
         uid,
         status
     );
     anyhow::ensure!(
         entry.pw_uid == uid,
-        "passwd entry has different uid ({}) than getuid ({}) returned",
+        "passwd 条目的 uid ({}) 与 getuid ({}) 返回的 uid 不同",
         entry.pw_uid,
         uid,
     );
@@ -287,7 +287,7 @@ fn load_shell_from_passwd() -> Result<()> {
 
     if should_set_shell {
         log::info!(
-            "updating SHELL environment variable to value from passwd entry: {:?}",
+            "正在将 Shell 环境变量更新为 passwd 条目中的值: {:?}",
             shell,
         );
         unsafe { std::env::set_var("SHELL", shell) };
@@ -302,7 +302,7 @@ pub fn get_shell_safe_zed_path(shell_kind: shell::ShellKind) -> anyhow::Result<S
     use anyhow::Context as _;
     use paths::PathExt;
     let mut zed_path =
-        std::env::current_exe().context("Failed to determine current zed executable path.")?;
+        std::env::current_exe().context("无法确定当前 Zed 可执行文件路径。")?;
     if cfg!(target_os = "linux")
         && !zed_path.is_file()
         && let Some(truncated) = zed_path
@@ -317,7 +317,7 @@ pub fn get_shell_safe_zed_path(shell_kind: shell::ShellKind) -> anyhow::Result<S
 
     zed_path
         .try_shell_safe(shell_kind)
-        .context("Failed to shell-escape Zed executable path.")
+        .context("无法对 Zed 可执行文件路径进行 Shell 转义。")
 }
 
 /// Returns a path for the zed cli executable, this function
@@ -325,10 +325,10 @@ pub fn get_shell_safe_zed_path(shell_kind: shell::ShellKind) -> anyhow::Result<S
 pub fn get_zed_cli_path() -> Result<PathBuf> {
     use anyhow::Context as _;
     let zed_path =
-        std::env::current_exe().context("Failed to determine current zed executable path.")?;
+        std::env::current_exe().context("无法确定当前 Zed 可执行文件路径。")?;
     let parent = zed_path
         .parent()
-        .context("Failed to determine parent directory of zed executable path.")?;
+        .context("无法确定 zed 可执行文件路径的父目录。")?;
 
     let possible_locations: &[&str] = if cfg!(target_os = "macos") {
         // On macOS, the zed executable and zed-cli are inside the app bundle,
@@ -341,7 +341,7 @@ pub fn get_zed_cli_path() -> Result<PathBuf> {
         // bin is the standard, ./cli is for the target directory in development builds.
         &["../bin/zed", "./cli"]
     } else {
-        anyhow::bail!("unsupported platform for determining zed-cli path");
+        anyhow::bail!("不支持用于确定 zed-cli 路径的平台");
     };
 
     possible_locations
@@ -355,7 +355,7 @@ pub fn get_zed_cli_path() -> Result<PathBuf> {
         })
         .with_context(|| {
             format!(
-                "could not find zed-cli from any of: {}",
+                "无法从以下任何位置找到 zed-cli: {}",
                 possible_locations.join(", ")
             )
         })
@@ -374,7 +374,7 @@ pub async fn load_login_shell_environment() -> Result<()> {
     // in home directory.
     for (name, value) in shell_env::capture(get_system_shell(), &[], paths::home_dir())
         .await
-        .with_context(|| format!("capturing environment with {:?}", get_system_shell()))?
+        .with_context(|| format!("正在使用 {:?} 捕获环境", get_system_shell()))?
     {
         // Skip SHLVL to prevent it from polluting Zed's process environment.
         // The login shell used for env capture increments SHLVL, and if we propagate it,
@@ -387,7 +387,7 @@ pub async fn load_login_shell_environment() -> Result<()> {
     }
 
     log::info!(
-        "set environment variables from shell:{}, path:{}",
+        "已从 Shell 设置环境变量: Shell:{}, 路径:{}",
         std::env::var("SHELL").unwrap_or_default(),
         std::env::var("PATH").unwrap_or_default(),
     );
@@ -754,8 +754,8 @@ pub enum ConnectionResult<O> {
 impl<O> ConnectionResult<O> {
     pub fn into_response(self) -> anyhow::Result<O> {
         match self {
-            ConnectionResult::Timeout => anyhow::bail!("Request timed out"),
-            ConnectionResult::ConnectionReset => anyhow::bail!("Server reset the connection"),
+            ConnectionResult::Timeout => anyhow::bail!("请求超时"),
+            ConnectionResult::ConnectionReset => anyhow::bail!("服务器重置了连接"),
             ConnectionResult::Result(r) => r,
         }
     }
@@ -922,7 +922,7 @@ mod tests {
             assert_eq!(
                 NumericPrefixWithSuffix::from_numeric_prefixed_str(numeric_prefix_less),
                 NumericPrefixWithSuffix(None, numeric_prefix_less),
-                "String without numeric prefix `{numeric_prefix_less}` should not be converted into NumericPrefixWithSuffix"
+                "没有数字前缀的字符串 `{numeric_prefix_less}` 不应转换为 NumericPrefixWithSuffix"
             )
         }
     }

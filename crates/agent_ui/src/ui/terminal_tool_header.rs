@@ -185,7 +185,7 @@ impl RenderOnce for TerminalToolHeader {
                             .icon_color(Color::Error)
                             .tooltip(move |_window, cx| {
                                 Tooltip::with_meta(
-                                    "Stop This Command",
+                                    "停止此命令",
                                     None,
                                     "Also possible by placing your cursor inside the terminal \
                                      and using regular terminal bindings.",
@@ -213,7 +213,7 @@ impl RenderOnce for TerminalToolHeader {
                         .icon_size(IconSize::Small)
                         .icon_color(Color::Error)
                         .when_some(exit_code, |this, code| {
-                            this.tooltip(Tooltip::text(format!("Exited with code {code}")))
+                            this.tooltip(Tooltip::text(format!("退出代码 {code}")))
                         }),
                 )
             })
@@ -230,7 +230,7 @@ impl RenderOnce for TerminalToolHeader {
                             Tooltip::with_meta(
                                 title.clone(),
                                 None,
-                                format!("{detail} Click to learn more about sandboxing."),
+                                format!("{detail} 点击了解更多关于沙箱的信息。"),
                                 cx,
                             )
                         })
@@ -253,11 +253,11 @@ impl Component for TerminalToolHeader {
     }
 
     fn name() -> &'static str {
-        "Terminal Tool Header"
+        "终端工具头部"
     }
 
     fn description() -> &'static str {
-        "The top of a terminal tool call card in the agent panel."
+        "代理面板中终端工具调用卡片的顶部。"
     }
 
     fn preview(_window: &mut Window, cx: &mut App) -> AnyElement {
@@ -283,8 +283,8 @@ impl Component for TerminalToolHeader {
         };
 
         let sandbox_warning = || TerminalSandboxWarning {
-            title: "Ran without sandbox".into(),
-            detail: "Unsandboxed execution is allowed for the rest of this thread.".into(),
+            title: "无沙箱运行".into(),
+            detail: "此对话线程的其余部分允许无沙箱执行。".into(),
             docs_url: "https://zed.dev/docs/ai/sandboxing".into(),
         };
 
@@ -292,7 +292,7 @@ impl Component for TerminalToolHeader {
             .gap_4()
             .child(example_group(vec![
                 single_example(
-                    "Running",
+                    "运行中",
                     card(
                         "running",
                         TerminalToolHeader::new(
@@ -305,7 +305,7 @@ impl Component for TerminalToolHeader {
                     ),
                 ),
                 single_example(
-                    "Finished (long-running)",
+                    "已完成(长时间运行)",
                     card(
                         "elapsed",
                         TerminalToolHeader::new(
@@ -318,7 +318,7 @@ impl Component for TerminalToolHeader {
                     ),
                 ),
                 single_example(
-                    "Truncated output",
+                    "输出已截断",
                     card(
                         "truncated",
                         TerminalToolHeader::new(
@@ -334,7 +334,7 @@ impl Component for TerminalToolHeader {
                     ),
                 ),
                 single_example(
-                    "Failed with exit code",
+                    "失败,退出代码",
                     card(
                         "failed",
                         TerminalToolHeader::new(
@@ -347,7 +347,7 @@ impl Component for TerminalToolHeader {
                     ),
                 ),
                 single_example(
-                    "Ran without sandbox",
+                    "无沙箱运行",
                     card(
                         "sandbox",
                         TerminalToolHeader::new(
@@ -360,7 +360,7 @@ impl Component for TerminalToolHeader {
                     ),
                 ),
                 single_example(
-                    "Long path (truncated from the start)",
+                    "长路径(从开头截断)",
                     div()
                         .w_80()
                         .child(card(
@@ -375,7 +375,7 @@ impl Component for TerminalToolHeader {
                         .into_any_element(),
                 ),
                 single_example(
-                    "Everything at once",
+                    "同时显示所有状态",
                     card(
                         "kitchen-sink",
                         TerminalToolHeader::new(
@@ -385,7 +385,7 @@ impl Component for TerminalToolHeader {
                             true,
                         )
                         .elapsed(Duration::from_secs(3671))
-                        .truncated("Output was truncated")
+                        .truncated("输出已被截断")
                         .failed(Some(1))
                         .sandbox_warning(sandbox_warning()),
                     ),

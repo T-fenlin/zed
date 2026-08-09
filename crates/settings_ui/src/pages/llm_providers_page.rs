@@ -85,7 +85,7 @@ pub(crate) fn render_add_llm_provider_popover(
 
     PopoverMenu::new("add-llm-provider-popover")
         .trigger(
-            Button::new("add-llm-provider", "Add Provider")
+            Button::new("add-llm-provider", "添加提供商")
                 .style(ButtonStyle::Outlined)
                 .track_focus(&focus_handle)
                 .label_size(LabelSize::Small)
@@ -103,7 +103,7 @@ pub(crate) fn render_add_llm_provider_popover(
         .menu(move |window, cx| {
             let settings_window = settings_window.clone();
             Some(ContextMenu::build(window, cx, move |menu, _window, _cx| {
-                menu.header("Compatible APIs")
+                menu.header("兼容 API")
                     .entry("OpenAI", None, {
                         let settings_window = settings_window.clone();
                         move |window, cx| {
@@ -223,19 +223,19 @@ fn render_api_key_providers_item(
 
     if has_key {
         let configured_label = if is_from_env_var {
-            "API Key Set in Environment Variable"
+            "已在环境变量中设置 API 密钥"
         } else {
-            "API Key Configured"
+            "已配置 API 密钥"
         };
         let button_id = format!("reset-api-key-{}", provider_id.0);
 
         let card = ConfiguredApiCard::new(button_id, configured_label)
-            .button_label("Reset Key")
+            .button_label("重置密钥")
             .button_tab_index(0)
             .disabled(is_from_env_var)
             .when(is_from_env_var, |this| {
                 this.tooltip_label(format!(
-                    "To reset your API key, unset the {env_var_name} environment variable."
+                    "要重置 API 密钥,请取消设置 {env_var_name} 环境变量。"
                 ))
             })
             .on_click({
@@ -250,7 +250,7 @@ fn render_api_key_providers_item(
     }
 
     let input_id = format!("{}-api-key-input", provider_id.0);
-    let aria_label = format!("{provider_name} API Key");
+    let aria_label = format!("{provider_name} API 密钥");
 
     v_flex()
         .gap_2()
@@ -267,7 +267,7 @@ fn render_api_key_providers_item(
                         .min_w_0()
                         .max_w_1_2()
                         .gap_0p5()
-                        .child(Label::new("API Key"))
+                        .child(Label::new("API 密钥"))
                         .child(
                             h_flex()
                                 .w_full()
@@ -275,13 +275,13 @@ fn render_api_key_providers_item(
                                 .flex_wrap()
                                 .gap_0p5()
                                 .child(
-                                    Label::new("Visit the")
+                                    Label::new("访问")
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
                                 .child(
                                     ButtonLink::new(
-                                        format!("{provider_name} dashboard"),
+                                        format!("{provider_name} 仪表盘"),
                                         api_key_url,
                                     )
                                     .no_icon(true)
@@ -289,14 +289,14 @@ fn render_api_key_providers_item(
                                     .label_color(Color::Muted),
                                 )
                                 .child(
-                                    Label::new("to generate an API key.")
+                                    Label::new("以生成 API 密钥。")
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 ),
                         )
                         .child(
                             Label::new(format!(
-                                "Or set the {env_var_name} env var and restart Zed for it to take effect."
+                                "或者设置 {env_var_name} 环境变量并重启 Zed 以使其生效。"
                             ))
                             .size(LabelSize::XSmall)
                             .color(Color::Muted),
@@ -375,13 +375,13 @@ fn render_subpage_item(
                 .min_w_0()
                 .max_w_1_2()
                 .gap_0p5()
-                .child(Label::new("Configure Provider"))
+                .child(Label::new("配置提供商"))
                 .when_some(description, |this, description| {
                     this.child(render_inline_description(provider_name, description))
                 }),
         )
         .child(
-            Button::new(format!("configure-{}", provider_id.0), "Configure")
+            Button::new(format!("configure-{}", provider_id.0), "配置")
                 .style(ButtonStyle::OutlinedGhost)
                 .size(ButtonSize::Medium)
                 .end_icon(
@@ -405,12 +405,12 @@ fn render_inline_description(
         InlineDescription::ApiKeyUrl(url) => h_flex()
             .gap_0p5()
             .child(
-                Label::new("To find an API key, visit the")
+                Label::new("要查找 API 密钥,请访问")
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             )
             .child(
-                ButtonLink::new(format!("{provider_name} dashboard."), url)
+                ButtonLink::new(format!("{provider_name} 仪表盘。"), url)
                     .label_size(LabelSize::Small),
             )
             .into_any_element(),
@@ -436,7 +436,7 @@ fn open_provider_configuration(
 
     settings_window.push_dynamic_sub_page(
         title,
-        "Agent Configuration",
+        "代理配置",
         Some("llm_providers"),
         true,
         render_provider_config_sub_page,
@@ -580,8 +580,8 @@ impl ModelInput {
                 cx,
             ),
             max_completion_tokens: new_input("200000", Some("200000"), false, window, cx),
-            max_output_tokens: new_input("Max Output Tokens", Some("32000"), false, window, cx),
-            max_tokens: new_input("Max Tokens", Some("200000"), false, window, cx),
+            max_output_tokens: new_input("最大输出令牌数", Some("32000"), false, window, cx),
+            max_tokens: new_input("最大令牌数", Some("200000"), false, window, cx),
             reasoning_effort: OpenAiReasoningEffort::Medium,
             supports_tools: tools.into(),
             supports_images: images.into(),
@@ -623,8 +623,8 @@ fn open_llm_provider_form(
 ) {
     settings_window.llm_provider_form = Some(LlmProviderForm::new(kind, window, cx));
     settings_window.push_dynamic_sub_page(
-        format!("Add {}-Compatible Provider", kind.label()),
-        "Agent Configuration",
+        format!("添加 {} 兼容提供商", kind.label()),
+        "代理配置",
         Some("llm_providers"),
         true,
         render_llm_provider_form_page,
@@ -656,28 +656,28 @@ fn render_llm_provider_form_page(
                 .overflow_y_scroll()
                 .child(Label::new(match form.kind {
                     CompatibleProviderKind::OpenAi => {
-                        "This provider will use an OpenAI-compatible API."
+                        "此提供商将使用 OpenAI 兼容 API。"
                     }
                     CompatibleProviderKind::Anthropic => {
-                        "This provider will use an Anthropic Messages-compatible API."
+                        "此提供商将使用 Anthropic Messages 兼容 API。"
                     }
                 }))
                 .child(Divider::horizontal().flex_shrink_0())
                 .child(render_form_field(
-                    "Provider Name",
-                    "A unique name used to identify this provider.",
+                    "提供商名称",
+                    "用于标识此提供商的唯一名称。",
                     &form.provider_name,
                     cx,
                 ))
                 .child(render_form_field(
                     "API URL",
-                    "The base URL for the compatible API.",
+                    "兼容 API 的基础 URL。",
                     &form.api_url,
                     cx,
                 ))
                 .child(render_form_field(
-                    "API Key",
-                    "Stored in the system keychain, not in settings.json.",
+                    "API 密钥",
+                    "存储在系统钥匙串中,而非 设置.json。",
                     &form.api_key,
                     cx,
                 ))
@@ -754,9 +754,9 @@ fn render_models_section(
         .child(
             h_flex()
                 .justify_between()
-                .child(Label::new("Models"))
+                .child(Label::new("模型"))
                 .child(
-                    Button::new("add-model", "Add Model")
+                    Button::new("add-model", "添加模型")
                         .start_icon(
                             Icon::new(IconName::Plus)
                                 .size(IconSize::XSmall)
@@ -794,35 +794,35 @@ fn render_model(
         .border_color(cx.theme().colors().border.opacity(0.6))
         .bg(cx.theme().colors().element_active.opacity(0.15))
         .child(render_form_field(
-            "Model Name",
-            "The model's name in the provider's API.",
+            "模型名称",
+            "模型在提供商 API 中的名称。",
             &model.name,
             cx,
         ))
         .when(matches!(kind, CompatibleProviderKind::OpenAi), |this| {
             this.child(render_form_field(
-                "Max Completion Tokens",
-                "Maximum completion tokens for OpenAI-compatible requests.",
+                "最大补全令牌数",
+                "OpenAI 兼容请求的最大补全令牌数。",
                 &model.max_completion_tokens,
                 cx,
             ))
         })
         .child(render_form_field(
-            "Max Output Tokens",
-            "The maximum number of tokens the model can output.",
+            "最大输出令牌数",
+            "模型可以输出的最大令牌数。",
             &model.max_output_tokens,
             cx,
         ))
         .child(render_form_field(
-            "Max Tokens",
-            "The model context window size.",
+            "最大令牌数",
+            "模型上下文窗口大小。",
             &model.max_tokens,
             cx,
         ))
         .child(render_model_capabilities(kind, model, index, window, cx))
         .when(model_count > 1, |this| {
             this.child(
-                Button::new(("remove-model", index), "Remove Model")
+                Button::new(("remove-model", index), "移除模型")
                     .start_icon(
                         Icon::new(IconName::Trash)
                             .size(IconSize::XSmall)
@@ -856,7 +856,7 @@ fn render_model_capabilities(
         .child(render_capability_checkbox(
             "supports-tools",
             index,
-            "Supports tools",
+            "支持工具",
             model.supports_tools,
             |model, state| model.supports_tools = state,
             cx,
@@ -864,7 +864,7 @@ fn render_model_capabilities(
         .child(render_capability_checkbox(
             "supports-images",
             index,
-            "Supports images",
+            "支持图像",
             model.supports_images,
             |model, state| model.supports_images = state,
             cx,
@@ -873,7 +873,7 @@ fn render_model_capabilities(
             this.child(render_capability_checkbox(
                 "supports-parallel-tool-calls",
                 index,
-                "Supports parallel_tool_calls",
+                "支持 parallel_tool_calls",
                 model.supports_parallel_tool_calls,
                 |model, state| model.supports_parallel_tool_calls = state,
                 cx,
@@ -881,7 +881,7 @@ fn render_model_capabilities(
             .child(render_capability_checkbox(
                 "supports-prompt-cache-key",
                 index,
-                "Supports prompt_cache_key",
+                "支持 prompt_cache_key",
                 model.supports_prompt_cache_key,
                 |model, state| model.supports_prompt_cache_key = state,
                 cx,
@@ -889,7 +889,7 @@ fn render_model_capabilities(
             .child(render_capability_checkbox(
                 "supports-chat-completions",
                 index,
-                "Supports /chat/completions",
+                "支持 /chat/completions",
                 model.supports_chat_completions,
                 |model, state| model.supports_chat_completions = state,
                 cx,
@@ -898,7 +898,7 @@ fn render_model_capabilities(
                 this.child(render_capability_checkbox(
                     "max-tokens-parameter",
                     index,
-                    "Uses max_tokens for output limit",
+                    "使用 max_tokens 作为输出限制",
                     model.max_tokens_parameter,
                     |model, state| model.max_tokens_parameter = state,
                     cx,
@@ -907,7 +907,7 @@ fn render_model_capabilities(
             .child(render_capability_checkbox(
                 "supports-thinking",
                 index,
-                "Supports thinking",
+                "支持思考",
                 model.supports_thinking,
                 |model, state| model.supports_thinking = state,
                 cx,
@@ -923,7 +923,7 @@ fn render_model_capabilities(
                     this.child(render_capability_checkbox(
                         "interleaved-reasoning",
                         index,
-                        "Preserves thinking in chat history",
+                        "在聊天历史中保留思考",
                         model.interleaved_reasoning,
                         |model, state| model.interleaved_reasoning = state,
                         cx,
@@ -986,7 +986,7 @@ fn render_reasoning_effort_selector(
 
     v_flex()
         .gap_1()
-        .child(Label::new("Default reasoning effort").size(LabelSize::Small))
+        .child(Label::new("默认推理强度").size(LabelSize::Small))
         .child(
             DropdownMenu::new(
                 ElementId::Name(format!("reasoning-effort-selector-{index}").into()),
@@ -996,7 +996,7 @@ fn render_reasoning_effort_selector(
             .style(DropdownStyle::Outlined)
             .trigger_size(ButtonSize::Compact)
             .full_width(true)
-            .aria_label("Default reasoning effort"),
+            .aria_label("默认推理强度"),
         )
 }
 
@@ -1018,7 +1018,7 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
         .gap_1()
         .justify_end()
         .child(
-            Button::new("llm-provider-form-cancel", "Cancel").on_click(cx.listener(
+            Button::new("llm-provider-form-cancel", "取消").on_click(cx.listener(
                 |this, _, window, cx| {
                     this.llm_provider_form = None;
                     this.pop_sub_page(window, cx);
@@ -1026,7 +1026,7 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
             )),
         )
         .child(
-            Button::new("llm-provider-form-save", "Save Provider")
+            Button::new("llm-provider-form-save", "保存提供商")
                 .style(ButtonStyle::Filled)
                 .on_click(cx.listener(|this, _, window, cx| {
                     save_llm_provider_form(this, window, cx);
@@ -1150,12 +1150,12 @@ fn save_llm_provider_form(
 
             settings_update
                 .await
-                .map_err(|_| anyhow::anyhow!("Settings update was canceled"))??;
+                .map_err(|_| anyhow::anyhow!("设置更新已取消"))??;
 
             let set_api_key = cx.update(|_window, cx| {
                 let provider = LanguageModelRegistry::read_global(cx)
                     .provider(&provider_id)
-                    .ok_or_else(|| anyhow::anyhow!("Provider was not registered"))?;
+                    .ok_or_else(|| anyhow::anyhow!("提供商未注册"))?;
                 anyhow::Ok(provider.set_api_key(Some(api_key), cx))
             })??;
             set_api_key.await?;
@@ -1192,7 +1192,7 @@ fn validate_llm_provider_form(
 ) -> Result<(String, String, String, ParsedModels), SharedString> {
     let provider_name = values.provider_name.clone();
     if provider_name.is_empty() {
-        return Err("Provider Name cannot be empty".into());
+        return Err("提供商名称不能为空".into());
     }
 
     if LanguageModelRegistry::read_global(cx)
@@ -1203,17 +1203,17 @@ fn validate_llm_provider_form(
                 || provider.name().0.as_ref() == provider_name.as_str()
         })
     {
-        return Err("Provider Name is already taken by another provider".into());
+        return Err("提供商名称已被其他提供商占用".into());
     }
 
     let api_url = values.api_url.clone();
     if api_url.is_empty() {
-        return Err("API URL cannot be empty".into());
+        return Err("API URL 不能为空".into());
     }
 
     let api_key = values.api_key.clone();
     if api_key.is_empty() {
-        return Err("API Key cannot be empty".into());
+        return Err("API 密钥不能为空".into());
     }
 
     let models = match values.kind {
@@ -1243,7 +1243,7 @@ fn validate_llm_provider_form(
             .all(|model| model_names.insert(model.name.clone())),
     };
     if !model_names_are_unique {
-        return Err("Model Names must be unique".into());
+        return Err("模型名称必须唯一".into());
     }
 
     Ok((provider_name, api_url, api_key, models))
@@ -1251,7 +1251,7 @@ fn validate_llm_provider_form(
 
 fn parse_model_name(model: &ModelValues) -> Result<String, SharedString> {
     if model.name.is_empty() {
-        return Err("Model Name cannot be empty".into());
+        return Err("模型名称不能为空".into());
     }
     Ok(model.name.clone())
 }
@@ -1264,13 +1264,13 @@ fn parse_open_ai_model(
         display_name: None,
         max_completion_tokens: Some(parse_u64_field(
             &model.max_completion_tokens,
-            "Max Completion Tokens",
+            "最大补全令牌数",
         )?),
         max_output_tokens: Some(parse_u64_field(
             &model.max_output_tokens,
-            "Max Output Tokens",
+            "最大输出令牌数",
         )?),
-        max_tokens: parse_u64_field(&model.max_tokens, "Max Tokens")?,
+        max_tokens: parse_u64_field(&model.max_tokens, "最大令牌数")?,
         reasoning_effort: model.supports_thinking.then_some(model.reasoning_effort),
         capabilities: OpenAiCompatibleModelCapabilities {
             tools: model.supports_tools,
@@ -1292,11 +1292,11 @@ fn parse_anthropic_model(
     Ok(AnthropicCompatibleAvailableModel {
         name: parse_model_name(model)?,
         display_name: None,
-        max_tokens: parse_u64_field(&model.max_tokens, "Max Tokens")?,
+        max_tokens: parse_u64_field(&model.max_tokens, "最大令牌数")?,
         tool_override: None,
         max_output_tokens: Some(parse_u64_field(
             &model.max_output_tokens,
-            "Max Output Tokens",
+            "最大输出令牌数",
         )?),
         default_temperature: None,
         extra_beta_headers: Vec::new(),
@@ -1312,5 +1312,5 @@ fn parse_anthropic_model(
 fn parse_u64_field(value: &str, name: &str) -> Result<u64, SharedString> {
     value
         .parse::<u64>()
-        .map_err(|_| format!("{name} must be a number").into())
+        .map_err(|_| format!("{name} 必须是数字").into())
 }

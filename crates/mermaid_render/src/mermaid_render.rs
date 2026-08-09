@@ -196,7 +196,7 @@ mod tests {
         let zalgo = "Ne\u{0301}\u{0302}\u{0303}\u{0304}\u{0306}\u{0307}\u{0308}\u{030a}d";
         let source = format!("flowchart TD\n  A[\"**{zalgo}** {zalgo}\"]");
         let svg = render_to_svg(&source, &MermaidTheme::default())
-            .expect("mermaid diagram should render to SVG");
+            .expect("Mermaid 图表应能渲染为 SVG");
 
         let mut db = usvg::fontdb::Database::new();
         db.load_font_data(IBM_PLEX_REGULAR.to_vec());
@@ -208,7 +208,7 @@ mod tests {
         };
 
         usvg::Tree::from_data(svg.as_bytes(), &options)
-            .expect("rasterizing mermaid text should not panic");
+            .expect("栅格化 Mermaid 文本不应导致崩溃");
     }
 
     /// An ER diagram whose attribute-block tokens begin with a multibyte
@@ -231,7 +231,7 @@ mod tests {
             let message = format!("{err:#}");
             assert!(
                 message.contains("cycle"),
-                "expected a cycle-related error, got: {message}"
+                "预期收到与循环相关的错误,实际为: {message}"
             );
         }
     }

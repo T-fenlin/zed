@@ -153,7 +153,7 @@ impl State {
                             |error| {
                                 ollama::Model::new_disabled(
                                     name,
-                                    format!("Failed to fetch model from API: {error}",),
+                                    format!("从 API 获取模型失败:{error}",),
                                 )
                             },
                             |model| {
@@ -344,7 +344,7 @@ impl LanguageModelProvider for OllamaLanguageModelProvider {
                     .into()
             })
             .description(InlineDescription::Text(
-                "Run local models on your machine with Ollama.".into(),
+                "使用 Ollama 在您的机器上运行本地模型。".into(),
             )),
         ))
     }
@@ -362,7 +362,7 @@ pub struct OllamaLanguageModel {
 impl OllamaLanguageModel {
     fn to_ollama_request(&self, request: LanguageModelRequest) -> Result<ChatRequest> {
         if request.contains_custom_tool_input() {
-            anyhow::bail!("Ollama does not support custom tools");
+            anyhow::bail!("Ollama 不支持自定义工具");
         }
 
         let supports_vision = self.model.supports_vision.unwrap_or(false);
@@ -395,7 +395,7 @@ impl OllamaLanguageModel {
                                     content: tool_result.text_contents(),
                                 })
                             }
-                            _ => unreachable!("Only tool result should be extracted"),
+                            _ => unreachable!("只能提取工具结果"),
                         }
                     }
                     if !msg.content.is_empty() {
@@ -432,7 +432,7 @@ impl OllamaLanguageModel {
                                             ) => input,
                                             language_model::LanguageModelToolUseInput::Text(_) => {
                                                 return Err(anyhow::anyhow!(
-                                                    "Ollama does not support custom tool calls"
+                                                    "Ollama 不支持自定义工具调用"
                                                 ));
                                             }
                                         },
@@ -686,7 +686,7 @@ struct ConfigurationView {
 
 impl ConfigurationView {
     pub fn new(state: Entity<State>, window: &mut Window, cx: &mut Context<Self>) -> Self {
-        let api_key_editor = cx.new(|cx| InputField::new(window, cx, "63e02e...").label("API key"));
+        let api_key_editor = cx.new(|cx| InputField::new(window, cx, "63e02e...").label("API 密钥"));
 
         let api_url_editor = cx.new(|cx| {
             let input = InputField::new(window, cx, OLLAMA_API_URL).label("API URL");
@@ -695,7 +695,7 @@ impl ConfigurationView {
         });
 
         let context_window_editor = cx.new(|cx| {
-            let input = InputField::new(window, cx, "8192").label("Context Window");
+            let input = InputField::new(window, cx, "8192").label("上下文窗口");
             if let Some(context_window) = OllamaLanguageModelProvider::settings(cx).context_window {
                 input.set_text(&context_window.to_string(), window, cx);
             }
@@ -858,20 +858,20 @@ impl ConfigurationView {
                 )
                 .color(Color::Muted),
             )
-            .child(Label::new("To use local Ollama:").color(Color::Muted))
+            .child(Label::new("要使用本地 Ollama:").color(Color::Muted))
             .child(
                 List::new()
                     .child(
                         ListBulletItem::new("")
                             .child(
-                                Label::new("Download and install Ollama from").color(Color::Muted),
+                                Label::new("从以下位置下载并安装 Ollama").color(Color::Muted),
                             )
                             .child(ButtonLink::new("ollama.com", "https://ollama.com/download")),
                     )
                     .child(
                         ListBulletItem::new("")
                             .child(
-                                Label::new("Start Ollama and download a model:")
+                                Label::new("启动 Ollama 并下载模型:")
                                     .color(Color::Muted),
                             )
                             .child(Label::new("ollama run gpt-oss:20b").inline_code(cx)),
@@ -894,9 +894,9 @@ impl ConfigurationView {
         let state = self.state.read(cx);
         let env_var_set = state.api_key_state.is_from_env_var();
         let configured_card_label = if env_var_set {
-            format!("API key set in {API_KEY_ENV_VAR_NAME} environment variable.")
+            format!("API 密钥已在 {API_KEY_ENV_VAR_NAME} 环境变量中设置。")
         } else {
-            "API key configured".to_string()
+            "API 密钥已配置".to_string()
         };
 
         let api_key_control = if !state.api_key_state.has_key() {
@@ -906,7 +906,7 @@ impl ConfigurationView {
                 .disabled(env_var_set)
                 .on_click(cx.listener(|this, _, window, cx| this.reset_api_key(window, cx)))
                 .when(env_var_set, |this| {
-                    this.tooltip_label(format!("To reset your API key, unset the {API_KEY_ENV_VAR_NAME} environment variable."))
+                    this.tooltip_label(format!("要重置您的 API 密钥,请取消设置 {API_KEY_ENV_VAR_NAME} 环境变量。"))
                 })
                 .into_any_element()
         };
@@ -918,7 +918,7 @@ impl ConfigurationView {
           .mb_2()
           .child(
               Label::new(
-                  format!("You can also set the {API_KEY_ENV_VAR_NAME} environment variable and restart Zed.")
+                  format!("您也可以设置 {API_KEY_ENV_VAR_NAME} 环境变量并重启 Zed。")
               )
               .size(LabelSize::Small)
               .color(Color::Muted),
@@ -942,12 +942,12 @@ impl ConfigurationView {
                         .gap_1()
                         .child(Icon::new(IconName::Check).color(Color::Success))
                         .child(Label::new(format!(
-                            "Context Window: {}",
+                            "上下文窗口:{}",
                             settings.context_window.unwrap()
                         ))),
                 )
                 .child(
-                    Button::new("reset-context-window", "Reset")
+                    Button::new("reset-context-window", "重置")
                         .style(ButtonStyle::Outlined)
                         .label_size(LabelSize::Small)
                         .start_icon(Icon::new(IconName::Undo).size(IconSize::Small))
@@ -967,7 +967,7 @@ impl ConfigurationView {
                 .child(self.context_window_editor.clone())
                 .gap_1p5()
                 .child(
-                    Label::new("Default: Model specific")
+                    Label::new("默认:模型特定")
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -993,7 +993,7 @@ impl ConfigurationView {
                         .child(Label::new(api_url)),
                 )
                 .child(
-                    Button::new("reset-api-url", "Reset API URL")
+                    Button::new("reset-api-url", "重置 API URL")
                         .style(ButtonStyle::Outlined)
                         .label_size(LabelSize::Small)
                         .start_icon(Icon::new(IconName::Undo).size(IconSize::Small))
@@ -1051,7 +1051,7 @@ impl Render for ConfigurationView {
                                     )
                                 } else {
                                     this.child(
-                                        Button::new("download_ollama_button", "Download Ollama")
+                                        Button::new("download_ollama_button", "下载 Ollama")
                                             .style(ButtonStyle::OutlinedGhost)
                                             .size(ButtonSize::Medium)
                                             .end_icon(
@@ -1067,7 +1067,7 @@ impl Render for ConfigurationView {
                                 }
                             })
                             .child(
-                                Button::new("view-models", "View All Models")
+                                Button::new("view-models", "查看所有模型")
                                     .style(ButtonStyle::OutlinedGhost)
                                     .size(ButtonSize::Medium)
                                     .end_icon(
@@ -1087,12 +1087,12 @@ impl Render for ConfigurationView {
                                         h_flex()
                                             .gap_1()
                                             .child(Icon::new(IconName::Check).color(Color::Success))
-                                            .child(Label::new("Connected")),
+                                            .child(Label::new("已连接")),
                                     )
                                     .child(
                                         IconButton::new("refresh-models", IconName::RotateCcw)
                                             .icon_size(IconSize::Small)
-                                            .tooltip(Tooltip::text("Refresh Models"))
+                                            .tooltip(Tooltip::text("刷新模型"))
                                             .on_click(cx.listener(|this, _, window, cx| {
                                                 this.state.update(cx, |state, _| {
                                                     state.fetched_models.clear();
@@ -1103,7 +1103,7 @@ impl Render for ConfigurationView {
                             )
                         } else {
                             this.child(
-                                Button::new("retry_ollama_models", "Connect")
+                                Button::new("retry_ollama_models", "连接")
                                     .style(ButtonStyle::Outlined)
                                     .size(ButtonSize::Medium)
                                     .start_icon(
@@ -1158,7 +1158,7 @@ fn tool_into_ollama(tool: LanguageModelRequestTool) -> Result<ollama::OllamaTool
             input_schema
         }
         language_model::LanguageModelRequestToolInput::Custom { .. } => {
-            anyhow::bail!("Ollama does not support custom tools");
+            anyhow::bail!("Ollama 不支持自定义工具");
         }
     };
     Ok(ollama::OllamaTool::Function {
@@ -1239,14 +1239,14 @@ mod tests {
         assert_eq!(
             model_1_5b.display_name,
             Some("QWEN2.5 Coder 1.5B".to_string()),
-            "1.5b model should have its own display_name"
+            "1.5b 模型应有自己的 display_name"
         );
         assert_eq!(model_1_5b.max_tokens, 5000);
 
         assert_eq!(
             model_3b.display_name,
             Some("QWEN2.5 Coder 3B".to_string()),
-            "3b model should have its own display_name"
+            "3b 模型应有自己的 display_name"
         );
         assert_eq!(model_3b.max_tokens, 6000);
     }

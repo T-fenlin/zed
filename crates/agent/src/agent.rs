@@ -261,7 +261,7 @@ impl LanguageModels {
         }
         if !recommended.is_empty() {
             language_model_list.insert(
-                acp_thread::AgentModelGroupName("Recommended".into()),
+                acp_thread::AgentModelGroupName("推荐".into()),
                 recommended,
             );
         }
@@ -364,7 +364,7 @@ impl LanguageModels {
                                 }
                                 _ => {
                                     log::error!(
-                                        "Failed to authenticate provider: {}: {err:#}",
+                                        "无法验证提供商 {} 的身份:{err:#}",
                                         provider_name.0
                                     );
                                 }
@@ -562,7 +562,7 @@ impl NativeAgent {
         fs: Arc<dyn Fs>,
         cx: &mut App,
     ) -> Entity<NativeAgent> {
-        log::debug!("Creating new NativeAgent");
+        log::debug!("正在创建新的 NativeAgent");
 
         cx.new(|cx| {
             let subscriptions = vec![
@@ -731,7 +731,7 @@ impl NativeAgent {
 
         let registry = LanguageModelRegistry::read_global(cx);
         let available_count = registry.available_models(cx).count();
-        log::debug!("Total available models: {}", available_count);
+        log::debug!("可用模型总数:{}", available_count);
 
         let default_model = registry.default_model().and_then(|default_model| {
             self.models
@@ -943,7 +943,7 @@ impl NativeAgent {
                 let state = this
                     .projects
                     .get(&project_id)
-                    .context("project state not found")?;
+                    .context("未找到项目状态")?;
                 anyhow::Ok(Self::build_project_context(
                     &state.project,
                     this.fs.clone(),
@@ -1092,7 +1092,7 @@ impl NativeAgent {
                     if let Err(error) = expand_project_skills_directories(&worktree, cx).await {
                         project_skills_results.push(vec![Err(SkillLoadError {
                             path: PathBuf::from(project_skills_relative_path()),
-                            message: format!("Failed to scan project skills: {}", error),
+                            message: format!("扫描项目技能失败:{}", error),
                         })]);
                         continue;
                     }
@@ -1111,7 +1111,7 @@ impl NativeAgent {
                             worktree_results.push(Err(SkillLoadError {
                                 path: skill_file.display_path.clone(),
                                 message: format!(
-                                    "SKILL.md file exceeds maximum size of {}KB",
+                                    "SKILL.md 文件超过最大大小 {}KB",
                                     MAX_SKILL_FILE_SIZE / 1024
                                 ),
                             }));
@@ -1131,7 +1131,7 @@ impl NativeAgent {
                             Err(error) => {
                                 worktree_results.push(Err(SkillLoadError {
                                     path: skill_file.display_path.clone(),
-                                    message: format!("Failed to read file: {}", error),
+                                    message: format!("读取文件失败: {}", error),
                                 }));
                                 continue;
                             }
@@ -1280,7 +1280,7 @@ impl NativeAgent {
             let rope_task = cx.spawn(async move |cx| {
                 let buffer = buffer_task.await?;
                 let (project_entry_id, rope) = buffer.read_with(cx, |buffer, cx| {
-                    let project_entry_id = buffer.entry_id(cx).context("buffer has no file")?;
+                    let project_entry_id = buffer.entry_id(cx).context("缓冲区没有文件")?;
                     anyhow::Ok((project_entry_id, buffer.as_rope().clone()))
                 })?;
                 anyhow::Ok((project_entry_id, rope))
@@ -1508,7 +1508,7 @@ impl NativeAgent {
         };
         let compact_command = acp::AvailableCommand::new(
             COMPACT_COMMAND_NAME,
-            "Summarize the conversation so far to free up context",
+            "总结当前对话以释放上下文空间",
         )
         .meta(acp_thread::meta_with_command_category(
             acp_thread::CommandCategory::Native,
@@ -1576,14 +1576,14 @@ impl NativeAgent {
             let db_thread = database
                 .load_thread(id.clone())
                 .await?
-                .with_context(|| format!("no thread found with ID: {id:?}"))?;
+                .with_context(|| format!("未找到 ID 为 {id:?} 的对话线程"))?;
 
             this.update(cx, |this, cx| {
                 let project_id = this.get_or_create_project_state(&project, cx);
                 let project_state = this
                     .projects
                     .get(&project_id)
-                    .context("project state not found")?;
+                    .context("未找到项目状态")?;
                 let summarization_model = LanguageModelRegistry::read_global(cx)
                     .thread_summary_model(cx)
                     .map(|c| c.model);
@@ -1694,7 +1694,7 @@ impl NativeAgent {
                         .update(cx, |thread, cx| thread.summary(cx))
                 })?
                 .await
-                .context("Failed to generate summary")?;
+                .context("生成摘要失败")?;
 
             this.update(cx, |this, cx| this.close_session(&id, cx))?
                 .await?;
@@ -1834,7 +1834,7 @@ impl NativeAgent {
         cx: &mut Context<Self>,
     ) -> Task<Result<acp::PromptResponse>> {
         let Some(state) = self.session_project_state(&session_id) else {
-            return Task::ready(Err(anyhow!("Project state not found for session")));
+            return Task::ready(Err(anyhow!("未找到会话对应的项目状态")));
         };
         let server_store = state
             .context_server_registry
@@ -1851,7 +1851,7 @@ impl NativeAgent {
                 let session = this
                     .sessions
                     .get(&session_id)
-                    .context("Failed to get session")?;
+                    .context("获取会话失败")?;
                 anyhow::Ok((session.acp_thread.clone(), session.thread.clone()))
             })??;
 
@@ -1941,7 +1941,7 @@ impl NativeAgent {
                 let session = this
                     .sessions
                     .get(&session_id)
-                    .context("Failed to get session")?;
+                    .context("获取会话失败")?;
                 anyhow::Ok((session.acp_thread.clone(), session.thread.clone()))
             })??;
 
@@ -1981,7 +1981,7 @@ impl NativeAgent {
         cx: &mut Context<Self>,
     ) -> Task<Result<acp::PromptResponse>> {
         let Some(state) = self.session_project_state(&session_id) else {
-            return Task::ready(Err(anyhow!("Project state not found for session")));
+            return Task::ready(Err(anyhow!("未找到会话对应的项目状态")));
         };
         let path_style = state.project.read(cx).path_style(cx);
         let read_skill_body =
@@ -1992,7 +1992,7 @@ impl NativeAgent {
                 let session = this
                     .sessions
                     .get(&session_id)
-                    .context("Failed to get session")?;
+                    .context("获取会话失败")?;
                 anyhow::Ok((session.acp_thread.clone(), session.thread.clone()))
             })??;
 
@@ -2011,7 +2011,7 @@ impl NativeAgent {
             } else {
                 read_skill_body(skill.clone(), cx).await.with_context(|| {
                     format!(
-                        "Failed to read skill body from {}",
+                        "从 {} 读取技能内容失败",
                         skill.skill_file_path.display()
                     )
                 })?
@@ -2143,10 +2143,10 @@ impl NativeAgentConnection {
                 .get_mut(&session_id)
                 .map(|s| (s.thread.clone(), s.acp_thread.clone()))
         }) else {
-            log::error!("Session not found in run_turn: {}", session_id);
-            return Task::ready(Err(anyhow!("Session not found")));
+            log::error!("run_turn 中未找到会话:{}", session_id);
+            return Task::ready(Err(anyhow!("未找到会话")));
         };
-        log::debug!("Found session for: {}", session_id);
+        log::debug!("已找到会话:{}", session_id);
 
         let response_stream = match f(thread, cx) {
             Ok(stream) => stream,
@@ -2171,7 +2171,7 @@ impl NativeAgentConnection {
             while let Some(result) = events.next().await {
                 match result {
                     Ok(event) => {
-                        log::trace!("Received completion event: {:?}", event);
+                        log::trace!("收到补全事件: {:?}", event);
 
                         match event {
                             ThreadEvent::UserMessage(message) => {
@@ -2222,7 +2222,7 @@ impl NativeAgentConnection {
                                     };
                                     response
                                         .send(outcome)
-                                        .map_err(|_| anyhow!("authorization receiver was dropped"))
+                                        .map_err(|_| anyhow!("授权接收器已被丢弃"))
                                         .log_err();
                                 })
                                 .detach();
@@ -2277,19 +2277,19 @@ impl NativeAgentConnection {
                                 })?;
                             }
                             ThreadEvent::Stop(stop_reason) => {
-                                log::debug!("Assistant message complete: {:?}", stop_reason);
+                                log::debug!("助手消息完成:{:?}", stop_reason);
                                 return Ok(acp::PromptResponse::new(stop_reason));
                             }
                         }
                     }
                     Err(e) => {
-                        log::error!("Error in model response stream: {:?}", e);
+                        log::error!("模型响应流出错:{:?}", e);
                         return Err(e);
                     }
                 }
             }
 
-            log::debug!("Response stream completed");
+            log::debug!("响应流已完成");
             anyhow::Ok(acp::PromptResponse::new(acp::StopReason::EndTurn))
         })
     }
@@ -2395,10 +2395,10 @@ struct NativeAgentModelSelector {
 
 impl acp_thread::AgentModelSelector for NativeAgentModelSelector {
     fn list_models(&self, cx: &mut App) -> Task<Result<acp_thread::AgentModelList>> {
-        log::debug!("NativeAgentConnection::list_models called");
+        log::debug!("已调用 NativeAgentConnection::list_models");
         let list = self.connection.0.read(cx).models.model_list.clone();
         Task::ready(if list.is_empty() {
-            Err(anyhow::anyhow!("No models available"))
+            Err(anyhow::anyhow!("没有可用模型"))
         } else {
             Ok(list)
         })
@@ -2406,7 +2406,7 @@ impl acp_thread::AgentModelSelector for NativeAgentModelSelector {
 
     fn select_model(&self, model_id: AgentModelId, cx: &mut App) -> Task<Result<()>> {
         log::debug!(
-            "Setting model for session {}: {}",
+            "正在为会话 {} 设置模型:{}",
             self.session_id,
             model_id
         );
@@ -2418,11 +2418,11 @@ impl acp_thread::AgentModelSelector for NativeAgentModelSelector {
             .get(&self.session_id)
             .map(|session| session.thread.clone())
         else {
-            return Task::ready(Err(anyhow!("Session not found")));
+            return Task::ready(Err(anyhow!("未找到会话")));
         };
 
         let Some(model) = self.connection.0.read(cx).models.model_from_id(&model_id) else {
-            return Task::ready(Err(anyhow!("Invalid model ID {}", model_id)));
+            return Task::ready(Err(anyhow!("无效的模型 ID {}", model_id)));
         };
 
         let favorite = agent_settings::AgentSettings::get_global(cx)
@@ -2483,14 +2483,14 @@ impl acp_thread::AgentModelSelector for NativeAgentModelSelector {
             .get(&self.session_id)
             .map(|session| session.thread.clone())
         else {
-            return Task::ready(Err(anyhow!("Session not found")));
+            return Task::ready(Err(anyhow!("未找到会话")));
         };
         let Some(model) = thread.read(cx).model() else {
-            return Task::ready(Err(anyhow!("Model not found")));
+            return Task::ready(Err(anyhow!("未找到模型")));
         };
         let Some(provider) = LanguageModelRegistry::read_global(cx).provider(&model.provider_id())
         else {
-            return Task::ready(Err(anyhow!("Provider not found")));
+            return Task::ready(Err(anyhow!("未找到提供商")));
         };
         Task::ready(Ok(LanguageModels::map_language_model_to_info(
             model, &provider,
@@ -2565,7 +2565,7 @@ fn model_id_to_selection(model_id: &AgentModelId, cx: &App) -> LanguageModelSele
     agent_settings::language_model_to_selection(&resolved, current_user_selection.as_ref())
 }
 
-pub static ZED_AGENT_ID: LazyLock<AgentId> = LazyLock::new(|| AgentId::new("Zed Agent"));
+pub static ZED_AGENT_ID: LazyLock<AgentId> = LazyLock::new(|| AgentId::new("Zed 助手"));
 
 impl acp_thread::AgentConnection for NativeAgentConnection {
     fn agent_id(&self) -> AgentId {
@@ -2582,7 +2582,7 @@ impl acp_thread::AgentConnection for NativeAgentConnection {
         work_dirs: PathList,
         cx: &mut App,
     ) -> Task<Result<Entity<acp_thread::AcpThread>>> {
-        log::debug!("Creating new thread for project at: {work_dirs:?}");
+        log::debug!("正在为项目创建新对话线程:{work_dirs:?}");
         Task::ready(Ok(self
             .0
             .update(cx, |agent, cx| agent.new_session(project, cx))))
@@ -2665,7 +2665,7 @@ impl acp_thread::AgentConnection for NativeAgentConnection {
     }
 
     fn cancel(&self, session_id: &acp::SessionId, cx: &mut App) {
-        log::info!("Cancelling on session: {}", session_id);
+        log::info!("正在取消会话:{}", session_id);
         self.0.update(cx, |agent, cx| {
             if let Some(session) = agent.sessions.get(session_id) {
                 session
@@ -2731,18 +2731,18 @@ impl acp_thread::AgentSessionClientUserMessageIds for NativeAgentConnection {
         cx: &mut App,
     ) -> Task<Result<acp::PromptResponse>> {
         let session_id = params.session_id.clone();
-        log::info!("Received prompt request for session: {}", session_id);
-        log::debug!("Prompt blocks count: {}", params.prompt.len());
+        log::info!("收到会话 {} 的提示词请求", session_id);
+        log::debug!("提示词块数量:{}", params.prompt.len());
 
         let Some(project_state) = self.0.read(cx).session_project_state(&session_id) else {
-            log::error!("Session not found in prompt: {}", session_id);
+            log::error!("提示词中未找到会话:{}", session_id);
             if self.0.read(cx).sessions.contains_key(&session_id) {
                 log::error!(
-                    "Session found in sessions map, but not in project state: {}",
+                    "在会话映射中找到会话,但项目状态中不存在:{}",
                     session_id
                 );
             }
-            return Task::ready(Err(anyhow::anyhow!("Session not found")));
+            return Task::ready(Err(anyhow::anyhow!("未找到会话")));
         };
 
         if let Some(parsed_command) = Command::parse(&params.prompt) {
@@ -2873,9 +2873,9 @@ impl acp_thread::AgentSessionClientUserMessageIds for NativeAgentConnection {
                 .into_iter()
                 .map(|block| UserMessageContent::from_content_block(block, path_style))
                 .collect::<Vec<_>>();
-            log::debug!("Converted prompt to message: {} chars", content.len());
-            log::debug!("Client user message id: {:?}", client_user_message_id);
-            log::debug!("Message content: {:?}", content);
+            log::debug!("已将提示词转换为消息:{} 个字符", content.len());
+            log::debug!("客户端用户消息 ID:{:?}", client_user_message_id);
+            log::debug!("消息内容:{:?}", content);
 
             thread.update(cx, |thread, cx| {
                 thread.send(client_user_message_id, content, cx)
@@ -2891,12 +2891,12 @@ impl acp_thread::AgentTelemetry for NativeAgentConnection {
         cx: &mut App,
     ) -> Task<Result<serde_json::Value>> {
         let Some(session) = self.0.read(cx).sessions.get(session_id) else {
-            return Task::ready(Err(anyhow!("Session not found")));
+            return Task::ready(Err(anyhow!("未找到会话")));
         };
 
         let task = session.thread.read(cx).to_db(cx);
         cx.background_spawn(async move {
-            serde_json::to_value(task.await).context("Failed to serialize thread")
+            serde_json::to_value(task.await).context("序列化对话线程失败")
         })
     }
 }
@@ -3044,7 +3044,7 @@ impl NativeThreadEnvironment {
         cx: &mut App,
     ) -> Result<Rc<dyn SubagentHandle>> {
         let Some(parent_thread_entity) = self.thread.upgrade() else {
-            anyhow::bail!("Parent thread no longer exists".to_string());
+            anyhow::bail!("父对话线程已不存在".to_string());
         };
         let parent_thread = parent_thread_entity.read(cx);
         let current_depth = parent_thread.depth();
@@ -3052,7 +3052,7 @@ impl NativeThreadEnvironment {
 
         if current_depth >= MAX_SUBAGENT_DEPTH {
             return Err(anyhow!(
-                "Maximum subagent depth ({}) reached",
+                "已达到最大子代理深度({})",
                 MAX_SUBAGENT_DEPTH
             ));
         }
@@ -3072,14 +3072,14 @@ impl NativeThreadEnvironment {
                     .sessions
                     .get(&parent_session_id)
                     .map(|s| s.project_id)
-                    .context("parent session not found")?;
+                    .context("未找到父会话")?;
                 Ok(agent.register_session(subagent_thread.clone(), project_id, 1, cx))
             })??;
 
         let depth = current_depth + 1;
 
         telemetry::event!(
-            "Subagent Started",
+            "子代理已启动",
             session = parent_thread_entity.read(cx).id().to_string(),
             subagent_session = session_id.to_string(),
             depth,
@@ -3098,7 +3098,7 @@ impl NativeThreadEnvironment {
             let session = agent
                 .sessions
                 .get(&session_id)
-                .ok_or_else(|| anyhow!("No subagent session found with id {session_id}"))?;
+                .ok_or_else(|| anyhow!("未找到 ID 为 {session_id} 的子代理会话"))?;
             anyhow::Ok((session.thread.clone(), session.acp_thread.clone()))
         })??;
 
@@ -3106,7 +3106,7 @@ impl NativeThreadEnvironment {
 
         if let Some(parent_thread_entity) = self.thread.upgrade() {
             telemetry::event!(
-                "Subagent Started",
+                "子代理已启动",
                 session = parent_thread_entity.read(cx).id().to_string(),
                 subagent_session = session_id.to_string(),
                 depth,
@@ -3124,7 +3124,7 @@ impl NativeThreadEnvironment {
         acp_thread: Entity<acp_thread::AcpThread>,
     ) -> Result<Rc<dyn SubagentHandle>> {
         let Some(parent_thread_entity) = self.thread.upgrade() else {
-            anyhow::bail!("Parent thread no longer exists".to_string());
+            anyhow::bail!("父对话线程已不存在".to_string());
         };
         Ok(Rc::new(NativeSubagentHandle::new(
             session_id,
@@ -3379,13 +3379,13 @@ impl SubagentHandle for NativeSubagentHandle {
                                 Ok(Some(response)) => {
                                     match response.stop_reason {
                                         acp::StopReason::Cancelled => SubagentPromptResult::Cancelled,
-                                        acp::StopReason::MaxTokens => SubagentPromptResult::Error("The agent reached the maximum number of tokens.".into()),
-                                        acp::StopReason::MaxTurnRequests => SubagentPromptResult::Error("The agent reached the maximum number of allowed requests between user turns. Try prompting again.".into()),
-                                        acp::StopReason::Refusal => SubagentPromptResult::Error("The agent refused to process that prompt. Try again.".into()),
+                                        acp::StopReason::MaxTokens => SubagentPromptResult::Error("代理已达到最大令牌数。".into()),
+                                        acp::StopReason::MaxTurnRequests => SubagentPromptResult::Error("代理已达到用户轮次之间允许的最大请求数。请再次尝试提示。".into()),
+                                        acp::StopReason::Refusal => SubagentPromptResult::Error("代理拒绝处理该提示词。请重试。".into()),
                                         acp::StopReason::EndTurn | _ => SubagentPromptResult::Completed,
                                     }
                                 }
-                                Ok(None) => SubagentPromptResult::Error("No response from the agent. You can try messaging again.".into()),
+                                Ok(None) => SubagentPromptResult::Error("代理无响应。您可以再次尝试发送消息。".into()),
                                 Err(error) => SubagentPromptResult::Error(error.to_string()),
                             },
                             _ = token_limit_rx.fuse() => SubagentPromptResult::ContextWindowWarning,
@@ -3414,9 +3414,9 @@ impl SubagentHandle for NativeSubagentHandle {
                                 Some( content)
                             }
                         })
-                        .context("No response from subagent")
+                        .context("子代理无响应")
                 }),
-                SubagentPromptResult::Cancelled => Err(anyhow!("User canceled")),
+                SubagentPromptResult::Cancelled => Err(anyhow!("用户已取消")),
                 SubagentPromptResult::Error(message) => Err(anyhow!("{message}")),
                 SubagentPromptResult::ContextWindowWarning => {
                     thread.update(cx, |thread, cx| thread.cancel(cx)).await;
@@ -3517,14 +3517,14 @@ fn select_catalog_skills(skills: &[Skill]) -> (Vec<SkillSummary>, Vec<SkillLoadi
         let message = if dropped.len() == 1 {
             let entry_size = first.name.len() + first.description.len();
             format!(
-                "Skill '{}' ({:.1}KB description) was dropped from the catalog because the previous skills already used the entire {}KB description budget.",
+                "技能“{}”(描述 {:.1}KB)已从目录中移除,因为之前的技能已用完整个 {}KB 的描述预算。",
                 first.name,
                 entry_size as f64 / 1024.0,
                 budget_kb,
             )
         } else {
             let mut message = format!(
-                "{} skills were dropped from the catalog because they exceeded the {}KB description budget:",
+                "{} 个技能因超出 {}KB 描述预算而从目录中移除:",
                 dropped.len(),
                 budget_kb,
             );
@@ -3532,7 +3532,7 @@ fn select_catalog_skills(skills: &[Skill]) -> (Vec<SkillSummary>, Vec<SkillLoadi
                 let entry_size = skill.name.len() + skill.description.len();
                 message.push('\n');
                 message.push_str(&format!(
-                    "- {} ({:.1}KB description)",
+                    "- {}(描述 {:.1}KB)",
                     skill.name,
                     entry_size as f64 / 1024.0,
                 ));
@@ -3583,7 +3583,7 @@ pub fn skill_body_resolver_for_project(
                 let worktree_id = WorktreeId::from_usize(worktree_id.0);
                 let worktree = project
                     .update(cx, |project, cx| project.worktree_for_id(worktree_id, cx))
-                    .context("no such worktree")?;
+                    .context("不存在该工作树")?;
                 expand_project_skills_directories(&worktree, cx).await?;
                 let relative_path = worktree.update(cx, |worktree, _cx| {
                     let worktree_root = worktree.abs_path();
@@ -3591,7 +3591,7 @@ pub fn skill_body_resolver_for_project(
                         .path_style()
                         .strip_prefix(&skill.skill_file_path, &worktree_root)
                         .map(|relative_path| relative_path.into_arc())
-                        .context("skill file is not inside its worktree")
+                        .context("技能文件不在其工作树内")
                 })?;
 
                 let buffer = project
@@ -3654,7 +3654,7 @@ fn log_skill_conflicts(skills: &[Skill]) {
             Some(existing) => {
                 if skill.source.precedence() > existing.source.precedence() {
                     log::warn!(
-                        "Skill '{}' at '{}' overrides skill at '{}' for the model; both appear in the slash-command popup with their source",
+                        "位于“{}”的技能“{}”覆盖了“{}”处的技能;两者都会在斜杠命令弹出窗口中显示并标注来源",
                         skill.name,
                         skill.skill_file_path.display(),
                         existing.skill_file_path.display(),
@@ -3662,7 +3662,7 @@ fn log_skill_conflicts(skills: &[Skill]) {
                     by_name.insert(skill.name.as_str(), skill);
                 } else {
                     log::warn!(
-                        "Skill '{}' at '{}' conflicts with skill at '{}'; the model will see the first one, but both appear in the slash-command popup with their source",
+                        "位于“{}”的技能“{}”与“{}”处的技能冲突;模型将看到第一个,但两者都会在斜杠命令弹出窗口中显示并标注来源",
                         skill.name,
                         skill.skill_file_path.display(),
                         existing.skill_file_path.display(),
@@ -3814,7 +3814,7 @@ mod internal_tests {
             let commands = acp_thread.read(cx).available_commands();
 
             let compact = commands.iter().find(|command| command.name == "compact");
-            let compact = compact.expect("compact command should be available");
+            let compact = compact.expect("compact 命令应可用");
             assert_eq!(
                 acp_thread::command_category_from_meta(&compact.meta),
                 Some(acp_thread::CommandCategory::Native),
@@ -3837,11 +3837,11 @@ mod internal_tests {
                 thread.set_model(model.clone(), cx);
                 thread.push_acp_user_block(
                     old_message_id,
-                    [acp::ContentBlock::from("old user")],
+                    [acp::ContentBlock::from("旧用户")],
                     path_style,
                     cx,
                 );
-                thread.push_acp_agent_block("old assistant".into(), cx);
+                thread.push_acp_agent_block("旧助手".into(), cx);
             });
         });
 
@@ -3864,8 +3864,8 @@ mod internal_tests {
         assert_eq!(
             request_texts_after_system(&request.messages),
             vec![
-                "old user".to_string(),
-                "old assistant".to_string(),
+                "旧用户".to_string(),
+                "旧助手".to_string(),
                 COMPACTION_PROMPT.to_string(),
             ]
         );
@@ -3905,14 +3905,14 @@ mod internal_tests {
             thread.update(cx, |thread, cx| {
                 thread.push_acp_user_block(
                     ClientUserMessageId::new(),
-                    [acp::ContentBlock::from("hello from the user")],
+                    [acp::ContentBlock::from("来自用户的问候")],
                     path_style,
                     cx,
                 );
             });
             acp_thread.update(cx, |acp_thread, cx| {
                 acp_thread
-                    .set_draft_prompt(Some(vec![acp::ContentBlock::from("draft in progress")]), cx);
+                    .set_draft_prompt(Some(vec![acp::ContentBlock::from("草稿进行中")]), cx);
             });
         });
         cx.run_until_parked();
@@ -3928,7 +3928,7 @@ mod internal_tests {
                 .await
                 .unwrap()
                 .is_none(),
-            "precondition: content row should be missing before the quit flush"
+            "前置条件:退出刷新前内容行应不存在"
         );
 
         // Quit through the real shutdown path so the `on_app_quit`
@@ -3939,16 +3939,16 @@ mod internal_tests {
             .load_thread(session_id.clone())
             .await
             .unwrap()
-            .expect("thread content should be persisted to the database on quit");
+            .expect("退出时对话线程内容应持久化到数据库");
         assert_eq!(
             restored.messages.len(),
             1,
-            "the user message should survive the quit flush"
+            "用户消息应在退出刷新后保留"
         );
         assert_eq!(
             restored.draft_prompt,
-            Some(vec![acp::ContentBlock::from("draft in progress")]),
-            "the current draft prompt should be captured by the quit flush"
+            Some(vec![acp::ContentBlock::from("草稿进行中")]),
+            "当前草稿提示词应被退出刷新捕获"
         );
         assert!(
             database
@@ -3956,7 +3956,7 @@ mod internal_tests {
                 .await
                 .unwrap()
                 .is_none(),
-            "empty threads should not be persisted by the quit flush"
+            "退出刷新不应持久化空对话线程"
         );
     }
 
@@ -4023,7 +4023,7 @@ mod internal_tests {
             skill_file_path: PathBuf::from(format!("/builtin/{name}/SKILL.md")),
             load_warnings: Vec::new(),
             disable_model_invocation: false,
-            embedded_body: Some("built-in body"),
+            embedded_body: Some("内置内容"),
         }
     }
 
@@ -4040,8 +4040,8 @@ mod internal_tests {
         // The autocomplete popup needs both same-named entries so the
         // source label can disambiguate them. `combine_skills` must not
         // drop the global when a project-local shares its name.
-        let global = make_global_skill("review", "Global review");
-        let project = make_project_skill("review", "Project review", "project");
+        let global = make_global_skill("review", "全局审查");
+        let project = make_project_skill("review", "项目审查", "project");
 
         let (skills, errors) = combine_skills(vec![Ok(global)], vec![Ok(project)].into_iter());
 
@@ -4058,13 +4058,13 @@ mod internal_tests {
         // single entry, with the project-local winning. This is what
         // `select_catalog_skills`, `SkillTool`, and the slash-command
         // resolver all see.
-        let global = make_global_skill("review", "Global review");
-        let project = make_project_skill("review", "Project review", "project");
+        let global = make_global_skill("review", "全局审查");
+        let project = make_project_skill("review", "项目审查", "project");
 
         let resolved = apply_skill_overrides(&[global, project]);
 
         assert_eq!(resolved.len(), 1);
-        assert_eq!(resolved[0].description, "Project review");
+        assert_eq!(resolved[0].description, "项目审查");
         assert!(matches!(
             resolved[0].source,
             SkillSource::ProjectLocal { .. }
@@ -4075,14 +4075,14 @@ mod internal_tests {
     fn test_apply_skill_overrides_same_source_collision_keeps_first() {
         // Two globals (or two project-locals from different worktrees)
         // colliding don't have a clear winner; preserve the historical
-        // "first one wins" behavior.
-        let first = make_global_skill("review", "First");
-        let second = make_global_skill("review", "Second");
+        // "第一个优先" behavior.
+        let first = make_global_skill("review", "第一个");
+        let second = make_global_skill("review", "第二个");
 
         let resolved = apply_skill_overrides(&[first, second]);
 
         assert_eq!(resolved.len(), 1);
-        assert_eq!(resolved[0].description, "First");
+        assert_eq!(resolved[0].description, "第一个");
     }
 
     #[test]
@@ -4090,25 +4090,25 @@ mod internal_tests {
         // A global skill with the same name as a built-in must shadow
         // the built-in in the model-facing projection, regardless of
         // iteration order.
-        let built_in = make_builtin_skill("create-skill", "Built-in version");
-        let global = make_global_skill("create-skill", "User override");
+        let built_in = make_builtin_skill("create-skill", "内置版本");
+        let global = make_global_skill("create-skill", "用户覆盖");
 
         let resolved = apply_skill_overrides(&[built_in, global]);
 
         assert_eq!(resolved.len(), 1);
-        assert_eq!(resolved[0].description, "User override");
+        assert_eq!(resolved[0].description, "用户覆盖");
         assert!(matches!(resolved[0].source, SkillSource::Global));
     }
 
     #[test]
     fn test_apply_skill_overrides_project_wins_over_builtin() {
-        let built_in = make_builtin_skill("create-skill", "Built-in version");
-        let project = make_project_skill("create-skill", "Project override", "my-project");
+        let built_in = make_builtin_skill("create-skill", "内置版本");
+        let project = make_project_skill("create-skill", "项目覆盖", "my-project");
 
         let resolved = apply_skill_overrides(&[built_in, project]);
 
         assert_eq!(resolved.len(), 1);
-        assert_eq!(resolved[0].description, "Project override");
+        assert_eq!(resolved[0].description, "项目覆盖");
         assert!(matches!(
             resolved[0].source,
             SkillSource::ProjectLocal { .. }
@@ -4120,14 +4120,14 @@ mod internal_tests {
         // All three sources present — the project-local must win and
         // both lower-precedence entries must be dropped from the
         // model-facing projection.
-        let built_in = make_builtin_skill("create-skill", "Built-in");
-        let global = make_global_skill("create-skill", "Global");
-        let project = make_project_skill("create-skill", "Project", "my-project");
+        let built_in = make_builtin_skill("create-skill", "内置");
+        let global = make_global_skill("create-skill", "全局");
+        let project = make_project_skill("create-skill", "项目", "my-project");
 
         let resolved = apply_skill_overrides(&[built_in, global, project]);
 
         assert_eq!(resolved.len(), 1);
-        assert_eq!(resolved[0].description, "Project");
+        assert_eq!(resolved[0].description, "项目");
     }
 
     #[test]
@@ -4210,14 +4210,14 @@ mod internal_tests {
 
         assert!(
             kept.len() < skills.len(),
-            "some skills should be dropped due to the budget (kept {} of {})",
+            "由于预算限制,应移除部分技能(保留了 {} 个,共 {} 个)",
             kept.len(),
             skills.len(),
         );
         assert_eq!(
             issues.len(),
             1,
-            "all dropped skills should be consolidated into a single issue, got {issues:?}",
+            "所有被移除的技能应合并为一个问题,实际为 {issues:?}",
         );
 
         let kept_size: usize = kept
@@ -4226,27 +4226,27 @@ mod internal_tests {
             .sum();
         assert!(
             kept_size <= MAX_SKILL_DESCRIPTIONS_SIZE,
-            "kept skills must fit in the budget (got {kept_size} bytes)",
+            "保留的技能必须符合预算(实际为 {kept_size} 字节)",
         );
 
         let issue = &issues[0];
         assert_eq!(issue.kind, SkillLoadingIssueKind::CatalogBudgetExceeded);
         assert!(
             issue.message.contains("50KB") && issue.message.contains("budget"),
-            "issue message {:?} should describe the budget",
+            "问题消息 {:?} 应描述预算",
             issue.message,
         );
         assert_eq!(
             issue.path,
             skills[kept.len()].skill_file_path,
-            "issue path should match the first dropped skill",
+            "问题路径应与第一个被移除的技能匹配",
         );
 
         for dropped_skill in &skills[kept.len()..total] {
             let name = &dropped_skill.name;
             assert!(
                 issue.message.contains(name.as_str()),
-                "issue message {:?} should mention the dropped skill name {name:?}",
+                "问题消息 {:?} 应提及被移除的技能名称 {name:?}",
                 issue.message,
             );
             let bullet_line = format!("- {name}");
@@ -4255,7 +4255,7 @@ mod internal_tests {
                     .message
                     .lines()
                     .any(|line| line.starts_with(&bullet_line)),
-                "issue message {:?} should contain a bullet line starting with {bullet_line:?}",
+                "问题消息 {:?} 应包含以 {bullet_line:?} 开头的项目符号行",
                 issue.message,
             );
         }
@@ -4309,7 +4309,7 @@ mod internal_tests {
             MAX_SKILL_DESCRIPTIONS_SIZE - (first.name.len() + first.description.len());
         assert!(
             third.name.len() + third.description.len() <= leftover_after_first,
-            "third skill must fit in the leftover sliver for this test to be meaningful",
+            "第三个技能必须能放入剩余的空间,此测试才有意义",
         );
 
         let skills = vec![first.clone(), second.clone(), third.clone()];
@@ -4318,24 +4318,24 @@ mod internal_tests {
         let kept_names: Vec<&str> = kept.iter().map(|s| s.name.as_str()).collect();
         assert_eq!(kept_names, vec![first.name.as_str()]);
 
-        assert_eq!(issues.len(), 1, "expected a single consolidated issue");
+        assert_eq!(issues.len(), 1, "预期只有一个合并后的问题");
         assert_eq!(issues[0].kind, SkillLoadingIssueKind::CatalogBudgetExceeded);
         assert_eq!(issues[0].path, second.skill_file_path);
         assert!(
             issues[0].message.contains(second.name.as_str()),
-            "issue message {:?} should mention {:?}",
+            "问题消息 {:?} 应提及 {:?}",
             issues[0].message,
             second.name,
         );
         assert!(
             issues[0].message.contains(third.name.as_str()),
-            "issue message {:?} should mention {:?}",
+            "问题消息 {:?} 应提及 {:?}",
             issues[0].message,
             third.name,
         );
         assert!(
             issues[0].message.contains("- "),
-            "issue message {:?} should use bullet form when multiple skills are dropped",
+            "当移除多个技能时,问题消息 {:?} 应使用项目符号形式",
             issues[0].message,
         );
     }
@@ -4372,7 +4372,7 @@ mod internal_tests {
 
         let (kept, issues) = select_catalog_skills(&[hidden, visible]);
 
-        assert!(issues.is_empty(), "expected no issues, got: {issues:?}");
+        assert!(issues.is_empty(), "预期没有问题,实际为:{issues:?}");
         let kept_names: Vec<&str> = kept.iter().map(|s| s.name.as_str()).collect();
         assert_eq!(kept_names, vec!["visible"]);
     }
@@ -4510,7 +4510,7 @@ mod internal_tests {
             let user = user_skills(&state.skills);
             assert_eq!(user.len(), 1);
             assert_eq!(user[0].name, "my-skill");
-            assert_eq!(user[0].description, "First version");
+            assert_eq!(user[0].description, "第一个版本");
         });
 
         // Modify the SKILL.md and verify the project context refreshes.
@@ -4526,7 +4526,7 @@ mod internal_tests {
             let state = agent.projects.get(&project.entity_id()).unwrap();
             let user = user_skills(&state.skills);
             assert_eq!(user.len(), 1);
-            assert_eq!(user[0].description, "Second version");
+            assert_eq!(user[0].description, "第二个版本");
         });
     }
 
@@ -4585,16 +4585,16 @@ mod internal_tests {
                 .collect();
             assert!(
                 catalog_names.contains(&"long-description"),
-                "long-description skill should remain in the model catalog: {catalog_names:?}"
+                "long-description 技能应保留在模型目录中:{catalog_names:?}"
             );
 
             assert!(
                 state.skill_loading_issues.iter().any(|issue| {
                     issue.kind == SkillLoadingIssueKind::DescriptionTooLong
                         && issue.path == skill_path
-                        && issue.message.to_string().contains("1024-byte limit")
+                        && issue.message.to_string().contains("1024 字节限制")
                 }),
-                "expected a description-length warning issue, got {:?}",
+                "预期有描述长度警告问题,实际为 {:?}",
                 state.skill_loading_issues
             );
 
@@ -4607,21 +4607,21 @@ mod internal_tests {
             let available_skill = available_skills
                 .iter()
                 .find(|skill| skill.name == "long-description")
-                .expect("long-description should appear in available skills");
+                .expect("long-description 应出现在可用技能中");
             assert_eq!(available_skill.description, long_description);
             assert!(
                 available_skill
                     .warning
                     .as_ref()
-                    .is_some_and(|warning| warning.contains("1024-byte limit")),
-                "available skill should expose warning text, got {:?}",
+                    .is_some_and(|warning| warning.contains("1024 字节限制")),
+                "可用技能应显示警告文本,实际为 {:?}",
                 available_skill.warning
             );
         });
 
         let body = agent_skills::read_skill_body(fs.as_ref(), &loaded_skill.skill_file_path)
             .await
-            .expect("body should load despite description-length warning");
+            .expect("尽管有描述长度警告,正文仍应加载");
         assert_eq!(body, "body");
     }
 
@@ -4674,7 +4674,7 @@ mod internal_tests {
             let user = user_skills(&state.skills);
             assert_eq!(user.len(), 1);
             assert_eq!(user[0].name, "my-skill");
-            assert_eq!(user[0].description, "First symlinked version");
+            assert_eq!(user[0].description, "第一个符号链接版本");
             assert_eq!(user[0].source, SkillSource::Global);
             assert_eq!(user[0].skill_file_path, skill_link_path);
 
@@ -4682,8 +4682,8 @@ mod internal_tests {
             let catalog_skill = catalog_skills
                 .iter()
                 .find(|skill| skill.name == "my-skill")
-                .expect("symlinked skill should be included in the model-facing catalog");
-            assert_eq!(catalog_skill.description, "First symlinked version");
+                .expect("符号链接的技能应包含在面向模型的目录中");
+            assert_eq!(catalog_skill.description, "第一个符号链接版本");
             assert_eq!(
                 catalog_skill.location,
                 skill_link_path.to_string_lossy().as_ref()
@@ -4709,7 +4709,7 @@ mod internal_tests {
             let user = user_skills(&state.skills);
             assert_eq!(user.len(), 1);
             assert_eq!(user[0].name, "my-skill");
-            assert_eq!(user[0].description, "Second symlinked version");
+            assert_eq!(user[0].description, "第二个符号链接版本");
             assert_eq!(user[0].source, SkillSource::Global);
             assert_eq!(user[0].skill_file_path, skill_link_path);
 
@@ -4717,8 +4717,8 @@ mod internal_tests {
             let catalog_skill = catalog_skills
                 .iter()
                 .find(|skill| skill.name == "my-skill")
-                .expect("reloaded symlinked skill should be included in the model-facing catalog");
-            assert_eq!(catalog_skill.description, "Second symlinked version");
+                .expect("重新加载的符号链接技能应包含在面向模型的目录中");
+            assert_eq!(catalog_skill.description, "第二个符号链接版本");
             assert_eq!(
                 catalog_skill.location,
                 skill_link_path.to_string_lossy().as_ref()
@@ -4772,7 +4772,7 @@ mod internal_tests {
             let state = agent.projects.get(&project.entity_id()).unwrap();
             assert!(
                 user_skills(&state.skills).is_empty(),
-                "expected no user skills before the global skills dir exists, got {:?}",
+                "在全局技能目录存在之前,预期没有用户技能,实际为 {:?}",
                 state.skills
             );
         });
@@ -4800,7 +4800,7 @@ mod internal_tests {
             let user = user_skills(&state.skills);
             assert_eq!(user.len(), 1);
             assert_eq!(user[0].name, "late-skill");
-            assert_eq!(user[0].description, "Created after startup");
+            assert_eq!(user[0].description, "启动后创建");
         });
     }
 
@@ -4810,7 +4810,7 @@ mod internal_tests {
     /// up the new skill automatically. The `SkillTool` registered on the
     /// thread used to hold a stale snapshot of `state.skills` taken at
     /// thread-construction time, which meant the model would see the new
-    /// skill in `<available_skills>` but get "not found" when it tried to
+    /// skill in `<available_skills>` but get "未找到" when it tried to
     /// invoke it. The fix wires the tool to a dynamic resolver closure
     /// that re-reads `state.skills` for the project on every invocation.
     #[gpui::test]
@@ -4849,7 +4849,7 @@ mod internal_tests {
             let state = agent.projects.get(&project_id).unwrap();
             assert!(
                 user_skills(&state.skills).is_empty(),
-                "expected no user skills before the global skills dir exists, got {:?}",
+                "在全局技能目录存在之前,预期没有用户技能,实际为 {:?}",
                 state.skills
             );
         });
@@ -4913,7 +4913,7 @@ mod internal_tests {
             assert_eq!(
                 snapshot.len(),
                 1,
-                "dynamic resolver should see the new skill"
+                "动态解析器应能看到新技能"
             );
             assert_eq!(snapshot[0].name, "my-skill");
             assert_eq!(snapshot[0].description, "Created after session");

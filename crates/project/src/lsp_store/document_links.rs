@@ -102,7 +102,7 @@ impl LspStore {
                     project_id: *project_id,
                     server_id: for_server.map(|server_id| server_id.to_proto()),
                 })
-                .context("sending refresh document links downstream")
+                .context("向下游发送刷新文档链接请求")
                 .log_err();
         }
     }
@@ -182,7 +182,7 @@ impl LspStore {
                         })
                         .map_err(Arc::new)?
                         .await
-                        .context("fetching document links")
+                        .context("获取文档链接")
                         .map_err(Arc::new);
 
                     let fetched = match fetched {
@@ -328,7 +328,7 @@ impl LspStore {
                         Err(e) => {
                             has_errors = true;
                             log::error!(
-                                "Failed to fetch document links for server {server_id}: {e:#}"
+                                "获取服务器 {server_id} 的文档链接失败:{e:#}"
                             );
                             None
                         }
@@ -336,7 +336,7 @@ impl LspStore {
                     .collect::<HashMap<_, _>>();
                 anyhow::ensure!(
                     !has_errors || !result.is_empty(),
-                    "Failed to fetch document links"
+                    "获取文档链接失败"
                 );
                 Ok(Some(result))
             })
@@ -509,13 +509,13 @@ impl LspStore {
         mut cx: AsyncApp,
     ) -> anyhow::Result<proto::ResolveDocumentLinkResponse> {
         let lsp_link: lsp::DocumentLink = serde_json::from_slice(&envelope.payload.lsp_link)
-            .context("deserializing document link to resolve")?;
+            .context("反序列化待解析的文档链接")?;
         let server_id = LanguageServerId::from_proto(envelope.payload.language_server_id);
 
         let resolve_task = lsp_store.update(&mut cx, |lsp_store, cx| {
             let server = lsp_store
                 .language_server_for_id(server_id)
-                .with_context(|| format!("No language server {server_id}"))?;
+                .with_context(|| format!("不存在语言服务器 {server_id}"))?;
             let timeout = ProjectSettings::get_global(cx)
                 .global_lsp_settings
                 .get_request_timeout();
@@ -525,7 +525,7 @@ impl LspStore {
 
         Ok(proto::ResolveDocumentLinkResponse {
             lsp_link: serde_json::to_vec(&resolved)
-                .context("serializing resolved document link")?,
+                .context("序列化已解析的文档链接")?,
         })
     }
 }

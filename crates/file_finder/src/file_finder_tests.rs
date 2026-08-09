@@ -240,7 +240,7 @@ async fn test_matching_paths(cx: &mut TestAppContext) {
                 } else {
                     2
                 },
-                "Wrong number of matches for bandana query '{bandana_query}'. Matches: {:?}",
+                "针对 bandana 查询 '{bandana_query}' 的匹配数量错误。匹配项: {:?}",
                 picker.delegate.matches
             );
         });
@@ -251,7 +251,7 @@ async fn test_matching_paths(cx: &mut TestAppContext) {
             assert_eq!(
                 active_editor.read(cx).title(cx),
                 "bandana",
-                "Wrong match for bandana query '{bandana_query}'"
+                "针对 bandana 查询 '{bandana_query}' 的匹配错误"
             );
         });
     }
@@ -371,7 +371,7 @@ async fn test_absolute_paths(cx: &mut TestAppContext) {
         assert_eq!(
             collect_search_matches(picker).search_paths_only(),
             vec![rel_path("a/b/file2.txt").into()],
-            "Matching abs path should be the only match"
+            "匹配的绝对路径应为唯一匹配项"
         )
     });
     cx.dispatch_action(SelectNext);
@@ -393,7 +393,7 @@ async fn test_absolute_paths(cx: &mut TestAppContext) {
         assert_eq!(
             collect_search_matches(picker).search_paths_only(),
             Vec::new(),
-            "Mismatching abs path should produce no matches"
+            "不匹配的绝对路径不应产生任何匹配项"
         )
     });
 }
@@ -489,7 +489,7 @@ async fn test_row_column_numbers_query_inside_file(cx: &mut TestAppContext) {
         let latest_search_query = finder
             .latest_search_query
             .as_ref()
-            .expect("Finder should have a query after the update_matches call");
+            .expect("调用 update_matches 后,查找器应包含查询");
         assert_eq!(latest_search_query.raw_query, query_inside_file);
         assert_eq!(latest_search_query.file_query_end, Some(file_query.len()));
         assert_eq!(latest_search_query.path_position.row, Some(file_row));
@@ -509,15 +509,15 @@ async fn test_row_column_numbers_query_inside_file(cx: &mut TestAppContext) {
             assert_eq!(
                 all_selections.len(),
                 1,
-                "Expected to have 1 selection (caret) after file finder confirm, but got: {all_selections:?}"
+                "文件查找器确认后应有 1 个选区(光标),但实际为: {all_selections:?}"
             );
             let caret_selection = all_selections.into_iter().next().unwrap();
             assert_eq!(caret_selection.start, caret_selection.end,
-                "Caret selection should have its start and end at the same position");
+                "光标选区的起点和终点应位于同一位置");
             assert_eq!(file_row, caret_selection.start.row + 1,
-                "Query inside file should get caret with the same focus row");
+                "文件内查询应使光标位于相同的焦点行");
             assert_eq!(file_column, caret_selection.start.column as usize + 1,
-                "Query inside file should get caret with the same focus column");
+                "文件内查询应使光标位于相同的焦点列");
         });
 }
 
@@ -565,7 +565,7 @@ async fn test_row_column_numbers_query_inside_unicode_file(cx: &mut TestAppConte
         let latest_search_query = finder
             .latest_search_query
             .as_ref()
-            .expect("Finder should have a query after the update_matches call");
+            .expect("调用 update_matches 后,查找器应包含查询");
         assert_eq!(latest_search_query.raw_query, query_inside_file);
         assert_eq!(latest_search_query.file_query_end, Some(file_query.len()));
         assert_eq!(latest_search_query.path_position.row, Some(file_row));
@@ -588,22 +588,22 @@ async fn test_row_column_numbers_query_inside_unicode_file(cx: &mut TestAppConte
         assert_eq!(
             all_selections.len(),
             1,
-            "Expected to have 1 selection (caret) after file finder confirm, but got: {all_selections:?}"
+            "文件查找器确认后应有 1 个选区(光标),但实际为: {all_selections:?}"
         );
         let caret_selection = all_selections.into_iter().next().unwrap();
         assert_eq!(
             caret_selection.start, caret_selection.end,
-            "Caret selection should have its start and end at the same position"
+            "光标选区的起点和终点应位于同一位置"
         );
         assert_eq!(
             file_row,
             caret_selection.start.row + 1,
-            "Query inside file should get caret with the same focus row"
+            "文件内查询应使光标位于相同的焦点行"
         );
         assert_eq!(
             expected_column,
             caret_selection.start.column as usize,
-            "Query inside file should map user-visible columns to byte offsets for Unicode text"
+            "文件内查询应将用户可见列映射为 Unicode 文本的字节偏移量"
         );
     });
 }
@@ -653,7 +653,7 @@ async fn test_row_column_numbers_query_outside_file(cx: &mut TestAppContext) {
         let latest_search_query = delegate
             .latest_search_query
             .as_ref()
-            .expect("Finder should have a query after the update_matches call");
+            .expect("调用 update_matches 后,查找器应包含查询");
         assert_eq!(latest_search_query.raw_query, query_outside_file);
         assert_eq!(latest_search_query.file_query_end, Some(file_query.len()));
         assert_eq!(latest_search_query.path_position.row, Some(file_row));
@@ -673,15 +673,15 @@ async fn test_row_column_numbers_query_outside_file(cx: &mut TestAppContext) {
             assert_eq!(
                 all_selections.len(),
                 1,
-                "Expected to have 1 selection (caret) after file finder confirm, but got: {all_selections:?}"
+                "文件查找器确认后应有 1 个选区(光标),但实际为: {all_selections:?}"
             );
             let caret_selection = all_selections.into_iter().next().unwrap();
             assert_eq!(caret_selection.start, caret_selection.end,
-                "Caret selection should have its start and end at the same position");
+                "光标选区的起点和终点应位于同一位置");
             assert_eq!(0, caret_selection.start.row,
-                "Excessive rows (as in query outside file borders) should get trimmed to last file row");
+                "超出范围的行(如查询超出文件边界)应裁剪到文件最后一行");
             assert_eq!(first_file_contents.len(), caret_selection.start.column as usize,
-                "Excessive columns (as in query outside file borders) should get trimmed to selected row's last column");
+                "超出范围的列(如查询超出文件边界)应裁剪到所选行的最后一列");
         });
 }
 
@@ -797,7 +797,7 @@ async fn test_line_range_query_selects_lines(cx: &mut TestAppContext) {
             .delegate
             .latest_search_query
             .as_ref()
-            .expect("Finder should have a query after the update_matches call");
+            .expect("调用 update_matches 后,查找器应包含查询");
         assert_eq!(latest_search_query.raw_query, query);
         assert_eq!(
             latest_search_query.file_query_end,
@@ -818,7 +818,7 @@ async fn test_line_range_query_selects_lines(cx: &mut TestAppContext) {
         assert_eq!(
             all_selections.len(),
             1,
-            "Expected to have 1 selection after file finder confirm, but got: {all_selections:?}"
+            "文件查找器确认后应有 1 个选区,但实际为: {all_selections:?}"
         );
         let selection = all_selections.into_iter().next().unwrap();
         assert_eq!(selection.start.row, 1);
@@ -869,7 +869,7 @@ async fn test_line_range_query_outside_file_clamps_to_eof(cx: &mut TestAppContex
         assert_eq!(
             all_selections.len(),
             1,
-            "Expected to have 1 selection after file finder confirm, but got: {all_selections:?}"
+            "文件查找器确认后应有 1 个选区,但实际为: {all_selections:?}"
         );
         let selection = all_selections.into_iter().next().unwrap();
         assert_eq!(selection.start, selection.end);
@@ -914,7 +914,7 @@ async fn test_path_with_position_when_target_file_is_open(cx: &mut TestAppContex
                 .matches
                 .iter()
                 .all(|m| !matches!(m, Match::CreateNew(_))),
-            "`Create file:` row should not be offered for an existing file"
+            "对于已存在的文件,不应提供“创建文件:”行"
         );
         assert_match_selection(finder, 0, "default.json");
     });
@@ -1086,7 +1086,7 @@ async fn test_ignored_root_with_file_inclusions(cx: &mut TestAppContext) {
                 rel_path("ignored-root/happiness").into(),
                 rel_path("tracked-root/happiness").into(),
             ],
-            "All ignored files that were indexed are found for default ignored mode"
+            "在默认忽略模式下,所有已索引的忽略文件都会被找到"
         );
     });
 }
@@ -1133,7 +1133,7 @@ async fn test_ignored_root_with_file_inclusions_repro(cx: &mut TestAppContext) {
         assert_eq!(
             matches.search,
             vec![],
-            "All ignored files that were indexed are found for default ignored mode"
+            "在默认忽略模式下,所有已索引的忽略文件都会被找到"
         );
     });
 }
@@ -1173,7 +1173,7 @@ async fn test_toggle_action_include_ignored_param(cx: &mut TestAppContext) {
         picker.update(cx, |picker, _| {
             assert_eq!(
                 picker.delegate.include_ignored, expected,
-                "setting: {setting:?}, action param: {action_param:?}"
+                "设置: {setting:?},操作参数: {action_param:?}"
             );
         });
         cx.dispatch_action(menu::Cancel);
@@ -1243,7 +1243,7 @@ async fn test_ignored_root(cx: &mut TestAppContext) {
                 rel_path("ignored-root/happiness").into(),
                 rel_path("tracked-root/happiness").into(),
             ],
-            "All ignored files that were indexed are found for default ignored mode"
+            "在默认忽略模式下,所有已索引的忽略文件都会被找到"
         );
     });
     cx.dispatch_action(ToggleIncludeIgnored);
@@ -1269,7 +1269,7 @@ async fn test_ignored_root(cx: &mut TestAppContext) {
                 rel_path("ignored-root/happiness").into(),
                 rel_path("tracked-root/happiness").into(),
             ],
-            "All ignored files should be found, for the toggled on ignored mode"
+            "在开启忽略模式下,应找到所有忽略的文件"
         );
     });
 
@@ -1291,7 +1291,7 @@ async fn test_ignored_root(cx: &mut TestAppContext) {
                 rel_path("tracked-root/hiccup").into(),
                 rel_path("tracked-root/happiness").into(),
             ],
-            "Only non-ignored files should be found for the turned off ignored mode"
+            "在关闭忽略模式下,应只找到非忽略的文件"
         );
     });
 
@@ -1342,7 +1342,7 @@ async fn test_ignored_root(cx: &mut TestAppContext) {
                 rel_path("ignored-root/happiness").into(),
                 rel_path("tracked-root/happiness").into(),
             ],
-            "Only for the worktree with the ignored root, all indexed ignored files are found in the auto ignored mode"
+            "仅在包含忽略根目录的工作树中,自动忽略模式下会找到所有已索引的忽略文件"
         );
     });
 
@@ -1371,7 +1371,7 @@ async fn test_ignored_root(cx: &mut TestAppContext) {
                 rel_path("ignored-root/happiness").into(),
                 rel_path("tracked-root/happiness").into(),
             ],
-            "All ignored files that were indexed are found in the turned on ignored mode"
+            "在开启忽略模式下,所有已索引的忽略文件都会被找到"
         );
     });
 
@@ -1393,7 +1393,7 @@ async fn test_ignored_root(cx: &mut TestAppContext) {
                 rel_path("tracked-root/hiccup").into(),
                 rel_path("tracked-root/happiness").into(),
             ],
-            "Only non-ignored files should be found for the turned off ignored mode"
+            "在关闭忽略模式下,应只找到非忽略的文件"
         );
     });
 }
@@ -1527,7 +1527,7 @@ async fn test_history_items_uniqueness_for_multiple_worktree(cx: &mut TestAppCon
         assert_eq!(
             matches.len(),
             2,
-            "Expected 1 history match + 1 search matches, but got {} matches: {:?}",
+            "预期 1 个历史匹配 + 1 个搜索匹配,但实际有 {} 个匹配: {:?}",
             matches.len(),
             matches
         );
@@ -1538,12 +1538,12 @@ async fn test_history_items_uniqueness_for_multiple_worktree(cx: &mut TestAppCon
         assert_eq!(
             search_matches.history.len(),
             1,
-            "Should have exactly 1 history match"
+            "应恰好有 1 个历史匹配"
         );
         assert_eq!(
             search_matches.search.len(),
             1,
-            "Should have exactly 1 search match (the other package.json)"
+            "应恰好有 1 个搜索匹配(另一个 package.json)"
         );
 
         if let Match::History { path, .. } = &matches[0] {
@@ -1709,7 +1709,7 @@ async fn test_create_file_focused_file_does_not_belong_to_available_worktrees(
 
         assert!(
             project_path.is_some(),
-            "Active editor should have a project path"
+            "活动编辑器应具有项目路径"
         );
 
         let project_path = project_path.unwrap();
@@ -1927,7 +1927,7 @@ async fn test_query_history(cx: &mut gpui::TestAppContext) {
     let initial_history = open_close_queried_buffer("fir", 1, "first.rs", &workspace, cx).await;
     assert!(
         initial_history.is_empty(),
-        "Should have no history before opening any files"
+        "在打开任何文件之前不应有历史记录"
     );
 
     let history_after_first =
@@ -1941,7 +1941,7 @@ async fn test_query_history(cx: &mut gpui::TestAppContext) {
             },
             PathBuf::from(path!("/src/test/first.rs"))
         )],
-        "Should show 1st opened item in the history when opening the 2nd item"
+        "打开第二个项目时,历史记录中应显示第一个打开的项目"
     );
 
     let history_after_second =
@@ -2140,7 +2140,7 @@ async fn test_history_labels_do_not_include_worktree_root_name(cx: &mut gpui::Te
             if let Match::History { panel_match, .. } = m {
                 assert!(
                     panel_match.is_none(),
-                    "History items with no query should not have a panel match"
+                    "无查询的历史项不应有面板匹配"
                 );
             }
         }
@@ -2152,7 +2152,7 @@ async fn test_history_labels_do_not_include_worktree_root_name(cx: &mut gpui::Te
         assert_eq!(
             path_label.text(),
             format!("src{separator}"),
-            "History path label must not contain root name 'my_project'"
+            "历史路径标签不得包含根名称“my_project”"
         );
 
         let (file_label, path_label) = finder.delegate.labels_for_match(&matches[1], window, cx);
@@ -2160,7 +2160,7 @@ async fn test_history_labels_do_not_include_worktree_root_name(cx: &mut gpui::Te
         assert_eq!(
             path_label.text(),
             format!("src{separator}"),
-            "History path label must not contain root name 'my_project'"
+            "历史路径标签不得包含根名称“my_project”"
         );
     });
 
@@ -2179,7 +2179,7 @@ async fn test_history_labels_do_not_include_worktree_root_name(cx: &mut gpui::Te
         let history_match = matches
             .iter()
             .find(|m| matches!(m, Match::History { .. }))
-            .expect("Should have a history match for 'first'");
+            .expect("应有一个针对“first”的历史匹配");
 
         let (file_label, path_label) = finder.delegate.labels_for_match(history_match, window, cx);
         assert_eq!(file_label.text(), "first.rs");
@@ -2187,7 +2187,7 @@ async fn test_history_labels_do_not_include_worktree_root_name(cx: &mut gpui::Te
         assert_eq!(
             path_label.text(),
             format!("src{separator}"),
-            "Queried history path label must not contain root name 'my_project'"
+            "查询后的历史路径标签不得包含根名称“my_project”"
         );
     });
 }
@@ -2237,7 +2237,7 @@ async fn test_history_labels_include_worktree_root_name_when_hide_root_false(
         assert_eq!(
             path_label.text(),
             format!("my_project{separator}src{separator}"),
-            "With hide_root=false, history path label should include root name 'my_project'"
+            "当 hide_root=false 时,历史路径标签应包含根名称“my_project”"
         );
     });
 }
@@ -2303,7 +2303,7 @@ async fn test_history_labels_include_worktree_root_name_when_hide_root_true_and_
     let picker = open_file_picker(&workspace, cx);
     picker.update_in(cx, |finder, window, cx| {
         let matches = &finder.delegate.matches.matches;
-        assert!(matches.len() >= 2, "Should have at least 2 history matches");
+        assert!(matches.len() >= 2, "应至少有 2 个历史匹配");
 
         let separator = PathStyle::local().primary_separator();
 
@@ -2318,7 +2318,7 @@ async fn test_history_labels_include_worktree_root_name_when_hide_root_true_and_
                     false
                 }
             })
-            .expect("Should have history match for first.rs");
+            .expect("应有一个针对 first.rs 的历史匹配");
 
         let third_match = matches
             .iter()
@@ -2331,14 +2331,14 @@ async fn test_history_labels_include_worktree_root_name_when_hide_root_true_and_
                     false
                 }
             })
-            .expect("Should have history match for third.rs");
+            .expect("应有一个针对 third.rs 的历史匹配");
 
         let (_file_label, path_label) =
             finder.delegate.labels_for_match(first_match, window, cx);
         assert_eq!(
             path_label.text(),
             format!("my_project{separator}src{separator}"),
-            "With hide_root=true and multiple folders, history path label should include root name 'my_project'"
+            "当 hide_root=true 且有多个文件夹时,历史路径标签应包含根名称“my_project”"
         );
 
         let (_file_label, path_label) =
@@ -2346,7 +2346,7 @@ async fn test_history_labels_include_worktree_root_name_when_hide_root_true_and_
         assert_eq!(
             path_label.text(),
             format!("my_second_project{separator}src{separator}"),
-            "With hide_root=true and multiple folders, history path label should include root name 'my_second_project'"
+            "当 hide_root=true 且有多个文件夹时,历史路径标签应包含根名称“my_second_project”"
         );
     });
 }
@@ -2420,13 +2420,13 @@ async fn test_external_files_history(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             worktrees.len(),
             2,
-            "External file should get opened in a new worktree"
+            "外部文件应在新工作树中打开"
         );
 
         worktrees
             .into_iter()
             .find(|worktree| worktree.read(cx).id() != worktree_id)
-            .expect("New worktree should have a different id")
+            .expect("新工作树应具有不同的 ID")
             .read(cx)
             .id()
     });
@@ -2446,7 +2446,7 @@ async fn test_external_files_history(cx: &mut gpui::TestAppContext) {
             },
             PathBuf::from(path!("/external-src/test/third.rs"))
         )],
-        "Should show external file with its full path in the history after it was open"
+        "打开后,历史记录中应显示外部文件的完整路径"
     );
 
     let updated_history_items =
@@ -2469,7 +2469,7 @@ async fn test_external_files_history(cx: &mut gpui::TestAppContext) {
                 PathBuf::from(path!("/external-src/test/third.rs"))
             ),
         ],
-        "Should keep external file with history updates",
+        "应保留外部文件的历史更新",
     );
 }
 
@@ -2533,12 +2533,12 @@ async fn test_non_project_file_open_with_filter(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             entries.search.len(),
             0,
-            "External file should appear as a history match, not a search match"
+            "外部文件应作为历史匹配出现,而不是搜索匹配"
         );
         assert_eq!(
             entries.history.len(),
             1,
-            "Expected the external file in history matches"
+            "期望在历史匹配中找到外部文件"
         );
     });
 
@@ -2555,7 +2555,7 @@ async fn test_non_project_file_open_with_filter(cx: &mut gpui::TestAppContext) {
         let active_editor = workspace
             .read(cx)
             .active_item_as::<Editor>(cx)
-            .expect("Should have an active editor after confirming");
+            .expect("确认后应有一个活动编辑器");
         let abs_path = active_editor
             .read(cx)
             .buffer()
@@ -2566,7 +2566,7 @@ async fn test_non_project_file_open_with_filter(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             abs_path.as_deref(),
             Some(Path::new(path!("/external/notes.txt"))),
-            "Should open /external/notes.txt, not a duplicated path"
+            "应打开 /external/notes.txt,而不是重复的路径"
         );
     });
 }
@@ -2639,12 +2639,12 @@ async fn test_non_project_file_matches_history_with_hidden_root(cx: &mut gpui::T
         assert_eq!(
             entries.search.len(),
             0,
-            "External file should appear as a history match, not a search match"
+            "外部文件应作为历史匹配出现,而不是搜索匹配"
         );
         assert_eq!(
             entries.history.len(),
             1,
-            "Expected the external file in history matches"
+            "期望在历史匹配中找到外部文件"
         );
     });
 }
@@ -2676,7 +2676,7 @@ async fn test_single_file_search_result_split_open(cx: &mut gpui::TestAppContext
             .read(cx)
             .worktrees(cx)
             .next()
-            .expect("Expected a single-file worktree")
+            .expect("期望一个单文件工作树")
             .read(cx)
             .id()
     });
@@ -2704,14 +2704,14 @@ async fn test_single_file_search_result_split_open(cx: &mut gpui::TestAppContext
         let active_editor = workspace
             .read(cx)
             .active_item_as::<Editor>(cx)
-            .expect("Should have an active editor after splitting the search result");
+            .expect("拆分搜索结果后应有一个活动编辑器");
         assert_eq!(
             active_editor.read(cx).active_project_path(cx),
             Some(ProjectPath {
                 worktree_id,
                 path: RelPath::empty_arc(),
             }),
-            "Should split-open the single-file worktree root with an empty relative path"
+            "应使用空相对路径拆分打开单文件工作树根"
         );
     });
 }
@@ -2752,7 +2752,7 @@ async fn test_toggle_panel_new_selections(cx: &mut gpui::TestAppContext) {
         let selected_index = picker.update(cx, |picker, _| picker.delegate.selected_index());
         assert_eq!(
             selected_index, expected_selected_index,
-            "Should select the next item in the history"
+            "应选择历史记录中的下一项"
         );
     }
 
@@ -2769,7 +2769,7 @@ async fn test_toggle_panel_new_selections(cx: &mut gpui::TestAppContext) {
     });
     assert_eq!(
         selected_index, 0,
-        "Should wrap around the history and start all over"
+        "应环绕历史记录并重新开始"
     );
 }
 
@@ -2829,8 +2829,8 @@ async fn test_search_preserves_history_items(cx: &mut gpui::TestAppContext) {
         .await;
     finder.update(cx, |picker, _| {
             let matches = collect_search_matches(picker);
-            assert_eq!(matches.history.len(), 1, "Only one history item contains {first_query}, it should be present and others should be filtered out");
-            let history_match = matches.history_found_paths.first().expect("Should have path matches for history items after querying");
+            assert_eq!(matches.history.len(), 1, "只有一个历史项包含 {first_query},它应存在,其他项应被过滤掉");
+            let history_match = matches.history_found_paths.first().expect("查询后,历史项应有路径匹配");
             assert_eq!(history_match, &FoundPath::new(
                 ProjectPath {
                     worktree_id,
@@ -2838,7 +2838,7 @@ async fn test_search_preserves_history_items(cx: &mut gpui::TestAppContext) {
                 },
                 PathBuf::from(path!("/src/test/first.rs")),
             ));
-            assert_eq!(matches.search.len(), 1, "Only one non-history item contains {first_query}, it should be present");
+            assert_eq!(matches.search.len(), 1, "只有一个非历史项包含 {first_query},它应存在");
             assert_eq!(matches.search.first().unwrap().as_ref(), rel_path("test/fourth.rs"));
         });
 
@@ -2856,7 +2856,7 @@ async fn test_search_preserves_history_items(cx: &mut gpui::TestAppContext) {
             collect_search_matches(picker)
                 .search_paths_only()
                 .is_empty(),
-            "No search entries should match {second_query}"
+            "没有搜索条目应匹配 {second_query}"
         );
     });
 
@@ -2872,8 +2872,8 @@ async fn test_search_preserves_history_items(cx: &mut gpui::TestAppContext) {
         .await;
     finder.update(cx, |picker, _| {
             let matches = collect_search_matches(picker);
-            assert_eq!(matches.history.len(), 1, "Only one history item contains {first_query_again}, it should be present and others should be filtered out, even after non-matching query");
-            let history_match = matches.history_found_paths.first().expect("Should have path matches for history items after querying");
+            assert_eq!(matches.history.len(), 1, "只有一个历史项包含 {first_query_again},即使在不匹配的查询之后,它也应存在,其他项应被过滤掉");
+            let history_match = matches.history_found_paths.first().expect("查询后,历史项应有路径匹配");
             assert_eq!(history_match, &FoundPath::new(
                 ProjectPath {
                     worktree_id,
@@ -2881,7 +2881,7 @@ async fn test_search_preserves_history_items(cx: &mut gpui::TestAppContext) {
                 },
                 PathBuf::from(path!("/src/test/first.rs"))
             ));
-            assert_eq!(matches.search.len(), 1, "Only one non-history item contains {first_query_again}, it should be present, even after non-matching query");
+            assert_eq!(matches.search.len(), 1, "只有一个非历史项包含 {first_query_again},即使在不匹配的查询之后,它也应存在");
             assert_eq!(matches.search.first().unwrap().as_ref(), rel_path("test/fourth.rs"));
         });
 }
@@ -3364,7 +3364,7 @@ async fn test_selected_history_item_stays_selected_on_worktree_updated(cx: &mut 
             .fs
             .create_file(Path::new(&filename), Default::default())
             .await
-            .expect("unable to create file");
+            .expect("无法创建文件");
     }
 
     advance_worktree_update_refresh(cx);
@@ -3428,7 +3428,7 @@ async fn test_history_items_vs_very_good_external_match(cx: &mut gpui::TestAppCo
                     rel_path("collab_ui/third.rs").into(),
                     rel_path("collab_ui/second.rs").into(),
                 ],
-                "Despite all search results having the same directory name, the most matching one should be on top"
+                "尽管所有搜索结果具有相同的目录名,最匹配的应排在顶部"
             );
         });
 }
@@ -3488,7 +3488,7 @@ async fn test_nonexistent_history_items_not_shown(cx: &mut gpui::TestAppContext)
                 rel_path("test/first.rs").into(),
                 rel_path("test/third.rs").into()
             ],
-            "Should have all opened files in the history, except the ones that do not exist on disk"
+            "历史记录中应包含所有已打开的文件,但磁盘上不存在的文件除外"
         );
     });
 }
@@ -3529,7 +3529,7 @@ async fn test_search_results_refreshed_on_worktree_updates(cx: &mut gpui::TestAp
         .fs
         .remove_file("/src/main.rs".as_ref(), Default::default())
         .await
-        .expect("unable to remove file");
+        .expect("无法删除文件");
     advance_worktree_update_refresh(cx);
 
     // main.rs is in not among search results anymore
@@ -3544,7 +3544,7 @@ async fn test_search_results_refreshed_on_worktree_updates(cx: &mut gpui::TestAp
         .fs
         .create_file("/src/util.rs".as_ref(), Default::default())
         .await
-        .expect("unable to create file");
+        .expect("无法创建文件");
     advance_worktree_update_refresh(cx);
 
     // util.rs is among search results
@@ -3582,7 +3582,7 @@ async fn test_worktree_entry_updates_are_coalesced(cx: &mut gpui::TestAppContext
             .fs
             .create_file(Path::new(&format!("/src/{filename}")), Default::default())
             .await
-            .expect("unable to create file");
+            .expect("无法创建文件");
         cx.executor().advance_clock(FS_WATCH_LATENCY);
         cx.run_until_parked();
     }
@@ -3595,7 +3595,7 @@ async fn test_worktree_entry_updates_are_coalesced(cx: &mut gpui::TestAppContext
         assert_eq!(
             picker.delegate.search_count,
             initial_search_count + 1,
-            "bursty worktree entry updates should be coalesced into one search refresh"
+            "突发的工作树条目更新应合并为一次搜索刷新"
         );
         assert_eq!(picker.delegate.matches.len(), 5);
     });
@@ -3660,15 +3660,15 @@ async fn test_search_results_refreshed_on_standalone_file_creation(cx: &mut gpui
             assert_eq!(
                 finder.delegate.matches.len(),
                 2, // 1 history match + 1 CreateNew
-                "Unexpected number of matches found for query `new`, matches: {:?}",
+                "查询“new”的匹配数量意外,匹配项:{:?}",
                 finder.delegate.matches
             );
             let entries = collect_search_matches(finder);
-            assert_eq!(entries.history.len(), 1, "new.rs should be a history match");
+            assert_eq!(entries.history.len(), 1, "new.rs 应是一个历史匹配");
             assert_eq!(
                 entries.search.len(),
                 0,
-                "new.rs should not be a plain search match"
+                "new.rs 不应是普通的搜索匹配"
             );
             finder.delegate.history_items.clone()
         });
@@ -3678,7 +3678,7 @@ async fn test_search_results_refreshed_on_standalone_file_creation(cx: &mut gpui
     assert_eq!(
         initial_history.first().unwrap().absolute,
         PathBuf::from(path!("/test/new.rs")),
-        "Should show 1st opened item in the history when opening the 2nd item"
+        "打开第二个项目时,历史记录中应显示第一个打开的项目"
     );
 
     cx.dispatch_action(CloseActiveItem {
@@ -3691,7 +3691,7 @@ async fn test_search_results_refreshed_on_standalone_file_creation(cx: &mut gpui
     assert_eq!(
         history_after_first.first().unwrap().absolute,
         PathBuf::from(path!("/test/new.rs")),
-        "Should show 1st opened item in the history when opening the 2nd item"
+        "打开第二个项目时,历史记录中应显示第一个打开的项目"
     );
 }
 
@@ -3724,7 +3724,7 @@ async fn test_search_results_refreshed_on_adding_and_removing_worktrees(
         cx.add_window_view(|window, cx| MultiWorkspace::test_new(project.clone(), window, cx));
     let workspace = multi_workspace.read_with(cx, |mw, _| mw.workspace().clone());
     let worktree_1_id = project.update(cx, |project, cx| {
-        let worktree = project.worktrees(cx).last().expect("worktree not found");
+        let worktree = project.worktrees(cx).last().expect("未找到工作树");
         worktree.read(cx).id()
     });
 
@@ -3746,7 +3746,7 @@ async fn test_search_results_refreshed_on_adding_and_removing_worktrees(
                 .into_future()
         })
         .await
-        .expect("unable to create workdir");
+        .expect("无法创建工作目录");
     advance_worktree_update_refresh(cx);
 
     // main.rs is among search results
@@ -3870,7 +3870,7 @@ async fn test_history_items_uniqueness_for_multiple_worktree_open_all_files(
         assert_eq!(
             matches.len(),
             2,
-            "Expected 1 history match + 1 search matches, but got {} matches: {:?}",
+            "预期 1 个历史匹配 + 1 个搜索匹配,但实际有 {} 个匹配: {:?}",
             matches.len(),
             matches
         );
@@ -3881,12 +3881,12 @@ async fn test_history_items_uniqueness_for_multiple_worktree_open_all_files(
         assert_eq!(
             search_matches.history.len(),
             2,
-            "Should have exactly 2 history match"
+            "应恰好有 2 个历史匹配"
         );
         assert_eq!(
             search_matches.search.len(),
             0,
-            "Should have exactly 0 search match (because we already opened the 2 package.json)"
+            "应恰好有 0 个搜索匹配(因为我们已经打开了 2 个 package.json)"
         );
 
         if let Match::History { path, panel_match } = &matches[0] {
@@ -3933,7 +3933,7 @@ async fn test_selected_match_stays_selected_after_matches_refreshed(cx: &mut gpu
         .fs
         .create_dir("/src/even".as_ref())
         .await
-        .expect("unable to create dir");
+        .expect("无法创建目录");
 
     let initial_files_num = 5;
     for i in 0..initial_files_num {
@@ -3942,7 +3942,7 @@ async fn test_selected_match_stays_selected_after_matches_refreshed(cx: &mut gpu
             .fs
             .create_file(Path::new(&filename), Default::default())
             .await
-            .expect("unable to create file");
+            .expect("无法创建文件");
     }
 
     let project = Project::test(app_state.fs.clone(), ["/src".as_ref()], cx).await;
@@ -3973,7 +3973,7 @@ async fn test_selected_match_stays_selected_after_matches_refreshed(cx: &mut gpu
             .fs
             .create_file(Path::new(&filename), Default::default())
             .await
-            .expect("unable to create file");
+            .expect("无法创建文件");
         // Wait for each file system event to be observed before adding the next.
         cx.executor().advance_clock(FS_WATCH_LATENCY);
         cx.run_until_parked();
@@ -4025,7 +4025,7 @@ async fn test_first_match_selected_if_previous_one_is_not_in_the_match_list(
         .fs
         .remove_file("/src/file_2.txt".as_ref(), Default::default())
         .await
-        .expect("unable to remove file");
+        .expect("无法删除文件");
     advance_worktree_update_refresh(cx);
 
     // file_1.txt is now selected
@@ -4327,7 +4327,7 @@ async fn test_open_without_dismiss_keeps_finder_open(cx: &mut TestAppContext) {
     picker.update(cx, |picker, _| {
         assert!(
             picker.delegate.matches.len() >= 3,
-            "Expected at least 3 matches for 'file', got {}",
+            "期望“file”至少有 3 个匹配,实际得到 {}",
             picker.delegate.matches.len()
         );
     });
@@ -4339,21 +4339,21 @@ async fn test_open_without_dismiss_keeps_finder_open(cx: &mut TestAppContext) {
     workspace.update(cx, |workspace, cx| {
         assert!(
             workspace.active_modal::<FileFinder>(cx).is_some(),
-            "File finder should remain open after OpenWithoutDismiss"
+            "执行 OpenWithoutDismiss 后,文件查找器应保持打开"
         );
     });
 
     // Exactly one file was opened in the pane.
     cx.read(|cx| {
         let items: Vec<_> = workspace.read(cx).active_pane().read(cx).items().collect();
-        assert_eq!(items.len(), 1, "One file should be open in the pane");
+        assert_eq!(items.len(), 1, "窗格中应打开一个文件");
     });
 
     // The search query and results are preserved so the user can continue browsing.
     picker.update(cx, |picker, _| {
         assert!(
             picker.delegate.matches.len() >= 3,
-            "Search results should remain unchanged after OpenWithoutDismiss"
+            "执行 OpenWithoutDismiss 后,搜索结果应保持不变"
         );
     });
 }
@@ -4388,7 +4388,7 @@ async fn test_open_without_dismiss_opens_multiple_files(cx: &mut TestAppContext)
     workspace.update(cx, |workspace, cx| {
         assert!(
             workspace.active_modal::<FileFinder>(cx).is_some(),
-            "Finder should remain open after first OpenWithoutDismiss"
+            "第一次 OpenWithoutDismiss 后,查找器应保持打开"
         );
     });
     cx.read(|cx| {
@@ -4396,7 +4396,7 @@ async fn test_open_without_dismiss_opens_multiple_files(cx: &mut TestAppContext)
         assert_eq!(
             pane.items().count(),
             1,
-            "One file open after first OpenWithoutDismiss"
+            "第一次 OpenWithoutDismiss 后打开一个文件"
         );
     });
 
@@ -4408,7 +4408,7 @@ async fn test_open_without_dismiss_opens_multiple_files(cx: &mut TestAppContext)
     workspace.update(cx, |workspace, cx| {
         assert!(
             workspace.active_modal::<FileFinder>(cx).is_some(),
-            "Finder should remain open after second OpenWithoutDismiss"
+            "第二次 OpenWithoutDismiss 后,查找器应保持打开"
         );
     });
     cx.read(|cx| {
@@ -4416,11 +4416,11 @@ async fn test_open_without_dismiss_opens_multiple_files(cx: &mut TestAppContext)
         assert_eq!(
             pane.items().count(),
             2,
-            "Two files open after second OpenWithoutDismiss"
+            "第二次 OpenWithoutDismiss 后打开两个文件"
         );
         // The second opened file should now be the active tab.
         let active_index = pane.active_item_index();
-        assert_eq!(active_index, 1, "Second file should be the active tab");
+        assert_eq!(active_index, 1, "第二个文件应为活动标签页");
     });
 }
 
@@ -4465,19 +4465,19 @@ async fn test_open_without_dismiss_then_confirm_closes_finder(cx: &mut TestAppCo
     workspace.update(cx, |workspace, cx| {
         assert!(
             workspace.active_modal::<FileFinder>(cx).is_none(),
-            "Finder should be closed after regular Confirm"
+            "常规确认后,查找器应关闭"
         );
     });
 
     // Two files were opened in total, with the confirmed one now active.
     cx.read(|cx| {
         let pane = workspace.read(cx).active_pane().read(cx);
-        assert_eq!(pane.items().count(), 2, "Two files should be open total");
+        assert_eq!(pane.items().count(), 2, "总共应打开两个文件");
         let active_editor = workspace.read(cx).active_item_as::<Editor>(cx).unwrap();
         let title = active_editor.read(cx).title(cx);
         assert!(
             title == "second.txt" || title == "first.txt",
-            "Active editor should be one of the opened files, got: {title}"
+            "活动编辑器应是已打开的文件之一,实际为:{title}"
         );
     });
 }
@@ -4506,7 +4506,7 @@ async fn test_reopen_with_preview_keeps_results_width(cx: &mut TestAppContext) {
 
     assert_eq!(
         in_session_width, reopened_width,
-        "reopening with the side preview must keep the same results width as the in-session toggle"
+        "使用侧边预览重新打开时,必须保持与会话内切换相同的结果宽度"
     );
 
     // The preview layout is persisted in the key-value store, and tests in a
@@ -4555,7 +4555,7 @@ async fn open_queried_buffer(
         assert_eq!(
             finder.delegate.matches.len(),
             expected_matches + 1, // +1 from CreateNew option
-            "Unexpected number of matches found for query `{input}`, matches: {:?}",
+            "查询“{input}”的匹配数量意外,匹配项:{:?}",
             finder.delegate.matches
         );
         finder.delegate.history_items.clone()
@@ -4572,7 +4572,7 @@ async fn open_queried_buffer(
         let active_editor_title = active_editor.read(cx).title(cx);
         assert_eq!(
             expected_editor_title, active_editor_title,
-            "Unexpected editor title for query `{input}`"
+            "查询“{input}”的编辑器标题意外"
         );
     });
 
@@ -4645,7 +4645,7 @@ pub(crate) fn active_file_picker(
     workspace.update(cx, |workspace, cx| {
         workspace
             .active_modal::<FileFinder>(cx)
-            .expect("file finder is not open")
+            .expect("文件查找器未打开")
             .read(cx)
             .picker
             .clone()
@@ -4665,7 +4665,7 @@ impl SearchEntries {
     fn search_paths_only(self) -> Vec<Arc<RelPath>> {
         assert!(
             self.history.is_empty(),
-            "Should have no history matches, but got: {:?}",
+            "应没有历史匹配,但实际得到:{:?}",
             self.history
         );
         self.search
@@ -4675,7 +4675,7 @@ impl SearchEntries {
     fn search_matches_only(self) -> Vec<PathMatch> {
         assert!(
             self.history.is_empty(),
-            "Should have no history matches, but got: {:?}",
+            "应没有历史匹配,但实际得到:{:?}",
             self.history
         );
         self.search_matches
@@ -4697,7 +4697,7 @@ fn collect_search_matches(picker: &Picker<FileFinderDelegate>) -> SearchEntries 
                 } else {
                     // This occurs when the query is empty and we show history matches
                     // that are outside the project.
-                    panic!("currently not exercised in tests");
+                    panic!("当前未在测试中执行");
                 }
                 search_entries
                     .history_found_paths
@@ -4725,7 +4725,7 @@ fn assert_match_selection(
     assert_eq!(
         finder.delegate.selected_index(),
         expected_selection_index,
-        "Match is not selected"
+        "匹配项未被选中"
     );
     assert_match_at_position(finder, expected_selection_index, expected_file_name);
 }
@@ -4740,7 +4740,7 @@ fn assert_match_at_position(
         .delegate
         .matches
         .get(match_index)
-        .unwrap_or_else(|| panic!("Finder has no match for index {match_index}"));
+        .unwrap_or_else(|| panic!("查找器在索引 {match_index} 处没有匹配项"));
     let match_file_name = match &match_item {
         Match::History { path, .. } => path.absolute.file_name().and_then(|s| s.to_str()),
         Match::Search(path_match) => path_match.0.path.file_name(),
@@ -4799,7 +4799,7 @@ async fn test_filename_precedence(cx: &mut TestAppContext) {
                 rel_path("layout/app.html").into(),
                 rel_path("layout/+page.svelte").into(),
             ],
-            "File with 'layout' in filename should be prioritized over files in 'layout' directory"
+            "文件名中包含 'layout' 的文件应优先于 'layout' 目录中的文件"
         );
     });
 }
@@ -4848,7 +4848,7 @@ async fn test_paths_with_starting_slash(cx: &mut TestAppContext) {
         assert_eq!(
             collect_search_matches(picker).search_paths_only(),
             vec![rel_path("a/file1.txt").into()],
-            "Relative path starting with slash should match"
+            "以斜杠开头的相对路径应能匹配"
         )
     });
     cx.dispatch_action(SelectNext);
@@ -4893,7 +4893,7 @@ async fn test_clear_navigation_history(cx: &mut TestAppContext) {
     assert_eq!(
         history_before_clear.len(),
         2,
-        "Should have history items before clearing"
+        "清除前应有历史记录"
     );
 
     // Verify that file finder shows history items
@@ -4903,7 +4903,7 @@ async fn test_clear_navigation_history(cx: &mut TestAppContext) {
         let matches = collect_search_matches(finder);
         assert!(
             !matches.history.is_empty(),
-            "File finder should show history items before clearing"
+            "文件查找器在清除前应显示历史记录"
         );
     });
     workspace.update_in(cx, |_, window, cx| {
@@ -4924,11 +4924,11 @@ async fn test_clear_navigation_history(cx: &mut TestAppContext) {
         let pane = workspace.active_pane();
         assert!(
             !pane.read(cx).can_navigate_backward(),
-            "Should not be able to navigate backward after clearing history"
+            "清除历史记录后不应能向后导航"
         );
         assert!(
             !pane.read(cx).can_navigate_forward(),
-            "Should not be able to navigate forward after clearing history"
+            "清除历史记录后不应能向前导航"
         );
     });
 
@@ -4939,7 +4939,7 @@ async fn test_clear_navigation_history(cx: &mut TestAppContext) {
         let matches = collect_search_matches(finder);
         assert!(
             matches.history.is_empty(),
-            "File finder should not show history items after clearing"
+            "文件查找器在清除后不应显示历史记录"
         );
     });
     workspace.update_in(cx, |_, window, cx| {
@@ -4953,7 +4953,7 @@ async fn test_clear_navigation_history(cx: &mut TestAppContext) {
     assert_eq!(
         history_after_clear.len(),
         0,
-        "Should have no history items after clearing"
+        "清除后不应有历史记录"
     );
 }
 

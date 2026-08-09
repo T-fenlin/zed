@@ -424,7 +424,7 @@ mod tests {
             simulate_external_file_copy(&pasteboard, &["/test.txt"]);
         }
 
-        let item = pasteboard.read().expect("should read clipboard item");
+        let item = pasteboard.read().expect("应读取剪贴板项目");
 
         // Test both ExternalPaths and String entries exist
         assert_eq!(item.entries.len(), 2);
@@ -434,7 +434,7 @@ mod tests {
             ClipboardEntry::ExternalPaths(ep) => {
                 assert_eq!(ep.paths(), &[PathBuf::from("/test.txt")]);
             }
-            other => panic!("expected ExternalPaths, got {:?}", other),
+            other => panic!("应为 ExternalPaths,实际为 {:?}", other),
         }
 
         // Test second entry is String
@@ -442,7 +442,7 @@ mod tests {
             ClipboardEntry::String(s) => {
                 assert_eq!(s.text(), "/test.txt");
             }
-            other => panic!("expected String, got {:?}", other),
+            other => panic!("应为 String,实际为 {:?}", other),
         }
     }
 
@@ -455,13 +455,13 @@ mod tests {
             simulate_external_file_copy(&pasteboard, &paths);
         }
 
-        let item = pasteboard.read().expect("should read clipboard item");
+        let item = pasteboard.read().expect("应读取剪贴板项目");
 
         match &item.entries[0] {
             ClipboardEntry::ExternalPaths(ep) => {
                 assert_eq!(ep.paths(), &[PathBuf::from("/some file with spaces.txt")]);
             }
-            other => panic!("expected ExternalPaths, got {:?}", other),
+            other => panic!("应为 ExternalPaths,实际为 {:?}", other),
         }
     }
 
@@ -474,7 +474,7 @@ mod tests {
             simulate_external_file_copy(&pasteboard, &paths);
         }
 
-        let item = pasteboard.read().expect("should read clipboard item");
+        let item = pasteboard.read().expect("应读取剪贴板项目");
         assert_eq!(item.entries.len(), 2);
 
         // Test both ExternalPaths and String entries exist
@@ -485,7 +485,7 @@ mod tests {
                     &[PathBuf::from("/file.txt"), PathBuf::from("/image.png"),]
                 );
             }
-            other => panic!("expected ExternalPaths, got {:?}", other),
+            other => panic!("应为 ExternalPaths,实际为 {:?}", other),
         }
 
         match &item.entries[1] {
@@ -493,7 +493,7 @@ mod tests {
                 assert_eq!(s.text(), "/file.txt\n/image.png");
                 assert_eq!(s.metadata, None);
             }
-            other => panic!("expected String, got {:?}", other),
+            other => panic!("应为 String,实际为 {:?}", other),
         }
     }
 
@@ -523,7 +523,7 @@ mod tests {
             pasteboard.inner.setData_forType(data, ns_png_type);
         }
 
-        let item = pasteboard.read().expect("should read PNG image");
+        let item = pasteboard.read().expect("应读取 PNG 图像");
 
         // Test Image entry exists
         assert_eq!(item.entries.len(), 1);
@@ -532,7 +532,7 @@ mod tests {
                 assert_eq!(img.format, ImageFormat::Png);
                 assert_eq!(img.bytes, png_bytes);
             }
-            other => panic!("expected Image, got {:?}", other),
+            other => panic!("应为 Image,实际为 {:?}", other),
         }
     }
 }

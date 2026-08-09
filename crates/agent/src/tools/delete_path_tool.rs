@@ -68,9 +68,9 @@ impl AgentTool for DeletePathTool {
         _cx: &mut App,
     ) -> SharedString {
         if let Ok(input) = input {
-            format!("Delete “`{}`”", input.path).into()
+            format!("删除“`{}`”", input.path).into()
         } else {
-            "Delete path".into()
+            "删除路径".into()
         }
     }
 
@@ -99,7 +99,7 @@ impl AgentTool for DeletePathTool {
 
             if resolves_to_global_skills_dir(Path::new(&path), fs.as_ref()).await {
                 return Err(
-                    "Cannot delete the global agent skills directory itself. Delete a skill directory or file beneath it instead."
+                    "无法删除全局代理技能目录本身。请改为删除其下的技能目录或文件。"
                         .to_string(),
                 );
             }
@@ -142,7 +142,7 @@ impl AgentTool for DeletePathTool {
                     ToolPermissionDecision::Confirm => Some(cx.update(|cx| {
                         let context =
                             crate::ToolPermissionContext::new(Self::NAME, vec![path.clone()]);
-                        let title = format!("Delete {}", MarkdownInlineCode(&path));
+                        let title = format!("删除 {}", MarkdownInlineCode(&path));
                         authorize_with_sensitive_settings(
                             settings_kind,
                             context,
@@ -163,8 +163,8 @@ impl AgentTool for DeletePathTool {
                 let metadata = fs
                     .metadata(&global_skill_path)
                     .await
-                    .map_err(|e| format!("Deleting {path}: {e}"))?
-                    .ok_or_else(|| format!("Deleting {path}: path not found"))?;
+                    .map_err(|e| format!("删除 {path}:{e}"))?
+                    .ok_or_else(|| format!("删除 {path}:路径不存在"))?;
 
                 futures::select! {
                     result = async {
@@ -181,24 +181,24 @@ impl AgentTool for DeletePathTool {
                             fs.remove_file(&global_skill_path, fs::RemoveOptions::default()).await
                         }
                     }.fuse() => {
-                        result.map_err(|e| format!("Deleting {path}: {e}"))?;
+                        result.map_err(|e| format!("删除 {path}:{e}"))?;
                     }
                     _ = event_stream.cancelled_by_user().fuse() => {
-                        return Err("Delete cancelled by user".to_string());
+                        return Err("用户已取消删除".to_string());
                     }
                 }
 
-                return Ok(format!("Deleted {path}"));
+                return Ok(format!("已删除 {path}"));
             }
 
             let (project_path, worktree_snapshot) = project.read_with(cx, |project, cx| {
                 let project_path = project.find_project_path(&path, cx).ok_or_else(|| {
-                    format!("Couldn't delete {path} because that path isn't in this project.")
+                    format!("无法删除 {path},因为该路径不在当前项目中。")
                 })?;
                 let worktree = project
                     .worktree_for_id(project_path.worktree_id, cx)
                     .ok_or_else(|| {
-                        format!("Couldn't delete {path} because that path isn't in this project.")
+                        format!("无法删除 {path},因为该路径不在当前项目中。")
                     })?;
                 let worktree_snapshot = worktree.read(cx).snapshot();
                 Result::<_, String>::Ok((project_path, worktree_snapshot))
@@ -230,7 +230,7 @@ impl AgentTool for DeletePathTool {
                 let path_result = futures::select! {
                     path = paths_rx.next().fuse() => path,
                     _ = event_stream.cancelled_by_user().fuse() => {
-                        return Err("Delete cancelled by user".to_string());
+                        return Err("用户已取消删除".to_string());
                     }
                 };
                 let Some(path) = path_result else {
@@ -249,18 +249,18 @@ impl AgentTool for DeletePathTool {
             let deletion_task = project
                 .update(cx, |project, cx| project.delete_file(project_path, cx))
                 .ok_or_else(|| {
-                    format!("Couldn't delete {path} because that path isn't in this project.")
+                    format!("无法删除 {path},因为该路径不在当前项目中。")
                 })?;
 
             futures::select! {
                 result = deletion_task.fuse() => {
-                    result.map_err(|e| format!("Deleting {path}: {e}"))?;
+                    result.map_err(|e| format!("删除 {path}:{e}"))?;
                 }
                 _ = event_stream.cancelled_by_user().fuse() => {
-                    return Err("Delete cancelled by user".to_string());
+                    return Err("用户已取消删除".to_string());
                 }
             }
-            Ok(format!("Deleted {path}"))
+            Ok(format!("已删除 {path}"))
         })
     }
 }
@@ -324,8 +324,8 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("agent skills"),
-            "Authorization title should mention agent skills, got: {title}",
+            title.contains("代理技能"),
+            "授权标题应提及代理技能,实际为: {title}",
         );
         assert!(
             auth.options
@@ -339,10 +339,10 @@ mod tests {
                 acp::PermissionOptionId::new("allow"),
                 acp::PermissionOptionKind::AllowOnce,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
 
         let result = task.await;
-        assert!(result.is_ok(), "should delete after approval: {result:?}");
+        assert!(result.is_ok(), "批准后应删除:{result:?}");
         assert!(fs.is_dir(&skills_dir).await);
         assert!(!fs.is_dir(&skill_dir).await);
     }
@@ -388,10 +388,10 @@ mod tests {
                 acp::PermissionOptionId::new("allow"),
                 acp::PermissionOptionKind::AllowOnce,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
 
         let result = task.await;
-        assert!(result.is_ok(), "should delete after approval: {result:?}");
+        assert!(result.is_ok(), "批准后应删除:{result:?}");
         assert!(!fs.is_file(&skill_file).await);
     }
 
@@ -425,14 +425,14 @@ mod tests {
             })
             .await;
 
-        assert!(result.is_err(), "should reject deleting skills root");
+        assert!(result.is_err(), "应拒绝删除技能根目录");
         assert!(fs.is_dir(&skills_dir).await);
         assert!(
             !matches!(
                 event_rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "Deleting the skills root should fail before requesting authorization",
+            "删除技能根目录应在请求授权之前失败",
         );
     }
 
@@ -481,8 +481,8 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("points outside the project") || title.contains("symlink"),
-            "Authorization title should mention symlink escape, got: {title}",
+            title.contains("指向项目外部") || title.contains("symlink"),
+            "授权标题应提及符号链接逃逸,实际为: {title}",
         );
 
         auth.response
@@ -501,7 +501,7 @@ mod tests {
             let msg = format!("{err:#}");
             assert!(
                 !msg.contains("denied") && !msg.contains("authorization"),
-                "Error should not be a permission denial, got: {msg}",
+                "错误不应是权限拒绝,实际为:{msg}",
             );
         }
     }
@@ -555,7 +555,7 @@ mod tests {
         let result = task.await;
         assert!(
             result.is_err(),
-            "Tool should fail when authorization is denied"
+            "授权被拒绝时工具应失败"
         );
     }
 
@@ -611,8 +611,8 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("points outside the project") || title.contains("symlink"),
-            "Authorization title should mention symlink escape, got: {title}",
+            title.contains("指向项目外部") || title.contains("symlink"),
+            "授权标题应提及符号链接逃逸,实际为: {title}",
         );
 
         auth.response
@@ -627,7 +627,7 @@ mod tests {
                 event_rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "Expected a single authorization prompt",
+            "预期只有一次授权提示",
         );
 
         let result = task.await;
@@ -635,7 +635,7 @@ mod tests {
             let message = format!("{err:#}");
             assert!(
                 !message.contains("denied") && !message.contains("authorization"),
-                "Error should not be a permission denial, got: {message}",
+                "错误不应是权限拒绝,实际为:{message}",
             );
         }
     }
@@ -695,13 +695,13 @@ mod tests {
             })
             .await;
 
-        assert!(result.is_err(), "Tool should fail when policy denies");
+        assert!(result.is_err(), "策略拒绝时工具应失败");
         assert!(
             !matches!(
                 event_rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "Deny policy should not emit symlink authorization prompt",
+            "拒绝策略不应发出符号链接授权提示",
         );
     }
 }

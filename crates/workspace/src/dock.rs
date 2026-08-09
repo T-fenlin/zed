@@ -340,9 +340,9 @@ impl From<TerminalDockPosition> for DockPosition {
 impl DockPosition {
     fn label(&self) -> &'static str {
         match self {
-            Self::Left => "Left",
-            Self::Bottom => "Bottom",
-            Self::Right => "Right",
+            Self::Left => "左侧",
+            Self::Bottom => "底部",
+            Self::Right => "右侧",
         }
     }
 
@@ -535,7 +535,7 @@ impl Dock {
             .position(|entry| entry.panel.enabled(cx))
             .with_context(|| {
                 format!(
-                    "Couldn't find any enabled panel for the {} dock.",
+                    "在{}停靠面板中找不到任何已启用的面板。",
                     self.position.label()
                 )
             })
@@ -757,7 +757,7 @@ impl Dock {
             Ok(ix) => {
                 if cfg!(debug_assertions) {
                     panic!(
-                        "Panels `{}` and `{}` have the same activation priority. Each panel must have a unique priority so the status bar order is deterministic.",
+                        "面板 `{}` 和 `{}` 具有相同的激活优先级。每个面板必须具有唯一的优先级,以确保状态栏顺序是确定的。",
                         T::panel_key(),
                         self.panel_entries[ix].panel.panel_key()
                     );
@@ -1081,7 +1081,7 @@ impl Dock {
 
     fn dispatch_context() -> KeyContext {
         let mut dispatch_context = KeyContext::new_with_defaults();
-        dispatch_context.add("Dock");
+        dispatch_context.add("停靠面板");
 
         dispatch_context
     }
@@ -1273,7 +1273,7 @@ impl Render for PanelButtons {
                     .panel
                     .icon_tooltip(window, cx)
                     .ok_or_else(|| {
-                        anyhow::anyhow!("can't render a panel button without an icon tooltip")
+                        anyhow::anyhow!("没有图标提示信息,无法渲染面板按钮")
                     })
                     .log_err()?;
                 let name = entry.panel.persistent_name();
@@ -1288,7 +1288,7 @@ impl Render for PanelButtons {
                     let action = dock.toggle_action();
 
                     let tooltip: SharedString =
-                        format!("Close {} Dock", dock.position.label()).into();
+                        format!("关闭{}停靠面板", dock.position.label()).into();
 
                     (action, tooltip)
                 } else {
@@ -1317,7 +1317,7 @@ impl Render for PanelButtons {
                                         let is_current = position == dock_position;
                                         let panel = panel.clone();
                                         menu = menu.toggleable_entry(
-                                            format!("Dock {}", position.label()),
+                                            format!("停靠面板 {}", position.label()),
                                             is_current,
                                             IconPosition::Start,
                                             None,
@@ -1338,7 +1338,7 @@ impl Render for PanelButtons {
                                     let dock_for_flex = dock_for_menu.clone();
                                     let workspace_for_flex = workspace_for_menu.clone();
                                     menu = menu.toggleable_entry(
-                                        "Flex Width",
+                                        "弹性宽度",
                                         currently_flexible,
                                         IconPosition::Start,
                                         None,
@@ -1361,7 +1361,7 @@ impl Render for PanelButtons {
                                     let dock_for_fixed = dock_for_menu.clone();
                                     let workspace_for_fixed = workspace_for_menu.clone();
                                     menu = menu.toggleable_entry(
-                                        "Fixed Width",
+                                        "固定宽度",
                                         !currently_flexible,
                                         IconPosition::Start,
                                         None,

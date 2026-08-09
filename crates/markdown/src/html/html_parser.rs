@@ -819,10 +819,10 @@ mod tests {
 
         assert_eq!(parsed.children.len(), 1);
         let ParsedHtmlElement::Paragraph(paragraph) = &parsed.children[0] else {
-            panic!("expected paragraph");
+            panic!("应为段落");
         };
         let HtmlParagraphChunk::Text(text) = &paragraph.contents[0] else {
-            panic!("expected text chunk");
+            panic!("应为文本块");
         };
 
         assert_eq!(text.contents.as_ref(), "Some text strong link");
@@ -860,7 +860,7 @@ mod tests {
         .unwrap();
 
         let ParsedHtmlElement::Table(table) = &parsed.children[0] else {
-            panic!("expected table");
+            panic!("应为表格");
         };
         assert_eq!(table.body.len(), 2);
         assert_eq!(table.body[0].columns[0].col_span, 2);
@@ -873,7 +873,7 @@ mod tests {
         let parsed = parse_html_block(html, 0..html.len()).unwrap();
 
         let ParsedHtmlElement::Table(table) = &parsed.children[0] else {
-            panic!("expected table");
+            panic!("应为表格");
         };
 
         assert_eq!(table.header.len(), 1);
@@ -903,7 +903,7 @@ mod tests {
         let parsed = parse_html_block(html, 0..html.len()).unwrap();
 
         let ParsedHtmlElement::Table(table) = &parsed.children[0] else {
-            panic!("expected table");
+            panic!("应为表格");
         };
 
         assert_eq!(table.header[0].columns[0].alignment, Alignment::Right);
@@ -923,7 +923,7 @@ mod tests {
         assert_eq!(parsed.children.len(), 1);
 
         let ParsedHtmlElement::List(list) = &parsed.children[0] else {
-            panic!("expected list");
+            panic!("应为列表");
         };
 
         assert!(!list.ordered);
@@ -932,34 +932,34 @@ mod tests {
 
         let first_item = &list.items[0];
         let ParsedHtmlElement::Paragraph(paragraph) = &first_item.content[0] else {
-            panic!("expected first item paragraph");
+            panic!("应为第一个列表项的段落");
         };
         let HtmlParagraphChunk::Text(text) = &paragraph.contents[0] else {
-            panic!("expected first item text");
+            panic!("应为第一个列表项的文本");
         };
         assert_eq!(text.contents.as_ref(), "parent");
 
         let ParsedHtmlElement::List(nested_list) = &first_item.content[1] else {
-            panic!("expected nested list");
+            panic!("应为嵌套列表");
         };
         assert_eq!(nested_list.depth, 2);
         assert_eq!(nested_list.items.len(), 1);
 
         let ParsedHtmlElement::Paragraph(nested_paragraph) = &nested_list.items[0].content[0]
         else {
-            panic!("expected nested item paragraph");
+            panic!("应为嵌套列表项的段落");
         };
         let HtmlParagraphChunk::Text(nested_text) = &nested_paragraph.contents[0] else {
-            panic!("expected nested item text");
+            panic!("应为嵌套列表项的文本");
         };
         assert_eq!(nested_text.contents.as_ref(), "child");
 
         let second_item = &list.items[1];
         let ParsedHtmlElement::Paragraph(second_paragraph) = &second_item.content[0] else {
-            panic!("expected second item paragraph");
+            panic!("应为第二个列表项的段落");
         };
         let HtmlParagraphChunk::Text(second_text) = &second_paragraph.contents[0] else {
-            panic!("expected second item text");
+            panic!("应为第二个列表项的文本");
         };
         assert_eq!(second_text.contents.as_ref(), "sibling");
     }
@@ -968,7 +968,7 @@ mod tests {
     fn parses_paragraph_text_align_from_style() {
         let parsed = parse_html_block("<p style=\"text-align: center\">x</p>", 0..40).unwrap();
         let ParsedHtmlElement::Paragraph(paragraph) = &parsed.children[0] else {
-            panic!("expected paragraph");
+            panic!("应为段落");
         };
         assert_eq!(paragraph.text_align, Some(TextAlign::Center));
     }
@@ -977,7 +977,7 @@ mod tests {
     fn parses_heading_text_align_from_style() {
         let parsed = parse_html_block("<h2 style=\"text-align: right\">Title</h2>", 0..45).unwrap();
         let ParsedHtmlElement::Heading(heading) = &parsed.children[0] else {
-            panic!("expected heading");
+            panic!("应为标题");
         };
         assert_eq!(heading.text_align, Some(TextAlign::Right));
     }
@@ -986,7 +986,7 @@ mod tests {
     fn parses_paragraph_text_align_from_align_attribute() {
         let parsed = parse_html_block("<p align=\"center\">x</p>", 0..24).unwrap();
         let ParsedHtmlElement::Paragraph(paragraph) = &parsed.children[0] else {
-            panic!("expected paragraph");
+            panic!("应为段落");
         };
         assert_eq!(paragraph.text_align, Some(TextAlign::Center));
     }
@@ -995,7 +995,7 @@ mod tests {
     fn parses_heading_text_align_from_align_attribute() {
         let parsed = parse_html_block("<h2 align=\"right\">Title</h2>", 0..30).unwrap();
         let ParsedHtmlElement::Heading(heading) = &parsed.children[0] else {
-            panic!("expected heading");
+            panic!("应为标题");
         };
         assert_eq!(heading.text_align, Some(TextAlign::Right));
     }
@@ -1008,7 +1008,7 @@ mod tests {
         )
         .unwrap();
         let ParsedHtmlElement::Paragraph(paragraph) = &parsed.children[0] else {
-            panic!("expected paragraph");
+            panic!("应为段落");
         };
         assert_eq!(paragraph.text_align, Some(TextAlign::Center));
     }

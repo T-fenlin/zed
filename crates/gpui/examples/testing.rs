@@ -150,7 +150,7 @@ impl Render for Counter {
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.load(cx).detach();
                             }))
-                            .child("Load"),
+                            .child("加载"),
                     )
                     .child(
                         div()
@@ -165,14 +165,14 @@ impl Render for Counter {
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.reload(cx);
                             }))
-                            .child("Reload"),
+                            .child("重新加载"),
                     ),
             )
             .child(
                 div()
                     .text_sm()
                     .text_color(rgb(0x6c7086))
-                    .child("Press ↑/↓ or click buttons"),
+                    .child("按 ↑/↓ 或点击按钮"),
             )
     }
 }
@@ -241,7 +241,7 @@ mod tests {
         let count_after_update = counter.read_with(cx, |counter, _| counter.count);
         assert_eq!(
             count_after_update, 999,
-            "Side effects should run after update completes"
+            "副作用应在更新完成后运行"
         );
     }
 
@@ -268,7 +268,7 @@ mod tests {
         let count_after = counter.read_with(&cx, |counter, _| counter.count);
         assert_eq!(
             count_after, 1,
-            "Action dispatched via focus handle should increment"
+            "通过焦点句柄分发的操作应递增"
         );
     }
 
@@ -283,19 +283,19 @@ mod tests {
         counter.update(cx, |counter, cx| counter.load(cx)).await;
 
         let count = counter.read_with(cx, |counter, _| counter.count);
-        assert_eq!(count, 100, "Load task should have set count to 100");
+        assert_eq!(count, 100, "加载任务应将计数设置为 100");
 
         // But side effects don't run until you yield control
         counter.update(cx, |counter, cx| counter.reload(cx));
 
         let count = counter.read_with(cx, |counter, _| counter.count);
-        assert_eq!(count, 100, "Detached reload task shouldn't have run yet");
+        assert_eq!(count, 100, "分离的重新加载任务不应已运行");
 
         // This runs all pending tasks
         cx.run_until_parked();
 
         let count = counter.read_with(cx, |counter, _| counter.count);
-        assert_eq!(count, 150, "Reload task should have run after parking");
+        assert_eq!(count, 150, "重新加载任务应在停车后运行");
     }
 
     /// Note that the test executor panics if you await a future that waits on
@@ -352,7 +352,7 @@ mod tests {
         let actual = counter.read_with(&cx, |counter, _| counter.count);
         assert_eq!(
             actual, expected,
-            "Counter should match expected after random ops"
+            "随机操作后计数器应与预期匹配"
         );
     }
 
@@ -526,7 +526,7 @@ mod tests {
             let a_count = a.read_with(cx_a, |a, _| a.count);
             let b_count = b.read_with(cx_b, |b, _| b.count);
 
-            assert_eq!(a_count, b_count, "A and B should have the same count");
+            assert_eq!(a_count, b_count, "A 和 B 应具有相同的计数");
 
             // Nicely format the execution order output.
             // Run this test with `-- --nocapture` to see it!
@@ -544,8 +544,8 @@ mod tests {
                     }
                 })
                 .collect();
-            println!("spawned: [{}]", spawned.join(", "));
-            println!("ran:     [{}]", ran.join(", "));
+            println!("生成: [{}]", spawned.join(", "));
+            println!("运行:     [{}]", ran.join(", "));
             println!("         [{}]", diff.join(", "));
         }
     }

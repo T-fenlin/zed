@@ -102,7 +102,7 @@ async fn assert_edit_prediction_diff_popover_avoids_right_occluders(
     });
     let editor = window
         .read_with(cx, |root, _| root.editor.clone())
-        .expect("test window should contain editor");
+        .expect("测试窗口应包含编辑器");
     let mut cx = gpui::VisualTestContext::from_window(*window, cx);
     cx.simulate_resize(size(window_width, px(500.)));
     cx.run_until_parked();
@@ -138,20 +138,20 @@ async fn assert_edit_prediction_diff_popover_avoids_right_occluders(
     cx.editor(|editor, _, _| {
         assert!(
             editor.last_position_map.is_some(),
-            "editor should have rendered a position map"
+            "编辑器应已渲染位置映射"
         );
     });
 
     let popover_bounds = cx
         .cx
         .debug_bounds("edit_prediction_diff_popover")
-        .expect("diff popover should render");
+        .expect("差异弹窗应渲染");
 
     for selector in ["right_dock", "right_sidebar"] {
         if let Some(occluder_bounds) = cx.cx.debug_bounds(selector) {
             assert!(
                 !popover_bounds.intersects(&occluder_bounds),
-                "diff popover {popover_bounds:?} should not overlap {selector} {occluder_bounds:?}"
+                "差异弹窗 {popover_bounds:?} 不应与 {selector} {occluder_bounds:?} 重叠"
             );
         }
     }
@@ -513,7 +513,7 @@ async fn test_edit_prediction_jump_disabled_for_non_zed_providers(cx: &mut gpui:
                 }
                 EditPrediction::MoveWithin { .. } | EditPrediction::MoveOutside { .. } => {
                     panic!(
-                        "Non-Zed providers should not show Move predictions (jump functionality)"
+                        "非 Zed 提供程序不应显示移动预测(跳转功能)"
                     );
                 }
             }
@@ -680,7 +680,7 @@ async fn test_hidden_edit_prediction_opens_snippet_menu_for_strong_prefix_match(
 
     cx.update_editor(|editor, _, _| {
         let Some(CodeContextMenu::Completions(menu)) = &*editor.context_menu.borrow() else {
-            panic!("expected completions menu");
+            panic!("应为补全菜单");
         };
         let entries = menu.entries.borrow();
         assert!(
@@ -736,7 +736,7 @@ async fn test_edit_prediction_preview_activates_when_prediction_arrives_with_mod
         assert!(editor.has_active_edit_prediction());
         assert!(
             editor.edit_prediction_preview_is_active(),
-            "prediction preview should activate immediately when the prediction arrives while the preview modifier is still held",
+            "当预览修饰键仍按住时,预测到达应立即激活预测预览",
         );
     });
 }
@@ -806,7 +806,7 @@ async fn test_edit_prediction_preview_does_not_hide_code_actions_on_modifier_pre
         move |_, _, _| async move {
             Ok(Some(vec![lsp::CodeActionOrCommand::CodeAction(
                 lsp::CodeAction {
-                    title: "Inline value".to_string(),
+                    title: "内联值".to_string(),
                     kind: Some(lsp::CodeActionKind::QUICKFIX),
                     ..Default::default()
                 },
@@ -846,11 +846,11 @@ async fn test_edit_prediction_preview_does_not_hide_code_actions_on_modifier_pre
     cx.update_editor(|editor, _, _| {
         assert!(
             !editor.edit_prediction_preview_is_active(),
-            "modifier-only press should not activate edit prediction preview while code actions are open"
+            "代码操作打开时,仅按修饰键不应激活编辑预测预览"
         );
         assert!(
             editor.context_menu_visible(),
-            "modifier-only press should not hide the code actions menu"
+            "仅按修饰键不应隐藏代码操作菜单"
         );
         assert!(matches!(
             editor.context_menu.borrow().as_ref(),
@@ -919,7 +919,7 @@ fn load_default_keymap(cx: &mut gpui::TestAppContext) {
                 settings::DEFAULT_KEYMAP_PATH,
                 cx,
             )
-            .expect("failed to load default keymap"),
+            .expect("无法加载默认键位映射"),
         );
     });
 }
@@ -970,19 +970,19 @@ async fn test_inline_edit_prediction_keybind_selection_cases(cx: &mut gpui::Test
             let accept_keystroke = keybind_display
                 .accept_keystroke
                 .as_ref()
-                .expect("default inline edit prediction should have an accept binding")
+                .expect("默认内联编辑预测应具有接受绑定")
                 .clone();
             let preview_keystroke = keybind_display
                 .preview_keystroke
                 .as_ref()
-                .expect("default inline edit prediction should have a preview binding")
+                .expect("默认内联编辑预测应具有预览绑定")
                 .clone();
             (accept_keystroke, preview_keystroke)
         });
 
     let cases = [
         InlineKeybindCase {
-            name: "default setup prefers tab over alt-tab for accept",
+            name: "默认设置中接受操作优先使用标签页而非 Alt-标签页",
             use_default_keymap: true,
             mode: EditPredictionsMode::Eager,
             extra_bindings: Vec::new(),
@@ -992,7 +992,7 @@ async fn test_inline_edit_prediction_keybind_selection_cases(cx: &mut gpui::Test
             expected_displayed_keystroke: ExpectedKeystroke::DefaultAccept,
         },
         InlineKeybindCase {
-            name: "subtle mode displays preview binding inline",
+            name: "微妙模式内联显示预览绑定",
             use_default_keymap: true,
             mode: EditPredictionsMode::Subtle,
             extra_bindings: Vec::new(),
@@ -1002,7 +1002,7 @@ async fn test_inline_edit_prediction_keybind_selection_cases(cx: &mut gpui::Test
             expected_displayed_keystroke: ExpectedKeystroke::DefaultPreview,
         },
         InlineKeybindCase {
-            name: "removing default tab binding still displays tab",
+            name: "移除默认标签页绑定后仍显示标签页",
             use_default_keymap: true,
             mode: EditPredictionsMode::Eager,
             extra_bindings: vec![KeyBinding::new(
@@ -1016,7 +1016,7 @@ async fn test_inline_edit_prediction_keybind_selection_cases(cx: &mut gpui::Test
             expected_displayed_keystroke: ExpectedKeystroke::DefaultPreview,
         },
         InlineKeybindCase {
-            name: "custom-only rebound accept key uses replacement key",
+            name: "仅自定义重绑定的接受键使用替换键",
             use_default_keymap: true,
             mode: EditPredictionsMode::Eager,
             extra_bindings: vec![KeyBinding::new(
@@ -1030,7 +1030,7 @@ async fn test_inline_edit_prediction_keybind_selection_cases(cx: &mut gpui::Test
             expected_displayed_keystroke: ExpectedKeystroke::Literal("ctrl-enter"),
         },
         InlineKeybindCase {
-            name: "showing completions restores conflict-context binding",
+            name: "显示补全时恢复冲突上下文绑定",
             use_default_keymap: true,
             mode: EditPredictionsMode::Eager,
             extra_bindings: vec![KeyBinding::new(
@@ -1044,7 +1044,7 @@ async fn test_inline_edit_prediction_keybind_selection_cases(cx: &mut gpui::Test
             expected_displayed_keystroke: ExpectedKeystroke::Literal("ctrl-enter"),
         },
         InlineKeybindCase {
-            name: "leading whitespace restores conflict-context binding",
+            name: "前导空白恢复冲突上下文绑定",
             use_default_keymap: false,
             mode: EditPredictionsMode::Eager,
             extra_bindings: vec![KeyBinding::new(
@@ -1058,7 +1058,7 @@ async fn test_inline_edit_prediction_keybind_selection_cases(cx: &mut gpui::Test
             expected_displayed_keystroke: ExpectedKeystroke::Literal("ctrl-enter"),
         },
         InlineKeybindCase {
-            name: "showing completions and leading whitespace restore combined conflict binding",
+            name: "显示补全和前导空白恢复组合冲突绑定",
             use_default_keymap: false,
             mode: EditPredictionsMode::Eager,
             extra_bindings: vec![KeyBinding::new(
@@ -1122,7 +1122,7 @@ async fn test_inline_edit_prediction_keybind_selection_cases(cx: &mut gpui::Test
         cx.update_editor(|editor, window, cx| {
             assert!(
                 editor.has_active_edit_prediction(),
-                "case '{}' should have an active edit prediction",
+                "用例 '{}' 应具有活动的编辑预测",
                 case.name
             );
 
@@ -1134,58 +1134,58 @@ async fn test_inline_edit_prediction_keybind_selection_cases(cx: &mut gpui::Test
             let accept_keystroke = keybind_display
                 .accept_keystroke
                 .as_ref()
-                .unwrap_or_else(|| panic!("case '{}' should have an accept binding", case.name));
+                .unwrap_or_else(|| panic!("用例 '{}' 应具有接受绑定", case.name));
             let preview_keystroke = keybind_display
                 .preview_keystroke
                 .as_ref()
-                .unwrap_or_else(|| panic!("case '{}' should have a preview binding", case.name));
+                .unwrap_or_else(|| panic!("用例 '{}' 应具有预览绑定", case.name));
             let displayed_keystroke = keybind_display
                 .displayed_keystroke
                 .as_ref()
-                .unwrap_or_else(|| panic!("case '{}' should have a displayed binding", case.name));
+                .unwrap_or_else(|| panic!("用例 '{}' 应具有显示的绑定", case.name));
 
             let expected_accept_keystroke = match case.expected_accept_keystroke {
                 ExpectedKeystroke::DefaultAccept => default_accept_keystroke.clone(),
                 ExpectedKeystroke::DefaultPreview => default_preview_keystroke.clone(),
                 ExpectedKeystroke::Literal(keystroke) => KeybindingKeystroke::from_keystroke(
-                    Keystroke::parse(keystroke).expect("expected test keystroke to parse"),
+                    Keystroke::parse(keystroke).expect("预期测试按键能够解析"),
                 ),
             };
             let expected_preview_keystroke = match case.expected_preview_keystroke {
                 ExpectedKeystroke::DefaultAccept => default_accept_keystroke.clone(),
                 ExpectedKeystroke::DefaultPreview => default_preview_keystroke.clone(),
                 ExpectedKeystroke::Literal(keystroke) => KeybindingKeystroke::from_keystroke(
-                    Keystroke::parse(keystroke).expect("expected test keystroke to parse"),
+                    Keystroke::parse(keystroke).expect("预期测试按键能够解析"),
                 ),
             };
             let expected_displayed_keystroke = match case.expected_displayed_keystroke {
                 ExpectedKeystroke::DefaultAccept => default_accept_keystroke.clone(),
                 ExpectedKeystroke::DefaultPreview => default_preview_keystroke.clone(),
                 ExpectedKeystroke::Literal(keystroke) => KeybindingKeystroke::from_keystroke(
-                    Keystroke::parse(keystroke).expect("expected test keystroke to parse"),
+                    Keystroke::parse(keystroke).expect("预期测试按键能够解析"),
                 ),
             };
 
             assert_eq!(
                 accept_keystroke, &expected_accept_keystroke,
-                "case '{}' selected the wrong accept binding",
+                "用例 '{}' 选择了错误的接受绑定",
                 case.name
             );
             assert_eq!(
                 preview_keystroke, &expected_preview_keystroke,
-                "case '{}' selected the wrong preview binding",
+                "用例 '{}' 选择了错误的预览绑定",
                 case.name
             );
             assert_eq!(
                 displayed_keystroke, &expected_displayed_keystroke,
-                "case '{}' selected the wrong displayed binding",
+                "用例 '{}' 选择了错误的显示绑定",
                 case.name
             );
 
             if matches!(case.mode, EditPredictionsMode::Subtle) {
                 assert!(
                     editor.edit_prediction_requires_modifier(),
-                    "case '{}' should require a modifier",
+                    "用例 '{}' 应需要修饰键",
                     case.name
                 );
             }
@@ -1236,32 +1236,32 @@ async fn test_cursor_popover_edit_prediction_keybind_cases(cx: &mut gpui::TestAp
 
     let cases = [
         CursorPopoverCase {
-            name: "single line prediction uses accept action",
+            name: "单行预测使用接受操作",
             prediction_kind: CursorPopoverPredictionKind::SingleLine,
             expected_action: EditPredictionKeybindAction::Accept,
         },
         CursorPopoverCase {
-            name: "multi line prediction uses preview action",
+            name: "多行预测使用预览操作",
             prediction_kind: CursorPopoverPredictionKind::MultiLine,
             expected_action: EditPredictionKeybindAction::Preview,
         },
         CursorPopoverCase {
-            name: "single line prediction with preview still uses accept action",
+            name: "带预览的单行预测仍使用接受操作",
             prediction_kind: CursorPopoverPredictionKind::SingleLineWithPreview,
             expected_action: EditPredictionKeybindAction::Accept,
         },
         CursorPopoverCase {
-            name: "multi line prediction with preview uses preview action",
+            name: "带预览的多行预测使用预览操作",
             prediction_kind: CursorPopoverPredictionKind::MultiLineWithPreview,
             expected_action: EditPredictionKeybindAction::Preview,
         },
         CursorPopoverCase {
-            name: "single line newline deletion uses accept action",
+            name: "单行换行删除使用接受操作",
             prediction_kind: CursorPopoverPredictionKind::DeleteSingleNewline,
             expected_action: EditPredictionKeybindAction::Accept,
         },
         CursorPopoverCase {
-            name: "stale multi line prediction does not force preview action",
+            name: "过时的多行预测不强制使用预览操作",
             prediction_kind: CursorPopoverPredictionKind::StaleSingleLineAfterMultiLine,
             expected_action: EditPredictionKeybindAction::Accept,
         },
@@ -1344,7 +1344,7 @@ async fn test_cursor_popover_edit_prediction_keybind_cases(cx: &mut gpui::TestAp
         cx.update_editor(|editor, window, cx| {
             assert!(
                 editor.has_active_edit_prediction(),
-                "case '{}' should have an active edit prediction",
+                "用例 '{}' 应具有活动的编辑预测",
                 case.name
             );
 
@@ -1356,15 +1356,15 @@ async fn test_cursor_popover_edit_prediction_keybind_cases(cx: &mut gpui::TestAp
             let accept_keystroke = keybind_display
                 .accept_keystroke
                 .as_ref()
-                .unwrap_or_else(|| panic!("case '{}' should have an accept binding", case.name));
+                .unwrap_or_else(|| panic!("用例 '{}' 应具有接受绑定", case.name));
             let preview_keystroke = keybind_display
                 .preview_keystroke
                 .as_ref()
-                .unwrap_or_else(|| panic!("case '{}' should have a preview binding", case.name));
+                .unwrap_or_else(|| panic!("用例 '{}' 应具有预览绑定", case.name));
 
             assert_eq!(
                 keybind_display.action, case.expected_action,
-                "case '{}' selected the wrong cursor popover action",
+                "用例 '{}' 选择了错误的游标弹窗操作",
                 case.name
             );
             assert_eq!(
@@ -1375,7 +1375,7 @@ async fn test_cursor_popover_edit_prediction_keybind_cases(cx: &mut gpui::TestAp
             );
             assert!(
                 preview_keystroke.modifiers().modified(),
-                "case '{}' should use a modified preview binding",
+                "用例 '{}' 应使用修改后的预览绑定",
                 case.name
             );
 
@@ -1385,7 +1385,7 @@ async fn test_cursor_popover_edit_prediction_keybind_cases(cx: &mut gpui::TestAp
             ) {
                 assert!(
                     editor.stale_edit_prediction_in_menu.is_none(),
-                    "case '{}' should clear stale menu state",
+                    "用例 '{}' 应清除过时的菜单状态",
                     case.name
                 );
             }
@@ -1401,12 +1401,12 @@ fn assert_editor_active_edit_completion(
         let completion_state = editor
             .active_edit_prediction
             .as_ref()
-            .expect("editor has no active completion");
+            .expect("编辑器没有活动的补全");
 
         if let EditPrediction::Edit { edits, .. } = &completion_state.completion {
             assert(editor.buffer().read(cx).snapshot(cx), edits);
         } else {
-            panic!("expected edit completion");
+            panic!("预期编辑补全");
         }
     })
 }
@@ -1419,12 +1419,12 @@ fn assert_editor_active_move_completion(
         let completion_state = editor
             .active_edit_prediction
             .as_ref()
-            .expect("editor has no active completion");
+            .expect("编辑器没有活动的补全");
 
         if let EditPrediction::MoveWithin { target, .. } = &completion_state.completion {
             assert(editor.buffer().read(cx).snapshot(cx), *target);
         } else {
-            panic!("expected move completion");
+            panic!("预期移动补全");
         }
     })
 }
@@ -1489,7 +1489,7 @@ async fn test_discard_clears_delegate_completion(cx: &mut gpui::TestAppContext) 
     cx.update_editor(|editor, _window, _cx| {
         assert!(
             editor.active_edit_prediction.is_none(),
-            "prediction must not resurface after discard()"
+            "调用 discard() 后预测不得重新出现"
         );
     });
 }
@@ -1616,8 +1616,8 @@ async fn hidden_edit_prediction_snippet_test_context(
                 let snippet = project::snippet_provider::Snippet {
                     prefix: vec!["Theta".to_string(), "turnstile".to_string()],
                     body: "⊢".to_string(),
-                    description: Some("unicode symbol".to_string()),
-                    name: "unicode snippets".to_string(),
+                    description: Some("Unicode 符号".to_string()),
+                    name: "Unicode 代码片段".to_string(),
                 };
                 snippets.add_snippet_for_test(
                     None,
@@ -1765,7 +1765,7 @@ impl EditPredictionDelegate for FakeEditPredictionDelegate {
     }
 
     fn display_name() -> &'static str {
-        "Fake Completion Provider"
+        "模拟补全提供程序"
     }
 
     fn show_predictions_in_menu() -> bool {
@@ -1844,7 +1844,7 @@ impl EditPredictionDelegate for FakeNonZedEditPredictionDelegate {
     }
 
     fn display_name() -> &'static str {
-        "Fake Non-Zed Provider"
+        "模拟非 Zed 提供程序"
     }
 
     fn show_predictions_in_menu() -> bool {

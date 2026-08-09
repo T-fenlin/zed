@@ -413,12 +413,12 @@ impl VsCodeThemeConverter {
                 });
 
             let Some(token_color) = best_match else {
-                log::warn!("No matching token color found for '{syntax_token}'");
+                log::warn!("未找到与 '{syntax_token}' 匹配的令牌颜色");
                 continue;
             };
 
             log::info!(
-                "Matched '{syntax_token}' to '{}'",
+                "已将 '{syntax_token}' 匹配到 '{}'",
                 token_color
                     .name
                     .clone()
@@ -426,7 +426,7 @@ impl VsCodeThemeConverter {
                         .scope
                         .as_ref()
                         .map(|scope| format!("{:?}", scope)))
-                    .unwrap_or_else(|| "no identifier".to_string())
+                    .unwrap_or_else(|| "无标识符".to_string())
             );
 
             let highlight_style = HighlightStyleContent {

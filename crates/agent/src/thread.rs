@@ -69,9 +69,9 @@ use std::{
 use util::{ResultExt, debug_panic, markdown::MarkdownCodeBlock, paths::PathStyle};
 use uuid::Uuid;
 
-const TOOL_CANCELED_MESSAGE: &str = "Tool canceled by user";
+const TOOL_CANCELED_MESSAGE: &str = "用户已取消工具";
 const TOOL_CALL_INTERRUPTED_BY_FOLLOW_UP_MESSAGE: &str =
-    "Permission denied: user sent a follow-up message instead of approving the tool call.";
+    "权限被拒绝:用户发送了后续消息,而不是批准工具调用。";
 pub(crate) const FOLLOW_UP_PERMISSION_DENIED_OPTION_ID: &str = "follow_up_permission_denied";
 pub const MAX_TOOL_NAME_LENGTH: usize = 64;
 pub const MAX_SUBAGENT_DEPTH: u8 = 1;
@@ -132,7 +132,7 @@ pub struct NoModelConfiguredError;
 
 impl std::fmt::Display for NoModelConfiguredError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "no language model configured")
+        write!(f, "未配置语言模型")
     }
 }
 
@@ -204,7 +204,7 @@ impl CompactionInfo {
             Self::Summary(summary) => vec![LanguageModelRequestMessage {
                 role: Role::User,
                 content: vec![format!(
-                    "The previous conversation was compacted. Use this summary as context:\n\n{}",
+                    "之前的对话已压缩。请使用此摘要作为上下文:\n\n{}",
                     summary
                 )
                 .into()],
@@ -237,7 +237,7 @@ impl Message {
             Message::Compaction(info) => info.to_request(),
             Message::Resume => vec![LanguageModelRequestMessage {
                 role: Role::User,
-                content: vec!["Continue where you left off".into()],
+                content: vec!["从上次中断处继续".into()],
                 cache: false,
                 reasoning_details: None,
             }],
@@ -249,7 +249,7 @@ impl Message {
             Message::User(message) => message.to_markdown(),
             Message::Agent(message) => message.to_markdown(),
             Message::Resume => "[resume]\n".into(),
-            Message::Compaction(_) => "--- Context Compacted ---\n".into(),
+            Message::Compaction(_) => "--- 上下文已压缩 ---\n".into(),
         }
     }
 
@@ -322,12 +322,12 @@ impl UserMessage {
         const OPEN_THREADS_TAG: &str = "<threads>";
         const OPEN_FETCH_TAG: &str = "<fetched_urls>";
         const OPEN_RULES_TAG: &str =
-            "<rules>\nThe user has specified the following rules that should be applied:\n";
+            "<rules>\n用户指定了以下应遵循的规则:\n";
         const OPEN_DIAGNOSTICS_TAG: &str = "<diagnostics>";
         const OPEN_DIFFS_TAG: &str = "<diffs>";
         const MERGE_CONFLICT_TAG: &str = "<merge_conflicts>";
         const OPEN_SKILLS_TAG: &str =
-            "<skills>\nThe user has attached the following agent skills:\n";
+            "<skills>\n用户附加了以下代理技能:\n";
 
         let mut file_context = OPEN_FILES_TAG.to_string();
         let mut directory_context = OPEN_DIRECTORIES_TAG.to_string();
@@ -363,7 +363,7 @@ impl UserMessage {
                             .ok();
                         }
                         MentionUri::PastedImage { .. } => {
-                            debug_panic!("pasted image URI should not be used in mention content")
+                            debug_panic!("粘贴的图片 URI 不应在提及内容中使用")
                         }
                         MentionUri::Directory { .. } => {
                             write!(&mut directory_context, "\n{}\n", content).ok();
@@ -393,7 +393,7 @@ impl UserMessage {
                                 "\n{}",
                                 MarkdownCodeBlock {
                                     tag: &codeblock_tag(
-                                        path.as_deref().unwrap_or("Untitled".as_ref()),
+                                        path.as_deref().unwrap_or("未命名".as_ref()),
                                         Some(line_range)
                                     ),
                                     text: content
@@ -417,7 +417,7 @@ impl UserMessage {
                             .ok();
                         }
                         MentionUri::Fetch { url } => {
-                            write!(&mut fetch_context, "\nFetch: {}\n\n{}", url, content).ok();
+                            write!(&mut fetch_context, "\n获取: {}\n\n{}", url, content).ok();
                         }
                         MentionUri::Diagnostics { .. } => {
                             write!(&mut diagnostics_context, "\n{}\n", content).ok();
@@ -436,7 +436,7 @@ impl UserMessage {
                         MentionUri::GitDiff { base_ref } => {
                             write!(
                                 &mut diffs_context,
-                                "\nBranch diff against {}:\n{}",
+                                "\n与 {} 的分支差异:\n{}",
                                 base_ref,
                                 MarkdownCodeBlock {
                                     tag: "diff",
@@ -448,7 +448,7 @@ impl UserMessage {
                         MentionUri::MergeConflict { file_path } => {
                             write!(
                                 &mut merge_conflict_context,
-                                "\nMerge conflict in {}:\n{}",
+                                "\n{} 中的合并冲突:\n{}",
                                 file_path,
                                 MarkdownCodeBlock {
                                     tag: "diff",
@@ -459,7 +459,7 @@ impl UserMessage {
                         }
                         MentionUri::Skill { name, source, .. } => {
                             let label = format!("{} ({})", name, source);
-                            write!(&mut skills_context, "\nSkill: {}\n{}\n", label, content).ok();
+                            write!(&mut skills_context, "\n技能: {}\n{}\n", label, content).ok();
                         }
                     }
 
@@ -603,7 +603,7 @@ impl AgentMessage {
                 }
                 AgentMessageContent::ToolUse(tool_use) => {
                     markdown.push_str(&format!(
-                        "**Tool Use**: {} (ID: {})\n",
+                        "**工具使用**: {} (ID: {})\n",
                         tool_use.name, tool_use.id
                     ));
                     markdown.push_str(&format!(
@@ -619,11 +619,11 @@ impl AgentMessage {
 
         for tool_result in self.tool_results.values() {
             markdown.push_str(&format!(
-                "**Tool Result**: {} (ID: {})\n\n",
+                "**工具结果**: {} (ID: {})\n\n",
                 tool_result.tool_name, tool_result.tool_use_id
             ));
             if tool_result.is_error {
-                markdown.push_str("**ERROR:**\n");
+                markdown.push_str("**错误:**\n");
             }
 
             for part in &tool_result.content {
@@ -640,7 +640,7 @@ impl AgentMessage {
             if let Some(output) = tool_result.output.as_ref() {
                 writeln!(
                     markdown,
-                    "**Debug Output**:\n\n```json\n{}\n```\n",
+                    "**调试输出**:\n\n```json\n{}\n```\n",
                     serde_json::to_string_pretty(output).unwrap()
                 )
                 .unwrap();
@@ -699,7 +699,7 @@ impl AgentMessage {
             // Surprisingly, the API fails if we return an empty string here.
             // It thinks we are sending a tool use without a tool result.
             if tool_result.is_content_empty() {
-                tool_result.content = vec!["<Tool returned an empty string>".into()];
+                tool_result.content = vec!["<工具返回了空字符串>".into()];
             }
             user_message
                 .content
@@ -772,7 +772,7 @@ pub trait ThreadEnvironment {
         _cx: &mut App,
     ) -> Result<Rc<dyn SubagentHandle>> {
         Err(anyhow::anyhow!(
-            "Resuming subagent sessions is not supported"
+            "不支持恢复子代理会话"
         ))
     }
 
@@ -787,7 +787,7 @@ pub trait ThreadEnvironment {
         let _ = request;
         let _ = cx;
         Task::ready(Err(anyhow::anyhow!(
-            "Creating sibling threads is not supported in this environment"
+            "此环境不支持创建同级线程"
         )))
     }
 
@@ -795,7 +795,7 @@ pub trait ThreadEnvironment {
     fn list_available_agents(&self, cx: &mut App) -> Result<AvailableAgents> {
         let _ = cx;
         Err(anyhow::anyhow!(
-            "Listing available agents is not supported in this environment"
+            "此环境不支持列出可用代理"
         ))
     }
 }
@@ -815,7 +815,7 @@ pub struct SiblingThreadRequest {
     /// Whether to create the thread in a new git worktree workspace.
     pub use_new_worktree: bool,
     /// Optional worktree directory name. When `None`, the UI generates a
-    /// random non-colliding name (matching the manual "Create worktree"
+    /// random non-colliding name (matching the manual "创建工作树"
     /// flow). Only relevant when `use_new_worktree` is true.
     pub worktree_name: Option<String>,
     /// Git ref (branch, tag, or commit) to base the new worktree on.
@@ -938,10 +938,10 @@ impl ToolPermissionContext {
     ///
     /// # Shell Compatibility for Terminal Tool
     ///
-    /// For the terminal tool, "Always allow" options are only shown when the user's
+    /// For the terminal tool, "始终允许" options are only shown when the user's
     /// shell supports POSIX-like command chaining syntax (`&&`, `||`, `;`, `|`).
     ///
-    /// **Why this matters:** When a user sets up an "always allow" pattern like `^cargo`,
+    /// **Why this matters:** When a user sets up an "始终允许" pattern like `^cargo`,
     /// we need to parse the command to extract all sub-commands and verify that EVERY
     /// sub-command matches the pattern. Otherwise, an attacker could craft a command like
     /// `cargo build && rm -rf /` that would bypass the security check.
@@ -952,7 +952,7 @@ impl ToolPermissionContext {
     /// **Unsupported shells:** Nushell (uses `and`/`or` keywords), Elvish (uses `and`/`or`
     /// keywords), Rc (Plan 9 shell - no `&&`/`||` operators)
     ///
-    /// For unsupported shells, we hide the "Always allow" UI options entirely, and if
+    /// For unsupported shells, we hide the "始终允许" UI options entirely, and if
     /// the user has `always_allow` rules configured in settings, `ToolPermissionDecision::from_input`
     /// will return a `Deny` with an explanatory error message.
     pub fn build_permission_options(&self) -> acp_thread::PermissionOptions {
@@ -965,12 +965,12 @@ impl ToolPermissionContext {
             return acp_thread::PermissionOptions::Flat(vec![
                 acp::PermissionOption::new(
                     acp::PermissionOptionId::new("allow"),
-                    "Yes",
+                    "是",
                     acp::PermissionOptionKind::AllowOnce,
                 ),
                 acp::PermissionOption::new(
                     acp::PermissionOptionId::new("deny"),
-                    "No",
+                    "否",
                     acp::PermissionOptionKind::RejectOnce,
                 ),
             ]);
@@ -981,12 +981,12 @@ impl ToolPermissionContext {
             return acp_thread::PermissionOptions::Flat(vec![
                 acp::PermissionOption::new(
                     acp::PermissionOptionId::new("allow"),
-                    "Allow",
+                    "允许",
                     acp::PermissionOptionKind::AllowOnce,
                 ),
                 acp::PermissionOption::new(
                     acp::PermissionOptionId::new("deny"),
-                    "Deny",
+                    "拒绝",
                     acp::PermissionOptionKind::RejectOnce,
                 ),
             ]);
@@ -1010,12 +1010,12 @@ impl ToolPermissionContext {
                     choices.push(acp_thread::PermissionOptionChoice {
                         allow: acp::PermissionOption::new(
                             acp::PermissionOptionId::new(format!("always_allow:{}", tool_name)),
-                            format!("Always for {}", tool_name.replace('_', " ")),
+                            format!("始终对 {}", tool_name.replace('_', " ")),
                             acp::PermissionOptionKind::AllowAlways,
                         ),
                         deny: acp::PermissionOption::new(
                             acp::PermissionOptionId::new(format!("always_deny:{}", tool_name)),
-                            format!("Always for {}", tool_name.replace('_', " ")),
+                            format!("始终对 {}", tool_name.replace('_', " ")),
                             acp::PermissionOptionKind::RejectAlways,
                         ),
                         sub_patterns: vec![],
@@ -1023,12 +1023,12 @@ impl ToolPermissionContext {
                     choices.push(acp_thread::PermissionOptionChoice {
                         allow: acp::PermissionOption::new(
                             acp::PermissionOptionId::new("allow"),
-                            "Only this time",
+                            "仅此一次",
                             acp::PermissionOptionKind::AllowOnce,
                         ),
                         deny: acp::PermissionOption::new(
                             acp::PermissionOptionId::new("deny"),
-                            "Only this time",
+                            "仅此一次",
                             acp::PermissionOptionKind::RejectOnce,
                         ),
                         sub_patterns: vec![],
@@ -1070,7 +1070,7 @@ impl ToolPermissionContext {
         };
 
         // Extract patterns from all input values. Only offer a pattern-specific
-        // "always allow/deny" button when every value produces the same pattern.
+        // "始终允许/拒绝" button when every value produces the same pattern.
         let (pattern, pattern_display) = match input_values.as_slice() {
             [single] => extract_for_value(single),
             _ => {
@@ -1109,7 +1109,7 @@ impl ToolPermissionContext {
 
         if shell_supports_always_allow {
             push_choice(
-                format!("Always for {}", tool_name.replace('_', " ")),
+                format!("始终对 {}", tool_name.replace('_', " ")),
                 format!("always_allow:{}", tool_name),
                 format!("always_deny:{}", tool_name),
                 acp::PermissionOptionKind::AllowAlways,
@@ -1119,9 +1119,9 @@ impl ToolPermissionContext {
 
             if let (Some(pattern), Some(display)) = (pattern, pattern_display) {
                 let button_text = if tool_name == TerminalTool::NAME {
-                    format!("Always for `{}` commands", display)
+                    format!("始终用于 `{}` 命令", display)
                 } else {
-                    format!("Always for `{}`", display)
+                    format!("始终对 `{}`", display)
                 };
                 push_choice(
                     button_text,
@@ -1135,7 +1135,7 @@ impl ToolPermissionContext {
         }
 
         push_choice(
-            "Only this time".to_string(),
+            "仅此一次".to_string(),
             "allow".to_string(),
             "deny".to_string(),
             acp::PermissionOptionKind::AllowOnce,
@@ -1177,7 +1177,7 @@ fn auto_resolve_permission_outcome(
     };
     let option = options
         .first_option_of_kind(kind)
-        .ok_or_else(|| anyhow!("permission prompt has no auto-resolution option"))?;
+        .ok_or_else(|| anyhow!("权限提示没有自动解决选项"))?;
 
     Ok(acp_thread::SelectedPermissionOutcome::new(
         option.option_id.clone(),
@@ -1187,7 +1187,7 @@ fn auto_resolve_permission_outcome(
 
 #[derive(Debug, thiserror::Error)]
 enum CompletionError {
-    #[error("max tokens")]
+    #[error("最大令牌数")]
     MaxTokens,
     #[error("refusal")]
     Refusal,
@@ -1281,7 +1281,7 @@ pub struct Thread {
     running_subagents: Vec<WeakEntity<Thread>>,
     inherits_parent_model_settings: bool,
     sandboxed_terminal_temp_dir: Option<PathBuf>,
-    /// Sandbox permissions the user approved "for the rest of the thread".
+    /// Sandbox permissions the user approved "对于线程的其余部分".
     /// Shared with each tool call's event stream so repeated requests for
     /// already-granted permissions skip the approval prompt.
     /// Never persisted — lives and dies with this thread.
@@ -1447,7 +1447,7 @@ impl Thread {
     ) {
         let Some(model) = Self::resolve_model_from_selection(selection, cx) else {
             log::warn!(
-                "failed to resolve configured subagent model: {}/{}",
+                "无法解析配置的子代理模型: {}/{}",
                 selection.provider.0,
                 selection.model
             );
@@ -1478,7 +1478,7 @@ impl Thread {
         if let Some(temp_dir) = &self.sandboxed_terminal_temp_dir {
             std::fs::create_dir_all(temp_dir).with_context(|| {
                 format!(
-                    "failed to recreate sandboxed terminal temp directory {}",
+                    "无法重新创建沙盒终端临时目录 {}",
                     temp_dir.display()
                 )
             })?;
@@ -1488,7 +1488,7 @@ impl Thread {
         let temp_dir = tempfile::Builder::new()
             .prefix("zed-agent-terminal-")
             .tempdir()
-            .context("failed to create sandboxed terminal temp directory")?;
+            .context("无法创建沙盒终端临时目录")?;
         let temp_dir = temp_dir.keep();
         self.sandboxed_terminal_temp_dir = Some(temp_dir.clone());
         cx.notify();
@@ -2182,7 +2182,7 @@ impl Thread {
     pub fn add_tool<T: AgentTool>(&mut self, tool: T) {
         debug_assert!(
             !self.tools.contains_key(T::NAME),
-            "Duplicate tool name: {}",
+            "重复的工具名称: {}",
             T::NAME,
         );
         self.tools.insert(T::NAME.into(), tool.erase());
@@ -2368,7 +2368,7 @@ impl Thread {
         let Some(position) = self.messages.iter().position(|msg| {
             matches!(&**msg, Message::User(UserMessage { id, .. }) if id == &client_user_message_id)
         }) else {
-            return Err(anyhow!("Message not found"));
+            return Err(anyhow!("未找到消息"));
         };
 
         for message in self.messages.drain(position..) {
@@ -2480,7 +2480,7 @@ impl Thread {
         self.messages.push(Arc::new(Message::Resume));
         cx.notify();
 
-        log::debug!("Total messages in thread: {}", self.messages.len());
+        log::debug!("线程中的消息总数: {}", self.messages.len());
         self.run_turn(cx)
     }
 
@@ -2517,7 +2517,7 @@ impl Thread {
         log::info!("Thread::send called with model: {}", model.name().0);
         self.advance_prompt_id();
 
-        log::debug!("Total messages in thread: {}", self.messages.len());
+        log::debug!("线程中的消息总数: {}", self.messages.len());
         self.run_turn(cx)
     }
 
@@ -2590,7 +2590,7 @@ impl Thread {
                     // so we leave `pending_compaction_telemetry` in place here.
                     Ok(_) => event_stream.send_stop(acp::StopReason::EndTurn),
                     Err(error) => {
-                        log::error!("Manual compaction failed: {:?}", error);
+                        log::error!("手动压缩失败: {:?}", error);
                         this.update(cx, |this, _| {
                             this.emit_compaction_telemetry_outcome(
                                 "failed",
@@ -2634,15 +2634,15 @@ impl Thread {
     pub fn push_acp_agent_block(&mut self, block: acp::ContentBlock, cx: &mut Context<Self>) {
         let text = match block {
             acp::ContentBlock::Text(text_content) => text_content.text,
-            acp::ContentBlock::Image(_) => "[image]".to_string(),
-            acp::ContentBlock::Audio(_) => "[audio]".to_string(),
+            acp::ContentBlock::Image(_) => "[图片]".to_string(),
+            acp::ContentBlock::Audio(_) => "[音频]".to_string(),
             acp::ContentBlock::ResourceLink(resource_link) => resource_link.uri,
             acp::ContentBlock::Resource(resource) => match resource.resource {
                 acp::EmbeddedResourceResource::TextResourceContents(resource) => resource.uri,
                 acp::EmbeddedResourceResource::BlobResourceContents(resource) => resource.uri,
-                _ => "[resource]".to_string(),
+                _ => "[资源]".to_string(),
             },
-            _ => "[unknown]".to_string(),
+            _ => "[未知]".to_string(),
         };
 
         self.messages.push(Arc::new(Message::Agent(AgentMessage {
@@ -2671,7 +2671,7 @@ impl Thread {
         let task = cx.spawn({
             let event_stream = event_stream.clone();
             async move |this, cx| {
-                log::debug!("Starting agent turn execution");
+                log::debug!("开始代理回合执行");
 
                 let turn_result =
                     Self::run_turn_internal(&this, &event_stream, cancellation_rx.clone(), cx)
@@ -2681,7 +2681,7 @@ impl Thread {
                 // and we shouldn't touch it (it might be a NEW turn now)
                 let was_cancelled = *cancellation_rx.borrow();
                 if was_cancelled {
-                    log::debug!("Turn was cancelled, skipping cleanup");
+                    log::debug!("回合已取消,跳过清理");
                     return;
                 }
 
@@ -2689,11 +2689,11 @@ impl Thread {
 
                 match turn_result {
                     Ok(()) => {
-                        log::debug!("Turn execution completed");
+                        log::debug!("回合执行完成");
                         event_stream.send_stop(acp::StopReason::EndTurn);
                     }
                     Err(error) => {
-                        log::error!("Turn execution failed: {:?}", error);
+                        log::error!("回合执行失败: {:?}", error);
                         match error.downcast::<CompletionError>() {
                             Ok(CompletionError::Refusal) => {
                                 event_stream.send_stop(acp::StopReason::Refusal);
@@ -2747,7 +2747,7 @@ impl Thread {
                     return Ok(());
                 }
                 Err(error) => {
-                    log::error!("Compaction failed: {}", error);
+                    log::error!("压缩失败: {}", error);
                     let error_message = error.to_string();
                     match error.downcast::<LanguageModelCompletionError>() {
                         Ok(error) => {
@@ -2818,7 +2818,7 @@ impl Thread {
             })??;
 
             telemetry::event!(
-                "Agent Thread Completion",
+                "代理线程完成",
                 thread_id = this.read_with(cx, |this, _| this.id.to_string())?,
                 parent_thread_id = this.read_with(cx, |this, _| this
                     .parent_thread_id()
@@ -2829,7 +2829,7 @@ impl Thread {
                 attempt
             );
 
-            log::debug!("Calling model.stream_completion, attempt {}", attempt);
+            log::debug!("正在调用 model.stream_completion,尝试 {}", attempt);
 
             let (mut events, mut error) = match model.stream_completion(request, cx).await {
                 Ok(events) => (events.fuse(), None),
@@ -2892,7 +2892,7 @@ impl Thread {
                     let mut batch_error = None;
 
                     for event in batch {
-                        log::trace!("Received completion event: {:?}", event);
+                        log::trace!("收到补全事件: {:?}", event);
                         match event {
                             Ok(event) => {
                                 match this.handle_completion_event(
@@ -2926,7 +2926,7 @@ impl Thread {
                         .downcast_ref::<CompletionError>()
                         .is_some_and(|e| matches!(e, CompletionError::Refusal));
                     if is_refusal {
-                        log::info!("Model refused request; checking for fallback model");
+                        log::info!("模型拒绝了请求;正在检查备用模型");
                         had_refusal = true;
                         break;
                     }
@@ -2950,7 +2950,7 @@ impl Thread {
                     if running_turn.streaming_tool_inputs.is_empty() {
                         return;
                     }
-                    log::warn!("Dropping partial tool inputs because the stream ended");
+                    log::warn!("由于流结束,丢弃部分工具输入");
                     running_turn.streaming_tool_inputs.drain();
                 }
             })?;
@@ -2962,7 +2962,7 @@ impl Thread {
                         Some(id) => id,
                         None => {
                             log::info!(
-                                "Refusal fallback: no fallback configured for model {} (provider {})",
+                                "拒绝回退:模型 {} (提供方 {}) 未配置备用模型",
                                 current_model.id().0,
                                 current_model.provider_id()
                             );
@@ -2978,7 +2978,7 @@ impl Thread {
                         });
                     if found.is_none() {
                         log::info!(
-                            "Refusal fallback: fallback model {}/{} not found in available models",
+                            "拒绝回退:在可用模型中未找到备用模型 {}/{}",
                             provider_id,
                             fallback_id
                         );
@@ -2987,14 +2987,14 @@ impl Thread {
                 })?;
 
                 if let Some(fallback) = maybe_fallback {
-                    log::info!("Refusal fallback: retrying with {}", fallback.id().0);
+                    log::info!("拒绝回退:正在使用 {} 重试", fallback.id().0);
                     let fallback_name = fallback.name().0.clone();
                     this.update(cx, |this, cx| {
                         this.pending_message = None;
                         this.set_model(fallback.clone(), cx);
                     })?;
                     event_stream.send_retry(acp_thread::RetryStatus {
-                        last_error: "Safety filter triggered".into(),
+                        last_error: "安全过滤器已触发".into(),
                         attempt: 1,
                         max_attempts: 1,
                         started_at: Instant::now(),
@@ -3004,7 +3004,7 @@ impl Thread {
                     refusal_fallback_model = Some(fallback);
                     continue;
                 }
-                log::info!("Request refused with no fallback model available");
+                log::info!("请求被拒绝,且没有可用的备用模型");
                 return Err(CompletionError::Refusal.into());
             }
 
@@ -3025,7 +3025,7 @@ impl Thread {
             })?;
 
             if cancelled {
-                log::debug!("Turn cancelled by user, exiting");
+                log::debug!("回合已被用户取消,正在退出");
                 return Ok(());
             }
 
@@ -3058,7 +3058,7 @@ impl Thread {
                 let end_at_boundary =
                     this.update(cx, |this, _| this.end_turn_at_next_boundary())?;
                 if end_at_boundary {
-                    log::debug!("Steering message queued, ending turn at message boundary");
+                    log::debug!("引导消息已排队,在消息边界结束回合");
                     return Ok(());
                 }
                 intent = CompletionIntent::ToolResults;
@@ -3089,7 +3089,7 @@ impl Thread {
             _ = timer.fuse() => {}
             _ = cancellation_rx.changed().fuse() => {
                 if *cancellation_rx.borrow() {
-                    log::debug!("Turn cancelled during retry delay, exiting");
+                    log::debug!("重试延迟期间回合被取消,正在退出");
                     return Ok(ControlFlow::Break(()));
                 }
             }
@@ -3141,7 +3141,7 @@ impl Thread {
         insertion: CompactionInsertion,
         cx: &mut AsyncApp,
     ) -> Result<ControlFlow<()>> {
-        log::debug!("Running compaction");
+        log::debug!("正在运行压缩");
         let compaction_id = acp_thread::ContextCompactionId(Uuid::new_v4().to_string().into());
         event_stream.send_context_compaction(
             compaction_id.clone(),
@@ -3151,7 +3151,7 @@ impl Thread {
             result = model.stream_completion(request, cx).fuse() => result,
             _ = cancellation_rx.changed().fuse() => {
                 if *cancellation_rx.borrow() {
-                    log::debug!("Compaction cancelled before request started");
+                    log::debug!("压缩在请求开始前被取消");
                     return Ok(ControlFlow::Break(()));
                 }
                 return Ok(ControlFlow::Continue(()));
@@ -3165,7 +3165,7 @@ impl Thread {
                 event = stream.next().fuse() => event,
                 _ = cancellation_rx.changed().fuse() => {
                     if *cancellation_rx.borrow() {
-                        log::debug!("Compaction cancelled while summarizing");
+                        log::debug!("压缩在摘要生成过程中被取消");
                         return Ok(ControlFlow::Break(()));
                     }
                     continue;
@@ -3200,17 +3200,17 @@ impl Thread {
         }
 
         if *cancellation_rx.borrow() {
-            log::debug!("Compaction cancelled after summarizing");
+            log::debug!("压缩在摘要生成后被取消");
             return Ok(ControlFlow::Break(()));
         }
 
         let summary = summary.trim().to_string();
         if summary.is_empty() {
-            log::warn!("Compaction produced an empty summary");
-            return Err(anyhow::anyhow!("Compaction produced an empty summary"));
+            log::warn!("压缩生成了空摘要");
+            return Err(anyhow::anyhow!("压缩生成了空摘要"));
         }
 
-        log::debug!("Compaction succeeded:\n{summary}");
+        log::debug!("压缩成功:\n{summary}");
         event_stream.update_context_compaction_status(
             compaction_id,
             acp_thread::ContextCompactionStatus::Completed,
@@ -3247,7 +3247,7 @@ impl Thread {
         owning_message_ix: usize,
         tool_result: LanguageModelToolResult,
     ) -> Result<(), anyhow::Error> {
-        log::debug!("Tool finished {:?}", tool_result);
+        log::debug!("工具完成 {:?}", tool_result);
 
         event_stream.update_tool_call_fields(
             &scoped_tool_call_id(owning_message_ix, &tool_result.tool_use_id),
@@ -3313,7 +3313,7 @@ impl Thread {
             }
             RetryStrategy::Fixed { delay, .. } => *delay,
         };
-        log::debug!("Retry attempt {attempt} with delay {delay:?}");
+        log::debug!("重试尝试 {attempt},延迟 {delay:?}");
 
         Ok(acp_thread::RetryStatus {
             last_error: error.to_string().into(),
@@ -3335,7 +3335,7 @@ impl Thread {
         cancellation_rx: watch::Receiver<bool>,
         cx: &mut Context<Self>,
     ) -> Result<Option<Task<(usize, LanguageModelToolResult)>>> {
-        log::trace!("Handling streamed completion event: {:?}", event);
+        log::trace!("正在处理流式完成事件: {:?}", event);
         use LanguageModelCompletionEvent::*;
 
         match event {
@@ -3381,7 +3381,7 @@ impl Thread {
             }
             UsageUpdate(usage) => {
                 telemetry::event!(
-                    "Agent Thread Completion Usage Updated",
+                    "代理线程完成使用量已更新",
                     thread_id = self.id.to_string(),
                     parent_thread_id = self.parent_thread_id().map(|id| id.to_string()),
                     prompt_id = self.prompt_id.to_string(),
@@ -3474,7 +3474,7 @@ impl Thread {
         self.send_or_update_tool_use(&tool_use, title, kind, owning_message_ix, event_stream);
 
         let Some(tool) = tool else {
-            let content = format!("No tool named {} exists", tool_use.name);
+            let content = format!("不存在名为 {} 的工具", tool_use.name);
             return Some(Task::ready((
                 owning_message_ix,
                 LanguageModelToolResult {
@@ -3522,7 +3522,7 @@ impl Thread {
                     .insert(tool_use.id.clone(), sender);
 
                 let tool = tool.clone();
-                log::debug!("Running streaming tool {}", tool_use.name);
+                log::debug!("正在运行流式工具 {}", tool_use.name);
                 return Some(self.run_tool(
                     tool,
                     tool_input,
@@ -3548,7 +3548,7 @@ impl Thread {
             return None;
         }
 
-        log::debug!("Running tool {}", tool_use.name);
+        log::debug!("正在运行工具 {}", tool_use.name);
         let tool_input = ToolInput::ready(input);
         Some(self.run_tool(
             tool,
@@ -3589,7 +3589,7 @@ impl Thread {
                     tool_name,
                     is_error: true,
                     content: vec![LanguageModelToolResultContent::Text(Arc::from(
-                        "workspace has become restricted",
+                        "工作区已受到限制",
                     ))],
                     output: None,
                 },
@@ -3626,7 +3626,7 @@ impl Thread {
                         // to match the pre-multi-part behavior for image-only
                         // tool results.
                         let placeholder = LanguageModelToolResultContent::Text(Arc::from(
-                            "[Tool responded with an image, but this model doesn't support images]",
+                            "[工具以图片响应,但此模型不支持图片]",
                         ));
                         let has_non_image = output
                             .llm_output
@@ -3644,7 +3644,7 @@ impl Thread {
                             (false, output)
                         } else {
                             let output = anyhow::anyhow!(
-                                "Attempted to read an image, but this model doesn't support it.",
+                                "尝试读取图片,但此模型不支持。",
                             )
                             .into();
                             (true, output)
@@ -3699,7 +3699,7 @@ impl Thread {
         let tool = self.tool(tool_use.name.as_ref());
 
         let Some(tool) = tool else {
-            let content = format!("No tool named {} exists", tool_use.name);
+            let content = format!("不存在名为 {} 的工具", tool_use.name);
             return Some(Task::ready((
                 owning_message_ix,
                 LanguageModelToolResult {
@@ -3712,7 +3712,7 @@ impl Thread {
             )));
         };
 
-        let error_message = format!("Error parsing input JSON: {json_parse_error}");
+        let error_message = format!("解析输入 JSON 时出错: {json_parse_error}");
 
         if tool.supports_input_streaming()
             && let Some(mut sender) = self
@@ -3725,7 +3725,7 @@ impl Thread {
             return None;
         }
 
-        log::debug!("Running tool {}. Received invalid JSON", tool_use.name);
+        log::debug!("正在运行工具 {}。收到无效的 JSON", tool_use.name);
         let tool_input = ToolInput::invalid_json(error_message);
         Some(self.run_tool(
             tool,
@@ -3817,7 +3817,7 @@ impl Thread {
             return task;
         }
         let Some(model) = self.summarization_model.clone() else {
-            log::error!("No summarization model available");
+            log::error!("没有可用的摘要模型");
             return Task::ready(None).shared();
         };
         let mut request = LanguageModelRequest {
@@ -3850,7 +3850,7 @@ impl Thread {
                     summary.extend(lines.next());
                 }
 
-                log::debug!("Setting summary: {}", summary);
+                log::debug!("正在设置摘要: {}", summary);
                 let summary = SharedString::from(summary);
 
                 this.update(cx, |this, cx| {
@@ -3906,7 +3906,7 @@ impl Thread {
         cx: &mut Context<Self>,
     ) {
         self.title_generation_error = None;
-        log::debug!("Generating title with model: {:?}", model.name());
+        log::debug!("正在使用模型生成标题: {:?}", model.name());
 
         let temperature = AgentSettings::temperature_for_model(&model, cx);
         let request = build_thread_title_request(&self.messages, temperature);
@@ -3914,7 +3914,7 @@ impl Thread {
         let title_generation = cx.spawn(async move |_this, cx| {
             stream_thread_title(model, request, cx)
                 .await
-                .context("failed to generate thread title")
+                .context("无法生成线程标题")
                 .map(SharedString::from)
         });
 
@@ -4027,7 +4027,7 @@ impl Thread {
             turn.tools
                 .iter()
                 .filter_map(|(tool_name, tool)| {
-                    log::trace!("Including tool: {}", tool_name);
+                    log::trace!("包含工具: {}", tool_name);
                     let mut description = tool.description().to_string();
                     let mut schema = tool.input_schema(model.tool_input_format()).log_err()?;
                     // TEMPORARY (sandboxing feature flag): with the flag off,
@@ -4041,7 +4041,7 @@ impl Thread {
                     if !sandboxing_enabled {
                         if tool_name.as_ref() == FetchTool::NAME {
                             description =
-                                "Fetches a URL and returns the content as Markdown.".to_string();
+                                "获取 URL 并将内容作为 Markdown 返回。".to_string();
                         } else if tool_name.as_ref() == CreateDirectoryTool::NAME {
                             description = "Creates a new directory at the specified path within \
                                 the project. Returns confirmation that the directory was \
@@ -4071,8 +4071,8 @@ impl Thread {
             Vec::new()
         };
 
-        log::debug!("Building completion request");
-        log::debug!("Completion intent: {:?}", completion_intent);
+        log::debug!("正在构建完成请求");
+        log::debug!("完成意图: {:?}", completion_intent);
 
         let available_tools: Vec<_> = self
             .running_turn
@@ -4080,9 +4080,9 @@ impl Thread {
             .map(|turn| turn.tools.keys().cloned().collect())
             .unwrap_or_default();
 
-        log::debug!("Request includes {} tools", available_tools.len());
+        log::debug!("请求包含 {} 个工具", available_tools.len());
         let messages = self.build_request_messages(available_tools, cx);
-        log::debug!("Request will include {} messages", messages.len());
+        log::debug!("请求将包含 {} 条消息", messages.len());
 
         let request = LanguageModelRequest {
             thread_id: Some(self.id.to_string()),
@@ -4102,7 +4102,7 @@ impl Thread {
             compact_at_tokens: None,
         };
 
-        log::debug!("Completion request built successfully");
+        log::debug!("完成请求构建成功");
         Ok(request)
     }
 
@@ -4290,7 +4290,7 @@ impl Thread {
         cx: &App,
     ) -> Vec<LanguageModelRequestMessage> {
         let end_ix = end_ix.min(self.messages.len());
-        log::trace!("Building request messages from {} thread messages", end_ix);
+        log::trace!("正在从 {} 条线程消息构建请求消息", end_ix);
 
         let user_agents_md = UserAgentsMd::global(cx).and_then(|s| s.content().cloned());
         let system_prompt = SystemPromptTemplate {
@@ -4307,8 +4307,8 @@ impl Thread {
             is_windows: cfg!(target_os = "windows"),
         }
         .render(&self.templates)
-        .context("failed to build system prompt")
-        .expect("Invalid template");
+        .context("无法构建系统提示词")
+        .expect("无效的模板");
         let mut messages = vec![LanguageModelRequestMessage {
             role: Role::System,
             content: vec![system_prompt.into()],
@@ -4480,7 +4480,7 @@ impl Thread {
         let mut markdown = messages_to_markdown(&self.messages);
 
         if let Some(message) = self.pending_message.as_ref() {
-            markdown.push_str("\n## Assistant\n\n");
+            markdown.push_str("\n## 助手\n\n");
             markdown.push_str(&message.to_markdown());
         }
 
@@ -4530,7 +4530,7 @@ impl Thread {
                     max_attempts: 3,
                 }),
                 status => {
-                    // There is no StatusCode variant for the unofficial HTTP 529 ("The service is overloaded"),
+                    // There is no StatusCode variant for the unofficial HTTP 529 ("服务过载"),
                     // but we frequently get them in practice. See https://http.dev/529
                     if status.as_u16() == 529 {
                         Some(RetryStrategy::Fixed {
@@ -4619,7 +4619,7 @@ fn auto_compact_threshold_token_count(
     }
 }
 
-/// Snapshot of the data needed to report an `"Agent Compaction Completed"`
+/// Snapshot of the data needed to report an `"代理压缩完成"`
 /// telemetry event, captured when a compaction starts.
 struct CompactionTelemetry {
     /// `"auto"` for threshold-triggered compaction, `"manual"` for `/compact`.
@@ -4644,7 +4644,7 @@ struct CompactionTelemetry {
 impl CompactionTelemetry {
     fn emit(self, status: &'static str, error: Option<String>, tokens_after: Option<u64>) {
         telemetry::event!(
-            "Agent Compaction Completed",
+            "代理压缩完成",
             trigger = self.trigger,
             status = status,
             error = error,
@@ -4790,7 +4790,7 @@ impl RunningTurn {
     }
 
     fn cancel(mut self) -> Task<()> {
-        log::debug!("Cancelling in progress turn");
+        log::debug!("正在取消进行中的回合");
         self.cancellation_tx.send(true).ok();
         self.event_stream.send_canceled();
         self._task
@@ -4804,8 +4804,8 @@ pub(crate) fn messages_to_markdown(messages: &[Arc<Message>]) -> String {
             markdown.push('\n');
         }
         match &**message {
-            Message::User(_) => markdown.push_str("## User\n\n"),
-            Message::Agent(_) => markdown.push_str("## Assistant\n\n"),
+            Message::User(_) => markdown.push_str("## 用户\n\n"),
+            Message::Agent(_) => markdown.push_str("## 助手\n\n"),
             Message::Resume | Message::Compaction(_) => {}
         }
         markdown.push_str(&message.to_markdown());
@@ -4946,7 +4946,7 @@ pub struct ToolInput<T> {
 impl<T: DeserializeOwned> ToolInput<T> {
     #[cfg(any(test, feature = "test-support"))]
     pub fn resolved(input: impl Serialize) -> Self {
-        let value = serde_json::to_value(input).expect("failed to serialize tool input");
+        let value = serde_json::to_value(input).expect("无法序列化工具输入");
         Self::ready(value)
     }
 
@@ -4987,7 +4987,7 @@ impl<T: DeserializeOwned> ToolInput<T> {
                 }
             }
         }
-        Err(anyhow!("tool input was not fully received"))
+        Err(anyhow!("工具输入未完全接收"))
     }
 
     pub async fn next(&mut self) -> Result<ToolInputPayload<T>> {
@@ -4995,7 +4995,7 @@ impl<T: DeserializeOwned> ToolInput<T> {
             .rx
             .next()
             .await
-            .ok_or_else(|| anyhow!("tool input was not fully received"))?;
+            .ok_or_else(|| anyhow!("工具输入未完全接收"))?;
 
         Ok(match value {
             ToolInputPayload::Partial(payload) => ToolInputPayload::Partial(payload),
@@ -5157,7 +5157,7 @@ impl From<anyhow::Error> for AgentToolOutput {
     fn from(error: anyhow::Error) -> Self {
         let llm_output = vec![error.into()];
         let raw_output = serde_json::to_value(&llm_output).unwrap_or_else(|e| {
-            log::error!("Failed to serialize tool output: {e}");
+            log::error!("无法序列化工具输出: {e}");
             serde_json::Value::Null
         });
         Self {
@@ -5248,7 +5248,7 @@ where
         cx.spawn(async move |_cx| match task.await {
             Ok(output) => {
                 let raw_output = serde_json::to_value(&output).unwrap_or_else(|e| {
-                    log::error!("Failed to serialize tool output: {e}");
+                    log::error!("无法序列化工具输出: {e}");
                     serde_json::Value::Null
                 });
                 Ok(AgentToolOutput {
@@ -5258,7 +5258,7 @@ where
             }
             Err(error_output) => {
                 let raw_output = serde_json::to_value(&error_output).unwrap_or_else(|e| {
-                    log::error!("Failed to serialize tool error output: {e}");
+                    log::error!("无法序列化工具错误输出: {e}");
                     serde_json::Value::Null
                 });
                 Err(AgentToolOutput {
@@ -5474,7 +5474,7 @@ pub struct ToolCallEventStream {
     cancellation_rx: watch::Receiver<bool>,
     /// Shared, thread-scoped sandbox grants (see [`Thread::sandbox_grants`]).
     sandbox_grants: Rc<RefCell<ThreadSandboxGrants>>,
-    /// The owning thread, used to trigger a save when a "for this thread"
+    /// The owning thread, used to trigger a save when a "仅此对话线程"
     /// sandbox grant is recorded so it survives reopening. `None` in tests and
     /// for streams not tied to a live thread.
     thread: Option<WeakEntity<Thread>>,
@@ -5566,7 +5566,7 @@ impl ToolCallEventStream {
     }
 
     /// Whether the owning thread is a subagent, so prompts can say "for this
-    /// subagent" instead of "for this thread".
+    /// subagent" 而不是 "仅此对话线程".
     fn is_subagent(&self, cx: &App) -> bool {
         self.thread
             .as_ref()
@@ -5574,7 +5574,7 @@ impl ToolCallEventStream {
             .is_some_and(|thread| thread.read(cx).is_subagent())
     }
 
-    /// Persist the thread so a freshly recorded "for this thread" sandbox grant
+    /// Persist the thread so a freshly recorded "仅此对话线程" sandbox grant
     /// survives a reopen. Saving is driven by the agent's `observe` on the
     /// thread entity, so a no-op `notify` is enough to schedule it.
     fn persist_thread_grants(thread: &Option<WeakEntity<Thread>>, cx: &AsyncApp) {
@@ -5662,8 +5662,8 @@ impl ToolCallEventStream {
     /// They only support `default` (allow/deny/confirm) per tool.
     ///
     /// Uses the dropdown authorization flow with two granularities:
-    /// - "Always for <display_name> MCP tool" → sets `tools.<tool_id>.default = "allow"` or "deny"
-    /// - "Only this time" → allow/deny once
+    /// - "始终对 <display_name> MCP 工具" → sets `tools.<tool_id>.default = "allow"` or "deny"
+    /// - "仅此一次" → allow/deny once
     pub fn authorize_third_party_tool(
         &self,
         title: impl Into<String>,
@@ -5676,12 +5676,12 @@ impl ToolCallEventStream {
             acp_thread::PermissionOptionChoice {
                 allow: acp::PermissionOption::new(
                     acp::PermissionOptionId::new(format!("always_allow_mcp:{tool_id}")),
-                    format!("Always for {display_name} MCP tool"),
+                    format!("始终对 {display_name} MCP 工具"),
                     acp::PermissionOptionKind::AllowAlways,
                 ),
                 deny: acp::PermissionOption::new(
                     acp::PermissionOptionId::new(format!("always_deny_mcp:{tool_id}")),
-                    format!("Always for {display_name} MCP tool"),
+                    format!("始终对 {display_name} MCP 工具"),
                     acp::PermissionOptionKind::RejectAlways,
                 ),
                 sub_patterns: vec![],
@@ -5689,12 +5689,12 @@ impl ToolCallEventStream {
             acp_thread::PermissionOptionChoice {
                 allow: acp::PermissionOption::new(
                     acp::PermissionOptionId::new("allow"),
-                    "Only this time",
+                    "仅此一次",
                     acp::PermissionOptionKind::AllowOnce,
                 ),
                 deny: acp::PermissionOption::new(
                     acp::PermissionOptionId::new("deny"),
-                    "Only this time",
+                    "仅此一次",
                     acp::PermissionOptionKind::RejectOnce,
                 ),
                 sub_patterns: vec![],
@@ -5720,10 +5720,10 @@ impl ToolCallEventStream {
     /// if the tool is already allowed, an error if it is denied, and
     /// otherwise prompts the user for a decision. While a prompt is pending,
     /// a subscription to `SettingsStore` watches for changes (for example,
-    /// when the user clicks "Always for …" on a sibling tool call and the
+    /// when the user clicks "始终对…" on a sibling tool call and the
     /// new rule becomes globally visible). When settings change, the current
     /// prompt is dismissed and the decision is re-evaluated. This closes the
-    /// gap where an "Always for …" decision on one pending tool call would
+    /// gap where an "始终对…" decision on one pending tool call would
     /// not propagate to other pending tool calls in the same turn or in
     /// subagent turns.
     ///
@@ -5773,7 +5773,7 @@ impl ToolCallEventStream {
     /// filesystem write access) on user approval.
     ///
     /// Offers the user three grant lifetimes — "once", "for the rest of this
-    /// thread", and "always". Thread grants live in the shared, in-memory
+    /// thread",以及 "always". Thread grants live in the shared, in-memory
     /// [`ThreadSandboxGrants`]. Always grants are persisted in agent settings
     /// and are also observed while a prompt is pending, matching the
     /// settings-driven authorization flow for regular tools.
@@ -5811,14 +5811,14 @@ impl ToolCallEventStream {
             reason,
         };
         let allow_thread_label = if self.is_subagent(cx) {
-            "Allow for this subagent"
+            "允许此子代理"
         } else {
-            "Allow for this thread"
+            "允许此对话线程"
         };
         let options = acp_thread::PermissionOptions::Flat(vec![
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new(acp_thread::SandboxPermission::AllowOnce.as_id()),
-                "Allow once",
+                "允许一次",
                 acp::PermissionOptionKind::AllowOnce,
             ),
             acp::PermissionOption::new(
@@ -5828,12 +5828,12 @@ impl ToolCallEventStream {
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new(acp_thread::SandboxPermission::AllowAlways.as_id()),
-                "Allow always",
+                "始终允许",
                 acp::PermissionOptionKind::AllowAlways,
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new(acp_thread::SandboxPermission::Deny.as_id()),
-                "Deny",
+                "拒绝",
                 acp::PermissionOptionKind::RejectOnce,
             ),
         ]);
@@ -5869,8 +5869,8 @@ impl ToolCallEventStream {
                     },
                 )))
             {
-                log::error!("Failed to send sandbox authorization: {error}");
-                return Err(anyhow!("Failed to send sandbox authorization: {error}"));
+                log::error!("无法发送沙盒授权: {error}");
+                return Err(anyhow!("无法发送沙盒授权: {error}"));
             }
 
             let (mut settings_tx, mut settings_rx) = watch::channel(());
@@ -5888,7 +5888,7 @@ impl ToolCallEventStream {
                 };
                 futures::select_biased! {
                     outcome = (&mut response_rx).fuse() => {
-                        let outcome = outcome.map_err(|_| anyhow!("authorization channel closed"))?;
+                        let outcome = outcome.map_err(|_| anyhow!("授权通道已关闭"))?;
                         ensure_tool_call_authorization_not_interrupted(&outcome)?;
                         return Self::handle_sandbox_permission_outcome(
                             &outcome,
@@ -5923,8 +5923,8 @@ impl ToolCallEventStream {
     /// guarantees. This is a transient gate *in front of* the normal sandbox
     /// flow — it is never persisted or recorded as a grant; the only way to
     /// stop it recurring is to disable `warn_ntfs_grants` in settings (offered
-    /// via the banner's gear). Returns `Ok(())` on "Continue" (after which the
-    /// caller proceeds to any escalation prompt) and `Err` on "Abort".
+    /// via the banner's gear). Returns `Ok(())` on "继续" (after which the
+    /// caller proceeds to any escalation prompt) and `Err` on "中止".
     pub(crate) fn authorize_windows_fs_warning(&self, cx: &mut App) -> Task<Result<()>> {
         // If the warning is already disabled, don't prompt.
         if !AgentSettings::get_global(cx)
@@ -5947,12 +5947,12 @@ impl ToolCallEventStream {
         let options = acp_thread::PermissionOptions::Flat(vec![
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new(acp_thread::SandboxPermission::AllowOnce.as_id()),
-                "Continue",
+                "继续",
                 acp::PermissionOptionKind::AllowOnce,
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new(acp_thread::SandboxPermission::Deny.as_id()),
-                "Abort",
+                "中止",
                 acp::PermissionOptionKind::RejectOnce,
             ),
         ]);
@@ -5960,7 +5960,7 @@ impl ToolCallEventStream {
         let stream = self.stream.clone();
         // The update must target the ACP-facing (scoped) id: an update keyed
         // by the raw provider id matches no existing tool call, and creating
-        // one from empty fields is rejected downstream ("title is required"),
+        // one from empty fields is rejected downstream ("需要标题"),
         // which tears down the stream and turns the prompt into a phantom
         // decline.
         let tool_call_id = self.tool_call_id.clone();
@@ -5985,19 +5985,19 @@ impl ToolCallEventStream {
                     },
                 )))
             {
-                log::error!("Failed to send Windows-drive sandbox warning: {error}");
+                log::error!("无法发送 Windows 驱动器沙盒警告: {error}");
                 return Err(anyhow!(
-                    "Failed to send Windows-drive sandbox warning: {error}"
+                    "无法发送 Windows 驱动器沙盒警告: {error}"
                 ));
             }
 
             let outcome = response_rx
                 .await
-                .map_err(|_| anyhow!("authorization channel closed"))?;
+                .map_err(|_| anyhow!("授权通道已关闭"))?;
             ensure_tool_call_authorization_not_interrupted(&outcome)?;
             match acp_thread::SandboxPermission::from_id(outcome.option_id.0.as_ref()) {
                 Some(acp_thread::SandboxPermission::AllowOnce) => Ok(()),
-                _ => Err(anyhow!("Windows-drive write aborted by user")),
+                _ => Err(anyhow!("Windows 驱动器写入已被用户中止")),
             }
         })
     }
@@ -6023,7 +6023,7 @@ impl ToolCallEventStream {
     ) -> Result<()> {
         debug_assert!(
             outcome.params.is_none(),
-            "unexpected params for sandbox permission"
+            "沙盒权限的意外参数"
         );
 
         match acp_thread::SandboxPermission::from_id(outcome.option_id.0.as_ref()) {
@@ -6038,12 +6038,12 @@ impl ToolCallEventStream {
                 Ok(())
             }
             Some(acp_thread::SandboxPermission::Deny) => {
-                Err(anyhow!("Permission to run tool denied by user"))
+                Err(anyhow!("运行工具的权限已被用户拒绝"))
             }
             None => {
                 let other = outcome.option_id.0.as_ref();
-                debug_assert!(false, "unexpected sandbox permission option_id: {other}");
-                Err(anyhow!("Permission to run tool denied by user"))
+                debug_assert!(false, "意外的沙盒权限 option_id: {other}");
+                Err(anyhow!("运行工具的权限已被用户拒绝"))
             }
         }
     }
@@ -6055,7 +6055,7 @@ impl ToolCallEventStream {
     ) {
         let Some(fs) = fs else {
             log::error!(
-                "Cannot persist \"allow always\" sandbox permission: no filesystem available"
+                "无法持久化“始终允许”沙盒权限:没有可用的文件系统"
             );
             return;
         };
@@ -6116,7 +6116,7 @@ impl ToolCallEventStream {
 
     /// The sandbox permissions to actually enforce for a command: the union
     /// of this command's `request`, everything granted "for the rest of the
-    /// conversation", and persistent "allow always" sandbox grants.
+    /// conversation",以及持久性 "allow always" sandbox grants.
     ///
     /// Callers must apply this to the enforced sandbox policy (rather than
     /// the raw `request`) so standing grants keep working for later commands
@@ -6166,14 +6166,14 @@ impl ToolCallEventStream {
     /// *escalation* — this surfaces a *system limitation*: the sandbox failed,
     /// so the prompt explains why (`reason`) and lets the user retry, run the
     /// command unsandboxed (once / for this thread / always), or deny it. The
-    /// "for this thread" choice is recorded in the in-memory thread grants and
+    /// "仅此对话线程" choice is recorded in the in-memory thread grants and
     /// "always" is persisted as the `allow_unsandboxed` setting. Only the
     /// Bubblewrap sandboxes (Linux directly, Windows via WSL) can fail to
     /// create a sandbox, so this is gated to those platforms.
     ///
     /// `retries` is how many times the user has already pressed Retry for this
     /// command; it's shown on the button so repeated presses visibly advance
-    /// ("Retry", then "Retry (attempt 1)", "Retry (attempt 2)", …).
+    /// ("重试", then "重试(尝试 1)", "重试(尝试 2)", …).
     #[cfg(any(target_os = "linux", target_os = "windows"))]
     pub(crate) fn authorize_sandbox_fallback(
         &self,
@@ -6189,20 +6189,20 @@ impl ToolCallEventStream {
             docs_section,
         };
         let retry_label = if retries == 0 {
-            "Retry".to_string()
+            "重试".to_string()
         } else {
-            format!("Retry (attempt {retries})")
+            format!("重试(尝试 {retries})")
         };
         let allow_thread_label = if self.is_subagent(cx) {
-            "Run without sandbox for this subagent"
+            "对此子代理在无沙盒模式下运行"
         } else {
-            "Run without sandbox for this thread"
+            "对此线程在无沙盒模式下运行"
         };
         let options = acp_thread::PermissionOptions::Flat(vec![
             // Retry isn't an allow/deny choice; the UI renders it with its own
             // icon and we dispatch on the option id, so the kind here only
             // governs keybindings. Use `RejectAlways` (which has none) so the
-            // "allow once" shortcut maps to "Run without sandbox once" rather
+            // "允许一次" shortcut maps to "在无沙盒模式下运行一次" rather
             // than to Retry.
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new(acp_thread::SANDBOX_FALLBACK_RETRY_OPTION_ID),
@@ -6211,7 +6211,7 @@ impl ToolCallEventStream {
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new(acp_thread::SandboxPermission::AllowOnce.as_id()),
-                "Run without sandbox once",
+                "在无沙盒模式下运行一次",
                 acp::PermissionOptionKind::AllowOnce,
             ),
             acp::PermissionOption::new(
@@ -6221,12 +6221,12 @@ impl ToolCallEventStream {
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new(acp_thread::SandboxPermission::AllowAlways.as_id()),
-                "Always run without sandbox",
+                "始终在无沙盒模式下运行",
                 acp::PermissionOptionKind::AllowAlways,
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new(acp_thread::SandboxPermission::Deny.as_id()),
-                "Deny",
+                "拒绝",
                 acp::PermissionOptionKind::RejectOnce,
             ),
         ]);
@@ -6261,15 +6261,15 @@ impl ToolCallEventStream {
                     },
                 )))
             {
-                log::error!("Failed to send sandbox fallback authorization: {error}");
+                log::error!("无法发送沙盒回退授权: {error}");
                 return Err(anyhow!(
-                    "Failed to send sandbox fallback authorization: {error}"
+                    "无法发送沙盒回退授权: {error}"
                 ));
             }
 
             let outcome = response_rx
                 .await
-                .map_err(|_| anyhow!("authorization channel closed"))?;
+                .map_err(|_| anyhow!("授权通道已关闭"))?;
             ensure_tool_call_authorization_not_interrupted(&outcome)?;
 
             let option_id = outcome.option_id.0.as_ref();
@@ -6294,7 +6294,7 @@ impl ToolCallEventStream {
                 Some(acp_thread::SandboxPermission::Deny) => Ok(SandboxFallbackDecision::Deny),
                 None => {
                     let other = option_id;
-                    debug_assert!(false, "unexpected sandbox fallback option_id: {other}");
+                    debug_assert!(false, "意外的沙盒回退 option_id: {other}");
                     Ok(SandboxFallbackDecision::Deny)
                 }
             }
@@ -6309,7 +6309,7 @@ impl ToolCallEventStream {
     fn persist_sandbox_unsandboxed_permission(fs: Option<Arc<dyn Fs>>, cx: &AsyncApp) {
         let Some(fs) = fs else {
             log::error!(
-                "Cannot persist \"allow always\" unsandboxed permission: no filesystem available"
+                "无法持久化“始终允许”无沙盒权限:没有可用的文件系统"
             );
             return;
         };
@@ -6330,7 +6330,7 @@ impl ToolCallEventStream {
     /// does not interpret the user's choice as a permission grant — callers
     /// are responsible for handling each `option_id` explicitly. Use this
     /// when a tool needs the user to pick between several side-effecting
-    /// actions (for example, "Save" vs "Discard" for a dirty buffer).
+    /// actions (for example, "保存" vs "放弃" for a dirty buffer).
     pub fn prompt_for_decision(
         &self,
         title: Option<String>,
@@ -6363,13 +6363,13 @@ impl ToolCallEventStream {
                     },
                 )))
             {
-                log::error!("Failed to send tool call decision prompt: {error}");
-                return Err(anyhow!("Failed to send tool call decision prompt: {error}"));
+                log::error!("无法发送工具调用决策提示: {error}");
+                return Err(anyhow!("无法发送工具调用决策提示: {error}"));
             }
 
             let outcome = response_rx
                 .await
-                .map_err(|_| anyhow!("authorization channel closed"))?;
+                .map_err(|_| anyhow!("授权通道已关闭"))?;
             ensure_tool_call_authorization_not_interrupted(&outcome)?;
             Ok(outcome.option_id)
         })
@@ -6437,20 +6437,20 @@ impl ToolCallEventStream {
                     },
                 )))
             {
-                log::error!("Failed to send tool call authorization: {error}");
-                return Err(anyhow!("Failed to send tool call authorization: {error}"));
+                log::error!("无法发送工具调用授权: {error}");
+                return Err(anyhow!("无法发送工具调用授权: {error}"));
             }
 
             let Some(check_settings) = check_settings else {
                 let outcome = response_rx
                     .await
-                    .map_err(|_| anyhow!("authorization channel closed"))?;
+                    .map_err(|_| anyhow!("授权通道已关闭"))?;
                 ensure_tool_call_authorization_not_interrupted(&outcome)?;
 
                 return Self::persist_permission_outcome(&outcome, fs, cx);
             };
             let Some((auto_allow_outcome, auto_deny_outcome)) = auto_resolution_outcomes else {
-                return Err(anyhow!("missing auto-resolution outcomes"));
+                return Err(anyhow!("缺少自动解决结果"));
             };
 
             let (mut settings_tx, mut settings_rx) = watch::channel(());
@@ -6473,7 +6473,7 @@ impl ToolCallEventStream {
                 };
                 futures::select_biased! {
                     outcome = (&mut response_rx).fuse() => {
-                        let outcome = outcome.map_err(|_| anyhow!("authorization channel closed"))?;
+                        let outcome = outcome.map_err(|_| anyhow!("授权通道已关闭"))?;
                         ensure_tool_call_authorization_not_interrupted(&outcome)?;
                         return Self::persist_permission_outcome(&outcome, fs.clone(), cx);
                     }
@@ -6516,7 +6516,7 @@ impl ToolCallEventStream {
         cx: &AsyncApp,
     ) -> Result<()> {
         let option_id = outcome.option_id.0.as_ref();
-        let err = || Err(anyhow!("Permission to run tool denied by user"));
+        let err = || Err(anyhow!("运行工具的权限已被用户拒绝"));
 
         let always_permission = option_id
             .strip_prefix("always_allow:")
@@ -6551,17 +6551,17 @@ impl ToolCallEventStream {
         if option_id == "allow" || option_id == "deny" {
             debug_assert!(
                 outcome.params.is_none(),
-                "unexpected params for once-only permission"
+                "一次性权限的意外参数"
             );
             return if option_id == "allow" { Ok(()) } else { err() };
         }
 
-        debug_assert!(false, "unexpected permission option_id: {option_id}");
+        debug_assert!(false, "意外的权限 option_id: {option_id}");
 
         err()
     }
 
-    /// Persists an "always allow" or "always deny" permission, using sub_patterns
+    /// Persists an "始终允许" or "始终拒绝" permission, using sub_patterns
     /// from params when present.
     fn persist_always_permission(
         tool: &str,
@@ -6580,7 +6580,7 @@ impl ToolCallEventStream {
             }) => {
                 debug_assert!(
                     !sub_patterns.is_empty(),
-                    "empty sub_patterns for tool {tool} — callers should pass None instead"
+                    "工具 {tool} 的 sub_patterns 为空 — 调用方应改为传递 None"
                 );
                 let tool = tool.to_string();
                 let sub_patterns = sub_patterns.clone();
@@ -6629,7 +6629,7 @@ impl ToolCallEventStreamReceiver {
         if let Some(Ok(ThreadEvent::ToolCallAuthorization(auth))) = event {
             auth
         } else {
-            panic!("Expected ToolCallAuthorization but got: {:?}", event);
+            panic!("预期 ToolCallAuthorization,但收到: {:?}", event);
         }
     }
 
@@ -6641,7 +6641,7 @@ impl ToolCallEventStreamReceiver {
         {
             update.fields
         } else {
-            panic!("Expected update fields but got: {:?}", event);
+            panic!("预期更新字段,但收到:{:?}", event);
         }
     }
 
@@ -6656,7 +6656,7 @@ impl ToolCallEventStreamReceiver {
         {
             (tool_call_id, outcome)
         } else {
-            panic!("Expected authorization resolved but got: {:?}", event);
+            panic!("预期授权已解决,但收到:{:?}", event);
         }
     }
 
@@ -6668,7 +6668,7 @@ impl ToolCallEventStreamReceiver {
         {
             update.diff
         } else {
-            panic!("Expected diff but got: {:?}", event);
+            panic!("预期差异,但收到:{:?}", event);
         }
     }
 
@@ -6680,7 +6680,7 @@ impl ToolCallEventStreamReceiver {
         {
             update.terminal
         } else {
-            panic!("Expected terminal but got: {:?}", event);
+            panic!("预期终端,但收到:{:?}", event);
         }
     }
 }
@@ -6720,7 +6720,7 @@ impl UserMessageContent {
             acp::ContentBlock::Image(image_content) => Self::Image(convert_image(image_content)),
             acp::ContentBlock::Audio(_) => {
                 // TODO
-                Self::Text("[audio]".to_string())
+                Self::Text("[音频]".to_string())
             }
             acp::ContentBlock::ResourceLink(resource_link) => {
                 match MentionUri::parse(&resource_link.uri, path_style) {
@@ -6729,7 +6729,7 @@ impl UserMessageContent {
                         content: SharedString::default(),
                     },
                     Err(err) => {
-                        log::error!("Failed to parse mention link: {}", err);
+                        log::error!("无法解析提及链接:{}", err);
                         Self::Text(format!("[{}]({})", resource_link.name, resource_link.uri))
                     }
                 }
@@ -6742,7 +6742,7 @@ impl UserMessageContent {
                             content: resource.text.into(),
                         },
                         Err(err) => {
-                            log::error!("Failed to parse mention link: {}", err);
+                            log::error!("无法解析提及链接:{}", err);
                             Self::Text(
                                 MarkdownCodeBlock {
                                     tag: &resource.uri,
@@ -6758,13 +6758,13 @@ impl UserMessageContent {
                     Self::Text("[blob]".to_string())
                 }
                 other => {
-                    log::warn!("Unexpected content type: {:?}", other);
-                    Self::Text("[unknown]".to_string())
+                    log::warn!("意外的内容类型: {:?}", other);
+                    Self::Text("[未知]".to_string())
                 }
             },
             other => {
-                log::warn!("Unexpected content type: {:?}", other);
-                Self::Text("[unknown]".to_string())
+                log::warn!("意外的内容类型: {:?}", other);
+                Self::Text("[未知]".to_string())
             }
         }
     }
@@ -6859,10 +6859,10 @@ mod tests {
 
     #[test]
     fn test_summary_compaction_renders_for_request_and_markdown() {
-        let message = Message::Compaction(CompactionInfo::Summary("Older context".into()));
+        let message = Message::Compaction(CompactionInfo::Summary("较早的上下文".into()));
 
         assert_eq!(message.role(), Role::User);
-        assert_eq!(message.to_markdown(), "--- Context Compacted ---\n");
+        assert_eq!(message.to_markdown(), "--- 上下文已压缩 ---\n");
 
         let request_messages = message.to_request();
         assert_eq!(request_messages.len(), 1);
@@ -6871,11 +6871,11 @@ mod tests {
         assert_eq!(request_messages[0].reasoning_details, None);
         assert_eq!(request_messages[0].content.len(), 1);
         let language_model::MessageContent::Text(text) = &request_messages[0].content[0] else {
-            panic!("expected text summary context");
+            panic!("预期文本摘要上下文");
         };
         assert_eq!(
             text.as_str(),
-            "The previous conversation was compacted. Use this summary as context:\n\nOlder context"
+            "之前的对话已压缩。请使用此摘要作为上下文:\n\n较早的上下文"
         );
     }
 
@@ -6899,7 +6899,7 @@ mod tests {
 
     fn summary_request_text(summary: &str) -> String {
         format!(
-            "The previous conversation was compacted. Use this summary as context:\n\n{summary}"
+            "之前的对话已压缩。请使用此摘要作为上下文:\n\n{summary}"
         )
     }
 
@@ -6928,21 +6928,21 @@ mod tests {
                 thread.set_summarization_model(Some(summary_model.clone()), cx);
                 thread
                     .messages
-                    .push(user_text_message(ClientUserMessageId::new(), "old user"));
-                thread.messages.push(agent_text_message("old assistant"));
-                thread.messages.push(summary_compaction("first summary"));
+                    .push(user_text_message(ClientUserMessageId::new(), "旧用户"));
+                thread.messages.push(agent_text_message("旧助手"));
+                thread.messages.push(summary_compaction("第一个摘要"));
                 thread.messages.push(user_text_message(
                     ClientUserMessageId::new(),
-                    "between user",
+                    "用户之间",
                 ));
                 thread
                     .messages
-                    .push(agent_text_message("between assistant"));
-                thread.messages.push(summary_compaction("latest summary"));
+                    .push(agent_text_message("助手之间"));
+                thread.messages.push(summary_compaction("最新摘要"));
                 thread
                     .messages
-                    .push(user_text_message(ClientUserMessageId::new(), "after user"));
-                thread.messages.push(agent_text_message("after assistant"));
+                    .push(user_text_message(ClientUserMessageId::new(), "用户之后"));
+                thread.messages.push(agent_text_message("助手之后"));
 
                 thread.summary(cx)
             })
@@ -6957,31 +6957,31 @@ mod tests {
         assert_eq!(
             request_texts(&summary_request.messages),
             vec![
-                "old user".to_string(),
-                "between user".to_string(),
-                summary_request_text("latest summary"),
-                "after user".to_string(),
-                "after assistant".to_string(),
+                "旧用户".to_string(),
+                "用户之间".to_string(),
+                summary_request_text("最新摘要"),
+                "用户之后".to_string(),
+                "助手之后".to_string(),
                 SUMMARIZE_THREAD_DETAILED_PROMPT.to_string(),
             ]
         );
 
-        summary_model.send_completion_stream_text_chunk(&summary_request, "thread summary");
+        summary_model.send_completion_stream_text_chunk(&summary_request, "对话线程摘要");
         summary_model.end_completion_stream(&summary_request);
-        assert_eq!(summary_task.await.as_deref(), Some("thread summary"));
+        assert_eq!(summary_task.await.as_deref(), Some("对话线程摘要"));
     }
 
     #[test]
     fn test_thread_title_request_uses_compacted_history() {
         let messages = vec![
-            user_text_message(ClientUserMessageId::new(), "old user"),
-            agent_text_message("old assistant"),
-            summary_compaction("first summary"),
-            user_text_message(ClientUserMessageId::new(), "between user"),
-            agent_text_message("between assistant"),
-            summary_compaction("latest summary"),
-            user_text_message(ClientUserMessageId::new(), "after user"),
-            agent_text_message("after assistant"),
+            user_text_message(ClientUserMessageId::new(), "旧用户"),
+            agent_text_message("旧助手"),
+            summary_compaction("第一个摘要"),
+            user_text_message(ClientUserMessageId::new(), "用户之间"),
+            agent_text_message("助手之间"),
+            summary_compaction("最新摘要"),
+            user_text_message(ClientUserMessageId::new(), "用户之后"),
+            agent_text_message("助手之后"),
         ];
 
         let request = build_thread_title_request(&messages, Some(0.2));
@@ -6991,11 +6991,11 @@ mod tests {
         assert_eq!(
             request_texts(&request.messages),
             vec![
-                "old user".to_string(),
-                "between user".to_string(),
-                summary_request_text("latest summary"),
-                "after user".to_string(),
-                "after assistant".to_string(),
+                "旧用户".to_string(),
+                "用户之间".to_string(),
+                summary_request_text("最新摘要"),
+                "用户之后".to_string(),
+                "助手之后".to_string(),
                 SUMMARIZE_THREAD_PROMPT.to_string(),
             ]
         );
@@ -7012,7 +7012,7 @@ mod tests {
                 thread.set_model(model, cx);
                 thread
                     .messages
-                    .push(user_text_message(user_message_id.clone(), "below limit"));
+                    .push(user_text_message(user_message_id.clone(), "低于限制"));
                 thread.request_token_usage.insert(
                     user_message_id.clone(),
                     language_model::TokenUsage {
@@ -7048,7 +7048,7 @@ mod tests {
                 thread.set_model(model, cx);
                 thread.messages.push(user_text_message(
                     user_message_id.clone(),
-                    "near input limit",
+                    "接近输入限制",
                 ));
                 thread.request_token_usage.insert(
                     user_message_id.clone(),
@@ -7118,7 +7118,7 @@ mod tests {
                 thread.set_model(model, cx);
                 thread
                     .messages
-                    .push(user_text_message(user_message_id.clone(), "near limit"));
+                    .push(user_text_message(user_message_id.clone(), "接近限制"));
                 thread.request_token_usage.insert(
                     user_message_id.clone(),
                     language_model::TokenUsage {
@@ -7150,7 +7150,7 @@ mod tests {
                 thread.set_model(model, cx);
                 thread.messages.push(user_text_message(
                     user_message_id.clone(),
-                    "fixed token limit",
+                    "固定令牌限制",
                 ));
                 thread.request_token_usage.insert(
                     user_message_id.clone(),
@@ -7215,7 +7215,7 @@ mod tests {
                 thread.set_model(model, cx);
                 thread
                     .messages
-                    .push(user_text_message(user_message_id.clone(), "near limit"));
+                    .push(user_text_message(user_message_id.clone(), "接近限制"));
                 thread.request_token_usage.insert(
                     user_message_id.clone(),
                     language_model::TokenUsage {
@@ -7243,8 +7243,8 @@ mod tests {
                 thread.set_model(model.clone(), cx);
                 thread
                     .messages
-                    .push(user_text_message(old_user_message_id.clone(), "old user"));
-                thread.messages.push(agent_text_message("old assistant"));
+                    .push(user_text_message(old_user_message_id.clone(), "旧用户"));
+                thread.messages.push(agent_text_message("旧助手"));
                 thread.request_token_usage.insert(
                     old_user_message_id.clone(),
                     language_model::TokenUsage {
@@ -7258,7 +7258,7 @@ mod tests {
         let _events = cx
             .update(|cx| {
                 thread.update(cx, |thread, cx| {
-                    thread.send(new_user_message_id, vec!["new prompt"], cx)
+                    thread.send(new_user_message_id, vec!["新提示词"], cx)
                 })
             })
             .unwrap();
@@ -7271,11 +7271,11 @@ mod tests {
         );
         let compaction_texts = request_texts_after_system(&compaction_request.messages);
         assert_eq!(compaction_texts.len(), 3);
-        assert_eq!(compaction_texts[0], "old user");
-        assert_eq!(compaction_texts[1], "old assistant");
+        assert_eq!(compaction_texts[0], "旧用户");
+        assert_eq!(compaction_texts[1], "旧助手");
         assert_eq!(compaction_texts[2], COMPACTION_PROMPT);
 
-        model.send_completion_stream_text_chunk(&compaction_request, "compacted old context");
+        model.send_completion_stream_text_chunk(&compaction_request, "已压缩的旧上下文");
         model.end_completion_stream(&compaction_request);
         cx.run_until_parked();
 
@@ -7284,9 +7284,9 @@ mod tests {
         assert_eq!(
             request_texts_after_system(&final_request.messages),
             vec![
-                "old user".to_string(),
-                summary_request_text("compacted old context"),
-                "new prompt".to_string(),
+                "旧用户".to_string(),
+                summary_request_text("已压缩的旧上下文"),
+                "新提示词".to_string(),
             ]
         );
 
@@ -7300,7 +7300,7 @@ mod tests {
                 assert!(matches!(&*thread.messages[1], Message::Agent(_)));
                 assert!(matches!(
                     &*thread.messages[2],
-                    Message::Compaction(CompactionInfo::Summary(summary)) if summary.as_ref() == "compacted old context"
+                    Message::Compaction(CompactionInfo::Summary(summary)) if summary.as_ref() == "已压缩的旧上下文"
                 ));
                 assert!(matches!(&*thread.messages[3], Message::User(_)));
             });
@@ -7322,8 +7322,8 @@ mod tests {
                 thread.set_model(model.clone(), cx);
                 thread
                     .messages
-                    .push(user_text_message(user_message_id.clone(), "old user"));
-                thread.messages.push(agent_text_message("old assistant"));
+                    .push(user_text_message(user_message_id.clone(), "旧用户"));
+                thread.messages.push(agent_text_message("旧助手"));
                 // Auto-compaction would be a no-op here.
                 assert_eq!(thread.compaction_message_target_ix(cx), None);
             });
@@ -7345,11 +7345,11 @@ mod tests {
         );
         let compaction_texts = request_texts_after_system(&compaction_request.messages);
         assert_eq!(compaction_texts.len(), 3);
-        assert_eq!(compaction_texts[0], "old user");
-        assert_eq!(compaction_texts[1], "old assistant");
+        assert_eq!(compaction_texts[0], "旧用户");
+        assert_eq!(compaction_texts[1], "旧助手");
         assert_eq!(compaction_texts[2], COMPACTION_PROMPT);
 
-        model.send_completion_stream_text_chunk(&compaction_request, "summary of old context");
+        model.send_completion_stream_text_chunk(&compaction_request, "旧上下文摘要");
         model.end_completion_stream(&compaction_request);
         cx.run_until_parked();
 
@@ -7367,7 +7367,7 @@ mod tests {
                 ));
                 assert!(matches!(
                     &*thread.messages[3],
-                    Message::Compaction(CompactionInfo::Summary(summary)) if summary.as_ref() == "summary of old context"
+                    Message::Compaction(CompactionInfo::Summary(summary)) if summary.as_ref() == "旧上下文摘要"
                 ));
                 // Re-running `/compact` with nothing new to summarize is a
                 // no-op: the thread already ends in a compaction.
@@ -7398,8 +7398,8 @@ mod tests {
                 thread.set_model(model.clone(), cx);
                 thread
                     .messages
-                    .push(user_text_message(ClientUserMessageId::new(), "old user"));
-                thread.messages.push(agent_text_message("old assistant"));
+                    .push(user_text_message(ClientUserMessageId::new(), "旧用户"));
+                thread.messages.push(agent_text_message("旧助手"));
             });
         });
 
@@ -7437,8 +7437,8 @@ mod tests {
                 thread.set_model(model.clone(), cx);
                 thread
                     .messages
-                    .push(user_text_message(ClientUserMessageId::new(), "old user"));
-                thread.messages.push(agent_text_message("old assistant"));
+                    .push(user_text_message(ClientUserMessageId::new(), "旧用户"));
+                thread.messages.push(agent_text_message("旧助手"));
             });
         });
 
@@ -7465,7 +7465,7 @@ mod tests {
                 saw_error = true;
             }
         }
-        assert!(saw_error, "expected an error event for the empty summary");
+        assert!(saw_error, "预期空摘要的错误事件");
         thread.read_with(cx, |thread, _cx| {
             assert_eq!(thread.messages.len(), 2);
             assert!(matches!(&*thread.messages[0], Message::User(_)));
@@ -7529,16 +7529,16 @@ mod tests {
                 assert_eq!(message.id, marker_id);
                 assert!(
                     message.content.is_empty(),
-                    "marker should replay with no content so the UI renders nothing"
+                    "标记应无内容重放,以便界面不渲染任何内容"
                 );
             }
-            _ => panic!("expected the marker to replay as a user message, got {event:?}"),
+            _ => panic!("预期标记作为用户消息重放,收到 {event:?}"),
         }
 
         let event = replay_events.next().await;
         assert!(
             matches!(&event, Some(Ok(ThreadEvent::ContextCompaction(_)))),
-            "expected the compaction to replay after the marker, got {event:?}"
+            "预期压缩在标记之后重放,收到 {event:?}"
         );
     }
 
@@ -7555,8 +7555,8 @@ mod tests {
                 thread.set_model(thread_model.clone(), cx);
                 thread
                     .messages
-                    .push(user_text_message(ClientUserMessageId::new(), "old user"));
-                thread.messages.push(agent_text_message("old assistant"));
+                    .push(user_text_message(ClientUserMessageId::new(), "旧用户"));
+                thread.messages.push(agent_text_message("旧助手"));
             });
             set_registry_compaction_model(cx, Some(compaction_model.clone()));
         });
@@ -7573,12 +7573,12 @@ mod tests {
         assert_eq!(
             thread_model.pending_completions().len(),
             0,
-            "thread's primary model should not have been used for compaction"
+            "对话线程的主模型不应被用于压缩"
         );
         let request = compaction_model
             .pending_completions()
             .pop()
-            .expect("compaction model should have received the request");
+            .expect("压缩模型应已收到请求");
         assert_eq!(
             request.intent,
             Some(CompletionIntent::ThreadContextSummarization)
@@ -7588,7 +7588,7 @@ mod tests {
             let telemetry = thread
                 .pending_compaction_telemetry
                 .as_ref()
-                .expect("pending telemetry");
+                .expect("待处理的遥测数据");
             assert_eq!(telemetry.model, compaction_model.telemetry_id());
         });
 
@@ -7611,10 +7611,10 @@ mod tests {
                 thread.set_model(thread_model.clone(), cx);
                 thread
                     .messages
-                    .push(user_text_message(ClientUserMessageId::new(), "old user"));
-                thread.messages.push(agent_text_message("old assistant"));
+                    .push(user_text_message(ClientUserMessageId::new(), "旧用户"));
+                thread.messages.push(agent_text_message("旧助手"));
             });
-            // Settings say "configured"; registry says "couldn't resolve".
+            // Settings say "configured"; registry says "无法解析".
             let mut settings = AgentSettings::get_global(cx).clone();
             settings.compaction_model = Some(LanguageModelSelection {
                 provider: LanguageModelProviderSetting("missing".into()),
@@ -7639,7 +7639,7 @@ mod tests {
         let request = thread_model
             .pending_completions()
             .pop()
-            .expect("thread model should have received the fallback request");
+            .expect("对话线程模型应已收到回退请求");
         assert_eq!(
             request.intent,
             Some(CompletionIntent::ThreadContextSummarization)
@@ -7649,7 +7649,7 @@ mod tests {
             let telemetry = thread
                 .pending_compaction_telemetry
                 .as_ref()
-                .expect("pending telemetry");
+                .expect("待处理的遥测数据");
             assert_eq!(telemetry.model, thread_model.telemetry_id());
         });
 
@@ -7672,8 +7672,8 @@ mod tests {
                 thread.set_model(thread_model.clone(), cx);
                 thread
                     .messages
-                    .push(user_text_message(old_user_message_id.clone(), "old user"));
-                thread.messages.push(agent_text_message("old assistant"));
+                    .push(user_text_message(old_user_message_id.clone(), "旧用户"));
+                thread.messages.push(agent_text_message("旧助手"));
                 thread.request_token_usage.insert(
                     old_user_message_id.clone(),
                     TokenUsage {
@@ -7698,7 +7698,7 @@ mod tests {
         let _events = cx
             .update(|cx| {
                 thread.update(cx, |thread, cx| {
-                    thread.send(ClientUserMessageId::new(), vec!["new prompt"], cx)
+                    thread.send(ClientUserMessageId::new(), vec!["新提示词"], cx)
                 })
             })
             .unwrap();
@@ -7708,7 +7708,7 @@ mod tests {
         let request = compaction_model
             .pending_completions()
             .pop()
-            .expect("compaction model should have received the auto-compaction request");
+            .expect("压缩模型应已收到自动压缩请求");
         assert_eq!(
             request.intent,
             Some(CompletionIntent::ThreadContextSummarization)
@@ -7747,8 +7747,8 @@ mod tests {
                 thread.set_model(model.clone(), cx);
                 thread
                     .messages
-                    .push(user_text_message(old_user_message_id.clone(), "old user"));
-                thread.messages.push(agent_text_message("old assistant"));
+                    .push(user_text_message(old_user_message_id.clone(), "旧用户"));
+                thread.messages.push(agent_text_message("旧助手"));
                 thread
                     .request_token_usage
                     .insert(old_user_message_id.clone(), prior_usage);
@@ -7760,7 +7760,7 @@ mod tests {
         let _events = cx
             .update(|cx| {
                 thread.update(cx, |thread, cx| {
-                    thread.send(new_user_message_id.clone(), vec!["new prompt"], cx)
+                    thread.send(new_user_message_id.clone(), vec!["新提示词"], cx)
                 })
             })
             .unwrap();
@@ -7784,7 +7784,7 @@ mod tests {
             &compaction_request,
             LanguageModelCompletionEvent::UsageUpdate(compaction_usage),
         );
-        model.send_completion_stream_text_chunk(&compaction_request, "compacted old context");
+        model.send_completion_stream_text_chunk(&compaction_request, "已压缩的旧上下文");
         model.end_completion_stream(&compaction_request);
         cx.run_until_parked();
 
@@ -7843,13 +7843,13 @@ mod tests {
                 &event,
                 Some(Ok(ThreadEvent::UserMessage(UserMessage { id, .. }))) if id == &user_message_id
             ),
-            "expected replayed user message, got {event:?}"
+            "预期重放的用户消息,收到 {event:?}"
         );
 
         let event = replay_events.next().await;
         let compaction_id = match &event {
             Some(Ok(ThreadEvent::ContextCompaction(compaction))) => compaction.id.clone(),
-            _ => panic!("expected context compaction event, got {event:?}"),
+            _ => panic!("预期上下文压缩事件,收到 {event:?}"),
         };
 
         let event = replay_events.next().await;
@@ -7859,13 +7859,13 @@ mod tests {
                 Some(Ok(ThreadEvent::ContextCompactionUpdate(update)))
                     if update.id == compaction_id && update.summary_delta == "summary"
             ),
-            "expected context compaction summary event, got {event:?}"
+            "预期上下文压缩摘要事件,收到 {event:?}"
         );
 
         let event = replay_events.next().await;
         assert!(
             matches!(&event, Some(Ok(ThreadEvent::AgentText(text))) if text == "after"),
-            "expected replayed agent text, got {event:?}"
+            "预期重放的代理文本,收到 {event:?}"
         );
     }
 
@@ -7877,7 +7877,7 @@ mod tests {
             thread.update(cx, |thread, cx| {
                 thread.messages.push(user_text_message(
                     ClientUserMessageId::new(),
-                    "before native",
+                    "原生之前",
                 ));
                 thread.messages.push(Arc::new(Message::Compaction(
                     CompactionInfo::ProviderNative {
@@ -7887,7 +7887,7 @@ mod tests {
                 )));
                 thread.messages.push(user_text_message(
                     ClientUserMessageId::new(),
-                    "after native",
+                    "原生之后",
                 ));
 
                 thread.build_request_messages(Vec::new(), cx)
@@ -7896,7 +7896,7 @@ mod tests {
 
         assert_eq!(
             request_texts_after_system(&request_messages),
-            vec!["after native".to_string()]
+            vec!["原生之后".to_string()]
         );
     }
 
@@ -7911,22 +7911,22 @@ mod tests {
             thread.update(cx, |thread, cx| {
                 thread.messages.push(user_text_message(
                     ClientUserMessageId::new(),
-                    "dropped older user",
+                    "已丢弃较早的用户",
                 ));
                 thread
                     .messages
-                    .push(agent_text_message("dropped assistant"));
+                    .push(agent_text_message("已丢弃助手"));
                 thread
                     .messages
                     .push(user_text_message(ClientUserMessageId::new(), &long_text));
                 thread
                     .messages
                     .push(user_text_message(ClientUserMessageId::new(), "new"));
-                thread.messages.push(summary_compaction("summary context"));
-                thread.messages.push(agent_text_message("after assistant"));
+                thread.messages.push(summary_compaction("摘要上下文"));
+                thread.messages.push(agent_text_message("助手之后"));
                 thread
                     .messages
-                    .push(user_text_message(ClientUserMessageId::new(), "after user"));
+                    .push(user_text_message(ClientUserMessageId::new(), "用户之后"));
 
                 thread.build_request_messages(Vec::new(), cx)
             })
@@ -7944,11 +7944,11 @@ mod tests {
             )
         );
         assert_eq!(request_texts[1], "new");
-        assert_eq!(request_texts[2], summary_request_text("summary context"));
-        assert_eq!(request_texts[3], "after assistant");
-        assert_eq!(request_texts[4], "after user");
+        assert_eq!(request_texts[2], summary_request_text("摘要上下文"));
+        assert_eq!(request_texts[3], "助手之后");
+        assert_eq!(request_texts[4], "用户之后");
         assert!(request_texts.iter().all(
-            |text| !text.contains("dropped older user") && !text.contains("dropped assistant")
+            |text| !text.contains("已丢弃较早的用户") && !text.contains("已丢弃助手")
         ));
     }
 
@@ -8028,7 +8028,7 @@ mod tests {
             _input: Result<Self::Input, serde_json::Value>,
             _cx: &mut App,
         ) -> SharedString {
-            "Registered Image Tool".into()
+            "已注册的图像工具".into()
         }
 
         fn run(
@@ -8063,14 +8063,14 @@ mod tests {
         let authorize = cx.update(|cx| {
             event_stream.authorize_sandbox(
                 request.clone(),
-                "needs to write build artifacts".to_string(),
+                "需要写入构建产物".to_string(),
                 cx,
             )
         });
         let authorization = receiver.expect_authorization().await;
         let details =
             acp_thread::sandbox_authorization_details_from_meta(&authorization.tool_call.meta)
-                .expect("sandbox authorization should include request details");
+                .expect("沙箱授权应包含请求详情");
         assert!(details.network_hosts.is_empty());
         assert!(!details.network_all_hosts);
         assert_eq!(details.allow_fs_write_all, request.allow_fs_write_all);
@@ -8079,7 +8079,7 @@ mod tests {
         assert!(authorization.tool_call.fields.content.is_none());
 
         let acp_thread::PermissionOptions::Flat(options) = &authorization.options else {
-            panic!("expected flat sandbox permission options");
+            panic!("预期扁平沙箱权限选项");
         };
         let options = options
             .iter()
@@ -8094,18 +8094,18 @@ mod tests {
         assert_eq!(
             options,
             vec![
-                ("allow", "Allow once", acp::PermissionOptionKind::AllowOnce),
+                ("allow", "允许一次", acp::PermissionOptionKind::AllowOnce),
                 (
                     "allow_thread",
-                    "Allow for this thread",
+                    "允许此对话线程",
                     acp::PermissionOptionKind::AllowAlways,
                 ),
                 (
                     "allow_always",
-                    "Allow always",
+                    "始终允许",
                     acp::PermissionOptionKind::AllowAlways,
                 ),
-                ("deny", "Deny", acp::PermissionOptionKind::RejectOnce),
+                ("deny", "拒绝", acp::PermissionOptionKind::RejectOnce),
             ]
         );
 
@@ -8118,14 +8118,14 @@ mod tests {
         assert!(send_result.is_ok());
         authorize.await.unwrap();
 
-        // "Allow always" persists to settings only
+        // "始终允许" persists to settings only
         let effective = event_stream.effective_sandbox_request(
             &SandboxRequest::default(),
             &agent_settings::SandboxPermissions::default(),
         );
         assert!(
             effective.write_paths.is_empty(),
-            "allow always should not record an in-memory thread grant: {:?}",
+            "始终允许不应记录内存中的对话线程授权:{:?}",
             effective.write_paths
         );
     }
@@ -8139,7 +8139,7 @@ mod tests {
         let authorize = cx.update(|cx| {
             event_stream.authorize_sandbox_fallback(
                 Some("cargo build".to_string()),
-                "bwrap not found on PATH".to_string(),
+                "在 PATH 中未找到 bwrap".to_string(),
                 Some("installing-bubblewrap".to_string()),
                 0,
                 cx,
@@ -8149,16 +8149,16 @@ mod tests {
         let details = acp_thread::sandbox_fallback_authorization_details_from_meta(
             &authorization.tool_call.meta,
         )
-        .expect("fallback authorization should include details");
+        .expect("回退授权应包含详情");
         assert_eq!(details.command.as_deref(), Some("cargo build"));
-        assert_eq!(details.reason, "bwrap not found on PATH");
+        assert_eq!(details.reason, "在 PATH 中未找到 bwrap");
         assert_eq!(
             details.docs_section.as_deref(),
             Some("installing-bubblewrap")
         );
 
         let acp_thread::PermissionOptions::Flat(options) = &authorization.options else {
-            panic!("expected flat fallback permission options");
+            panic!("预期扁平回退权限选项");
         };
         let options = options
             .iter()
@@ -8167,11 +8167,11 @@ mod tests {
         assert_eq!(
             options,
             vec![
-                ("retry", "Retry"),
-                ("allow", "Run without sandbox once"),
-                ("allow_thread", "Run without sandbox for this thread"),
-                ("allow_always", "Always run without sandbox"),
-                ("deny", "Deny"),
+                ("retry", "重试"),
+                ("allow", "在无沙盒模式下运行一次"),
+                ("allow_thread", "对此线程在无沙盒模式下运行"),
+                ("allow_always", "始终在无沙盒模式下运行"),
+                ("deny", "拒绝"),
             ]
         );
 
@@ -8195,7 +8195,7 @@ mod tests {
             let authorize = cx.update(|cx| {
                 event_stream.authorize_sandbox_fallback(
                     None,
-                    "probe failed".to_string(),
+                    "探测失败".to_string(),
                     None,
                     retries,
                     cx,
@@ -8203,14 +8203,14 @@ mod tests {
             });
             let authorization = receiver.expect_authorization().await;
             let acp_thread::PermissionOptions::Flat(options) = &authorization.options else {
-                panic!("expected flat fallback permission options");
+                panic!("预期扁平回退权限选项");
             };
             let label = options
                 .iter()
                 .find(|option| {
                     option.option_id.0.as_ref() == acp_thread::SANDBOX_FALLBACK_RETRY_OPTION_ID
                 })
-                .expect("retry option present")
+                .expect("存在重试选项")
                 .name
                 .to_string();
             authorization
@@ -8224,9 +8224,9 @@ mod tests {
             label
         }
 
-        assert_eq!(retry_label(cx, 0).await, "Retry");
-        assert_eq!(retry_label(cx, 1).await, "Retry (attempt 1)");
-        assert_eq!(retry_label(cx, 2).await, "Retry (attempt 2)");
+        assert_eq!(retry_label(cx, 0).await, "重试");
+        assert_eq!(retry_label(cx, 1).await, "重试(尝试 1)");
+        assert_eq!(retry_label(cx, 2).await, "重试(尝试 2)");
     }
 
     #[cfg(target_os = "linux")]
@@ -8240,7 +8240,7 @@ mod tests {
         let authorize = cx.update(|cx| {
             event_stream.authorize_sandbox_fallback(
                 Some("cargo build".to_string()),
-                "user namespaces are disabled".to_string(),
+                "用户命名空间已禁用".to_string(),
                 None,
                 0,
                 cx,
@@ -8273,7 +8273,7 @@ mod tests {
         let authorize = cx.update(|cx| {
             event_stream.authorize_sandbox_fallback(
                 None,
-                "bwrap probe failed".to_string(),
+                "bwrap 探测失败".to_string(),
                 None,
                 0,
                 cx,
@@ -8294,7 +8294,7 @@ mod tests {
     /// Regression test: the Windows-drive (DrvFs) warning prompt must target
     /// the ACP-facing *scoped* tool-call id. When it used the raw provider id,
     /// the update matched no existing tool call, the ACP layer rejected the
-    /// resulting title-less insert ("title is required for a tool call"), the
+    /// resulting title-less insert ("工具调用需要标题"), the
     /// event stream was torn down, and every terminal command was auto-declined
     /// without the user ever seeing a prompt.
     #[gpui::test]
@@ -8313,7 +8313,7 @@ mod tests {
         );
         let details =
             acp_thread::sandbox_authorization_details_from_meta(&authorization.tool_call.meta)
-                .expect("warning authorization should include sandbox details");
+                .expect("警告授权应包含沙箱详情");
         assert!(details.warn_windows_fs);
 
         authorization
@@ -8332,12 +8332,12 @@ mod tests {
             acp_thread::PermissionOptionChoice {
                 allow: acp::PermissionOption::new(
                     acp::PermissionOptionId::new("always_allow:test_tool"),
-                    "Always allow",
+                    "始终允许",
                     acp::PermissionOptionKind::AllowAlways,
                 ),
                 deny: acp::PermissionOption::new(
                     acp::PermissionOptionId::new("always_deny:test_tool"),
-                    "Always deny",
+                    "始终拒绝",
                     acp::PermissionOptionKind::RejectAlways,
                 ),
                 sub_patterns: vec![],
@@ -8345,12 +8345,12 @@ mod tests {
             acp_thread::PermissionOptionChoice {
                 allow: acp::PermissionOption::new(
                     acp::PermissionOptionId::new("allow"),
-                    "Allow once",
+                    "允许一次",
                     acp::PermissionOptionKind::AllowOnce,
                 ),
                 deny: acp::PermissionOption::new(
                     acp::PermissionOptionId::new("deny"),
-                    "Deny once",
+                    "拒绝一次",
                     acp::PermissionOptionKind::RejectOnce,
                 ),
                 sub_patterns: vec![],
@@ -8358,12 +8358,12 @@ mod tests {
         ]);
 
         let allow = auto_resolve_permission_outcome(&options, true)
-            .expect("allow auto-resolve should use once-only option");
+            .expect("允许自动解析应使用仅一次选项");
         assert_eq!(allow.option_id, acp::PermissionOptionId::new("allow"));
         assert_eq!(allow.option_kind, acp::PermissionOptionKind::AllowOnce);
 
         let deny = auto_resolve_permission_outcome(&options, false)
-            .expect("deny auto-resolve should use once-only option");
+            .expect("拒绝自动解析应使用仅一次选项");
         assert_eq!(deny.option_id, acp::PermissionOptionId::new("deny"));
         assert_eq!(deny.option_kind, acp::PermissionOptionKind::RejectOnce);
     }
@@ -8412,7 +8412,7 @@ mod tests {
                             LanguageModelToolResultContent::Image(image.clone()),
                             LanguageModelToolResultContent::Text("after".into()),
                         ],
-                        output: Some(json!("raw output")),
+                        output: Some(json!("原始输出")),
                     },
                 );
                 tool_results.insert(
@@ -8422,7 +8422,7 @@ mod tests {
                         tool_name: "missing_image_tool".into(),
                         is_error: false,
                         content: vec![LanguageModelToolResultContent::Image(image.clone())],
-                        output: Some(json!("raw output")),
+                        output: Some(json!("原始输出")),
                     },
                 );
 
@@ -8479,7 +8479,7 @@ mod tests {
         let new_model: Arc<dyn LanguageModel> = Arc::new(FakeLanguageModel::with_id_and_thinking(
             "test-provider",
             "new-model",
-            "New Model",
+            "新模型",
             false,
         ));
 
@@ -8493,7 +8493,7 @@ mod tests {
                 assert_eq!(
                     subagent_model_id.0.as_ref(),
                     "new-model",
-                    "Subagent model should match parent model after set_model"
+                    "调用 set_model 后,子代理模型应与父模型匹配"
                 );
             }
         });
@@ -8508,7 +8508,7 @@ mod tests {
             Arc::new(FakeLanguageModel::with_id_and_thinking(
                 "test-provider",
                 "summary-model",
-                "Summary Model",
+                "摘要模型",
                 false,
             ));
 
@@ -8522,7 +8522,7 @@ mod tests {
                 assert_eq!(
                     subagent_summary_id.0.as_ref(),
                     "summary-model",
-                    "Subagent summarization model should match parent after set_summarization_model"
+                    "调用 set_summarization_model 后,子代理摘要模型应与父模型匹配"
                 );
             }
         });
@@ -8541,7 +8541,7 @@ mod tests {
             for subagent in &subagents {
                 assert!(
                     subagent.read(cx).thinking_enabled(),
-                    "Subagent thinking should be enabled after parent enables it"
+                    "父代理启用思考后,子代理思考应被启用"
                 );
             }
 
@@ -8552,7 +8552,7 @@ mod tests {
             for subagent in &subagents {
                 assert!(
                     !subagent.read(cx).thinking_enabled(),
-                    "Subagent thinking should be disabled after parent disables it"
+                    "父代理禁用思考后,子代理思考应被禁用"
                 );
             }
         });
@@ -8572,7 +8572,7 @@ mod tests {
                 assert_eq!(
                     subagent.read(cx).thinking_effort().map(|s| s.as_str()),
                     Some("high"),
-                    "Subagent thinking effort should match parent"
+                    "子代理思考力度应与父代理匹配"
                 );
             }
 
@@ -8584,7 +8584,7 @@ mod tests {
                 assert_eq!(
                     subagent.read(cx).thinking_effort(),
                     None,
-                    "Subagent thinking effort should be None after parent clears it"
+                    "父代理清除思考力度后,子代理思考力度应为 None"
                 );
             }
         });
@@ -8628,7 +8628,7 @@ mod tests {
                 assert_eq!(
                     subagent.read(cx).speed(),
                     Some(Speed::Fast),
-                    "Subagent speed should match parent after set_speed"
+                    "调用 set_speed 后,子代理速度应与父代理匹配"
                 );
             }
         });
@@ -8661,7 +8661,7 @@ mod tests {
         let tool_use_id = LanguageModelToolUseId::from("test_tool_id");
         let tool_name: Arc<str> = Arc::from("test_tool");
         let raw_input: Arc<str> = Arc::from("{invalid json");
-        let json_parse_error = "expected value at line 1 column 1".to_string();
+        let json_parse_error = "预期第 1 行第 1 列有值".to_string();
 
         let (_cancellation_tx, cancellation_rx) = watch::channel(false);
 
@@ -8700,7 +8700,7 @@ mod tests {
                 assert_eq!(
                     last_message.content.len(),
                     1,
-                    "Should have one tool_use in content"
+                    "内容中应有一个 tool_use"
                 );
 
                 match &last_message.content[0] {
@@ -8715,7 +8715,7 @@ mod tests {
                             language_model::LanguageModelToolUseInput::Json(json!({}))
                         );
                     }
-                    _ => panic!("Expected ToolUse content"),
+                    _ => panic!("预期 ToolUse 内容"),
                 }
             }
 
@@ -8730,7 +8730,7 @@ mod tests {
             assert_eq!(
                 last_message.tool_results.len(),
                 1,
-                "Should have one tool_result"
+                "应有一个 tool_result"
             );
             assert!(last_message.tool_results.contains_key(&tool_use_id));
         })

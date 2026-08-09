@@ -78,7 +78,7 @@ pub enum PreviewSource {
     /// No buffer to show; display this message centered in the preview instead.
     ///
     /// Used by pickers that have a selection without a previewable buffer (like
-    /// the file finder's "create new file" entry). Built as a [`HighlightedText`]
+    /// the file finder's "新建文件" entry). Built as a [`HighlightedText`]
     /// so callers can emphasize parts of the message (e.g. a file path).
     Message(HighlightedText),
 }

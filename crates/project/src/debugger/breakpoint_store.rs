@@ -107,7 +107,7 @@ mod breakpoints_in_file {
                             {
                                 let Some(breakpoints_in_file) =
                                     breakpoint_store.breakpoints.remove(&old_path) else {
-                                        log::error!("Couldn't get breakpoints in file from old path during buffer rename handling");
+                                        log::error!("缓冲区重命名处理期间,无法从旧路径获取文件中的断点");
                                         return;
                                     };
 
@@ -228,7 +228,7 @@ impl BreakpointStore {
                         .update(cx, |this, cx| this.open_buffer(path, cx)),
                 )
             })
-            .context("Invalid project path")?
+            .context("无效的项目路径")?
             .await?;
 
         this.update(&mut cx, move |this, cx| {
@@ -282,25 +282,25 @@ impl BreakpointStore {
                     .read(cx)
                     .project_path_for_absolute_path(message.payload.path.as_ref(), cx)
             })
-            .context("Could not resolve provided abs path")?;
+            .context("无法解析提供的绝对路径")?;
         let buffer = this
             .update(&mut cx, |this, cx| {
                 this.buffer_store.read(cx).get_by_path(&path)
             })
-            .context("Could not find buffer for a given path")?;
+            .context("找不到给定路径对应的缓冲区")?;
         let breakpoint = message
             .payload
             .breakpoint
-            .context("Breakpoint not present in RPC payload")?;
+            .context("RPC 负载中不存在断点")?;
         let position = language::proto::deserialize_anchor(
             breakpoint
                 .position
                 .clone()
-                .context("Anchor not present in RPC payload")?,
+                .context("RPC 负载中不存在锚点")?,
         )
-        .context("Anchor deserialization failed")?;
+        .context("锚点反序列化失败")?;
         let breakpoint =
-            Breakpoint::from_proto(breakpoint).context("Could not deserialize breakpoint")?;
+            Breakpoint::from_proto(breakpoint).context("无法反序列化断点")?;
 
         this.update(&mut cx, |this, cx| {
             this.toggle_breakpoint(
@@ -498,7 +498,7 @@ impl BreakpointStore {
                     {
                         breakpoint_set.breakpoints.remove(position);
                     } else {
-                        log::error!("Failed to find position of breakpoint to delete")
+                        log::error!("找不到要删除的断点的位置")
                     }
                 }
             }
@@ -530,7 +530,7 @@ impl BreakpointStore {
                     {
                         breakpoint_set.breakpoints.remove(position);
                     } else {
-                        log::error!("Failed to find position of breakpoint to delete")
+                        log::error!("找不到要删除的断点的位置")
                     }
                 }
             }
@@ -562,7 +562,7 @@ impl BreakpointStore {
                     {
                         breakpoint_set.breakpoints.remove(position);
                     } else {
-                        log::error!("Failed to find position of breakpoint to delete")
+                        log::error!("找不到要删除的断点的位置")
                     }
                 }
             }
@@ -848,7 +848,7 @@ impl BreakpointStore {
                         })?
                         .await;
                     let Ok(buffer) = buffer else {
-                        log::error!("Todo: Serialized breakpoints which do not have buffer (yet)");
+                        log::error!("待办:序列化的断点尚无缓冲区");
                         continue;
                     };
                     let snapshot = buffer.read_with(cx, |buffer, _| buffer.snapshot());
@@ -860,7 +860,7 @@ impl BreakpointStore {
                         let max_point = snapshot.max_point_utf16();
                         let point = PointUtf16::new(bp.row, 0);
                         if point > max_point {
-                            log::error!("skipping a deserialized breakpoint that's out of range");
+                            log::error!("跳过超出范围的反序列化断点");
                             continue;
                         }
                         let position = snapshot.anchor_after(point);
@@ -887,7 +887,7 @@ impl BreakpointStore {
                         } else {
                             "breakpoint"
                         };
-                        log::debug!("Deserialized {count} {breakpoint_str} at path: {path}");
+                        log::debug!("在路径 {path} 处反序列化了 {count} 个{breakpoint_str}");
                     }
 
                     this.breakpoints = new_breakpoints;

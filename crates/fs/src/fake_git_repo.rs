@@ -170,7 +170,7 @@ impl GitRepository for FakeGitRepository {
 
     fn load_blob_content(&self, oid: git::Oid) -> BoxFuture<'_, Result<String>> {
         self.with_state_async(false, move |state| {
-            state.oids.get(&oid).cloned().context("oid does not exist")
+            state.oids.get(&oid).cloned().context("对象 ID 不存在")
         })
         .boxed()
     }
@@ -234,7 +234,7 @@ impl GitRepository for FakeGitRepository {
             for path in tracked_paths {
                 let status = match (state.merge_base_contents.get(path), contents.get(path)) {
                     (Some(oid), Some(content)) => {
-                        if state.oids.get(oid).context("merge-base blob is missing")? == content {
+                        if state.oids.get(oid).context("合并基准 blob 缺失")? == content {
                             continue;
                         }
                         TreeDiffStatus::Modified { old: *oid }
@@ -293,7 +293,7 @@ impl GitRepository for FakeGitRepository {
             };
             Ok(CommitDetails {
                 sha: sha.into(),
-                message: "initial commit".into(),
+                message: "初始提交".into(),
                 ..Default::default()
             })
         })
@@ -319,13 +319,13 @@ impl GitRepository for FakeGitRepository {
                     .rposition(|entry| entry.sha == commit)
                 {
                     Some(index) => state.commit_history.len() - index,
-                    None => anyhow::bail!("Unknown commit ref: {commit}"),
+                    None => anyhow::bail!("未知的提交引用: {commit}"),
                 }
             };
 
             if pop_count == 0 || pop_count > state.commit_history.len() {
                 anyhow::bail!(
-                    "Cannot reset {pop_count} commit(s): only {} in history",
+                    "无法重置 {pop_count} 个提交: 历史记录中仅有 {} 个",
                     state.commit_history.len()
                 );
             }
@@ -628,16 +628,16 @@ impl GitRepository for FakeGitRepository {
             let git_file = fs
                 .load(&dot_git_path)
                 .await
-                .with_context(|| format!("failed to read {}", dot_git_path.display()))?;
+                .with_context(|| format!("无法读取 {}", dot_git_path.display()))?;
             let git_dir = git_file
                 .strip_prefix("gitdir:")
-                .context("worktree .git file missing gitdir pointer")?
+                .context("工作树 .git 文件缺少 gitdir 指针")?
                 .trim();
             let git_dir = worktree_path.join(git_dir);
             let metadata = fs
                 .metadata(&git_dir)
                 .await?
-                .with_context(|| format!("missing worktree git dir {}", git_dir.display()))?;
+                .with_context(|| format!("缺少工作树 git 目录 {}", git_dir.display()))?;
             // FakeFs assigns directories a monotonically increasing mtime at
             // creation and never updates it afterwards, so a directory's
             // mtime doubles as its creation time.
@@ -672,16 +672,16 @@ impl GitRepository for FakeGitRepository {
                     match (create_branch_ref, branch_name.as_ref()) {
                         (true, Some(branch_name)) => {
                             if state.branches.contains(branch_name) {
-                                bail!("a branch named '{}' already exists", branch_name);
+                                bail!("名为 '{}' 的分支已存在", branch_name);
                             }
                         }
                         (false, Some(branch_name)) => {
                             if !state.branches.contains(branch_name) {
-                                bail!("no branch named '{}' exists", branch_name);
+                                bail!("不存在名为 '{}' 的分支", branch_name);
                             }
                         }
                         (false, None) => {}
-                        (true, None) => bail!("branch name is required to create a branch"),
+                        (true, None) => bail!("创建分支需要提供分支名称"),
                     }
 
                     Ok(())
@@ -795,7 +795,7 @@ impl GitRepository for FakeGitRepository {
                 fs.with_git_state(&common_dir_path, false, |state| {
                     if state.worktrees_requiring_force_delete.contains(&path) {
                         bail!(
-                            "fatal: '{}' contains modified or untracked files, use --force to delete it",
+                            "致命错误: '{}' 包含已修改或未跟踪的文件,请使用 --force 删除",
                             path.display()
                         );
                     }
@@ -812,13 +812,13 @@ impl GitRepository for FakeGitRepository {
             let worktree_entry_dir = if let Ok(content) = fs.load(&dot_git_file).await {
                 let gitdir = content
                     .strip_prefix("gitdir:")
-                    .context("invalid .git file in worktree")?
+                    .context("工作树中的 .git 文件无效")?
                     .trim();
                 PathBuf::from(gitdir)
             } else {
                 self.find_worktree_entry_dir_by_path(&path)
                     .await
-                    .with_context(|| format!("no worktree found at path: {}", path.display()))?
+                    .with_context(|| format!("在路径 {} 处未找到工作树", path.display()))?
             };
 
             // Remove the worktree checkout directory if it still exists.
@@ -865,10 +865,10 @@ impl GitRepository for FakeGitRepository {
             let content = fs
                 .load(&dot_git_file)
                 .await
-                .with_context(|| format!("no worktree found at path: {}", old_path.display()))?;
+                .with_context(|| format!("在路径 {} 处未找到工作树", old_path.display()))?;
             let gitdir = content
                 .strip_prefix("gitdir:")
-                .context("invalid .git file in worktree")?
+                .context("工作树中的 .git 文件无效")?
                 .trim();
             let worktree_entry_dir = PathBuf::from(gitdir);
 
@@ -944,7 +944,7 @@ impl GitRepository for FakeGitRepository {
     fn rename_branch(&self, branch: String, new_name: String) -> BoxFuture<'_, Result<()>> {
         self.with_state_async(true, move |state| {
             if !state.branches.remove(&branch) {
-                bail!("no such branch: {branch}");
+                bail!("不存在这样的分支: {branch}");
             }
             state.branches.insert(new_name.clone());
             if state.current_branch_name == Some(branch) {
@@ -967,7 +967,7 @@ impl GitRepository for FakeGitRepository {
                 );
             }
             if !state.branches.remove(&name) {
-                bail!("no such branch: {name}");
+                bail!("不存在这样的分支: {name}");
             }
             state.branches_requiring_force_delete.remove(&name);
             Ok(())
@@ -984,7 +984,7 @@ impl GitRepository for FakeGitRepository {
             state
                 .blames
                 .get(&path)
-                .with_context(|| format!("failed to get blame for {:?}", path))
+                .with_context(|| format!("无法获取 {:?} 的追溯信息", path))
                 .cloned()
         })
     }
@@ -1080,7 +1080,7 @@ impl GitRepository for FakeGitRepository {
         self.with_state_async(true, move |state| {
             if !options.allow_empty && !options.amend && state.index_contents == state.head_contents
             {
-                anyhow::bail!("nothing to commit (use allow_empty to create an empty commit)");
+                anyhow::bail!("没有可提交的内容(使用 allow_empty 创建空提交)");
             }
 
             let old_sha = state.refs.get("HEAD").cloned().unwrap_or_default();
@@ -1321,7 +1321,7 @@ impl GitRepository for FakeGitRepository {
             let checkpoints = checkpoints.lock();
             let entry = checkpoints
                 .get(&checkpoint.commit_sha)
-                .context(format!("invalid checkpoint: {}", checkpoint.commit_sha))?;
+                .context(format!("无效的检查点: {}", checkpoint.commit_sha))?;
             fs.insert_entry(&repository_dir_path, entry.clone())?;
             Ok(())
         }
@@ -1355,7 +1355,7 @@ impl GitRepository for FakeGitRepository {
         match unstaged_sha.parse() {
             Ok(commit_sha) => self.restore_checkpoint(GitRepositoryCheckpoint { commit_sha }),
             Err(error) => async move {
-                Err(anyhow::anyhow!(error).context("failed to parse unstaged SHA as Oid"))
+                Err(anyhow::anyhow!(error).context("无法将未暂存的 SHA 解析为 Oid"))
             }
             .boxed(),
         }
@@ -1373,10 +1373,10 @@ impl GitRepository for FakeGitRepository {
             let checkpoints = checkpoints.lock();
             let left = checkpoints
                 .get(&left.commit_sha)
-                .context(format!("invalid left checkpoint: {}", left.commit_sha))?;
+                .context(format!("无效的左侧检查点: {}", left.commit_sha))?;
             let right = checkpoints
                 .get(&right.commit_sha)
-                .context(format!("invalid right checkpoint: {}", right.commit_sha))?;
+                .context(format!("无效的右侧检查点: {}", right.commit_sha))?;
 
             Ok(left == right)
         }
@@ -1396,13 +1396,13 @@ impl GitRepository for FakeGitRepository {
             let base = checkpoints
                 .get(&base_checkpoint.commit_sha)
                 .context(format!(
-                    "invalid base checkpoint: {}",
+                    "无效的基础检查点: {}",
                     base_checkpoint.commit_sha
                 ))?;
             let target = checkpoints
                 .get(&target_checkpoint.commit_sha)
                 .context(format!(
-                    "invalid target checkpoint: {}",
+                    "无效的目标检查点: {}",
                     target_checkpoint.commit_sha
                 ))?;
 
@@ -1599,12 +1599,12 @@ impl GitRepository for FakeGitRepository {
                 let commit = state
                     .commit_data
                     .get(&sha)
-                    .context(format!("graph commit data not found for {sha}"))?;
+                    .context(format!("未找到 {sha} 的图提交数据"))?;
 
                 match commit {
                     FakeCommitDataEntry::Success(data) => Ok(data.clone()),
                     FakeCommitDataEntry::Fail(_) => {
-                        bail!("simulated commit data read failure for {sha}")
+                        bail!("模拟 {sha} 的提交数据读取失败")
                     }
                 }
             })?

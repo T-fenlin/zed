@@ -23,7 +23,7 @@ pub fn derive_inspector_reflection(_args: TokenStream, input: TokenStream) -> To
         _ => {
             return syn::Error::new_spanned(
                 quote!(#item),
-                "#[derive_inspector_reflection] can only be applied to traits",
+                "#[derive_inspector_reflection] 只能应用于 trait",
             )
             .to_compile_error()
             .into();
@@ -104,7 +104,7 @@ fn generate_reflected_trait(trait_item: ItemTrait) -> TokenStream {
                 if let Ok(concrete) = value.downcast::<T>() {
                     Box::new(concrete.#method_name())
                 } else {
-                    panic!("Type mismatch in reflection wrapper");
+                    panic!("反射包装器中的类型不匹配");
                 }
             }
         }

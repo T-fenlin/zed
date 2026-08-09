@@ -30,18 +30,18 @@ impl SourceHut {
     pub fn from_remote_url(remote_url: &str) -> Result<Self> {
         let host = get_host_from_git_remote_url(remote_url)?;
         if host == "git.sr.ht" {
-            bail!("the SourceHut instance is not self-hosted");
+            bail!("该 SourceHut 实例并非自托管");
         }
 
         // TODO: detecting self hosted instances by checking whether "sourcehut" is in the url or not
         // is not very reliable. See https://github.com/zed-industries/zed/issues/26393 for more
         // information.
         if !host.contains("sourcehut") {
-            bail!("not a SourceHut URL");
+            bail!("不是 SourceHut URL");
         }
 
         Ok(Self::new(
-            "SourceHut Self-Hosted",
+            "SourceHut 自托管",
             Url::parse(&format!("https://{}", host))?,
         ))
     }

@@ -49,26 +49,26 @@ async fn main() -> Result<()> {
     let extension_path = args
         .source_dir
         .canonicalize()
-        .context("failed to canonicalize source_dir")?;
+        .context("无法规范化源目录路径")?;
 
     fs.create_dir(&args.scratch_dir)
         .await
-        .context("failed to create scratch dir")?;
+        .context("无法创建临时目录")?;
 
     let scratch_dir = args
         .scratch_dir
         .canonicalize()
-        .context("failed to canonicalize scratch_dir")?;
+        .context("无法规范化临时目录路径")?;
     let output_dir = if args.output_dir.is_relative() {
         env::current_dir()?.join(&args.output_dir)
     } else {
         args.output_dir
     };
 
-    log::info!("loading extension manifest");
+    log::info!("正在加载扩展清单");
     let mut manifest = ExtensionManifest::load(fs.clone(), &extension_path).await?;
 
-    log::info!("compiling extension");
+    log::info!("正在编译扩展");
 
     let user_agent = format!(
         "Zed Extension CLI/{} ({}; {})",
@@ -90,7 +90,7 @@ async fn main() -> Result<()> {
             fs.clone(),
         )
         .await
-        .context("failed to compile extension")?;
+        .context("编译扩展失败")?;
 
     let extension_provides = manifest.provides();
     validate_extension_features(&extension_provides)?;
@@ -113,17 +113,17 @@ async fn main() -> Result<()> {
     .ok();
     copy_extension_resources(&manifest, &extension_path, &archive_dir, fs.clone())
         .await
-        .context("failed to copy extension resources")?;
+        .context("复制扩展资源失败")?;
 
     let tar_output = Command::new("tar")
         .current_dir(&output_dir)
         .args(["-czvf", "archive.tar.gz", "-C", "archive", "."])
         .output()
         .await
-        .context("failed to run tar")?;
+        .context("运行 tar 失败")?;
     if !tar_output.status.success() {
         bail!(
-            "failed to create archive.tar.gz: {}",
+            "创建 archive.tar.gz 失败: {}",
             String::from_utf8_lossy(&tar_output.stderr)
         );
     }
@@ -136,7 +136,7 @@ async fn main() -> Result<()> {
         schema_version: Some(manifest.schema_version.0),
         repository: manifest
             .repository
-            .context("missing repository in extension manifest")?,
+            .context("扩展清单中缺少仓库信息")?,
         wasm_api_version: manifest.lib.version.map(|version| version.to_string()),
         provides: extension_provides,
     })?;
@@ -162,12 +162,12 @@ async fn copy_extension_resources(
 ) -> Result<()> {
     fs.create_dir(output_dir)
         .await
-        .context("failed to create output dir")?;
+        .context("无法创建输出目录")?;
 
-    let manifest_toml = toml::to_string(&manifest).context("failed to serialize manifest")?;
+    let manifest_toml = toml::to_string(&manifest).context("无法序列化清单")?;
     fs.write(&output_dir.join("extension.toml"), manifest_toml.as_bytes())
         .await
-        .context("failed to write extension.toml")?;
+        .context("无法写入 扩展.toml")?;
 
     if manifest.lib.kind.is_some() {
         fs.copy_file(
@@ -179,7 +179,7 @@ async fn copy_extension_resources(
             },
         )
         .await
-        .context("failed to copy extension.wasm")?;
+        .context("无法复制 扩展.wasm")?;
     }
 
     if !manifest.grammars.is_empty() {
@@ -202,7 +202,7 @@ async fn copy_extension_resources(
                     },
                 )
                 .await
-                .with_context(|| format!("failed to copy grammar '{}'", grammar_filename.display()))
+                .with_context(|| format!("无法复制语法 '{}'", grammar_filename.display()))
             }
         }))
         .await?;
@@ -218,14 +218,14 @@ async fn copy_extension_resources(
                 let theme_path = theme_path.as_std_path();
                 fs.copy_file(
                     &extension_path.join(theme_path),
-                    &output_themes_dir.join(theme_path.file_name().context("invalid theme path")?),
+                    &output_themes_dir.join(theme_path.file_name().context("无效的主题路径")?),
                     CopyOptions {
                         overwrite: true,
                         ignore_if_exists: false,
                     },
                 )
                 .await
-                .with_context(|| format!("failed to copy theme '{}'", theme_path.display()))
+                .with_context(|| format!("无法复制主题 '{}'", theme_path.display()))
             }
         }))
         .await?;
@@ -244,7 +244,7 @@ async fn copy_extension_resources(
                     &output_icon_themes_dir.join(
                         icon_theme_path
                             .file_name()
-                            .context("invalid icon theme path")?,
+                            .context("无效的图标主题路径")?,
                     ),
                     CopyOptions {
                         overwrite: true,
@@ -253,7 +253,7 @@ async fn copy_extension_resources(
                 )
                 .await
                 .with_context(|| {
-                    format!("failed to copy icon theme '{}'", icon_theme_path.display())
+                    format!("无法复制图标主题 '{}'", icon_theme_path.display())
                 })
             }
         }))
@@ -271,7 +271,7 @@ async fn copy_extension_resources(
             },
         )
         .await
-        .context("failed to copy icons")?;
+        .context("无法复制图标")?;
     }
 
     if !manifest.languages.is_empty() {
@@ -286,7 +286,7 @@ async fn copy_extension_resources(
                     fs.as_ref(),
                     &extension_path.join(language_path),
                     &output_languages_dir
-                        .join(language_path.file_name().context("invalid language path")?),
+                        .join(language_path.file_name().context("无效的语言路径")?),
                     CopyOptions {
                         overwrite: true,
                         ignore_if_exists: false,
@@ -294,7 +294,7 @@ async fn copy_extension_resources(
                 )
                 .await
                 .with_context(|| {
-                    format!("failed to copy language dir '{}'", language_path.display())
+                    format!("无法复制语言目录 '{}'", language_path.display())
                 })
             }
         }))
@@ -310,7 +310,7 @@ async fn copy_extension_resources(
                     let schema_path =
                         extension::build_debug_adapter_schema_path(&debug_adapter, &entry)?;
                     let parent = schema_path.parent().with_context(|| {
-                        format!("invalid empty schema path for {debug_adapter}")
+                        format!("{debug_adapter} 的架构路径为空")
                     })?;
                     let schema_path = schema_path.as_std_path();
                     fs.create_dir(&output_dir.join(parent)).await?;
@@ -326,7 +326,7 @@ async fn copy_extension_resources(
                     .await
                     .with_context(|| {
                         format!(
-                            "failed to copy debug adapter schema '{}'",
+                            "无法复制调试适配器架构 '{}'",
                             schema_path.display(),
                         )
                     })
@@ -355,7 +355,7 @@ async fn copy_extension_resources(
                 )
                 .await
                 .with_context(|| {
-                    format!("failed to copy snippets from '{}'", snippets_path.display())
+                    format!("无法从 '{}' 复制代码片段", snippets_path.display())
                 })
             }
         }))
@@ -367,19 +367,19 @@ async fn copy_extension_resources(
 
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
 enum ExtensionFeatureError {
-    #[error("extension does not provide any features")]
+    #[error("扩展未提供任何功能")]
     NoFeatures,
-    #[error("extension must not provide other features along with themes")]
+    #[error("扩展不得在提供主题的同时提供其他功能")]
     ThemesMixedWithOtherFeatures,
-    #[error("extension must not provide other features along with icon themes")]
+    #[error("扩展不得在提供图标主题的同时提供其他功能")]
     IconThemesMixedWithOtherFeatures,
     #[error(
         "Slash commands have been deprecated and \
         the slash command API will be removed in a future release. {}",
         if *.sole_feature {
-            "Slash command extensions will no longer be accepted at this time."
+            "目前将不再接受斜杠命令扩展。"
         } else {
-            "Please remove any slash-command related code from your extension."
+            "请从扩展中移除所有与斜杠命令相关的代码。"
         }
     )]
     SlashCommandsDeprecated { sole_feature: bool },
@@ -425,7 +425,7 @@ fn test_grammars(
 
         let wasm = fs::read(&grammar_path)?;
         let language = wasm_store.load_language(grammar_name, &wasm)?;
-        log::info!("loaded grammar {grammar_name}");
+        log::info!("已加载语法 {grammar_name}");
         grammars.insert(grammar_name.to_string(), language);
     }
 
@@ -445,7 +445,7 @@ fn test_languages(
             Some(
                 grammars
                     .get(name.as_ref())
-                    .with_context(|| format!("grammar not found: '{name}'"))?,
+                    .with_context(|| format!("未找到语法: '{name}'"))?,
             )
         } else {
             None
@@ -470,7 +470,7 @@ fn test_languages(
                 TaskTemplates::FILE_NAME => {
                     let task_file_content = std::fs::read(&file_path).with_context(|| {
                         anyhow!(
-                            "Failed to read tasks file at {path}",
+                            "无法读取 {path} 处的任务文件",
                             path = file_path.display()
                         )
                     })?;
@@ -478,7 +478,7 @@ fn test_languages(
                         serde_json_lenient::from_slice::<TaskTemplates>(&task_file_content)
                             .with_context(|| {
                                 anyhow!(
-                                    "Failed to parse tasks file at {path}",
+                                    "无法解析 {path} 处的任务文件",
                                     path = file_path.display()
                                 )
                             })?;
@@ -486,7 +486,7 @@ fn test_languages(
                 _ if file_name.ends_with(".scm") => {
                     let grammar = grammar.with_context(|| {
                         format! {
-                            "language {} provides query {} but no grammar",
+                            "语言 {} 提供了查询 {} 但没有语法",
                             config.name,
                             file_path.display()
                         }
@@ -499,7 +499,7 @@ fn test_languages(
             }
         }
 
-        log::info!("loaded language {}", config.name);
+        log::info!("已加载语言 {}", config.name);
     }
 
     Ok(())
@@ -514,7 +514,7 @@ async fn test_themes(
         let theme_path = extension_path.join(relative_theme_path);
         let theme_family =
             theme_settings::deserialize_user_theme(&fs.load_bytes(&theme_path).await?)?;
-        log::info!("loaded theme family {}", theme_family.name);
+        log::info!("已加载主题系列 {}", theme_family.name);
 
         for theme in &theme_family.themes {
             if theme
@@ -524,7 +524,7 @@ async fn test_themes(
                 .is_some()
             {
                 bail!(
-                    r#"Theme "{theme_name}" is using a deprecated style property: scrollbar_thumb.background. Use `scrollbar.thumb.background` instead."#,
+                    r#"主题 "{theme_name}"正在使用已弃用的样式属性: scrollbar_thumb.background。请改用 `scrollbar.thumb.background`。"#,
                     theme_name = theme.name
                 )
             }
@@ -549,7 +549,7 @@ async fn test_snippets(
         let snippet_path = extension_path.join(relative_snippet_path);
         let snippets_content = fs.load_bytes(&snippet_path).await?;
         let snippets_file = serde_json_lenient::from_slice::<VsSnippetsFile>(&snippets_content)
-            .with_context(|| anyhow!("Failed to parse snippet file at {snippet_path:?}"))?;
+            .with_context(|| anyhow!("无法解析 {snippet_path:?} 处的代码片段文件"))?;
         let snippet_errors = file_to_snippets(snippets_file, &snippet_path)
             .flat_map(Result::err)
             .collect::<Vec<_>>();

@@ -230,7 +230,7 @@ impl CsvPreviewView {
         cx: &mut Context<Self>,
     ) {
         if let Err(err) = self.engine.toggle_filter(col, value) {
-            log::error!("Failed to toggle filter: {err}");
+            log::error!("切换筛选器失败:{err}");
             return;
         }
         self.apply_filter_sort(cx);
@@ -318,9 +318,9 @@ impl Item for CsvPreviewView {
                 local_file
                     .abs_path(cx)
                     .file_name()
-                    .map(|name| format!("Preview {}", name.to_string_lossy()).into())
+                    .map(|name| format!("预览 {}", name.to_string_lossy()).into())
             })
-            .unwrap_or_else(|| SharedString::from("CSV Preview"))
+            .unwrap_or_else(|| SharedString::from("CSV 预览"))
     }
 }
 

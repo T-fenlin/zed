@@ -56,7 +56,7 @@ impl ConfiguredApiCard {
 
 impl RenderOnce for ConfiguredApiCard {
     fn render(self, _: &mut Window, cx: &mut App) -> impl IntoElement {
-        let button_label = self.button_label.unwrap_or("Reset Key".into());
+        let button_label = self.button_label.unwrap_or("重置密钥".into());
         let button_id = self.id;
 
         h_flex()
@@ -122,34 +122,34 @@ impl Component for ConfiguredApiCard {
 
         let examples = vec![
             single_example(
-                "Default",
+                "默认",
                 container()
-                    .child(ConfiguredApiCard::new("default", "API key is configured"))
+                    .child(ConfiguredApiCard::new("default", "API 密钥已配置"))
                     .into_any_element(),
             ),
             single_example(
-                "Custom Button Label",
+                "自定义按钮标签",
                 container()
                     .child(
-                        ConfiguredApiCard::new("custom-button-label", "OpenAI API key configured")
-                            .button_label("Remove Key"),
+                        ConfiguredApiCard::new("custom-button-label", "OpenAI API 密钥已配置")
+                            .button_label("移除密钥"),
                     )
                     .into_any_element(),
             ),
             single_example(
-                "With Tooltip",
+                "带工具提示",
                 container()
                     .child(
-                        ConfiguredApiCard::new("with-tooltip", "Anthropic API key configured")
-                            .tooltip_label("Click to reset your API key"),
+                        ConfiguredApiCard::new("with-tooltip", "Anthropic API 密钥已配置")
+                            .tooltip_label("点击重置你的 API 密钥"),
                     )
                     .into_any_element(),
             ),
             single_example(
-                "Disabled",
+                "已禁用",
                 container()
                     .child(
-                        ConfiguredApiCard::new("disabled", "API key is configured").disabled(true),
+                        ConfiguredApiCard::new("disabled", "API 密钥已配置").disabled(true),
                     )
                     .into_any_element(),
             ),

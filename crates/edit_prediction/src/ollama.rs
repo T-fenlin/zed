@@ -103,6 +103,6 @@ pub(crate) async fn make_request(
     response.body_mut().read_to_string(&mut body).await?;
 
     let ollama_response: OllamaGenerateResponse =
-        serde_json::from_str(&body).context("Failed to parse Ollama response")?;
+        serde_json::from_str(&body).context("无法解析 Ollama 响应")?;
     Ok(ollama_response)
 }

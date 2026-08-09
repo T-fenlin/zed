@@ -232,7 +232,7 @@ impl StatusCode {
             b'R' => Ok(StatusCode::Renamed),
             b'C' => Ok(StatusCode::Copied),
             b' ' => Ok(StatusCode::Unmodified),
-            _ => anyhow::bail!("Invalid status code: {byte}"),
+            _ => anyhow::bail!("无效的状态码: {byte}"),
         }
     }
 
@@ -277,7 +277,7 @@ impl UnmergedStatusCode {
             b'A' => Ok(UnmergedStatusCode::Added),
             b'D' => Ok(UnmergedStatusCode::Deleted),
             b'U' => Ok(UnmergedStatusCode::Updated),
-            _ => anyhow::bail!("Invalid unmerged status code: {byte}"),
+            _ => anyhow::bail!("无效的未合并状态码: {byte}"),
         }
     }
 }
@@ -478,7 +478,7 @@ impl FromStr for GitStatus {
                 (x, y) if x == y => {}
                 _ => {
                     log::warn!(
-                        "Unexpected duplicated status entries: {a_status:?} and {b_status:?}"
+                        "意外的重复状态条目: {a_status:?} 和 {b_status:?}"
                     );
                 }
             }
@@ -536,12 +536,12 @@ impl FromStr for TreeDiff {
             let mut fields = status.split(" ").skip(2);
             let old_sha = fields
                 .next()
-                .ok_or_else(|| anyhow!("expected to find old_sha"))?
+                .ok_or_else(|| anyhow!("预期找到 old_sha"))?
                 .to_owned()
                 .parse()?;
             let _new_sha = fields
                 .next()
-                .ok_or_else(|| anyhow!("expected to find new_sha"))?;
+                .ok_or_else(|| anyhow!("预期找到 new_sha"))?;
             let status = fields
                 .next()
                 .and_then(|s| {
@@ -551,7 +551,7 @@ impl FromStr for TreeDiff {
                         None
                     }
                 })
-                .ok_or_else(|| anyhow!("expected to find status"))?;
+                .ok_or_else(|| anyhow!("预期找到状态"))?;
 
             let result = match StatusCode::from_byte(*status)? {
                 StatusCode::Modified => TreeDiffStatus::Modified { old: old_sha },

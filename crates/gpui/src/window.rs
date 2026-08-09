@@ -246,7 +246,7 @@ impl WindowInvalidator {
     pub fn debug_assert_paint(&self) {
         debug_assert!(
             matches!(self.inner.borrow().draw_phase, DrawPhase::Paint),
-            "this method can only be called during paint"
+            "此方法只能在绘制期间调用"
         );
     }
 
@@ -254,7 +254,7 @@ impl WindowInvalidator {
     pub fn debug_assert_prepaint(&self) {
         debug_assert!(
             matches!(self.inner.borrow().draw_phase, DrawPhase::Prepaint),
-            "this method can only be called during request_layout, or prepaint"
+            "此方法只能在 request_layout 或预绘制期间调用"
         );
     }
 
@@ -265,7 +265,7 @@ impl WindowInvalidator {
                 self.inner.borrow().draw_phase,
                 DrawPhase::Paint | DrawPhase::Prepaint
             ),
-            "this method can only be called during request_layout, prepaint, or paint"
+            "此方法只能在 request_layout、预绘制或绘制期间调用"
         );
     }
 }
@@ -390,7 +390,7 @@ impl ElementArenaScope {
     pub(crate) fn exit(mut self, arena: &RefCell<Arena>) -> ArenaClearNeeded {
         assert!(
             std::ptr::eq(self.entered, arena),
-            "ElementArenaScope::exit called with a different arena than was entered"
+            "ElementArenaScope::exit 被调用时使用的 arena 与进入时不同"
         );
         self.exited = true;
         // Teardown (restoring the thread-local and ending the arena's
@@ -417,7 +417,7 @@ impl Drop for ElementArenaScope {
         // normal and unwinding paths, since the guard is a local of the draw.
         unsafe { &*self.entered }.borrow_mut().end_scope();
         if !self.exited && !std::thread::panicking() {
-            debug_assert!(false, "ElementArenaScope dropped without calling exit()");
+            debug_assert!(false, "ElementArenaScope 在未调用 exit() 的情况下被丢弃");
             log::error!(
                 "ElementArenaScope dropped without calling exit(); \
                  the arena clear for this draw was never requested"
@@ -454,7 +454,7 @@ impl ArenaClearNeeded {
     pub fn clear(self, cx: &mut App) {
         assert!(
             std::ptr::eq(self.arena, &cx.element_arena),
-            "ArenaClearNeeded::clear called with a different App than the draw ran against"
+            "ArenaClearNeeded::clear 被调用时使用的 App 与绘制时不同"
         );
         cx.element_arena.borrow_mut().clear();
     }
@@ -1271,9 +1271,9 @@ impl InputLatencyTracker {
             first_input_at: None,
             pending_input_count: 0,
             latency_histogram: Histogram::new(3)
-                .map_err(|e| anyhow!("Failed to create input latency histogram: {e}"))?,
+                .map_err(|e| anyhow!("创建输入延迟直方图失败: {e}"))?,
             events_per_frame_histogram: Histogram::new(3)
-                .map_err(|e| anyhow!("Failed to create events per frame histogram: {e}"))?,
+                .map_err(|e| anyhow!("创建每帧事件直方图失败: {e}"))?,
             mid_draw_events_dropped: 0,
         })
     }
@@ -1514,7 +1514,7 @@ impl Window {
                 activation: {
                     let active_flag = a11y_active_flag.clone();
                     Box::new(move || {
-                        log::info!("Accessibility activated");
+                        log::info!("辅助功能已激活");
                         active_flag.store(true, SeqCst);
                         activation_sender.send_blocking(()).log_err();
                         Some(initial_tree.clone())
@@ -1526,7 +1526,7 @@ impl Window {
                 deactivation: {
                     let active_flag = a11y_active_flag.clone();
                     Box::new(move || {
-                        log::info!("Accessibility deactivated");
+                        log::info!("辅助功能已停用");
                         active_flag.store(false, SeqCst);
                         deactivation_sender.send_blocking(()).log_err();
                     })
@@ -1609,7 +1609,7 @@ impl Window {
                 // branch is unreachable there in practice: only Windows pumps
                 // platform events (and thus requests frames) mid-draw.
                 if draw_in_progress() {
-                    log::debug!("deferring re-entrant window draw request");
+                    log::debug!("延迟处理重入窗口绘制请求");
                     deferred_force_render |= request_frame_options.force_render;
                     return;
                 }
@@ -1682,7 +1682,7 @@ impl Window {
                     || input_rate_tracker.borrow_mut().is_high_rate();
 
                 if invalidator.is_dirty() || force_render {
-                    measure("frame duration", || {
+                    measure("帧持续时间", || {
                         handle
                             .update(&mut cx, |_, window, cx| {
                                 if force_render {
@@ -2344,7 +2344,7 @@ impl Window {
                     window_handle
                         .update(cx, |_, window, cx| {
                             if let Some(entity) = handle.upgrade() {
-                                let event = event.downcast_ref().expect("invalid event type");
+                                let event = event.downcast_ref().expect("无效的事件类型");
                                 on_event(entity, event, window, cx);
                                 true
                             } else {
@@ -2372,7 +2372,7 @@ impl Window {
         let (subscription, activate) = cx.release_listeners.insert(
             entity_id,
             Box::new(move |entity, cx| {
-                let entity = entity.downcast_mut().expect("invalid entity type");
+                let entity = entity.downcast_mut().expect("无效的实体类型");
                 let _ = window_handle.update(cx, |_, window, cx| on_release(entity, window, cx));
             }),
         );
@@ -3158,7 +3158,7 @@ impl Window {
 
             if should_send_a11y_update {
                 log::debug!(
-                    "Sending a11y tree update: {} nodes",
+                    "发送辅助功能树更新: {} 个节点",
                     tree_update.nodes.len()
                 );
                 self.platform_window.a11y_tree_update(tree_update);
@@ -3175,7 +3175,7 @@ impl Window {
                 .get(tooltip_request_index)
                 .cloned()
             else {
-                log::error!("Unexpectedly absent TooltipRequest");
+                log::error!("意外的 TooltipRequest 缺失");
                 continue;
             };
             let mut element = tooltip_request.tooltip.view.clone().into_any_element();
@@ -3256,7 +3256,7 @@ impl Window {
                 break;
             }
             // Limit maximum nesting depth to prevent infinite loops.
-            assert!(depth < 10, "Exceeded maximum (10) deferred depth");
+            assert!(depth < 10, "超出最大(10)延迟深度");
             depth += 1;
 
             // Sort this round by priority.
@@ -3789,7 +3789,7 @@ impl Window {
                     #[cfg(debug_assertions)]
                     {
                         anyhow::anyhow!(
-                            "invalid element state type for id, requested {:?}, actual: {:?}",
+                            "id 的元素状态类型无效,请求 {:?},实际 {:?}",
                             std::any::type_name::<S>(),
                             type_name
                         )
@@ -3798,7 +3798,7 @@ impl Window {
                     #[cfg(not(debug_assertions))]
                     {
                         anyhow::anyhow!(
-                            "invalid element state type for id, requested {:?}",
+                            "id 的元素状态类型无效,请求 {:?}",
                             std::any::type_name::<S>(),
                         )
                     }
@@ -3806,7 +3806,7 @@ impl Window {
                 .unwrap();
 
             let state = state_box.take().expect(
-                "reentrant call to with_element_state for the same state type and element id",
+                "对相同状态类型和元素 id 的 with_element_state 进行了重入调用",
             );
             let (result, state) = f(Some(state), self);
             state_box.replace(state);
@@ -3853,14 +3853,14 @@ impl Window {
             self.with_element_state(global_id, |state, cx| {
                 let (result, state) = f(Some(state), cx);
                 let state =
-                    state.expect("you must return some state when you pass some element id");
+                    state.expect("当传递元素 id 时,必须返回一些状态");
                 (result, state)
             })
         } else {
             let (result, state) = f(None, self);
             debug_assert!(
                 state.is_none(),
-                "you must not return an element state when passing None for the global id"
+                "当全局 id 传递 None 时,不得返回元素状态"
             );
             result
         }
@@ -4271,7 +4271,7 @@ impl Window {
                     let (size, bytes) = self.text_system().rasterize_glyph(&params)?;
                     Ok(Some((size, Cow::Owned(bytes))))
                 })?
-                .expect("Callback above only errors or returns Some");
+                .expect("上述回调仅出错或返回 Some");
             let bounds = Bounds {
                 origin: integer_origin + raster_bounds.origin.map(Into::into),
                 size: tile.bounds.size.map(Into::into),
@@ -4361,7 +4361,7 @@ impl Window {
                     let (size, bytes) = self.text_system().rasterize_glyph(&params)?;
                     Ok(Some((size, Cow::Owned(bytes))))
                 })?
-                .expect("Callback above only errors or returns Some");
+                .expect("上述回调仅出错或返回 Some");
 
             let bounds = Bounds {
                 origin: integer_origin + raster_bounds.origin.map(Into::into),
@@ -4488,11 +4488,11 @@ impl Window {
                     data.size(frame_index),
                     Cow::Borrowed(
                         data.as_bytes(frame_index)
-                            .expect("It's the caller's job to pass a valid frame index"),
+                            .expect("传递有效的帧索引是调用方的职责"),
                     ),
                 )))
             })?
-            .expect("Callback above only returns Some");
+            .expect("上述回调仅返回 Some");
 
         let visible_bounds_snapped = self.snap_bounds(visible_bounds);
 
@@ -5715,7 +5715,7 @@ impl Window {
     {
         let prompt_builder = cx.prompt_builder.take();
         let Some(prompt_builder) = prompt_builder else {
-            unreachable!("Re-entrant window prompting is not supported by GPUI");
+            unreachable!("GPUI 不支持重入窗口提示");
         };
 
         let answers = answers
@@ -6113,7 +6113,7 @@ impl Window {
             }
             _ => {
                 log::debug!(
-                    "Unhandled a11y action: {:?} on {:?}",
+                    "未处理的辅助功能操作: {:?} 于 {:?}",
                     request.action,
                     request.target_node
                 );
@@ -6392,7 +6392,7 @@ impl<V: 'static + Render> WindowHandle<V> {
         cx.update_window(self.any_handle, |root_view, _, _| {
             root_view
                 .downcast::<V>()
-                .map_err(|_| anyhow!("the type of the window's root view has changed"))
+                .map_err(|_| anyhow!("窗口根视图的类型已更改"))
         })?
     }
 
@@ -6410,7 +6410,7 @@ impl<V: 'static + Render> WindowHandle<V> {
         cx.update_window(self.any_handle, |root_view, window, cx| {
             let view = root_view
                 .downcast::<V>()
-                .map_err(|_| anyhow!("the type of the window's root view has changed"))?;
+                .map_err(|_| anyhow!("窗口根视图的类型已更改"))?;
 
             Ok(view.update(cx, |view, cx| update(view, window, cx)))
         })?
@@ -6429,8 +6429,8 @@ impl<V: 'static + Render> WindowHandle<V> {
                     .and_then(|window| window.root.clone())
                     .map(|root_view| root_view.downcast::<V>())
             })
-            .context("window not found")?
-            .map_err(|_| anyhow!("the type of the window's root view has changed"))?;
+            .context("未找到窗口")?
+            .map_err(|_| anyhow!("窗口根视图的类型已更改"))?;
 
         Ok(x.read(cx))
     }
@@ -6543,7 +6543,7 @@ impl AnyWindowHandle {
     {
         let view = self
             .downcast::<T>()
-            .context("the type of the window's root view has changed")?;
+            .context("窗口根视图的类型已更改")?;
 
         cx.read_window(&view, read)
     }
@@ -6624,7 +6624,7 @@ impl TryInto<SharedString> for ElementId {
         if let ElementId::Name(name) = self {
             Ok(name)
         } else {
-            anyhow::bail!("element id is not string")
+            anyhow::bail!("元素 id 不是字符串")
         }
     }
 }
@@ -6919,7 +6919,7 @@ mod tests {
         // frame would never be requested.
         assert!(
             test_window.frame_wake_count() >= 1,
-            "opening a window must wake the frame source for the initial frame"
+            "打开窗口必须唤醒帧源以获取初始帧"
         );
 
         // Serve outstanding demand (present the frame drawn by `add_window`).
@@ -6933,14 +6933,14 @@ mod tests {
         assert_eq!(
             test_window.frame_wake_count(),
             baseline,
-            "clean frames and non-notifying updates must not wake the frame source"
+            "干净帧和非通知更新不得唤醒帧源"
         );
 
         // Notifying a view in an idle window is the core demand signal.
         window.update(cx, |_, _, cx| cx.notify()).unwrap();
         assert!(
             test_window.frame_wake_count() > baseline,
-            "notifying a view in an idle window must wake the frame source"
+            "在空闲窗口中通知视图必须唤醒帧源"
         );
 
         // Serving that demand returns to idle without further wakes.
@@ -6950,7 +6950,7 @@ mod tests {
         assert_eq!(
             test_window.frame_wake_count(),
             baseline,
-            "serving demand must return the window to idle"
+            "满足需求后必须将窗口恢复到空闲状态"
         );
 
         // Next-frame callbacks create demand without dirtying the window.
@@ -6959,7 +6959,7 @@ mod tests {
             .unwrap();
         assert!(
             test_window.frame_wake_count() > baseline,
-            "scheduling a next-frame callback in an idle window must wake the frame source"
+            "在空闲窗口中调度下一帧回调必须唤醒帧源"
         );
     }
 
@@ -6995,7 +6995,7 @@ mod tests {
         // callback directly.
         assert!(
             test_window.frame_wake_count() > baseline || callback_ran.get(),
-            "a frame request with pending next-frame callbacks must either run them or re-arm the frame source"
+            "带有待处理下一帧回调的帧请求必须运行它们或重新武装帧源"
         );
     }
 
@@ -7171,7 +7171,7 @@ mod tests {
             });
             assert!(
                 update_result.is_ok(),
-                "failed to start drag: {update_result:?}"
+                "启动拖拽失败: {update_result:?}"
             );
 
             assert!(cx.test_window(window).external_drag_files().is_empty());
@@ -7199,7 +7199,7 @@ mod tests {
         });
         assert!(
             update_result.is_ok(),
-            "failed to promote drag: {update_result:?}"
+            "提升拖拽失败: {update_result:?}"
         );
         assert_eq!(
             cx.test_window(successful.window).external_drag_files(),
@@ -7234,7 +7234,7 @@ mod tests {
         });
         assert!(
             update_result.is_ok(),
-            "failed to handle drag in destination window: {update_result:?}"
+            "在目标窗口中处理拖拽失败: {update_result:?}"
         );
 
         let update_result = cx.update_window(successful.window, |_, window, cx| {
@@ -7308,7 +7308,7 @@ mod tests {
         });
         assert!(
             update_result.is_ok(),
-            "failed to restore drag in source window: {update_result:?}"
+            "在源窗口中恢复拖拽失败: {update_result:?}"
         );
 
         let cancelled_path = PathBuf::from("/tmp/cancelled-drag");
@@ -7343,7 +7343,7 @@ mod tests {
         });
         assert!(
             update_result.is_ok(),
-            "failed to cancel restored drag: {update_result:?}"
+            "取消恢复的拖拽失败: {update_result:?}"
         );
         assert!(!cx.update(|cx| cx.end_platform_drag(cancelled.window.window_id())));
 
@@ -7365,7 +7365,7 @@ mod tests {
         });
         assert!(
             update_result.is_ok(),
-            "failed to remove drag source window: {update_result:?}"
+            "移除拖拽源窗口失败: {update_result:?}"
         );
         assert!(!cx.update(|cx| cx.end_platform_drag(removed_window_id)));
 
@@ -7387,7 +7387,7 @@ mod tests {
         });
         assert!(
             update_result.is_ok(),
-            "failed to retain drag after platform failure: {update_result:?}"
+            "平台故障后保留拖拽失败: {update_result:?}"
         );
         assert_eq!(
             cx.test_window(failed.window).external_drag_files(),

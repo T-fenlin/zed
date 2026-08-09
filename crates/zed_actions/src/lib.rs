@@ -308,7 +308,7 @@ pub enum NewWorktreeBranchTarget {
 }
 
 /// Creates a new git worktree and switches the workspace to it.
-/// Dispatched by the unified worktree picker when the user selects a "Create new worktree" entry.
+/// Dispatched by the unified worktree picker when the user selects a "创建新工作树" entry.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Action)]
 #[action(namespace = git)]
 #[serde(deny_unknown_fields)]
@@ -329,7 +329,7 @@ pub struct SwitchWorktree {
 }
 
 /// Opens an existing worktree in a new window.
-/// Dispatched by the worktree picker's "Open in New Window" button.
+/// Dispatched by the worktree picker's "在新窗口中打开" button.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Action)]
 #[action(namespace = git)]
 #[serde(deny_unknown_fields)]

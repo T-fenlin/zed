@@ -727,7 +727,7 @@ impl PickerDelegate for Delegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Search all files…".into()
+        "搜索所有文件…".into()
     }
 
     fn searchbar_trailer(
@@ -788,30 +788,30 @@ impl PickerDelegate for Delegate {
     ) -> Vec<picker::PickerAction> {
         use gpui::Action as _;
         vec![
-            picker::PickerAction::header("Split…"),
+            picker::PickerAction::header("拆分…"),
             picker::PickerAction::button(
-                "Left",
+                "左侧",
                 workspace::pane::SplitLeft::default().boxed_clone(),
             ),
             picker::PickerAction::button(
-                "Right",
+                "右侧",
                 workspace::pane::SplitRight::default().boxed_clone(),
             ),
-            picker::PickerAction::button("Up", workspace::pane::SplitUp::default().boxed_clone()),
+            picker::PickerAction::button("上", workspace::pane::SplitUp::default().boxed_clone()),
             picker::PickerAction::button(
-                "Down",
+                "下",
                 workspace::pane::SplitDown::default().boxed_clone(),
             ),
             picker::PickerAction::separator(),
             picker::PickerAction::button(
                 if self.selected_matches.len() > 1 {
-                    "Open Multiple"
+                    "打开多个"
                 } else {
-                    "Open File"
+                    "打开文件"
                 },
                 menu::Confirm.boxed_clone(),
             ),
-            picker::PickerAction::button("Open as Tab", super::ToProjectSearch.boxed_clone()),
+            picker::PickerAction::button("在标签页中打开", super::ToProjectSearch.boxed_clone()),
         ]
     }
 
@@ -1126,15 +1126,15 @@ impl Delegate {
                                             .tooltip(move |_window, cx| {
                                                 let (label, action): (_, &dyn gpui::Action) =
                                                     if is_collapsed {
-                                                        ("Unfold", &Unfold)
+                                                        ("展开", &Unfold)
                                                     } else {
-                                                        ("Fold", &Fold)
+                                                        ("折叠", &Fold)
                                                     };
                                                 Tooltip::with_meta_in(
                                                     label,
                                                     Some(action),
                                                     format!(
-                                                        "{} to toggle all",
+                                                        "{} 切换全部",
                                                         text_for_keystroke(
                                                             &Modifiers::alt(),
                                                             "click",

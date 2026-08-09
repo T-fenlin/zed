@@ -325,7 +325,7 @@ async fn test_basic_calls(
             );
         });
     } else {
-        panic!("unexpected event")
+        panic!("意外事件")
     }
 
     // User A leaves the room.
@@ -2960,7 +2960,7 @@ async fn test_git_diff_index_matches_head(
                 .git_store()
                 .read(cx)
                 .index_matches_head_for_buffer(buffer_id, cx),
-            "the host should send IndexMatchesHead when the index is clean"
+            "当索引干净时,主机应发送 IndexMatchesHead"
         );
     });
 
@@ -4468,7 +4468,7 @@ async fn test_collaborating_with_lsp_progress_updates_and_diagnostics_ordering(
         token: lsp::NumberOrString::String("the-disk-based-token".to_string()),
         value: lsp::ProgressParamsValue::WorkDone(lsp::WorkDoneProgress::Begin(
             lsp::WorkDoneProgressBegin {
-                title: "Progress Began".into(),
+                title: "进度开始".into(),
                 ..Default::default()
             },
         )),
@@ -4495,7 +4495,7 @@ async fn test_collaborating_with_lsp_progress_updates_and_diagnostics_ordering(
         )),
     });
 
-    // When the "disk base diagnostics finished" message is received, the buffers'
+    // When the "磁盘基础诊断完成" message is received, the buffers'
     // diagnostics are expected to be present.
     let disk_based_diagnostics_finished = Arc::new(AtomicBool::new(false));
     project_b.update(cx_b, {
@@ -4513,7 +4513,7 @@ async fn test_collaborating_with_lsp_progress_updates_and_diagnostics_ordering(
                                 .diagnostics_in_range::<_, usize>(0..5, false)
                                 .count(),
                             1,
-                            "expected a diagnostic for buffer {:?}",
+                            "期望缓冲区 {:?} 的诊断",
                             buffer.read(cx).file().unwrap().path(),
                         );
                     }
@@ -4921,7 +4921,7 @@ async fn test_prettier_formatting_buffer(
     let fake_language_server = fake_language_servers.next().await.unwrap();
     fake_language_server.set_request_handler::<lsp::request::Formatting, _, _>(|_, _| async move {
         panic!(
-            "Unexpected: prettier should be preferred since it's enabled and language supports it"
+            "意外:Prettier 已启用且语言支持,应优先使用 Prettier"
         )
     });
 
@@ -4942,7 +4942,7 @@ async fn test_prettier_formatting_buffer(
     assert_eq!(
         buffer_b.read_with(cx_b, |buffer, _| buffer.text()),
         buffer_text.to_string() + "\n" + prettier_format_suffix,
-        "Prettier formatting was not applied to client buffer after client's request"
+        "客户端请求后,Prettier 格式化未应用于客户端缓冲区"
     );
 
     project_a
@@ -4962,7 +4962,7 @@ async fn test_prettier_formatting_buffer(
     assert_eq!(
         buffer_b.read_with(cx_b, |buffer, _| buffer.text()),
         buffer_text.to_string() + "\n" + prettier_format_suffix + "\n" + prettier_format_suffix,
-        "Prettier formatting was not applied to client buffer after host's request"
+        "主机请求后,Prettier 格式化未应用于客户端缓冲区"
     );
 }
 
@@ -5058,7 +5058,7 @@ async fn test_definition(
         assert_eq!(
             definitions_1.len(),
             1,
-            "Unexpected definitions: {definitions_1:?}"
+            "意外的定义: {definitions_1:?}"
         );
         assert_eq!(project_b.read(cx).worktrees(cx).count(), 2);
         let target_buffer = definitions_1[0].target.buffer.read(cx);
@@ -5132,7 +5132,7 @@ async fn test_definition(
         assert_eq!(
             type_definitions.len(),
             1,
-            "Unexpected type definitions: {type_definitions:?}"
+            "意外的类型定义: {type_definitions:?}"
         );
         let target_buffer = type_definitions[0].target.buffer.read(cx);
         assert_eq!(target_buffer.text(), "type T2 = usize;");
@@ -5346,7 +5346,7 @@ async fn test_references(
         assert_eq!(status.name.0, "my-fake-lsp-adapter");
         assert_eq!(
             status.pending_work.values().next().unwrap().message,
-            Some("Finding references...".into())
+            Some("正在查找引用...".into())
         );
     });
 
@@ -5404,13 +5404,13 @@ async fn test_references(
         assert_eq!(status.name.0, "my-fake-lsp-adapter");
         assert_eq!(
             status.pending_work.values().next().unwrap().message,
-            Some("Finding references...".into())
+            Some("正在查找引用...".into())
         );
     });
 
     // Cause the LSP request to fail.
     lsp_response_tx
-        .unbounded_send(Err(anyhow!("can't find references")))
+        .unbounded_send(Err(anyhow!("找不到引用")))
         .unwrap();
     assert_eq!(references.await.unwrap().unwrap(), []);
 
@@ -5495,7 +5495,7 @@ async fn test_project_search(
             }
             SearchResult::LimitReached => {
                 panic!(
-                    "Unexpectedly reached search limit in tests. If you do want to assert limit-reached, change this panic call."
+                    "测试中意外达到搜索限制。如果您确实想断言已达到限制,请更改此 panic 调用。"
                 )
             }
             SearchResult::WaitingForScan | SearchResult::Searching => {}
@@ -5735,14 +5735,14 @@ async fn test_lsp_hover(
     for i in 0..language_server_names.len() {
         let new_server = language_servers[i].next().await.unwrap_or_else(|| {
             panic!(
-                "Failed to get language server #{i} with name {}",
+                "获取名为 {} 的语言服务器 #{i} 失败",
                 &language_server_names[i]
             )
         });
         let new_server_name = new_server.server.name();
         assert!(
             !servers_with_hover_requests.contains_key(&new_server_name),
-            "Unexpected: initialized server with the same name twice. Name: `{new_server_name}`"
+            "意外:使用相同名称初始化了两次服务器。名称:`{new_server_name}`"
         );
         match new_server_name.as_ref() {
             "CrabLang-ls" => {
@@ -5762,7 +5762,7 @@ async fn test_lsp_hover(
                             async move {
                                 Ok(Some(lsp::Hover {
                                     contents: lsp::HoverContents::Scalar(
-                                        lsp::MarkedString::String(format!("{name} hover")),
+                                        lsp::MarkedString::String(format!("{name} 悬停提示")),
                                     ),
                                     range: None,
                                 }))
@@ -5790,7 +5790,7 @@ async fn test_lsp_hover(
                             );
                             Ok(Some(lsp::Hover {
                                 contents: lsp::HoverContents::Array(vec![
-                                    lsp::MarkedString::String("Test hover content.".to_string()),
+                                    lsp::MarkedString::String("测试悬停内容。".to_string()),
                                     lsp::MarkedString::LanguageString(lsp::LanguageString {
                                         language: "Rust".to_string(),
                                         value: "let foo = 42;".to_string(),
@@ -5805,7 +5805,7 @@ async fn test_lsp_hover(
                     ),
                 );
             }
-            unexpected => panic!("Unexpected server name: {unexpected}"),
+            unexpected => panic!("意外的服务器名称: {unexpected}"),
         }
     }
     cx_a.run_until_parked();
@@ -5819,7 +5819,7 @@ async fn test_lsp_hover(
     assert_eq!(
         hovers.len(),
         2,
-        "Expected two hovers from both language servers, but got: {hovers:?}"
+        "期望从两个语言服务器获得两个悬停提示,但实际得到: {hovers:?}"
     );
 
     let _: Vec<()> = futures::future::join_all(servers_with_hover_requests.into_values().map(
@@ -5827,7 +5827,7 @@ async fn test_lsp_hover(
             hover_request
                 .next()
                 .await
-                .expect("All hover requests should have been triggered")
+                .expect("所有悬停请求都应已触发")
         },
     ))
     .await;
@@ -5837,7 +5837,7 @@ async fn test_lsp_hover(
     assert_eq!(
         first_hover.contents,
         vec![project::HoverBlock {
-            text: "CrabLang-ls hover".to_string(),
+            text: "CrabLang-ls 悬停提示".to_string(),
             kind: HoverBlockKind::Markdown,
         },]
     );
@@ -5846,7 +5846,7 @@ async fn test_lsp_hover(
         second_hover.contents,
         vec![
             project::HoverBlock {
-                text: "Test hover content.".to_string(),
+                text: "测试悬停内容。".to_string(),
                 kind: HoverBlockKind::Markdown,
             },
             project::HoverBlock {
@@ -5979,7 +5979,7 @@ async fn test_project_symbols(
         })
         .await
         .unwrap_err();
-    assert!(error.to_string().contains("invalid symbol signature"));
+    assert!(error.to_string().contains("无效的符号签名"));
 }
 
 #[gpui::test(iterations = 10)]
@@ -6082,7 +6082,7 @@ async fn test_open_buffer_while_getting_definition_pointing_to_it(
     assert_eq!(
         definitions.len(),
         1,
-        "Unexpected definitions: {definitions:?}"
+        "意外的定义: {definitions:?}"
     );
     assert_eq!(definitions[0].target.buffer, buffer_b2);
 }
@@ -6854,7 +6854,7 @@ async fn test_share_screen_wayland(
         assert!(room.is_sharing_screen());
         let screen_id = room.shared_screen_id();
         assert!(screen_id.is_some(), "shared_screen_id should be Some");
-        assert_ne!(screen_id.unwrap(), 0, "synthetic ID must be nonzero");
+        assert_ne!(screen_id.unwrap(), 0, "合成 ID 必须非零");
     });
 
     // User B observes the remote screen sharing track.
@@ -6872,7 +6872,7 @@ async fn test_share_screen_wayland(
             );
         });
     } else {
-        panic!("expected RemoteVideoTracksChanged event");
+        panic!("期望 RemoteVideoTracksChanged 事件");
     }
 }
 
@@ -7506,7 +7506,7 @@ async fn test_guest_can_rejoin_shared_project_after_leaving_call(
 
         assert_eq!(
             guest_count, 2,
-            "host should have exactly one guest collaborator after rejoin"
+            "重新加入后,主机应恰好有一个访客协作者"
         );
     });
 
@@ -7514,7 +7514,7 @@ async fn test_guest_can_rejoin_shared_project_after_leaving_call(
         assert_eq!(
             project.client_subscriptions().len(),
             0,
-            "We should clear all host subscriptions after leaving the project"
+            "离开项目后,我们应清除所有主机订阅"
         );
     })
 }

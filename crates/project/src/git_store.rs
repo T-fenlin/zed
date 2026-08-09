@@ -364,7 +364,7 @@ impl TryFrom<proto::StatusEntry> for StatusEntry {
     type Error = anyhow::Error;
 
     fn try_from(value: proto::StatusEntry) -> Result<Self, Self::Error> {
-        let repo_path = RepoPath::from_proto(&value.repo_path).context("invalid repo path")?;
+        let repo_path = RepoPath::from_proto(&value.repo_path).context("无效的仓库路径")?;
         let status = status_from_proto(value.simple_status, value.status)?;
         let diff_stat = match (value.diff_stat_added, value.diff_stat_deleted) {
             (Some(added), Some(deleted)) => Some(DiffStat { added, deleted }),
@@ -554,7 +554,7 @@ impl LocalRepositoryState {
                 })?
                 .await
                 .unwrap_or_else(|| {
-                    log::error!("failed to get working directory environment for repository {work_directory_abs_path:?}");
+                    log::error!("获取仓库 {work_directory_abs_path:?} 的工作目录环境失败");
                     HashMap::default()
                 });
         let search_paths = environment.get("PATH").map(|val| val.to_owned());
@@ -569,7 +569,7 @@ impl LocalRepositoryState {
                         })
                         .or_else(|| which::which("git").ok());
                     fs.open_repo(&dot_git_abs_path, system_git_binary_path.as_deref())
-                        .with_context(|| format!("opening repository at {dot_git_abs_path:?}"))
+                        .with_context(|| format!("正在打开位于 {dot_git_abs_path:?} 的仓库"))
                 }
             })
             .await?;
@@ -980,7 +980,7 @@ impl GitStore {
                             {
                                 downstream_client.take();
                             } else {
-                                unreachable!("unshared called on remote store");
+                                unreachable!("在远程存储上调用了 unshared");
                             }
                         })
                     }),
@@ -1065,7 +1065,7 @@ impl GitStore {
         let Some((repo, repo_path)) =
             self.repository_and_path_for_buffer_id(buffer.read(cx).remote_id(), cx)
         else {
-            return Task::ready(Err(anyhow!("failed to find git repository for buffer")));
+            return Task::ready(Err(anyhow!("找不到缓冲区的 git 仓库")));
         };
 
         let is_symlink = Self::buffer_is_symlink(&buffer, cx);
@@ -1124,7 +1124,7 @@ impl GitStore {
         let Some((repo, repo_path)) =
             self.repository_and_path_for_buffer_id(buffer.read(cx).remote_id(), cx)
         else {
-            return Task::ready(Err(anyhow!("failed to find git repository for buffer")));
+            return Task::ready(Err(anyhow!("找不到缓冲区的 git 仓库")));
         };
 
         let task = self
@@ -1154,7 +1154,7 @@ impl GitStore {
                         let (_, index_text_buffer) = diff_state.read(cx).staged_diff.as_ref()?;
                         Some(index_text_buffer.clone())
                     })
-                    .context("index text buffer missing after opening staged diff")?;
+                    .context("打开暂存差异后缺少索引文本缓冲区")?;
                 Ok((diff, index_text_buffer))
             })?
         })
@@ -1262,7 +1262,7 @@ impl GitStore {
             .diffs
             .get(&buffer_id)
             .cloned()
-            .context("failed to find git state for buffer")?;
+            .context("找不到缓冲区的 git 状态")?;
         diff_state.update(cx, |diff_state, _| {
             diff_state.remove_overlapping_pending_index_edits(&index_footprints);
             diff_state.insert_pending_index_edits(index_edits);
@@ -1304,7 +1304,7 @@ impl GitStore {
         let uncommitted_snapshot = uncommitted_diff.read(cx).snapshot(cx);
         let unstaged_snapshot = uncommitted_snapshot
             .secondary_diff()
-            .context("diff has no unstaged secondary")?;
+            .context("差异没有未暂存的次要差异")?;
 
         let mut hunks = Vec::new();
         for range in &worktree_ranges {
@@ -1328,7 +1328,7 @@ impl GitStore {
             .diffs
             .get(&buffer_id)
             .cloned()
-            .context("failed to find git state for buffer")?;
+            .context("找不到缓冲区的 git 状态")?;
         diff_state.update(cx, |diff_state, _| {
             diff_state.insert_pending_index_edits(index_edits)
         });
@@ -1359,16 +1359,16 @@ impl GitStore {
         let buffer_id = *self
             .buffer_ids_by_index_text_buffer_id
             .get(&index_buffer_id)
-            .context("failed to find git state for index text buffer")?;
+            .context("找不到索引文本缓冲区的 git 状态")?;
         let diff_state = self
             .diffs
             .get(&buffer_id)
             .cloned()
-            .context("failed to find git state for buffer")?;
+            .context("找不到缓冲区的 git 状态")?;
         let index_buffer = diff_state
             .read(cx)
             .index_text_buffer()
-            .context("index text is not loaded")?;
+            .context("索引文本未加载")?;
         let index_snapshot = index_buffer.read(cx).text_snapshot();
         let staged_snapshot = staged_diff.read(cx).snapshot(cx);
 
@@ -1572,7 +1572,7 @@ impl GitStore {
         let Some((repo, repo_path)) =
             self.repository_and_path_for_buffer_id(buffer.read(cx).remote_id(), cx)
         else {
-            return Task::ready(Err(anyhow!("failed to find git repository for buffer")));
+            return Task::ready(Err(anyhow!("找不到缓冲区的 git 仓库")));
         };
 
         let is_symlink = Self::buffer_is_symlink(&buffer, cx);
@@ -1702,7 +1702,7 @@ impl GitStore {
                         })
                     }
                     DiffKind::SinceOid(_) => {
-                        unreachable!("open_diff_internal is not used for OID diffs")
+                        unreachable!("open_diff_internal 不用于 OID 差异")
                     }
                 };
                 diff
@@ -1723,7 +1723,7 @@ impl GitStore {
                         diff_state.index_text_buffer_language_enabled = true;
                         let index_text_buffer = staged_index_text_buffer
                             .take()
-                            .context("index text buffer was not created for staged diff")?;
+                            .context("未为暂存差异创建索引文本缓冲区")?;
                         diff_state.staged_diff = Some((diff.downgrade(), index_text_buffer));
                     }
                     DiffKind::Uncommitted => {
@@ -1748,7 +1748,7 @@ impl GitStore {
                         diff_state.uncommitted_diff = Some(diff.downgrade())
                     }
                     DiffKind::SinceOid(_) => {
-                        unreachable!("open_diff_internal is not used for OID diffs")
+                        unreachable!("open_diff_internal 不用于 OID 差异")
                     }
                 }
 
@@ -1974,7 +1974,7 @@ impl GitStore {
         let Some((repo, repo_path)) =
             self.repository_and_path_for_buffer_id(buffer.remote_id(), cx)
         else {
-            return Task::ready(Err(anyhow!("failed to find a git repository for buffer")));
+            return Task::ready(Err(anyhow!("找不到缓冲区的 git 仓库")));
         };
         let content = match &version {
             Some(version) => buffer.rope_for_version(version),
@@ -1994,7 +1994,7 @@ impl GitStore {
                 RepositoryState::Local(LocalRepositoryState { backend, .. }) => backend
                     .blame(repo_path.clone(), content, line_ending)
                     .await
-                    .with_context(|| format!("Failed to blame {:?}", repo_path.as_ref()))
+                    .with_context(|| format!("追溯 {:?} 失败", repo_path.as_ref()))
                     .map(Some),
                 RepositoryState::Remote(RemoteRepositoryState { project_id, client }) => {
                     let response = client
@@ -2017,7 +2017,7 @@ impl GitStore {
         cx: &mut App,
     ) -> Task<Result<url::Url>> {
         let Some(file) = File::from_dyn(buffer.read(cx).file()) else {
-            return Task::ready(Err(anyhow!("buffer has no file")));
+            return Task::ready(Err(anyhow!("缓冲区没有文件")));
         };
 
         let Some((repo, repo_path)) = self.repository_and_path_for_project_path(
@@ -2033,13 +2033,13 @@ impl GitStore {
                 .language()
                 .is_none_or(|lang| lang.name() != "Rust")
             {
-                return Task::ready(Err(anyhow!("no permalink available")));
+                return Task::ready(Err(anyhow!("没有可用的永久链接")));
             }
             let file_path = file.worktree.read(cx).absolutize(&file.path);
             return cx.spawn(async move |cx| {
                 let provider_registry = cx.update(GitHostingProviderRegistry::default_global);
                 get_permalink_in_rust_registry_src(provider_registry, file_path, selection)
-                    .context("no permalink available")
+                    .context("没有可用的永久链接")
             });
         };
 
@@ -2061,14 +2061,14 @@ impl GitStore {
                             .await
                             .with_context(|| format!("remote \"{remote}\" not found"))?;
 
-                        let sha = backend.head_sha().await.context("reading HEAD SHA")?;
+                        let sha = backend.head_sha().await.context("正在读取 HEAD SHA")?;
 
                         let provider_registry =
                             cx.update(GitHostingProviderRegistry::default_global);
 
                         let (provider, remote) =
                             parse_git_remote_url(provider_registry, &origin_url)
-                                .context("parsing Git remote URL")?;
+                                .context("正在解析 Git 远程 URL")?;
 
                         Ok(provider.build_permalink(
                             remote,
@@ -2087,7 +2087,7 @@ impl GitStore {
                             })
                             .await?;
 
-                        url::Url::parse(&response.permalink).context("failed to parse permalink")
+                        url::Url::parse(&response.permalink).context("解析永久链接失败")
                     }
                 }
             })
@@ -2164,7 +2164,7 @@ impl GitStore {
                 else {
                     return;
                 };
-                log::debug!("received worktree update for repositories: {changed_repos:?}");
+                log::debug!("收到仓库的工作树更新:{changed_repos:?}");
                 self.update_repositories_from_worktree(
                     *worktree_id,
                     project_environment.clone(),
@@ -2574,7 +2574,7 @@ impl GitStore {
             return;
         };
         let recv = repo.update(cx, |repo, cx| {
-            log::debug!("hunks changed for {}", path.as_unix_str());
+            log::debug!("{} 的代码块已更改", path.as_unix_str());
             repo.spawn_set_index_text_job(
                 path,
                 new_index_text,
@@ -2604,7 +2604,7 @@ impl GitStore {
         changed_repos: &UpdatedGitRepositoriesSet,
         cx: &mut Context<Self>,
     ) {
-        log::debug!("local worktree repos changed");
+        log::debug!("本地工作树仓库已更改");
         debug_assert!(worktree.read(cx).is_local());
 
         for repository in self.repositories.values() {
@@ -2734,7 +2734,7 @@ impl GitStore {
             } => {
                 if upstream_client.is_via_collab() {
                     return Task::ready(Err(anyhow!(
-                        "Git Clone isn't supported for project guests"
+                        "项目访客不支持 Git 克隆"
                     )));
                 }
                 let request = upstream_client.request(proto::GitClone {
@@ -2748,7 +2748,7 @@ impl GitStore {
 
                     match result.success {
                         true => Ok(()),
-                        false => Err(anyhow!("Git Clone failed")),
+                        false => Err(anyhow!("Git 克隆失败")),
                     }
                 })
             }
@@ -2768,13 +2768,13 @@ impl GitStore {
                 // Prevent running git config commands for collab.
                 if upstream_client.is_via_collab() {
                     return Task::ready(Err(anyhow!(
-                        "Git Config isn't support for project guests"
+                        "项目访客不支持 Git 配置"
                     )));
                 }
 
                 // TODO: Implement this for remote repositories.
                 Task::ready(Err(anyhow!(
-                    "Git Config isn't yet supported for remote projects"
+                    "远程项目尚不支持 Git 配置"
                 )))
             }
         }
@@ -2790,7 +2790,7 @@ impl GitStore {
             let mut update = envelope.payload;
 
             let id = RepositoryId::from_proto(update.id);
-            let client = this.upstream_client().context("no upstream client")?;
+            let client = this.upstream_client().context("没有上游客户端")?;
             let is_new = !this.repositories.contains_key(&id);
 
             let repository_dir_abs_path: Option<Arc<Path>> = update
@@ -3162,7 +3162,7 @@ impl GitStore {
     ) -> Result<proto::Ack> {
         let repository_id = RepositoryId::from_proto(envelope.payload.repository_id);
         let repository_handle = Self::repository_for_request(&this, repository_id, &mut cx)?;
-        let hook = RunHook::from_proto(envelope.payload.hook).context("invalid hook")?;
+        let hook = RunHook::from_proto(envelope.payload.hook).context("无效的钩子")?;
         repository_handle
             .update(&mut cx, |repository_handle, cx| {
                 repository_handle.run_hook(hook, cx)
@@ -3401,7 +3401,7 @@ impl GitStore {
                     CommitDataState::Loading(None) => {
                         // todo(git_graph) this could happen if the request fails, we should encode an error case
                         debug_panic!(
-                            "This should never happen since we passed true into fetch commit data"
+                            "既然我们在获取提交数据时传入了 true,这种情况就不应该发生"
                         );
                     }
                 }
@@ -3435,7 +3435,7 @@ impl GitStore {
         let log_source = log_source_from_proto(
             payload
                 .log_source
-                .context("missing initial graph data log source")?,
+                .context("缺少初始图数据日志源")?,
         )?;
 
         let (subscriber_sender, subscriber_receiver) = async_channel::unbounded();
@@ -3495,7 +3495,7 @@ impl GitStore {
                         response_tx
                             .send(Err(anyhow!(error.to_string())))
                             .await
-                            .context("Failed to send error")
+                            .context("发送错误失败")
                             .log_err();
                         return;
                     }
@@ -3532,7 +3532,7 @@ impl GitStore {
             envelope
                 .payload
                 .log_source
-                .context("missing search commit log source")?,
+                .context("缺少搜索提交日志源")?,
         )?;
         let search_args = SearchCommitArgs {
             query: SharedString::from(envelope.payload.query),
@@ -3587,7 +3587,7 @@ impl GitStore {
         let commit = match envelope.payload.action {
             Some(proto::git_edit_ref::Action::UpdateToCommit(sha)) => Some(sha),
             Some(proto::git_edit_ref::Action::Delete(_)) => None,
-            None => anyhow::bail!("GitEditRef missing action"),
+            None => anyhow::bail!("GitEditRef 缺少操作"),
         };
 
         repository_handle
@@ -4059,14 +4059,14 @@ impl GitStore {
 
         let delegates = cx.update(|cx| repository.read(cx).askpass_delegates.clone());
         let Some(mut askpass) = delegates.lock().remove(&envelope.payload.askpass_id) else {
-            debug_panic!("no askpass found");
-            anyhow::bail!("no askpass found");
+            debug_panic!("未找到 askpass");
+            anyhow::bail!("未找到 askpass");
         };
 
         let response = askpass
             .ask_password(envelope.payload.prompt)
             .await
-            .ok_or_else(|| anyhow::anyhow!("askpass cancelled"))?;
+            .ok_or_else(|| anyhow::anyhow!("askpass 已取消"))?;
 
         delegates
             .lock()
@@ -4113,7 +4113,7 @@ impl GitStore {
                 let base_ref = envelope
                     .payload
                     .merge_base_ref
-                    .ok_or_else(|| anyhow!("merge_base_ref is required for MergeBase diff type"))?;
+                    .ok_or_else(|| anyhow!("MergeBase 差异类型需要 merge_base_ref"))?;
                 DiffType::MergeBase {
                     base_ref: base_ref.into(),
                 }
@@ -4160,7 +4160,7 @@ impl GitStore {
                 let repository = this.repositories().get(&repository_id)?;
                 Some(repository.update(cx, |repo, cx| repo.diff_tree(diff_type, cx)))
             })
-            .context("missing repository")?
+            .context("缺少仓库")?
             .await??;
 
         Ok(proto::GetTreeDiffResponse {
@@ -4201,7 +4201,7 @@ impl GitStore {
                 let repository = this.repositories().get(&repository_id)?;
                 Some(repository.update(cx, |repo, cx| repo.load_blob_content(oid, cx)))
             })
-            .context("missing repository")?
+            .context("缺少仓库")?
             .await?;
         Ok(proto::GetBlobContentResponse { content })
     }
@@ -4217,7 +4217,7 @@ impl GitStore {
                 let repository = this.repositories().get(&repository_id)?;
                 Some(repository.update(cx, |repo, _| repo.load_commit_template_text()))
             })
-            .context("missing repository")?;
+            .context("缺少仓库")?;
         let template = rx.await??;
         Ok(proto::LoadCommitTemplateResponse {
             template: template.map(|t| t.template),
@@ -4235,7 +4235,7 @@ impl GitStore {
                 let buffer = this.buffer_store.read(cx).get(buffer_id)?;
                 Some(this.open_unstaged_diff(buffer, cx))
             })
-            .context("missing buffer")?
+            .context("缺少缓冲区")?
             .await?;
         this.update(&mut cx, |this, _| {
             let shared_diffs = this
@@ -4259,7 +4259,7 @@ impl GitStore {
                 let buffer = this.buffer_store.read(cx).get(buffer_id)?;
                 Some(this.open_uncommitted_diff(buffer, cx))
             })
-            .context("missing buffer")?
+            .context("缺少缓冲区")?
             .await?;
         this.update(&mut cx, |this, _| {
             let shared_diffs = this
@@ -4271,7 +4271,7 @@ impl GitStore {
         this.read_with(&cx, |this, cx| {
             use proto::open_uncommitted_diff_response::Mode;
 
-            let diff_state = this.diffs.get(&buffer_id).context("missing diff state")?;
+            let diff_state = this.diffs.get(&buffer_id).context("缺少差异状态")?;
             let diff_state = diff_state.read(cx);
             let index_matches_head = diff_state.index_matches_head();
             let index_text = diff_state.index_text.clone();
@@ -4347,7 +4347,7 @@ impl GitStore {
             let proto_selection = envelope
                 .payload
                 .selection
-                .context("no selection to get permalink for defined")?;
+                .context("没有为定义获取永久链接的选择")?;
             proto_selection.start as u32..proto_selection.end as u32
         };
         let buffer = this.read_with(&cx, |this, cx| {
@@ -4371,7 +4371,7 @@ impl GitStore {
         this.read_with(cx, |this, _| {
             this.repositories
                 .get(&id)
-                .context("missing repository handle")
+                .context("缺少仓库句柄")
                 .cloned()
         })
     }
@@ -5049,7 +5049,7 @@ impl BufferGitState {
         }
         self.recalculate_diff_task = Some(cx.spawn(async move |this, cx| {
             log::debug!(
-                "start recalculating diffs for buffer {}",
+                "开始为缓冲区 {} 重新计算差异",
                 buffer.remote_id()
             );
 
@@ -5221,8 +5221,8 @@ impl BufferGitState {
             if cancel {
                 log::debug!(
                     concat!(
-                        "aborting recalculating diffs for buffer {}",
-                        "due to subsequent hunk operations",
+                        "中止为缓冲区 {} 重新计算差异",
+                        "由于后续的代码块操作",
                     ),
                     buffer.remote_id()
                 );
@@ -5311,7 +5311,7 @@ impl BufferGitState {
                 oid_diff.update(cx, |diff, cx| diff.set_snapshot(new_oid_diff, cx));
 
                 log::debug!(
-                    "finished recalculating oid diff for buffer {} oid {:?}",
+                    "完成缓冲区 {} oid {:?} 的 oid 差异重新计算",
                     buffer.remote_id(),
                     oid
                 );
@@ -5320,7 +5320,7 @@ impl BufferGitState {
             }
 
             log::debug!(
-                "finished recalculating diffs for buffer {}",
+                "完成缓冲区 {} 的差异重新计算",
                 buffer.remote_id()
             );
 
@@ -5687,7 +5687,7 @@ impl MergeDetails {
         backend: &Arc<dyn GitRepository>,
         current_conflicted_paths: Vec<RepoPath>,
     ) -> bool {
-        log::debug!("load merge details");
+        log::debug!("加载合并详情");
         self.message = backend.merge_message().await.map(SharedString::from);
         let heads = backend
             .revparse_batch(vec![
@@ -5843,7 +5843,7 @@ impl Repository {
             git_store,
             snapshot,
             pending_ops: Default::default(),
-            repository_state: Task::ready(Err("not yet initialized".into())).shared(),
+            repository_state: Task::ready(Err("尚未初始化".into())).shared(),
             _worker_task: Task::ready(()),
             commit_message_buffer: None,
             askpass_delegates: Default::default(),
@@ -5940,7 +5940,7 @@ impl Repository {
             None,
             |state, mut cx| async move {
                 let RepositoryState::Local(LocalRepositoryState { backend, .. }) = state else {
-                    log::error!("tried to recompute diffs for a non-local repository");
+                    log::error!("尝试为非本地仓库重新计算差异");
                     return Ok(());
                 };
 
@@ -5961,7 +5961,7 @@ impl Repository {
                                 let repo_path = this.abs_path_to_repo_path(&abs_path)?;
                                 let is_symlink = GitStore::file_is_symlink(file, cx);
                                 log::debug!(
-                                    "start reload diff bases for repo path {}",
+                                    "开始为仓库路径 {} 重新加载差异基准",
                                     repo_path.as_unix_str()
                                 );
                                 diff_state.update(cx, |diff_state, _| {
@@ -6271,7 +6271,7 @@ impl Repository {
             None,
             move |state, mut cx| async move {
                 let Some(this) = this.upgrade() else {
-                    bail!("git store was dropped");
+                    bail!("git 存储已被释放");
                 };
                 match state {
                     RepositoryState::Local(..) => {
@@ -6285,7 +6285,7 @@ impl Repository {
                             project_id: project_id.0,
                             repository_id: id.to_proto(),
                         });
-                        let response = request.await.context("requesting to open commit buffer")?;
+                        let response = request.await.context("正在请求打开提交缓冲区")?;
                         let buffer_id = BufferId::new(response.buffer_id)?;
                         let buffer = buffer_store
                             .update(&mut cx, |buffer_store, cx| {
@@ -6294,7 +6294,7 @@ impl Repository {
                             .await?;
                         if let Some(language_registry) = languages {
                             let git_commit_language =
-                                language_registry.language_for_name("Git Commit").await?;
+                                language_registry.language_for_name("Git 提交").await?;
                             buffer.update(&mut cx, |buffer, cx| {
                                 buffer.set_language(Some(git_commit_language), cx);
                             });
@@ -6319,7 +6319,7 @@ impl Repository {
         cx.spawn(async move |repository, cx| {
             let git_commit_language = match language_registry {
                 Some(language_registry) => {
-                    Some(language_registry.language_for_name("Git Commit").await?)
+                    Some(language_registry.language_for_name("Git 提交").await?)
                 }
                 None => None,
             };
@@ -6522,7 +6522,7 @@ impl Repository {
                             .await
                     }
                     RepositoryState::Remote(_) => {
-                        anyhow::bail!("file history changed files is only supported locally")
+                        anyhow::bail!("文件历史更改文件仅支持本地操作")
                     }
                 }
             },
@@ -6572,7 +6572,7 @@ impl Repository {
                     let mut stream = match result {
                         Ok(stream) => stream,
                         Err(error) => {
-                            log::error!("failed to search commits remotely: {error:?}");
+                            log::error!("远程搜索提交失败:{error:?}");
                             return;
                         }
                     };
@@ -6582,7 +6582,7 @@ impl Repository {
                             Ok(response) => response,
                             Err(error) => {
                                 log::error!(
-                                    "failed to receive remote commit search results: {error:?}"
+                                    "接收远程提交搜索结果失败:{error:?}"
                                 );
                                 return;
                             }
@@ -6599,7 +6599,7 @@ impl Repository {
                     }
                 }
                 Err(error) => {
-                    log::error!("failed to get repository state for commit search: {error}");
+                    log::error!("获取提交搜索的仓库状态失败:{error}");
                 }
             };
         })
@@ -6673,7 +6673,7 @@ impl Repository {
                                 data.subscribers.clear();
                             } else {
                                 debug_panic!(
-                                    "This task would be dropped if this entry doesn't exist"
+                                    "如果此条目不存在,此任务将被丢弃"
                                 );
                             }
                         })
@@ -6734,7 +6734,7 @@ impl Repository {
             match &graph_data {
                 Entry::Occupied(_) => {}
                 Entry::Vacant(_) => {
-                    debug_panic!("This task should be dropped if data doesn't exist");
+                    debug_panic!("如果数据不存在,此任务应被丢弃");
                 }
             }
         })
@@ -6860,12 +6860,12 @@ impl Repository {
                     self.commit_data.remove(&sha),
                     Some(CommitDataState::Loading(_))
                 ),
-                "Commit data should still be loading when enqueueing the request fails"
+                "当入队请求失败时,提交数据应仍在加载中"
             );
         }
 
         &self.commit_data.get(&sha).unwrap_or_else(|| {
-            debug_assert!(!has_failed, "This should always be inserted");
+            debug_assert!(!has_failed, "这应始终被插入");
             &CommitDataState::Loading(None)
         })
     }
@@ -6898,13 +6898,13 @@ impl Repository {
                             completion_sender.send(data.clone()).ok();
                         }
                     } else {
-                        debug_panic!("The handler state has to be open for this task to exist");
+                        debug_panic!("处理程序状态必须为打开状态,此任务才能存在");
                     }
 
                     let old_value = this.commit_data.insert(sha, CommitDataState::Loaded(data));
                     debug_assert!(
                         !matches!(old_value, Some(CommitDataState::Loaded(_))),
-                        "We should never overwrite commit data"
+                        "我们绝不应覆盖提交数据"
                     );
 
                     cx.notify();
@@ -6919,7 +6919,7 @@ impl Repository {
                     &mut this.commit_data_handler,
                     CommitDataHandlerState::Closed,
                 ) else {
-                    debug_panic!("The handler state has to be open for this task to exist");
+                    debug_panic!("处理程序状态必须为打开状态,此任务才能存在");
                     return;
                 };
 
@@ -6957,7 +6957,7 @@ impl Repository {
                     .await;
                 }
                 Err(error) => {
-                    log::error!("failed to get repository state: {error}");
+                    log::error!("获取仓库状态失败:{error}");
                     return;
                 }
             };
@@ -6991,7 +6991,7 @@ impl Repository {
         let reader = match backend.commit_data_reader() {
             Ok(reader) => reader,
             Err(error) => {
-                log::error!("failed to create commit data reader: {error:?}");
+                log::error!("创建提交数据读取器失败:{error:?}");
                 return;
             }
         };
@@ -7031,7 +7031,7 @@ impl Repository {
                             }
                         }
                         Err(error) => {
-                            log::error!("failed to read commit data for {sha}: {error:?}");
+                            log::error!("读取 {sha} 的提交数据失败:{error:?}");
                         }
                     }
                 }
@@ -7360,7 +7360,7 @@ impl Repository {
                                                     .collect(),
                                             })
                                             .await
-                                            .context("sending stage request")
+                                            .context("正在发送暂存请求")
                                             .map(|_| ())
                                     } else {
                                         client
@@ -7375,7 +7375,7 @@ impl Repository {
                                                     .collect(),
                                             })
                                             .await
-                                            .context("sending unstage request")
+                                            .context("正在发送取消暂存请求")
                                             .map(|_| ())
                                     }
                                 }
@@ -7539,7 +7539,7 @@ impl Repository {
                                     stash_index: index.map(|i| i as u64),
                                 })
                                 .await
-                                .context("sending stash pop request")?;
+                                .context("正在发送弹出暂存请求")?;
                             Ok(())
                         }
                     }
@@ -7573,7 +7573,7 @@ impl Repository {
                                     stash_index: index.map(|i| i as u64),
                                 })
                                 .await
-                                .context("sending stash apply request")?;
+                                .context("正在发送应用暂存请求")?;
                             Ok(())
                         }
                     }
@@ -7621,7 +7621,7 @@ impl Repository {
                                 is_dir,
                             })
                             .await
-                            .context("sending add path to .gitignore request")?;
+                            .context("正在发送将路径添加到 .gitignore 的请求")?;
                         Ok(())
                     }
                 }
@@ -7666,7 +7666,7 @@ impl Repository {
                                 is_dir,
                             })
                             .await
-                            .context("sending add path to .git/info/exclude request")?;
+                            .context("正在发送将路径添加到 .git/info/exclude 的请求")?;
                         Ok(())
                     }
                 }
@@ -7723,7 +7723,7 @@ impl Repository {
                             stash_index: index.map(|i| i as u64),
                         })
                         .await
-                        .context("sending stash pop request")?;
+                        .context("正在发送弹出暂存请求")?;
                     Ok(())
                 }
             }
@@ -7830,7 +7830,7 @@ impl Repository {
         let branch_list_error = branches_scan.error;
         let branch_list: Arc<[Branch]> = branches_scan.branches.into();
         let branch = branch_list.iter().find(|branch| branch.is_head).cloned();
-        log::info!("head branch after scan is {branch:?}");
+        log::info!("扫描后的头部分支为 {branch:?}");
         let snapshot = this.update(cx, |this, cx| {
             let head_changed = branch != this.snapshot.branch;
             let branch_list_changed = *branch_list != *this.snapshot.branch_list;
@@ -8127,7 +8127,7 @@ impl Repository {
                     }
                 }
                 log::debug!(
-                    "finish updating index text for buffer {}",
+                    "完成缓冲区 {} 的索引文本更新",
                     path.as_unix_str()
                 );
 
@@ -8151,7 +8151,7 @@ impl Repository {
                             });
                             Some(())
                         })
-                        .context("Git store dropped")?;
+                        .context("Git 存储已被释放")?;
                 }
                 Ok(())
             },
@@ -8342,7 +8342,7 @@ impl Repository {
         let project_name = repository_anchor
             .file_name()
             .and_then(|name| name.to_str())
-            .ok_or_else(|| anyhow!("git repo must have a directory name"))?;
+            .ok_or_else(|| anyhow!("git 仓库必须有一个目录名"))?;
         let directory = worktrees_directory_for_repo(
             repository_anchor,
             worktree_directory_setting,
@@ -8491,7 +8491,7 @@ impl Repository {
                     }
                     RepositoryState::Remote(_) => {
                         log::warn!(
-                            "checkout_branch_in_worktree not supported for remote repositories"
+                            "远程仓库不支持在工作树中检出分支"
                         );
                         Ok(())
                     }
@@ -8684,7 +8684,7 @@ impl Repository {
                             )
                             .await
                             .with_context(|| {
-                                format!("failed to delete worktree directory '{}'", path.display())
+                                format!("删除工作树目录 '{}' 失败", path.display())
                             })?;
                         }
 
@@ -8825,7 +8825,7 @@ impl Repository {
                                 proto::tree_diff_status::Status::Modified => {
                                     TreeDiffStatus::Modified {
                                         old: git::Oid::from_str(
-                                            &entry.oid.context("missing oid").log_err()?,
+                                            &entry.oid.context("缺少 oid").log_err()?,
                                         )
                                         .log_err()?,
                                     }
@@ -8833,7 +8833,7 @@ impl Repository {
                                 proto::tree_diff_status::Status::Deleted => {
                                     TreeDiffStatus::Deleted {
                                         old: git::Oid::from_str(
-                                            &entry.oid.context("missing oid").log_err()?,
+                                            &entry.oid.context("缺少 oid").log_err()?,
                                         )
                                         .log_err()?,
                                     }
@@ -9285,13 +9285,13 @@ impl Repository {
             Some(GitJobKey::ReloadGitState),
             None,
             |state, mut cx| async move {
-                log::debug!("run scheduled git status scan");
+                log::debug!("运行计划中的 git 状态扫描");
 
                 let Some(this) = this.upgrade() else {
                     return Ok(());
                 };
                 let RepositoryState::Local(LocalRepositoryState { backend, .. }) = state else {
-                    bail!("not a local repository")
+                    bail!("不是本地仓库")
                 };
                 let snapshot = compute_snapshot(this.clone(), backend.clone(), &mut cx).await;
                 this.update(&mut cx, |this, cx| {
@@ -9468,7 +9468,7 @@ impl Repository {
                             buffer_id: buffer_id.to_proto(),
                         })
                         .await?;
-                    let mode = Mode::from_i32(response.mode).context("Invalid mode")?;
+                    let mode = Mode::from_i32(response.mode).context("无效的模式")?;
                     let bases = match mode {
                         Mode::IndexMatchesHead => DiffBasesChange::SetBoth(response.committed_text),
                         Mode::IndexAndHead => DiffBasesChange::SetEach {
@@ -9557,7 +9557,7 @@ impl Repository {
                     )
                 })?;
                 let RepositoryState::Local(LocalRepositoryState { backend, .. }) = state else {
-                    bail!("not a local repository")
+                    bail!("不是本地仓库")
                 };
 
                 if changed_paths.is_empty() {
@@ -9858,12 +9858,12 @@ pub fn worktrees_directory_for_repo(
         || worktree_directory_setting.starts_with('\\')
     {
         anyhow::bail!(
-            "git.worktree_directory must be a relative path, got: {worktree_directory_setting:?}"
+            "git.worktree_directory 必须是相对路径,当前为:{worktree_directory_setting:?}"
         );
     }
 
     if worktree_directory_setting.is_empty() {
-        anyhow::bail!("git.worktree_directory must not be empty");
+        anyhow::bail!("git.worktree_directory 不能为空");
     }
 
     let trimmed = worktree_directory_setting.trim_end_matches(['/', '\\']);
@@ -9926,13 +9926,13 @@ async fn remove_empty_managed_worktree_ancestors(fs: &dyn Fs, child_path: &Path,
         match result {
             Ok(()) => {
                 log::info!(
-                    "Removed empty managed worktree directory: {}",
+                    "已移除空的托管工作树目录:{}",
                     parent.display()
                 );
             }
             Err(error) => {
                 log::debug!(
-                    "Stopped removing managed worktree parent directories at {}: {error}",
+                    "在 {} 处停止移除托管工作树父目录:{error}",
                     parent.display()
                 );
                 break;
@@ -9947,7 +9947,7 @@ async fn remove_empty_managed_worktree_ancestors(fs: &dyn Fs, child_path: &Path,
 ///
 /// This is the canonical, on-disk path used for project grouping and as the
 /// basis for display names. The goal is to return the directory the user
-/// thinks of as "the project":
+/// thinks of as "项目":
 ///
 /// - If `common_dir`'s last component starts with `.` (e.g. `.git` for a
 ///   normal checkout, or `.bare` for a bare clone), the parent directory is
@@ -10044,20 +10044,20 @@ fn get_permalink_in_rust_registry_src(
         let json = std::fs::read_to_string(dir.join(".cargo_vcs_info.json")).ok()?;
         Some((dir, json))
     }) else {
-        bail!("No .cargo_vcs_info.json found in parent directories")
+        bail!("在父目录中未找到 .cargo_vcs_info.json")
     };
     let cargo_vcs_info = serde_json::from_str::<CargoVcsInfo>(&cargo_vcs_info_json)?;
     let cargo_toml = std::fs::read_to_string(dir.join("Cargo.toml"))?;
     let manifest = toml::from_str::<CargoToml>(&cargo_toml)?;
     let (provider, remote) = parse_git_remote_url(provider_registry, &manifest.package.repository)
-        .context("parsing package.repository field of manifest")?;
+        .context("正在解析清单的 package.repository 字段")?;
     let path = PathBuf::from(cargo_vcs_info.path_in_vcs).join(path.strip_prefix(dir).unwrap());
     let permalink = provider.build_permalink(
         remote,
         BuildPermalinkParams::new(
             &cargo_vcs_info.git.sha1,
             &RepoPath::from_rel_path(
-                &RelPath::new(&path, PathStyle::local()).context("invalid path")?,
+                &RelPath::new(&path, PathStyle::local()).context("无效路径")?,
             ),
             Some(selection),
         ),
@@ -10164,7 +10164,7 @@ fn log_source_to_proto(log_source: &LogSource) -> proto::GitLogSource {
 fn log_source_from_proto(log_source: proto::GitLogSource) -> Result<LogSource> {
     match log_source
         .source
-        .context("git log source is missing source")?
+        .context("git 日志源缺少源")?
     {
         proto::git_log_source::Source::All(_) => Ok(LogSource::All),
         proto::git_log_source::Source::Branch(branch) => Ok(LogSource::Branch(branch.into())),
@@ -10550,7 +10550,7 @@ mod tests {
         symlink_diff.read_with(cx, |diff, _| {
             assert!(
                 !diff.base_text_exists(),
-                "symlinked buffer should not have a git diff base"
+                "符号链接缓冲区不应有 git 差异基准"
             );
         });
 
@@ -10570,7 +10570,7 @@ mod tests {
         regular_diff.read_with(cx, |diff, _| {
             assert!(
                 diff.base_text_exists(),
-                "regular file should have a git diff base"
+                "普通文件应有 git 差异基准"
             );
         });
     }
@@ -10799,7 +10799,7 @@ mod tests {
             if matches!(state, CommitDataState::Loading(_)) {
                 anyhow::ensure!(
                     handler.pending_requests.contains(sha),
-                    "loading commit data for {sha} must be tracked in pending_requests"
+                    "加载 {sha} 的提交数据必须在 pending_requests 中跟踪"
                 );
             }
         }
@@ -10815,7 +10815,7 @@ mod tests {
             if matches!(state, CommitDataState::Loading(Some(_))) {
                 anyhow::ensure!(
                     handler.completion_senders.contains_key(sha),
-                    "await-result loading commit data for {sha} must have a completion sender"
+                    "await-result 加载 {sha} 的提交数据必须有完成发送器"
                 );
             }
         }
@@ -10833,7 +10833,7 @@ mod tests {
                     repository.commit_data.get(sha),
                     Some(CommitDataState::Loading(_))
                 ),
-                "pending request for {sha} must correspond to loading commit data"
+                "{sha} 的待处理请求必须对应加载提交数据"
             );
         }
 
@@ -10850,7 +10850,7 @@ mod tests {
                     repository.commit_data.get(sha),
                     Some(CommitDataState::Loading(Some(_)))
                 ),
-                "completion sender for {sha} must correspond to await-result loading commit data"
+                "{sha} 的完成发送器必须对应 await-result 加载提交数据"
             );
         }
 
@@ -10861,7 +10861,7 @@ mod tests {
         for sha in handler.completion_senders.keys() {
             anyhow::ensure!(
                 handler.pending_requests.contains(sha),
-                "completion sender for {sha} must also be tracked as pending"
+                "{sha} 的完成发送器也必须作为待处理跟踪"
             );
         }
 
@@ -10876,7 +10876,7 @@ mod tests {
             if matches!(state, CommitDataState::Loading(None)) {
                 anyhow::ensure!(
                     !handler.completion_senders.contains_key(sha),
-                    "non-await-result loading commit data for {sha} must not have a completion sender"
+                    "非 await-result 加载 {sha} 的提交数据不能有完成发送器"
                 );
             }
         }
@@ -10892,7 +10892,7 @@ mod tests {
             if matches!(state, CommitDataState::Loaded(_)) {
                 anyhow::ensure!(
                     !handler.pending_requests.contains(sha),
-                    "loaded commit data for {sha} must not still be pending"
+                    "已加载的 {sha} 提交数据不能仍处于待处理状态"
                 );
             }
         }
@@ -10908,7 +10908,7 @@ mod tests {
             if matches!(state, CommitDataState::Loaded(_)) {
                 anyhow::ensure!(
                     !handler.completion_senders.contains_key(sha),
-                    "loaded commit data for {sha} must not keep a completion sender"
+                    "已加载的 {sha} 提交数据不能保留完成发送器"
                 );
             }
         }
@@ -10920,7 +10920,7 @@ mod tests {
         for (sha, state) in &repository.commit_data {
             anyhow::ensure!(
                 !matches!(state, CommitDataState::Loading(_)),
-                "closed handler must not keep loading commit data for {sha}"
+                "关闭的处理程序不能继续加载 {sha} 的提交数据"
             );
         }
 
@@ -10967,10 +10967,10 @@ mod tests {
                     CommitData {
                         sha: *sha,
                         parents: SmallVec::new(),
-                        author_name: SharedString::from(format!("Author {sha}")),
+                        author_name: SharedString::from(format!("作者 {sha}")),
                         author_email: SharedString::from(format!("{sha}@example.com")),
                         commit_timestamp: rng.random_range(0..10_000),
-                        subject: SharedString::from(format!("Subject {sha}")),
+                        subject: SharedString::from(format!("主题 {sha}")),
                         message: SharedString::from(format!("Subject {sha}\n\nBody for {sha}")),
                     },
                     failing_shas.contains(sha),
@@ -11002,13 +11002,13 @@ mod tests {
         let repository = project.read_with(cx, |project, cx| {
             project
                 .active_repository(cx)
-                .expect("should have a repository")
+                .expect("应有一个仓库")
         });
 
         cx.update(|cx| {
             cx.observe(&repository, |repo, cx| {
                 verify_invariants(repo.read(cx))
-                    .context("Invariant weren't held after a cx.notify")
+                    .context("cx.notify 后不变量未被保持")
                     .unwrap();
             })
         })
@@ -11029,7 +11029,7 @@ mod tests {
                     verify_invariants(repository)
                         .with_context(|| {
                             format!(
-                                "commit data invariant violation after step {} for sha {}",
+                                "步骤 {} 后 sha {} 的提交数据不变量违规",
                                 step + 1,
                                 sha,
                             )
@@ -11043,7 +11043,7 @@ mod tests {
                 verify_invariants(repository)
                     .with_context(|| {
                         format!(
-                            "commit data invariant violation after draining through step {}",
+                            "排空至步骤 {} 后提交数据不变量违规",
                             chunk_end,
                         )
                     })
@@ -11056,7 +11056,7 @@ mod tests {
         cx.run_until_parked();
         repository.read_with(cx, |repository, _cx| {
             verify_invariants(repository)
-                .with_context(|| "commit data invariant violation after final drain".to_string())
+                .with_context(|| "最终排空后提交数据不变量违规".to_string())
                 .unwrap();
 
             let loaded_shas = repository
@@ -11077,7 +11077,7 @@ mod tests {
                 .collect::<Vec<_>>();
             assert!(
                 missing_loaded_shas.is_empty() && unexpected_loaded_shas.is_empty(),
-                "loaded commit data SHAs after final drain did not match expectation. missing: {:?}, unexpected: {:?}",
+                "最终排空后加载的提交数据 SHA 与预期不符。缺失: {:?}, 意外: {:?}",
                 missing_loaded_shas,
                 unexpected_loaded_shas,
             );
@@ -11131,7 +11131,7 @@ async fn compute_snapshot(
     backend: Arc<dyn GitRepository>,
     cx: &mut AsyncApp,
 ) -> RepositorySnapshot {
-    log::debug!("starting compute snapshot");
+    log::debug!("开始计算快照");
 
     let (id, work_directory_abs_path, prev_snapshot) = this.update(cx, |this, _| {
         this.paths_needing_status_update.clear();
@@ -11156,7 +11156,7 @@ async fn compute_snapshot(
     };
     let (branches, head_commit, all_worktrees) =
         futures::future::join3(branches_future, head_commit_future, worktrees_future).await;
-    log::debug!("fetched branches, head commit, worktrees");
+    log::debug!("已获取分支、头提交、工作树");
 
     let BranchesScanResult {
         branches,
@@ -11174,7 +11174,7 @@ async fn compute_snapshot(
     let remote_origin_url = remote_urls.remove("origin");
     let remote_upstream_url = remote_urls.remove("upstream");
 
-    log::debug!("fetched remotes");
+    log::debug!("已获取远程");
 
     let snapshot = this.update(cx, |this, cx| {
         let head_changed =
@@ -11255,7 +11255,7 @@ async fn compute_snapshot(
     let diff_stats = diff_stats.log_err().unwrap_or_default();
     let staged_diff_stats = staged_diff_stats.log_err().unwrap_or_default();
     let unstaged_diff_stats = unstaged_diff_stats.log_err().unwrap_or_default();
-    log::debug!("fetched statuses, diff stats, stash entries");
+    log::debug!("已获取状态、差异统计、暂存条目");
 
     let diff_stat_map: HashMap<&RepoPath, DiffStat> =
         diff_stats.entries.iter().map(|(p, s)| (p, *s)).collect();
@@ -11296,7 +11296,7 @@ async fn compute_snapshot(
             }
         })
         .await;
-    log::debug!("new merge details: {merge_details:?}");
+    log::debug!("新的合并详情: {merge_details:?}");
 
     this.update(cx, |this, cx| {
         if conflicts_changed || statuses_by_path != this.snapshot.statuses_by_path {
@@ -11323,7 +11323,7 @@ fn status_from_proto(
 
     let Some(variant) = status.and_then(|status| status.variant) else {
         let code = proto::GitStatus::from_i32(simple_status)
-            .with_context(|| format!("Invalid git status code: {simple_status}"))?;
+            .with_context(|| format!("无效的 git 状态代码: {simple_status}"))?;
         let result = match code {
             proto::GitStatus::Added => TrackedStatus {
                 worktree_status: StatusCode::Added,
@@ -11345,7 +11345,7 @@ fn status_from_proto(
                 index_status: StatusCode::Unmodified,
             }
             .into(),
-            _ => anyhow::bail!("Invalid code for simple status: {simple_status}"),
+            _ => anyhow::bail!("简单状态代码无效: {simple_status}"),
         };
         return Ok(result);
     };
@@ -11357,12 +11357,12 @@ fn status_from_proto(
             let [first_head, second_head] =
                 [unmerged.first_head, unmerged.second_head].map(|head| {
                     let code = proto::GitStatus::from_i32(head)
-                        .with_context(|| format!("Invalid git status code: {head}"))?;
+                        .with_context(|| format!("无效的 git 状态代码: {head}"))?;
                     let result = match code {
                         proto::GitStatus::Added => UnmergedStatusCode::Added,
                         proto::GitStatus::Updated => UnmergedStatusCode::Updated,
                         proto::GitStatus::Deleted => UnmergedStatusCode::Deleted,
-                        _ => anyhow::bail!("Invalid code for unmerged status: {code:?}"),
+                        _ => anyhow::bail!("未合并状态代码无效: {code:?}"),
                     };
                     Ok(result)
                 });
@@ -11377,7 +11377,7 @@ fn status_from_proto(
             let [index_status, worktree_status] = [tracked.index_status, tracked.worktree_status]
                 .map(|status| {
                     let code = proto::GitStatus::from_i32(status)
-                        .with_context(|| format!("Invalid git status code: {status}"))?;
+                        .with_context(|| format!("无效的 git 状态代码: {status}"))?;
                     let result = match code {
                         proto::GitStatus::Modified => StatusCode::Modified,
                         proto::GitStatus::TypeChanged => StatusCode::TypeChanged,
@@ -11386,7 +11386,7 @@ fn status_from_proto(
                         proto::GitStatus::Renamed => StatusCode::Renamed,
                         proto::GitStatus::Copied => StatusCode::Copied,
                         proto::GitStatus::Unmodified => StatusCode::Unmodified,
-                        _ => anyhow::bail!("Invalid code for tracked status: {code:?}"),
+                        _ => anyhow::bail!("已跟踪状态代码无效: {code:?}"),
                     };
                     Ok(result)
                 });

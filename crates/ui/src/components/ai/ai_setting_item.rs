@@ -17,13 +17,13 @@ pub enum AiSettingItemStatus {
 impl AiSettingItemStatus {
     fn tooltip_text(&self) -> &'static str {
         match self {
-            Self::Stopped => "Server is stopped.",
-            Self::Starting => "Server is starting.",
-            Self::Running => "Server is active.",
-            Self::Error => "Server has an error.",
-            Self::AuthRequired => "Authentication Required.",
-            Self::ClientSecretRequired => "Client Secret Required.",
-            Self::Authenticating => "Waiting for Authorization…",
+            Self::Stopped => "服务器已停止。",
+            Self::Starting => "服务器正在启动。",
+            Self::Running => "服务器运行中。",
+            Self::Error => "服务器出现错误。",
+            Self::AuthRequired => "需要身份验证。",
+            Self::ClientSecretRequired => "需要客户端密钥。",
+            Self::Authenticating => "等待授权…",
         }
     }
 
@@ -60,9 +60,9 @@ impl AiSettingItemSource {
 
     fn tooltip_text(&self, label: &str) -> String {
         match self {
-            Self::Extension => format!("{label} was installed from an extension."),
-            Self::Registry => format!("{label} was installed from the ACP registry."),
-            Self::Custom => format!("{label} was configured manually."),
+            Self::Extension => format!("{label} 是通过扩展安装的。"),
+            Self::Registry => format!("{label} 是从 ACP 注册表安装的。"),
+            Self::Custom => format!("{label} 是手动配置的。"),
         }
     }
 }
@@ -291,7 +291,7 @@ impl Component for AiSettingItem {
 
         let examples = vec![
             single_example(
-                "MCP server with letter avatar (running)",
+                "带字母头像的 MCP 服务器(运行中)",
                 container()
                     .child(
                         AiSettingItem::new(
@@ -300,7 +300,7 @@ impl Component for AiSettingItem {
                             AiSettingItemStatus::Running,
                             AiSettingItemSource::Extension,
                         )
-                        .detail_label("3 tools")
+                        .detail_label("3 个工具")
                         .action(
                             IconButton::new("menu", IconName::Settings)
                                 .icon_size(IconSize::Small)
@@ -315,7 +315,7 @@ impl Component for AiSettingItem {
                     .into_any_element(),
             ),
             single_example(
-                "MCP server (stopped)",
+                "MCP 服务器(已停止)",
                 container()
                     .child(AiSettingItem::new(
                         "custom-mcp",
@@ -326,7 +326,7 @@ impl Component for AiSettingItem {
                     .into_any_element(),
             ),
             single_example(
-                "MCP server (starting, animated)",
+                "MCP 服务器(启动中,带动画)",
                 container()
                     .child(AiSettingItem::new(
                         "starting-mcp",
@@ -337,7 +337,7 @@ impl Component for AiSettingItem {
                     .into_any_element(),
             ),
             single_example(
-                "Agent with icon (running)",
+                "带图标的代理(运行中)",
                 container()
                     .child(
                         AiSettingItem::new(
@@ -365,7 +365,7 @@ impl Component for AiSettingItem {
                     .into_any_element(),
             ),
             single_example(
-                "Registry agent (starting, animated)",
+                "注册表代理(启动中,带动画)",
                 container()
                     .child(
                         AiSettingItem::new(
@@ -383,7 +383,7 @@ impl Component for AiSettingItem {
                     .into_any_element(),
             ),
             single_example(
-                "Error with details",
+                "带详细信息的错误",
                 container()
                     .child(
                         AiSettingItem::new(
@@ -396,10 +396,10 @@ impl Component for AiSettingItem {
                             details_row(
                                 IconName::XCircle,
                                 Color::Error,
-                                "Failed to connect: connection refused",
+                                "连接失败:连接被拒绝",
                             )
                             .child(
-                                Button::new("logout", "Log Out")
+                                Button::new("logout", "退出登录")
                                     .style(ButtonStyle::Outlined)
                                     .label_size(LabelSize::Small),
                             ),

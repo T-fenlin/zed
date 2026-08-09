@@ -1332,13 +1332,13 @@ enum InlayHintRefreshReason {
 impl InlayHintRefreshReason {
     fn description(&self) -> &'static str {
         match self {
-            Self::ModifiersChanged(_) => "modifiers changed",
+            Self::ModifiersChanged(_) => "修饰符已更改",
             Self::Toggle(_) => "toggle",
-            Self::SettingsChange(_) => "settings change",
-            Self::NewLinesShown => "new lines shown",
-            Self::BufferEdited(_) => "buffer edited",
-            Self::RefreshRequested => "refresh requested",
-            Self::ExcerptsRemoved(_) => "excerpts removed",
+            Self::SettingsChange(_) => "设置更改",
+            Self::NewLinesShown => "显示新行",
+            Self::BufferEdited(_) => "缓冲区已编辑",
+            Self::RefreshRequested => "已请求刷新",
+            Self::ExcerptsRemoved(_) => "摘录已移除",
         }
     }
 }
@@ -1917,7 +1917,7 @@ impl Editor {
             }
         }
 
-        this.report_editor_event("Editor Opened", None, cx);
+        this.report_editor_event("编辑器已打开", None, cx);
         this
     }
 
@@ -2089,13 +2089,13 @@ impl Editor {
         cx: &mut Context<Workspace>,
     ) {
         Self::new_in_workspace(workspace, window, cx).detach_and_prompt_err(
-            "Failed to create buffer",
+            "无法创建缓冲区",
             window,
             cx,
             |e, _, _| match e.error_code() {
                 ErrorCode::RemoteUpgradeRequired => Some(format!(
-                "The remote instance of Zed does not support this yet. It must be upgraded to {}",
-                e.error_tag("required").unwrap_or("the latest version")
+                "远程 Zed 实例尚不支持此功能。必须将其升级到 {}",
+                e.error_tag("required").unwrap_or("最新版本")
             )),
                 _ => None,
             },
@@ -2162,11 +2162,11 @@ impl Editor {
             })?;
             anyhow::Ok(())
         })
-        .detach_and_prompt_err("Failed to create buffer", window, cx, |e, _, _| {
+        .detach_and_prompt_err("无法创建缓冲区", window, cx, |e, _, _| {
             match e.error_code() {
                 ErrorCode::RemoteUpgradeRequired => Some(format!(
-                "The remote instance of Zed does not support this yet. It must be upgraded to {}",
-                e.error_tag("required").unwrap_or("the latest version")
+                "远程 Zed 实例尚不支持此功能。必须将其升级到 {}",
+                e.error_tag("required").unwrap_or("最新版本")
             )),
                 _ => None,
             }
@@ -2682,7 +2682,7 @@ impl Editor {
 
                     DB.save_editor_selections(editor_id, workspace_id, db_selections)
                         .await
-                        .with_context(|| format!("persisting editor selections for editor {editor_id}, workspace {workspace_id:?}"))
+                        .with_context(|| format!("正在持久化编辑器 {editor_id} 在工作区 {workspace_id:?} 中的选择"))
                         .log_err();
                 });
                     }
@@ -2744,7 +2744,7 @@ impl Editor {
                 .await
                 .with_context(|| {
                     format!(
-                        "persisting editor folds for editor {editor_id}, workspace {workspace_id:?}"
+                        "正在持久化编辑器 {editor_id} 在工作区 {workspace_id:?} 中的折叠"
                     )
                 })
                 .log_err();
@@ -6354,8 +6354,8 @@ impl Editor {
             .and_then(|file| Some(file.path().extension()?.to_string_lossy().to_string()));
 
         let event_type = match accepted {
-            true => "Edit Prediction Accepted",
-            false => "Edit Prediction Discarded",
+            true => "编辑预测已接受",
+            false => "编辑预测已丢弃",
         };
         telemetry::event!(
             event_type,
@@ -6702,7 +6702,7 @@ impl Editor {
                             let focus_handle = self.focus_handle.clone();
                             move |window, cx| {
                                 Tooltip::for_action_in(
-                                    "Toggle Code Actions",
+                                    "切换代码操作",
                                     &ToggleCodeActions {
                                         deployed_from_indicator: None,
                                         quick_launch: false,
@@ -6749,7 +6749,7 @@ impl Editor {
         if self.tasks.insert(key, value).is_some() {
             // This case should hopefully be rare, but just in case...
             log::error!(
-                "multiple different run targets found on a single line, only the last target will be rendered"
+                "在单行上找到多个不同的运行目标,仅渲染最后一个目标"
             )
         }
     }
@@ -6834,41 +6834,41 @@ impl Editor {
             .map(|(anchor, bp)| (anchor, Arc::from(bp)));
 
         let log_breakpoint_msg = if breakpoint.as_ref().is_some_and(|bp| bp.1.message.is_some()) {
-            "Edit Log Breakpoint"
+            "编辑日志断点"
         } else {
-            "Set Log Breakpoint"
+            "设置日志断点"
         };
 
         let condition_breakpoint_msg = if breakpoint
             .as_ref()
             .is_some_and(|bp| bp.1.condition.is_some())
         {
-            "Edit Condition Breakpoint"
+            "编辑条件断点"
         } else {
-            "Set Condition Breakpoint"
+            "设置条件断点"
         };
 
         let hit_condition_breakpoint_msg = if breakpoint
             .as_ref()
             .is_some_and(|bp| bp.1.hit_condition.is_some())
         {
-            "Edit Hit Condition Breakpoint"
+            "编辑命中条件断点"
         } else {
-            "Set Hit Condition Breakpoint"
+            "设置命中条件断点"
         };
 
         let set_breakpoint_msg = if breakpoint.as_ref().is_some() {
-            "Unset Breakpoint"
+            "取消断点"
         } else {
-            "Set Breakpoint"
+            "设置断点"
         };
 
         let run_to_cursor = command_palette_hooks::CommandPaletteFilter::try_global(cx)
             .map_or(false, |filter| !filter.is_hidden(&DebuggerRunToCursor));
 
         let toggle_state_msg = breakpoint.as_ref().map_or(None, |bp| match bp.1.state {
-            BreakpointState::Enabled => Some("Disable"),
-            BreakpointState::Disabled => Some("Enable"),
+            BreakpointState::Enabled => Some("禁用"),
+            BreakpointState::Disabled => Some("启用"),
         });
 
         let (anchor, breakpoint) =
@@ -6879,7 +6879,7 @@ impl Editor {
                 .context(focus_handle)
                 .when(run_to_cursor, |this| {
                     let weak_editor = weak_editor.clone();
-                    this.entry("Run to cursor", None, move |window, cx| {
+                    this.entry("运行到光标处", None, move |window, cx| {
                         weak_editor
                             .update(cx, |editor, cx| {
                                 editor.change_selections(None, window, cx, |s| {
@@ -7028,10 +7028,10 @@ impl Editor {
         } else {
             "unset"
         };
-        let mut primary_text = format!("Click to {primary_action_text}");
+        let mut primary_text = format!("点击以{primary_action_text}");
         if collides_with_existing && !breakpoint.is_disabled() {
             use std::fmt::Write;
-            write!(primary_text, ", {alt_as_text}-click to disable").ok();
+            write!(primary_text, ",按住 {alt_as_text} 并点击以禁用").ok();
         }
         let primary_text = SharedString::from(primary_text);
         let focus_handle = self.focus_handle.clone();
@@ -7072,7 +7072,7 @@ impl Editor {
                 Tooltip::with_meta_in(
                     primary_text.clone(),
                     None,
-                    "Right-click for more options",
+                    "右键点击查看更多选项",
                     &focus_handle,
                     window,
                     cx,
@@ -7341,7 +7341,7 @@ impl Editor {
                 let target_display_point = range.end.to_display_point(editor_snapshot);
 
                 self.render_edit_prediction_end_of_line_popover(
-                    "Accept",
+                    "接受",
                     editor_snapshot,
                     visible_row_range,
                     target_display_point,
@@ -7439,13 +7439,13 @@ impl Editor {
             .items_end()
             .when(flag_on_right, |el| el.items_start())
             .child(if flag_on_right {
-                self.render_edit_prediction_line_popover("Jump", None, window, cx)?
+                self.render_edit_prediction_line_popover("跳转", None, window, cx)?
                     .rounded_bl(px(0.))
                     .rounded_tl(px(0.))
                     .border_l_2()
                     .border_color(border_color)
             } else {
-                self.render_edit_prediction_line_popover("Jump", None, window, cx)?
+                self.render_edit_prediction_line_popover("跳转", None, window, cx)?
                     .rounded_br(px(0.))
                     .rounded_tr(px(0.))
                     .border_r_2()
@@ -7485,7 +7485,7 @@ impl Editor {
         cx: &mut App,
     ) -> Option<(AnyElement, gpui::Point<Pixels>)> {
         let mut element = self
-            .render_edit_prediction_line_popover("Scroll", Some(scroll_icon), window, cx)?
+            .render_edit_prediction_line_popover("滚动", Some(scroll_icon), window, cx)?
             .into_any();
 
         let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);
@@ -7521,7 +7521,7 @@ impl Editor {
         if target_display_point.row().as_f32() < scroll_top {
             let mut element = self
                 .render_edit_prediction_line_popover(
-                    "Jump to Edit",
+                    "跳转到编辑",
                     Some(IconName::ArrowUp),
                     window,
                     cx,
@@ -7540,7 +7540,7 @@ impl Editor {
         } else if (target_display_point.row().as_f32() + 1.) > scroll_bottom {
             let mut element = self
                 .render_edit_prediction_line_popover(
-                    "Jump to Edit",
+                    "跳转到编辑",
                     Some(IconName::ArrowDown),
                     window,
                     cx,
@@ -7558,7 +7558,7 @@ impl Editor {
             Some((element, origin))
         } else {
             self.render_edit_prediction_end_of_line_popover(
-                "Jump to Edit",
+                "跳转到编辑",
                 editor_snapshot,
                 visible_row_range,
                 target_display_point,
@@ -7964,7 +7964,7 @@ impl Editor {
                     .on_mouse_down(MouseButton::Left, |_, window, _| window.prevent_default())
                     .on_click(cx.listener(|this, _event, window, cx| {
                         cx.stop_propagation();
-                        this.report_editor_event("Edit Prediction Provider ToS Clicked", None, cx);
+                        this.report_editor_event("编辑预测提供商服务条款已点击", None, cx);
                         window.dispatch_action(
                             zed_actions::OpenZedPredictOnboarding.boxed_clone(),
                             cx,
@@ -7975,7 +7975,7 @@ impl Editor {
                             .flex_1()
                             .gap_2()
                             .child(Icon::new(IconName::ZedPredict))
-                            .child(Label::new("Accept Terms of Service"))
+                            .child(Label::new("接受服务条款"))
                             .child(div().w_full())
                             .child(
                                 Icon::new(IconName::ArrowUpRight)
@@ -8038,7 +8038,7 @@ impl Editor {
                                     .bg(Self::edit_prediction_line_popover_bg_color(cx))
                                     .when(self.edit_prediction_preview.released_too_fast(), |el| {
                                         el.child(
-                                            Label::new("Hold")
+                                            Label::new("按住")
                                                 .size(LabelSize::Small)
                                                 .when(accept_keystroke.is_none(), |el| {
                                                     el.strikethrough()
@@ -8097,7 +8097,7 @@ impl Editor {
                 }
             },
 
-            None => pending_completion_container().child(Label::new("No Prediction")),
+            None => pending_completion_container().child(Label::new("无预测")),
         };
 
         let completion = if is_refreshing {
@@ -8163,7 +8163,7 @@ impl Editor {
                                         false,
                                     ))),
                             )
-                            .child(Label::new("Preview").into_any_element())
+                            .child(Label::new("预览").into_any_element())
                             .opacity(if has_completion { 1.0 } else { 0.4 }),
                     )
                 })
@@ -8215,7 +8215,7 @@ impl Editor {
                             Icon::new(IconName::ZedPredictUp)
                         },
                     )
-                    .child(Label::new("Jump to Edit")),
+                    .child(Label::new("跳转到编辑")),
             ),
 
             InlineCompletion::Edit {
@@ -10370,7 +10370,7 @@ impl Editor {
                     line.strip_prefix(&line_prefix)
                         .or_else(|| line.trim_start().strip_prefix(&line_prefix.trim_start()))
                         .with_context(|| {
-                            format!("line did not start with prefix {line_prefix:?}: {line:?}")
+                            format!("行未以前缀 {line_prefix:?} 开头: {line:?}")
                         })
                 })
                 .collect::<Result<Vec<_>, _>>()
@@ -13014,11 +13014,11 @@ impl Editor {
                     // Log the ancestor, to support using this action as a way to explore TreeSitter
                     // nodes. Parent and grandparent are also logged because this operation will not
                     // visit nodes that have the same range as their parent.
-                    log::info!("Node: {node:?}");
+                    log::info!("节点: {node:?}");
                     let parent = node.parent();
-                    log::info!("Parent: {parent:?}");
+                    log::info!("父级: {parent:?}");
                     let grandparent = parent.and_then(|x| x.parent());
-                    log::info!("Grandparent: {grandparent:?}");
+                    log::info!("祖父级: {grandparent:?}");
                 }
 
                 selected_larger_node |= new_range != old_range;
@@ -14062,7 +14062,7 @@ impl Editor {
                 }
             };
             cx.spawn_in(window, async move |editor, cx| {
-                let target = match target_task.await.context("target resolution task")? {
+                let target = match target_task.await.context("目标解析任务")? {
                     TargetTaskResult::AlreadyNavigated => return Ok(Navigated::Yes),
                     TargetTaskResult::Location(None) => return Ok(Navigated::No),
                     TargetTaskResult::Location(Some(target)) => target,
@@ -14118,8 +14118,8 @@ impl Editor {
                 let (title, location_tasks, workspace) = editor
                     .update_in(cx, |editor, window, cx| {
                         let tab_kind = match kind {
-                            Some(GotoDefinitionKind::Implementation) => "Implementations",
-                            _ => "Definitions",
+                            Some(GotoDefinitionKind::Implementation) => "实现",
+                            _ => "定义",
                         };
                         let title = definitions
                             .iter()
@@ -14127,7 +14127,7 @@ impl Editor {
                                 HoverLink::Text(link) => link.origin.as_ref().map(|origin| {
                                     let buffer = origin.buffer.read(cx);
                                     format!(
-                                        "{} for {}",
+                                        "{} 的 {}",
                                         tab_kind,
                                         buffer
                                             .text_for_range(origin.range.clone())
@@ -14151,14 +14151,14 @@ impl Editor {
                             .collect::<Vec<_>>();
                         (title, location_tasks, editor.workspace().clone())
                     })
-                    .context("location tasks preparation")?;
+                    .context("位置任务准备")?;
 
                 let locations = future::join_all(location_tasks)
                     .await
                     .into_iter()
                     .filter_map(|location| location.transpose())
                     .collect::<Result<_>>()
-                    .context("location tasks")?;
+                    .context("位置任务")?;
 
                 let Some(workspace) = workspace else {
                     return Ok(Navigated::No);
@@ -14214,7 +14214,7 @@ impl Editor {
             })?;
             let location = match location_task {
                 Some(task) => Some({
-                    let target_buffer_handle = task.await.context("open local buffer")?;
+                    let target_buffer_handle = task.await.context("打开本地缓冲区")?;
                     let range = target_buffer_handle.update(cx, |target_buffer, _| {
                         let target_start = target_buffer
                             .clip_point_utf16(point_from_lsp(lsp_location.range.start), Bias::Left);
@@ -14260,7 +14260,7 @@ impl Editor {
         {
             Ok(_) => {
                 log::info!(
-                    "Ignoring repeated FindAllReferences invocation with the position of already running task"
+                    "忽略重复的查找所有引用调用,该位置已有正在运行的任务"
                 );
                 return None;
             }
@@ -14295,7 +14295,7 @@ impl Editor {
                     .map(|location| {
                         let buffer = location.buffer.read(cx);
                         format!(
-                            "References to `{}`",
+                            "对 `{}` 的引用",
                             buffer
                                 .text_for_range(location.range.clone())
                                 .collect::<String>()
@@ -14651,7 +14651,7 @@ impl Editor {
                 &editor,
                 workspace,
                 project_transaction,
-                format!("Rename: {} → {}", old_name, new_name),
+                format!("重命名: {} → {}", old_name, new_name),
                 cx,
             )
             .await?;
@@ -14814,7 +14814,7 @@ impl Editor {
                     .map(|t| t.0.clone())
             })
             .unwrap_or_else(|| {
-                log::info!("Failed to determine selections from before format. Falling back to selections when format was initiated");
+                log::info!("无法确定格式化前的选择。回退到格式化开始时的选择");
                 self.selections.disjoint_anchors()
             });
 
@@ -14827,7 +14827,7 @@ impl Editor {
             let transaction = futures::select_biased! {
                 transaction = format.log_err().fuse() => transaction,
                 () = timeout => {
-                    log::warn!("timed out waiting for formatting");
+                    log::warn!("等待格式化超时");
                     None
                 }
             };
@@ -14895,7 +14895,7 @@ impl Editor {
         cx.spawn_in(window, async move |_, cx| {
             let transaction = futures::select_biased! {
                 () = timeout => {
-                    log::warn!("timed out waiting for executing code action");
+                    log::warn!("等待执行代码操作超时");
                     None
                 }
                 transaction = apply_action.log_err().fuse() => transaction,
@@ -15236,7 +15236,7 @@ impl Editor {
             {
                 *end_selections = Some(self.selections.disjoint_anchors());
             } else {
-                log::error!("unexpectedly ended a transaction that wasn't started by this editor");
+                log::error!("意外结束了并非由此编辑器启动的事务");
             }
 
             cx.emit(EditorEvent::Edited { transaction_id });
@@ -16287,7 +16287,7 @@ impl Editor {
             this.buffer
                 .read(cx)
                 .as_singleton()
-                .expect("you can only call set_text on editors for singleton buffers")
+                .expect("只能在单例缓冲区的编辑器上调用 set_text")
                 .update(cx, |buffer, cx| buffer.set_text(text, cx));
         });
     }
@@ -16913,11 +16913,11 @@ impl Editor {
         });
 
         let Some((buffer, selection)) = buffer_and_selection else {
-            return Task::ready(Err(anyhow!("failed to determine buffer and selection")));
+            return Task::ready(Err(anyhow!("无法确定缓冲区和选区")));
         };
 
         let Some(project) = self.project.as_ref() else {
-            return Task::ready(Err(anyhow!("editor does not have project")));
+            return Task::ready(Err(anyhow!("编辑器没有项目")));
         };
 
         project.update(cx, |project, cx| {
@@ -16942,7 +16942,7 @@ impl Editor {
                 .ok();
             }
             Err(err) => {
-                let message = format!("Failed to copy permalink: {err}");
+                let message = format!("无法复制永久链接: {err}");
 
                 anyhow::Result::<()>::Err(err).log_err();
 
@@ -16997,7 +16997,7 @@ impl Editor {
                 .ok();
             }
             Err(err) => {
-                let message = format!("Failed to open permalink: {err}");
+                let message = format!("无法打开永久链接: {err}");
 
                 anyhow::Result::<()>::Err(err).log_err();
 
@@ -17092,7 +17092,7 @@ impl Editor {
                 Self::open_locations_in_multibuffer(
                     workspace,
                     locations,
-                    format!("Selections for '{title}'"),
+                    format!("'{title}' 的选择"),
                     false,
                     MultibufferSelectionMode::All,
                     window,
@@ -17715,7 +17715,7 @@ impl Editor {
                 .ok()
                 .flatten()?
                 .await
-                .context("refreshing debugger inlays")
+                .context("正在刷新调试器内联提示")
                 .log_err()?;
 
             let (excerpt_id, buffer_id) = snapshot
@@ -18001,7 +18001,7 @@ impl Editor {
             .collect::<Vec<_>>();
         let proposed_changes_editor = cx.new(|cx| {
             ProposedChangesEditor::new(
-                "Proposed changes",
+                "建议的更改",
                 proposed_changes_buffers,
                 self.project.clone(),
                 window,
@@ -19426,9 +19426,9 @@ impl CodeActionProvider for Entity<Project> {
             cx.background_spawn(async move {
                 let (code_lens, code_actions) = join(code_lens, code_actions).await;
                 Ok(code_lens
-                    .context("code lens fetch")?
+                    .context("代码透镜获取")?
                     .into_iter()
-                    .chain(code_actions.context("code action fetch")?)
+                    .chain(code_actions.context("代码操作获取")?)
                     .collect())
             })
         })
@@ -20057,7 +20057,7 @@ impl EditorSnapshot {
             self.git_blame_gutter_max_author_length
                 .map(|max_author_length| {
                     let renderer = cx.global::<GlobalBlameRenderer>().0.clone();
-                    const MAX_RELATIVE_TIMESTAMP: &str = "60 minutes ago";
+                    const MAX_RELATIVE_TIMESTAMP: &str = "60 分钟前";
 
                     /// The number of characters to dedicate to gaps and margins.
                     const SPACING_WIDTH: usize = 4;
@@ -20965,9 +20965,9 @@ impl BreakpointPromptEditor {
             prompt.set_show_cursor_when_unfocused(false, cx);
             prompt.set_placeholder_text(
                 match edit_action {
-                    BreakpointPromptEditAction::Log => "Message to log when a breakpoint is hit. Expressions within {} are interpolated.",
-                    BreakpointPromptEditAction::Condition => "Condition when a breakpoint is hit. Expressions within {} are interpolated.",
-                    BreakpointPromptEditAction::HitCondition => "How many breakpoint hits to ignore",
+                    BreakpointPromptEditAction::Log => "命中断点时记录的消息。{} 内的表达式将被插值。",
+                    BreakpointPromptEditAction::Condition => "命中断点时的条件。{} 内的表达式将被插值。",
+                    BreakpointPromptEditAction::HitCondition => "要忽略的断点命中次数",
                 },
                 cx,
             );
@@ -20999,7 +20999,7 @@ impl BreakpointPromptEditor {
                 .buffer
                 .read(cx)
                 .as_singleton()
-                .expect("A multi buffer in breakpoint prompt isn't possible")
+                .expect("断点提示中不可能存在多缓冲区")
                 .read(cx)
                 .as_rope()
                 .to_string();
@@ -21129,8 +21129,8 @@ impl Render for MissingEditPredictionKeybindingTooltip {
                     v_flex()
                         .flex_1()
                         .text_ui_sm(cx)
-                        .child(Label::new("Conflict with Accept Keybinding"))
-                        .child("Your keymap currently overrides the default accept keybinding. To continue, assign one keybinding for the `editor::AcceptEditPrediction` action.")
+                        .child(Label::new("与接受键位绑定冲突"))
+                        .child("您的键位映射当前覆盖了默认的接受键位绑定。要继续,请为 `编辑器::AcceptEditPrediction` 操作分配一个键位绑定。")
                 )
                 .child(
                     h_flex()
@@ -21138,10 +21138,10 @@ impl Render for MissingEditPredictionKeybindingTooltip {
                         .gap_1()
                         .items_end()
                         .w_full()
-                        .child(Button::new("open-keymap", "Assign Keybinding").size(ButtonSize::Compact).on_click(|_ev, window, cx| {
+                        .child(Button::new("open-keymap", "分配键位绑定").size(ButtonSize::Compact).on_click(|_ev, window, cx| {
                             window.dispatch_action(zed_actions::OpenKeymap.boxed_clone(), cx)
                         }))
-                        .child(Button::new("see-docs", "See Docs").size(ButtonSize::Compact).on_click(|_ev, _window, cx| {
+                        .child(Button::new("see-docs", "查看文档").size(ButtonSize::Compact).on_click(|_ev, _window, cx| {
                             cx.open_url("https://zed.dev/docs/completions#edit-predictions-missing-keybinding");
                         })),
                 )
@@ -21182,13 +21182,13 @@ fn render_diff_hunk_controls(
         .occlude()
         .shadow_md()
         .child(if status.has_secondary_hunk() {
-            Button::new(("stage", row as u64), "Stage")
+            Button::new(("stage", row as u64), "暂存")
                 .alpha(if status.is_pending() { 0.66 } else { 1.0 })
                 .tooltip({
                     let focus_handle = editor.focus_handle(cx);
                     move |window, cx| {
                         Tooltip::for_action_in(
-                            "Stage Hunk",
+                            "暂存代码块",
                             &::git::ToggleStaged,
                             &focus_handle,
                             window,
@@ -21209,13 +21209,13 @@ fn render_diff_hunk_controls(
                     }
                 })
         } else {
-            Button::new(("unstage", row as u64), "Unstage")
+            Button::new(("unstage", row as u64), "取消暂存")
                 .alpha(if status.is_pending() { 0.66 } else { 1.0 })
                 .tooltip({
                     let focus_handle = editor.focus_handle(cx);
                     move |window, cx| {
                         Tooltip::for_action_in(
-                            "Unstage Hunk",
+                            "取消暂存代码块",
                             &::git::ToggleStaged,
                             &focus_handle,
                             window,
@@ -21237,12 +21237,12 @@ fn render_diff_hunk_controls(
                 })
         })
         .child(
-            Button::new(("restore", row as u64), "Restore")
+            Button::new(("restore", row as u64), "还原")
                 .tooltip({
                     let focus_handle = editor.focus_handle(cx);
                     move |window, cx| {
                         Tooltip::for_action_in(
-                            "Restore Hunk",
+                            "还原代码块",
                             &::git::Restore,
                             &focus_handle,
                             window,
@@ -21274,7 +21274,7 @@ fn render_diff_hunk_controls(
                             let focus_handle = editor.focus_handle(cx);
                             move |window, cx| {
                                 Tooltip::for_action_in(
-                                    "Next Hunk",
+                                    "下一个代码块",
                                     &GoToHunk,
                                     &focus_handle,
                                     window,
@@ -21310,7 +21310,7 @@ fn render_diff_hunk_controls(
                             let focus_handle = editor.focus_handle(cx);
                             move |window, cx| {
                                 Tooltip::for_action_in(
-                                    "Previous Hunk",
+                                    "上一个代码块",
                                     &GoToPreviousHunk,
                                     &focus_handle,
                                     window,

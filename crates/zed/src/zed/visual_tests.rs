@@ -145,7 +145,7 @@ pub async fn capture_and_save_screenshot(
             std::fs::create_dir_all(parent)?;
         }
         screenshot.save(path)?;
-        println!("Screenshot saved to: {}", path.display());
+        println!("截图已保存至: {}", path.display());
     }
 
     Ok(screenshot)
@@ -165,7 +165,7 @@ pub fn assert_or_update_baseline(
 ) -> Result<()> {
     if should_update_baselines() {
         save_baseline(actual, baseline_path)?;
-        println!("Updated baseline: {}", baseline_path.display());
+        println!("已更新基线: {}", baseline_path.display());
         Ok(())
     } else {
         assert_screenshot_matches(actual, baseline_path, tolerance, per_pixel_threshold)
@@ -284,13 +284,13 @@ pub fn assert_screenshot_matches(
 ) -> Result<()> {
     if !baseline_path.exists() {
         return Err(anyhow!(
-            "Baseline image not found at: {}. Run with UPDATE_BASELINES=1 to create it.",
+            "在 {} 处未找到基线图像。请设置 UPDATE_BASELINES=1 运行以创建它。",
             baseline_path.display()
         ));
     }
 
     let expected = image::open(baseline_path)
-        .map_err(|e| anyhow!("Failed to open baseline image: {}", e))?
+        .map_err(|e| anyhow!("无法打开基线图像: {}", e))?
         .to_rgba8();
 
     let comparison = compare_screenshots(actual, &expected, per_pixel_threshold);
@@ -328,12 +328,12 @@ pub fn assert_screenshot_matches(
 pub fn save_baseline(image: &RgbaImage, baseline_path: &Path) -> Result<()> {
     if let Some(parent) = baseline_path.parent() {
         std::fs::create_dir_all(parent)
-            .map_err(|e| anyhow!("Failed to create baseline directory: {}", e))?;
+            .map_err(|e| anyhow!("无法创建基线目录: {}", e))?;
     }
 
     image
         .save(baseline_path)
-        .map_err(|e| anyhow!("Failed to save baseline image: {}", e))?;
+        .map_err(|e| anyhow!("无法保存基线图像: {}", e))?;
 
     Ok(())
 }
@@ -341,7 +341,7 @@ pub fn save_baseline(image: &RgbaImage, baseline_path: &Path) -> Result<()> {
 /// Load an image from a file path.
 pub fn load_image(path: &Path) -> Result<RgbaImage> {
     image::open(path)
-        .map_err(|e| anyhow!("Failed to load image from {}: {}", path.display(), e))
+        .map_err(|e| anyhow!("无法从 {} 加载图像: {}", path.display(), e))
         .map(|img| img.to_rgba8())
 }
 
@@ -430,7 +430,7 @@ mod tests {
 
         let _window = cx
             .open_offscreen_window_default(|_, cx| cx.new(|_| Empty))
-            .expect("Failed to open offscreen window");
+            .expect("无法打开离屏窗口");
 
         cx.run_until_parked();
     }
@@ -459,7 +459,7 @@ mod tests {
         let workspace_result = gpui::block_on(open_test_workspace(app_state, &mut cx));
         assert!(
             workspace_result.is_ok(),
-            "Failed to open workspace: {:?}",
+            "无法打开工作区: {:?}",
             workspace_result.err()
         );
 
@@ -499,7 +499,7 @@ mod tests {
         });
 
         let workspace = gpui::block_on(open_test_workspace(app_state, &mut cx))
-            .expect("Failed to open workspace");
+            .expect("无法打开工作区");
 
         gpui::block_on(async {
             wait_for_ui_stabilization(&cx).await;
@@ -509,7 +509,7 @@ mod tests {
             match screenshot_result {
                 Ok(screenshot) => {
                     println!(
-                        "Screenshot captured successfully: {}x{}",
+                        "截图成功: {}x{}",
                         screenshot.width(),
                         screenshot.height()
                     );
@@ -519,27 +519,27 @@ mod tests {
                     let output_path = Path::new(&output_dir).join("workspace_screenshot.png");
 
                     if let Err(e) = std::fs::create_dir_all(&output_dir) {
-                        eprintln!("Warning: Failed to create output directory: {}", e);
+                        eprintln!("警告: 无法创建输出目录: {}", e);
                     }
 
                     if let Err(e) = screenshot.save(&output_path) {
-                        eprintln!("Warning: Failed to save screenshot: {}", e);
+                        eprintln!("警告: 无法保存截图: {}", e);
                     } else {
-                        println!("Screenshot saved to: {}", output_path.display());
+                        println!("截图已保存至: {}", output_path.display());
                     }
 
                     assert!(
                         screenshot.width() > 0,
-                        "Screenshot width should be positive"
+                        "截图宽度应为正数"
                     );
                     assert!(
                         screenshot.height() > 0,
-                        "Screenshot height should be positive"
+                        "截图高度应为正数"
                     );
                 }
                 Err(e) => {
                     eprintln!(
-                        "Screenshot capture failed (this may be expected in CI without screen recording permission): {}",
+                        "截图捕获失败(在无屏幕录制权限的 CI 环境中可能出现此情况): {}",
                         e
                     );
                 }

@@ -1684,7 +1684,7 @@ async fn test_fold_with_unindented_multiline_raw_string(cx: &mut TestAppContext)
             "})),
             ..Default::default()
         })
-        .expect("Could not parse queries"),
+        .expect("无法解析查询"),
     );
 
     cx.update_buffer(|buffer, cx| buffer.set_language(Some(language), cx));
@@ -1764,7 +1764,7 @@ async fn test_fold_with_unindented_multiline_block_comment(cx: &mut TestAppConte
             "})),
             ..Default::default()
         })
-        .expect("Could not parse queries"),
+        .expect("无法解析查询"),
     );
 
     cx.update_buffer(|buffer, cx| buffer.set_language(Some(language), cx));
@@ -1836,7 +1836,7 @@ async fn test_fold_preserves_top_level_comments_between_python_classes(cx: &mut 
             "})),
             ..Default::default()
         })
-        .expect("Could not parse queries"),
+        .expect("无法解析查询"),
     );
 
     cx.update_buffer(|buffer, cx| buffer.set_language(Some(language), cx));
@@ -1895,7 +1895,7 @@ async fn test_fold_preserves_top_level_comments_between_rust_functions(cx: &mut 
             "})),
             ..Default::default()
         })
-        .expect("Could not parse queries"),
+        .expect("无法解析查询"),
     );
 
     cx.update_buffer(|buffer, cx| buffer.set_language(Some(language), cx));
@@ -1953,7 +1953,7 @@ async fn test_fold_terminates_at_top_level_multiline_string_between_python_class
             "})),
             ..Default::default()
         })
-        .expect("Could not parse queries"),
+        .expect("无法解析查询"),
     );
 
     cx.update_buffer(|buffer, cx| buffer.set_language(Some(language), cx));
@@ -3372,7 +3372,7 @@ async fn test_scroll_line_up_down_cursor_margin(cx: &mut TestAppContext) {
         assert_eq!(
             editor.selections.newest_display(&snapshot).head().row().0,
             3,
-            "cursor clamped to min_row after scrolling down"
+            "向下滚动后光标被限制在最小行"
         );
     });
 
@@ -3385,7 +3385,7 @@ async fn test_scroll_line_up_down_cursor_margin(cx: &mut TestAppContext) {
         assert_eq!(
             editor.selections.newest_display(&snapshot).head().row().0,
             2,
-            "cursor clamped to max_row after scrolling up"
+            "向上滚动后光标被限制在最大行"
         );
     });
 
@@ -3398,7 +3398,7 @@ async fn test_scroll_line_up_down_cursor_margin(cx: &mut TestAppContext) {
         assert_eq!(
             editor.selections.newest_display(&snapshot).head().row().0,
             4,
-            "cursor clamped to min_row after scrolling half page down"
+            "向下滚动半页后光标被限制在最小行"
         );
     });
 
@@ -3411,7 +3411,7 @@ async fn test_scroll_line_up_down_cursor_margin(cx: &mut TestAppContext) {
         assert_eq!(
             editor.selections.newest_display(&snapshot).head().row().0,
             2,
-            "cursor clamped to max_row after scrolling half page up"
+            "向上滚动半页后光标被限制在最大行"
         );
     });
 }
@@ -4715,21 +4715,21 @@ fn test_newline_respects_read_only(cx: &mut TestAppContext) {
         assert_eq!(
             editor.text(cx),
             "aaaa\nbbbb\n",
-            "newline should not modify a read-only editor"
+            "换行不应修改只读编辑器"
         );
 
         editor.newline_above(&NewlineAbove, window, cx);
         assert_eq!(
             editor.text(cx),
             "aaaa\nbbbb\n",
-            "newline_above should not modify a read-only editor"
+            "在上方插入新行不应修改只读编辑器"
         );
 
         editor.newline_below(&NewlineBelow, window, cx);
         assert_eq!(
             editor.text(cx),
             "aaaa\nbbbb\n",
-            "newline_below should not modify a read-only editor"
+            "在下方插入新行不应修改只读编辑器"
         );
     });
 }
@@ -6358,7 +6358,7 @@ fn test_join_lines_with_single_selection(cx: &mut TestAppContext) {
         assert_eq!(
             buffer.read(cx).text(),
             "aaa bbb\nccc\nddd\n\n",
-            "only the two selected lines (a and b) should be joined"
+            "只有选中的两行(a 和 b)应该被合并"
         );
 
         // When multiple lines are selected, remove newlines that are spanned by the selection
@@ -6732,7 +6732,7 @@ async fn test_custom_newlines_cause_no_false_positive_diffs(
                 .diff_hunks_in_range(MultiBufferOffset(0)..snapshot.buffer_snapshot().len())
                 .collect::<Vec<_>>(),
             Vec::new(),
-            "Should not have any diffs for files with custom newlines"
+            "对于使用自定义换行符的文件,不应有任何差异"
         );
     });
 }
@@ -7107,7 +7107,7 @@ async fn test_wrap_in_tag_does_nothing_in_unsupported_languages(cx: &mut TestApp
 
     let plaintext_language = Arc::new(Language::new(
         LanguageConfig {
-            name: "Plain Text".into(),
+            name: "纯文本".into(),
             ..LanguageConfig::default()
         },
         None,
@@ -7185,7 +7185,7 @@ async fn test_manipulate_immutable_lines_with_multi_selection(cx: &mut TestAppCo
         aaaˇ»aa
     "});
     cx.update_editor(|e, window, cx| {
-        e.manipulate_immutable_lines(window, cx, |lines| lines.push("added line"))
+        e.manipulate_immutable_lines(window, cx, |lines| lines.push("添加的行"))
     });
     cx.assert_editor_state(indoc! {"
         «2
@@ -8446,7 +8446,7 @@ async fn test_rewrap(cx: &mut TestAppContext) {
                 },
             ),
             (
-                "Plain Text".into(),
+                "纯文本".into(),
                 LanguageSettingsContent {
                     allow_rewrap: Some(language_settings::RewrapBehavior::Anywhere),
                     preferred_line_length: Some(40),
@@ -8524,7 +8524,7 @@ async fn test_rewrap(cx: &mut TestAppContext) {
 
     let plaintext_language = Arc::new(Language::new(
         LanguageConfig {
-            name: "Plain Text".into(),
+            name: "纯文本".into(),
             ..LanguageConfig::default()
         },
         None,
@@ -9746,7 +9746,7 @@ async fn test_copy_trim(cx: &mut TestAppContext) {
                 start = Point::new(start.row, 0);"
                 .to_string()
         ),
-        "Regular copying preserves all indentation selected",
+        "常规复制会保留所有选中的缩进",
     );
     cx.update_editor(|e, window, cx| e.copy_and_trim(&CopyAndTrim, window, cx));
     assert_eq!(
@@ -9761,7 +9761,7 @@ if is_entire_line {
     start = Point::new(start.row, 0);"
                 .to_string()
         ),
-        "Copying with stripping should strip all leading whitespaces"
+        "带去除功能的复制应去除所有前导空白"
     );
 
     cx.set_state(
@@ -9788,7 +9788,7 @@ if is_entire_line {
                 start = Point::new(start.row, 0);"
                 .to_string()
         ),
-        "Regular copying preserves all indentation selected",
+        "常规复制会保留所有选中的缩进",
     );
     cx.update_editor(|e, window, cx| e.copy_and_trim(&CopyAndTrim, window, cx));
     assert_eq!(
@@ -9803,7 +9803,7 @@ if is_entire_line {
     start = Point::new(start.row, 0);"
                 .to_string()
         ),
-        "Copying with stripping should strip all leading whitespaces, even if some of it was selected"
+        "带去除功能的复制应去除所有前导空白,即使其中一部分已被选中"
     );
 
     cx.set_state(
@@ -9830,7 +9830,7 @@ if is_entire_line {
                 start = Point::new(start.row, 0);"
                 .to_string()
         ),
-        "Regular copying for reverse selection works the same",
+        "反向选择的常规复制效果相同",
     );
     cx.update_editor(|e, window, cx| e.copy_and_trim(&CopyAndTrim, window, cx));
     assert_eq!(
@@ -9845,7 +9845,7 @@ if is_entire_line {
     start = Point::new(start.row, 0);"
                 .to_string()
         ),
-        "Copying with stripping for reverse selection works the same"
+        "反向选择的带去除功能的复制效果相同"
     );
 
     cx.set_state(
@@ -9872,7 +9872,7 @@ if is_entire_line {
                 start = Point::new(start.row, 0);"
                 .to_string()
         ),
-        "When selecting past the indent, the copying works as usual",
+        "当选择超过缩进时,复制照常工作",
     );
     cx.update_editor(|e, window, cx| e.copy_and_trim(&CopyAndTrim, window, cx));
     assert_eq!(
@@ -9887,7 +9887,7 @@ if is_entire_line {
                 start = Point::new(start.row, 0);"
                 .to_string()
         ),
-        "When selecting past the indent, nothing is trimmed"
+        "当选择超过缩进时,不会修剪任何内容"
     );
 
     cx.set_state(
@@ -9917,7 +9917,7 @@ if is_entire_line {
 "
             .to_string()
         ),
-        "Copying with stripping should ignore empty lines"
+        "带去除功能的复制应忽略空行"
     );
 }
 
@@ -9947,7 +9947,7 @@ async fn test_copy_trim_line_mode(cx: &mut TestAppContext) {
             gpui::ClipboardEntry::String(text) => text.metadata_json(),
             _ => None,
         })
-        .expect("should have clipboard selections");
+        .expect("应该有剪贴板选区");
 
     assert_eq!(clipboard_selections.len(), 1);
     assert!(clipboard_selections[0].is_entire_line);
@@ -9972,7 +9972,7 @@ async fn test_copy_trim_line_mode(cx: &mut TestAppContext) {
             gpui::ClipboardEntry::String(text) => text.metadata_json(),
             _ => None,
         })
-        .expect("should have clipboard selections");
+        .expect("应该有剪贴板选区");
 
     assert_eq!(clipboard_selections.len(), 1);
     assert!(clipboard_selections[0].is_entire_line);
@@ -10029,13 +10029,13 @@ async fn test_clipboard_line_numbers_from_multibuffer(cx: &mut TestAppContext) {
             _ => None,
         });
 
-    let selections = clipboard_selections.expect("should have clipboard selections");
+    let selections = clipboard_selections.expect("应该有剪贴板选区");
     assert_eq!(selections.len(), 1);
     let selection = &selections[0];
     assert_eq!(
         selection.line_range,
         Some(2..=5),
-        "line range should be from original file (rows 2-5), not multibuffer rows (0-2)"
+        "行范围应来自原始文件(第 2-5 行),而不是多缓冲区行(第 0-2 行)"
     );
 }
 
@@ -10086,7 +10086,7 @@ async fn test_copy_file_location_from_multibuffer(cx: &mut TestAppContext) {
     assert_eq!(
         cx.read_from_clipboard().and_then(|item| item.text()),
         Some("file.txt:3".to_string()),
-        "cursor on the first excerpt row should report its line in the original file"
+        "位于第一个摘录行的光标应报告其在原始文件中的行号"
     );
 
     editor.update_in(cx, |editor, window, cx| {
@@ -10098,7 +10098,7 @@ async fn test_copy_file_location_from_multibuffer(cx: &mut TestAppContext) {
     assert_eq!(
         cx.read_from_clipboard().and_then(|item| item.text()),
         Some("file.txt:4".to_string()),
-        "a selection ending at the start of a row should not include that row"
+        "结束于行首的选区不应包含该行"
     );
 
     editor.update_in(cx, |editor, window, cx| {
@@ -10110,7 +10110,7 @@ async fn test_copy_file_location_from_multibuffer(cx: &mut TestAppContext) {
     assert_eq!(
         cx.read_from_clipboard().and_then(|item| item.text()),
         Some("file.txt:3-5".to_string()),
-        "a multi-row selection should report the original file's line range"
+        "多行选区应报告原始文件的行范围"
     );
 }
 
@@ -10177,7 +10177,7 @@ async fn test_copy_file_location_across_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         cx.read_from_clipboard().and_then(|item| item.text()),
         Some("two.txt:2".to_string()),
-        "a selection spanning buffers should report the location of the cursor"
+        "跨越缓冲区的选区应报告光标的位置"
     );
 
     editor.update_in(cx, |editor, window, cx| {
@@ -10189,7 +10189,7 @@ async fn test_copy_file_location_across_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         cx.read_from_clipboard().and_then(|item| item.text()),
         Some("one.txt:2".to_string()),
-        "a reversed selection spanning buffers should report the cursor's location in the first buffer"
+        "跨越缓冲区的反向选区应报告光标在第一个缓冲区中的位置"
     );
 }
 
@@ -10216,7 +10216,7 @@ async fn test_copy_file_location_with_deleted_hunk(cx: &mut TestAppContext) {
     assert_eq!(
         cx.read_from_clipboard().and_then(|item| item.text()),
         Some("file:2".to_string()),
-        "a selection crossing a deleted hunk should report the location of the cursor"
+        "跨越已删除代码块的选区应报告光标的位置"
     );
 
     cx.update_editor(|editor, window, cx| {
@@ -10239,7 +10239,7 @@ async fn test_copy_file_location_with_deleted_hunk(cx: &mut TestAppContext) {
     assert_eq!(
         cx.read_from_clipboard().and_then(|item| item.text()),
         Some("file:1".to_string()),
-        "a cursor inside a deleted hunk has no file location, so the clipboard is unchanged"
+        "位于已删除代码块内的光标没有文件位置,因此剪贴板保持不变"
     );
 }
 
@@ -10693,7 +10693,7 @@ async fn test_split_selection_into_lines_does_not_scroll(cx: &mut TestAppContext
     let scroll_position_after_split = cx.update_editor(|editor, _, cx| editor.scroll_position(cx));
     assert_eq!(
         initial_scroll_position, scroll_position_after_split,
-        "Scroll position should not change after splitting selection into lines"
+        "将选区拆分为多行后,滚动位置不应改变"
     );
 }
 
@@ -10808,7 +10808,7 @@ async fn test_add_selection_below_with_tab_aligned_columns(cx: &mut TestAppConte
 }
 
 #[gpui::test]
-/// Regression test for a panic ("display point out of range"): with a multi-line fold,
+/// Regression test for a panic ("显示点超出范围"): with a multi-line fold,
 /// buffer rows below the fold exceed the fold map's max row, so they must be converted
 /// to tab map rows instead of being used directly.
 async fn test_add_selection_above_below_with_fold(cx: &mut TestAppContext) {
@@ -11740,7 +11740,7 @@ async fn test_select_all_matches_does_not_scroll(cx: &mut TestAppContext) {
     ));
     let initial_scroll_position = cx.update_editor(|editor, _, cx| {
         let scroll_position = editor.scroll_position(cx);
-        assert!(scroll_position.y > 0.0, "Initial selection is between two large bodies and should have the editor scrolled to it");
+        assert!(scroll_position.y > 0.0, "初始选区位于两个大文本块之间,编辑器应滚动到该位置");
         scroll_position
     });
 
@@ -11753,7 +11753,7 @@ async fn test_select_all_matches_does_not_scroll(cx: &mut TestAppContext) {
         assert_eq!(
             editor.scroll_position(cx),
             initial_scroll_position,
-            "Scroll position should not change after selecting all matches"
+            "选择所有匹配项后滚动位置不应改变"
         )
     });
 
@@ -11766,7 +11766,7 @@ async fn test_select_all_matches_does_not_scroll(cx: &mut TestAppContext) {
         assert_eq!(
             editor.scroll_position(cx),
             initial_scroll_position,
-            "Scroll position should not change after editing all matches"
+            "编辑所有匹配项后滚动位置不应改变"
         )
     });
 
@@ -11775,7 +11775,7 @@ async fn test_select_all_matches_does_not_scroll(cx: &mut TestAppContext) {
     ));
     let initial_scroll_position = cx.update_editor(|editor, _, cx| {
         let scroll_position = editor.scroll_position(cx);
-        assert!(scroll_position.y > 0.0, "Initial selection is between two large bodies and should have the editor scrolled to it");
+        assert!(scroll_position.y > 0.0, "初始选区位于两个大文本块之间,编辑器应滚动到该位置");
         scroll_position
     });
 
@@ -11788,7 +11788,7 @@ async fn test_select_all_matches_does_not_scroll(cx: &mut TestAppContext) {
         assert_eq!(
             editor.scroll_position(cx),
             initial_scroll_position,
-            "Scroll position should not change after selecting all matches"
+            "选择所有匹配项后滚动位置不应改变"
         )
     });
 
@@ -11797,7 +11797,7 @@ async fn test_select_all_matches_does_not_scroll(cx: &mut TestAppContext) {
         assert_eq!(
             editor.scroll_position(cx),
             initial_scroll_position,
-            "Scroll position should not change after editing all matches"
+            "编辑所有匹配项后滚动位置不应改变"
         )
     });
 }
@@ -14853,7 +14853,7 @@ async fn test_snippet_placeholder_choices(cx: &mut TestAppContext) {
             "},
         );
 
-        assert!(editor.context_menu_visible(), "There should be a matches");
+        assert!(editor.context_menu_visible(), "应该有一个匹配项");
     });
 }
 
@@ -14888,14 +14888,14 @@ async fn test_snippet_choices_menu_survives_completion_refresh(cx: &mut TestAppC
 
         assert!(
             editor.context_menu_visible(),
-            "Snippet choices menu should be visible after inserting the choice tabstop"
+            "插入选择制表位后,代码片段选择菜单应可见"
         );
 
         editor.open_or_update_completions_menu(None, None, false, window, cx);
 
         assert!(
             editor.context_menu_visible(),
-            "Snippet choices menu should remain visible after a completion refresh with an empty query"
+            "使用空查询刷新补全后,代码片段选择菜单应保持可见"
         );
     });
 }
@@ -14951,7 +14951,7 @@ async fn test_snippet_tabstop_navigation_with_placeholders(cx: &mut TestAppConte
 
         assert!(
             editor.context_menu_visible(),
-            "Context menu should be visible for placeholder choices"
+            "占位符选项的上下文菜单应可见"
         );
 
         editor.next_snippet_tabstop(&NextSnippetTabstop, window, cx);
@@ -14966,7 +14966,7 @@ async fn test_snippet_tabstop_navigation_with_placeholders(cx: &mut TestAppConte
 
         assert!(
             !editor.context_menu_visible(),
-            "Context menu should be hidden after moving to next tabstop"
+            "移动到下一个制表位后,上下文菜单应隐藏"
         );
 
         editor.next_snippet_tabstop(&NextSnippetTabstop, window, cx);
@@ -15010,7 +15010,7 @@ async fn test_snippet_tabstop_navigation_with_placeholders(cx: &mut TestAppConte
 
         assert!(
             editor.context_menu_visible(),
-            "Context menu should be visible for placeholder choices"
+            "占位符选项的上下文菜单应可见"
         );
 
         editor.next_snippet_tabstop(&NextSnippetTabstop, window, cx);
@@ -15023,7 +15023,7 @@ async fn test_snippet_tabstop_navigation_with_placeholders(cx: &mut TestAppConte
 
         assert!(
             editor.context_menu_visible(),
-            "Context menu should be visible again after returning to first tabstop"
+            "返回第一个制表位后,上下文菜单应再次可见"
         );
 
         editor.previous_snippet_tabstop(&PreviousSnippetTabstop, window, cx);
@@ -15937,17 +15937,17 @@ async fn test_autosave_with_dirty_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         fs.write_count_for_path(path!("/dir/file1.rs")) - write_count_after_creation_1,
         1,
-        "Buffer 1 was dirty, so it should have been written once during autosave"
+        "缓冲区 1 已脏,因此自动保存期间应写入一次"
     );
     assert_eq!(
         fs.write_count_for_path(path!("/dir/file2.rs")) - write_count_after_creation_2,
         0,
-        "Buffer 2 was clean, so it should not have been written during autosave"
+        "缓冲区 2 是干净的,因此自动保存期间不应写入"
     );
     assert_eq!(
         fs.write_count_for_path(path!("/dir/file3.rs")) - write_count_after_creation_3,
         0,
-        "Buffer 3 was clean, so it should not have been written during autosave"
+        "缓冲区 3 是干净的,因此自动保存期间不应写入"
     );
 
     // Verify buffer states after autosave
@@ -15975,17 +15975,17 @@ async fn test_autosave_with_dirty_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         fs.write_count_for_path(path!("/dir/file1.rs")) - write_count_after_creation_1,
         1,
-        "Buffer 1 should only have been written once total (during autosave, not manual save)"
+        "缓冲区 1 总共只应写入一次(在自动保存期间,而非手动保存)"
     );
     assert_eq!(
         fs.write_count_for_path(path!("/dir/file2.rs")) - write_count_after_creation_2,
         0,
-        "Buffer 2 should not have been written at all"
+        "缓冲区 2 根本不应被写入"
     );
     assert_eq!(
         fs.write_count_for_path(path!("/dir/file3.rs")) - write_count_after_creation_3,
         0,
-        "Buffer 3 should not have been written at all"
+        "缓冲区 3 根本不应被写入"
     );
 }
 
@@ -16410,17 +16410,17 @@ async fn test_modifications_format_skips_without_git_diff(cx: &mut TestAppContex
     });
     assert!(
         cx.read(|cx| editor.is_dirty(cx)),
-        "editor should be dirty before save"
+        "保存前编辑器应为脏状态"
     );
 
     let _no_range_format_handler = fake_server
         .set_request_handler::<lsp::request::RangeFormatting, _, _>(move |_, _| async move {
-            panic!("rangeFormatting must not be called when no git diff is available");
+            panic!("没有可用的 git 差异时,不得调用 rangeFormatting");
         })
         .next();
     let _no_format_handler = fake_server
         .set_request_handler::<lsp::request::Formatting, _, _>(move |_, _| async move {
-            panic!("full formatting must not be called for Modifications without a git diff");
+            panic!("没有 git 差异时,不得为修改调用完整格式化");
         })
         .next();
 
@@ -16442,7 +16442,7 @@ async fn test_modifications_format_skips_without_git_diff(cx: &mut TestAppContex
     cx.run_until_parked();
     assert!(
         !cx.read(|cx| editor.is_dirty(cx)),
-        "the buffer should be saved despite the skipped formatting"
+        "尽管跳过了格式化,缓冲区仍应被保存"
     );
     assert_eq!(
         editor.update(cx, |editor, cx| editor.text(cx)),
@@ -16518,12 +16518,12 @@ async fn test_modifications_format_lsp_no_range_support(cx: &mut TestAppContext)
 
     let _no_range_format_handler = fake_server
         .set_request_handler::<lsp::request::RangeFormatting, _, _>(move |_, _| async move {
-            panic!("rangeFormatting must not be called when range formatting is unsupported");
+            panic!("不支持范围格式化时,不得调用 rangeFormatting");
         })
         .next();
     let _no_format_handler = fake_server
         .set_request_handler::<lsp::request::Formatting, _, _>(move |_, _| async move {
-            panic!("full formatting must not be called for Modifications when range formatting is unsupported");
+            panic!("不支持范围格式化时,不得为修改调用完整格式化");
         })
         .next();
 
@@ -16631,7 +16631,7 @@ async fn test_modifications_format_multiple_hunks(cx: &mut TestAppContext) {
                         lsp::Range::new(lsp::Position::new(4, 5), lsp::Position::new(4, 5)),
                         "!".to_string(),
                     )])),
-                    _ => panic!("unexpected third range formatting request"),
+                    _ => panic!("意外的第三次范围格式化请求"),
                 }
             }
         });
@@ -16686,7 +16686,7 @@ async fn test_modifications_format_excludes_staged_changes(cx: &mut TestAppConte
             request_count_clone.fetch_add(1, atomic::Ordering::SeqCst);
             assert_eq!(
                 params.range.start.line, 4,
-                "only the unstaged hunk (LINE4) should be formatted"
+                "只有未暂存的代码块(LINE4)应被格式化"
             );
             async move { Ok(Some(Vec::new())) }
         });
@@ -16711,7 +16711,7 @@ async fn test_modifications_format_excludes_staged_changes(cx: &mut TestAppConte
     assert_eq!(
         request_count.load(atomic::Ordering::SeqCst),
         1,
-        "staged hunk (LINE1) must not be formatted, only the unstaged hunk (LINE4)"
+        "已暂存的代码块(LINE1)不得被格式化,只有未暂存的代码块(LINE4)应被格式化"
     );
 }
 
@@ -16761,11 +16761,11 @@ async fn test_modifications_format_range_excludes_staged_hunk(cx: &mut TestAppCo
     assert_ne!(
         start_line,
         usize::MAX,
-        "expected at least one range formatting request"
+        "预期至少有一个范围格式化请求"
     );
     assert_eq!(
         start_line, 1,
-        "format range must exclude the staged row and start at the unstaged row"
+        "格式化范围必须排除已暂存的行,并从未暂存的行开始"
     );
 }
 
@@ -16815,7 +16815,7 @@ async fn test_modifications_format_pure_unstaged_with_git(cx: &mut TestAppContex
     assert_eq!(
         request_count.load(atomic::Ordering::SeqCst),
         2,
-        "unstaged hunks (LINE1, LINE4) must be formatted via the git diff path"
+        "未暂存的代码块(LINE1、LINE4)必须通过 git 差异 路径进行格式化"
     );
 }
 
@@ -16837,7 +16837,7 @@ async fn test_modifications_format_no_unstaged_changes_with_git(cx: &mut TestApp
 
     let _no_format_handler = fake_server
         .set_request_handler::<lsp::request::RangeFormatting, _, _>(move |_, _| async move {
-            panic!("range formatting must not be called when all changes are staged");
+            panic!("当所有更改都已暂存时,不得调用范围格式化");
         })
         .next();
 
@@ -16876,7 +16876,7 @@ async fn test_modifications_format_no_changes_with_git(cx: &mut TestAppContext) 
 
     let _no_format_handler = fake_server
         .set_request_handler::<lsp::request::RangeFormatting, _, _>(move |_, _| async move {
-            panic!("range formatting must not be called when buffer matches HEAD");
+            panic!("当缓冲区与 HEAD 匹配时,不得调用范围格式化");
         })
         .next();
 
@@ -16949,7 +16949,7 @@ async fn test_modifications_format_crlf_line_endings(cx: &mut TestAppContext) {
         assert_eq!(
             buffer.line_ending(),
             language::LineEnding::Windows,
-            "buffer should detect CRLF line endings from the working tree file"
+            "缓冲区应检测工作树文件中的 CRLF 行尾"
         );
     });
 
@@ -17009,7 +17009,7 @@ async fn test_modifications_format_crlf_line_endings(cx: &mut TestAppContext) {
     assert_eq!(
         request_count.load(atomic::Ordering::SeqCst),
         2,
-        "CRLF line endings must not cause spurious diff hunks"
+        "CRLF 行尾不得导致虚假的差异代码块"
     );
 }
 
@@ -17059,7 +17059,7 @@ async fn test_modifications_format_merge_boundary_one_row_gap(cx: &mut TestAppCo
     assert_eq!(
         request_count.load(atomic::Ordering::SeqCst),
         2,
-        "hunks separated by exactly one unchanged row must not merge"
+        "恰好由一行未更改行分隔的代码块不得合并"
     );
 }
 
@@ -17080,12 +17080,12 @@ async fn test_modifications_if_available_empty_diff_skips_formatting(cx: &mut Te
 
     let _no_range_format = fake_server
         .set_request_handler::<lsp::request::RangeFormatting, _, _>(move |_, _| async move {
-            panic!("range formatting must not be called when diff is empty");
+            panic!("当差异为空时,不得调用范围格式化");
         })
         .next();
     let _no_format = fake_server
         .set_request_handler::<lsp::request::Formatting, _, _>(move |_, _| async move {
-            panic!("full formatting must not be called when a diff is available but empty");
+            panic!("当差异可用但为空时,不得调用完整格式化");
         })
         .next();
 
@@ -17107,7 +17107,7 @@ async fn test_modifications_if_available_empty_diff_skips_formatting(cx: &mut Te
     cx.run_until_parked();
     assert!(
         !cx.read(|cx| editor.is_dirty(cx)),
-        "the buffer should be saved despite the skipped formatting"
+        "尽管跳过了格式化,缓冲区仍应被保存"
     );
 }
 
@@ -17134,7 +17134,7 @@ async fn test_modifications_if_available_no_git_falls_back_to_full_format(cx: &m
 
     let _no_range_format = fake_server
         .set_request_handler::<lsp::request::RangeFormatting, _, _>(move |_, _| async move {
-            panic!("range formatting must not be called when no git diff is available");
+            panic!("当没有可用的 git 差异时,不得调用范围格式化");
         })
         .next();
 
@@ -17165,7 +17165,7 @@ async fn test_modifications_if_available_no_git_falls_back_to_full_format(cx: &m
 
     assert!(
         formatting_called.load(atomic::Ordering::SeqCst),
-        "ModificationsIfAvailable must fall back to full-buffer formatting when no git diff is available"
+        "当没有可用的 git 差异时,ModificationsIfAvailable 必须回退到完整缓冲区格式化"
     );
 }
 
@@ -17247,7 +17247,7 @@ async fn test_modifications_if_available_lsp_no_range_support_falls_back_to_full
 
     let _no_range_format = fake_server
         .set_request_handler::<lsp::request::RangeFormatting, _, _>(move |_, _| async move {
-            panic!("rangeFormatting must not be called when LSP lacks range support");
+            panic!("当 LSP 不支持范围格式化时,不得调用 rangeFormatting");
         })
         .next();
 
@@ -17278,7 +17278,7 @@ async fn test_modifications_if_available_lsp_no_range_support_falls_back_to_full
 
     assert!(
         formatting_called.load(atomic::Ordering::SeqCst),
-        "ModificationsIfAvailable must fall back to full-file formatting when the LSP lacks range support"
+        "当 LSP 不支持范围格式化时,ModificationsIfAvailable 必须回退到完整文件格式化"
     );
 }
 
@@ -17303,7 +17303,7 @@ async fn test_range_format_not_called_for_clean_buffer(cx: &mut TestAppContext) 
         .unwrap();
     let _pending_format_request = fake_server
         .set_request_handler::<lsp::request::RangeFormatting, _, _>(move |_, _| async move {
-            panic!("Should not be invoked");
+            panic!("不应被调用");
         })
         .next();
     save.await;
@@ -17538,7 +17538,7 @@ async fn test_multiple_formatters(cx: &mut TestAppContext) {
     );
     fake_server.set_request_handler::<lsp::request::CodeActionRequest, _, _>(
         move |params, _| async move {
-            let requested_code_actions = params.context.only.expect("Expected code action request");
+            let requested_code_actions = params.context.only.expect("预期代码操作请求");
             assert_eq!(requested_code_actions.len(), 1);
 
             let uri = lsp::Uri::from_file_path(path!("/file.rs")).unwrap();
@@ -17577,7 +17577,7 @@ async fn test_multiple_formatters(cx: &mut TestAppContext) {
                     )),
                     ..Default::default()
                 },
-                req => panic!("Unexpected code action request: {:?}", req),
+                req => panic!("意外的代码操作请求:{:?}", req),
             };
             Ok(Some(vec![lsp::CodeActionOrCommand::CodeAction(
                 code_action,
@@ -17888,7 +17888,7 @@ async fn test_organize_imports_manual_trigger(cx: &mut TestAppContext) {
             );
             Ok(Some(vec![lsp::CodeActionOrCommand::CodeAction(
                 lsp::CodeAction {
-                    title: "Organize Imports".to_string(),
+                    title: "整理导入".to_string(),
                     kind: Some(lsp::CodeActionKind::SOURCE_ORGANIZE_IMPORTS),
                     edit: Some(lsp::WorkspaceEdit {
                         changes: Some(
@@ -18000,7 +18000,7 @@ async fn test_formatter_failure_does_not_abort_subsequent_formatters(cx: &mut Te
 
     // Formatter #1 (LanguageServer) returns an error to simulate failure
     fake_server.set_request_handler::<lsp::request::Formatting, _, _>(
-        move |_params, _| async move { Err(anyhow::anyhow!("Simulated formatter failure")) },
+        move |_params, _| async move { Err(anyhow::anyhow!("模拟的格式化器故障")) },
     );
 
     // Formatter #2 (CodeAction) returns a successful edit
@@ -18089,7 +18089,7 @@ async fn test_explicit_formatter_failure_is_recorded(cx: &mut TestAppContext) {
                             let format_should_fail = format_should_fail.clone();
                             async move {
                                 if format_should_fail.load(atomic::Ordering::Acquire) {
-                                    Err(anyhow::anyhow!("Simulated formatter failure"))
+                                    Err(anyhow::anyhow!("模拟的格式化器故障"))
                                 } else {
                                     Ok(Some(Vec::new()))
                                 }
@@ -18142,7 +18142,7 @@ async fn test_explicit_formatter_failure_is_recorded(cx: &mut TestAppContext) {
     format(&editor, cx).await;
     assert!(
         last_failure(cx).is_some(),
-        "a failing explicitly configured formatter should be recorded"
+        "应记录显式配置的格式化器故障"
     );
 
     format_should_fail.store(false, atomic::Ordering::Release);
@@ -18150,7 +18150,7 @@ async fn test_explicit_formatter_failure_is_recorded(cx: &mut TestAppContext) {
     assert_eq!(
         last_failure(cx),
         None,
-        "A later successful format clears the recorded failure"
+        "后续成功的格式化会清除记录的故障"
     );
 }
 
@@ -18180,7 +18180,7 @@ async fn test_auto_formatter_failure_is_silent(cx: &mut TestAppContext) {
             initializer: Some(Box::new(|fake_server| {
                 fake_server.set_request_handler::<lsp::request::Formatting, _, _>(
                     move |_params, _| async move {
-                        Err(anyhow::anyhow!("Simulated formatter failure"))
+                        Err(anyhow::anyhow!("模拟的格式化器故障"))
                     },
                 );
             })),
@@ -18224,7 +18224,7 @@ async fn test_auto_formatter_failure_is_silent(cx: &mut TestAppContext) {
     });
     assert_eq!(
         last_failure, None,
-        "an auto-resolved formatter failure should not be surfaced"
+        "不应显示自动解决的格式化器故障"
     );
 }
 
@@ -18285,7 +18285,7 @@ async fn test_external_formatter_with_no_output_leaves_buffer_unchanged(cx: &mut
         assert_eq!(
             editor.text(cx),
             "fn main() {}\n",
-            "buffer should be left unchanged when the external formatter produces no output"
+            "当外部格式化器不产生输出时,缓冲区应保持不变"
         );
     });
 
@@ -18298,7 +18298,7 @@ async fn test_external_formatter_with_no_output_leaves_buffer_unchanged(cx: &mut
     });
     assert_eq!(
         last_failure, None,
-        "producing no output is not a formatter failure"
+        "不产生输出不是格式化器故障"
     );
 }
 
@@ -18679,7 +18679,7 @@ async fn test_signature_help_delay_only_for_auto(cx: &mut TestAppContext) {
     cx.editor(|editor, _, _| {
         assert!(
             editor.signature_help_state.is_shown(),
-            "Manual trigger should show signature help without delay"
+            "手动触发应立即显示签名帮助"
         );
     });
 
@@ -18707,7 +18707,7 @@ async fn test_signature_help_delay_only_for_auto(cx: &mut TestAppContext) {
     cx.editor(|editor, _, _| {
         assert!(
             !editor.signature_help_state.is_shown(),
-            "Auto trigger should wait for delay before showing signature help"
+            "自动触发应等待延迟后再显示签名帮助"
         );
     });
 
@@ -18717,7 +18717,7 @@ async fn test_signature_help_delay_only_for_auto(cx: &mut TestAppContext) {
     cx.editor(|editor, _, _| {
         assert!(
             editor.signature_help_state.is_shown(),
-            "Auto trigger should show signature help after delay elapsed"
+            "自动触发应在延迟结束后显示签名帮助"
         );
     });
 }
@@ -18798,7 +18798,7 @@ async fn test_signature_help_after_edits_no_delay(cx: &mut TestAppContext) {
     cx.editor(|editor, _, _| {
         assert!(
             editor.signature_help_state.is_shown(),
-            "show_signature_help_after_edits should show signature help without delay"
+            "show_signature_help_after_edits 应立即显示签名帮助"
         );
     });
 }
@@ -19437,7 +19437,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
 
     let runs = [
         Run {
-            run_description: "Start of word matches completion text",
+            run_description: "词首匹配补全文本",
             initial_state: "before ediˇ after".into(),
             buffer_marked_text: "before <edi|> after".into(),
             completion_label: "editor",
@@ -19448,7 +19448,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "before editorˇ after".into(),
         },
         Run {
-            run_description: "Accept same text at the middle of the word",
+            run_description: "接受词中间的相同文本",
             initial_state: "before ediˇtor after".into(),
             buffer_marked_text: "before <edi|tor> after".into(),
             completion_label: "editor",
@@ -19459,7 +19459,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "before editorˇ after".into(),
         },
         Run {
-            run_description: "End of word matches completion text -- cursor at end",
+            run_description: "词尾匹配补全文本 -- 光标在末尾",
             initial_state: "before torˇ after".into(),
             buffer_marked_text: "before <tor|> after".into(),
             completion_label: "editor",
@@ -19470,7 +19470,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "before editorˇ after".into(),
         },
         Run {
-            run_description: "End of word matches completion text -- cursor at start",
+            run_description: "词尾匹配补全文本 -- 光标在开头",
             initial_state: "before ˇtor after".into(),
             buffer_marked_text: "before <|tor> after".into(),
             completion_label: "editor",
@@ -19481,7 +19481,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "before editorˇ after".into(),
         },
         Run {
-            run_description: "Prepend text containing whitespace",
+            run_description: "前置包含空格的文本",
             initial_state: "pˇfield: bool".into(),
             buffer_marked_text: "<p|field>: bool".into(),
             completion_label: "pub ",
@@ -19492,7 +19492,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "pub ˇfield: bool".into(),
         },
         Run {
-            run_description: "Add element to start of list",
+            run_description: "在列表开头添加元素",
             initial_state: "[element_ˇelement_2]".into(),
             buffer_marked_text: "[<element_|element_2>]".into(),
             completion_label: "element_1",
@@ -19503,7 +19503,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "[element_1ˇelement_2]".into(),
         },
         Run {
-            run_description: "Add element to start of list -- first and second elements are equal",
+            run_description: "在列表开头添加元素 -- 第一个和第二个元素相等",
             initial_state: "[elˇelement]".into(),
             buffer_marked_text: "[<el|element>]".into(),
             completion_label: "element",
@@ -19514,7 +19514,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "[elementˇ]".into(),
         },
         Run {
-            run_description: "Ends with matching suffix",
+            run_description: "以匹配的后缀结尾",
             initial_state: "SubˇError".into(),
             buffer_marked_text: "<Sub|Error>".into(),
             completion_label: "SubscriptionError",
@@ -19525,7 +19525,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "SubscriptionErrorˇ".into(),
         },
         Run {
-            run_description: "Suffix is a subsequence -- contiguous",
+            run_description: "后缀是子序列 -- 连续的",
             initial_state: "SubˇErr".into(),
             buffer_marked_text: "<Sub|Err>".into(),
             completion_label: "SubscriptionError",
@@ -19536,7 +19536,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "SubscriptionErrorˇErr".into(),
         },
         Run {
-            run_description: "Suffix is a subsequence -- non-contiguous -- replace intended",
+            run_description: "后缀是子序列 -- 非连续 -- 预期替换",
             initial_state: "Suˇscrirr".into(),
             buffer_marked_text: "<Su|scrirr>".into(),
             completion_label: "SubscriptionError",
@@ -19547,7 +19547,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "SubscriptionErrorˇscrirr".into(),
         },
         Run {
-            run_description: "Suffix is a subsequence -- non-contiguous -- replace unintended",
+            run_description: "后缀是子序列 -- 非连续 -- 非预期替换",
             initial_state: "foo(indˇix)".into(),
             buffer_marked_text: "foo(<ind|ix>)".into(),
             completion_label: "node_index",
@@ -19558,7 +19558,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "foo(node_indexˇix)".into(),
         },
         Run {
-            run_description: "Replace range ends before cursor - should extend to cursor",
+            run_description: "替换范围在光标前结束 - 应扩展到光标",
             initial_state: "before editˇo after".into(),
             buffer_marked_text: "before <{ed}>it|o after".into(),
             completion_label: "editor",
@@ -19569,7 +19569,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "before editorˇo after".into(),
         },
         Run {
-            run_description: "Uses label for suffix matching",
+            run_description: "使用标签进行后缀匹配",
             initial_state: "before ediˇtor after".into(),
             buffer_marked_text: "before <edi|tor> after".into(),
             completion_label: "editor",
@@ -19580,7 +19580,7 @@ async fn test_completion_mode(cx: &mut TestAppContext) {
             expected_with_replace_suffix_mode: "before editor()ˇ after".into(),
         },
         Run {
-            run_description: "Case insensitive subsequence and suffix matching",
+            run_description: "不区分大小写的子序列和后缀匹配",
             initial_state: "before EDiˇtoR after".into(),
             buffer_marked_text: "before <EDi|toR> after".into(),
             completion_label: "editor",
@@ -20221,7 +20221,7 @@ async fn test_completion_in_multibuffer_with_newest_selection_in_other_buffer(
         let anchor = main_snapshot.anchor_before(Point::new(1, 11));
         multibuffer_snapshot
             .buffer_anchor_range_to_anchor_range(anchor..anchor)
-            .expect("main.rs cursor position should map into the multibuffer")
+            .expect("main.rs 光标位置应映射到多缓冲区中")
     });
     editor.update_in(cx, |editor, window, cx| {
         editor.change_selections(SelectionEffects::no_scroll(), window, cx, |s| {
@@ -20270,7 +20270,7 @@ async fn test_completion_in_multibuffer_with_newest_selection_in_other_buffer(
         let anchor = other_snapshot.anchor_before(Point::new(0, 6));
         multibuffer_snapshot
             .buffer_anchor_range_to_anchor_range(anchor..anchor)
-            .expect("other.rs cursor position should map into the multibuffer")
+            .expect("other.rs 光标位置应映射到多缓冲区中")
     });
     editor.update_in(cx, |editor, window, cx| {
         editor.change_selections(
@@ -20281,7 +20281,7 @@ async fn test_completion_in_multibuffer_with_newest_selection_in_other_buffer(
         );
         assert!(
             editor.context_menu_visible(),
-            "the completions menu should still be open after moving the cursor"
+            "移动光标后,补全菜单仍应保持打开"
         );
     });
 
@@ -20353,7 +20353,7 @@ async fn test_completion(cx: &mut TestAppContext) {
         &mut cx,
         lsp::SignatureHelp {
             signatures: vec![lsp::SignatureInformation {
-                label: "test signature".to_string(),
+                label: "测试签名".to_string(),
                 documentation: None,
                 parameters: Some(vec![lsp::ParameterInformation {
                     label: lsp::ParameterLabel::Simple("foo: u8".to_string()),
@@ -20368,7 +20368,7 @@ async fn test_completion(cx: &mut TestAppContext) {
     cx.update_editor(|editor, window, cx| {
         assert!(
             !editor.signature_help_state.is_shown(),
-            "No signature help was called for"
+            "未调用签名帮助"
         );
         editor.show_signature_help(&ShowSignatureHelp, window, cx);
     });
@@ -20376,7 +20376,7 @@ async fn test_completion(cx: &mut TestAppContext) {
     cx.update_editor(|editor, _, _| {
         assert!(
             !editor.signature_help_state.is_shown(),
-            "No signature help should be shown when completions menu is open"
+            "当补全菜单打开时,不应显示签名帮助"
         );
     });
 
@@ -20403,7 +20403,7 @@ async fn test_completion(cx: &mut TestAppContext) {
                     two
                     threeˇ
                 "},
-                "overlapping additional edit",
+                "重叠的附加编辑",
             ),
             (
                 indoc! {"
@@ -20643,7 +20643,7 @@ async fn test_completion_can_run_commands(cx: &mut TestAppContext) {
                 &["registered_command", "unregistered_command",],
             );
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 
@@ -20659,7 +20659,7 @@ async fn test_completion_can_run_commands(cx: &mut TestAppContext) {
     assert_eq!(
         command_calls.load(atomic::Ordering::Acquire),
         1,
-        "For completion with a registered command, Zed should send a command execution request",
+        "对于带有已注册命令的补全,Zed 应发送命令执行请求",
     );
 
     editor.update_in(cx, |editor, window, cx| {
@@ -20682,7 +20682,7 @@ async fn test_completion_can_run_commands(cx: &mut TestAppContext) {
                 &["registered_command", "unregistered_command",],
             );
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
     editor
@@ -20698,7 +20698,7 @@ async fn test_completion_can_run_commands(cx: &mut TestAppContext) {
     assert_eq!(
         command_calls.load(atomic::Ordering::Acquire),
         1,
-        "For completion with an unregistered command, Zed should not send a command execution request",
+        "对于带有未注册命令的补全,Zed 不应发送命令执行请求",
     );
 }
 
@@ -20892,10 +20892,10 @@ async fn test_word_completion(cx: &mut TestAppContext) {
             assert_eq!(
                 completion_menu_entries(menu),
                 &["first", "last"],
-                "When LSP server is fast to reply, no fallback word completions are used"
+                "当 LSP 服务器响应迅速时,不使用回退的词补全"
             );
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
         editor.cancel(&Cancel, window, cx);
     });
@@ -20914,9 +20914,9 @@ async fn test_word_completion(cx: &mut TestAppContext) {
         if let Some(CodeContextMenu::Completions(menu)) = editor.context_menu.borrow_mut().as_ref()
         {
             assert_eq!(completion_menu_entries(menu), &["one", "three", "two"],
-                "When LSP server is slow, document words can be shown instead, if configured accordingly");
+                "当 LSP 服务器响应缓慢时,如果相应配置,可以显示文档中的词作为替代");
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 }
@@ -20976,10 +20976,10 @@ async fn test_word_completions_do_not_duplicate_lsp_ones(cx: &mut TestAppContext
             assert_eq!(
                 completion_menu_entries(menu),
                 &["first", "last", "second"],
-                "Word completions that has the same edit as the any of the LSP ones, should not be proposed"
+                "与任何 LSP 补全具有相同编辑内容的单词补全不应被提议"
             );
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 }
@@ -21012,7 +21012,7 @@ async fn test_word_completions_continue_on_typing(cx: &mut TestAppContext) {
         cx.lsp
             .server
             .on_request::<lsp::request::Completion, _, _>(move |_, _| async move {
-                panic!("LSP completions should not be queried when dealing with word completions")
+                panic!("处理单词补全时不应查询 LSP 补全")
             });
 
     cx.set_state(indoc! {"ˇ
@@ -21032,10 +21032,10 @@ async fn test_word_completions_continue_on_typing(cx: &mut TestAppContext) {
             assert_eq!(
                 completion_menu_entries(menu),
                 &["first", "last", "second"],
-                "`ShowWordCompletions` action should show word completions"
+                "`ShowWordCompletions` 操作应显示单词补全"
             );
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 
@@ -21049,10 +21049,10 @@ async fn test_word_completions_continue_on_typing(cx: &mut TestAppContext) {
             assert_eq!(
                 completion_menu_entries(menu),
                 &["last"],
-                "After showing word completions, further editing should filter them and not query the LSP"
+                "显示单词补全后,进一步编辑应过滤它们而不查询 LSP"
             );
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 }
@@ -21081,7 +21081,7 @@ async fn test_completions_use_selection_head(cx: &mut TestAppContext) {
         cx.lsp
             .server
             .on_request::<lsp::request::Completion, _, _>(move |_, _| async move {
-                panic!("LSP completions should not be queried when dealing with word completions")
+                panic!("处理单词补全时不应查询 LSP 补全")
             });
 
     cx.set_state(indoc! {"«applˇ»
@@ -21101,10 +21101,10 @@ async fn test_completions_use_selection_head(cx: &mut TestAppContext) {
             assert_eq!(
                 completion_menu_entries(menu),
                 &["applepie"],
-                "Completion query should use the selection head (`appl`), filtering to words with that prefix"
+                "补全查询应使用选区头部(`appl`),过滤出具有该前缀的单词"
             );
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 }
@@ -21140,10 +21140,10 @@ async fn test_word_completions_usually_skip_digits(cx: &mut TestAppContext) {
             assert_eq!(
                 completion_menu_entries(menu),
                 &["let"],
-                "With no digits in the completion query, no digits should be in the word completions"
+                "补全查询中没有数字时,单词补全中也不应有数字"
             );
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
         editor.cancel(&Cancel, window, cx);
     });
@@ -21166,7 +21166,7 @@ async fn test_word_completions_usually_skip_digits(cx: &mut TestAppContext) {
             assert_eq!(completion_menu_entries(menu), &["33", "35f32"], "The digit is in the completion query, \
                 return matching words with digits (`33`, `35f32`) but exclude query duplicates (`3`)");
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 }
@@ -21193,7 +21193,7 @@ async fn test_word_completions_do_not_show_before_threshold(cx: &mut TestAppCont
     cx.update_editor(|editor, _, _| {
         if editor.context_menu.borrow_mut().is_some() {
             panic!(
-                "expected completion menu to be hidden, as words completion threshold is not met"
+                "预期补全菜单隐藏,因为未达到单词补全阈值"
             );
         }
     });
@@ -21205,16 +21205,16 @@ async fn test_word_completions_do_not_show_before_threshold(cx: &mut TestAppCont
     cx.update_editor(|editor, window, cx| {
         if let Some(CodeContextMenu::Completions(menu)) = editor.context_menu.borrow_mut().as_ref()
         {
-            assert_eq!(completion_menu_entries(menu), &["wowser", "wowen", "wow"], "Even though the threshold is not met, invoking word completions with an action should provide the completions");
+            assert_eq!(completion_menu_entries(menu), &["wowser", "wowen", "wow"], "即使未达到阈值,通过操作调用单词补全也应提供补全");
         } else {
-            panic!("expected completion menu to be open after the word completions are called with an action");
+            panic!("通过操作调用单词补全后,预期补全菜单打开");
         }
 
         editor.cancel(&Cancel, window, cx);
     });
     cx.update_editor(|editor, _, _| {
         if editor.context_menu.borrow_mut().is_some() {
-            panic!("expected completion menu to be hidden after canceling");
+            panic!("取消后预期补全菜单隐藏");
         }
     });
 
@@ -21223,7 +21223,7 @@ async fn test_word_completions_do_not_show_before_threshold(cx: &mut TestAppCont
     cx.update_editor(|editor, _, _| {
         if editor.context_menu.borrow_mut().is_some() {
             panic!(
-                "expected completion menu to be hidden, as words completion threshold is not met still"
+                "预期补全菜单隐藏,因为仍未达到单词补全阈值"
             );
         }
     });
@@ -21233,9 +21233,9 @@ async fn test_word_completions_do_not_show_before_threshold(cx: &mut TestAppCont
     cx.update_editor(|editor, _, _| {
         if let Some(CodeContextMenu::Completions(menu)) = editor.context_menu.borrow_mut().as_ref()
         {
-            assert_eq!(completion_menu_entries(menu), &["wowen", "wowser"], "After word completion threshold is met, matching words should be shown, excluding the already typed word");
+            assert_eq!(completion_menu_entries(menu), &["wowen", "wowser"], "达到单词补全阈值后,应显示匹配的单词,不包括已输入的单词");
         } else {
-            panic!("expected completion menu to be open after the word completions threshold is met");
+            panic!("达到单词补全阈值后,预期补全菜单打开");
         }
     });
 }
@@ -21265,7 +21265,7 @@ async fn test_word_completions_disabled(cx: &mut TestAppContext) {
     cx.update_editor(|editor, _, _| {
         if editor.context_menu.borrow_mut().is_some() {
             panic!(
-                "expected completion menu to be hidden, as words completion are disabled for this editor"
+                "预期补全菜单隐藏,因为此编辑器禁用了单词补全"
             );
         }
     });
@@ -21277,7 +21277,7 @@ async fn test_word_completions_disabled(cx: &mut TestAppContext) {
     cx.update_editor(|editor, _, _| {
         if editor.context_menu.borrow_mut().is_some() {
             panic!(
-                "expected completion menu to be hidden even if called for explicitly, as words completion are disabled for this editor"
+                "即使显式调用,预期补全菜单也隐藏,因为此编辑器禁用了单词补全"
             );
         }
     });
@@ -21307,7 +21307,7 @@ async fn test_word_completions_disabled_with_no_provider(cx: &mut TestAppContext
     cx.executor().run_until_parked();
     cx.update_editor(|editor, _, _| {
         if editor.context_menu.borrow_mut().is_some() {
-            panic!("expected completion menu to be hidden, as disabled in settings");
+            panic!("预期补全菜单隐藏,因为在设置中已禁用");
         }
     });
 }
@@ -21427,13 +21427,13 @@ async fn test_multiline_completion(cx: &mut TestAppContext) {
                     ..lsp::CompletionItem::default()
                 },
                 lsp::CompletionItem {
-                    label: "single line label 1".to_string(),
+                    label: "单行标签 1".to_string(),
                     detail: Some(multiline_detail.to_string()),
                     text_edit: gen_text_edit(&params, "new_text_2"),
                     ..lsp::CompletionItem::default()
                 },
                 lsp::CompletionItem {
-                    label: "single line label 2".to_string(),
+                    label: "单行标签 2".to_string(),
                     label_details: Some(lsp::CompletionItemLabelDetails {
                         description: Some(multiline_description.to_string()),
                         detail: None,
@@ -21448,9 +21448,9 @@ async fn test_multiline_completion(cx: &mut TestAppContext) {
                     ..lsp::CompletionItem::default()
                 },
                 lsp::CompletionItem {
-                    label: "Label with many     spaces and \t but without newlines".to_string(),
+                    label: "包含多个空格和 \t 但没有换行符的标签".to_string(),
                     detail: Some(
-                        "Details with many     spaces and \t but without newlines".to_string(),
+                        "包含多个空格和 \t 但没有换行符的详细信息".to_string(),
                     ),
                     text_edit: gen_text_edit(&params, "new_text_4"),
                     ..lsp::CompletionItem::default()
@@ -21486,7 +21486,7 @@ async fn test_multiline_completion(cx: &mut TestAppContext) {
                     "a b c g h i ",
                     "Label with many     spaces and \t but without newlines Details with many     spaces and \t but without newlines",
                 ],
-                "Completion items should have their labels without newlines, also replacing excessive whitespaces. Completion items without newlines should not be altered.",
+                "补全项的标签不应包含换行符,同时应替换过多的空白字符。没有换行符的补全项不应被修改。",
             );
 
             for completion in menu
@@ -21496,11 +21496,11 @@ async fn test_multiline_completion(cx: &mut TestAppContext) {
                     assert_eq!(
                         completion.label.filter_range,
                         0..completion.label.text.len(),
-                        "Adjusted completion items should still keep their filter ranges for the entire label. Item: {completion:?}"
+                        "调整后的补全项仍应保留整个标签的过滤范围。项目:{completion:?}"
                     );
                 }
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 }
@@ -21541,7 +21541,7 @@ async fn test_completion_page_up_down_keys(cx: &mut TestAppContext) {
         {
             assert_eq!(completion_menu_entries(menu), &["first", "last"]);
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 
@@ -21551,10 +21551,10 @@ async fn test_completion_page_up_down_keys(cx: &mut TestAppContext) {
         {
             assert!(
                 menu.selected_item == 1,
-                "expected PageDown to select the last item from the context menu"
+                "预期 PageDown 从上下文菜单中选择最后一项"
             );
         } else {
-            panic!("expected completion menu to stay open after PageDown");
+            panic!("PageDown 后预期补全菜单保持打开");
         }
     });
 
@@ -21564,10 +21564,10 @@ async fn test_completion_page_up_down_keys(cx: &mut TestAppContext) {
         {
             assert!(
                 menu.selected_item == 0,
-                "expected PageUp to select the first item from the context menu"
+                "预期 PageUp 从上下文菜单中选择第一项"
             );
         } else {
-            panic!("expected completion menu to stay open after PageUp");
+            panic!("PageUp 后预期补全菜单保持打开");
         }
     });
 }
@@ -21816,7 +21816,7 @@ async fn test_no_duplicated_completion_requests(cx: &mut TestAppContext) {
     let completion_item = lsp::CompletionItem {
         label: "Some".into(),
         kind: Some(lsp::CompletionItemKind::SNIPPET),
-        detail: Some("Wrap the expression in an `Option::Some`".to_string()),
+        detail: Some("将表达式包装在 `Option::Some` 中".to_string()),
         documentation: Some(lsp::Documentation::MarkupContent(lsp::MarkupContent {
             kind: lsp::MarkupKind::Markdown,
             value: "```rust\nSome(2)\n```".to_string(),
@@ -21888,7 +21888,7 @@ async fn test_no_duplicated_completion_requests(cx: &mut TestAppContext) {
     assert_eq!(
         counter.load(atomic::Ordering::Acquire),
         4,
-        "With the completions menu open, only one LSP request should happen per input"
+        "补全菜单打开时,每次输入应只发生一次 LSP 请求"
     );
 }
 
@@ -22481,7 +22481,7 @@ fn test_header_jump_data_uses_selection_excerpt(cx: &mut TestAppContext) {
     // 25-line buffer so excerpts at rows 1, 10, and 20 (each a 1-line range,
     // expanded by 2 context lines) can't merge into a single excerpt.
     let buffer_text = (0..25)
-        .map(|row| format!("line {row}"))
+        .map(|row| format!("行 {row}"))
         .collect::<Vec<_>>()
         .join("\n");
     let buffer = cx.new(|cx| Buffer::local(buffer_text, cx));
@@ -22523,7 +22523,7 @@ fn test_header_jump_data_uses_selection_excerpt(cx: &mut TestAppContext) {
         let selection_anchor = editor.buffer().update(cx, |multibuffer, cx| {
             multibuffer
                 .buffer_point_to_anchor(&buffer_entity, Point::new(selection_buffer_row, 0), cx)
-                .expect("buffer row 20 maps to a multibuffer anchor")
+                .expect("缓冲区第 20 行映射到多缓冲区锚点")
         });
         editor.change_selections(SelectionEffects::no_scroll(), window, cx, |s| {
             s.select_anchor_ranges([selection_anchor..selection_anchor])
@@ -22545,7 +22545,7 @@ fn test_header_jump_data_uses_selection_excerpt(cx: &mut TestAppContext) {
             .buffer_snapshot()
             .excerpt_boundaries_in_range(MultiBufferOffset(0)..snapshot.buffer_snapshot().len())
             .next()
-            .expect("multibuffer has at least one excerpt")
+            .expect("多缓冲区至少有一个摘录")
             .next;
 
         let jump_data = header_jump_data(
@@ -22564,7 +22564,7 @@ fn test_header_jump_data_uses_selection_excerpt(cx: &mut TestAppContext) {
             } => {
                 assert_eq!(
                     position.row, selection_buffer_row,
-                    "jump should target the cursor's buffer row, not the first excerpt's row"
+                    "跳转应针对光标所在的缓冲区行,而不是第一个摘录的行"
                 );
                 assert!(
                     line_offset_from_top < selection_buffer_row,
@@ -22574,7 +22574,7 @@ fn test_header_jump_data_uses_selection_excerpt(cx: &mut TestAppContext) {
                 );
             }
             JumpData::MultiBufferRow { .. } => {
-                panic!("expected MultiBufferPoint jump data when a selection is present")
+                panic!("存在选区时,预期有 MultiBufferPoint 跳转数据")
             }
         }
     });
@@ -24251,7 +24251,7 @@ async fn test_on_type_formatting_not_triggered(cx: &mut TestAppContext) {
         assert_eq!(
             buffer.text(),
             "fn main() { let a = {5}; }",
-            "No extra braces from on type formatting should appear in the buffer"
+            "缓冲区中不应出现来自输入时格式化的多余花括号"
         )
     });
 }
@@ -24290,7 +24290,7 @@ async fn test_on_type_formatting_is_applied_after_autoindent(cx: &mut TestAppCon
                     assert_eq!(
                         buffer.text(),
                         "fn c() {\n    d()\n        .\n}\n",
-                        "OnTypeFormatting should triggered after autoindent applied"
+                        "应用自动缩进后应触发输入时格式化"
                     )
                 });
 
@@ -24325,7 +24325,7 @@ async fn test_language_server_restart_due_to_settings_change(cx: &mut TestAppCon
 
     let server_restarts = Arc::new(AtomicUsize::new(0));
     let closure_restarts = Arc::clone(&server_restarts);
-    let language_server_name = "test language server";
+    let language_server_name = "测试语言服务器";
     let language_name: LanguageName = "Rust".into();
 
     let language_registry = project.read_with(cx, |project, _| project.languages().clone());
@@ -24380,17 +24380,17 @@ async fn test_language_server_restart_due_to_settings_change(cx: &mut TestAppCon
     assert_eq!(
         server_restarts.load(atomic::Ordering::Acquire),
         0,
-        "Should not restart LSP server on an unrelated change"
+        "不应因无关更改而重启 LSP 服务器"
     );
 
     update_test_project_settings(cx, &|project_settings| {
         project_settings.lsp.0.insert(
-            "Some other server name".into(),
+            "其他服务器名称".into(),
             LspSettings {
                 binary: None,
                 settings: None,
                 initialization_options: Some(json!({
-                    "some other init value": false
+                    "其他初始化值": false
                 })),
                 enable_lsp_tasks: false,
                 fetch: None,
@@ -24401,7 +24401,7 @@ async fn test_language_server_restart_due_to_settings_change(cx: &mut TestAppCon
     assert_eq!(
         server_restarts.load(atomic::Ordering::Acquire),
         0,
-        "Should not restart LSP server on an unrelated LSP settings change"
+        "不应因无关的 LSP 设置更改而重启 LSP 服务器"
     );
 
     update_test_project_settings(cx, &|project_settings| {
@@ -24422,7 +24422,7 @@ async fn test_language_server_restart_due_to_settings_change(cx: &mut TestAppCon
     assert_eq!(
         server_restarts.load(atomic::Ordering::Acquire),
         1,
-        "Should restart LSP server on a related LSP settings change"
+        "应因相关的 LSP 设置更改而重启 LSP 服务器"
     );
 
     update_test_project_settings(cx, &|project_settings| {
@@ -24443,7 +24443,7 @@ async fn test_language_server_restart_due_to_settings_change(cx: &mut TestAppCon
     assert_eq!(
         server_restarts.load(atomic::Ordering::Acquire),
         1,
-        "Should not restart LSP server on a related LSP settings change that is the same"
+        "不应因相同的相关 LSP 设置更改而重启 LSP 服务器"
     );
 
     update_test_project_settings(cx, &|project_settings| {
@@ -24462,7 +24462,7 @@ async fn test_language_server_restart_due_to_settings_change(cx: &mut TestAppCon
     assert_eq!(
         server_restarts.load(atomic::Ordering::Acquire),
         2,
-        "Should restart LSP server on another related LSP settings change"
+        "应因另一个相关的 LSP 设置更改而重启 LSP 服务器"
     );
 }
 
@@ -24488,7 +24488,7 @@ async fn test_completions_with_additional_edits(cx: &mut TestAppContext) {
     let completion_item = lsp::CompletionItem {
         label: "some".into(),
         kind: Some(lsp::CompletionItemKind::SNIPPET),
-        detail: Some("Wrap the expression in an `Option::Some`".to_string()),
+        detail: Some("将表达式包装在 `Option::Some` 中".to_string()),
         documentation: Some(lsp::Documentation::MarkupContent(lsp::MarkupContent {
             kind: lsp::MarkupKind::Markdown,
             value: "```rust\nSome(2)\n```".to_string(),
@@ -24740,7 +24740,7 @@ async fn test_completions_with_additional_edits_undo(cx: &mut TestAppContext) {
     let completion_item = lsp::CompletionItem {
         label: "some".into(),
         kind: Some(lsp::CompletionItemKind::SNIPPET),
-        detail: Some("Wrap the expression in an `Option::Some`".to_string()),
+        detail: Some("将表达式包装在 `Option::Some` 中".to_string()),
         documentation: Some(lsp::Documentation::MarkupContent(lsp::MarkupContent {
             kind: lsp::MarkupKind::Markdown,
             value: "```rust\nSome(2)\n```".to_string(),
@@ -24971,7 +24971,7 @@ async fn test_completions_resolve_updates_labels_if_filter_text_matches(cx: &mut
         let context_menu = editor.context_menu.borrow_mut();
         let context_menu = context_menu
             .as_ref()
-            .expect("Should have the context menu deployed");
+            .expect("应已显示上下文菜单");
         match context_menu {
             CodeContextMenu::Completions(completions_menu) => {
                 let completions = completions_menu.completions.borrow_mut();
@@ -24983,7 +24983,7 @@ async fn test_completions_resolve_updates_labels_if_filter_text_matches(cx: &mut
                     vec!["method id()", "other"]
                 )
             }
-            CodeContextMenu::CodeActions(_) => panic!("Should show the completions menu"),
+            CodeContextMenu::CodeActions(_) => panic!("应显示补全菜单"),
         }
     });
 
@@ -24996,8 +24996,8 @@ async fn test_completions_resolve_updates_labels_if_filter_text_matches(cx: &mut
                     Ok(lsp::CompletionItem {
                         label: "method id()".to_string(),
                         filter_text: Some("id".to_string()),
-                        detail: Some("Now resolved!".to_string()),
-                        documentation: Some(lsp::Documentation::String("Docs".to_string())),
+                        detail: Some("现已解析!".to_string()),
+                        documentation: Some(lsp::Documentation::String("文档".to_string())),
                         text_edit: Some(lsp::CompletionTextEdit::Edit(lsp::TextEdit {
                             range: lsp::Range::new(
                                 lsp::Position::new(0, 22),
@@ -25027,7 +25027,7 @@ async fn test_completions_resolve_updates_labels_if_filter_text_matches(cx: &mut
         let context_menu = editor.context_menu.borrow_mut();
         let context_menu = context_menu
             .as_ref()
-            .expect("Should have the context menu deployed");
+            .expect("应已显示上下文菜单");
         match context_menu {
             CodeContextMenu::Completions(completions_menu) => {
                 let completions = completions_menu.completions.borrow_mut();
@@ -25037,10 +25037,10 @@ async fn test_completions_resolve_updates_labels_if_filter_text_matches(cx: &mut
                         .map(|completion| &completion.label.text)
                         .collect::<Vec<_>>(),
                     vec!["method id() Now resolved!", "other"],
-                    "Should update first completion label, but not second as the filter text did not match."
+                    "应更新第一个补全项的标签,但第二个因过滤文本不匹配而不更新。"
                 );
             }
-            CodeContextMenu::CodeActions(_) => panic!("Should show the completions menu"),
+            CodeContextMenu::CodeActions(_) => panic!("应显示补全菜单"),
         }
     });
 }
@@ -25086,7 +25086,7 @@ async fn test_context_menus_hide_hover_popover(cx: &mut gpui::TestAppContext) {
             Ok(Some(lsp::Hover {
                 contents: lsp::HoverContents::Markup(lsp::MarkupContent {
                     kind: lsp::MarkupKind::Markdown,
-                    value: "Function documentation".to_string(),
+                    value: "函数文档".to_string(),
                 }),
                 range: Some(symbol_range),
             }))
@@ -25100,7 +25100,7 @@ async fn test_context_menus_hide_hover_popover(cx: &mut gpui::TestAppContext) {
         move |_, _, _| async move {
             Ok(Some(vec![lsp::CodeActionOrCommand::CodeAction(
                 lsp::CodeAction {
-                    title: "Remove unused variable".to_string(),
+                    title: "移除未使用的变量".to_string(),
                     kind: Some(CodeActionKind::QUICKFIX),
                     edit: Some(lsp::WorkspaceEdit {
                         changes: Some(
@@ -25141,7 +25141,7 @@ async fn test_context_menus_hide_hover_popover(cx: &mut gpui::TestAppContext) {
     cx.update_editor(|editor, _, _| {
         assert!(
             !editor.hover_state.visible(),
-            "Hover popover should be hidden when code action menu is shown"
+            "显示代码操作菜单时,悬停弹窗应隐藏"
         );
         // Hide code actions
         editor.context_menu.take();
@@ -25182,7 +25182,7 @@ async fn test_context_menus_hide_hover_popover(cx: &mut gpui::TestAppContext) {
     cx.update_editor(|editor, _, _| {
         assert!(
             !editor.hover_state.visible(),
-            "Hover popover should be hidden when completion menu is shown"
+            "显示补全菜单时,悬停弹窗应隐藏"
         );
     });
 }
@@ -25270,7 +25270,7 @@ async fn test_completions_resolve_happens_once(cx: &mut TestAppContext) {
                         resolve_requests_2.fetch_add(1, atomic::Ordering::Release);
                         Ok(resolved_item_2.clone())
                     } else {
-                        panic!("Unexpected completion item {unresolved_request:?}")
+                        panic!("意外的补全项 {unresolved_request:?}")
                     }
                 }
             }
@@ -25296,7 +25296,7 @@ async fn test_completions_resolve_happens_once(cx: &mut TestAppContext) {
         let context_menu = editor.context_menu.borrow_mut();
         let context_menu = context_menu
             .as_ref()
-            .expect("Should have the context menu deployed");
+            .expect("应已显示上下文菜单");
         match context_menu {
             CodeContextMenu::Completions(completions_menu) => {
                 let completions = completions_menu.completions.borrow_mut();
@@ -25308,7 +25308,7 @@ async fn test_completions_resolve_happens_once(cx: &mut TestAppContext) {
                     vec!["id", "other"]
                 )
             }
-            CodeContextMenu::CodeActions(_) => panic!("Should show the completions menu"),
+            CodeContextMenu::CodeActions(_) => panic!("应显示补全菜单"),
         }
     });
     cx.run_until_parked();
@@ -25328,27 +25328,27 @@ async fn test_completions_resolve_happens_once(cx: &mut TestAppContext) {
     cx.update_editor(|editor, window, cx| {
         editor
             .compose_completion(&ComposeCompletion::default(), window, cx)
-            .expect("No task returned")
+            .expect("未返回任务")
     })
     .await
-    .expect("Completion failed");
+    .expect("补全失败");
     cx.run_until_parked();
 
     cx.update_editor(|editor, _, cx| {
         assert_eq!(
             resolve_requests_1.load(atomic::Ordering::Acquire),
             1,
-            "Should always resolve once despite multiple selections"
+            "即使有多个选区,也应始终解析一次"
         );
         assert_eq!(
             resolve_requests_2.load(atomic::Ordering::Acquire),
             1,
-            "Should always resolve once after multiple selections and applying the completion"
+            "在多个选区并应用补全后,应始终解析一次"
         );
         assert_eq!(
             editor.text(cx),
             "fn main() { let a = ??.other; }",
-            "Should use resolved data when applying the completion"
+            "应用补全时应使用已解析的数据"
         );
     });
 }
@@ -25457,7 +25457,7 @@ async fn test_completions_default_resolve_data_handling(cx: &mut TestAppContext)
     cx.run_until_parked();
     cx.update_editor(|editor, _, _| {
         let menu = editor.context_menu.borrow_mut();
-        match menu.as_ref().expect("should have the completions menu") {
+        match menu.as_ref().expect("应显示补全菜单") {
             CodeContextMenu::Completions(completions_menu) => {
                 assert_eq!(
                     completions_menu
@@ -25472,7 +25472,7 @@ async fn test_completions_default_resolve_data_handling(cx: &mut TestAppContext)
                         .collect::<Vec<String>>()
                 );
             }
-            CodeContextMenu::CodeActions(_) => panic!("Expected to have the completions menu"),
+            CodeContextMenu::CodeActions(_) => panic!("预期显示补全菜单"),
         }
     });
     // Approximate initial displayed interval is 0..12. With extra item padding of 4 this is 0..16
@@ -25490,7 +25490,7 @@ async fn test_completions_default_resolve_data_handling(cx: &mut TestAppContext)
                 item
             })
             .collect::<Vec<lsp::CompletionItem>>(),
-        "Items sent for resolve should be unchanged modulo resolve `data` filled with default if missing"
+        "发送用于解析的项应保持不变,若缺少 `data` 则用默认值填充"
     );
     resolved_items.lock().clear();
 
@@ -25585,7 +25585,7 @@ async fn test_completions_in_languages_with_extra_word_characters(cx: &mut TestA
                 &["bg-blue", "bg-red", "bg-yellow"]
             );
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 
@@ -25596,7 +25596,7 @@ async fn test_completions_in_languages_with_extra_word_characters(cx: &mut TestA
         {
             assert_eq!(completion_menu_entries(menu), &["bg-blue", "bg-yellow"]);
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 
@@ -25610,7 +25610,7 @@ async fn test_completions_in_languages_with_extra_word_characters(cx: &mut TestA
         {
             assert_eq!(completion_menu_entries(menu), &["bg-yellow"]);
         } else {
-            panic!("expected completion menu to be open");
+            panic!("预期补全菜单已打开");
         }
     });
 }
@@ -25690,7 +25690,7 @@ async fn test_document_format_with_prettier(cx: &mut TestAppContext) {
     assert_eq!(
         editor.update(cx, |editor, cx| editor.text(cx)),
         buffer_text.to_string() + prettier_format_suffix,
-        "Test prettier formatting was not applied to the original buffer text",
+        "测试 prettier 格式化未应用于原始缓冲区文本",
     );
 
     update_test_language_settings(cx, &|settings| {
@@ -25709,7 +25709,7 @@ async fn test_document_format_with_prettier(cx: &mut TestAppContext) {
     assert_eq!(
         editor.update(cx, |editor, cx| editor.text(cx)),
         buffer_text.to_string() + prettier_format_suffix + "\n" + prettier_format_suffix,
-        "Autoformatting (via test prettier) was not applied to the original buffer text",
+        "自动格式化(通过测试 prettier)未应用于原始缓冲区文本",
     );
 }
 
@@ -25789,7 +25789,7 @@ async fn test_document_format_with_prettier_explicit_language(cx: &mut TestAppCo
     assert_eq!(
         editor.update(cx, |editor, cx| editor.text(cx)),
         buffer_text.to_string() + prettier_format_suffix + "\ntypescript",
-        "Test prettier formatting was not applied to the original buffer text",
+        "测试 prettier 格式化未应用于原始缓冲区文本",
     );
 
     update_test_language_settings(cx, &|settings| {
@@ -25813,7 +25813,7 @@ async fn test_document_format_with_prettier_explicit_language(cx: &mut TestAppCo
             + "\ntypescript\n"
             + prettier_format_suffix
             + "\ntypescript",
-        "Autoformatting (via test prettier) was not applied to the original buffer text",
+        "自动格式化(通过测试 prettier)未应用于原始缓冲区文本",
     );
 }
 
@@ -25889,7 +25889,7 @@ async fn test_range_format_with_prettier(cx: &mut TestAppContext) {
     assert_eq!(
         editor.update(cx, |editor, cx| editor.text(cx)),
         format!("one\ntwo{prettier_range_format_suffix}\nthree\nfour\nfive\n"),
-        "Range formatting (via test prettier) was not applied to the buffer text",
+        "范围格式化(通过测试 prettier)未应用于缓冲区文本",
     );
 }
 
@@ -25974,7 +25974,7 @@ async fn test_range_format_with_prettier_explicit_language(cx: &mut TestAppConte
     assert_eq!(
         editor.update(cx, |editor, cx| editor.text(cx)),
         format!("one\ntwo{prettier_range_format_suffix}\ntypescript\nthree\nfour\nfive\n"),
-        "Range formatting (via test prettier) was not applied with explicit language",
+        "范围格式化(通过测试 prettier)未使用显式语言应用",
     );
 }
 
@@ -26613,7 +26613,7 @@ async fn test_multibuffer_in_navigation_history(cx: &mut TestAppContext) {
     let multibuffer_item_id = workspace.update_in(cx, |workspace, window, cx| {
         assert!(
             workspace.active_item(cx).is_none(),
-            "active item should be None before the first item is added"
+            "添加第一个项之前,活动项应为 None"
         );
         workspace.add_item_to_active_pane(
             Box::new(multi_buffer_editor.clone()),
@@ -26624,11 +26624,11 @@ async fn test_multibuffer_in_navigation_history(cx: &mut TestAppContext) {
         );
         let active_item = workspace
             .active_item(cx)
-            .expect("should have an active item after adding the multi buffer");
+            .expect("添加多缓冲区后应有一个活动项");
         assert_eq!(
             active_item.buffer_kind(cx),
             ItemBufferKind::Multibuffer,
-            "A multi buffer was expected to active after adding"
+            "添加后预期多缓冲区处于活动状态"
         );
         active_item.item_id()
     });
@@ -26648,21 +26648,21 @@ async fn test_multibuffer_in_navigation_history(cx: &mut TestAppContext) {
     let first_item_id = workspace.update_in(cx, |workspace, window, cx| {
         let active_item = workspace
             .active_item(cx)
-            .expect("should have an active item after navigating into the 1st buffer");
+            .expect("导航进入第一个缓冲区后应有一个活动项");
         let first_item_id = active_item.item_id();
         assert_ne!(
             first_item_id, multibuffer_item_id,
-            "Should navigate into the 1st buffer and activate it"
+            "应导航进入第一个缓冲区并将其激活"
         );
         assert_eq!(
             active_item.buffer_kind(cx),
             ItemBufferKind::Singleton,
-            "New active item should be a singleton buffer"
+            "新的活动项应为单例缓冲区"
         );
         assert_eq!(
             active_item
                 .act_as::<Editor>(cx)
-                .expect("should have navigated into an editor for the 1st buffer")
+                .expect("应已导航进入第一个缓冲区的编辑器")
                 .read(cx)
                 .text(cx),
             sample_text_1
@@ -26679,11 +26679,11 @@ async fn test_multibuffer_in_navigation_history(cx: &mut TestAppContext) {
     workspace.update_in(cx, |workspace, _, cx| {
         let active_item = workspace
             .active_item(cx)
-            .expect("should have an active item after navigating back");
+            .expect("导航返回后应有一个活动项");
         assert_eq!(
             active_item.item_id(),
             multibuffer_item_id,
-            "Should navigate back to the multi buffer"
+            "应导航返回多缓冲区"
         );
         assert_eq!(active_item.buffer_kind(cx), ItemBufferKind::Multibuffer);
     });
@@ -26701,25 +26701,25 @@ async fn test_multibuffer_in_navigation_history(cx: &mut TestAppContext) {
     let second_item_id = workspace.update_in(cx, |workspace, window, cx| {
         let active_item = workspace
             .active_item(cx)
-            .expect("should have an active item after navigating into the 2nd buffer");
+            .expect("导航进入第二个缓冲区后应有一个活动项");
         let second_item_id = active_item.item_id();
         assert_ne!(
             second_item_id, multibuffer_item_id,
-            "Should navigate away from the multibuffer"
+            "应导航离开多缓冲区"
         );
         assert_ne!(
             second_item_id, first_item_id,
-            "Should navigate into the 2nd buffer and activate it"
+            "应导航进入第二个缓冲区并将其激活"
         );
         assert_eq!(
             active_item.buffer_kind(cx),
             ItemBufferKind::Singleton,
-            "New active item should be a singleton buffer"
+            "新的活动项应为单例缓冲区"
         );
         assert_eq!(
             active_item
                 .act_as::<Editor>(cx)
-                .expect("should have navigated into an editor")
+                .expect("应已导航进入编辑器")
                 .read(cx)
                 .text(cx),
             sample_text_2
@@ -26736,11 +26736,11 @@ async fn test_multibuffer_in_navigation_history(cx: &mut TestAppContext) {
     workspace.update_in(cx, |workspace, _, cx| {
         let active_item = workspace
             .active_item(cx)
-            .expect("should have an active item after navigating back from the 2nd buffer");
+            .expect("从第二个缓冲区导航返回后应有一个活动项");
         assert_eq!(
             active_item.item_id(),
             multibuffer_item_id,
-            "Should navigate back from the 2nd buffer to the multi buffer"
+            "应从第二个缓冲区导航返回多缓冲区"
         );
         assert_eq!(active_item.buffer_kind(cx), ItemBufferKind::Multibuffer);
     });
@@ -26758,23 +26758,23 @@ async fn test_multibuffer_in_navigation_history(cx: &mut TestAppContext) {
     workspace.update_in(cx, |workspace, window, cx| {
         let active_item = workspace
             .active_item(cx)
-            .expect("should have an active item after navigating into the 3rd buffer");
+            .expect("导航进入第三个缓冲区后应有一个活动项");
         let third_item_id = active_item.item_id();
         assert_ne!(
             third_item_id, multibuffer_item_id,
-            "Should navigate into the 3rd buffer and activate it"
+            "应导航进入第三个缓冲区并将其激活"
         );
         assert_ne!(third_item_id, first_item_id);
         assert_ne!(third_item_id, second_item_id);
         assert_eq!(
             active_item.buffer_kind(cx),
             ItemBufferKind::Singleton,
-            "New active item should be a singleton buffer"
+            "新的活动项应为单例缓冲区"
         );
         assert_eq!(
             active_item
                 .act_as::<Editor>(cx)
-                .expect("should have navigated into an editor")
+                .expect("应已导航进入编辑器")
                 .read(cx)
                 .text(cx),
             sample_text_3
@@ -26789,11 +26789,11 @@ async fn test_multibuffer_in_navigation_history(cx: &mut TestAppContext) {
     workspace.update_in(cx, |workspace, _, cx| {
         let active_item = workspace
             .active_item(cx)
-            .expect("should have an active item after navigating back from the 3rd buffer");
+            .expect("从第三个缓冲区导航返回后应有一个活动项");
         assert_eq!(
             active_item.item_id(),
             multibuffer_item_id,
-            "Should navigate back from the 3rd buffer to the multi buffer"
+            "应从第三个缓冲区导航返回多缓冲区"
         );
         assert_eq!(active_item.buffer_kind(cx), ItemBufferKind::Multibuffer);
     });
@@ -26852,7 +26852,7 @@ async fn test_merge_base_diff_hunks_are_read_only(cx: &mut TestAppContext) {
             .buffer()
             .read(cx)
             .diff_for(buffer_id)
-            .expect("buffer should have a display diff");
+            .expect("缓冲区应显示差异");
         assert!(!diff.read(cx).is_stageable());
     });
     editor.update_in(cx, |editor, window, cx| {
@@ -27080,7 +27080,7 @@ async fn test_diff_base_change_with_expanded_diff_hunks(
         .unindent(),
     );
 
-    cx.set_head_text("new diff base!");
+    cx.set_head_text("新的差异基准!");
     executor.run_until_parked();
     cx.assert_state_with_diff(
         r#"
@@ -28123,11 +28123,11 @@ fn assert_indent_guides(
         assert_eq!(
             active_indices.unwrap().into_iter().collect::<Vec<_>>(),
             expected,
-            "Active indent guide indices do not match"
+            "活动缩进参考线索引不匹配"
         );
     }
 
-    assert_eq!(indent_guides, expected, "Indent guides do not match");
+    assert_eq!(indent_guides, expected, "缩进参考线不匹配");
 }
 
 fn indent_guide(buffer_id: BufferId, start_row: u32, end_row: u32, depth: u32) -> IndentGuide {
@@ -29074,11 +29074,11 @@ async fn test_select_smaller_syntax_node_after_diff_hunk_collapse(
 
     let diff_base = r#"
         fn removed_one() {
-            println!("this function was deleted");
+            println!("此函数已被删除");
         }
 
         fn removed_two() {
-            println!("this function was also deleted");
+            println!("此函数也已被删除");
         }
 
         fn main() {
@@ -29445,35 +29445,35 @@ let foo = 15;"#,
         assert_eq!(
             e.next_scroll_position,
             NextScrollCursorCenterTopBottom::Center,
-            "Default next scroll direction is center",
+            "默认的下一次滚动方向为居中",
         );
 
         e.scroll_cursor_center_top_bottom(&ScrollCursorCenterTopBottom, window, cx);
         assert_eq!(
             e.next_scroll_position,
             NextScrollCursorCenterTopBottom::Top,
-            "After center, next scroll direction should be top",
+            "居中后,下一次滚动方向应为顶部",
         );
 
         e.scroll_cursor_center_top_bottom(&ScrollCursorCenterTopBottom, window, cx);
         assert_eq!(
             e.next_scroll_position,
             NextScrollCursorCenterTopBottom::Bottom,
-            "After top, next scroll direction should be bottom",
+            "顶部后,下一次滚动方向应为底部",
         );
 
         e.scroll_cursor_center_top_bottom(&ScrollCursorCenterTopBottom, window, cx);
         assert_eq!(
             e.next_scroll_position,
             NextScrollCursorCenterTopBottom::Center,
-            "After bottom, scrolling should start over",
+            "底部后,滚动应重新开始",
         );
 
         e.scroll_cursor_center_top_bottom(&ScrollCursorCenterTopBottom, window, cx);
         assert_eq!(
             e.next_scroll_position,
             NextScrollCursorCenterTopBottom::Top,
-            "Scrolling continues if retriggered fast enough"
+            "如果快速重新触发,滚动将继续"
         );
     });
 
@@ -29484,7 +29484,7 @@ let foo = 15;"#,
         assert_eq!(
             e.next_scroll_position,
             NextScrollCursorCenterTopBottom::Center,
-            "If scrolling is not triggered fast enough, it should reset"
+            "如果滚动触发不够快,则应重置"
         );
     });
 }
@@ -29545,11 +29545,11 @@ async fn test_goto_definition_with_find_all_references_fallback(cx: &mut TestApp
             editor.go_to_definition(&GoToDefinition::default(), window, cx)
         })
         .await
-        .expect("Failed to navigate to definition");
+        .expect("导航到定义失败");
     assert_eq!(
         navigated,
         Navigated::Yes,
-        "Should have navigated to definition from the GetDefinition response"
+        "应已从 GetDefinition 响应导航到定义"
     );
     cx.assert_editor_state(
         &r#"fn one() {
@@ -29567,11 +29567,11 @@ async fn test_goto_definition_with_find_all_references_fallback(cx: &mut TestApp
         assert_eq!(
             editors.len(),
             1,
-            "Initially, only one, test, editor should be open in the workspace"
+            "最初,工作区中应只打开一个测试编辑器"
         );
         assert_eq!(
             test_editor_cx.entity(),
-            editors.last().expect("Asserted len is 1").clone()
+            editors.last().expect("断言的长度为 1").clone()
         );
     });
 
@@ -29581,11 +29581,11 @@ async fn test_goto_definition_with_find_all_references_fallback(cx: &mut TestApp
             editor.go_to_definition(&GoToDefinition::default(), window, cx)
         })
         .await
-        .expect("Failed to navigate to lookup references");
+        .expect("导航到查找引用失败");
     assert_eq!(
         navigated,
         Navigated::Yes,
-        "Should have navigated to references as a fallback after empty GoToDefinition response"
+        "在 GoToDefinition 响应为空后,应已回退导航到引用"
     );
     // We should not change the selections in the existing file,
     // if opening another milti buffer with the references
@@ -29604,17 +29604,17 @@ async fn test_goto_definition_with_find_all_references_fallback(cx: &mut TestApp
         assert_eq!(
             editors.len(),
             2,
-            "After falling back to references search, we open a new editor with the results"
+            "回退到引用搜索后,我们打开一个包含结果的新编辑器"
         );
         let references_fallback_text = editors
             .into_iter()
             .find(|new_editor| *new_editor != test_editor_cx.entity())
-            .expect("Should have one non-test editor now")
+            .expect("现在应有一个非测试编辑器")
             .read(test_editor_cx)
             .text(test_editor_cx);
         assert_eq!(
             references_fallback_text, "fn one() {\n    let mut a = two();\n}",
-            "Should use the range from the references response and not the GoToDefinition one"
+            "应使用引用响应中的范围,而不是 GoToDefinition 中的范围"
         );
     });
 }
@@ -29652,7 +29652,7 @@ async fn test_goto_definition_no_fallback(cx: &mut TestAppContext) {
     let _references = cx
         .lsp
         .set_request_handler::<lsp::request::References, _, _>(move |_, _| async move {
-            panic!("Should not call for references with no go to definition fallback")
+            panic!("在没有转到定义回退的情况下,不应调用引用")
         });
 
     let navigated = cx
@@ -29660,16 +29660,16 @@ async fn test_goto_definition_no_fallback(cx: &mut TestAppContext) {
             editor.go_to_definition(&GoToDefinition::default(), window, cx)
         })
         .await
-        .expect("Failed to navigate to lookup references");
+        .expect("导航到查找引用失败");
     go_to_definition
         .next()
         .await
-        .expect("Should have called the go_to_definition handler");
+        .expect("应已调用 go_to_definition 处理器");
 
     assert_eq!(
         navigated,
         Navigated::No,
-        "Should have navigated to references as a fallback after empty GoToDefinition response"
+        "在 GoToDefinition 响应为空后,应已回退导航到引用"
     );
     cx.assert_editor_state(&original_state);
     let editors = cx.update_workspace(|workspace, _, cx| {
@@ -29679,7 +29679,7 @@ async fn test_goto_definition_no_fallback(cx: &mut TestAppContext) {
         assert_eq!(
             editors.len(),
             1,
-            "After unsuccessful fallback, no other editor should have been opened"
+            "回退失败后,不应打开其他编辑器"
         );
     });
 }
@@ -29731,7 +29731,7 @@ async fn test_goto_definition_close_ranges_open_singleton(cx: &mut TestAppContex
             editor.go_to_definition(&GoToDefinition::default(), window, cx)
         })
         .await
-        .expect("Failed to navigate to definitions");
+        .expect("导航到多个定义失败");
     assert_eq!(navigated, Navigated::Yes);
 
     let editors = cx.update_workspace(|workspace, _, cx| {
@@ -29741,7 +29741,7 @@ async fn test_goto_definition_close_ranges_open_singleton(cx: &mut TestAppContex
         assert_eq!(
             editors.len(),
             1,
-            "Close ranges should navigate in-place without opening a new editor"
+            "近距离范围应就地导航,不打开新编辑器"
         );
     });
 
@@ -29817,7 +29817,7 @@ async fn test_goto_definition_far_ranges_open_multibuffer(cx: &mut TestAppContex
             editor.go_to_definition(&GoToDefinition::default(), window, cx)
         })
         .await
-        .expect("Failed to navigate to definitions");
+        .expect("导航到多个定义失败");
     assert_eq!(navigated, Navigated::Yes);
 
     let editors = cx.update_workspace(|workspace, _, cx| {
@@ -29827,16 +29827,16 @@ async fn test_goto_definition_far_ranges_open_multibuffer(cx: &mut TestAppContex
         assert_eq!(
             editors.len(),
             2,
-            "Far apart ranges should open a new multibuffer editor"
+            "远距离范围应打开新的多缓冲区编辑器"
         );
         let multibuffer_editor = editors
             .into_iter()
             .find(|editor| *editor != test_editor_cx.entity())
-            .expect("Should have a multibuffer editor");
+            .expect("应有一个多缓冲区编辑器");
         let multibuffer_text = multibuffer_editor.read(test_editor_cx).text(test_editor_cx);
         assert!(
             multibuffer_text.contains("target_a"),
-            "Multibuffer should contain the first definition"
+            "多缓冲区应包含第一个定义"
         );
         assert!(
             multibuffer_text.contains("target_b"),
@@ -29892,7 +29892,7 @@ async fn test_goto_definition_contained_ranges(cx: &mut TestAppContext) {
             editor.go_to_definition(&GoToDefinition::default(), window, cx)
         })
         .await
-        .expect("Failed to navigate to definitions");
+        .expect("导航到多个定义失败");
     assert_eq!(navigated, Navigated::Yes);
 }
 
@@ -29974,7 +29974,7 @@ async fn test_goto_definition_preserve_scroll_strategy(cx: &mut TestAppContext) 
         editor
             .visible_line_count()
             .map(|count| ((count - 1.0) / 2.0).floor())
-            .expect("Visible line count should be available")
+            .expect("可见行数应可用")
     });
 
     // When the cursor is visible inside the viewport, going to a definition
@@ -29991,7 +29991,7 @@ async fn test_goto_definition_preserve_scroll_strategy(cx: &mut TestAppContext) 
         editor.go_to_definition(&GoToDefinition::default(), window, cx)
     })
     .await
-    .expect("Failed to navigate to definition");
+    .expect("导航到定义失败");
     cx.run_until_parked();
     cx.update_editor(|editor, window, cx| {
         assert_eq!(
@@ -30017,16 +30017,16 @@ async fn test_goto_definition_preserve_scroll_strategy(cx: &mut TestAppContext) 
             .as_f64();
         let visible_lines = editor
             .visible_line_count()
-            .expect("Visible line count should be available");
+            .expect("可见行数应可用");
 
-        assert!(cursor_row >= visible_lines, "Cursor should be offscreen");
+        assert!(cursor_row >= visible_lines, "光标应在屏幕外");
     });
 
     cx.update_editor(|editor, window, cx| {
         editor.go_to_definition(&GoToDefinition::default(), window, cx)
     })
     .await
-    .expect("Failed to navigate to definition");
+    .expect("导航到定义失败");
     cx.run_until_parked();
     cx.update_editor(|editor, window, cx| {
         assert_eq!(
@@ -30076,11 +30076,11 @@ async fn test_find_all_references_editor_reuse(cx: &mut TestAppContext) {
         })
         .unwrap()
         .await
-        .expect("Failed to navigate to references");
+        .expect("导航到引用失败");
     assert_eq!(
         navigated,
         Navigated::Yes,
-        "Should have navigated to references from the FindAllReferences response"
+        "应已从 FindAllReferences 响应导航到引用"
     );
     cx.assert_editor_state(
         &r#"fn one() {
@@ -30095,7 +30095,7 @@ async fn test_find_all_references_editor_reuse(cx: &mut TestAppContext) {
         workspace.items_of_type::<Editor>(cx).collect::<Vec<_>>()
     });
     cx.update_editor(|_, _, _| {
-        assert_eq!(editors.len(), 2, "We should have opened a new multibuffer");
+        assert_eq!(editors.len(), 2, "我们应已打开一个新的多缓冲区");
     });
 
     cx.set_state(
@@ -30112,11 +30112,11 @@ async fn test_find_all_references_editor_reuse(cx: &mut TestAppContext) {
         })
         .unwrap()
         .await
-        .expect("Failed to navigate to references");
+        .expect("导航到引用失败");
     assert_eq!(
         navigated,
         Navigated::Yes,
-        "Should have navigated to references from the FindAllReferences response"
+        "应已从 FindAllReferences 响应导航到引用"
     );
     cx.assert_editor_state(
         &r#"fn one() {
@@ -30133,7 +30133,7 @@ async fn test_find_all_references_editor_reuse(cx: &mut TestAppContext) {
         assert_eq!(
             editors.len(),
             2,
-            "should have re-used the previous multibuffer"
+            "应已重用先前的多缓冲区"
         );
     });
 
@@ -30164,11 +30164,11 @@ async fn test_find_all_references_editor_reuse(cx: &mut TestAppContext) {
         })
         .unwrap()
         .await
-        .expect("Failed to navigate to references");
+        .expect("导航到引用失败");
     assert_eq!(
         navigated,
         Navigated::Yes,
-        "Should have navigated to references from the FindAllReferences response"
+        "应已从 FindAllReferences 响应导航到引用"
     );
     cx.assert_editor_state(
         &r#"fn one() {
@@ -30185,7 +30185,7 @@ async fn test_find_all_references_editor_reuse(cx: &mut TestAppContext) {
         assert_eq!(
             editors.len(),
             3,
-            "should have used a new multibuffer as offsets changed"
+            "由于偏移量已更改,应已使用新的多缓冲区"
         );
     });
 }
@@ -30254,9 +30254,9 @@ async fn test_find_all_references_preserves_preview_tab(cx: &mut TestAppContext)
         cx.update_editor(|editor, window, cx| {
             editor.find_all_references(&FindAllReferences::default(), window, cx)
         })
-        .expect("Editor::find_all_references should return a task")
+        .expect("编辑器::find_all_references 应返回一个任务")
         .await
-        .expect("Should be able to find all references"),
+        .expect("应能够查找所有引用"),
         Navigated::Yes
     );
     cx.executor().run_until_parked();
@@ -30267,7 +30267,7 @@ async fn test_find_all_references_preserves_preview_tab(cx: &mut TestAppContext)
         assert_eq!(
             active_pane.preview_item_id(),
             Some(active_pane.active_item().unwrap().item_id()),
-            "The preview item id should be the same as the id of the multibuffer"
+            "预览项 id 应与多缓冲区的 id 相同"
         );
     });
 }
@@ -30349,14 +30349,14 @@ async fn test_find_enclosing_node_with_task(cx: &mut TestAppContext) {
             s.select_ranges([Point::new(4, 5)..Point::new(4, 5)])
         });
         let (_, row, _) = editor.find_enclosing_node_task(cx).unwrap();
-        assert_eq!(row, 3, "Should find task for cursor inside runnable_1");
+        assert_eq!(row, 3, "应找到 runnable_1 内光标对应的任务");
 
         // Test finding task when cursor is on function name
         editor.change_selections(SelectionEffects::no_scroll(), window, cx, |s| {
             s.select_ranges([Point::new(8, 4)..Point::new(8, 4)])
         });
         let (_, row, _) = editor.find_enclosing_node_task(cx).unwrap();
-        assert_eq!(row, 8, "Should find task when cursor is on function name");
+        assert_eq!(row, 8, "当光标位于函数名上时,应找到任务");
     });
 }
 
@@ -30374,7 +30374,7 @@ async fn test_toggle_code_actions_build_tasks_context_error_notifies(cx: &mut Te
             _: Arc<dyn LanguageToolchainStore>,
             _: &mut gpui::App,
         ) -> Task<anyhow::Result<TaskVariables>> {
-            Task::ready(Err(anyhow::anyhow!("Task context provider failed")))
+            Task::ready(Err(anyhow::anyhow!("任务上下文提供程序失败")))
         }
     }
 
@@ -30558,7 +30558,7 @@ async fn test_folding_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\n\n\nllll\nmmmm\nnnnn\n\nqqqq\nrrrr\n\nuuuu\n\n\nvvvv\nwwww\nxxxx\n\n1111\n2222\n\n5555",
-        "After folding the first buffer, its text should not be displayed"
+        "折叠第一个缓冲区后,其文本不应显示"
     );
 
     multi_buffer_editor.update(cx, |editor, cx| {
@@ -30567,7 +30567,7 @@ async fn test_folding_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\n\n\n\n\nvvvv\nwwww\nxxxx\n\n1111\n2222\n\n5555",
-        "After folding the second buffer, its text should not be displayed"
+        "折叠第二个缓冲区后,其文本不应显示"
     );
 
     multi_buffer_editor.update(cx, |editor, cx| {
@@ -30576,7 +30576,7 @@ async fn test_folding_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\n\n\n\n",
-        "After folding the third buffer, its text should not be displayed"
+        "折叠第三个缓冲区后,其文本不应显示"
     );
 
     // Emulate selection inside the fold logic, that should work
@@ -30592,7 +30592,7 @@ async fn test_folding_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\n\n\nllll\nmmmm\nnnnn\n\nqqqq\nrrrr\n\nuuuu\n\n",
-        "After unfolding the second buffer, its text should be displayed"
+        "展开第二个缓冲区后,其文本应显示"
     );
 
     // Typing inside of buffer 1 causes that buffer to be unfolded.
@@ -30614,7 +30614,7 @@ async fn test_folding_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\naaaa\nBbbbb\ncccc\n\nffff\ngggg\n\njjjj\n\n\nllll\nmmmm\nnnnn\n\nqqqq\nrrrr\n\nuuuu\n\n",
-        "After unfolding the first buffer, its and 2nd buffer's text should be displayed"
+        "展开第一个缓冲区后,其和第二个缓冲区的文本应显示"
     );
 
     multi_buffer_editor.update(cx, |editor, cx| {
@@ -30623,7 +30623,7 @@ async fn test_folding_buffers(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\naaaa\nBbbbb\ncccc\n\nffff\ngggg\n\njjjj\n\n\nllll\nmmmm\nnnnn\n\nqqqq\nrrrr\n\nuuuu\n\n\nvvvv\nwwww\nxxxx\n\n1111\n2222\n\n5555",
-        "After unfolding the all buffers, all original text should be displayed"
+        "展开所有缓冲区后,所有原始文本应显示"
     );
 }
 
@@ -30793,7 +30793,7 @@ async fn test_folding_buffers_with_one_excerpt(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\n\n\n4444\n5555\n6666\n\n\n7777\n8888\n9999",
-        "After folding the first buffer, its text should not be displayed"
+        "折叠第一个缓冲区后,其文本不应显示"
     );
 
     multi_buffer_editor.update(cx, |editor, cx| {
@@ -30803,7 +30803,7 @@ async fn test_folding_buffers_with_one_excerpt(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\n\n\n\n\n7777\n8888\n9999",
-        "After folding the second buffer, its text should not be displayed"
+        "折叠第二个缓冲区后,其文本不应显示"
     );
 
     multi_buffer_editor.update(cx, |editor, cx| {
@@ -30812,7 +30812,7 @@ async fn test_folding_buffers_with_one_excerpt(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\n\n\n\n",
-        "After folding the third buffer, its text should not be displayed"
+        "折叠第三个缓冲区后,其文本不应显示"
     );
 
     multi_buffer_editor.update(cx, |editor, cx| {
@@ -30821,7 +30821,7 @@ async fn test_folding_buffers_with_one_excerpt(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\n\n\n4444\n5555\n6666\n\n",
-        "After unfolding the second buffer, its text should be displayed"
+        "展开第二个缓冲区后,其文本应显示"
     );
 
     multi_buffer_editor.update(cx, |editor, cx| {
@@ -30830,7 +30830,7 @@ async fn test_folding_buffers_with_one_excerpt(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         "\n\n1111\n2222\n3333\n\n\n4444\n5555\n6666\n\n",
-        "After unfolding the first buffer, its text should be displayed"
+        "展开第一个缓冲区后,其文本应显示"
     );
 
     multi_buffer_editor.update(cx, |editor, cx| {
@@ -30839,7 +30839,7 @@ async fn test_folding_buffers_with_one_excerpt(cx: &mut TestAppContext) {
     assert_eq!(
         multi_buffer_editor.update(cx, |editor, cx| editor.display_text(cx)),
         full_text,
-        "After unfolding all buffers, all original text should be displayed"
+        "展开所有缓冲区后,所有原始文本应显示"
     );
 }
 
@@ -31403,10 +31403,10 @@ fn test_gutter_button_tooltip_updates_intent_with_secondary_modifier(cx: &mut Te
     // When both features are enabled, the meta text advertises the
     // modifier-click alternative.
     let meta = tooltip.meta_text(primary_intent);
-    assert!(meta.contains("-click to add a bookmark"), "got: {meta}");
-    assert!(meta.contains("right-click for more options"));
+    assert!(meta.contains("点击添加书签"), "得到: {meta}");
+    assert!(meta.contains("右键点击查看更多选项"));
     let meta = tooltip.meta_text(secondary_intent);
-    assert!(meta.contains("-click to add a breakpoint"), "got: {meta}");
+    assert!(meta.contains("点击添加断点"), "得到: {meta}");
 
     // When only one feature is enabled (primary == secondary), a
     // modifier-click repeats the primary action, so the tooltip must not
@@ -31417,7 +31417,7 @@ fn test_gutter_button_tooltip_updates_intent_with_secondary_modifier(cx: &mut Te
         focus_handle: tooltip.focus_handle,
     };
     let meta = single_feature_tooltip.meta_text(GutterButtonIntent::SetBreakpoint);
-    assert_eq!(meta, "right-click for more options");
+    assert_eq!(meta, "右键点击查看更多选项");
 }
 
 #[gpui::test]
@@ -31605,7 +31605,7 @@ fn hover_over_gutter_row_zero(cx: &mut EditorTestContext) {
         editor
             .last_position_map
             .as_ref()
-            .expect("expected editor position map")
+            .expect("期望的编辑器位置映射")
             .gutter_hitbox
             .bounds
     });
@@ -31622,7 +31622,7 @@ async fn test_gutter_hover_button_shown_for_saved_buffer(cx: &mut TestAppContext
     cx.update_editor(|editor, _, _| {
         assert!(
             editor.gutter_hover_button.0.is_some(),
-            "expected gutter hover button to be armed for a saved buffer"
+            "期望已保存缓冲区的行号槽悬停按钮已启用"
         );
         assert!(!editor.gutter_hover_button.0.as_ref().unwrap().is_active);
     });
@@ -31636,7 +31636,7 @@ async fn test_gutter_hover_button_shown_for_saved_buffer(cx: &mut TestAppContext
                 .0
                 .as_ref()
                 .is_some_and(|indicator| indicator.is_active),
-            "expected gutter hover button to become active after the debounce"
+            "期望行号槽悬停按钮在防抖后变为激活状态"
         );
     });
 }
@@ -31649,11 +31649,11 @@ async fn test_gutter_hover_button_hidden_for_unsaved_buffer(cx: &mut TestAppCont
     cx.update_editor(|editor, _, _| {
         assert!(
             editor.gutter_hover_button.0.is_none(),
-            "expected no gutter hover button for an unsaved buffer"
+            "期望未保存缓冲区没有行号槽悬停按钮"
         );
         assert!(
             editor.gutter_hover_button.1.is_none(),
-            "expected no debounce task to be armed for an unsaved buffer"
+            "期望未保存缓冲区没有启用防抖任务"
         );
     });
 
@@ -31674,7 +31674,7 @@ fn right_click_gutter_row_zero(cx: &mut EditorTestContext) {
         editor
             .last_position_map
             .as_ref()
-            .expect("expected editor position map")
+            .expect("期望的编辑器位置映射")
             .gutter_hitbox
             .bounds
     });
@@ -31691,7 +31691,7 @@ async fn test_gutter_context_menu_shown_for_saved_buffer(cx: &mut TestAppContext
     cx.update_editor(|editor, _, _| {
         assert!(
             editor.mouse_context_menu.is_some(),
-            "expected gutter context menu to open for a saved buffer"
+            "期望已保存缓冲区的行号槽上下文菜单打开"
         );
     });
 }
@@ -31704,7 +31704,7 @@ async fn test_gutter_context_menu_hidden_for_unsaved_buffer(cx: &mut TestAppCont
     cx.update_editor(|editor, _, _| {
         assert!(
             editor.mouse_context_menu.is_none(),
-            "expected no gutter context menu for an unsaved buffer"
+            "期望未保存缓冲区没有行号槽上下文菜单"
         );
     });
 }
@@ -31792,7 +31792,7 @@ async fn test_gutter_context_menu_anchor_in_multibuffer(cx: &mut TestAppContext)
 
         assert_ne!(
             display_row.0, buffer_point.row,
-            "display row should be offset from the multibuffer row by excerpt headers"
+            "显示行应通过摘录标题与多缓冲区行偏移"
         );
 
         editor.set_gutter_context_menu(display_row, None, Default::default(), window, cx);
@@ -31804,12 +31804,12 @@ async fn test_gutter_context_menu_anchor_in_multibuffer(cx: &mut TestAppContext)
         let menu = editor.mouse_context_menu.as_ref().unwrap();
         let snapshot = editor.buffer().read(cx).snapshot(cx);
         let MenuPosition::PinnedToEditor { source, .. } = &menu.position else {
-            panic!("expected gutter context menu to be pinned to the editor");
+            panic!("期望行号槽上下文菜单固定到编辑器");
         };
 
         let (buffer_anchor, buffer_snapshot) = snapshot
             .anchor_to_buffer_anchor(*source)
-            .expect("menu anchor should resolve to a buffer");
+            .expect("菜单锚点应解析为缓冲区");
 
         assert_eq!(buffer_snapshot.remote_id(), buffer_b.read(cx).remote_id());
         assert_eq!(
@@ -32327,7 +32327,7 @@ impl BookmarkTestContext {
         if expected_rows.is_empty() {
             assert!(
                 !bookmarks.contains_key(&abs_path),
-                "Expected no bookmarks for {}",
+                "期望 {} 没有书签",
                 abs_path.display()
             );
         } else {
@@ -32361,7 +32361,7 @@ impl BookmarkTestContext {
     }
 
     fn select_rows(&mut self, rows: &[u32]) {
-        assert!(!rows.is_empty(), "expected at least one row to select");
+        assert!(!rows.is_empty(), "期望至少选择一行");
 
         self.editor
             .update_in(&mut self.cx, |editor: &mut Editor, window, cx| {
@@ -32407,7 +32407,7 @@ impl BookmarkTestContext {
         let prompt_blocks = self.prompt_blocks();
         let (block_row, block_height) = *prompt_blocks
             .get(block_index)
-            .expect("expected bookmark prompt block");
+            .expect("期望书签提示块");
 
         let click_position =
             self.editor
@@ -32416,7 +32416,7 @@ impl BookmarkTestContext {
                     let block_top = DisplayPoint::new(block_row, 0);
                     let relative_block_top = editor
                         .display_to_pixel_point(block_top, &snapshot, window, cx)
-                        .expect("expected prompt block to be visible");
+                        .expect("期望提示块可见");
                     let line_height = editor
                         .style(cx)
                         .text
@@ -32424,13 +32424,13 @@ impl BookmarkTestContext {
                     let editor_origin = editor
                         .last_position_map
                         .as_ref()
-                        .expect("expected editor position map")
+                        .expect("期望的编辑器位置映射")
                         .text_hitbox
                         .bounds
                         .origin;
                     let editor_center_x = editor
                         .last_bounds
-                        .expect("expected editor bounds")
+                        .expect("期望编辑器边界")
                         .center()
                         .x;
 
@@ -32448,7 +32448,7 @@ impl BookmarkTestContext {
 
         assert!(
             self.confirm_action_available(),
-            "expected bookmark prompt block to be focused"
+            "期望书签提示块获得焦点"
         );
     }
 
@@ -32594,18 +32594,18 @@ async fn test_bookmark_toggling_with_label_with_multiple_selections(cx: &mut Tes
     ctx.assert_prompt_block_count(3);
     ctx.assert_bookmarked_file_count(0);
 
-    ctx.confirm_bookmark_prompt_at_block_index(0, "first label");
+    ctx.confirm_bookmark_prompt_at_block_index(0, "第一个标签");
     ctx.assert_prompt_block_count(2);
-    ctx.confirm_bookmark_prompt_at_block_index(0, "second label");
+    ctx.confirm_bookmark_prompt_at_block_index(0, "第二个标签");
     ctx.assert_prompt_block_count(1);
-    ctx.confirm_bookmark_prompt_at_block_index(0, "third label");
+    ctx.confirm_bookmark_prompt_at_block_index(0, "第三个标签");
     ctx.assert_prompt_block_count(0);
 
     ctx.assert_bookmarked_file_count(1);
     ctx.assert_bookmark_labels(vec![
-        (0, "first label"),
-        (1, "second label"),
-        (2, "third label"),
+        (0, "第一个标签"),
+        (1, "第二个标签"),
+        (2, "第三个标签"),
     ]);
 
     ctx.select_rows(&[0, 1, 2, 3]);
@@ -32613,19 +32613,19 @@ async fn test_bookmark_toggling_with_label_with_multiple_selections(cx: &mut Tes
 
     ctx.assert_prompt_block_count(1);
     ctx.assert_bookmark_labels(vec![
-        (0, "first label"),
-        (1, "second label"),
-        (2, "third label"),
+        (0, "第一个标签"),
+        (1, "第二个标签"),
+        (2, "第三个标签"),
     ]);
 
-    ctx.confirm_bookmark_prompt_at_block_index(0, "fourth label");
+    ctx.confirm_bookmark_prompt_at_block_index(0, "第四个标签");
 
     ctx.assert_prompt_block_count(0);
     ctx.assert_bookmark_labels(vec![
-        (0, "first label"),
-        (1, "second label"),
-        (2, "third label"),
-        (3, "fourth label"),
+        (0, "第一个标签"),
+        (1, "第二个标签"),
+        (2, "第三个标签"),
+        (3, "第四个标签"),
     ]);
 
     ctx.select_rows(&[0, 1, 2, 3]);
@@ -32729,7 +32729,7 @@ async fn test_bookmark_not_available_in_single_line_editor(cx: &mut TestAppConte
     editor.update(cx, |editor, _cx| {
         assert!(
             editor.bookmark_store.is_none(),
-            "Single-line editors should not have a bookmark store"
+            "单行编辑器不应有书签存储"
         );
     });
 }
@@ -32757,8 +32757,8 @@ async fn test_edit_bookmark_updates_label_after_confirmation(cx: &mut TestAppCon
     let mut ctx =
         BookmarkTestContext::new("First line\nSecond line\nThird line\nFourth line", cx).await;
 
-    ctx.add_bookmark_with_label("old label");
-    ctx.assert_bookmark_labels(vec![(0, "old label")]);
+    ctx.add_bookmark_with_label("旧标签");
+    ctx.assert_bookmark_labels(vec![(0, "旧标签")]);
 
     ctx.editor
         .update_in(&mut ctx.cx, |editor: &mut Editor, window, cx| {
@@ -32767,10 +32767,10 @@ async fn test_edit_bookmark_updates_label_after_confirmation(cx: &mut TestAppCon
 
     assert!(ctx.confirm_action_available());
     ctx.cx.dispatch_action(SelectAll);
-    ctx.cx.simulate_input("new label");
+    ctx.cx.simulate_input("新标签");
     ctx.cx.dispatch_action(menu::Confirm);
 
-    ctx.assert_bookmark_labels(vec![(0, "new label")]);
+    ctx.assert_bookmark_labels(vec![(0, "新标签")]);
 }
 
 #[gpui::test]
@@ -32794,7 +32794,7 @@ async fn test_bookmark_navigation_lands_at_column_zero(cx: &mut TestAppContext) 
     let column_before_toggle = ctx.cursor_point().column;
     assert_eq!(
         column_before_toggle, 11,
-        "Cursor should be at the 11th column before toggling bookmark, got column {column_before_toggle}"
+        "切换书签前光标应位于第 11 列,实际位于第 {column_before_toggle} 列"
     );
 
     ctx.add_bookmark_with_label("");
@@ -32807,10 +32807,10 @@ async fn test_bookmark_navigation_lands_at_column_zero(cx: &mut TestAppContext) 
     ctx.go_to_next_bookmark();
 
     let cursor = ctx.cursor_point();
-    assert_eq!(cursor.row, 1, "Should navigate to the bookmarked row");
+    assert_eq!(cursor.row, 1, "应导航到书签行");
     assert_eq!(
         cursor.column, 0,
-        "Bookmark navigation should always land at column 0"
+        "书签导航应始终位于第 0 列"
     );
 }
 
@@ -32869,28 +32869,28 @@ async fn test_go_to_next_bookmark(cx: &mut TestAppContext) {
     assert_eq!(
         ctx.cursor_row(),
         2,
-        "First next-bookmark should go to row 2"
+        "第一个下一个书签应转到第 2 行"
     );
 
     ctx.go_to_next_bookmark();
     assert_eq!(
         ctx.cursor_row(),
         5,
-        "Second next-bookmark should go to row 5"
+        "第二个下一个书签应转到第 5 行"
     );
 
     ctx.go_to_next_bookmark();
     assert_eq!(
         ctx.cursor_row(),
         8,
-        "Third next-bookmark should go to row 8"
+        "第三个下一个书签应转到第 8 行"
     );
 
     ctx.go_to_next_bookmark();
     assert_eq!(
         ctx.cursor_row(),
         2,
-        "Next-bookmark should wrap around to row 2"
+        "下一个书签应循环到第 2 行"
     );
 }
 
@@ -32913,28 +32913,28 @@ async fn test_go_to_previous_bookmark(cx: &mut TestAppContext) {
     assert_eq!(
         ctx.cursor_row(),
         8,
-        "First prev-bookmark should go to row 8"
+        "第一个上一个书签应转到第 8 行"
     );
 
     ctx.go_to_previous_bookmark();
     assert_eq!(
         ctx.cursor_row(),
         5,
-        "Second prev-bookmark should go to row 5"
+        "第二个上一个书签应转到第 5 行"
     );
 
     ctx.go_to_previous_bookmark();
     assert_eq!(
         ctx.cursor_row(),
         2,
-        "Third prev-bookmark should go to row 2"
+        "第三个上一个书签应转到第 2 行"
     );
 
     ctx.go_to_previous_bookmark();
     assert_eq!(
         ctx.cursor_row(),
         8,
-        "Prev-bookmark should wrap around to row 8"
+        "上一个书签应循环到第 8 行"
     );
 }
 
@@ -32954,21 +32954,21 @@ async fn test_go_to_bookmark_when_cursor_on_bookmarked_line(cx: &mut TestAppCont
     assert_eq!(
         ctx.cursor_row(),
         7,
-        "Next from bookmarked row 3 should go to row 7"
+        "从书签行 3 开始的下一个应转到第 7 行"
     );
 
     ctx.go_to_previous_bookmark();
     assert_eq!(
         ctx.cursor_row(),
         3,
-        "Previous from bookmarked row 7 should go to row 3"
+        "从书签行 7 开始的上一个应转到第 3 行"
     );
 
     ctx.go_to_next_bookmark();
-    assert_eq!(ctx.cursor_row(), 7, "Next from row 3 should go to row 7");
+    assert_eq!(ctx.cursor_row(), 7, "从第 3 行开始的下一个应转到第 7 行");
 
     ctx.go_to_next_bookmark();
-    assert_eq!(ctx.cursor_row(), 3, "Next from row 7 should wrap to row 3");
+    assert_eq!(ctx.cursor_row(), 3, "从第 7 行开始的下一个应循环到第 3 行");
 }
 
 #[gpui::test]
@@ -32984,29 +32984,29 @@ async fn test_go_to_bookmark_with_out_of_order_bookmarks(cx: &mut TestAppContext
     ctx.move_to_row(0);
 
     ctx.go_to_next_bookmark();
-    assert_eq!(ctx.cursor_row(), 1, "First next should go to row 1");
+    assert_eq!(ctx.cursor_row(), 1, "第一个下一个应转到第 1 行");
 
     ctx.go_to_next_bookmark();
-    assert_eq!(ctx.cursor_row(), 5, "Second next should go to row 5");
+    assert_eq!(ctx.cursor_row(), 5, "第二个下一个应转到第 5 行");
 
     ctx.go_to_next_bookmark();
-    assert_eq!(ctx.cursor_row(), 8, "Third next should go to row 8");
+    assert_eq!(ctx.cursor_row(), 8, "第三个下一个应转到第 8 行");
 
     ctx.go_to_next_bookmark();
-    assert_eq!(ctx.cursor_row(), 1, "Fourth next should wrap to row 1");
+    assert_eq!(ctx.cursor_row(), 1, "第四个下一个应循环到第 1 行");
 
     ctx.go_to_previous_bookmark();
     assert_eq!(
         ctx.cursor_row(),
         8,
-        "Prev from row 1 should wrap around to row 8"
+        "从第 1 行开始的上一个应循环到第 8 行"
     );
 
     ctx.go_to_previous_bookmark();
-    assert_eq!(ctx.cursor_row(), 5, "Prev from row 8 should go to row 5");
+    assert_eq!(ctx.cursor_row(), 5, "从第 8 行开始的上一个应转到第 5 行");
 
     ctx.go_to_previous_bookmark();
-    assert_eq!(ctx.cursor_row(), 1, "Prev from row 5 should go to row 1");
+    assert_eq!(ctx.cursor_row(), 1, "从第 5 行开始的上一个应转到第 1 行");
 }
 
 #[gpui::test]
@@ -33053,9 +33053,9 @@ async fn test_rename_with_duplicate_edits(cx: &mut TestAppContext) {
         );
     let prepare_rename_task = cx
         .update_editor(|e, window, cx| e.rename(&Rename, window, cx))
-        .expect("Prepare rename was not started");
+        .expect("准备重命名未启动");
     prepare_rename_handler.next().await.unwrap();
-    prepare_rename_task.await.expect("Prepare rename failed");
+    prepare_rename_task.await.expect("准备重命名失败");
 
     let mut rename_handler =
         cx.set_request_handler::<lsp::request::Rename, _, _>(move |url, _, _| async move {
@@ -33079,9 +33079,9 @@ async fn test_rename_with_duplicate_edits(cx: &mut TestAppContext) {
         });
     let rename_task = cx
         .update_editor(|e, window, cx| e.confirm_rename(&ConfirmRename, window, cx))
-        .expect("Confirm rename was not started");
+        .expect("确认重命名未启动");
     rename_handler.next().await.unwrap();
-    rename_task.await.expect("Confirm rename failed");
+    rename_task.await.expect("确认重命名失败");
     cx.run_until_parked();
 
     // Despite two edits, only one is actually applied as those are identical
@@ -33145,9 +33145,9 @@ async fn test_rename_with_out_of_order_document_highlights(cx: &mut TestAppConte
         );
     let prepare_rename_task = cx
         .update_editor(|e, window, cx| e.rename(&Rename, window, cx))
-        .expect("Prepare rename was not started");
+        .expect("准备重命名未启动");
     prepare_rename_handler.next().await.unwrap();
-    prepare_rename_task.await.expect("Prepare rename failed");
+    prepare_rename_task.await.expect("准备重命名失败");
 
     cx.update_editor(|editor, window, cx| {
         editor
@@ -33182,9 +33182,9 @@ async fn test_rename_without_prepare(cx: &mut TestAppContext) {
     });
 
     cx.update_editor(|e, window, cx| e.rename(&Rename, window, cx))
-        .expect("Prepare rename was not started")
+        .expect("准备重命名未启动")
         .await
-        .expect("Prepare rename failed");
+        .expect("准备重命名失败");
 
     let mut rename_handler =
         cx.set_request_handler::<lsp::request::Rename, _, _>(move |url, _, _| async move {
@@ -33207,9 +33207,9 @@ async fn test_rename_without_prepare(cx: &mut TestAppContext) {
         });
     let rename_task = cx
         .update_editor(|e, window, cx| e.confirm_rename(&ConfirmRename, window, cx))
-        .expect("Confirm rename was not started");
+        .expect("确认重命名未启动");
     rename_handler.next().await.unwrap();
-    rename_task.await.expect("Confirm rename failed");
+    rename_task.await.expect("确认重命名失败");
     cx.run_until_parked();
 
     // Correct range is renamed, as `surrounding_word` is used to find it.
@@ -33347,7 +33347,7 @@ async fn test_apply_code_lens_actions_with_commands(cx: &mut gpui::TestAppContex
             .buffer()
             .read(cx)
             .as_singleton()
-            .expect("have opened a single file by path")
+            .expect("已通过路径打开单个文件")
     });
 
     let buffer_snapshot = buffer.update(cx, |buffer, _| buffer.snapshot());
@@ -33365,7 +33365,7 @@ async fn test_apply_code_lens_actions_with_commands(cx: &mut gpui::TestAppContex
                 lsp::CodeLens {
                     range: lsp::Range::default(),
                     command: Some(lsp::Command {
-                        title: "Code lens command".to_owned(),
+                        title: "Code Lens 命令".to_owned(),
                         command: "_the/command".to_owned(),
                         arguments: None,
                     }),
@@ -33383,7 +33383,7 @@ async fn test_apply_code_lens_actions_with_commands(cx: &mut gpui::TestAppContex
                         },
                     },
                     command: Some(lsp::Command {
-                        title: "Command not in range".to_owned(),
+                        title: "命令不在范围内".to_owned(),
                         command: "_the/command".to_owned(),
                         arguments: None,
                     }),
@@ -33398,7 +33398,7 @@ async fn test_apply_code_lens_actions_with_commands(cx: &mut gpui::TestAppContex
     assert_eq!(
         actions.len(),
         1,
-        "Should have only one valid action for the 0..0 range, got: {actions:#?}"
+        "对于 0..0 范围应只有一个有效操作,实际为: {actions:#?}"
     );
     let action = actions[0].clone();
     let apply = project.update(cx, |project, cx| {
@@ -33409,8 +33409,8 @@ async fn test_apply_code_lens_actions_with_commands(cx: &mut gpui::TestAppContex
     // edits, we must execute the given command.
     fake_server.set_request_handler::<lsp::request::CodeLensResolve, _, _>(
         |mut lens, _| async move {
-            let lens_command = lens.command.as_mut().expect("should have a command");
-            assert_eq!(lens_command.title, "Code lens command");
+            let lens_command = lens.command.as_mut().expect("应有一个命令");
+            assert_eq!(lens_command.title, "Code Lens 命令");
             lens_command.arguments = Some(vec![json!("the-argument")]);
             Ok(lens)
         },
@@ -33475,12 +33475,12 @@ async fn test_apply_code_lens_actions_with_commands(cx: &mut gpui::TestAppContex
         .await;
     assert_eq!(
         actions, actions_after_edits,
-        "For the same selection, same code lens actions should be returned"
+        "对于相同的选择,应返回相同的 Code Lens 操作"
     );
 
     let _responses =
         fake_server.set_request_handler::<lsp::request::CodeLensRequest, _, _>(|_, _| async move {
-            panic!("No more code lens requests are expected");
+            panic!("不应再有 Code Lens 请求");
         });
     editor.update_in(cx, |editor, window, cx| {
         editor.select_all(&SelectAll, window, cx);
@@ -33492,7 +33492,7 @@ async fn test_apply_code_lens_actions_with_commands(cx: &mut gpui::TestAppContex
         .await;
     assert_eq!(
         actions, new_actions,
-        "Code lens are queried for the same range and should get the same set back, but without additional LSP queries now"
+        "对相同范围查询 Code Lens 应返回相同集合,但现在不应有额外的 LSP 查询"
     );
 }
 
@@ -33556,7 +33556,7 @@ println!("5");
             assert_eq!(
                 editor.display_text(cx),
                 main_text,
-                "Original main.rs text on initial open",
+                "初始打开时的原始 main.rs 文本",
             );
             assert_eq!(
                 editor
@@ -33566,7 +33566,7 @@ println!("5");
                     .map(|s| s.range())
                     .collect::<Vec<_>>(),
                 vec![Point::zero()..Point::zero()],
-                "Default selections on initial open",
+                "初始打开时的默认选择",
             );
         })
     });
@@ -33599,7 +33599,7 @@ println!("5");
             assert_eq!(
                 editor.display_text(cx),
                 main_text,
-                "Original main.rs text on initial open in another panel",
+                "另一个面板中初始打开时的原始 main.rs 文本",
             );
             assert_eq!(
                 editor
@@ -33609,7 +33609,7 @@ println!("5");
                     .map(|s| s.range())
                     .collect::<Vec<_>>(),
                 vec![Point::zero()..Point::zero()],
-                "Default selections on initial open in another panel",
+                "另一个面板中初始打开时的默认选择",
             );
         })
     });
@@ -33648,10 +33648,10 @@ println!("5");
                 assert_eq!(
                     editor.display_text(cx),
                     lib_text,
-                    "Other file should be open and active",
+                    "其他文件应打开并处于活动状态",
                 );
             });
-        assert_eq!(pane.items().count(), 1, "No other editors should be open");
+        assert_eq!(pane.items().count(), 1, "不应打开其他编辑器");
     });
 
     let _other_editor_2 = workspace
@@ -33681,13 +33681,13 @@ println!("5");
             assert_eq!(
                 editor.display_text(cx),
                 lib_text,
-                "Other file should be open and active in another panel too",
+                "另一个面板中的其他文件也应打开并处于活动状态",
             );
         });
         assert_eq!(
             pane.items().count(),
             1,
-            "No other editors should be open in another pane",
+            "另一个窗格中不应打开其他编辑器",
         );
     });
 
@@ -33725,7 +33725,7 @@ println!("5");
             assert_eq!(
                 editor.display_text(cx),
                 main_text,
-                "Previous editor in the 1st panel had no extra text manipulations and should get none on reopen",
+                "第一个面板中的先前编辑器没有额外的文本操作,重新打开时也不应有",
             );
             assert_eq!(
                 editor
@@ -33735,7 +33735,7 @@ println!("5");
                     .map(|s| s.range())
                     .collect::<Vec<_>>(),
                 expected_ranges,
-                "Previous editor in the 1st panel had selections and should get them restored on reopen",
+                "第一个面板中的先前编辑器有选择,重新打开时应恢复这些选择",
             );
         })
     });
@@ -33751,7 +33751,7 @@ println!("5");
 println!("4");
 println!("5");
 }"#,
-                "Previous editor in the 2nd pane had folds and should restore those on reopen in the same pane",
+                "第二个窗格中的先前编辑器有折叠,在同一窗格中重新打开时应恢复这些折叠",
             );
             assert_eq!(
                 editor
@@ -33761,7 +33761,7 @@ println!("5");
                     .map(|s| s.range())
                     .collect::<Vec<_>>(),
                 vec![Point::zero()..Point::zero()],
-                "Previous editor in the 2nd pane had no selections changed hence should restore none",
+                "第二个窗格中的先前编辑器没有更改选择,因此不应恢复任何选择",
             );
         })
     });
@@ -33820,7 +33820,7 @@ println!("5");
             assert_eq!(
                 editor.display_text(cx),
                 main_text,
-                "Original main.rs text on initial open",
+                "初始打开时的原始 main.rs 文本",
             );
         })
     });
@@ -33879,7 +33879,7 @@ println!("5");
             assert_eq!(
                 editor.display_text(cx),
                 main_text,
-                "No folds: even after enabling the restoration, previous editor's data should not be saved to be used for the restoration"
+                "无折叠:即使启用了恢复,也不应保存先前编辑器的数据用于恢复"
             );
         })
     });
@@ -33966,7 +33966,7 @@ async fn test_hide_pending_blame_popover_when_modal_opens(cx: &mut TestAppContex
         multi_buffer
             .all_buffers_iter()
             .next()
-            .expect("Should have at least one buffer")
+            .expect("应至少有一个缓冲区")
             .read(cx)
             .remote_id()
     });
@@ -34168,7 +34168,7 @@ async fn test_html_linked_edits_on_completion(cx: &mut TestAppContext) {
     editor.update(cx, |editor, _| {
         assert!(
             editor.context_menu_visible(),
-            "Completion menu should be visible"
+            "补全菜单应可见"
         );
     });
     editor.update_in(cx, |editor, window, cx| {
@@ -34412,7 +34412,7 @@ async fn test_invisible_worktree_servers(cx: &mut TestAppContext) {
 
     assert_language_servers_count(
         0,
-        "No servers should be running before any file is open",
+        "在打开任何文件之前不应有服务器在运行",
         cx,
     );
     let pane = workspace.update(cx, |workspace, _| workspace.active_pane().clone());
@@ -34436,12 +34436,12 @@ async fn test_invisible_worktree_servers(cx: &mut TestAppContext) {
             assert_eq!(
                 editor.display_text(cx),
                 "fn main() {}",
-                "Original main.rs text on initial open",
+                "初始打开时的原始 main.rs 文本",
             );
         });
         assert_eq!(open_editor, main_editor);
     });
-    assert_language_servers_count(1, "First *.rs file starts a language server", cx);
+    assert_language_servers_count(1, "第一个 *.rs 文件启动语言服务器", cx);
 
     let external_editor = workspace
         .update_in(cx, |workspace, window, cx| {
@@ -34453,23 +34453,23 @@ async fn test_invisible_worktree_servers(cx: &mut TestAppContext) {
             )
         })
         .await
-        .expect("opening external file")
+        .expect("正在打开外部文件")
         .downcast::<Editor>()
-        .expect("downcasted external file's open element to editor");
+        .expect("已将外部文件的打开元素向下转换为编辑器");
     pane.update(cx, |pane, cx| {
         let open_editor = pane.active_item().unwrap().downcast::<Editor>().unwrap();
         open_editor.update(cx, |editor, cx| {
             assert_eq!(
                 editor.display_text(cx),
                 "pub mod external {}",
-                "External file is open now",
+                "外部文件现已打开",
             );
         });
         assert_eq!(open_editor, external_editor);
     });
     assert_language_servers_count(
         1,
-        "Second, external, *.rs file should join the existing server",
+        "第二个外部 *.rs 文件应加入现有服务器",
         cx,
     );
 
@@ -34488,13 +34488,13 @@ async fn test_invisible_worktree_servers(cx: &mut TestAppContext) {
             assert_eq!(
                 editor.display_text(cx),
                 "pub mod external {}",
-                "External file is open now",
+                "外部文件现已打开",
             );
         });
     });
     assert_language_servers_count(
         1,
-        "After closing and reopening (with navigate back) of an external file, no extra language servers should appear",
+        "关闭并重新打开(使用导航返回)外部文件后,不应出现额外的语言服务器",
         cx,
     );
 
@@ -34503,7 +34503,7 @@ async fn test_invisible_worktree_servers(cx: &mut TestAppContext) {
     });
     assert_language_servers_count(
         1,
-        "After reloading the worktree with local and external files opened, only one project should be started",
+        "在打开本地和外部文件的情况下重新加载工作树后,应只启动一个项目",
         cx,
     );
 }
@@ -35429,7 +35429,7 @@ fn assert_selection_ranges(marked_text: &str, editor: &mut Editor, cx: &mut Cont
             .iter()
             .map(|range| MultiBufferOffset(range.start)..MultiBufferOffset(range.end))
             .collect::<Vec<_>>(),
-        "Assert selections are {}",
+        "断言选择为 {}",
         marked_text
     );
 }
@@ -35461,7 +35461,7 @@ pub fn check_displayed_completions(expected: Vec<&'static str>, cx: &mut EditorL
                 .collect::<Vec<_>>();
             assert_eq!(entries, expected);
         } else {
-            panic!("Expected completions menu");
+            panic!("期望补全菜单");
         }
     });
 }
@@ -35512,9 +35512,9 @@ async fn test_mixed_completions_with_multi_word_snippet(cx: &mut TestAppContext)
                     vec![
                         Arc::new(project::snippet_provider::Snippet {
                             prefix: vec![
-                                "unlimited word count".to_string(),
-                                "unlimit word count".to_string(),
-                                "unlimited unknown".to_string(),
+                                "无限字数".to_string(),
+                                "无限字数".to_string(),
+                                "无限未知".to_string(),
                             ],
                             body: "this is many words".to_string(),
                             description: Some("description".to_string()),
@@ -35522,9 +35522,9 @@ async fn test_mixed_completions_with_multi_word_snippet(cx: &mut TestAppContext)
                         }),
                         Arc::new(project::snippet_provider::Snippet {
                             prefix: vec!["unsnip".to_string(), "@few".to_string()],
-                            body: "fewer words".to_string(),
-                            description: Some("alt description".to_string()),
-                            name: "other name".to_string(),
+                            body: "更少的词".to_string(),
+                            description: Some("替代描述".to_string()),
+                            name: "其他名称".to_string(),
                         }),
                         Arc::new(project::snippet_provider::Snippet {
                             prefix: vec!["ab aa".to_string()],
@@ -35558,8 +35558,8 @@ async fn test_mixed_completions_with_multi_word_snippet(cx: &mut TestAppContext)
     // when typing:
     //
     // when typing:
-    //  - if I type a symbol "open the completions with snippets only"
-    //  - if I type a word character "open the completions menu" (if it had been open snippets only, clear it out)
+    //  - if I type a symbol "仅打开包含代码片段的补全"
+    //  - if I type a word character "打开补全菜单" (if it had been open snippets only, clear it out)
     //
     // stuff we need:
     //  - filtering logic change?
@@ -35570,18 +35570,18 @@ async fn test_mixed_completions_with_multi_word_snippet(cx: &mut TestAppContext)
             "un",
             &[
                 "unsafe",
-                "unlimit word count",
-                "unlimited unknown",
-                "unlimited word count",
+                "无限字数",
+                "无限未知",
+                "无限字数",
                 "unsnip",
             ],
         ),
         (
             "u ",
             &[
-                "unlimit word count",
-                "unlimited unknown",
-                "unlimited word count",
+                "无限字数",
+                "无限未知",
+                "无限字数",
             ],
         ),
         ("u a", &["ab aa", "unsafe"]), // unsAfe
@@ -35589,28 +35589,28 @@ async fn test_mixed_completions_with_multi_word_snippet(cx: &mut TestAppContext)
             "u u",
             &[
                 "unsafe",
-                "unlimit word count",
-                "unlimited unknown", // ranked highest among snippets
-                "unlimited word count",
+                "无限字数",
+                "无限未知", // ranked highest among snippets
+                "无限字数",
                 "unsnip",
             ],
         ),
-        ("uw c", &["unlimit word count", "unlimited word count"]),
+        ("uw c", &["无限字数", "无限字数"]),
         (
             "u w",
             &[
-                "unlimit word count",
-                "unlimited word count",
-                "unlimited unknown",
+                "无限字数",
+                "无限字数",
+                "无限未知",
             ],
         ),
-        ("u w ", &["unlimit word count", "unlimited word count"]),
+        ("u w ", &["无限字数", "无限字数"]),
         (
             "u ",
             &[
-                "unlimit word count",
-                "unlimited unknown",
-                "unlimited word count",
+                "无限字数",
+                "无限未知",
+                "无限字数",
             ],
         ),
         ("wor", &[]),
@@ -35619,7 +35619,7 @@ async fn test_mixed_completions_with_multi_word_snippet(cx: &mut TestAppContext)
         ("afu", &[]),
         (
             "ue",
-            &["unsafe", "unlimited unknown", "unlimited word count"],
+            &["unsafe", "无限未知", "无限字数"],
         ),
         ("@", &["@few"]),
         ("@few", &["@few"]),
@@ -35650,7 +35650,7 @@ async fn test_mixed_completions_with_multi_word_snippet(cx: &mut TestAppContext)
         assert_eq!(
             get_completions(&mut cx),
             expected_completions,
-            "< actual / expected >, input = {input_to_simulate:?}",
+            "< 实际 / 期望 >, 输入 = {input_to_simulate:?}",
         );
     }
 }
@@ -35767,7 +35767,7 @@ pub fn handle_completion_request_with_insert_and_replace(
                 assert_eq!(params.text_document_position.text_document.uri, url.clone());
                 assert_eq!(
                     params.text_document_position.position, complete_from_position,
-                    "marker `|` position doesn't match",
+                    "标记 `|` 的位置不匹配",
                 );
                 Ok(Some(lsp::CompletionResponse::Array(
                     completions
@@ -35990,7 +35990,7 @@ async fn test_pulling_diagnostics(cx: &mut TestAppContext) {
                 .buffer()
                 .read(cx)
                 .as_singleton()
-                .expect("created a singleton buffer")
+                .expect("已创建单例缓冲区")
                 .read(cx)
                 .remote_id();
             let buffer_result_id = project
@@ -36007,12 +36007,12 @@ async fn test_pulling_diagnostics(cx: &mut TestAppContext) {
     assert_eq!(
         diagnostic_requests.load(atomic::Ordering::Acquire),
         1,
-        "Opening file should trigger diagnostic request"
+        "打开文件应触发诊断请求"
     );
     first_request
         .next()
         .await
-        .expect("should have sent the first diagnostics pull request");
+        .expect("应已发送第一个诊断拉取请求");
     ensure_result_id(Some(SharedString::new_static("1")), cx);
 
     // Editing should trigger diagnostics
@@ -36024,7 +36024,7 @@ async fn test_pulling_diagnostics(cx: &mut TestAppContext) {
     assert_eq!(
         diagnostic_requests.load(atomic::Ordering::Acquire),
         2,
-        "Editing should trigger diagnostic request"
+        "编辑应触发诊断请求"
     );
     ensure_result_id(Some(SharedString::new_static("2")), cx);
 
@@ -36039,7 +36039,7 @@ async fn test_pulling_diagnostics(cx: &mut TestAppContext) {
     assert_eq!(
         diagnostic_requests.load(atomic::Ordering::Acquire),
         2,
-        "Cursor movement should not trigger diagnostic request"
+        "光标移动不应触发诊断请求"
     );
     ensure_result_id(Some(SharedString::new_static("2")), cx);
     // Multiple rapid edits should be debounced
@@ -36054,7 +36054,7 @@ async fn test_pulling_diagnostics(cx: &mut TestAppContext) {
     let final_requests = diagnostic_requests.load(atomic::Ordering::Acquire);
     assert!(
         final_requests <= 4,
-        "Multiple rapid edits should be debounced (got {final_requests} requests)",
+        "多次快速编辑应进行防抖(收到 {final_requests} 个请求)",
     );
     ensure_result_id(Some(SharedString::new(final_requests.to_string())), cx);
 }
@@ -36088,7 +36088,7 @@ async fn test_add_selection_after_moving_with_multiple_cursors(cx: &mut TestAppC
     let initial_count = cx.update_editor(|editor, _, _| editor.selections.count());
     assert_eq!(
         initial_count, 3,
-        "Should have 3 cursors after adding 2 below"
+        "在下方添加 2 个光标后应有 3 个光标"
     );
 
     // Move down one line
@@ -36105,7 +36105,7 @@ async fn test_add_selection_after_moving_with_multiple_cursors(cx: &mut TestAppC
     let final_count = cx.update_editor(|editor, _, _| editor.selections.count());
     assert_eq!(
         final_count, 4,
-        "Should have 4 cursors after moving and adding another"
+        "移动并添加另一个光标后应有 4 个光标"
     );
 }
 
@@ -36228,9 +36228,9 @@ async fn test_insert_snippet(cx: &mut TestAppContext) {
             project.snippets().update(cx, |snippets, _cx| {
                 let snippet = project::snippet_provider::Snippet {
                     prefix: vec![], // no prefix needed!
-                    body: "an Unspecified".to_string(),
-                    description: Some("shhhh it's a secret".to_string()),
-                    name: "super secret snippet".to_string(),
+                    body: "一个未指定".to_string(),
+                    description: Some("嘘,这是个秘密".to_string()),
+                    name: "超级秘密代码片段".to_string(),
                 };
                 snippets.add_snippet_for_test(
                     None,
@@ -36240,9 +36240,9 @@ async fn test_insert_snippet(cx: &mut TestAppContext) {
 
                 let snippet = project::snippet_provider::Snippet {
                     prefix: vec![], // no prefix needed!
-                    body: " Location".to_string(),
-                    description: Some("the word 'location'".to_string()),
-                    name: "location word".to_string(),
+                    body: " 位置".to_string(),
+                    description: Some("单词 'location'".to_string()),
+                    name: "location 单词".to_string(),
                 };
                 snippets.add_snippet_for_test(
                     Some("Markdown".to_string()),
@@ -36253,13 +36253,13 @@ async fn test_insert_snippet(cx: &mut TestAppContext) {
         })
     });
 
-    cx.set_state(indoc!(r#"First cursor at ˇ and second cursor at ˇ"#));
+    cx.set_state(indoc!(r#"第一个光标位于 ˇ,第二个光标位于 ˇ"#));
 
     cx.update_editor(|editor, window, cx| {
         editor.insert_snippet_at_selections(
             &InsertSnippet {
                 language: None,
-                name: Some("super secret snippet".to_string()),
+                name: Some("超级秘密代码片段".to_string()),
                 snippet: None,
             },
             window,
@@ -36271,7 +36271,7 @@ async fn test_insert_snippet(cx: &mut TestAppContext) {
         editor.insert_snippet_at_selections(
             &InsertSnippet {
                 language: Some("Markdown".to_string()),
-                name: Some("location word".to_string()),
+                name: Some("location 单词".to_string()),
                 snippet: None,
             },
             window,
@@ -36282,7 +36282,7 @@ async fn test_insert_snippet(cx: &mut TestAppContext) {
             &InsertSnippet {
                 language: None,
                 name: None,
-                snippet: Some("$0 after".to_string()),
+                snippet: Some("$0 之后".to_string()),
             },
             window,
             cx,
@@ -36290,7 +36290,7 @@ async fn test_insert_snippet(cx: &mut TestAppContext) {
     });
 
     cx.assert_editor_state(
-        r#"First cursor at an Unspecified Locationˇ after and second cursor at an Unspecified Locationˇ after"#,
+        r#"第一个光标位于未指定位置ˇ之后,第二个光标位于未指定位置ˇ之后"#,
     );
 }
 
@@ -36395,7 +36395,7 @@ async fn test_inlay_hints_request_timeout(cx: &mut TestAppContext) {
         .update(cx, |editor, _window, cx| {
             assert!(
                 cached_hint_labels(editor, cx).is_empty(),
-                "First request should time out, no hints cached"
+                "第一个请求应超时,不缓存提示"
             );
         })
         .unwrap();
@@ -36412,7 +36412,7 @@ async fn test_inlay_hints_request_timeout(cx: &mut TestAppContext) {
         .update(cx, |editor, _window, cx| {
             assert!(
                 cached_hint_labels(editor, cx).is_empty(),
-                "Second request should also time out with BASE_TIMEOUT, no hints cached"
+                "第二个请求也应使用 BASE_TIMEOUT 超时,不缓存提示"
             );
         })
         .unwrap();
@@ -36443,7 +36443,7 @@ async fn test_inlay_hints_request_timeout(cx: &mut TestAppContext) {
             assert_eq!(
                 vec!["1".to_string()],
                 cached_hint_labels(editor, cx),
-                "With extended timeout (BASE * 4), hints should arrive successfully"
+                "使用扩展超时(BASE * 4)时,提示应成功到达"
             );
             assert_eq!(vec!["1".to_string()], visible_hint_labels(editor, cx));
         })
@@ -36638,7 +36638,7 @@ async fn test_select_next_prev_syntax_node(cx: &mut TestAppContext) {
         let initial_selection = editor
             .selections
             .display_ranges(&editor.display_snapshot(cx));
-        assert_eq!(initial_selection.len(), 1, "Should have one selection");
+        assert_eq!(initial_selection.len(), 1, "应有一个选区");
 
         // Test select next sibling - should move up levels to find the next sibling
         // Since "let a = 1;" has no siblings in the if block, it should move up
@@ -36652,11 +36652,11 @@ async fn test_select_next_prev_syntax_node(cx: &mut TestAppContext) {
         assert_eq!(
             next_selection.len(),
             1,
-            "Should have one selection after next"
+            "下一个之后应有一个选区"
         );
         assert_ne!(
             next_selection[0], initial_selection[0],
-            "Next sibling selection should be different"
+            "下一个兄弟选区应不同"
         );
 
         // Test hierarchical navigation by going to the end of the current function
@@ -36676,7 +36676,7 @@ async fn test_select_next_prev_syntax_node(cx: &mut TestAppContext) {
         assert_eq!(
             function_next_selection.len(),
             1,
-            "Should have one selection after function next"
+            "函数下一个之后应有一个选区"
         );
 
         // Test select previous sibling navigation
@@ -36689,11 +36689,11 @@ async fn test_select_next_prev_syntax_node(cx: &mut TestAppContext) {
         assert_eq!(
             prev_selection.len(),
             1,
-            "Should have one selection after prev"
+            "上一个之后应有一个选区"
         );
         assert_ne!(
             prev_selection[0], function_next_selection[0],
-            "Previous sibling selection should be different from next"
+            "上一个兄弟选区应与下一个不同"
         );
     });
 }
@@ -36877,7 +36877,7 @@ async fn test_markdown_indents(cx: &mut gpui::TestAppContext) {
 
     // Case 3: Test adding content to continued list item
     cx.update_editor(|editor, window, cx| {
-        editor.handle_input("Item 2.c", window, cx);
+        editor.handle_input("项目 2.c", window, cx);
     });
     cx.run_until_parked();
     cx.assert_editor_state(indoc! {"
@@ -36911,7 +36911,7 @@ async fn test_markdown_indents(cx: &mut gpui::TestAppContext) {
 
     // Case 5: Adding content to continued ordered list item
     cx.update_editor(|editor, window, cx| {
-        editor.handle_input("Item 2.c", window, cx);
+        editor.handle_input("项目 2.c", window, cx);
     });
     cx.run_until_parked();
     cx.assert_editor_state(indoc! {"
@@ -37009,14 +37009,14 @@ async fn test_paste_url_from_other_app_replaces_existing_url_without_creating_ma
 
     let mut cx = EditorTestContext::new(cx).await;
     cx.update_buffer(|buffer, cx| buffer.set_language(Some(markdown_language), cx));
-    cx.set_state("Please visit zed's homepage: «https://www.apple.comˇ»");
+    cx.set_state("请访问 zed 的主页:«https://www.apple.comˇ»");
 
     cx.update_editor(|editor, window, cx| {
         cx.write_to_clipboard(ClipboardItem::new_string(url.to_string()));
         editor.paste(&Paste, window, cx);
     });
 
-    cx.assert_editor_state(&format!("Please visit zed's homepage: {url}ˇ"));
+    cx.assert_editor_state(&format!("请访问 zed 的主页:{url}ˇ"));
 }
 
 #[gpui::test]
@@ -37025,7 +37025,7 @@ async fn test_paste_plain_text_from_other_app_replaces_selection_without_creatin
 ) {
     init_test(cx, |_| {});
 
-    let text = "Awesome";
+    let text = "太棒了";
 
     let markdown_language = Arc::new(Language::new(
         LanguageConfig {
@@ -37055,7 +37055,7 @@ async fn test_paste_text_with_scheme_like_prefix_replaces_selection_without_crea
 
     // `url::Url::parse` accepts this as a URL with the scheme `editor`, but it
     // should not be treated as one when pasting.
-    let text = "editor: Fix double-click bracket selection for large spans";
+    let text = "编辑器: 修复大跨度双击括号选择";
 
     let markdown_language = Arc::new(Language::new(
         LanguageConfig {
@@ -37067,7 +37067,7 @@ async fn test_paste_text_with_scheme_like_prefix_replaces_selection_without_crea
 
     let mut cx = EditorTestContext::new(cx).await;
     cx.update_buffer(|buffer, cx| buffer.set_language(Some(markdown_language), cx));
-    cx.set_state("«(feat on git-ui-add-info-exclude-to-context-menus) Fmtˇ»");
+    cx.set_state("«(feat on git-ui-add-info-exclude-to-上下文-menus) Fmtˇ»");
 
     cx.update_editor(|editor, window, cx| {
         cx.write_to_clipboard(ClipboardItem::new_string(text.to_string()));
@@ -37126,8 +37126,8 @@ async fn test_paste_url_from_other_app_creates_markdown_link_selectively_in_mult
     let (editor, cx) = cx.add_window_view(|window, cx| {
         let multi_buffer = MultiBuffer::build_multi(
             [
-                ("this will embed -> link", vec![Point::row_range(0..1)]),
-                ("this will replace -> link", vec![Point::row_range(0..1)]),
+                ("这将嵌入 -> 链接", vec![Point::row_range(0..1)]),
+                ("这将替换 -> 链接", vec![Point::row_range(0..1)]),
             ],
             cx,
         );
@@ -37211,7 +37211,7 @@ async fn test_paste_image_in_markdown_saves_file_and_inserts_markdown(cx: &mut T
     let buffer_text = cx.buffer_text();
     assert!(
         buffer_text.starts_with("![](image") && buffer_text.ends_with(".png)"),
-        "expected markdown image syntax, got: {buffer_text:?}"
+        "应为 markdown 图片语法,实际为:{buffer_text:?}"
     );
 
     // Cursor should land inside [] so the user can type alt text immediately.
@@ -37223,7 +37223,7 @@ async fn test_paste_image_in_markdown_saves_file_and_inserts_markdown(cx: &mut T
     assert_eq!(
         fs.read_file_sync(format!("/test/{filename}")).unwrap(),
         png_bytes,
-        "image file contents should match clipboard bytes"
+        "图片文件内容应与剪贴板字节匹配"
     );
 }
 
@@ -37283,7 +37283,7 @@ async fn test_paste_multiple_images_in_markdown_increments_filename(cx: &mut Tes
     let text_after_first = cx.buffer_text();
     assert_eq!(
         text_after_first, "![](image.png)",
-        "first paste should produce image.png"
+        "第一次粘贴应生成 image.png"
     );
     assert_eq!(fs.read_file_sync("/test/image.png").unwrap(), png_bytes_1);
 
@@ -37296,7 +37296,7 @@ async fn test_paste_multiple_images_in_markdown_increments_filename(cx: &mut Tes
     let text_after_second = cx.buffer_text();
     assert!(
         text_after_second.contains("![](image_1.png)"),
-        "second paste should produce image_1.png, got: {text_after_second:?}"
+        "第二次粘贴应生成 image_1.png,实际为:{text_after_second:?}"
     );
     assert_eq!(fs.read_file_sync("/test/image_1.png").unwrap(), png_bytes_2);
 
@@ -37309,7 +37309,7 @@ async fn test_paste_multiple_images_in_markdown_increments_filename(cx: &mut Tes
     let text_after_third = cx.buffer_text();
     assert!(
         text_after_third.contains("![](image_2.png)"),
-        "third paste should produce image_2.png, got: {text_after_third:?}"
+        "第三次粘贴应生成 image_2.png,实际为:{text_after_third:?}"
     );
     assert_eq!(fs.read_file_sync("/test/image_2.png").unwrap(), png_bytes_3);
 }
@@ -37422,7 +37422,7 @@ async fn test_paste_image_in_markdown_single_file_worktree_falls_through(cx: &mu
     cx.assert_editor_state("ˇ");
     assert!(
         fs.read_file_sync("/root/image.png").is_err(),
-        "no image file should be created for a single-file worktree"
+        "单文件工作树不应创建图片文件"
     );
 }
 
@@ -37435,7 +37435,7 @@ async fn test_race_in_multibuffer_save(cx: &mut TestAppContext) {
         path!("/project"),
         json!({
             "first.rs": "# First Document\nSome content here.",
-            "second.rs": "Plain text content for second file.",
+            "second.rs": "第二个文件的纯文本内容。",
         }),
     )
     .await;
@@ -37456,13 +37456,13 @@ async fn test_race_in_multibuffer_save(cx: &mut TestAppContext) {
 
     let buffer1 = project
         .update(cx, |project, cx| {
-            project.open_local_buffer(PathBuf::from(path!("/project/first.rs")), cx)
+            project.open_local_buffer(PathBuf::from(path!("/项目/first.rs")), cx)
         })
         .await
         .unwrap();
     let buffer2 = project
         .update(cx, |project, cx| {
-            project.open_local_buffer(PathBuf::from(path!("/project/second.rs")), cx)
+            project.open_local_buffer(PathBuf::from(path!("/项目/second.rs")), cx)
         })
         .await
         .unwrap();
@@ -37498,7 +37498,7 @@ async fn test_race_in_multibuffer_save(cx: &mut TestAppContext) {
 
     let fake_language_server = fake_servers.next().await.unwrap();
 
-    buffer1.update(cx, |buffer, cx| buffer.edit([(0..0, "hello!")], None, cx));
+    buffer1.update(cx, |buffer, cx| buffer.edit([(0..0, "你好!")], None, cx));
 
     let save = editor.update_in(cx, |editor, window, cx| {
         assert!(editor.is_dirty(cx));
@@ -37530,7 +37530,7 @@ async fn test_race_in_multibuffer_save(cx: &mut TestAppContext) {
 
     start_edit_rx.await.unwrap();
     buffer2
-        .update(cx, |buffer, cx| buffer.edit([(0..0, "world!")], None, cx))
+        .update(cx, |buffer, cx| buffer.edit([(0..0, "世界!")], None, cx))
         .unwrap();
 
     done_edit_tx.send(()).unwrap();
@@ -37561,7 +37561,7 @@ fn test_duplicate_line_up_on_last_line_without_newline(cx: &mut TestAppContext) 
             assert_eq!(
                 editor.display_text(cx),
                 "line1\nline2\nline2",
-                "Duplicating last line upward should create duplicate above, not on same line"
+                "向上复制最后一行应在上方创建副本,而不是在同一行"
             );
 
             assert_eq!(
@@ -37569,7 +37569,7 @@ fn test_duplicate_line_up_on_last_line_without_newline(cx: &mut TestAppContext) 
                     .selections
                     .display_ranges(&editor.display_snapshot(cx)),
                 vec![DisplayPoint::new(DisplayRow(0), 0)..DisplayPoint::new(DisplayRow(0), 0)],
-                "Selection should move to the duplicated line"
+                "选区应移动到复制的行"
             );
         })
         .unwrap();
@@ -37592,7 +37592,7 @@ async fn test_copy_line_without_trailing_newline(cx: &mut TestAppContext) {
     assert_eq!(
         clipboard_text,
         Some("line2\n".to_string()),
-        "Copying a line without trailing newline should include a newline"
+        "复制没有尾随换行符的行应包含换行符"
     );
 
     cx.set_state("line1\nˇ");
@@ -37619,7 +37619,7 @@ async fn test_multi_selection_copy_with_newline_between_copied_lines(cx: &mut Te
     assert_eq!(
         clipboard_text,
         Some("line1\nline2\nline3\n".to_string()),
-        "Copying multiple lines should include a single newline between lines"
+        "复制多行应在行之间包含单个换行符"
     );
 
     cx.set_state("lineA\nˇ");
@@ -37646,7 +37646,7 @@ async fn test_multi_selection_cut_with_newline_between_copied_lines(cx: &mut Tes
     assert_eq!(
         clipboard_text,
         Some("line1\nline2\nline3\n".to_string()),
-        "Copying multiple lines should include a single newline between lines"
+        "复制多行应在行之间包含单个换行符"
     );
 
     cx.set_state("lineA\nˇ");
@@ -37806,7 +37806,7 @@ async fn test_sticky_scroll_with_decoration_prefix_in_item(cx: &mut TestAppConte
                 name: (_) @name) @item
             "#,
         )
-        .expect("TypeScript outline query"),
+        .expect("TypeScript 大纲查询"),
     );
 
     let buffer = indoc! {"
@@ -38992,7 +38992,7 @@ async fn test_find_references_single_case(cx: &mut TestAppContext) {
 
     let navigated = cx
         .update_editor(|editor, window, cx| editor.find_all_references(&action, window, cx))
-        .expect("should have spawned a task")
+        .expect("应已生成一个任务")
         .await
         .unwrap();
 
@@ -39068,7 +39068,7 @@ async fn test_definition_locations_of_kind_excludes_self_link(cx: &mut TestAppCo
         .update_editor(|editor, _window, cx| {
             editor.definition_locations_of_kind(GotoDefinitionKind::Symbol, cx)
         })
-        .expect("definition query should spawn a task")
+        .expect("定义查询应生成一个任务")
         .await
         .unwrap();
 
@@ -39700,7 +39700,7 @@ async fn test_local_worktree_trust(cx: &mut TestAppContext) {
         path!("/project"),
         json!({
             ".zed": {
-                "settings.json": r#"{"languages":{"Rust":{"language_servers":["override-rust-analyzer"]}}}"#
+                "设置.json": r#"{"languages":{"Rust":{"language_servers":["override-rust-analyzer"]}}}"#
             },
             "main.rs": "fn main() {}"
         }),
@@ -39757,17 +39757,17 @@ async fn test_local_worktree_trust(cx: &mut TestAppContext) {
             .worktrees(cx)
             .next()
             .map(|wt| wt.read(cx).id())
-            .expect("should have a worktree")
+            .expect("应有一个工作树")
     });
     let worktree_store = project.read_with(cx, |project, _| project.worktree_store());
 
     let trusted_worktrees =
-        cx.update(|cx| TrustedWorktrees::try_get_global(cx).expect("trust global should exist"));
+        cx.update(|cx| TrustedWorktrees::try_get_global(cx).expect("全局信任应存在"));
 
     let can_trust = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_id, cx)
     });
-    assert!(!can_trust, "worktree should be restricted initially");
+    assert!(!can_trust, "工作树最初应受限");
 
     let buffer_before_approval = project
         .update(cx, |project, cx| {
@@ -39798,7 +39798,7 @@ async fn test_local_worktree_trust(cx: &mut TestAppContext) {
             [language::language_settings::ConfiguredLanguageServer::new(
                 "..."
             )],
-            "local .zed/settings.json must not apply before trust approval"
+            "本地 .zed/设置.json 在信任批准前不得生效"
         )
     });
 
@@ -39811,7 +39811,7 @@ async fn test_local_worktree_trust(cx: &mut TestAppContext) {
     assert_eq!(
         lsp_inlay_hint_request_count.load(atomic::Ordering::Acquire),
         0,
-        "inlay hints must not be queried before trust approval"
+        "在信任批准前不得查询内联提示"
     );
 
     trusted_worktrees.update(cx, |store, cx| {
@@ -39833,7 +39833,7 @@ async fn test_local_worktree_trust(cx: &mut TestAppContext) {
             [language::language_settings::ConfiguredLanguageServer::new(
                 "override-rust-analyzer"
             )],
-            "local .zed/settings.json should apply after trust approval"
+            "本地 .zed/设置.json 应在信任批准后生效"
         )
     });
     let _fake_language_server = fake_language_server.await.unwrap();
@@ -39845,13 +39845,13 @@ async fn test_local_worktree_trust(cx: &mut TestAppContext) {
         .advance_clock(std::time::Duration::from_secs(1));
     assert!(
         lsp_inlay_hint_request_count.load(atomic::Ordering::Acquire) > 0,
-        "inlay hints should be queried after trust approval"
+        "应在信任批准后查询内联提示"
     );
 
     let can_trust_after = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_id, cx)
     });
-    assert!(can_trust_after, "worktree should be trusted after trust()");
+    assert!(can_trust_after, "工作树应在 trust() 后被信任");
 }
 
 #[gpui::test]
@@ -39927,7 +39927,7 @@ async fn test_diff_review_indicator_created_on_gutter_hover(cx: &mut TestAppCont
     editor.update(cx, |editor, _cx| {
         assert!(
             editor.gutter_diff_review_indicator.0.is_none(),
-            "Indicator should be None initially"
+            "指示器最初应为 None"
         );
     });
 }
@@ -39979,7 +39979,7 @@ async fn test_diff_review_button_hidden_when_ai_disabled(cx: &mut TestAppContext
     cx.read(|cx| {
         assert!(
             project::DisableAiSettings::get_global(cx).disable_ai,
-            "AI should be disabled"
+            "AI 应被禁用"
         );
     });
 
@@ -39988,7 +39988,7 @@ async fn test_diff_review_button_hidden_when_ai_disabled(cx: &mut TestAppContext
     editor.update(cx, |editor, _cx| {
         assert!(
             editor.gutter_diff_review_indicator.0.is_none(),
-            "Indicator should be None when AI is disabled"
+            "AI 禁用时指示器应为 None"
         );
     });
 }
@@ -40040,7 +40040,7 @@ async fn test_diff_review_button_shown_when_ai_enabled(cx: &mut TestAppContext) 
     cx.read(|cx| {
         assert!(
             !project::DisableAiSettings::get_global(cx).disable_ai,
-            "AI should be enabled"
+            "AI 应被启用"
         );
     });
 
@@ -40048,7 +40048,7 @@ async fn test_diff_review_button_shown_when_ai_enabled(cx: &mut TestAppContext) 
     editor.update(cx, |editor, _cx| {
         assert!(
             editor.show_diff_review_button(),
-            "show_diff_review_button should be true"
+            "show_diff_review_button 应为 true"
         );
     });
 }
@@ -40098,7 +40098,7 @@ fn test_review_comment_add_to_hunk(cx: &mut TestAppContext) {
     _ = editor.update(cx, |editor: &mut Editor, _window, cx| {
         let key = test_hunk_key("");
 
-        let id = add_test_comment(editor, key.clone(), "Test comment", cx);
+        let id = add_test_comment(editor, key.clone(), "测试评论", cx);
 
         let snapshot = editor.buffer().read(cx).snapshot(cx);
         assert_eq!(editor.total_review_comment_count(), 1);
@@ -40106,7 +40106,7 @@ fn test_review_comment_add_to_hunk(cx: &mut TestAppContext) {
 
         let comments = editor.comments_for_hunk(&key, &snapshot);
         assert_eq!(comments.len(), 1);
-        assert_eq!(comments[0].comment, "Test comment");
+        assert_eq!(comments[0].comment, "测试评论");
         assert_eq!(comments[0].id, id);
     });
 }
@@ -40124,8 +40124,8 @@ fn test_review_comments_are_per_hunk(cx: &mut TestAppContext) {
         let key1 = test_hunk_key_with_anchor("file1.rs", anchor1);
         let key2 = test_hunk_key_with_anchor("file2.rs", anchor2);
 
-        add_test_comment(editor, key1.clone(), "Comment for file1", cx);
-        add_test_comment(editor, key2.clone(), "Comment for file2", cx);
+        add_test_comment(editor, key1.clone(), "file1 的评论", cx);
+        add_test_comment(editor, key2.clone(), "file2 的评论", cx);
 
         let snapshot = editor.buffer().read(cx).snapshot(cx);
         assert_eq!(editor.total_review_comment_count(), 2);
@@ -40134,11 +40134,11 @@ fn test_review_comments_are_per_hunk(cx: &mut TestAppContext) {
 
         assert_eq!(
             editor.comments_for_hunk(&key1, &snapshot)[0].comment,
-            "Comment for file1"
+            "file1 的评论"
         );
         assert_eq!(
             editor.comments_for_hunk(&key2, &snapshot)[0].comment,
-            "Comment for file2"
+            "file2 的评论"
         );
     });
 }
@@ -40152,7 +40152,7 @@ fn test_review_comment_remove(cx: &mut TestAppContext) {
     _ = editor.update(cx, |editor: &mut Editor, _window, cx| {
         let key = test_hunk_key("");
 
-        let id = add_test_comment(editor, key, "To be removed", cx);
+        let id = add_test_comment(editor, key, "将被移除", cx);
 
         assert_eq!(editor.total_review_comment_count(), 1);
 
@@ -40175,14 +40175,14 @@ fn test_review_comment_update(cx: &mut TestAppContext) {
     _ = editor.update(cx, |editor: &mut Editor, _window, cx| {
         let key = test_hunk_key("");
 
-        let id = add_test_comment(editor, key.clone(), "Original text", cx);
+        let id = add_test_comment(editor, key.clone(), "原始文本", cx);
 
-        let updated = editor.update_review_comment(id, "Updated text".to_string(), cx);
+        let updated = editor.update_review_comment(id, "更新后的文本".to_string(), cx);
         assert!(updated);
 
         let snapshot = editor.buffer().read(cx).snapshot(cx);
         let comments = editor.comments_for_hunk(&key, &snapshot);
-        assert_eq!(comments[0].comment, "Updated text");
+        assert_eq!(comments[0].comment, "更新后的文本");
         assert!(!comments[0].is_editing); // Should clear editing flag
     });
 }
@@ -40200,9 +40200,9 @@ fn test_review_comment_take_all(cx: &mut TestAppContext) {
         let key1 = test_hunk_key_with_anchor("file1.rs", anchor1);
         let key2 = test_hunk_key_with_anchor("file2.rs", anchor2);
 
-        let id1 = add_test_comment(editor, key1.clone(), "Comment 1", cx);
-        let id2 = add_test_comment(editor, key1.clone(), "Comment 2", cx);
-        let id3 = add_test_comment(editor, key2.clone(), "Comment 3", cx);
+        let id1 = add_test_comment(editor, key1.clone(), "评论 1", cx);
+        let id2 = add_test_comment(editor, key1.clone(), "评论 2", cx);
+        let id3 = add_test_comment(editor, key2.clone(), "评论 3", cx);
 
         // IDs should be sequential starting from 0
         assert_eq!(id1, 0);
@@ -40228,11 +40228,11 @@ fn test_review_comment_take_all(cx: &mut TestAppContext) {
 
         // After taking all comments, ID counter should reset
         // New comments should get IDs starting from 0 again
-        let new_id1 = add_test_comment(editor, key1, "New Comment 1", cx);
-        let new_id2 = add_test_comment(editor, key2, "New Comment 2", cx);
+        let new_id1 = add_test_comment(editor, key1, "新评论 1", cx);
+        let new_id2 = add_test_comment(editor, key2, "新评论 2", cx);
 
-        assert_eq!(new_id1, 0, "ID counter should reset after take_all");
-        assert_eq!(new_id2, 1, "IDs should be sequential after reset");
+        assert_eq!(new_id1, 0, "ID 计数器应在 take_all 后重置");
+        assert_eq!(new_id2, 1, "重置后 ID 应为连续的");
     });
 }
 
@@ -40367,7 +40367,7 @@ fn test_diff_review_inline_edit_flow(cx: &mut TestAppContext) {
     let comment_id = editor
         .update(cx, |editor, _window, cx| {
             let key = test_hunk_key("");
-            add_test_comment(editor, key, "Original comment", cx)
+            add_test_comment(editor, key, "原始评论", cx)
         })
         .unwrap();
 
@@ -40393,7 +40393,7 @@ fn test_diff_review_inline_edit_flow(cx: &mut TestAppContext) {
     editor
         .update(cx, |editor, _window, cx| {
             let updated =
-                editor.update_review_comment(comment_id, "Updated comment".to_string(), cx);
+                editor.update_review_comment(comment_id, "更新后的评论".to_string(), cx);
             assert!(updated);
         })
         .unwrap();
@@ -40404,7 +40404,7 @@ fn test_diff_review_inline_edit_flow(cx: &mut TestAppContext) {
             let key = test_hunk_key("");
             let snapshot = editor.buffer().read(cx).snapshot(cx);
             let comments = editor.comments_for_hunk(&key, &snapshot);
-            assert_eq!(comments[0].comment, "Updated comment");
+            assert_eq!(comments[0].comment, "更新后的评论");
             assert!(!comments[0].is_editing);
         })
         .unwrap();
@@ -40430,7 +40430,7 @@ fn test_orphaned_comments_are_cleaned_up(cx: &mut TestAppContext) {
                 file_path: Arc::from(util::rel_path::RelPath::empty()),
                 hunk_start_anchor: anchor,
             };
-            editor.add_review_comment(key, "Comment on line 2".to_string(), anchor..anchor, cx);
+            editor.add_review_comment(key, "第 2 行的评论".to_string(), anchor..anchor, cx);
             assert_eq!(editor.total_review_comment_count(), 1);
         })
         .unwrap();
@@ -40439,7 +40439,7 @@ fn test_orphaned_comments_are_cleaned_up(cx: &mut TestAppContext) {
     editor
         .update(cx, |editor, window, cx| {
             editor.select_all(&SelectAll, window, cx);
-            editor.insert("completely new content", window, cx);
+            editor.insert("全新的内容", window, cx);
         })
         .unwrap();
 
@@ -40473,7 +40473,7 @@ fn test_orphaned_comments_cleanup_called_on_buffer_edit(cx: &mut TestAppContext)
                 file_path: Arc::from(util::rel_path::RelPath::empty()),
                 hunk_start_anchor: anchor,
             };
-            editor.add_review_comment(key, "Comment on line 2".to_string(), anchor..anchor, cx);
+            editor.add_review_comment(key, "第 2 行的评论".to_string(), anchor..anchor, cx);
             assert_eq!(editor.total_review_comment_count(), 1);
         })
         .unwrap();
@@ -40483,7 +40483,7 @@ fn test_orphaned_comments_cleanup_called_on_buffer_edit(cx: &mut TestAppContext)
     editor
         .update(cx, |editor, window, cx| {
             editor.select_all(&SelectAll, window, cx);
-            editor.insert("completely new content", window, cx);
+            editor.insert("全新的内容", window, cx);
             // The cleanup is called automatically in on_buffer_event when Edited fires
         })
         .unwrap();
@@ -40523,13 +40523,13 @@ fn test_comments_stored_for_multiple_hunks(cx: &mut TestAppContext) {
         // Add comments to first hunk
         editor.add_review_comment(
             key1.clone(),
-            "Comment 1 for file1".to_string(),
+            "file1 的评论 1".to_string(),
             anchor..anchor,
             cx,
         );
         editor.add_review_comment(
             key1.clone(),
-            "Comment 2 for file1".to_string(),
+            "file1 的评论 2".to_string(),
             anchor..anchor,
             cx,
         );
@@ -40537,7 +40537,7 @@ fn test_comments_stored_for_multiple_hunks(cx: &mut TestAppContext) {
         // Add comment to second hunk
         editor.add_review_comment(
             key2.clone(),
-            "Comment for file2".to_string(),
+            "file2 的评论".to_string(),
             anchor..anchor,
             cx,
         );
@@ -40550,23 +40550,23 @@ fn test_comments_stored_for_multiple_hunks(cx: &mut TestAppContext) {
         assert_eq!(
             editor.hunk_comment_count(&key1, &snapshot),
             2,
-            "file1 should have 2 comments"
+            "file1 应有 2 条评论"
         );
         assert_eq!(
             editor.hunk_comment_count(&key2, &snapshot),
             1,
-            "file2 should have 1 comment"
+            "file2 应有 1 条评论"
         );
 
         // Verify comments_for_hunk returns correct comments
         let file1_comments = editor.comments_for_hunk(&key1, &snapshot);
         assert_eq!(file1_comments.len(), 2);
-        assert_eq!(file1_comments[0].comment, "Comment 1 for file1");
-        assert_eq!(file1_comments[1].comment, "Comment 2 for file1");
+        assert_eq!(file1_comments[0].comment, "file1 的评论 1");
+        assert_eq!(file1_comments[1].comment, "file1 的评论 2");
 
         let file2_comments = editor.comments_for_hunk(&key2, &snapshot);
         assert_eq!(file2_comments.len(), 1);
-        assert_eq!(file2_comments[0].comment, "Comment for file2");
+        assert_eq!(file2_comments[0].comment, "file2 的评论");
     });
 }
 
@@ -40593,14 +40593,14 @@ fn test_same_hunk_detected_by_matching_keys(cx: &mut TestAppContext) {
         };
 
         // Add comment to first key
-        editor.add_review_comment(key1, "Test comment".to_string(), anchor..anchor, cx);
+        editor.add_review_comment(key1, "测试评论".to_string(), anchor..anchor, cx);
 
         // Verify second key (same hunk) finds the comment
         let snapshot = editor.buffer().read(cx).snapshot(cx);
         assert_eq!(
             editor.hunk_comment_count(&key2, &snapshot),
             1,
-            "Same hunk should find the comment"
+            "相同的代码块应能找到评论"
         );
 
         // Create a key with different file path
@@ -40613,7 +40613,7 @@ fn test_same_hunk_detected_by_matching_keys(cx: &mut TestAppContext) {
         assert_eq!(
             editor.hunk_comment_count(&different_file_key, &snapshot),
             0,
-            "Different file should not find the comment"
+            "不同的文件不应找到评论"
         );
     });
 }
@@ -40638,7 +40638,7 @@ fn test_overlay_comments_expanded_state(cx: &mut TestAppContext) {
         .update(cx, |editor, _window, _cx| {
             assert!(
                 editor.diff_review_overlays[0].comments_expanded,
-                "Should be expanded by default"
+                "默认应展开"
             );
         })
         .unwrap();
@@ -40655,7 +40655,7 @@ fn test_overlay_comments_expanded_state(cx: &mut TestAppContext) {
         .update(cx, |editor, _window, _cx| {
             assert!(
                 !editor.diff_review_overlays[0].comments_expanded,
-                "Should be collapsed after setting to false"
+                "设置为 false 后应折叠"
             );
         })
         .unwrap();
@@ -40672,7 +40672,7 @@ fn test_overlay_comments_expanded_state(cx: &mut TestAppContext) {
         .update(cx, |editor, _window, _cx| {
             assert!(
                 editor.diff_review_overlays[0].comments_expanded,
-                "Should be expanded after setting to true"
+                "设置为 true 后应展开"
             );
         })
         .unwrap();
@@ -40860,11 +40860,11 @@ fn test_calculate_overlay_height(cx: &mut TestAppContext) {
         let height_no_comments = editor.calculate_overlay_height(&key, true, &snapshot);
         assert_eq!(
             height_no_comments, 2,
-            "Base height should be 2 with no comments"
+            "无评论时基础高度应为 2"
         );
 
         // Add one comment
-        editor.add_review_comment(key.clone(), "Comment 1".to_string(), anchor..anchor, cx);
+        editor.add_review_comment(key.clone(), "评论 1".to_string(), anchor..anchor, cx);
 
         let snapshot = editor.buffer().read(cx).snapshot(cx);
 
@@ -40873,7 +40873,7 @@ fn test_calculate_overlay_height(cx: &mut TestAppContext) {
         assert_eq!(
             height_expanded,
             2 + 1 + 2, // base + header + 1 comment * 2
-            "Height with 1 comment expanded"
+            "展开 1 条评论时的高度"
         );
 
         // With comments collapsed: base (2) + header (1)
@@ -40881,12 +40881,12 @@ fn test_calculate_overlay_height(cx: &mut TestAppContext) {
         assert_eq!(
             height_collapsed,
             2 + 1, // base + header only
-            "Height with comments collapsed"
+            "折叠评论时的高度"
         );
 
         // Add more comments
-        editor.add_review_comment(key.clone(), "Comment 2".to_string(), anchor..anchor, cx);
-        editor.add_review_comment(key.clone(), "Comment 3".to_string(), anchor..anchor, cx);
+        editor.add_review_comment(key.clone(), "评论 2".to_string(), anchor..anchor, cx);
+        editor.add_review_comment(key.clone(), "评论 3".to_string(), anchor..anchor, cx);
 
         let snapshot = editor.buffer().read(cx).snapshot(cx);
 
@@ -40895,7 +40895,7 @@ fn test_calculate_overlay_height(cx: &mut TestAppContext) {
         assert_eq!(
             height_3_expanded,
             2 + 1 + (3 * 2), // base + header + 3 comments * 2
-            "Height with 3 comments expanded"
+            "展开 3 条评论时的高度"
         );
 
         // Collapsed height stays the same regardless of comment count
@@ -40903,7 +40903,7 @@ fn test_calculate_overlay_height(cx: &mut TestAppContext) {
         assert_eq!(
             height_3_collapsed,
             2 + 1, // base + header only
-            "Height with 3 comments collapsed should be same as 1 comment collapsed"
+            "折叠 3 条评论时的高度应与折叠 1 条评论时相同"
         );
     });
 }
@@ -42175,7 +42175,7 @@ async fn test_toggle_diagnostics_persists_across_settings_change(cx: &mut TestAp
     cx.update_editor(|editor, _, _| {
         assert!(
             editor.diagnostics_enabled(),
-            "diagnostics should start enabled by default"
+            "诊断默认应处于启用状态"
         );
     });
 
@@ -42183,7 +42183,7 @@ async fn test_toggle_diagnostics_persists_across_settings_change(cx: &mut TestAp
         editor.toggle_diagnostics(&actions::ToggleDiagnostics, window, cx);
         assert!(
             !editor.diagnostics_enabled(),
-            "diagnostics should be disabled after toggle"
+            "切换后诊断应被禁用"
         );
     });
 
@@ -42195,7 +42195,7 @@ async fn test_toggle_diagnostics_persists_across_settings_change(cx: &mut TestAp
     cx.update_editor(|editor, _, _| {
         assert!(
             !editor.diagnostics_enabled(),
-            "diagnostics should remain disabled after settings change"
+            "更改设置后诊断应保持禁用状态"
         );
     });
 
@@ -42203,7 +42203,7 @@ async fn test_toggle_diagnostics_persists_across_settings_change(cx: &mut TestAp
         editor.toggle_diagnostics(&actions::ToggleDiagnostics, window, cx);
         assert!(
             editor.diagnostics_enabled(),
-            "diagnostics should be re-enabled after second toggle"
+            "再次切换后诊断应重新启用"
         );
     });
 }
@@ -42383,7 +42383,7 @@ async fn test_columnar_selection_with_soft_wrap(cx: &mut TestAppContext) {
         let second_line_row = Point::new(1, 0).to_display_point(&snapshot).row();
         assert!(
             second_line_row.0 > 1,
-            "expected the first line to be soft wrapped"
+            "预期第一行会被软换行"
         );
         second_line_row
     };

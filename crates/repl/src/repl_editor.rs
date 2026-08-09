@@ -30,7 +30,7 @@ pub fn assign_kernelspec(
     }
 
     let worktree_id = crate::repl_editor::worktree_id_for_editor(weak_editor.clone(), cx)
-        .context("editor is not in a worktree")?;
+        .context("编辑器不在工作树中")?;
 
     store.update(cx, |store, cx| {
         store.set_active_kernelspec(worktree_id, kernel_specification.clone(), cx);
@@ -99,7 +99,7 @@ pub fn install_ipykernel_and_assign(
             workspace.show_toast(
                 workspace::Toast::new(
                     notification_id.clone(),
-                    format!("Installing ipykernel in {}...", env_name),
+                    format!("正在向 {} 安装 ipykernel...", env_name),
                 ),
                 cx,
             );
@@ -121,20 +121,20 @@ pub fn install_ipykernel_and_assign(
                 ])
                 .output()
                 .await
-                .context("failed to run uv pip install ipykernel")?
+                .context("运行 uv pip 安装 ipykernel 失败")?
         } else {
             util::command::new_command(python_path.to_string_lossy().as_ref())
                 .args(&["-m", "pip", "install", "ipykernel"])
                 .output()
                 .await
-                .context("failed to run pip install ipykernel")?
+                .context("运行 pip 安装 ipykernel 失败")?
         };
 
         if output.status.success() {
             anyhow::Ok(())
         } else {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            anyhow::bail!("{}", stderr.lines().last().unwrap_or("unknown error"))
+            anyhow::bail!("{}", stderr.lines().last().unwrap_or("未知错误"))
         }
     });
 
@@ -150,7 +150,7 @@ pub fn install_ipykernel_and_assign(
                             workspace.show_toast(
                                 workspace::Toast::new(
                                     notification_id.clone(),
-                                    format!("ipykernel installed in {}", env_name),
+                                    format!("ipykernel 已安装到 {}", env_name),
                                 )
                                 .autohide(),
                                 cx,
@@ -184,7 +184,7 @@ pub fn install_ipykernel_and_assign(
                                 workspace::Toast::new(
                                     notification_id.clone(),
                                     format!(
-                                        "Failed to install ipykernel in {}: {}",
+                                        "无法在 {} 中安装 ipykernel: {}",
                                         env_name, error
                                     ),
                                 ),
@@ -213,7 +213,7 @@ pub fn run(
     }
     store.update(cx, |store, cx| store.ensure_kernelspecs(cx));
 
-    let editor = editor.upgrade().context("editor was dropped")?;
+    let editor = editor.upgrade().context("编辑器已被释放")?;
     let selected_range = editor
         .update(cx, |editor, cx| {
             editor
@@ -241,7 +241,7 @@ pub fn run(
         let kernel_specification = store
             .read(cx)
             .active_kernelspec(project_path.worktree_id, Some(language.clone()), cx)
-            .with_context(|| format!("No kernel found for language: {}", language.name()))?;
+            .with_context(|| format!("未找到语言 {} 的内核", language.name()))?;
 
         let fs = store.read(cx).fs().clone();
 

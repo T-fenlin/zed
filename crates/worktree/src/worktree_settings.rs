@@ -105,5 +105,5 @@ impl Settings for WorktreeSettings {
 fn path_matchers(mut values: Vec<String>, context: &'static str) -> anyhow::Result<PathMatcher> {
     values.sort();
     PathMatcher::new(values, PathStyle::local())
-        .with_context(|| format!("Failed to parse globs from {}", context))
+        .with_context(|| format!("无法从 {} 解析通配符", context))
 }

@@ -37,7 +37,7 @@ pub(crate) fn start(client: Arc<Client>, cx: &mut App) {
     };
 
     if cfg!(debug_assertions) {
-        log::warn!("debug build, only reporting hangs longer then {hang_time:?}");
+        log::warn!("调试构建,仅报告超过 {hang_time:?} 的挂起");
     }
 
     start_hang_detection(hang_time, client, cx);
@@ -48,7 +48,7 @@ pub(crate) fn start(client: Arc<Client>, cx: &mut App) {
             Zed will be unresponsive for that time. This should trigger a report in the log",
         );
         thread::sleep(hang_time + Duration::from_micros(1));
-        log::warn!("Hang ended");
+        log::warn!("挂起结束");
     });
     cx.on_action(move |_: &HangBackground, cx| {
         cx.background_spawn(async move {
@@ -57,7 +57,7 @@ pub(crate) fn start(client: Arc<Client>, cx: &mut App) {
                 This should trigger a report in the log",
             );
             thread::sleep(hang_time + Duration::from_micros(1));
-            log::warn!("Hang ended");
+            log::warn!("挂起结束");
         })
         .detach();
     });
@@ -69,7 +69,7 @@ pub(crate) fn start(client: Arc<Client>, cx: &mut App) {
                 This should trigger a report in the log"
             );
             thread::sleep(hang_time + Duration::from_micros(1));
-            log::warn!("Hang ended");
+            log::warn!("挂起结束");
         })
         .detach();
     });
@@ -114,7 +114,7 @@ fn start_hang_detection(report_longer_then: Duration, client: Arc<Client>, cx: &
                 let should_write_trace = log.check_and_report(&task_stats, &action_stats);
                 if should_write_trace {
                     if let Some(path) = task_traces::save_any(foreground_thread) {
-                        log::info!("Task trace has been saved to: {}", path.display());
+                        log::info!("任务跟踪已保存至: {}", path.display());
                     }
                 }
             }

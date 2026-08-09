@@ -103,10 +103,10 @@ impl Component for Facepile {
         v_flex()
             .gap_6()
             .children(vec![example_group_with_title(
-                "Facepile Examples",
+                "头像堆叠示例",
                 vec![
                     single_example(
-                        "Default",
+                        "默认",
                         Facepile::new(
                             EXAMPLE_FACES
                                 .iter()
@@ -116,7 +116,7 @@ impl Component for Facepile {
                         .into_any_element(),
                     ),
                     single_example(
-                        "Custom Size",
+                        "自定义大小",
                         Facepile::new(
                             EXAMPLE_FACES
                                 .iter()

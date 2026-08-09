@@ -53,7 +53,7 @@ pub async fn run_prediction(
 
     let Some(provider) = args.provider else {
         anyhow::bail!(
-            "No existing predictions found. Use --provider to specify which model to use for prediction."
+            "未找到现有预测。使用 --provider 指定用于预测的模型。"
         );
     };
 
@@ -140,7 +140,7 @@ pub async fn run_prediction(
                 let client = app_state.client.clone();
                 cx.spawn(async move |cx| {
                     if let Err(e) = client.sign_in_with_optional_connect(true, cx).await {
-                        eprintln!("Authentication failed: {}", e);
+                        eprintln!("认证失败:{}", e);
                     }
                 })
                 .shared()
@@ -151,7 +151,7 @@ pub async fn run_prediction(
 
     let ep_store = cx
         .update(|cx| EditPredictionStore::try_global(cx))
-        .context("EditPredictionStore not initialized")?;
+        .context("EditPredictionStore 未初始化")?;
 
     ep_store.update(&mut cx, |store, _cx| {
         let model = match provider {
@@ -183,8 +183,8 @@ pub async fn run_prediction(
             }
         }
     });
-    step_progress.set_substatus("configuring model");
-    let state = example.state.as_ref().context("state must be set")?;
+    step_progress.set_substatus("正在配置模型");
+    let state = example.state.as_ref().context("必须设置状态")?;
     let run_dir = RUN_DIR.join(&example.spec.name);
 
     let updated_example = Arc::new(Mutex::new(example.clone()));
@@ -255,12 +255,12 @@ pub async fn run_prediction(
 
         if repetition_count > 1 {
             step_progress.set_substatus(format!(
-                "running prediction {}/{}",
+                "正在运行预测 {}/{}",
                 ix + 1,
                 repetition_count
             ));
         } else {
-            step_progress.set_substatus("running prediction");
+            step_progress.set_substatus("正在运行预测");
         }
 
         fs::create_dir_all(&run_dir)?;
@@ -286,7 +286,7 @@ pub async fn run_prediction(
                 avg_logprob: None,
             });
 
-        step_progress.set_substatus("requesting prediction");
+        step_progress.set_substatus("正在请求预测");
         let prediction = ep_store
             .update(&mut cx, |store, cx| {
                 store.request_prediction(
@@ -320,7 +320,7 @@ pub async fn run_prediction(
             let (info, style) = if has_prediction {
                 ("predicted", InfoStyle::Normal)
             } else {
-                ("no prediction", InfoStyle::Warning)
+                ("无预测", InfoStyle::Warning)
             };
             step_progress.set_info(info, style);
         }
@@ -332,9 +332,9 @@ pub async fn run_prediction(
     debug_task.await?;
 
     *example = Arc::into_inner(updated_example)
-        .ok_or_else(|| anyhow::anyhow!("Failed to unwrap Arc"))?
+        .ok_or_else(|| anyhow::anyhow!("无法解包 Arc"))?
         .into_inner()
-        .map_err(|_| anyhow::anyhow!("Failed to unwrap Mutex"))?;
+        .map_err(|_| anyhow::anyhow!("无法解包 Mutex"))?;
     Ok(())
 }
 
@@ -388,20 +388,20 @@ async fn predict_anthropic(
         } else {
             AnthropicClient::plain()
         };
-        client.expect("Failed to create Anthropic client")
+        client.expect("无法创建 Anthropic 客户端")
     });
 
-    let prompt = example.prompt.as_ref().context("Prompt is required")?;
+    let prompt = example.prompt.as_ref().context("需要提示词")?;
 
     for ix in 0..repetition_count {
         if repetition_count > 1 {
             step_progress.set_substatus(format!(
-                "running prediction {}/{}",
+                "正在运行预测 {}/{}",
                 ix + 1,
                 repetition_count
             ));
         } else {
-            step_progress.set_substatus("running prediction");
+            step_progress.set_substatus("正在运行预测");
         }
 
         let messages = vec![anthropic::Message {
@@ -510,20 +510,20 @@ async fn predict_openai(
         } else {
             OpenAiClient::plain()
         };
-        client.expect("Failed to create OpenAI client")
+        client.expect("无法创建 OpenAI 客户端")
     });
 
-    let prompt = example.prompt.as_ref().context("Prompt is required")?;
+    let prompt = example.prompt.as_ref().context("需要提示词")?;
 
     for ix in 0..repetition_count {
         if repetition_count > 1 {
             step_progress.set_substatus(format!(
-                "running prediction {}/{}",
+                "正在运行预测 {}/{}",
                 ix + 1,
                 repetition_count
             ));
         } else {
-            step_progress.set_substatus("running prediction");
+            step_progress.set_substatus("正在运行预测");
         }
 
         let messages = vec![open_ai::RequestMessage::User {
@@ -625,16 +625,16 @@ pub async fn predict_baseten(
     step_progress: &StepProgress,
 ) -> anyhow::Result<()> {
     let model_id =
-        std::env::var("ZED_ZETA_MODEL").context("ZED_ZETA_MODEL environment variable required")?;
+        std::env::var("ZED_ZETA_MODEL").context("需要 ZED_ZETA_MODEL 环境变量")?;
 
     let api_key =
-        std::env::var("BASETEN_API_KEY").context("BASETEN_API_KEY environment variable not set")?;
+        std::env::var("BASETEN_API_KEY").context("未设置 BASETEN_API_KEY 环境变量")?;
 
-    let prompt = example.prompt.as_ref().context("Prompt is required")?;
+    let prompt = example.prompt.as_ref().context("需要提示词")?;
     let prompt_text = prompt.input.clone();
     let prefill = prompt.prefill.clone().unwrap_or_default();
 
-    step_progress.set_substatus("running prediction via baseten");
+    step_progress.set_substatus("正在通过 Baseten 运行预测");
 
     let environment: String = <&'static str>::from(&format).to_lowercase();
     let url = format!(
@@ -651,7 +651,7 @@ pub async fn predict_baseten(
     };
 
     let body_bytes =
-        serde_json::to_vec(&request_body).context("Failed to serialize request body")?;
+        serde_json::to_vec(&request_body).context("无法序列化请求体")?;
 
     let http_client: Arc<dyn HttpClient> = Arc::new(ReqwestClient::new());
     let request = http_client::Request::builder()
@@ -669,14 +669,14 @@ pub async fn predict_baseten(
         .body_mut()
         .read_to_string(&mut body)
         .await
-        .context("Failed to read Baseten response body")?;
+        .context("无法读取 Baseten 响应体")?;
 
     if !status.is_success() {
-        anyhow::bail!("Baseten API returned {status}: {body}");
+        anyhow::bail!("Baseten API 返回 {status}:{body}");
     }
 
     let completion: RawCompletionResponse =
-        serde_json::from_str(&body).context("Failed to parse Baseten response")?;
+        serde_json::from_str(&body).context("无法解析 Baseten 响应")?;
 
     let actual_output = completion
         .choices
@@ -711,22 +711,22 @@ pub async fn sync_batches(provider: Option<&PredictionProvider>) -> anyhow::Resu
             TeacherBackend::Sonnet45 | TeacherBackend::Sonnet46 => {
                 let llm_client = ANTHROPIC_CLIENT.get_or_init(|| {
                     AnthropicClient::batch(&crate::paths::LLM_CACHE_DB)
-                        .expect("Failed to create Anthropic client")
+                        .expect("无法创建 Anthropic 客户端")
                 });
                 llm_client
                     .sync_batches()
                     .await
-                    .context("Failed to sync Anthropic batches")?;
+                    .context("无法同步 Anthropic 批次")?;
             }
             TeacherBackend::Gpt52 | TeacherBackend::Gpt54 | TeacherBackend::Gpt55 => {
                 let llm_client = OPENAI_CLIENT.get_or_init(|| {
                     OpenAiClient::batch(&crate::paths::LLM_CACHE_DB)
-                        .expect("Failed to create OpenAI client")
+                        .expect("无法创建 OpenAI 客户端")
                 });
                 llm_client
                     .sync_batches()
                     .await
-                    .context("Failed to sync OpenAI batches")?;
+                    .context("无法同步 OpenAI 批次")?;
             }
         },
         _ => (),
@@ -769,7 +769,7 @@ pub async fn reprocess_after_batch_wait(
     }
 
     if reprocessed > 0 {
-        eprintln!("Reprocessed {} example(s) with batch results", reprocessed);
+        eprintln!("已使用批次结果重新处理 {} 个示例", reprocessed);
     }
 
     Ok(())
@@ -785,7 +785,7 @@ pub async fn wait_for_batches(provider: Option<&PredictionProvider>) -> anyhow::
         }
 
         eprintln!(
-            "Waiting for {} pending batch request(s) to complete... (polling every {}s)",
+            "正在等待 {} 个待处理的批次请求完成...(每 {} 秒轮询一次)",
             pending,
             poll_interval.as_secs()
         );
@@ -804,14 +804,14 @@ fn pending_batch_count(provider: Option<&PredictionProvider>) -> anyhow::Result<
             TeacherBackend::Sonnet45 | TeacherBackend::Sonnet46 => {
                 let llm_client = ANTHROPIC_CLIENT.get_or_init(|| {
                     AnthropicClient::batch(&crate::paths::LLM_CACHE_DB)
-                        .expect("Failed to create Anthropic client")
+                        .expect("无法创建 Anthropic 客户端")
                 });
                 llm_client.pending_batch_count()
             }
             TeacherBackend::Gpt52 | TeacherBackend::Gpt54 | TeacherBackend::Gpt55 => {
                 let llm_client = OPENAI_CLIENT.get_or_init(|| {
                     OpenAiClient::batch(&crate::paths::LLM_CACHE_DB)
-                        .expect("Failed to create OpenAI client")
+                        .expect("无法创建 OpenAI 客户端")
                 });
                 llm_client.pending_batch_count()
             }

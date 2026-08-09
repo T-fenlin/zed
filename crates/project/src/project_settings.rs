@@ -1080,7 +1080,7 @@ impl SettingsObserver {
     ) -> anyhow::Result<()> {
         let kind = match envelope.payload.kind {
             Some(kind) => proto::LocalSettingsKind::from_i32(kind)
-                .with_context(|| format!("unknown kind {kind}"))?,
+                .with_context(|| format!("未知类型 {kind}"))?,
             None => proto::LocalSettingsKind::Settings,
         };
 
@@ -1126,7 +1126,7 @@ impl SettingsObserver {
             settings_store
                 .set_user_settings(&envelope.payload.contents, cx)
                 .result()
-                .context("setting new user settings")?;
+                .context("设置新的用户设置")?;
             anyhow::Ok(())
         })?;
         Ok(())
@@ -1265,34 +1265,34 @@ impl SettingsObserver {
                                     let vscode_tasks =
                                         parse_json_with_comments::<VsCodeTaskFile>(&content)
                                             .with_context(|| {
-                                                format!("parsing VSCode tasks, file {abs_path:?}")
+                                                format!("解析 VSCode 任务,文件 {abs_path:?}")
                                             })?;
                                     let zed_tasks = TaskTemplates::try_from(vscode_tasks)
                                         .with_context(|| {
                                             format!(
-                                        "converting VSCode tasks into Zed ones, file {abs_path:?}"
+                                        "将 VSCode 任务转换为 Zed 任务,文件 {abs_path:?}"
                                     )
                                         })?;
                                     serde_json::to_string(&zed_tasks).with_context(|| {
                                         format!(
-                                            "serializing Zed tasks into JSON, file {abs_path:?}"
+                                            "将 Zed 任务序列化为 JSON,文件 {abs_path:?}"
                                         )
                                     })
                                 } else if abs_path.ends_with(local_vscode_launch_file_relative_path().as_std_path()) {
                                     let vscode_tasks =
                                         parse_json_with_comments::<VsCodeDebugTaskFile>(&content)
                                             .with_context(|| {
-                                                format!("parsing VSCode debug tasks, file {abs_path:?}")
+                                                format!("解析 VSCode 调试任务,文件 {abs_path:?}")
                                             })?;
                                     let zed_tasks = DebugTaskFile::try_from(vscode_tasks)
                                         .with_context(|| {
                                             format!(
-                                        "converting VSCode debug tasks into Zed ones, file {abs_path:?}"
+                                        "将 VSCode 调试任务转换为 Zed 任务,文件 {abs_path:?}"
                                     )
                                         })?;
                                     serde_json::to_string(&zed_tasks).with_context(|| {
                                         format!(
-                                            "serializing Zed tasks into JSON, file {abs_path:?}"
+                                            "将 Zed 任务序列化为 JSON,文件 {abs_path:?}"
                                         )
                                     })
                                 } else {
@@ -1393,13 +1393,13 @@ impl SettingsObserver {
 
                     match result {
                         Err(InvalidSettingsError::Tasks { path, message }) => {
-                            log::error!("Failed to set local tasks in {path:?}: {message:?}");
+                            log::error!("无法在 {path:?} 中设置本地任务:{message:?}");
                             cx.emit(SettingsObserverEvent::LocalTasksUpdated(Err(
                                 InvalidSettingsError::Tasks { path, message },
                             )));
                         }
                         Err(e) => {
-                            log::error!("Failed to set local tasks: {e}");
+                            log::error!("无法设置本地任务:{e}");
                         }
                         Ok(()) => {
                             cx.emit(SettingsObserverEvent::LocalTasksUpdated(Ok(directory
@@ -1423,14 +1423,14 @@ impl SettingsObserver {
                     match result {
                         Err(InvalidSettingsError::Debug { path, message }) => {
                             log::error!(
-                                "Failed to set local debug scenarios in {path:?}: {message:?}"
+                                "无法在 {path:?} 中设置本地调试场景:{message:?}"
                             );
                             cx.emit(SettingsObserverEvent::LocalTasksUpdated(Err(
                                 InvalidSettingsError::Debug { path, message },
                             )));
                         }
                         Err(e) => {
-                            log::error!("Failed to set local tasks: {e}");
+                            log::error!("无法设置本地任务:{e}");
                         }
                         Ok(()) => {
                             cx.emit(SettingsObserverEvent::LocalTasksUpdated(Ok(directory
@@ -1444,7 +1444,7 @@ impl SettingsObserver {
                 }
                 (LocalSettingsPath::OutsideWorktree(path), kind) => {
                     log::error!(
-                        "OutsideWorktree path {:?} with kind {:?} is only supported by editorconfig",
+                        "工作树外路径 {:?} 及类型 {:?} 仅受 editorconfig 支持",
                         path,
                         kind
                     );
@@ -1594,12 +1594,12 @@ fn apply_local_settings(
 
         match result {
             Err(InvalidSettingsError::LocalSettings { path, message }) => {
-                log::error!("Failed to set local settings in {path:?}: {message}");
+                log::error!("无法在 {path:?} 中设置本地设置:{message}");
                 cx.emit(SettingsObserverEvent::LocalSettingsUpdated(Err(
                     InvalidSettingsError::LocalSettings { path, message },
                 )));
             }
-            Err(e) => log::error!("Failed to set local settings: {e}"),
+            Err(e) => log::error!("无法设置本地设置:{e}"),
             Ok(()) => {
                 let settings_path = match &path {
                     LocalSettingsPath::InWorktree(rel_path) => rel_path

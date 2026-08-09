@@ -174,42 +174,42 @@ impl Component for Divider {
             .gap_6()
             .children(vec![
                 example_group_with_title(
-                    "Horizontal Dividers",
+                    "水平分隔线",
                     vec![
-                        single_example("Default", Divider::horizontal().into_any_element()),
+                        single_example("默认", Divider::horizontal().into_any_element()),
                         single_example(
-                            "Border Color",
+                            "边框颜色",
                             Divider::horizontal()
                                 .color(DividerColor::Border)
                                 .into_any_element(),
                         ),
-                        single_example("Inset", Divider::horizontal().inset().into_any_element()),
-                        single_example("Dashed", Divider::horizontal_dashed().into_any_element()),
+                        single_example("缩进", Divider::horizontal().inset().into_any_element()),
+                        single_example("虚线", Divider::horizontal_dashed().into_any_element()),
                     ],
                 ),
                 example_group_with_title(
-                    "Vertical Dividers",
+                    "垂直分隔线",
                     vec![
                         single_example(
-                            "Default",
+                            "默认",
                             div().h_16().child(Divider::vertical()).into_any_element(),
                         ),
                         single_example(
-                            "Border Color",
+                            "边框颜色",
                             div()
                                 .h_16()
                                 .child(Divider::vertical().color(DividerColor::Border))
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Inset",
+                            "缩进",
                             div()
                                 .h_16()
                                 .child(Divider::vertical().inset())
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Dashed",
+                            "虚线",
                             div()
                                 .h_16()
                                 .child(Divider::vertical_dashed())
@@ -218,18 +218,18 @@ impl Component for Divider {
                     ],
                 ),
                 example_group_with_title(
-                    "Example Usage",
+                    "示例用法",
                     vec![single_example(
-                        "Between Content",
+                        "内容之间",
                         v_flex()
                             .w_full()
                             .gap_4()
                             .px_4()
-                            .child(Label::new("Section One"))
+                            .child(Label::new("第一部分"))
                             .child(Divider::horizontal())
-                            .child(Label::new("Section Two"))
+                            .child(Label::new("第二部分"))
                             .child(Divider::horizontal_dashed())
-                            .child(Label::new("Section Three"))
+                            .child(Label::new("第三部分"))
                             .into_any_element(),
                     )],
                 ),

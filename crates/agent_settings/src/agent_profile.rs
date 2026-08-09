@@ -160,7 +160,7 @@ impl AgentProfileSettings {
             .profiles
             .get_or_insert_default();
         if profiles.contains_key(&profile_id.0) {
-            bail!("profile with ID '{profile_id}' already exists");
+            bail!("已存在 ID 为 '{profile_id}' 的配置文件");
         }
 
         profiles.insert(

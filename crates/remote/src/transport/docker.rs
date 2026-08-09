@@ -94,13 +94,13 @@ impl DockerExecConnection {
         };
 
         this.remote_platform = Some(remote_platform);
-        log::info!("Remote platform discovered: {:?}", this.remote_platform);
+        log::info!("检测到远程平台: {:?}", this.remote_platform);
 
         this.os_version = this.discover_os_version(remote_platform.os).await;
-        log::info!("Remote OS version discovered: {:?}", this.os_version);
+        log::info!("检测到远程操作系统版本: {:?}", this.os_version);
 
         this.shell = this.discover_shell().await;
-        log::info!("Remote shell discovered: {}", this.shell);
+        log::info!("检测到远程 Shell: {}", this.shell);
 
         this.remote_dir_for_server = this.docker_user_home_dir().await?.trim().to_string();
 
@@ -150,14 +150,14 @@ impl DockerExecConnection {
         match self.run_docker_exec_delimited("echo $SHELL").await {
             Ok(shell) => match shell.trim() {
                 "" => {
-                    log::info!("$SHELL is not set, checking passwd for user");
+                    log::info!("$Shell 未设置,正在检查 passwd 中的用户信息");
                 }
                 shell => {
                     return shell.to_owned();
                 }
             },
             Err(e) => {
-                log::error!("Failed to get $SHELL: {e}. Checking passwd for user");
+                log::error!("获取 $Shell 失败: {e}。正在检查 passwd 中的用户信息");
             }
         }
 
@@ -167,14 +167,14 @@ impl DockerExecConnection {
         {
             Ok(shell) => match shell.trim() {
                 "" => {
-                    log::info!("No shell found in passwd, falling back to {default_shell}");
+                    log::info!("在 passwd 中未找到 Shell,回退到 {default_shell}");
                 }
                 shell => {
                     return shell.to_owned();
                 }
             },
             Err(e) => {
-                log::info!("Error getting shell from passwd: {e}. Falling back to {default_shell}");
+                log::info!("从 passwd 获取 Shell 时出错: {e}。回退到 {default_shell}");
             }
         }
         default_shell.to_owned()
@@ -194,7 +194,7 @@ impl DockerExecConnection {
         {
             Ok(output) => super::parse_os_version(os, &output),
             Err(error) => {
-                log::warn!("Failed to determine remote OS version: {error:#}");
+                log::warn!("无法确定远程操作系统版本: {error:#}");
                 None
             }
         }
@@ -211,7 +211,7 @@ impl DockerExecConnection {
     ) -> Result<Arc<RelPath>> {
         let remote_platform = self
             .remote_platform
-            .context("No remote platform defined; cannot proceed.")?;
+            .context("未定义远程平台;无法继续。")?;
 
         let version_str = match release_channel {
             ReleaseChannel::Nightly => {
@@ -276,7 +276,7 @@ impl DockerExecConnection {
             ReleaseChannel::Nightly => Ok(None),
             ReleaseChannel::Dev => {
                 anyhow::bail!(
-                    "ZED_BUILD_REMOTE_SERVER is not set and no remote server exists at ({:?})",
+                    "未设置 ZED_BUILD_REMOTE_SERVER,且 ({:?}) 处不存在远程服务器",
                     dst_path
                 )
             }
@@ -309,12 +309,12 @@ impl DockerExecConnection {
                         cx,
                     )
                     .await
-                    .context("extracting server binary")?;
+                    .context("正在解压服务器二进制文件")?;
                     return Ok(dst_path.into());
                 }
                 Err(e) => {
                     log::error!(
-                        "Failed to download binary on server, attempting to download locally and then upload it the server: {e:#}",
+                        "在服务器上下载二进制文件失败,尝试在本地下载然后上传到服务器: {e:#}",
                     )
                 }
             }
@@ -323,7 +323,7 @@ impl DockerExecConnection {
         let src_path = delegate
             .download_server_binary_locally(remote_platform, release_channel, wanted_version, cx)
             .await
-            .context("downloading server binary locally")?;
+            .context("正在本地下载服务器二进制文件")?;
         self.upload_local_server_binary(
             &src_path,
             &tmp_path_gz,
@@ -332,7 +332,7 @@ impl DockerExecConnection {
             cx,
         )
         .await
-        .context("uploading server binary")?;
+        .context("正在上传服务器二进制文件")?;
         self.extract_server_binary(
             &dst_path,
             &tmp_path_gz,
@@ -341,7 +341,7 @@ impl DockerExecConnection {
             cx,
         )
         .await
-        .context("extracting server binary")?;
+        .context("正在解压服务器二进制文件")?;
         Ok(dst_path.into())
     }
 
@@ -357,7 +357,7 @@ impl DockerExecConnection {
         delegate: &Arc<dyn RemoteClientDelegate>,
         cx: &mut AsyncApp,
     ) -> Result<()> {
-        delegate.set_status(Some("Extracting remote development server"), cx);
+        delegate.set_status(Some("正在解压远程开发服务器"), cx);
         let server_mode = 0o755;
 
         let shell_kind = ShellKind::Posix;
@@ -365,21 +365,21 @@ impl DockerExecConnection {
         let server_mode = format!("{:o}", server_mode);
         let server_mode = shell_kind
             .try_quote(&server_mode)
-            .context("shell quoting")?;
+            .context("Shell 引用")?;
         let dst_path = dst_path.display(self.path_style());
-        let dst_path = shell_kind.try_quote(&dst_path).context("shell quoting")?;
+        let dst_path = shell_kind.try_quote(&dst_path).context("Shell 引用")?;
         let script = if let Some(tmp_path) = orig_tmp_path.strip_suffix(".gz") {
             let orig_tmp_path = shell_kind
                 .try_quote(&orig_tmp_path)
-                .context("shell quoting")?;
-            let tmp_path = shell_kind.try_quote(&tmp_path).context("shell quoting")?;
+                .context("Shell 引用")?;
+            let tmp_path = shell_kind.try_quote(&tmp_path).context("Shell 引用")?;
             format!(
                 "gunzip -f {orig_tmp_path} && chmod {server_mode} {tmp_path} && mv {tmp_path} {dst_path}",
             )
         } else {
             let orig_tmp_path = shell_kind
                 .try_quote(&orig_tmp_path)
-                .context("shell quoting")?;
+                .context("Shell 引用")?;
             format!("chmod {server_mode} {orig_tmp_path} && mv {orig_tmp_path} {dst_path}",)
         };
         let args = shell_kind.args_for_shell(false, script.to_string());
@@ -416,16 +416,16 @@ impl DockerExecConnection {
         let size = src_stat.len();
 
         let t0 = Instant::now();
-        delegate.set_status(Some("Uploading remote development server"), cx);
+        delegate.set_status(Some("正在上传远程开发服务器"), cx);
         log::info!(
-            "uploading remote development server to {:?} ({}kb)",
+            "正在将远程开发服务器上传到 {:?} ({}kb)",
             tmp_path_gz,
             size / 1024
         );
         self.upload_file(src_path, tmp_path_gz, remote_dir_for_server)
             .await
-            .context("failed to upload server binary")?;
-        log::info!("uploaded remote development server in {:?}", t0.elapsed());
+            .context("上传服务器二进制文件失败")?;
+        log::info!("远程开发服务器上传完成,耗时 {:?}", t0.elapsed());
         Ok(())
     }
 
@@ -445,9 +445,9 @@ impl DockerExecConnection {
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            log::debug!("failed to upload via docker cp {src_path} -> {dst_path}: {stderr}",);
+            log::debug!("通过 docker cp 上传 {src_path} -> {dst_path} 失败: {stderr}",);
             anyhow::bail!(
-                "failed to upload via docker cp {} -> {}: {}",
+                "通过 docker cp 上传 {} -> {} 失败: {}",
                 src_path,
                 dst_path,
                 stderr,
@@ -471,9 +471,9 @@ impl DockerExecConnection {
         }
 
         let stderr = String::from_utf8_lossy(&output.stderr);
-        log::debug!("failed to change ownership for via chown: {stderr}",);
+        log::debug!("通过 chown 更改所有权失败: {stderr}",);
         anyhow::bail!(
-            "failed to change ownership for zed_remote_server via chown: {}",
+            "通过 chown 更改 zed_remote_server 的所有权失败: {}",
             stderr,
         );
     }
@@ -484,7 +484,7 @@ impl DockerExecConnection {
         dest_path: &RelPath,
         remote_dir_for_server: &str,
     ) -> Result<()> {
-        log::debug!("uploading file {:?} to {:?}", src_path, dest_path);
+        log::debug!("正在将文件 {:?} 上传到 {:?}", src_path, dest_path);
 
         let src_path_display = src_path.display().to_string();
         let dest_path_str = dest_path.display(self.path_style());
@@ -513,7 +513,7 @@ impl DockerExecConnection {
         log::debug!("{:?}: {:?}", command, output);
         anyhow::ensure!(
             output.status.success(),
-            "failed to run command {command:?}: {}",
+            "运行命令 {command:?} 失败: {}",
             String::from_utf8_lossy(&output.stderr)
         );
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
@@ -571,7 +571,7 @@ impl DockerExecConnection {
             .await?;
         }
 
-        delegate.set_status(Some("Downloading remote development server on host"), cx);
+        delegate.set_status(Some("正在主机上下载远程开发服务器"), cx);
 
         match self
             .run_docker_exec(
@@ -598,7 +598,7 @@ impl DockerExecConnection {
                     return Err(e);
                 }
 
-                log::info!("curl is not available, trying wget");
+                log::info!("curl 不可用,正在尝试 wget");
                 match self
                     .run_docker_exec(
                         "wget",
@@ -617,7 +617,7 @@ impl DockerExecConnection {
                         {
                             return Err(e);
                         } else {
-                            anyhow::bail!("Neither curl nor wget is available");
+                            anyhow::bail!("curl 和 wget 均不可用");
                         }
                     }
                 }
@@ -634,7 +634,7 @@ impl DockerExecConnection {
             {
                 Ok(())
             } else {
-                Err(anyhow::anyhow!("Failed to kill process"))
+                Err(anyhow::anyhow!("终止进程失败"))
             }
         } else {
             Ok(())
@@ -664,10 +664,10 @@ impl RemoteConnection for DockerExecConnection {
             };
         }
 
-        delegate.set_status(Some("Starting proxy"), cx);
+        delegate.set_status(Some("正在启动代理"), cx);
 
         let Some(remote_binary_relpath) = self.remote_binary_relpath.clone() else {
-            return Task::ready(Err(anyhow!("Remote binary path not set")));
+            return Task::ready(Err(anyhow!("远程二进制文件路径未设置")));
         };
 
         let mut docker_args = vec!["exec".to_string()];
@@ -712,7 +712,7 @@ impl RemoteConnection for DockerExecConnection {
 
         let Ok(child) = command.spawn() else {
             return Task::ready(Err(anyhow::anyhow!(
-                "Failed to start remote server process"
+                "启动远程服务器进程失败"
             )));
         };
 
@@ -730,7 +730,7 @@ impl RemoteConnection for DockerExecConnection {
             .await
             .and_then(|status| {
                 if status != 0 {
-                    anyhow::bail!("Remote server exited with status {status}");
+                    anyhow::bail!("远程服务器已退出,状态码为 {status}");
                 }
                 Ok(0)
             })
@@ -843,7 +843,7 @@ impl RemoteConnection for DockerExecConnection {
         &self,
         _forwards: Vec<(u16, String, u16)>,
     ) -> Result<CommandTemplate> {
-        Err(anyhow::anyhow!("Not currently supported for docker_exec"))
+        Err(anyhow::anyhow!("当前不支持 docker_exec"))
     }
 
     fn connection_options(&self) -> RemoteConnectionOptions {

@@ -29,7 +29,7 @@ impl Bind for bool {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         statement
             .bind(&self.then_some(1).unwrap_or(0), start_index)
-            .with_context(|| format!("Failed to bind bool at index {start_index}"))
+            .with_context(|| format!("无法在索引 {start_index} 处绑定布尔值"))
     }
 }
 
@@ -37,7 +37,7 @@ impl Column for bool {
     fn column(statement: &mut Statement, start_index: i32) -> Result<(Self, i32)> {
         i32::column(statement, start_index)
             .map(|(i, next_index)| (i != 0, next_index))
-            .with_context(|| format!("Failed to read bool at index {start_index}"))
+            .with_context(|| format!("无法在索引 {start_index} 处读取布尔值"))
     }
 }
 
@@ -46,7 +46,7 @@ impl Bind for &[u8] {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         statement
             .bind_blob(start_index, self)
-            .with_context(|| format!("Failed to bind &[u8] at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处绑定字节切片"))?;
         Ok(start_index + 1)
     }
 }
@@ -56,7 +56,7 @@ impl<const C: usize> Bind for &[u8; C] {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         statement
             .bind_blob(start_index, self.as_slice())
-            .with_context(|| format!("Failed to bind &[u8; C] at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处绑定字节数组"))?;
         Ok(start_index + 1)
     }
 }
@@ -74,7 +74,7 @@ impl Bind for Vec<u8> {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         statement
             .bind_blob(start_index, self)
-            .with_context(|| format!("Failed to bind Vec<u8> at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处绑定字节向量"))?;
         Ok(start_index + 1)
     }
 }
@@ -83,7 +83,7 @@ impl Column for Vec<u8> {
     fn column(statement: &mut Statement, start_index: i32) -> Result<(Self, i32)> {
         let result = statement
             .column_blob(start_index)
-            .with_context(|| format!("Failed to read Vec<u8> at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处读取字节向量"))?;
 
         Ok((Vec::from(result), start_index + 1))
     }
@@ -94,7 +94,7 @@ impl Bind for f64 {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         statement
             .bind_double(start_index, *self)
-            .with_context(|| format!("Failed to bind f64 at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处绑定双精度浮点数"))?;
         Ok(start_index + 1)
     }
 }
@@ -103,7 +103,7 @@ impl Column for f64 {
     fn column(statement: &mut Statement, start_index: i32) -> Result<(Self, i32)> {
         let result = statement
             .column_double(start_index)
-            .with_context(|| format!("Failed to parse f64 at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处解析双精度浮点数"))?;
 
         Ok((result, start_index + 1))
     }
@@ -114,7 +114,7 @@ impl Bind for f32 {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         statement
             .bind_double(start_index, *self as f64)
-            .with_context(|| format!("Failed to bind f64 at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处绑定双精度浮点数"))?;
         Ok(start_index + 1)
     }
 }
@@ -123,7 +123,7 @@ impl Column for f32 {
     fn column(statement: &mut Statement, start_index: i32) -> Result<(Self, i32)> {
         let result = statement
             .column_double(start_index)
-            .with_context(|| format!("Failed to parse f32 at index {start_index}"))?
+            .with_context(|| format!("无法在索引 {start_index} 处解析单精度浮点数"))?
             as f32;
 
         Ok((result, start_index + 1))
@@ -135,7 +135,7 @@ impl Bind for i32 {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         statement
             .bind_int(start_index, *self)
-            .with_context(|| format!("Failed to bind i32 at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处绑定整数"))?;
 
         Ok(start_index + 1)
     }
@@ -153,7 +153,7 @@ impl Bind for i64 {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         statement
             .bind_int64(start_index, *self)
-            .with_context(|| format!("Failed to bind i64 at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处绑定长整数"))?;
         Ok(start_index + 1)
     }
 }
@@ -170,7 +170,7 @@ impl Bind for u64 {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         statement
             .bind_int64(start_index, (*self) as i64)
-            .with_context(|| format!("Failed to bind i64 at index {start_index}"))?;
+            .with_context(|| format!("无法在索引 {start_index} 处绑定长整数"))?;
         Ok(start_index + 1)
     }
 }
@@ -187,7 +187,7 @@ impl Bind for u32 {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         (*self as i64)
             .bind(statement, start_index)
-            .with_context(|| format!("Failed to bind usize at index {start_index}"))
+            .with_context(|| format!("无法在索引 {start_index} 处绑定无符号整数"))
     }
 }
 
@@ -203,7 +203,7 @@ impl Bind for u16 {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         (*self as i64)
             .bind(statement, start_index)
-            .with_context(|| format!("Failed to bind usize at index {start_index}"))
+            .with_context(|| format!("无法在索引 {start_index} 处绑定无符号整数"))
     }
 }
 
@@ -219,7 +219,7 @@ impl Bind for usize {
     fn bind(&self, statement: &Statement, start_index: i32) -> Result<i32> {
         (*self as i64)
             .bind(statement, start_index)
-            .with_context(|| format!("Failed to bind usize at index {start_index}"))
+            .with_context(|| format!("无法在索引 {start_index} 处绑定无符号整数"))
     }
 }
 

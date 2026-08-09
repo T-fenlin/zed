@@ -164,12 +164,12 @@ async fn test_open_path_prompt_completion(cx: &mut TestAppContext) {
     assert_eq!(
         confirm_completion(query, 0, &picker, cx),
         None,
-        "First entry is `./` and when we confirm completion, it is tabbed below"
+        "第一个条目是 `./`,当我们确认补全时,它会被 Tab 键移到下方"
     );
     assert_eq!(
         confirm_completion(query, 1, &picker, cx).unwrap(),
         path!("/root/dir1/"),
-        "Second entry is the first directory"
+        "第二个条目是第一个目录"
     );
 
     // Confirm completion for the query "/root/", selecting the third candidate "a", since it's a file, it should not add a trailing slash.
@@ -268,12 +268,12 @@ async fn test_open_path_prompt_on_windows(cx: &mut TestAppContext) {
     assert_eq!(
         confirm_completion(query, 0, &picker, cx),
         None,
-        "First entry is `.\\` and when we confirm completion, it is tabbed below"
+        "第一个条目是 `.\\`,当我们确认补全时,它会被 Tab 键移到下方"
     );
     assert_eq!(
         confirm_completion(query, 1, &picker, cx).unwrap(),
         "C:/root/dir1\\",
-        "Second entry is the first directory"
+        "第二个条目是第一个目录"
     );
 
     let query = "C:\\root/";
@@ -464,7 +464,7 @@ async fn test_dismiss_cancels_in_flight_match(cx: &mut TestAppContext) {
     let cancel_flag = picker.read_with(cx, |picker, _| picker.delegate.cancel_flag.clone());
     assert!(
         !cancel_flag.load(atomic::Ordering::Acquire),
-        "cancel flag should be clear while the prompt is active"
+        "提示框激活期间,取消标志应为清除状态"
     );
 
     picker.update_in(cx, |picker, window, cx| {
@@ -473,7 +473,7 @@ async fn test_dismiss_cancels_in_flight_match(cx: &mut TestAppContext) {
 
     assert!(
         cancel_flag.load(atomic::Ordering::Acquire),
-        "dismissing the prompt must cancel the in-flight fuzzy match"
+        "关闭提示框必须取消进行中的模糊匹配"
     );
 }
 

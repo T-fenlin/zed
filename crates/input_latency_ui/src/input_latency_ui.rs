@@ -149,7 +149,7 @@ pub fn report_input_latency_telemetry(window: &Window, cx: &mut App) {
     // frames with 4+ events are implicitly total_frames - (1 + 2 + 3)
 
     telemetry::event!(
-        "Latency Report",
+        "延迟报告",
         frames_sub4 = frames_sub4,
         frames_4to8 = frames_4to8,
         frames_8to16 = frames_8to16,
@@ -177,7 +177,7 @@ fn format_report(data: &InputLatencyReportData) -> String {
     let total = histogram.len();
 
     if total == 0 {
-        return "No input latency samples recorded yet.\n\nTry typing or clicking in a buffer first.".to_string();
+        return "尚未记录输入延迟样本。\n\n请先在缓冲区中键入或点击。".to_string();
     }
 
     let percentiles: &[(&str, f64)] = &[
@@ -194,30 +194,30 @@ fn format_report(data: &InputLatencyReportData) -> String {
     let now = data.timestamp;
 
     let mut report = String::new();
-    report.push_str("Input Latency Histogram\n");
+    report.push_str("输入延迟直方图\n");
     report.push_str("=======================\n");
 
     let timestamp = now.format("%Y-%m-%d %H:%M:%S %Z");
-    report.push_str(&format!("Timestamp: {timestamp}\n"));
+    report.push_str(&format!("时间戳: {timestamp}\n"));
     if let Some(reported_by) = &data.reported_by {
-        report.push_str(&format!("Reported from {reported_by}'s machine\n"));
+        report.push_str(&format!("报告来自 {reported_by} 的机器\n"));
     }
-    report.push_str(&format!("Samples: {total}\n"));
+    report.push_str(&format!("样本数: {total}\n"));
     if snapshot.mid_draw_events_dropped > 0 {
         report.push_str(&format!(
-            "Mid-draw events excluded: {}\n",
+            "排除的绘制中事件: {}\n",
             snapshot.mid_draw_events_dropped
         ));
     }
 
-    write_latency_percentiles(&mut report, "Percentiles", histogram, percentiles);
-    write_latency_distribution(&mut report, "Distribution", histogram);
+    write_latency_percentiles(&mut report, "百分位数", histogram, percentiles);
+    write_latency_distribution(&mut report, "分布", histogram);
 
     let coalesce = &snapshot.events_per_frame_histogram;
     let coalesce_total = coalesce.len();
     if coalesce_total > 0 {
         report.push('\n');
-        report.push_str("Events coalesced per frame:\n");
+        report.push_str("每帧合并的事件数:\n");
         for (label, quantile) in percentiles {
             let value = if *quantile == 0.0 {
                 coalesce.min()
@@ -226,11 +226,11 @@ fn format_report(data: &InputLatencyReportData) -> String {
             } else {
                 coalesce.value_at_quantile(*quantile)
             };
-            report.push_str(&format!("  {label}: {value:>6} events\n"));
+            report.push_str(&format!("  {label}: {value:>6} 个事件\n"));
         }
 
         report.push('\n');
-        report.push_str("Distribution:\n");
+        report.push_str("分布:\n");
         let bar_width = 30usize;
         let max_count = coalesce.max();
         for n in 1..=max_count {
@@ -246,7 +246,7 @@ fn format_report(data: &InputLatencyReportData) -> String {
             let bar_len = (fraction * bar_width as f64) as usize;
             let bar = "\u{2588}".repeat(bar_len);
             report.push_str(&format!(
-                "  {n:>6} events: {count:>6} ({:>5.1}%) {bar}\n",
+                "  {n:>6} 个事件: {count:>6} ({:>5.1}%) {bar}\n",
                 fraction * 100.0,
             ));
         }
@@ -261,14 +261,14 @@ fn format_report(data: &InputLatencyReportData) -> String {
         let delta_total = total - prev_total;
 
         report.push('\n');
-        report.push_str("Delta Since Last Report\n");
+        report.push_str("自上次报告以来的变化\n");
         report.push_str("-----------------------\n");
         let prev_ts = prev_timestamp.format("%Y-%m-%d %H:%M:%S %Z");
         let elapsed_secs = (now - *prev_timestamp).num_seconds().max(0);
         report.push_str(&format!(
-            "Previous report: {prev_ts} ({elapsed_secs}s ago)\n"
+            "上次报告: {prev_ts} ({elapsed_secs}秒前)\n"
         ));
-        report.push_str(&format!("New samples: {delta_total}\n"));
+        report.push_str(&format!("新样本数: {delta_total}\n"));
 
         if delta_total > 0 {
             let mut delta_histogram = histogram.clone();
@@ -276,13 +276,13 @@ fn format_report(data: &InputLatencyReportData) -> String {
 
             write_latency_percentiles(
                 &mut report,
-                "Percentiles (new samples only)",
+                "百分位数(仅新样本)",
                 &delta_histogram,
                 percentiles,
             );
             write_latency_distribution(
                 &mut report,
-                "Distribution (new samples only)",
+                "分布(仅新样本)",
                 &delta_histogram,
             );
         }
@@ -316,7 +316,7 @@ fn write_latency_percentiles(
             f64::INFINITY
         };
         report.push_str(&format!(
-            "  {label}: {:>8.2}ms  ({:>7.1} Hz)\n",
+            "  {label}: {:>8.2}毫秒  ({:>7.1} 赫兹)\n",
             ns_to_ms(value_ns),
             hz
         ));
@@ -325,12 +325,12 @@ fn write_latency_percentiles(
 
 fn write_latency_distribution(report: &mut String, heading: &str, histogram: &Histogram<u64>) {
     const BUCKETS: &[(u64, u64, &str, &str)] = &[
-        (0, 4_000_000, "0\u{2013}4ms", "(excellent)"),
-        (4_000_000, 8_000_000, "4\u{2013}8ms", "(120fps)"),
-        (8_000_000, 16_000_000, "8\u{2013}16ms", "(60fps)"),
-        (16_000_000, 33_000_000, "16\u{2013}33ms", "(30fps)"),
-        (33_000_000, 100_000_000, "33\u{2013}100ms", ""),
-        (100_000_000, u64::MAX, "100ms+", "(sluggish)"),
+        (0, 4_000_000, "0\u{2013}4毫秒", "(优秀)"),
+        (4_000_000, 8_000_000, "4\u{2013}8毫秒", "(120帧/秒)"),
+        (8_000_000, 16_000_000, "8\u{2013}16毫秒", "(60帧/秒)"),
+        (16_000_000, 33_000_000, "16\u{2013}33毫秒", "(30帧/秒)"),
+        (33_000_000, 100_000_000, "33\u{2013}100毫秒", ""),
+        (100_000_000, u64::MAX, "100毫秒以上", "(卡顿)"),
     ];
     let bar_width = 30usize;
     let total = histogram.len() as f64;

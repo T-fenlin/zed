@@ -41,7 +41,7 @@ fn email_zed_url(specs: &SystemSpecs) -> String {
 }
 
 fn email_body(specs: &SystemSpecs) -> String {
-    let body = format!("\n\nSystem Information:\n\n{}", specs);
+    let body = format!("\n\n系统信息:\n\n{}", specs);
     urlencoding::encode(&body).to_string()
 }
 
@@ -62,9 +62,9 @@ pub fn init(cx: &mut App) {
 
                     cx.prompt(
                         PromptLevel::Info,
-                        "Copied into clipboard",
+                        "已复制到剪贴板",
                         Some(&specs),
-                        &["OK"],
+                        &["确定"],
                     )
                     .await
                 })
@@ -75,9 +75,9 @@ pub fn init(cx: &mut App) {
                 cx.write_to_clipboard(ClipboardItem::new_string(clipboard_text.clone()));
                 drop(window.prompt(
                     PromptLevel::Info,
-                    "Copied into clipboard",
+                    "已复制到剪贴板",
                     Some(&clipboard_text),
-                    &["OK"],
+                    &["确定"],
                     cx,
                 ));
             })
@@ -126,7 +126,7 @@ fn format_installed_extensions_for_clipboard(cx: &mut App) -> String {
             entry.manifest.name,
             extension_id,
             entry.manifest.version,
-            if entry.dev { " (dev)" } else { "" }
+            if entry.dev { " (开发版)" } else { "" }
         );
         lines.push(line);
     }
@@ -134,11 +134,11 @@ fn format_installed_extensions_for_clipboard(cx: &mut App) -> String {
     lines.sort();
 
     if lines.is_empty() {
-        return "No extensions installed.".to_string();
+        return "未安装任何扩展。".to_string();
     }
 
     format!(
-        "Installed extensions ({}):\n{}",
+        "已安装的扩展 ({}):\n{}",
         lines.len(),
         lines.join("\n")
     )

@@ -310,7 +310,7 @@ impl SystemWindowTabs {
                         );
                     });
 
-                    menu = menu.entry("Move Tab to New Window", None, move |window, cx| {
+                    menu = menu.entry("将标签页移至新窗口", None, move |window, cx| {
                         Self::handle_right_click_action(
                             cx,
                             window,
@@ -326,7 +326,7 @@ impl SystemWindowTabs {
                         );
                     });
 
-                    menu = menu.entry("Show All Tabs", None, move |window, cx| {
+                    menu = menu.entry("显示所有标签页", None, move |window, cx| {
                         Self::handle_right_click_action(
                             cx,
                             window,

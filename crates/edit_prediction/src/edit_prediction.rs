@@ -912,11 +912,11 @@ pub(crate) fn buffer_path_with_id_fallback(
     cx: &App,
 ) -> Arc<Path> {
     let Some(file) = file else {
-        return Path::new(&format!("untitled-{}", snapshot.remote_id())).into();
+        return Path::new(&format!("未命名-{}", snapshot.remote_id())).into();
     };
     let full_path = file.full_path(cx);
     let Some(path) = RelPath::new(&full_path, file.path_style(cx)).ok() else {
-        return Path::new(&format!("untitled-{}", snapshot.remote_id())).into();
+        return Path::new(&format!("未命名-{}", snapshot.remote_id())).into();
     };
     path.as_std_path().into()
 }
@@ -1087,7 +1087,7 @@ impl EditPredictionStore {
     pub(crate) fn back_off_requests_after_timeout(&mut self, cx: &mut Context<Self>) {
         self.request_backoff_until = Some(cx.background_executor().now() + REQUEST_TIMEOUT_BACKOFF);
         log::info!(
-            "Backing off edit prediction requests for {:?} after Cloud timeout",
+            "Cloud 超时后,正在退避编辑预测请求,持续 {:?}",
             REQUEST_TIMEOUT_BACKOFF
         );
     }
@@ -1141,7 +1141,7 @@ impl EditPredictionStore {
             let experiments = cx
                 .background_spawn(async move {
                     let organization_id =
-                        organization_id.ok_or_else(|| anyhow!("No organization selected."))?;
+                        organization_id.ok_or_else(|| anyhow!("未选择组织。"))?;
                     let url = client.http_client().build_zed_llm_url(
                         "/edit_prediction_experiments",
                         &[("is_jumps_api", if is_jumps_api { "true" } else { "false" })],
@@ -1165,7 +1165,7 @@ impl EditPredictionStore {
                         let mut body = String::new();
                         response.body_mut().read_to_string(&mut body).await?;
                         anyhow::bail!(
-                            "Failed to fetch experiments: {:?}\nBody: {}",
+                            "获取实验失败:{:?}\n响应体:{}",
                             response.status(),
                             body
                         );
@@ -1387,11 +1387,11 @@ impl EditPredictionStore {
                 };
                 file_context.update(cx, |file_context, _| {
                     file_context.git_changed_file_sets = result
-                        .context("failed to receive git changed file sets")
+                        .context("接收 Git 变更文件集失败")
                         .flatten()
                         .log_with_level(log::Level::Trace)
                         .map(|mut file_sets| file_sets.pop().unwrap_or_default())
-                        .context("failed to load git changed file sets")
+                        .context("加载 Git 变更文件集失败")
                         .map(Arc::new)
                         .log_err();
                     file_context.git_changed_file_sets_task = None;
@@ -1483,7 +1483,7 @@ impl EditPredictionStore {
                                     timestamp: Instant::now(),
                                     metadata: vec![
                                         (
-                                            "Cache Hits",
+                                            "缓存命中",
                                             format!(
                                                 "{}/{}",
                                                 cache_hit_count,
@@ -1492,12 +1492,12 @@ impl EditPredictionStore {
                                             .into(),
                                         ),
                                         (
-                                            "Max LSP Time",
+                                            "最大 LSP 耗时",
                                             format!("{} ms", max_definition_latency.as_millis())
                                                 .into(),
                                         ),
                                         (
-                                            "Mean LSP Time",
+                                            "平均 LSP 耗时",
                                             format!("{} ms", mean_definition_latency.as_millis())
                                                 .into(),
                                         ),
@@ -2355,7 +2355,7 @@ async fn send_settled_batches(
     let Some(url) = client
         .http_client()
         .build_zed_llm_url("/predict_edits/settled", &[])
-        .context("failed to build edit predictions settled url")
+        .context("构建编辑预测结算 URL 失败")
         .log_err()
     else {
         return;
@@ -2467,7 +2467,7 @@ async fn send_settled_batches(
             .await;
 
             if let Err(error) = result {
-                log::error!("failed to submit edit predictions settled: {error:?}");
+                log::error!("提交编辑预测结算失败:{error:?}");
             }
         }
     }
@@ -2524,7 +2524,7 @@ impl EditPredictionStore {
                 EditPredictionProvider::None
                 | EditPredictionProvider::Copilot
                 | EditPredictionProvider::Codestral => {
-                    log::error!("queue_prediction_refresh called with non-store provider");
+                    log::error!("使用非存储提供程序调用了 queue_prediction_refresh");
                     return;
                 }
             };
@@ -2759,7 +2759,7 @@ impl EditPredictionStore {
 
         if is_cloud_zeta && self.request_backoff_active(cx) {
             log::debug!(
-                "Skipping Zeta edit prediction request while backing off after Cloud timeout"
+                "Cloud 超时退避期间,跳过 Zeta 编辑预测请求"
             );
             return Task::ready(Ok(None));
         }
@@ -3046,7 +3046,7 @@ impl EditPredictionStore {
         Res: DeserializeOwned,
     {
         let organization_id =
-            organization_id.ok_or_else(|| anyhow!("No organization selected."))?;
+            organization_id.ok_or_else(|| anyhow!("未选择组织。"))?;
 
         let response = client
             .authenticated_llm_request(&llm_token, organization_id, |token| {
@@ -3095,7 +3095,7 @@ impl EditPredictionStore {
             if status == http_client::http::StatusCode::REQUEST_TIMEOUT {
                 return Err(anyhow::Error::new(CloudRequestTimeoutError));
             }
-            anyhow::bail!("Request failed with status: {status:?}\nBody: {body}");
+            anyhow::bail!("请求失败,状态码:{status:?}\n响应体:{body}");
         }
     }
 
@@ -3464,14 +3464,14 @@ fn merge_anchor_ranges(
 
 #[derive(Error, Debug)]
 #[error(
-    "You must update to Zed version {minimum_version} or higher to continue using edit predictions."
+    "您必须将 Zed 更新到 {minimum_version} 或更高版本才能继续使用编辑预测。"
 )]
 pub struct ZedUpdateRequiredError {
     minimum_version: Version,
 }
 
 #[derive(Error, Debug)]
-#[error("Cloud request timed out")]
+#[error("Cloud 请求超时")]
 pub(crate) struct CloudRequestTimeoutError;
 
 struct ZedPredictUpsell;
@@ -3480,7 +3480,7 @@ fn is_upsell_dismissed(cx: &App) -> bool {
     // To make this backwards compatible with older versions of Zed, we
     // check if the user has seen the previous Edit Prediction Onboarding
     // before, by checking the data collection choice which was written to
-    // the database once the user clicked on "Accept and Enable"
+    // the database once the user clicked on "接受并启用"
     let kvp = KeyValueStore::global(cx);
     if kvp
         .read_kvp(ZED_PREDICT_DATA_COLLECTION_CHOICE)

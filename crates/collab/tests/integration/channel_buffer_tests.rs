@@ -318,7 +318,7 @@ fn assert_remote_selections(
         .remote_selections_in_range(&range, hub, cx)
         .map(|s| {
             let CollaboratorId::PeerId(peer_id) = s.collaborator_id else {
-                panic!("unexpected collaborator id");
+                panic!("意外的协作者 ID");
             };
             let start = s.selection.start.to_offset(snapshot.buffer_snapshot());
             let end = s.selection.end.to_offset(snapshot.buffer_snapshot());
@@ -329,7 +329,7 @@ fn assert_remote_selections(
         .collect::<Vec<_>>();
     assert_eq!(
         remote_selections, expected_selections,
-        "incorrect remote selections"
+        "远程选区不正确"
     );
 }
 
@@ -824,7 +824,7 @@ async fn test_channel_buffer_operations_lost_on_reconnect(
     );
     assert!(
         text_a.contains('a'),
-        "Initial edit 'a' missing from final text {:?}",
+        "最终文本中缺少初始编辑 'a' {:?}",
         text_a
     );
     assert!(
@@ -837,7 +837,7 @@ async fn test_channel_buffer_operations_lost_on_reconnect(
     );
     assert!(
         text_a.contains('c'),
-        "Racing edit 'c' missing from final text {:?}",
+        "最终文本中缺少竞争编辑 'c' {:?}",
         text_a
     );
 

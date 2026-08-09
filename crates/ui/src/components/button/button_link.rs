@@ -82,7 +82,7 @@ impl Component for ButtonLink {
     }
 
     fn description() -> &'static str {
-        "A button that opens a URL."
+        "一个打开 URL 的按钮。"
     }
 
     fn preview(_window: &mut Window, _cx: &mut App) -> AnyElement {
@@ -90,7 +90,7 @@ impl Component for ButtonLink {
             .gap_6()
             .child(
                 example_group(vec![single_example(
-                    "Simple",
+                    "简单",
                     ButtonLink::new("zed.dev", "https://zed.dev").into_any_element(),
                 )])
                 .vertical(),

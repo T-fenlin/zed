@@ -248,7 +248,7 @@ pub mod inspector_reflection {
             let result = (self.function)(boxed);
             *result
                 .downcast::<T>()
-                .expect("Type mismatch in reflection invoke")
+                .expect("反射调用中的类型不匹配")
         }
     }
 }

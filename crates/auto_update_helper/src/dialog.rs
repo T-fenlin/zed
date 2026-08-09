@@ -41,7 +41,7 @@ struct DialogInfo {
 pub(crate) fn create_dialog_window(receiver: Receiver<Result<()>>) -> Result<HWND> {
     unsafe {
         let class_name = windows::core::w!("Zed-Auto-Updater-Dialog-Class");
-        let module = GetModuleHandleW(None).context("unable to get module handle")?;
+        let module = GetModuleHandleW(None).context("无法获取模块句柄")?;
         let handle = LoadImageW(
             Some(module.into()),
             windows::core::PCWSTR(1 as _),
@@ -50,7 +50,7 @@ pub(crate) fn create_dialog_window(receiver: Receiver<Result<()>>) -> Result<HWN
             0,
             LR_DEFAULTSIZE | LR_SHARED,
         )
-        .context("unable to load icon file")?;
+        .context("无法加载图标文件")?;
         let wc = WNDCLASSW {
             lpfnWndProc: Some(wnd_proc),
             lpszClassName: class_name,
@@ -61,7 +61,7 @@ pub(crate) fn create_dialog_window(receiver: Receiver<Result<()>>) -> Result<HWN
         RegisterClassW(&wc);
         let mut rect = RECT::default();
         GetWindowRect(GetDesktopWindow(), &mut rect)
-            .context("unable to get desktop window rect")?;
+            .context("无法获取桌面窗口矩形")?;
         let width = 400;
         let height = 150;
         let info = Box::new(RefCell::new(DialogInfo {
@@ -83,7 +83,7 @@ pub(crate) fn create_dialog_window(receiver: Receiver<Result<()>>) -> Result<HWN
             None,
             Some(Box::into_raw(info) as _),
         )
-        .context("unable to create dialog window")?;
+        .context("无法创建对话框窗口")?;
         Ok(hwnd)
     }
 }
@@ -171,7 +171,7 @@ unsafe extern "system" fn wnd_proc(
                 &HSTRING::from(font_name),
             );
             let temp = SelectObject(hdc, font.into());
-            let string = HSTRING::from("Updating Zed...");
+            let string = HSTRING::from("正在更新 Zed...");
             return_if_failed!(TextOutW(hdc, 20, 15, &string).ok());
             return_if_failed!(DeleteObject(temp).ok());
 
@@ -189,8 +189,8 @@ unsafe extern "system" fn wnd_proc(
                 if let Ok(result) = data.borrow_mut().rx.recv()
                     && let Err(e) = result
                 {
-                    log::error!("Failed to update Zed: {:?}", e);
-                    show_error(format!("Error: {:?}", e));
+                    log::error!("更新 Zed 失败: {:?}", e);
+                    show_error(format!("错误: {:?}", e));
                 }
             });
             unsafe { PostQuitMessage(0) };

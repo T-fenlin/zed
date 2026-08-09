@@ -409,7 +409,7 @@ impl Element for EditorText {
         let is_placeholder = content.is_empty();
 
         let lines: Vec<ShapedLine> = if is_placeholder {
-            let placeholder: SharedString = "Type here...".into();
+            let placeholder: SharedString = "在此输入...".into();
             let run = TextRun {
                 len: placeholder.len(),
                 font: style.font(),

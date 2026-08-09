@@ -1320,21 +1320,21 @@ mod test {
         let disabled = ConfiguredLanguageServer::new_disabled("rust-analyzer");
 
         assert_eq!(
-            serde_json::to_string(&enabled).expect("enabled server should serialize"),
+            serde_json::to_string(&enabled).expect("启用的服务器应能序列化"),
             "\"rust-analyzer\""
         );
         assert_eq!(
-            serde_json::to_string(&disabled).expect("disabled server should serialize"),
+            serde_json::to_string(&disabled).expect("禁用的服务器应能序列化"),
             "\"!rust-analyzer\""
         );
         assert_eq!(
             serde_json::from_str::<ConfiguredLanguageServer>("\"rust-analyzer\"")
-                .expect("enabled server should deserialize"),
+                .expect("启用的服务器应能反序列化"),
             enabled
         );
         assert_eq!(
             serde_json::from_str::<ConfiguredLanguageServer>("\"!rust-analyzer\"")
-                .expect("disabled server should deserialize"),
+                .expect("禁用的服务器应能反序列化"),
             disabled
         );
     }
@@ -1376,7 +1376,7 @@ mod test {
         assert_eq!(
             base.languages.0["TypeScript"].language_servers.as_ref(),
             Some(&default_typescript_servers),
-            "a global list must not rewrite per-language lists"
+            "全局列表不得覆盖按语言配置的列表"
         );
         assert_eq!(
             base.defaults.language_servers.as_ref(),
@@ -1410,7 +1410,7 @@ mod test {
                 ConfiguredLanguageServer::new("vtsls"),
                 ConfiguredLanguageServer::new(REST_OF_LANGUAGE_SERVERS),
             ]),
-            "a per-language list must replace the older one wholesale"
+            "按语言配置的列表应整体替换旧的列表"
         );
     }
 
@@ -1447,7 +1447,7 @@ mod test {
 
         assert_eq!(
             base.languages.0["Rust"].language_servers, None,
-            "languages without their own list must not get a stale copy of the global one"
+            "没有自己列表的语言不应获得过时的全局列表副本"
         );
         assert_eq!(
             base.defaults.language_servers.as_ref(),
@@ -1584,19 +1584,19 @@ mod test {
     fn test_prettier_options() {
         let raw_prettier = r#"{"allowed": false, "tabWidth": 4, "semi": false}"#;
         let result = serde_json::from_str::<PrettierSettingsContent>(raw_prettier)
-            .expect("Failed to parse prettier options");
+            .expect("解析 Prettier 选项失败");
         assert!(
             result
                 .options
                 .as_ref()
-                .expect("options were flattened")
+                .expect("选项已扁平化")
                 .contains_key("semi")
         );
         assert!(
             result
                 .options
                 .as_ref()
-                .expect("options were flattened")
+                .expect("选项已扁平化")
                 .contains_key("tabWidth")
         );
     }

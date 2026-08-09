@@ -542,7 +542,7 @@ async fn test_diff_hunks_in_range_query_starting_at_added_row(cx: &mut TestAppCo
             .map(|hunk| hunk.row_range.start.0..hunk.row_range.end.0)
             .collect::<Vec<_>>(),
         vec![1..3],
-        "querying starting at the added row should still return the full hunk including deleted lines"
+        "从新增行开始查询仍应返回包含已删除行的完整代码块"
     );
 }
 
@@ -2334,8 +2334,8 @@ fn test_set_excerpts_for_path_replaces_previous_buffer(cx: &mut TestAppContext) 
             Some(start..end)
         });
         (
-            anchors.next().expect("should have first anchor"),
-            anchors.next().expect("should have second anchor"),
+            anchors.next().expect("应存在第一个锚点"),
+            anchors.next().expect("应存在第二个锚点"),
         )
     });
 
@@ -2379,7 +2379,7 @@ fn test_set_excerpts_for_path_replaces_previous_buffer(cx: &mut TestAppContext) 
                 Some(start..end)
             })
             .next()
-            .expect("should have an anchor")
+            .expect("应存在一个锚点")
     });
 
     let buffer_b_id = buffer_b.read_with(cx, |buffer, _| buffer.remote_id());
@@ -2397,16 +2397,16 @@ fn test_set_excerpts_for_path_replaces_previous_buffer(cx: &mut TestAppContext) 
         );
         assert!(
             multibuffer.buffer(buffer_a_id).is_none(),
-            "old buffer should be fully removed from the multibuffer"
+            "旧缓冲区应已从多缓冲区中完全移除"
         );
         assert!(
             multibuffer.buffer(buffer_b_id).is_some(),
-            "new buffer should be present in the multibuffer"
+            "新缓冲区应存在于多缓冲区中"
         );
     });
     assert!(
         removed_buffer_ids.read().contains(&buffer_a_id),
-        "BuffersRemoved event should have been emitted for the old buffer"
+        "应为旧缓冲区发出 BuffersRemoved 事件"
     );
 
     assert_excerpts_match(
@@ -2480,7 +2480,7 @@ fn test_stale_anchor_after_buffer_removal_and_path_reuse(cx: &mut TestAppContext
         let offset = stale_anchor.to_offset(&snapshot);
         assert!(
             offset.0 <= snapshot.len().0,
-            "stale anchor resolved to offset {offset:?} but multibuffer len is {:?}",
+            "过期锚点解析到偏移量 {offset:?},但多缓冲区长度为 {:?}",
             snapshot.len()
         );
     });
@@ -2500,7 +2500,7 @@ fn test_stale_anchor_after_buffer_removal_and_path_reuse(cx: &mut TestAppContext
         let offset = stale_anchor.to_offset(&snapshot);
         assert!(
             offset.0 <= snapshot.len().0,
-            "stale anchor resolved to offset {offset:?} but multibuffer len is {:?}",
+            "过期锚点解析到偏移量 {offset:?},但多缓冲区长度为 {:?}",
             snapshot.len()
         );
     });
@@ -3081,14 +3081,14 @@ impl ReferenceMultibuffer {
                 .binary_search_by(|anchor| anchor.cmp(&hunk.buffer_range.start, &buffer))
             {
                 log::info!(
-                    "expanding diff hunk {:?}. excerpt range: {:?}, buffer {:?}",
+                    "正在展开差异代码块 {:?}。摘录范围: {:?},缓冲区 {:?}",
                     hunk_range,
                     excerpt_range,
                     buffer.remote_id()
                 );
                 expanded_diff_hunks.insert(ix, hunk.buffer_range.start);
             } else {
-                log::trace!("hunk {hunk_range:?} already expanded in excerpt");
+                log::trace!("代码块 {hunk_range:?} 已在摘录中展开");
             }
         }
     }
@@ -3192,7 +3192,7 @@ impl ReferenceMultibuffer {
                     hunk_range.end = hunk_range.end.min(buffer_range.end);
                     if hunk_range.start > buffer_range.end || hunk_range.start < buffer_range.start
                     {
-                        log::trace!("skipping hunk outside excerpt range");
+                        log::trace!("跳过摘录范围之外的代码块");
                         continue;
                     }
 
@@ -3208,12 +3208,12 @@ impl ReferenceMultibuffer {
                                 .is_eq()
                         })
                     {
-                        log::trace!("skipping a hunk that's not marked as expanded");
+                        log::trace!("跳过未标记为已展开的代码块");
                         continue;
                     }
 
                     if !hunk.buffer_range.start.is_valid(buffer) {
-                        log::trace!("skipping hunk with deleted start: {:?}", hunk.range);
+                        log::trace!("跳过起始部分已删除的代码块: {:?}", hunk.range);
                         continue;
                     }
 
@@ -3461,7 +3461,7 @@ impl ReferenceMultibuffer {
 
     fn anchor_to_offset(&self, anchor: &Anchor, cx: &App) -> Option<MultiBufferOffset> {
         if anchor.diff_base_anchor().is_some() {
-            panic!("reference multibuffer cannot yet resolve anchors inside deleted hunks");
+            panic!("参考多缓冲区尚无法解析已删除代码块内的锚点");
         }
         let (anchor, snapshot, path_key) = self.anchor_to_buffer_anchor(anchor, cx)?;
         // TODO(cole) can maybe make this and expected content call a common function instead
@@ -3472,7 +3472,7 @@ impl ReferenceMultibuffer {
             let excerpt = region
                 .excerpt
                 .as_ref()
-                .expect("should have no buffers in empty reference multibuffer");
+                .expect("空参考多缓冲区中不应有任何缓冲区");
             excerpt
                 .path_key
                 .cmp(&path_key)
@@ -3556,7 +3556,7 @@ async fn test_random_set_ranges(cx: &mut TestAppContext, mut rng: StdRng) {
     let multibuffer = cx.new(|_| MultiBuffer::new(Capability::ReadWrite));
 
     let operations = env::var("OPERATIONS")
-        .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+        .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
         .unwrap_or(10);
 
     fn row_ranges(ranges: &Vec<Range<Point>>) -> Vec<Range<u32>> {
@@ -3578,7 +3578,7 @@ async fn test_random_set_ranges(cx: &mut TestAppContext, mut rng: StdRng) {
             })
             .collect::<Vec<_>>();
         ranges.sort_by_key(|range| range.start);
-        log::info!("Setting ranges: {:?}", row_ranges(&ranges));
+        log::info!("设置范围: {:?}", row_ranges(&ranges));
         multibuffer.update(cx, |multibuffer, cx| {
             multibuffer.set_excerpts_for_path(
                 PathKey::for_buffer(&buf, cx),
@@ -3604,7 +3604,7 @@ async fn test_random_set_ranges(cx: &mut TestAppContext, mut rng: StdRng) {
             if let Some(last_end) = last_end.take() {
                 assert!(
                     start > last_end,
-                    "multibuffer has out-of-order ranges: {:?}; {:?} <= {:?}",
+                    "多缓冲区范围顺序错误: {:?}; {:?} <= {:?}",
                     row_ranges(&seen_ranges),
                     start,
                     last_end
@@ -3618,7 +3618,7 @@ async fn test_random_set_ranges(cx: &mut TestAppContext, mut rng: StdRng) {
 
         assert!(
             ranges.is_empty(),
-            "multibuffer {:?} did not include all ranges: {:?}",
+            "多缓冲区 {:?} 未包含所有范围: {:?}",
             row_ranges(&seen_ranges),
             row_ranges(&ranges)
         );
@@ -3628,7 +3628,7 @@ async fn test_random_set_ranges(cx: &mut TestAppContext, mut rng: StdRng) {
 #[gpui::test(iterations = 100)]
 async fn test_random_multibuffer(cx: &mut TestAppContext, mut rng: StdRng) {
     let operations = env::var("OPERATIONS")
-        .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+        .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
         .unwrap_or(10);
     let multibuffer = cx.new(|_| MultiBuffer::new(Capability::ReadWrite));
     let mut buffers: Vec<Entity<Buffer>> = Vec::new();
@@ -3645,7 +3645,7 @@ async fn test_random_multibuffer(cx: &mut TestAppContext, mut rng: StdRng) {
                 buffer.update(cx, |buf, cx| {
                     let edit_count = rng.random_range(1..5);
                     buf.randomly_edit(&mut rng, edit_count, cx);
-                    log::info!("buffer text:\n{}", buf.text());
+                    log::info!("缓冲区文本:\n{}", buf.text());
                     needs_diff_calculation = true;
                 });
                 cx.update(|cx| reference.diffs_updated(cx));
@@ -3671,7 +3671,7 @@ async fn test_random_multibuffer(cx: &mut TestAppContext, mut rng: StdRng) {
                                 .unwrap()
                         })
                         .collect::<Vec<_>>();
-                    log::info!("Expanding excerpts {excerpt_ixs:?} by {line_count} lines");
+                    log::info!("将摘录 {excerpt_ixs:?} 扩展 {line_count} 行");
                     multibuffer.expand_excerpts(
                         excerpts
                             .iter()
@@ -3696,7 +3696,7 @@ async fn test_random_multibuffer(cx: &mut TestAppContext, mut rng: StdRng) {
                 } else {
                     Bias::Right
                 };
-                log::info!("Creating anchor at {} with bias {:?}", offset.0, bias);
+                log::info!("在 {} 处创建锚点,偏移方向 {:?}", offset.0, bias);
                 anchors.push(multibuffer.anchor_at(offset, bias));
                 anchors.sort_by(|a, b| a.cmp(b, &multibuffer));
             }
@@ -3718,7 +3718,7 @@ async fn test_random_multibuffer(cx: &mut TestAppContext, mut rng: StdRng) {
                         ..snapshot.anchor_in_excerpt(end).unwrap();
 
                     log::info!(
-                        "expanding diff hunks in range {:?} (excerpt index {excerpt_ix:?}, buffer id {:?})",
+                        "正在展开范围 {:?} 内的差异代码块 (摘录索引 {excerpt_ix:?},缓冲区 ID {:?})",
                         range.to_point(&snapshot),
                         buffer_id,
                     );
@@ -3734,7 +3734,7 @@ async fn test_random_multibuffer(cx: &mut TestAppContext, mut rng: StdRng) {
 
                         if let Some(diff) = multibuffer.diff_for(buffer_id) {
                             diff.update(cx, |diff, cx| {
-                                log::info!("recalculating diff for buffer {:?}", buffer_id,);
+                                log::info!("正在为缓冲区 {:?} 重新计算差异", buffer_id,);
                                 diff.recalculate_diff_sync(&snapshot.text, cx);
                             });
                         }
@@ -3742,7 +3742,7 @@ async fn test_random_multibuffer(cx: &mut TestAppContext, mut rng: StdRng) {
                         if let Some(inverted_diff) = inverted_diff_main_buffers.get(&buffer_id) {
                             inverted_diff.update(cx, |diff, cx| {
                                 log::info!(
-                                    "recalculating inverted diff for main buffer {:?}",
+                                    "正在为主缓冲区 {:?} 重新计算反向差异",
                                     buffer_id,
                                 );
                                 diff.recalculate_diff_sync(&snapshot.text, cx);
@@ -3918,7 +3918,7 @@ fn mutate_excerpt_ranges(
         match rng.random_range(0..5) {
             0..=1 if !existing_ranges.is_empty() => {
                 let index = rng.random_range(0..existing_ranges.len());
-                log::info!("Removing excerpt at index {index}");
+                log::info!("正在移除索引 {index} 处的摘录");
                 existing_ranges.remove(index);
             }
             _ => {
@@ -3926,7 +3926,7 @@ fn mutate_excerpt_ranges(
                 let start_row = rng.random_range(0..=end_row);
                 let end_col = buffer.line_len(end_row);
                 log::info!(
-                    "Inserting excerpt for buffer {:?}, row range {:?}",
+                    "正在为缓冲区 {:?} 插入行范围 {:?} 的摘录",
                     buffer.remote_id(),
                     start_row..end_row
                 );
@@ -4004,12 +4004,12 @@ fn check_multibuffer(
         Some(has_diff),
     );
 
-    log::info!("Multibuffer content:\n{}", actual_diff);
+    log::info!("多缓冲区内容:\n{}", actual_diff);
 
     assert_eq!(
         actual_row_infos.len(),
         actual_text.split('\n').count(),
-        "line count: {}",
+        "行数: {}",
         actual_text.split('\n').count()
     );
     pretty_assertions::assert_eq!(actual_diff, expected_diff);
@@ -4056,7 +4056,7 @@ fn check_multibuffer(
             .excerpts
             .iter()
             .find(|reference_excerpt| reference_excerpt.range == excerpt_range.context)
-            .expect("corresponding excerpt should exist in reference multibuffer");
+            .expect("参考多缓冲区中应存在对应的摘录");
     }
 
     assert_consistent_line_numbers(&snapshot);
@@ -4082,7 +4082,7 @@ fn check_multibuffer(
         assert_eq!(
             text_for_range,
             &expected_text[start_ix..end_ix],
-            "incorrect text for range {:?}",
+            "范围 {:?} 的文本不正确",
             start_ix..end_ix
         );
 
@@ -4093,7 +4093,7 @@ fn check_multibuffer(
                 MultiBufferOffset(start_ix)..MultiBufferOffset(end_ix)
             ),
             expected_summary,
-            "incorrect summary for range {:?}",
+            "范围 {:?} 的摘要不正确",
             start_ix..end_ix
         );
     }
@@ -4106,7 +4106,7 @@ fn check_multibuffer(
         assert_eq!(
             snapshot.summary_for_anchor::<MultiBufferOffset>(anchor),
             resolved_offset,
-            "anchor: {:?}",
+            "锚点: {:?}",
             anchor
         );
     }
@@ -4117,7 +4117,7 @@ fn check_multibuffer(
         .collect::<Vec<_>>();
     assert_eq!(
         actual_anchor_offsets, expected_anchor_offsets,
-        "buffer anchor resolves to wrong offset"
+        "缓冲区锚点解析到错误的偏移量"
     );
 
     for _ in 0..10 {
@@ -4156,7 +4156,7 @@ fn check_multibuffer_edits(
     let edits = subscription.consume().into_inner();
 
     log::info!(
-        "applying subscription edits to old text: {:?}: {:#?}",
+        "正在将订阅编辑应用于旧文本: {:?}: {:#?}",
         old_snapshot.text(),
         edits,
     );
@@ -4673,7 +4673,7 @@ fn format_diff(
             //     .map(|row| format!("{:0>3}", row.0))
             //     .unwrap_or_else(|| "???".to_string());
             // let byte_range = format!("{byte_range_start:0>3}..{byte_range_end:0>3}");
-            // format!("{boundary_row}Row: {mbr}, Bytes: {byte_range} | {marker}{line}{expand}")
+            // format!("{boundary_row}行: {mbr},字节: {byte_range} | {marker}{line}{expand}")
         })
         .collect::<Vec<_>>()
         .join("\n")
@@ -4685,12 +4685,12 @@ fn format_diff(
 //         .iter()
 //         .map(|transform| {
 //             let (kind, summary) = match transform {
-//                 DiffTransform::DeletedHunk { summary, .. } => ("   Deleted", (*summary).into()),
-//                 DiffTransform::FilteredInsertedHunk { summary, .. } => ("  Filtered", *summary),
-//                 DiffTransform::InsertedHunk { summary, .. } => ("  Inserted", *summary),
-//                 DiffTransform::Unmodified { summary, .. } => ("Unmodified", *summary),
+//                 DiffTransform::DeletedHunk { summary, .. } => ("   已删除", (*summary).into()),
+//                 DiffTransform::FilteredInsertedHunk { summary, .. } => ("   已过滤", *summary),
+//                 DiffTransform::InsertedHunk { summary, .. } => ("   已插入", *summary),
+//                 DiffTransform::Unmodified { summary, .. } => ("未修改", *summary),
 //             };
-//             format!("{kind}(len: {}, lines: {:?})", summary.len, summary.lines)
+//             format!("{kind}(长度: {},行: {:?})", summary.len, summary.lines)
 //         })
 //         .join("\n")
 // }
@@ -4701,7 +4701,7 @@ fn format_diff(
 //         .iter()
 //         .map(|excerpt| {
 //             format!(
-//                 "Excerpt(buffer_range = {:?}, lines = {:?}, has_trailing_newline = {:?})",
+//                 "摘录(缓冲区范围 = {:?},行 = {:?},有尾随换行符 = {:?})",
 //                 excerpt.range.context.to_point(&excerpt.buffer),
 //                 excerpt.text_summary.lines,
 //                 excerpt.has_trailing_newline
@@ -5049,7 +5049,7 @@ fn check_edits(
         );
     }
 
-    pretty_assertions::assert_eq!(text, new_text, "invalid edits: {:?}", edits);
+    pretty_assertions::assert_eq!(text, new_text, "无效编辑: {:?}", edits);
 }
 
 #[track_caller]
@@ -5065,7 +5065,7 @@ fn assert_chunks_in_ranges(snapshot: &MultiBufferSnapshot) {
         );
         chunks.seek(MultiBufferOffset(ix)..snapshot.len());
         let tail = chunks.map(|chunk| chunk.text).collect::<String>();
-        assert_eq!(tail, &full_text[ix..], "seek to range: {:?}", ix..);
+        assert_eq!(tail, &full_text[ix..], "定位到范围: {:?}", ix..);
     }
 }
 
@@ -5339,15 +5339,15 @@ fn test_random_chunk_bitmaps(cx: &mut App, mut rng: StdRng) {
         if chunk_text.is_empty() {
             assert_eq!(
                 chars_bitmap, 0,
-                "Empty chunk should have empty chars bitmap"
+                "空块应具有空的字符位图"
             );
-            assert_eq!(tabs_bitmap, 0, "Empty chunk should have empty tabs bitmap");
+            assert_eq!(tabs_bitmap, 0, "空块应具有空的制表符位图");
             continue;
         }
 
         assert!(
             chunk_text.len() <= 128,
-            "Chunk text length {} exceeds 128 bytes",
+            "块文本长度 {} 超过 128 字节",
             chunk_text.len()
         );
 
@@ -5362,14 +5362,14 @@ fn test_random_chunk_bitmaps(cx: &mut App, mut rng: StdRng) {
             let has_bit = chars_bitmap & (1 << byte_idx) != 0;
 
             if has_bit != should_have_bit {
-                eprintln!("Chunk text bytes: {:?}", chunk_text.as_bytes());
-                eprintln!("Char indices: {:?}", char_indices);
-                eprintln!("Chars bitmap: {:#b}", chars_bitmap);
+                eprintln!("块文本字节: {:?}", chunk_text.as_bytes());
+                eprintln!("字符索引: {:?}", char_indices);
+                eprintln!("字符位图: {:#b}", chars_bitmap);
             }
 
             assert_eq!(
                 has_bit, should_have_bit,
-                "Chars bitmap mismatch at byte index {} in chunk {:?}. Expected bit: {}, Got bit: {}",
+                "字节索引 {} 处块 {:?} 中的字符位图不匹配。预期位: {}, 实际位: {}",
                 byte_idx, chunk_text, should_have_bit, has_bit
             );
         }
@@ -5379,11 +5379,11 @@ fn test_random_chunk_bitmaps(cx: &mut App, mut rng: StdRng) {
             let has_bit = tabs_bitmap & (1 << byte_idx) != 0;
 
             if has_bit != is_tab {
-                eprintln!("Chunk text bytes: {:?}", chunk_text.as_bytes());
-                eprintln!("Tabs bitmap: {:#b}", tabs_bitmap);
+                eprintln!("块文本字节: {:?}", chunk_text.as_bytes());
+                eprintln!("制表符位图: {:#b}", tabs_bitmap);
                 assert_eq!(
                     has_bit, is_tab,
-                    "Tabs bitmap mismatch at byte index {} in chunk {:?}. Byte: {:?}, Expected bit: {}, Got bit: {}",
+                    "字节索引 {} 处块 {:?} 中的制表符位图不匹配。字节: {:?}, 预期位: {}, 实际位: {}",
                     byte_idx, chunk_text, byte as char, is_tab, has_bit
                 );
             }
@@ -5511,15 +5511,15 @@ fn test_random_chunk_bitmaps_with_diffs(cx: &mut App, mut rng: StdRng) {
         if chunk_text.is_empty() {
             assert_eq!(
                 chars_bitmap, 0,
-                "Empty chunk should have empty chars bitmap"
+                "空块应具有空的字符位图"
             );
-            assert_eq!(tabs_bitmap, 0, "Empty chunk should have empty tabs bitmap");
+            assert_eq!(tabs_bitmap, 0, "空块应具有空的制表符位图");
             continue;
         }
 
         assert!(
             chunk_text.len() <= 128,
-            "Chunk text length {} exceeds 128 bytes",
+            "块文本长度 {} 超过 128 字节",
             chunk_text.len()
         );
 
@@ -5533,14 +5533,14 @@ fn test_random_chunk_bitmaps_with_diffs(cx: &mut App, mut rng: StdRng) {
             let has_bit = chars_bitmap & (1 << byte_idx) != 0;
 
             if has_bit != should_have_bit {
-                eprintln!("Chunk text bytes: {:?}", chunk_text.as_bytes());
-                eprintln!("Char indices: {:?}", char_indices);
-                eprintln!("Chars bitmap: {:#b}", chars_bitmap);
+                eprintln!("块文本字节: {:?}", chunk_text.as_bytes());
+                eprintln!("字符索引: {:?}", char_indices);
+                eprintln!("字符位图: {:#b}", chars_bitmap);
             }
 
             assert_eq!(
                 has_bit, should_have_bit,
-                "Chars bitmap mismatch at byte index {} in chunk {:?}. Expected bit: {}, Got bit: {}",
+                "字节索引 {} 处块 {:?} 中的字符位图不匹配。预期位: {}, 实际位: {}",
                 byte_idx, chunk_text, should_have_bit, has_bit
             );
         }
@@ -5550,11 +5550,11 @@ fn test_random_chunk_bitmaps_with_diffs(cx: &mut App, mut rng: StdRng) {
             let has_bit = tabs_bitmap & (1 << byte_idx) != 0;
 
             if has_bit != is_tab {
-                eprintln!("Chunk text bytes: {:?}", chunk_text.as_bytes());
-                eprintln!("Tabs bitmap: {:#b}", tabs_bitmap);
+                eprintln!("块文本字节: {:?}", chunk_text.as_bytes());
+                eprintln!("制表符位图: {:#b}", tabs_bitmap);
                 assert_eq!(
                     has_bit, is_tab,
-                    "Tabs bitmap mismatch at byte index {} in chunk {:?}. Byte: {:?}, Expected bit: {}, Got bit: {}",
+                    "字节索引 {} 处块 {:?} 中的制表符位图不匹配。字节: {:?}, 预期位: {}, 实际位: {}",
                     byte_idx, chunk_text, byte as char, is_tab, has_bit
                 );
             }
@@ -5631,7 +5631,7 @@ async fn test_word_diff_consecutive_modified_lines(cx: &mut TestAppContext) {
     assert_eq!(
         word_diffs,
         vec!["bbb", "ddd", "BBB", "DDD"],
-        "consecutive modified lines should produce word diffs when line counts match"
+        "当行数匹配时,连续的修改行应产生单词差异"
     );
 }
 
@@ -5648,7 +5648,7 @@ async fn test_word_diff_modified_lines_with_deletion_between(cx: &mut TestAppCon
     assert_eq!(
         word_diffs,
         Vec::<String>::new(),
-        "modified lines with a deleted line between should not produce word diffs"
+        "中间有删除行的修改行不应产生单词差异"
     );
 }
 
@@ -5671,7 +5671,7 @@ async fn test_word_diff_disabled(cx: &mut TestAppContext) {
     assert_eq!(
         word_diffs,
         Vec::<String>::new(),
-        "word diffs should be empty when disabled"
+        "禁用时单词差异应为空"
     );
 }
 
@@ -5771,19 +5771,19 @@ fn test_excerpts_containment_functions(cx: &mut App) {
         assert_eq!(
             excerpts_for_range.len(),
             1,
-            "Expected exactly one excerpt for offset {offset}",
+            "偏移量 {offset} 应恰好对应一个摘录",
         );
 
         let (_, excerpt_containing) =
             snapshot
                 .excerpt_containing(offset..offset)
                 .unwrap_or_else(|| {
-                    panic!("Expected excerpt_containing to find excerpt for offset {offset}")
+                    panic!("excerpt_containing 应找到偏移量 {offset} 对应的摘录")
                 });
 
         assert_eq!(
             excerpts_for_range[0].range, excerpt_containing,
-            "excerpts_for_range and excerpt_containing should agree for offset {offset}",
+            "excerpts_for_range 和 excerpt_containing 对于偏移量 {offset} 应保持一致",
         );
     }
 
@@ -5797,7 +5797,7 @@ fn test_excerpts_containment_functions(cx: &mut App) {
     let containing = snapshot.excerpt_containing(p20..p40);
     assert!(
         containing.is_none(),
-        "excerpt_containing should return None for ranges spanning multiple excerpts"
+        "对于跨越多个摘录的范围,excerpt_containing 应返回 None"
     );
 }
 
@@ -5834,7 +5834,7 @@ fn test_range_to_buffer_ranges(cx: &mut App) {
     assert_eq!(
         ranges_half_open.len(),
         1,
-        "Half-open range ending at excerpt start should EXCLUDE that excerpt"
+        "在摘录起始处结束的半开区间应排除该摘录"
     );
     assert_eq!(ranges_half_open[0].1, BufferOffset(0)..BufferOffset(7));
     assert_eq!(
@@ -5876,7 +5876,7 @@ fn test_range_to_buffer_ranges(cx: &mut App) {
     assert_eq!(
         ranges_half_open_max.len(),
         2,
-        "Should include trailing empty excerpts"
+        "应包含末尾的空摘录"
     );
     assert_eq!(ranges_half_open_max[1].1, BufferOffset(0)..BufferOffset(0));
 }
@@ -5919,7 +5919,7 @@ fn test_range_to_buffer_ranges_zero_length_at_excerpt_boundary(cx: &mut App) {
 
     assert_eq!(
         ranges, expected_ranges,
-        "Zero-length range at excerpt boundary should return the excerpt at that point"
+        "摘录边界处的零长度范围应返回该点的摘录"
     );
 }
 
@@ -6087,7 +6087,7 @@ fn test_cannot_seek_backward_after_excerpt_replacement(cx: &mut TestAppContext) 
     let (anchor_in_e_b2, anchor_in_e_b3) = multibuffer.read_with(cx, |multibuffer, cx| {
         let snapshot = multibuffer.snapshot(cx);
         let excerpt_infos = snapshot.excerpts().collect::<Vec<_>>();
-        assert_eq!(excerpt_infos.len(), 4, "expected 4 excerpts (3×B + 1×C)");
+        assert_eq!(excerpt_infos.len(), 4, "预期 4 个摘录 (3×B + 1×C)");
 
         let e_b2_info = excerpt_infos[1].clone();
         let e_b3_info = excerpt_infos[2].clone();
@@ -6270,7 +6270,7 @@ fn test_is_valid_anchor_past_last_excerpt_for_buffer(cx: &mut TestAppContext) {
 
         assert!(
             !mb_anchor.is_valid(&snapshot),
-            "anchor past the last excerpt for its buffer should not be valid"
+            "超出缓冲区最后一个摘录的锚点应无效"
         );
     });
 }

@@ -144,7 +144,7 @@ impl FoldPoint {
         let overshoot = self.0 - start.1.output.lines;
         let mut offset = start.1.output.len;
         if !overshoot.is_zero() {
-            let transform = item.expect("display point out of range");
+            let transform = item.expect("显示点超出范围");
             assert!(transform.placeholder.is_none());
             let end_inlay_offset = snapshot
                 .inlay_snapshot
@@ -415,14 +415,14 @@ impl FoldMap {
             assert_eq!(
                 self.snapshot.transforms.summary().input.len,
                 self.snapshot.inlay_snapshot.len().0,
-                "transform tree does not match inlay snapshot's length"
+                "变换树与内联快照的长度不匹配"
             );
 
             let mut prev_transform_isomorphic = false;
             for transform in self.snapshot.transforms.iter() {
                 if !transform.is_fold() && prev_transform_isomorphic {
                     panic!(
-                        "found adjacent isomorphic transforms: {:?}",
+                        "发现相邻的同构变换: {:?}",
                         self.snapshot.transforms.items(())
                     );
                 }
@@ -826,7 +826,7 @@ impl FoldSnapshot {
     #[ztracing::instrument(skip_all)]
     pub fn row_infos(&self, start_row: u32) -> FoldRows<'_> {
         if start_row > self.transforms.summary().output.lines.row {
-            panic!("invalid display row {}", start_row);
+            panic!("无效的显示行 {}", start_row);
         }
 
         let fold_point = FoldPoint::new(start_row, 0);
@@ -1127,7 +1127,7 @@ fn consolidate_inlay_edits(mut edits: Vec<InlayEdit>) -> Vec<InlayEdit> {
             .filter_map(|x| x)
             .collect();
         v.push(first_edit.clone());
-        debug_assert_eq!(_old_alloc_ptr, v.as_ptr(), "Inlay edits were reallocated");
+        debug_assert_eq!(_old_alloc_ptr, v.as_ptr(), "内联编辑被重新分配");
         v
     } else {
         vec![]
@@ -1986,7 +1986,7 @@ mod tests {
     fn test_random_folds(cx: &mut gpui::App, mut rng: StdRng) {
         init_test(cx);
         let operations = env::var("OPERATIONS")
-            .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+            .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
             .unwrap_or(10);
 
         let len = rng.random_range(0..10);
@@ -2005,7 +2005,7 @@ mod tests {
 
         let mut next_inlay_id = 0;
         for _ in 0..operations {
-            log::info!("text: {:?}", buffer_snapshot.text());
+            log::info!("文本: {:?}", buffer_snapshot.text());
             let mut buffer_edits = Vec::new();
             let mut inlay_edits = Vec::new();
             match rng.random_range(0..=100) {
@@ -2022,14 +2022,14 @@ mod tests {
                     buffer.randomly_mutate(&mut rng, edit_count, cx);
                     buffer_snapshot = buffer.snapshot(cx);
                     let edits = subscription.consume().into_inner();
-                    log::info!("editing {:?}", edits);
+                    log::info!("编辑 {:?}", edits);
                     buffer_edits.extend(edits);
                 }),
             };
 
             let (inlay_snapshot, new_inlay_edits) =
                 inlay_map.sync(buffer_snapshot.clone(), buffer_edits);
-            log::info!("inlay text {:?}", inlay_snapshot.text());
+            log::info!("内联文本 {:?}", inlay_snapshot.text());
 
             let inlay_edits = Patch::new(inlay_edits)
                 .compose(new_inlay_edits)
@@ -2046,7 +2046,7 @@ mod tests {
 
             assert_eq!(snapshot.text(), expected_text);
             log::info!(
-                "fold text {:?} ({} lines)",
+                "折叠文本 {:?} ({} 行)",
                 expected_text,
                 expected_text.matches('\n').count() + 1
             );
@@ -2072,7 +2072,7 @@ mod tests {
             assert_eq!(
                 expected_buffer_rows.len(),
                 expected_text.matches('\n').count() + 1,
-                "wrong expected buffer rows {:?}. text: {:?}",
+                "错误的预期缓冲区行 {:?}。文本: {:?}",
                 expected_buffer_rows,
                 expected_text
             );
@@ -2098,7 +2098,7 @@ mod tests {
                 assert_eq!(
                     snapshot.to_fold_point(inlay_point, Right),
                     fold_point,
-                    "{:?} -> fold point",
+                    "{:?} -> 折叠点",
                     inlay_point,
                 );
                 assert_eq!(
@@ -2125,7 +2125,7 @@ mod tests {
                 fold_offset.0 += c.len_utf8();
                 if char_column > longest_char_column {
                     panic!(
-                        "invalid longest row {:?} (chars {}), found row {:?} (chars: {})",
+                        "无效的最长行 {:?} (字符数 {}), 找到行 {:?} (字符数: {})",
                         longest_row,
                         longest_char_column,
                         fold_point.row(),
@@ -2169,7 +2169,7 @@ mod tests {
                 assert_eq!(
                     snapshot.row_infos(fold_row).collect::<Vec<_>>(),
                     expected_buffer_rows[(fold_row as usize)..],
-                    "wrong buffer rows starting at fold row {}",
+                    "从折叠行 {} 开始的缓冲区行错误",
                     fold_row,
                 );
                 fold_row += 1;
@@ -2192,12 +2192,12 @@ mod tests {
                 assert_eq!(
                     snapshot.is_line_folded(MultiBufferRow(row)),
                     folded_buffer_rows.contains(&row),
-                    "expected buffer row {}{} to be folded",
+                    "预期缓冲区行 {}{} 被折叠",
                     row,
                     if folded_buffer_rows.contains(&row) {
                         ""
                     } else {
-                        " not"
+                        " 不"
                     }
                 );
             }
@@ -2345,16 +2345,16 @@ mod tests {
             if chunk_text.is_empty() {
                 assert_eq!(
                     chars_bitmap, 0,
-                    "Empty chunk should have empty chars bitmap"
+                    "空块应具有空的字符位图"
                 );
-                assert_eq!(tabs_bitmap, 0, "Empty chunk should have empty tabs bitmap");
+                assert_eq!(tabs_bitmap, 0, "空块应具有空的制表符位图");
                 continue;
             }
 
             // Verify that chunk text doesn't exceed 128 bytes
             assert!(
                 chunk_text.len() <= 128,
-                "Chunk text length {} exceeds 128 bytes",
+                "块文本长度 {} 超过 128 字节",
                 chunk_text.len()
             );
 
@@ -2369,12 +2369,12 @@ mod tests {
                 let has_bit = chars_bitmap & (1 << byte_idx) != 0;
 
                 if has_bit != should_have_bit {
-                    eprintln!("Chunk text bytes: {:?}", chunk_text.as_bytes());
-                    eprintln!("Char indices: {:?}", char_indices);
-                    eprintln!("Chars bitmap: {:#b}", chars_bitmap);
+                    eprintln!("块文本字节: {:?}", chunk_text.as_bytes());
+                    eprintln!("字符索引: {:?}", char_indices);
+                    eprintln!("字符位图: {:#b}", chars_bitmap);
                     assert_eq!(
                         has_bit, should_have_bit,
-                        "Chars bitmap mismatch at byte index {} in chunk {:?}. Expected bit: {}, Got bit: {}",
+                        "字节索引 {} 处块 {:?} 中的字符位图不匹配。预期位: {}, 实际位: {}",
                         byte_idx, chunk_text, should_have_bit, has_bit
                     );
                 }
@@ -2387,7 +2387,7 @@ mod tests {
 
                 assert_eq!(
                     has_bit, is_tab,
-                    "Tabs bitmap mismatch at byte index {} in chunk {:?}. Byte: {:?}, Expected bit: {}, Got bit: {}",
+                    "字节索引 {} 处块 {:?} 中的制表符位图不匹配。字节: {:?}, 预期位: {}, 实际位: {}",
                     byte_idx, chunk_text, byte as char, is_tab, has_bit
                 );
             }
@@ -2450,7 +2450,7 @@ mod tests {
                         to_unfold.push(start..end);
                     }
                     let inclusive = rng.random();
-                    log::info!("unfolding {:?} (inclusive: {})", to_unfold, inclusive);
+                    log::info!("展开 {:?} (包含: {})", to_unfold, inclusive);
                     let (mut writer, snapshot, edits) = self.write(inlay_snapshot, vec![]);
                     snapshot_edits.push((snapshot, edits));
                     let (snapshot, edits) = writer.unfold_intersecting(to_unfold, inclusive);
@@ -2469,7 +2469,7 @@ mod tests {
                             buffer.clip_offset(rng.random_range(MultiBufferOffset(0)..=end), Left);
                         to_fold.push((start..end, FoldPlaceholder::test()));
                     }
-                    log::info!("folding {:?}", to_fold);
+                    log::info!("折叠 {:?}", to_fold);
                     let (mut writer, snapshot, edits) = self.write(inlay_snapshot, vec![]);
                     snapshot_edits.push((snapshot, edits));
                     let (snapshot, edits) = writer.fold(to_fold);

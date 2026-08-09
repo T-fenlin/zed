@@ -699,11 +699,11 @@ impl PickerDelegate for OpenPathDelegate {
                         self.should_dismiss = false;
                         let answer = window.prompt(
                             gpui::PromptLevel::Critical,
-                            &format!("{prompted_path:?} already exists. Do you want to replace it?"),
+                            &format!("{prompted_path:?} 已存在。是否要替换它?"),
                             Some(
-                                "A file or folder with the same name already exists. Replacing it will overwrite its current contents.",
+                                "同名文件或文件夹已存在。替换将覆盖其当前内容。",
                             ),
-                            &["Replace", "Cancel"],
+                            &["替换", "取消"],
                             cx
                         );
                         self.replace_prompt = cx.spawn_in(window, async move |picker, cx| {
@@ -806,7 +806,7 @@ impl PickerDelegate for OpenPathDelegate {
         match &self.directory_state {
             DirectoryState::List { parent_path, .. } => {
                 let (label, indices) = if is_current_dir_candidate {
-                    ("open this directory".to_string(), vec![])
+                    ("打开此目录".to_string(), vec![])
                 } else if *parent_path == self.prompt_root {
                     match_positions.iter_mut().for_each(|position| {
                         *position += self.prompt_root.len();
@@ -852,7 +852,7 @@ impl PickerDelegate for OpenPathDelegate {
                                 let label = if user_input.is_dir {
                                     label
                                 } else {
-                                    format!("{label} (replace)")
+                                    format!("{label}(替换)")
                                 };
                                 StyledText::new(label)
                                     .with_default_highlights(
@@ -864,7 +864,7 @@ impl PickerDelegate for OpenPathDelegate {
                                     )
                                     .into_any_element()
                             } else {
-                                StyledText::new(format!("{label} (create)"))
+                                StyledText::new(format!("{label}(创建)"))
                                     .with_default_highlights(
                                         &window.text_style(),
                                         vec![(
@@ -904,12 +904,12 @@ impl PickerDelegate for OpenPathDelegate {
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
         Some(match &self.directory_state {
-            DirectoryState::Create { .. } => SharedString::from("Type a path…"),
+            DirectoryState::Create { .. } => SharedString::from("输入路径…"),
             DirectoryState::List {
                 error: Some(error), ..
             } => error.clone(),
             DirectoryState::List { .. } | DirectoryState::None { .. } => {
-                SharedString::from("No such file or directory")
+                SharedString::from("没有这样的文件或目录")
             }
         })
     }
@@ -917,7 +917,7 @@ impl PickerDelegate for OpenPathDelegate {
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
         Arc::from(
             format!(
-                "[directory{}]filename.ext",
+                "[目录{}]文件名.扩展名",
                 self.path_style.primary_separator()
             )
             .as_str(),

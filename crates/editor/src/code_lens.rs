@@ -20,7 +20,7 @@ use crate::{
     runnables::RunnableTaskStatus,
 };
 
-static EMPTY_LENS_FALLBACK_TITLE: SharedString = SharedString::new_static("0 references");
+static EMPTY_LENS_FALLBACK_TITLE: SharedString = SharedString::new_static("0 个引用");
 const CODE_LENS_SEPARATOR: &str = " | ";
 
 #[derive(Clone, Debug)]
@@ -274,7 +274,7 @@ impl Editor {
                             Ok(None) => continue,
                             Err(e) => {
                                 log::error!(
-                                    "Failed to fetch code lenses for buffer {buffer_id:?}: {e:#}"
+                                    "获取缓冲区 {buffer_id:?} 的代码透镜失败:{e:#}"
                                 );
                                 continue;
                             }
@@ -292,7 +292,7 @@ impl Editor {
     /// Lenses without a command cannot be rendered, as it's the only textual data in the [`lsp::CodeLens`].
     /// Worst case, we can know it only after asynchronously issuing a resolve request to the server.
     /// To avoid flickering during typing, keep a placeholder block for each lens and replace it with a resolved command's block when available,
-    /// or with a synthetic "0 references" title if the server resolve did not return a command.
+    /// or with a synthetic "0 个引用" title if the server resolve did not return a command.
     ///
     /// Also keep the old block until the fresh resolve lands, to avoid flickering during typing.
     fn apply_lens_actions_for_buffer(
@@ -758,7 +758,7 @@ mod tests {
                     lsp::CodeLens {
                         range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 19)),
                         command: Some(lsp::Command {
-                            title: "2 references".to_owned(),
+                            title: "2 个引用".to_owned(),
                             command: "lens_cmd".to_owned(),
                             arguments: None,
                         }),
@@ -767,7 +767,7 @@ mod tests {
                     lsp::CodeLens {
                         range: lsp::Range::new(lsp::Position::new(1, 0), lsp::Position::new(1, 19)),
                         command: Some(lsp::Command {
-                            title: "0 references".to_owned(),
+                            title: "0 个引用".to_owned(),
                             command: "lens_cmd".to_owned(),
                             arguments: None,
                         }),
@@ -780,7 +780,7 @@ mod tests {
 
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received a code lens request"
+            "应已收到代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -788,7 +788,7 @@ mod tests {
             assert_eq!(
                 editor.code_lens_enabled(),
                 true,
-                "code lens should be enabled"
+                "代码透镜应已启用"
             );
             assert_eq!(
                 code_lens_assertion_text(editor, cx),
@@ -799,7 +799,7 @@ mod tests {
                     Lenses: 0 references
                     Line 2: function world() {}
                 "#},
-                "both lenses should render their server-provided titles"
+                "两个透镜都应渲染服务器提供的标题"
             );
         });
     }
@@ -826,7 +826,7 @@ mod tests {
         )
         .await;
 
-        let lens_title = Arc::new(Mutex::new("Initial lens".to_string()));
+        let lens_title = Arc::new(Mutex::new("初始透镜".to_string()));
         let mut code_lens_request =
             cx.set_request_handler::<lsp::request::CodeLensRequest, _, _>({
                 let lens_title = lens_title.clone();
@@ -853,7 +853,7 @@ mod tests {
         cx.set_state("ˇfunction hello() {}\nfunction world() {}");
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received the initial code lens request"
+            "应已收到初始代码透镜请求"
         );
         cx.run_until_parked();
         cx.editor(|editor, _, cx| {
@@ -863,16 +863,16 @@ mod tests {
                     Lenses: Initial lens
                     Line 1: function hello() {}
                 "#},
-                "initial fetch should render the server title"
+                "初始获取应渲染服务器标题"
             );
         });
 
-        *lens_title.lock().unwrap() = "Refreshed lens".to_string();
+        *lens_title.lock().unwrap() = "已刷新的透镜".to_string();
         cx.lsp
             .request::<lsp::request::CodeLensRefresh>((), lsp::DEFAULT_LSP_REQUEST_TIMEOUT)
             .await
             .into_response()
-            .expect("code lens refresh request failed");
+            .expect("代码透镜刷新请求失败");
         cx.executor()
             .advance_clock(LSP_REQUEST_DEBOUNCE_TIMEOUT * 2);
         cx.run_until_parked();
@@ -883,7 +883,7 @@ mod tests {
                     Lenses: Refreshed lens
                     Line 1: function hello() {}
                 "#},
-                "refresh should update the displayed lens to the new server title"
+                "刷新应将显示的透镜更新为新的服务器标题"
             );
         });
     }
@@ -914,7 +914,7 @@ mod tests {
                 Ok(Some(vec![lsp::CodeLens {
                     range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 19)),
                     command: Some(lsp::Command {
-                        title: "Dynamic lens".to_owned(),
+                        title: "动态透镜".to_owned(),
                         command: "lens_cmd".to_owned(),
                         arguments: None,
                     }),
@@ -933,7 +933,7 @@ mod tests {
             assert_eq!(
                 code_lens_assertion_text(editor, cx),
                 "\n",
-                "no lenses should render before the capability is registered"
+                "在能力注册之前不应渲染任何透镜"
             );
         });
 
@@ -955,7 +955,7 @@ mod tests {
             )
             .await
             .into_response()
-            .expect("register capability request failed");
+            .expect("注册能力请求失败");
         cx.executor()
             .advance_clock(LSP_REQUEST_DEBOUNCE_TIMEOUT * 2);
         cx.run_until_parked();
@@ -966,7 +966,7 @@ mod tests {
                     Lenses: Dynamic lens
                     Line 1: function hello() {}
                 "#},
-                "dynamic textDocument/codeLens registration should re-query and display lenses for the open document"
+                "动态 textDocument/codeLens 注册应重新查询并显示打开文档的透镜"
             );
         });
     }
@@ -998,7 +998,7 @@ mod tests {
                 Ok(Some(vec![lsp::CodeLens {
                     range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 19)),
                     command: Some(lsp::Command {
-                        title: "1 reference".to_owned(),
+                        title: "1 个引用".to_owned(),
                         command: "lens_cmd".to_owned(),
                         arguments: None,
                     }),
@@ -1010,7 +1010,7 @@ mod tests {
 
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received the initial code lens request"
+            "应已收到初始代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -1021,7 +1021,7 @@ mod tests {
                     Lenses: 1 reference
                     Line 1: function hello() {}
                 "#},
-                "initial fetch should render the server title"
+                "初始获取应渲染服务器标题"
             );
             editor
                 .code_lens
@@ -1044,7 +1044,7 @@ mod tests {
             .advance_clock(LSP_REQUEST_DEBOUNCE_TIMEOUT + Duration::from_millis(50));
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received another code lens request after edit"
+            "编辑后应已收到另一个代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -1055,7 +1055,7 @@ mod tests {
                     Lenses: 1 reference
                     Line 1: function hello() {}
                 "#},
-                "refreshed block should keep rendering the same title"
+                "刷新后的块应继续渲染相同的标题"
             );
             editor
                 .code_lens
@@ -1071,7 +1071,7 @@ mod tests {
         });
         assert_eq!(
             refreshed_block_ids, initial_block_ids,
-            "Code lens blocks should be preserved across refreshes when their content is unchanged"
+            "当内容未更改时,代码透镜块应在刷新间保持不变"
         );
     }
 
@@ -1111,7 +1111,7 @@ mod tests {
             .set_request_handler::<lsp::request::CodeLensResolve, _, _>(|lens, _| async move {
                 Ok(lsp::CodeLens {
                     command: Some(lsp::Command {
-                        title: "1 reference".to_owned(),
+                        title: "1 个引用".to_owned(),
                         command: "resolved_cmd".to_owned(),
                         arguments: None,
                     }),
@@ -1123,7 +1123,7 @@ mod tests {
 
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received the initial code lens request"
+            "应已收到初始代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -1134,7 +1134,7 @@ mod tests {
                     Lenses: 1 reference
                     Line 1: function hello() {}
                 "#},
-                "resolve should fill the placeholder with the server title"
+                "解析应使用服务器标题填充占位符"
             );
             editor
                 .code_lens
@@ -1158,7 +1158,7 @@ mod tests {
                 .advance_clock(LSP_REQUEST_DEBOUNCE_TIMEOUT + Duration::from_millis(50));
             assert!(
                 code_lens_request.next().await.is_some(),
-                "should have received another (shallow) code lens request after edit"
+                "编辑后应已收到另一个(浅层)代码透镜请求"
             );
             cx.run_until_parked();
 
@@ -1169,7 +1169,7 @@ mod tests {
                         Lenses: 1 reference
                         Line 1: function hello() {}
                     "#},
-                    "refresh+resolve cycle should keep rendering the same title"
+                    "刷新+解析循环应继续渲染相同的标题"
                 );
                 editor
                     .code_lens
@@ -1185,7 +1185,7 @@ mod tests {
             });
             assert_eq!(
                 after, initial,
-                "Block IDs must survive the unresolved-fetch → resolve cycle without churn"
+                "块 ID 必须在未解析获取 → 解析循环中保持不变,不产生变动"
             );
         }
     }
@@ -1230,7 +1230,7 @@ mod tests {
                     }
                     Ok(lsp::CodeLens {
                         command: Some(lsp::Command {
-                            title: "1 reference".to_owned(),
+                            title: "1 个引用".to_owned(),
                             command: "resolved_cmd".to_owned(),
                             arguments: None,
                         }),
@@ -1243,7 +1243,7 @@ mod tests {
 
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received the initial code lens request"
+            "应已收到初始代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -1254,7 +1254,7 @@ mod tests {
                     Lenses: <placeholder>
                     Line 1: function hello() {}
                 "#},
-                "placeholder spacer should be reserved with no rendered text before resolve"
+                "在解析之前应保留占位符间隔,不渲染任何文本"
             );
         });
 
@@ -1268,7 +1268,7 @@ mod tests {
                     Lenses: 1 reference
                     Line 1: function hello() {}
                 "#},
-                "after resolve the placeholder should display the server title"
+                "解析后占位符应显示服务器标题"
             );
         });
     }
@@ -1320,7 +1320,7 @@ mod tests {
 
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received the initial code lens request"
+            "应已收到初始代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -1331,7 +1331,7 @@ mod tests {
                     Lenses: 0 references
                     Line 1: function hello() {}
                 "#},
-                "lens resolved to an empty title should fall back to the synthetic label"
+                "解析为空标题的透镜应回退到合成标签"
             );
         });
     }
@@ -1388,8 +1388,8 @@ mod tests {
                             .unwrap_or(serde_json::Value::Null);
                         resolve_calls.lock().unwrap().push(kind.clone());
                         let title = match kind.as_str() {
-                            Some("references") => "2 references",
-                            Some("implementations") => "1 implementation",
+                            Some("references") => "2 个引用",
+                            Some("implementations") => "1 个实现",
                             _ => "",
                         };
                         Ok(lsp::CodeLens {
@@ -1408,7 +1408,7 @@ mod tests {
 
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received the initial code lens request"
+            "应已收到初始代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -1416,7 +1416,7 @@ mod tests {
         assert_eq!(
             calls.len(),
             2,
-            "both same-range lenses should be resolved independently, got {calls:?}"
+            "两个同范围透镜应独立解析,得到 {calls:?}"
         );
         let kinds: Vec<&str> = calls.iter().filter_map(|v| v.as_str()).collect();
         assert_eq!(kinds.contains(&"references"), true);
@@ -1429,7 +1429,7 @@ mod tests {
                     Lenses: 2 references | 1 implementation
                     Line 1: function hello() {}
                 "#},
-                "both same-range lenses should render their resolved titles"
+                "两个同范围透镜都应渲染其解析后的标题"
             );
         });
     }
@@ -1475,7 +1475,7 @@ mod tests {
 
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received the initial code lens request"
+            "应已收到初始代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -1486,7 +1486,7 @@ mod tests {
                     Lenses: 0 references
                     Line 1: function hello() {}
                 "#},
-                "lens resolved without a command should fall back to the synthetic label"
+                "解析后没有命令的透镜应回退到合成标签"
             );
         });
     }
@@ -1512,7 +1512,7 @@ mod tests {
 
         cx.lsp
             .set_request_handler::<lsp::request::CodeLensRequest, _, _>(|_, _| async move {
-                panic!("Should not request code lenses when disabled");
+                panic!("禁用时不应请求代码透镜");
             });
 
         cx.set_state("ˇfunction hello() {}");
@@ -1522,7 +1522,7 @@ mod tests {
             assert_eq!(
                 editor.code_lens_enabled(),
                 false,
-                "code lens should not be enabled when setting is off"
+                "设置关闭时代码透镜不应启用"
             );
         });
     }
@@ -1554,7 +1554,7 @@ mod tests {
                 Ok(Some(vec![lsp::CodeLens {
                     range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 19)),
                     command: Some(lsp::Command {
-                        title: "1 reference".to_owned(),
+                        title: "1 个引用".to_owned(),
                         command: "lens_cmd".to_owned(),
                         arguments: None,
                     }),
@@ -1566,7 +1566,7 @@ mod tests {
 
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received a code lens request"
+            "应已收到代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -1574,14 +1574,14 @@ mod tests {
             assert_eq!(
                 editor.code_lens_enabled(),
                 true,
-                "code lens should be enabled"
+                "代码透镜应已启用"
             );
             let total_blocks: usize = editor
                 .code_lens
                 .as_ref()
                 .map(|s| s.blocks.values().map(|v| v.len()).sum())
                 .unwrap_or(0);
-            assert_eq!(total_blocks, 1, "Should have one code lens block");
+            assert_eq!(total_blocks, 1, "应有一个代码透镜块");
         });
 
         cx.update_editor(|editor, _window, cx| {
@@ -1592,7 +1592,7 @@ mod tests {
             assert_eq!(
                 editor.code_lens_enabled(),
                 false,
-                "code lens should be disabled after clearing"
+                "清除后代码透镜应被禁用"
             );
         });
     }
@@ -1640,8 +1640,8 @@ mod tests {
                     .and_then(|v| v.as_str())
                     .unwrap_or("unknown");
                 let title = match id {
-                    "lens_1" => "3 references",
-                    "lens_2" => "1 implementation",
+                    "lens_1" => "3 个引用",
+                    "lens_2" => "1 个实现",
                     _ => "unknown",
                 };
                 Ok(lsp::CodeLens {
@@ -1658,7 +1658,7 @@ mod tests {
 
         assert!(
             code_lens_request.next().await.is_some(),
-            "should have received a code lens request"
+            "应已收到代码透镜请求"
         );
         cx.run_until_parked();
 
@@ -1670,7 +1670,7 @@ mod tests {
                 .unwrap_or(0);
             assert_eq!(
                 total_blocks, 2,
-                "Unresolved lenses should have been resolved and displayed"
+                "未解析的透镜应已被解析并显示"
             );
         });
     }
@@ -1782,7 +1782,7 @@ mod tests {
                         resolved_lines.lock().unwrap().push(line);
                         Ok(lsp::CodeLens {
                             command: Some(lsp::Command {
-                                title: format!("{line} references"),
+                                title: format!("{line} 个引用"),
                                 command: format!("show_refs_{line}"),
                                 arguments: None,
                             }),
@@ -1804,7 +1804,7 @@ mod tests {
         assert_eq!(
             initial_resolved,
             HashSet::from_iter([0, 10, 20, 30, 40]),
-            "Only lenses visible at the top should be resolved"
+            "只有顶部可见的透镜应被解析"
         );
 
         editor.update_in(cx, |editor, window, cx| {
@@ -1826,7 +1826,7 @@ mod tests {
         assert_eq!(
             after_scroll_resolved,
             HashSet::from_iter([70, 80, 90]),
-            "Only newly visible lenses at the bottom should be resolved, not middle ones"
+            "只有底部新可见的透镜应被解析,而不是中间的"
         );
     }
 
@@ -1839,8 +1839,8 @@ mod tests {
             .unwrap_or_default();
         blocks.sort_by_key(|block| block.anchor.to_point(&snapshot).row);
 
-        let lens_label = "Lenses";
-        let line_label = "Line";
+        let lens_label = "透镜";
+        let line_label = "行";
         let mut text = blocks
             .into_iter()
             .map(|block| {

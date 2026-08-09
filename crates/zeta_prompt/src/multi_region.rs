@@ -337,32 +337,32 @@ pub(crate) fn strip_marker_tags(text: &str) -> String {
 pub fn extract_marker_span(text: &str) -> Result<(usize, usize, String)> {
     let first_tag_start = text
         .find(MARKER_TAG_PREFIX)
-        .context("no start marker found in output")?;
+        .context("输出中未找到起始标记")?;
     let first_num_start = first_tag_start + MARKER_TAG_PREFIX.len();
     let first_num_end = text[first_num_start..]
         .find(MARKER_TAG_SUFFIX)
         .map(|i| i + first_num_start)
-        .context("malformed start marker tag")?;
+        .context("起始标记格式错误")?;
     let start_num: usize = text[first_num_start..first_num_end]
         .parse()
-        .context("start marker number is not a valid integer")?;
+        .context("起始标记编号不是有效的整数")?;
     let first_tag_end = first_num_end + MARKER_TAG_SUFFIX.len();
 
     let last_tag_start = text
         .rfind(MARKER_TAG_PREFIX)
-        .context("no end marker found in output")?;
+        .context("输出中未找到结束标记")?;
     let last_num_start = last_tag_start + MARKER_TAG_PREFIX.len();
     let last_num_end = text[last_num_start..]
         .find(MARKER_TAG_SUFFIX)
         .map(|i| i + last_num_start)
-        .context("malformed end marker tag")?;
+        .context("结束标记格式错误")?;
     let end_num: usize = text[last_num_start..last_num_end]
         .parse()
-        .context("end marker number is not a valid integer")?;
+        .context("结束标记编号不是有效的整数")?;
 
     if start_num == end_num {
         return Err(anyhow!(
-            "start and end markers are the same (marker {})",
+            "起始和结束标记相同(标记 {})",
             start_num
         ));
     }
@@ -386,19 +386,19 @@ pub fn apply_marker_span(old_editable: &str, output: &str) -> Result<String> {
 
     let start_idx = start_num
         .checked_sub(1)
-        .context("marker numbers are 1-indexed")?;
+        .context("标记编号从 1 开始")?;
     let end_idx = end_num
         .checked_sub(1)
-        .context("marker numbers are 1-indexed")?;
+        .context("标记编号从 1 开始")?;
     let start_byte = *marker_offsets
         .get(start_idx)
-        .context("start marker number out of range")?;
+        .context("起始标记编号超出范围")?;
     let end_byte = *marker_offsets
         .get(end_idx)
-        .context("end marker number out of range")?;
+        .context("结束标记编号超出范围")?;
 
     if start_byte > end_byte {
-        return Err(anyhow!("start marker must come before end marker"));
+        return Err(anyhow!("起始标记必须位于结束标记之前"));
     }
 
     let old_span = &old_editable[start_byte..end_byte];
@@ -750,11 +750,11 @@ fn apply_marker_span_impl(
     resolve_boundaries: impl Fn(isize, isize) -> Result<(usize, usize)>,
 ) -> Result<String> {
     if tags.is_empty() {
-        return Err(anyhow!("no marker tags found in output"));
+        return Err(anyhow!("输出中未找到标记标签"));
     }
     if tags.len() == 1 {
         return Err(anyhow!(
-            "only one marker tag found in output, expected at least two"
+            "输出中仅找到一个标记标签,预期至少两个"
         ));
     }
 
@@ -768,7 +768,7 @@ fn apply_marker_span_impl(
     let (start_byte, end_byte) = resolve_boundaries(start_value, end_value)?;
 
     if start_byte > end_byte {
-        return Err(anyhow!("start marker must come before end marker"));
+        return Err(anyhow!("起始标记必须位于结束标记之前"));
     }
 
     let mut new_content = String::new();
@@ -800,7 +800,7 @@ pub fn apply_marker_span_v0316(old_editable: &str, output: &str) -> Result<Strin
             let actual: Vec<isize> = tags.iter().map(|t| t.value).collect();
             if actual != expected {
                 eprintln!(
-                    "V0316 marker sequence validation failed: expected {:?}, got {:?}. Attempting best-effort parse.",
+                    "V0316 标记序列验证失败:预期 {:?},实际 {:?}。正在尝试尽力解析。",
                     expected, actual
                 );
             }
@@ -811,16 +811,16 @@ pub fn apply_marker_span_v0316(old_editable: &str, output: &str) -> Result<Strin
     apply_marker_span_impl(old_editable, &tags, output, |start_val, end_val| {
         let start_idx = (start_val as usize)
             .checked_sub(1)
-            .context("marker numbers are 1-indexed")?;
+            .context("标记编号从 1 开始")?;
         let end_idx = (end_val as usize)
             .checked_sub(1)
-            .context("marker numbers are 1-indexed")?;
+            .context("标记编号从 1 开始")?;
         let start_byte = *marker_offsets
             .get(start_idx)
-            .context("start marker number out of range")?;
+            .context("起始标记编号超出范围")?;
         let end_byte = *marker_offsets
             .get(end_idx)
-            .context("end marker number out of range")?;
+            .context("结束标记编号超出范围")?;
         Ok((start_byte, end_byte))
     })
 }
@@ -838,16 +838,16 @@ pub fn apply_marker_span_v0317(
         let start_idx_signed = anchor_idx as isize + start_delta;
         let end_idx_signed = anchor_idx as isize + end_delta;
         if start_idx_signed < 0 || end_idx_signed < 0 {
-            return Err(anyhow!("relative marker maps before first marker"));
+            return Err(anyhow!("相对标记映射到第一个标记之前"));
         }
-        let start_idx = usize::try_from(start_idx_signed).context("invalid start marker index")?;
-        let end_idx = usize::try_from(end_idx_signed).context("invalid end marker index")?;
+        let start_idx = usize::try_from(start_idx_signed).context("无效的起始标记索引")?;
+        let end_idx = usize::try_from(end_idx_signed).context("无效的结束标记索引")?;
         let start_byte = *marker_offsets
             .get(start_idx)
-            .context("start marker number out of range")?;
+            .context("起始标记编号超出范围")?;
         let end_byte = *marker_offsets
             .get(end_idx)
-            .context("end marker number out of range")?;
+            .context("结束标记编号超出范围")?;
         Ok((start_byte, end_byte))
     })
 }
@@ -863,7 +863,7 @@ pub fn apply_marker_span_v0318(old_editable: &str, output: &str) -> Result<Strin
             let actual: Vec<isize> = tags.iter().map(|t| t.value).collect();
             if actual != expected {
                 eprintln!(
-                    "V0318 marker sequence validation failed: expected {:?}, got {:?}. Attempting best-effort parse.",
+                    "V0318 标记序列验证失败:预期 {:?},实际 {:?}。正在尝试尽力解析。",
                     expected, actual
                 );
             }
@@ -874,16 +874,16 @@ pub fn apply_marker_span_v0318(old_editable: &str, output: &str) -> Result<Strin
     apply_marker_span_impl(old_editable, &tags, output, |start_val, end_val| {
         let start_idx = (start_val as usize)
             .checked_sub(1)
-            .context("marker numbers are 1-indexed")?;
+            .context("标记编号从 1 开始")?;
         let end_idx = (end_val as usize)
             .checked_sub(1)
-            .context("marker numbers are 1-indexed")?;
+            .context("标记编号从 1 开始")?;
         let start_byte = *marker_offsets
             .get(start_idx)
-            .context("start marker number out of range")?;
+            .context("起始标记编号超出范围")?;
         let end_byte = *marker_offsets
             .get(end_idx)
-            .context("end marker number out of range")?;
+            .context("结束标记编号超出范围")?;
         Ok((start_byte, end_byte))
     })
 }
@@ -1073,7 +1073,7 @@ mod tests {
         let text = "aaa\nbbb\nccc\n\nddd\neee\nfff\n";
         let offsets = compute_marker_offsets(text);
         assert_eq!(offsets[0], 0);
-        assert!(offsets.contains(&13), "offsets: {:?}", offsets);
+        assert!(offsets.contains(&13), "偏移量:{:?}", offsets);
         assert_eq!(*offsets.last().unwrap(), text.len());
     }
 
@@ -1104,16 +1104,16 @@ class OCRDataframe(BaseModel):
 
         let def_start = text
             .find("    def get_text_cell(")
-            .expect("def line exists");
-        let self_start = text.find("        self,").expect("self line exists");
+            .expect("def 行存在");
+        let self_start = text.find("        self,").expect("self 行存在");
 
         assert!(
             offsets.contains(&def_start),
-            "expected boundary at def line start ({def_start}), got {offsets:?}"
+            "预期在 def 行起始处有边界({def_start}),实际为 {offsets:?}"
         );
         assert!(
             !offsets.contains(&self_start),
-            "did not expect boundary at self line start ({self_start}), got {offsets:?}"
+            "不预期在 self 行起始处有边界({self_start}),实际为 {offsets:?}"
         );
     }
 
@@ -1144,18 +1144,18 @@ pub enum AhoySystems {
 ";
         let offsets = compute_marker_offsets(text);
 
-        let closer_start = text.find("    }\n").expect("closer line exists");
+        let closer_start = text.find("    }\n").expect("闭合行存在");
         let doc_start = text
             .find("/// System set used by all systems of `bevy_ahoy`.")
-            .expect("doc line exists");
+            .expect("文档行存在");
 
         assert!(
             !offsets.contains(&closer_start),
-            "did not expect boundary at closer line start ({closer_start}), got {offsets:?}"
+            "不预期在闭合行起始处有边界({closer_start}),实际为 {offsets:?}"
         );
         assert!(
             offsets.contains(&doc_start),
-            "expected boundary at doc line start ({doc_start}), got {offsets:?}"
+            "预期在文档行起始处有边界({doc_start}),实际为 {offsets:?}"
         );
     }
 
@@ -1163,7 +1163,7 @@ pub enum AhoySystems {
     fn test_compute_marker_offsets_max_lines_split() {
         let text = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n";
         let offsets = compute_marker_offsets(text);
-        assert!(offsets.len() >= 3, "offsets: {:?}", offsets);
+        assert!(offsets.len() >= 3, "偏移量:{:?}", offsets);
     }
 
     #[test]
@@ -1171,10 +1171,10 @@ pub enum AhoySystems {
         let text = "a1\na2\na3\na4\na5\na6\na7\na8\n}\ncase 'x': {\nbody\n";
         let offsets = compute_marker_offsets(text);
 
-        let expected = text.find("case 'x': {").expect("case line exists");
+        let expected = text.find("case 'x': {").expect("case 行存在");
         assert!(
             offsets.contains(&expected),
-            "expected nudged boundary at case line start ({expected}), got {offsets:?}"
+            "预期在 case 行起始处有微调后的边界({expected}),实际为 {offsets:?}"
         );
     }
 
@@ -1183,10 +1183,10 @@ pub enum AhoySystems {
         let text = "a1\na2\na3\na4\na5\na6\na7\na8\n}\n}\n}\n}\n}\ncase 'x': {\nbody\n";
         let offsets = compute_marker_offsets(text);
 
-        let case_start = text.find("case 'x': {").expect("case line exists");
+        let case_start = text.find("case 'x': {").expect("case 行存在");
         assert!(
             !offsets.contains(&case_start),
-            "boundary should not nudge beyond max forward lines; offsets: {offsets:?}"
+            "边界不应超出最大向前行数;偏移量:{offsets:?}"
         );
     }
 
@@ -1214,13 +1214,13 @@ hhhhhhhhhh = 8;
 ";
         let offsets = compute_marker_offsets(text);
 
-        assert_eq!(offsets.first().copied(), Some(0), "offsets: {offsets:?}");
+        assert_eq!(offsets.first().copied(), Some(0), "偏移量:{offsets:?}");
         assert_eq!(
             offsets.last().copied(),
             Some(text.len()),
-            "offsets: {offsets:?}"
+            "偏移量:{offsets:?}"
         );
-        assert!(offsets.is_sorted(), "offsets must be sorted: {offsets:?}");
+        assert!(offsets.is_sorted(), "偏移量必须已排序:{offsets:?}");
     }
 
     #[test]
@@ -1232,7 +1232,7 @@ hhhhhhhhhh = 8;
     #[test]
     fn test_compute_v0327_editable_range_trims_to_marker_boundaries() {
         let text = (0..80).map(|_| "x\n").collect::<String>();
-        let cursor_offset = text.find("x\nx\nx\nx\nx\n").expect("cursor anchor exists") + 40;
+        let cursor_offset = text.find("x\nx\nx\nx\nx\n").expect("光标锚点存在") + 40;
 
         let candidate_range = grow_v0327_candidate_range(&text, cursor_offset, 20);
         let editable_range = compute_v0327_editable_range(&text, cursor_offset, 20);
@@ -1242,7 +1242,7 @@ hhhhhhhhhh = 8;
 
         assert!(
             marker_offsets.len() > 2,
-            "expected interior markers: {marker_offsets:?}"
+            "预期内部标记:{marker_offsets:?}"
         );
         assert!(marker_offsets.contains(&relative_start));
         assert!(marker_offsets.contains(&relative_end));
@@ -1251,7 +1251,7 @@ hhhhhhhhhh = 8;
         assert!(
             editable_range.start > candidate_range.start
                 || editable_range.end < candidate_range.end,
-            "expected at least one side to trim from {candidate_range:?} down to {editable_range:?}"
+            "预期至少有一侧从 {candidate_range:?} 修剪到 {editable_range:?}"
         );
     }
 
@@ -1318,11 +1318,11 @@ If you'd like to contribute, please take a look at the contributing guide.
 ";
         let offsets = compute_marker_offsets(text);
 
-        assert_eq!(offsets.first().copied(), Some(0), "offsets: {offsets:?}");
+        assert_eq!(offsets.first().copied(), Some(0), "偏移量:{offsets:?}");
         assert_eq!(
             offsets.last().copied(),
             Some(text.len()),
-            "offsets: {offsets:?}"
+            "偏移量:{offsets:?}"
         );
 
         for window in offsets.windows(2) {
@@ -1330,7 +1330,7 @@ If you'd like to contribute, please take a look at the contributing guide.
             let line_count = block.lines().count();
             assert!(
                 line_count >= V0316_MIN_BLOCK_LINES,
-                "block too short: {line_count} lines in block {block:?} with offsets {offsets:?}"
+                "块太短:块 {block:?} 中有 {line_count} 行,偏移量为 {offsets:?}"
             );
         }
     }
@@ -1418,7 +1418,7 @@ If you'd like to contribute, please take a look at the contributing guide.
         .unwrap();
         let output = encoded
             .strip_suffix(">>>>>>> UPDATED\n")
-            .expect("should have end marker");
+            .expect("应包含结束标记");
         let reconstructed = apply_marker_span(old, output).unwrap();
         assert_eq!(reconstructed, new);
     }
@@ -1450,8 +1450,8 @@ If you'd like to contribute, please take a look at the contributing guide.
             "NO_EDITS\n",
         )
         .unwrap();
-        assert!(result.contains("<|user_cursor|>"), "result: {result}");
-        assert!(result.contains("B<|user_cursor|>BB"), "result: {result}");
+        assert!(result.contains("<|user_cursor|>"), "结果:{result}");
+        assert!(result.contains("B<|user_cursor|>BB"), "结果:{result}");
     }
 
     #[test]
@@ -1482,7 +1482,7 @@ If you'd like to contribute, please take a look at the contributing guide.
 
     #[test]
     fn test_strip_marker_tags_inline() {
-        assert_eq!(strip_marker_tags("no markers here"), "no markers here");
+        assert_eq!(strip_marker_tags("此处无标记"), "此处无标记");
         assert_eq!(strip_marker_tags("before<|marker_5|>after"), "beforeafter");
         assert_eq!(
             strip_marker_tags("line1\n<|marker_3|>\nline2"),
@@ -1532,7 +1532,7 @@ If you'd like to contribute, please take a look at the contributing guide.
         let marker_offsets = compute_marker_offsets(old);
         assert!(
             marker_offsets.len() >= 3,
-            "expected at least 3 offsets, got {:?}",
+            "预期至少 3 个偏移量,实际为 {:?}",
             marker_offsets
         );
 
@@ -1592,7 +1592,7 @@ If you'd like to contribute, please take a look at the contributing guide.
             encode_from_old_and_new_v0316(old, new, None, "<|user_cursor|>", "<|end|>").unwrap();
         let stripped = encoded
             .strip_suffix("<|end|>")
-            .expect("should have end marker");
+            .expect("应包含结束标记");
         let reconstructed = apply_marker_span_v0316(old, stripped).unwrap();
         assert_eq!(reconstructed, new);
     }
@@ -1603,8 +1603,8 @@ If you'd like to contribute, please take a look at the contributing guide.
         let new = "aaa\nBBB\nccc\n";
         let result =
             encode_from_old_and_new_v0316(old, new, Some(5), "<|user_cursor|>", "<|end|>").unwrap();
-        assert!(result.contains("<|user_cursor|>"), "result: {result}");
-        assert!(result.contains("B<|user_cursor|>BB"), "result: {result}");
+        assert!(result.contains("<|user_cursor|>"), "结果:{result}");
+        assert!(result.contains("B<|user_cursor|>BB"), "结果:{result}");
     }
 
     #[test]
@@ -1615,7 +1615,7 @@ If you'd like to contribute, please take a look at the contributing guide.
             encode_from_old_and_new_v0316(old, new, None, "<|user_cursor|>", "<|end|>").unwrap();
         let stripped = encoded
             .strip_suffix("<|end|>")
-            .expect("should have end marker");
+            .expect("应包含结束标记");
         let reconstructed = apply_marker_span_v0316(old, stripped).unwrap();
         assert_eq!(reconstructed, new);
     }
@@ -1694,7 +1694,7 @@ If you'd like to contribute, please take a look at the contributing guide.
             encode_from_old_and_new_v0317(old, new, cursor, "<|user_cursor|>", "<|end|>").unwrap();
         let stripped = encoded
             .strip_suffix("<|end|>")
-            .expect("should have end marker");
+            .expect("应包含结束标记");
         let stripped = stripped.replace("<|user_cursor|>", "");
         let reconstructed = apply_marker_span_v0317(old, &stripped, cursor).unwrap();
         assert_eq!(reconstructed, new);
@@ -1706,8 +1706,8 @@ If you'd like to contribute, please take a look at the contributing guide.
         let new = "aaa\nBBB\nccc\n";
         let result =
             encode_from_old_and_new_v0317(old, new, Some(5), "<|user_cursor|>", "<|end|>").unwrap();
-        assert!(result.contains("<|user_cursor|>"), "result: {result}");
-        assert!(result.contains("<|marker-0|>"), "result: {result}");
+        assert!(result.contains("<|user_cursor|>"), "结果:{result}");
+        assert!(result.contains("<|marker-0|>"), "结果:{result}");
     }
 
     #[test]
@@ -1731,7 +1731,7 @@ If you'd like to contribute, please take a look at the contributing guide.
             encode_from_old_and_new_v0318(old, new, None, "<|user_cursor|>", "<|end|>").unwrap();
         let stripped = encoded
             .strip_suffix("<|end|>")
-            .expect("should have end marker");
+            .expect("应包含结束标记");
         let reconstructed = apply_marker_span_v0318(old, stripped).unwrap();
         assert_eq!(reconstructed, new);
     }
@@ -1747,7 +1747,7 @@ If you'd like to contribute, please take a look at the contributing guide.
 
         let stripped = encoded
             .strip_suffix("<|end|>")
-            .expect("should have end marker");
+            .expect("应包含结束标记");
         let reconstructed = apply_marker_span_v0318(old, stripped).unwrap();
         assert_eq!(reconstructed, new);
     }
@@ -1761,7 +1761,7 @@ If you'd like to contribute, please take a look at the contributing guide.
 
         let stripped = encoded
             .strip_suffix("<|end|>")
-            .expect("should have end marker");
+            .expect("应包含结束标记");
         let reconstructed = apply_marker_span_v0318(old, stripped).unwrap();
         assert_eq!(reconstructed, new);
     }
@@ -1807,7 +1807,7 @@ If you'd like to contribute, please take a look at the contributing guide.
             1,
         );
 
-        let cursor_offset = new.find("<|user_cursor|>").expect("cursor marker in new");
+        let cursor_offset = new.find("<|user_cursor|>").expect("新内容中的光标标记");
         let new_without_cursor = new.replace("<|user_cursor|>", "");
 
         let encoded = encode_from_old_and_new_v0317(
@@ -1824,7 +1824,7 @@ If you'd like to contribute, please take a look at the contributing guide.
             let tag_start = marker.tag_start;
             assert!(
                 tag_start == 0 || core.as_bytes()[tag_start - 1] == b'\n',
-                "marker not at line boundary: {} in output:\n{}",
+                "标记不在行边界:{},位于输出中:\n{}",
                 marker_tag_relative(marker.value),
                 core
             );

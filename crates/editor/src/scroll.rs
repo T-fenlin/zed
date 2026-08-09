@@ -79,10 +79,10 @@ impl SharedScrollAnchor {
         {
             let companion_snapshot = snapshot
                 .companion_snapshot()
-                .expect("shared scroll anchor references a non native display map, but snapshot has no companion");
+                .expect("共享滚动锚点引用了非原生显示映射,但快照没有伴随映射");
             assert_eq!(
                 companion_snapshot.display_map_id, display_map_id,
-                "shared scroll anchor display map should match the snapshot's split companion"
+                "共享滚动锚点的显示映射应与快照的分割伴随映射匹配"
             );
             companion_snapshot
         } else {
@@ -98,10 +98,10 @@ impl SharedScrollAnchor {
         {
             let companion_snapshot = snapshot
                 .companion_snapshot()
-                .expect("shared scroll anchor references a non native display map, but snapshot has no companion");
+                .expect("共享滚动锚点引用了非原生显示映射,但快照没有伴随映射");
             assert_eq!(
                 companion_snapshot.display_map_id, display_map_id,
-                "shared scroll anchor display map should match the snapshot's split companion"
+                "共享滚动锚点的显示映射应与快照的分割伴随映射匹配"
             );
             companion_snapshot
         } else {
@@ -239,10 +239,10 @@ impl ScrollManager {
         {
             let companion_snapshot = snapshot
                 .companion_snapshot()
-                .expect("shared scroll anchor references a non native display map, but the snapshot has no companion");
+                .expect("共享滚动锚点引用了非原生显示映射,但快照没有伴随映射");
             assert_eq!(
                 companion_snapshot.display_map_id, display_map_id,
-                "shared scroll anchor display map should match the companion used for native anchor conversion"
+                "共享滚动锚点的显示映射应与用于原生锚点转换的伴随映射匹配"
             );
 
             let mut display_point = shared
@@ -417,7 +417,7 @@ impl ScrollManager {
             self._save_scroll_position_task = cx.background_executor().spawn(async move {
                 executor.timer(Duration::from_millis(10)).await;
                 log::debug!(
-                    "Saving scroll position for item {item_id:?} in workspace {workspace_id:?}"
+                    "正在保存工作区 {workspace_id:?} 中项目 {item_id:?} 的滚动位置"
                 );
                 db.save_scroll_position(
                     item_id,
@@ -788,7 +788,7 @@ impl Editor {
         let workspace_id = self.workspace.as_ref().and_then(|workspace| workspace.1);
         let buffer_snapshot = self.buffer().read(cx).snapshot(cx);
         if !scroll_anchor.anchor.is_valid(&buffer_snapshot) {
-            log::warn!("Invalid scroll anchor: {:?}", scroll_anchor);
+            log::warn!("无效的滚动锚点: {:?}", scroll_anchor);
             return;
         }
         let display_map = self.display_map.update(cx, |map, cx| map.snapshot(cx));

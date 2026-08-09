@@ -178,7 +178,7 @@ impl TestServer {
         cx.update(|cx| {
             gpui_tokio::init(cx);
             if cx.has_global::<SettingsStore>() {
-                panic!("Same cx used to create two test clients")
+                panic!("同一个 cx 被用于创建两个测试客户端")
             }
             let settings = SettingsStore::test(cx);
             cx.set_global(settings);
@@ -286,7 +286,7 @@ impl TestServer {
                 cx.spawn(async move |cx| {
                     if forbid_connections.load(SeqCst) {
                         Err(EstablishConnectionError::other(anyhow!(
-                            "server is forbidding connections"
+                            "服务器正在禁止连接"
                         )))
                     } else {
                         let (client_conn, server_conn, killed) =
@@ -298,7 +298,7 @@ impl TestServer {
                             .await
                             .map_err(|e| {
                                 EstablishConnectionError::Other(anyhow!(
-                                    "retrieving user failed: {}",
+                                    "获取用户失败:{}",
                                     e
                                 ))
                             })?
@@ -319,7 +319,7 @@ impl TestServer {
                         .detach();
                         let connection_id = connection_id_rx.await.map_err(|e| {
                             EstablishConnectionError::Other(anyhow!(
-                                "{} (is server shutting down?)",
+                                "{}(服务器是否正在关闭?)",
                                 e
                             ))
                         })?;
@@ -534,7 +534,7 @@ impl TestServer {
                         .await;
                 } else {
                     panic!(
-                        "Edge {}->{} referenced before {} was created",
+                        "边 {}->{} 在 {} 创建之前被引用",
                         parent, channel, parent
                     )
                 }

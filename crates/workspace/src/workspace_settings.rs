@@ -146,7 +146,7 @@ impl Settings for WorkspaceSettings {
     }
 }
 
-/// Provides convenient access to whether "accessible mode" is enabled, mirroring
+/// Provides convenient access to whether "无障碍模式" is enabled, mirroring
 /// [`theme::ActiveTheme`] for the active theme. Import this trait to call
 /// `cx.accessible_mode()`.
 pub trait AccessibleMode {

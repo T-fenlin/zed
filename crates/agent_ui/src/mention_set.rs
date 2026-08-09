@@ -80,7 +80,7 @@ impl MentionSet {
         cx: &mut App,
     ) -> Task<Result<HashMap<CreaseId, (MentionUri, Mention)>>> {
         let Some(project) = self.project.upgrade() else {
-            return Task::ready(Err(anyhow!("Project not found")));
+            return Task::ready(Err(anyhow!("未找到项目")));
         };
         let mentions = self.mentions.clone();
         cx.spawn(async move |cx| {
@@ -162,13 +162,13 @@ impl MentionSet {
                 ..
             } => self.confirm_mention_for_symbol(abs_path, line_range, cx),
             MentionUri::Selection { abs_path: None, .. } => Task::ready(Err(anyhow!(
-                "Untitled buffer selection mentions are not supported for paste"
+                "不支持粘贴未命名缓冲区选区提及"
             ))),
             MentionUri::PastedImage { .. }
             | MentionUri::TerminalSelection { .. }
             | MentionUri::MergeConflict { .. }
             | MentionUri::Rule { .. } => {
-                Task::ready(Err(anyhow!("Unsupported mention URI type for paste")))
+                Task::ready(Err(anyhow!("不支持粘贴此类型的提及 URI")))
             }
         }
     }
@@ -263,7 +263,7 @@ impl MentionSet {
                 .read(cx)
                 .project_path_for_absolute_path(&abs_path, cx)
             else {
-                log::error!("project path not found for image mention {abs_path:?}");
+                log::error!("未找到图片提及 {abs_path:?} 的项目路径");
                 return Task::ready(());
             };
             let image_task = project.update(cx, |project, cx| project.open_image(project_path, cx));
@@ -328,29 +328,29 @@ impl MentionSet {
                 include_warnings,
             } => self.confirm_mention_for_diagnostics(include_errors, include_warnings, cx),
             MentionUri::PastedImage { .. } => {
-                debug_panic!("pasted image URI should not be included in completions");
+                debug_panic!("粘贴的图片 URI 不应包含在补全中");
                 Task::ready(Err(anyhow!(
-                    "pasted imaged URI should not be included in completions"
+                    "粘贴的图片 URI 不应包含在补全中"
                 )))
             }
             MentionUri::Selection { .. } => {
-                debug_panic!("unexpected selection URI");
-                Task::ready(Err(anyhow!("unexpected selection URI")))
+                debug_panic!("意外的选区 URI");
+                Task::ready(Err(anyhow!("意外的选区 URI")))
             }
             MentionUri::TerminalSelection { .. } => {
-                debug_panic!("unexpected terminal URI");
-                Task::ready(Err(anyhow!("unexpected terminal URI")))
+                debug_panic!("意外的终端 URI");
+                Task::ready(Err(anyhow!("意外的终端 URI")))
             }
             MentionUri::GitDiff { base_ref } => {
                 self.confirm_mention_for_git_diff(base_ref.into(), cx)
             }
             MentionUri::MergeConflict { .. } => {
-                debug_panic!("unexpected merge conflict URI");
-                Task::ready(Err(anyhow!("unexpected merge conflict URI")))
+                debug_panic!("意外的合并冲突 URI");
+                Task::ready(Err(anyhow!("意外的合并冲突 URI")))
             }
             MentionUri::Rule { .. } => {
-                debug_panic!("unexpected rule URI");
-                Task::ready(Err(anyhow!("unexpected rule URI")))
+                debug_panic!("意外的规则 URI");
+                Task::ready(Err(anyhow!("意外的规则 URI")))
             }
         };
         let task = cx
@@ -388,7 +388,7 @@ impl MentionSet {
         cx: &mut Context<Self>,
     ) -> Task<Result<Mention>> {
         let Some(project) = self.project.upgrade() else {
-            return Task::ready(Err(anyhow!("project not found")));
+            return Task::ready(Err(anyhow!("未找到项目")));
         };
 
         let Some(project_path) = project
@@ -396,13 +396,13 @@ impl MentionSet {
             .project_path_for_absolute_path(&abs_path, cx)
         else {
             return Task::ready(Err(anyhow!(
-                "project path not found for file mention {abs_path:?}"
+                "未找到文件提及 {abs_path:?} 的项目路径"
             )));
         };
 
         if is_raster_image_path(&abs_path) {
             if !supports_images {
-                return Task::ready(Err(anyhow!("This model does not support images yet")));
+                return Task::ready(Err(anyhow!("此模型尚不支持图片")));
             }
             let task = project.update(cx, |project, cx| project.open_image(project_path, cx));
             return cx.spawn(async move |_, cx| {
@@ -417,7 +417,7 @@ impl MentionSet {
                         format: LanguageModelImage::FORMAT,
                     }))
                 } else {
-                    Err(anyhow!("Failed to convert image"))
+                    Err(anyhow!("转换图片失败"))
                 }
             });
         }
@@ -466,14 +466,14 @@ impl MentionSet {
         cx: &mut Context<Self>,
     ) -> Task<Result<Mention>> {
         let Some(project) = self.project.upgrade() else {
-            return Task::ready(Err(anyhow!("project not found")));
+            return Task::ready(Err(anyhow!("未找到项目")));
         };
         let Some(project_path) = project
             .read(cx)
             .project_path_for_absolute_path(&abs_path, cx)
         else {
             return Task::ready(Err(anyhow!(
-                "project path not found for symbol mention {abs_path:?}"
+                "未找到符号提及 {abs_path:?} 的项目路径"
             )));
         };
         let buffer = project.update(cx, |project, cx| project.open_buffer(project_path, cx));
@@ -508,7 +508,7 @@ impl MentionSet {
         cx.background_spawn(async move {
             let content = std::fs::read_to_string(&skill_file_path).map_err(|e| {
                 anyhow!(
-                    "Failed to read skill file {}: {}",
+                    "读取技能文件 {} 失败:{}",
                     skill_file_path.display(),
                     e
                 )
@@ -612,11 +612,11 @@ impl MentionSet {
     ) -> Task<Result<Mention>> {
         let Some(thread_store) = self.thread_store.clone() else {
             return Task::ready(Err(anyhow!(
-                "Thread mentions are only supported for the native agent"
+                "对话线程提及仅支持原生代理"
             )));
         };
         let Some(project) = self.project.upgrade() else {
-            return Task::ready(Err(anyhow!("project not found")));
+            return Task::ready(Err(anyhow!("未找到项目")));
         };
 
         let server = Rc::new(agent::NativeAgentServer::new(
@@ -649,7 +649,7 @@ impl MentionSet {
         cx: &mut Context<Self>,
     ) -> Task<Result<Mention>> {
         let Some(project) = self.project.upgrade() else {
-            return Task::ready(Err(anyhow!("project not found")));
+            return Task::ready(Err(anyhow!("未找到项目")));
         };
 
         let diagnostics_task = collect_diagnostics(
@@ -664,7 +664,7 @@ impl MentionSet {
         cx.spawn(async move |_, _| {
             let content = diagnostics_task
                 .await?
-                .unwrap_or_else(|| "No diagnostics found.".into());
+                .unwrap_or_else(|| "未找到诊断信息。".into());
             Ok(Mention::Text {
                 content,
                 tracked_buffers: Vec::new(),
@@ -678,11 +678,11 @@ impl MentionSet {
         cx: &mut Context<Self>,
     ) -> Task<Result<Mention>> {
         let Some(project) = self.project.upgrade() else {
-            return Task::ready(Err(anyhow!("project not found")));
+            return Task::ready(Err(anyhow!("未找到项目")));
         };
 
         let Some(repo) = project.read(cx).active_repository(cx) else {
-            return Task::ready(Err(anyhow!("no active repository")));
+            return Task::ready(Err(anyhow!("没有活动的仓库")));
         };
 
         let diff_receiver = repo.update(cx, |repo, cx| {
@@ -696,7 +696,7 @@ impl MentionSet {
             let diff_text = diff_receiver.await??;
             if diff_text.is_empty() {
                 Ok(Mention::Text {
-                    content: "No changes found in branch diff.".into(),
+                    content: "分支差异中未找到更改。".into(),
                     tracked_buffers: Vec::new(),
                 })
             } else {
@@ -791,8 +791,8 @@ mod tests {
         assert!(
             error
                 .to_string()
-                .contains("Thread mentions are only supported for the native agent"),
-            "Unexpected error: {error:#}"
+                .contains("对话线程提及仅支持原生代理"),
+            "意外错误:{error:#}"
         );
     }
 
@@ -832,7 +832,7 @@ mod tests {
                 assert_eq!(content, "line 2\nline 3\n");
                 assert_eq!(tracked_buffers.len(), 1);
             }
-            other => panic!("Expected selection mention to resolve as text, got {other:?}"),
+            other => panic!("预期选区提及解析为文本,实际为 {other:?}"),
         }
     }
 
@@ -951,7 +951,7 @@ pub(crate) async fn insert_images_as_context(
                         format: LanguageModelImage::FORMAT,
                     }))
                 } else {
-                    Err("Failed to convert image".into())
+                    Err("转换图片失败".into())
                 }
             })
             .shared();
@@ -994,7 +994,7 @@ fn image_format_from_external_content(format: image::ImageFormat) -> Option<Imag
         image::ImageFormat::Ico => Some(ImageFormat::Ico),
         image::ImageFormat::Pnm => Some(ImageFormat::Pnm),
         _ => {
-            debug_panic!("An unhandled image format: {format:?}");
+            debug_panic!("未处理的图片格式:{format:?}");
             None
         }
     }
@@ -1052,7 +1052,7 @@ pub(crate) fn paste_images_as_context(
 
     Some(window.spawn(cx, async move |mut cx| {
         use itertools::Itertools;
-        let default_name: SharedString = "Image".into();
+        let default_name: SharedString = "图片".into();
         let (mut images, paths): (Vec<(gpui::Image, SharedString)>, Vec<_>) = clipboard
             .into_entries()
             .filter_map(|entry| match entry {
@@ -1248,16 +1248,16 @@ fn full_mention_for_directory(
         .project_path_for_absolute_path(&abs_path, cx)
     else {
         return Task::ready(Err(anyhow!(
-            "project path not found for directory mention {abs_path:?}"
+            "未找到目录提及 {abs_path:?} 的项目路径"
         )));
     };
     let Some(entry) = project.read(cx).entry_for_path(&project_path, cx) else {
-        return Task::ready(Err(anyhow!("project entry not found")));
+        return Task::ready(Err(anyhow!("未找到项目条目")));
     };
     let directory_path = entry.path.clone();
     let worktree_id = project_path.worktree_id;
     let Some(worktree) = project.read(cx).worktree_for_id(worktree_id, cx) else {
-        return Task::ready(Err(anyhow!("worktree not found")));
+        return Task::ready(Err(anyhow!("未找到工作树")));
     };
     let project = project.clone();
     cx.spawn(async move |cx| {
@@ -1462,22 +1462,22 @@ async fn fetch_url_content(http_client: Arc<HttpClientWithUrl>, url: String) -> 
         .body_mut()
         .read_to_end(&mut body)
         .await
-        .context("error reading response body")?;
+        .context("读取响应体时出错")?;
 
     if response.status().is_client_error() {
         let text = String::from_utf8_lossy(body.as_slice());
         anyhow::bail!(
-            "status error {}, response: {text:?}",
+            "状态错误 {}, 响应: {text:?}",
             response.status().as_u16()
         );
     }
 
     let Some(content_type) = response.headers().get("content-type") else {
-        anyhow::bail!("missing Content-Type header");
+        anyhow::bail!("缺少 Content-Type 头");
     };
     let content_type = content_type
         .to_str()
-        .context("invalid Content-Type header")?;
+        .context("无效的 Content-Type 头")?;
     let content_type = match content_type {
         "text/html" => ContentType::Html,
         "text/plain" => ContentType::Plaintext,

@@ -2404,16 +2404,16 @@ async fn test_fs_events_in_exclusions(cx: &mut TestAppContext) {
     let new_excluded_dir = dir.path().join("build_output");
     let new_ignored_dir = dir.path().join("test_output");
     std::fs::create_dir_all(&new_excluded_dir)
-        .unwrap_or_else(|e| panic!("Failed to create a {new_excluded_dir:?} directory: {e}"));
+        .unwrap_or_else(|e| panic!("创建 {new_excluded_dir:?} 目录失败: {e}"));
     std::fs::create_dir_all(&new_ignored_dir)
-        .unwrap_or_else(|e| panic!("Failed to create a {new_ignored_dir:?} directory: {e}"));
+        .unwrap_or_else(|e| panic!("创建 {new_ignored_dir:?} 目录失败: {e}"));
     let node_modules_dir = dir.path().join("node_modules");
     let dot_git_dir = dir.path().join(".git");
     let src_dir = dir.path().join("src");
     for existing_dir in [&node_modules_dir, &dot_git_dir, &src_dir] {
         assert!(
             existing_dir.is_dir(),
-            "Expect {existing_dir:?} to be present in the FS already"
+            "预期 {existing_dir:?} 已存在于文件系统中"
         );
     }
 
@@ -2426,7 +2426,7 @@ async fn test_fs_events_in_exclusions(cx: &mut TestAppContext) {
     ] {
         std::fs::write(directory_for_new_file.join("new_file"), "new file contents")
             .unwrap_or_else(|e| {
-                panic!("Failed to create in {directory_for_new_file:?} a new file: {e}")
+                panic!("在 {directory_for_new_file:?} 中创建新文件失败: {e}")
             });
     }
     tree.flush_fs_events(cx).await;
@@ -2502,7 +2502,7 @@ async fn test_fs_events_in_dot_git_worktree(cx: &mut TestAppContext) {
     });
 
     std::fs::write(dot_git_worktree_dir.join("new_file"), "new file contents")
-        .unwrap_or_else(|e| panic!("Failed to create in {dot_git_worktree_dir:?} a new file: {e}"));
+        .unwrap_or_else(|e| panic!("在 {dot_git_worktree_dir:?} 中创建新文件失败: {e}"));
     tree.flush_fs_events(cx).await;
     tree.read_with(cx, |tree, _| {
         check_worktree_entries(
@@ -2810,23 +2810,23 @@ async fn test_create_file_in_expanded_gitignored_dir(cx: &mut TestAppContext) {
         assert_eq!(
             ignored_dir.kind,
             EntryKind::Dir,
-            "ignored_dir should still be loaded, not UnloadedDir"
+            "ignored_dir 应仍处于已加载状态,而非 UnloadedDir"
         );
 
         assert!(
             tree.entry_for_path(rel_path("ignored_dir/existing_file.txt"))
                 .is_some(),
-            "existing_file.txt should still be visible"
+            "existing_file.txt 应仍然可见"
         );
         assert!(
             tree.entry_for_path(rel_path("ignored_dir/another_file.txt"))
                 .is_some(),
-            "another_file.txt should still be visible"
+            "another_file.txt 应仍然可见"
         );
         assert!(
             tree.entry_for_path(rel_path("ignored_dir/new_file.txt"))
                 .is_some(),
-            "new_file.txt should be visible"
+            "new_file.txt 应可见"
         );
     });
 }
@@ -2892,17 +2892,17 @@ async fn test_fs_event_for_gitignored_dir_does_not_lose_contents(cx: &mut TestAp
         assert_eq!(
             ignored_dir.kind,
             EntryKind::Dir,
-            "ignored_dir should still be loaded (Dir), not UnloadedDir"
+            "ignored_dir 应仍处于已加载状态(Dir),而非 UnloadedDir"
         );
         assert!(
             tree.entry_for_path(rel_path("ignored_dir/file1.txt"))
                 .is_some(),
-            "file1.txt should still be visible after directory fs event"
+            "目录文件系统事件后 file1.txt 应仍然可见"
         );
         assert!(
             tree.entry_for_path(rel_path("ignored_dir/file2.txt"))
                 .is_some(),
-            "file2.txt should still be visible after directory fs event"
+            "目录文件系统事件后 file2.txt 应仍然可见"
         );
     });
 }
@@ -2926,7 +2926,7 @@ async fn test_random_worktree_operations_during_initial_scan(
     for _ in 0..initial_entries {
         randomly_mutate_fs(&fs, root_dir, 1.0, &mut rng).await;
     }
-    log::info!("generated initial tree");
+    log::info!("已生成初始树");
 
     let worktree = Worktree::local(
         root_dir,
@@ -2997,7 +2997,7 @@ async fn test_random_worktree_operations_during_initial_scan(
         assert_eq!(
             updated_snapshot.entries(true, 0).collect::<Vec<_>>(),
             final_snapshot.entries(true, 0).collect::<Vec<_>>(),
-            "wrong updates after snapshot {i}: {updates:#?}",
+            "快照 {i} 后的更新错误: {updates:#?}",
         );
     }
 }
@@ -3018,7 +3018,7 @@ async fn test_random_worktree_changes(cx: &mut TestAppContext, mut rng: StdRng) 
     for _ in 0..initial_entries {
         randomly_mutate_fs(&fs, root_dir, 1.0, &mut rng).await;
     }
-    log::info!("generated initial tree");
+    log::info!("已生成初始树");
 
     let worktree = Worktree::local(
         root_dir,
@@ -3068,13 +3068,13 @@ async fn test_random_worktree_changes(cx: &mut TestAppContext, mut rng: StdRng) 
         if buffered_event_count > 0 && rng.random_bool(0.3) {
             if rng.random_bool(0.2) {
                 log::info!(
-                    "simulating watcher overflow, losing {} events",
+                    "模拟监视器溢出,丢失 {} 个事件",
                     buffered_event_count
                 );
                 fs.as_fake().simulate_watcher_overflow(root_dir);
             } else {
                 let len = rng.random_range(0..=buffered_event_count);
-                log::info!("flushing {} events", len);
+                log::info!("正在刷新 {} 个事件", len);
                 fs.as_fake().flush_events(len);
             }
         } else {
@@ -3084,7 +3084,7 @@ async fn test_random_worktree_changes(cx: &mut TestAppContext, mut rng: StdRng) 
 
         cx.executor().run_until_parked();
         if rng.random_bool(0.2) {
-            log::info!("storing snapshot {}", snapshots.len());
+            log::info!("正在存储快照 {}", snapshots.len());
             let snapshot = worktree.read_with(cx, |tree, _| tree.as_local().unwrap().snapshot());
             snapshots.push(snapshot);
         }
@@ -3150,7 +3150,7 @@ async fn test_random_worktree_changes(cx: &mut TestAppContext, mut rng: StdRng) 
                 .entries(true, 0)
                 .map(ignore_pending_dir)
                 .collect::<Vec<_>>(),
-            "wrong updates after snapshot {i}: {updates:#?}",
+            "快照 {i} 后的更新错误: {updates:#?}",
         );
     }
 
@@ -3232,7 +3232,7 @@ async fn test_random_git_updates_with_watcher_overflows(cx: &mut TestAppContext,
             // Change the repository's git state, e.g. a commit moving HEAD.
             0..25 => {
                 commit_count += 1;
-                log::info!("setting HEAD to commit {commit_count}");
+                log::info!("正在将 HEAD 设置为提交 {commit_count}");
                 fs.as_fake().set_head_for_repo(
                     &dot_git,
                     &[("src/main.rs", format!("fn main() {{}} // {commit_count}"))],
@@ -3244,7 +3244,7 @@ async fn test_random_git_updates_with_watcher_overflows(cx: &mut TestAppContext,
             // only a rescan for the root is reported.
             25..40 => {
                 log::info!(
-                    "simulating watcher overflow, losing {} events",
+                    "模拟监视器溢出,丢失 {} 个事件",
                     fs.as_fake().buffered_event_count()
                 );
                 fs.as_fake().simulate_watcher_overflow(root_dir);
@@ -3253,7 +3253,7 @@ async fn test_random_git_updates_with_watcher_overflows(cx: &mut TestAppContext,
             40..65 => {
                 let buffered_event_count = fs.as_fake().buffered_event_count();
                 let len = rng.random_range(0..=buffered_event_count);
-                log::info!("flushing {len} of {buffered_event_count} events");
+                log::info!("正在刷新 {buffered_event_count} 个事件中的 {len} 个");
                 fs.as_fake().flush_events(len);
             }
             // Unrelated churn in the working tree.
@@ -3273,7 +3273,7 @@ async fn test_random_git_updates_with_watcher_overflows(cx: &mut TestAppContext,
     });
     assert!(
         !pending_git_update.get(),
-        "a git state change was never signaled via UpdatedGitRepositories"
+        "从未通过 UpdatedGitRepositories 发出 git 状态更改信号"
     );
 }
 
@@ -3309,7 +3309,7 @@ fn check_worktree_change_events(tree: &mut Worktree, cx: &mut Context<Worktree>)
             }
 
             let new_entries = tree.entries(true, 0).cloned().collect::<Vec<_>>();
-            assert_eq!(entries, new_entries, "incorrect changes: {:?}", changes);
+            assert_eq!(entries, new_entries, "不正确的更改: {:?}", changes);
         }
     })
     .detach();
@@ -3320,14 +3320,14 @@ fn randomly_mutate_worktree(
     rng: &mut impl Rng,
     cx: &mut Context<Worktree>,
 ) -> Task<Result<()>> {
-    log::info!("mutating worktree");
+    log::info!("正在修改工作树");
     let worktree = worktree.as_local_mut().unwrap();
     let snapshot = worktree.snapshot();
     let entry = snapshot.entries(false, 0).choose(rng).unwrap();
 
     match rng.random_range(0_u32..100) {
         0..=33 if entry.path.as_ref() != RelPath::empty() => {
-            log::info!("deleting entry {:?} ({})", entry.path, entry.id.to_usize());
+            log::info!("正在删除条目 {:?} ({})", entry.path, entry.id.to_usize());
             let task = worktree.delete_entry(entry.clone(), cx);
 
             cx.background_spawn(async move {
@@ -3340,7 +3340,7 @@ fn randomly_mutate_worktree(
                 let child_path = entry.path.join(rel_path(&random_filename(rng)));
                 let is_dir = rng.random_bool(0.3);
                 log::info!(
-                    "creating {} at {:?}",
+                    "正在 {} 于 {:?} 创建",
                     if is_dir { "dir" } else { "file" },
                     child_path,
                 );
@@ -3351,7 +3351,7 @@ fn randomly_mutate_worktree(
                 })
             } else {
                 log::info!(
-                    "overwriting file {:?} ({})",
+                    "正在覆盖文件 {:?} ({})",
                     &entry.path,
                     entry.id.to_usize()
                 );
@@ -3378,7 +3378,7 @@ async fn randomly_mutate_fs(
     insertion_probability: f64,
     rng: &mut impl Rng,
 ) {
-    log::info!("mutating fs");
+    log::info!("正在修改文件系统");
     let mut files = Vec::new();
     let mut dirs = Vec::new();
     for path in fs.as_fake().paths(false) {
@@ -3397,13 +3397,13 @@ async fn randomly_mutate_fs(
 
         if rng.random() {
             log::info!(
-                "creating dir {:?}",
+                "正在创建目录 {:?}",
                 new_path.strip_prefix(root_path).unwrap()
             );
             fs.create_dir(&new_path).await.unwrap();
         } else {
             log::info!(
-                "creating file {:?}",
+                "正在创建文件 {:?}",
                 new_path.strip_prefix(root_path).unwrap()
             );
             fs.create_file(&new_path, Default::default()).await.unwrap();
@@ -3445,7 +3445,7 @@ async fn randomly_mutate_fs(
             .unwrap();
         }
         log::info!(
-            "creating gitignore {:?} with contents:\n{}",
+            "正在创建 gitignore {:?},内容为:\n{}",
             ignore_path.strip_prefix(root_path).unwrap(),
             ignore_contents
         );
@@ -3489,10 +3489,10 @@ async fn randomly_mutate_fs(
             };
 
             log::info!(
-                "renaming {:?} to {}{:?}",
+                "正在将 {:?} 重命名为 {}{:?}",
                 old_path.strip_prefix(root_path).unwrap(),
                 if overwrite_existing_dir {
-                    "overwrite "
+                    "覆盖 "
                 } else {
                     ""
                 },
@@ -3511,13 +3511,13 @@ async fn randomly_mutate_fs(
             .unwrap();
         } else if fs.is_file(old_path).await {
             log::info!(
-                "deleting file {:?}",
+                "正在删除文件 {:?}",
                 old_path.strip_prefix(root_path).unwrap()
             );
             fs.remove_file(old_path, Default::default()).await.unwrap();
         } else {
             log::info!(
-                "deleting dir {:?}",
+                "正在删除目录 {:?}",
                 old_path.strip_prefix(root_path).unwrap()
             );
             fs.remove_dir(
@@ -4094,7 +4094,7 @@ async fn test_repo_exclude_applies_within_nested_repos(
         assert_eq!(
             unignored_entries,
             Vec::<Arc<RelPath>>::new(),
-            "entries under the excluded .scratch directories leaked into the unignored traversal",
+            "被排除的 .scratch 目录下的条目泄漏到了未忽略的遍历中",
         );
     });
 }
@@ -4113,34 +4113,34 @@ fn check_worktree_entries(tree: &Worktree, expectations: WorktreeExpectations) {
         let entry = tree.entry_for_path(rel_path(path));
         assert!(
             entry.is_none(),
-            "expected path '{path}' to be excluded, but got entry: {entry:?}",
+            "预期路径 '{path}' 被排除,但得到了条目: {entry:?}",
         );
     }
     for path in expectations.ignored_paths {
         let entry = tree
             .entry_for_path(rel_path(path))
-            .unwrap_or_else(|| panic!("Missing entry for expected ignored path '{path}'"));
+            .unwrap_or_else(|| panic!("缺少预期被忽略路径 '{path}' 的条目"));
         assert!(
             entry.is_ignored,
-            "expected path '{path}' to be ignored, but got entry: {entry:?}",
+            "预期路径 '{path}' 被忽略,但得到了条目: {entry:?}",
         );
     }
     for path in expectations.tracked_paths {
         let entry = tree
             .entry_for_path(rel_path(path))
-            .unwrap_or_else(|| panic!("Missing entry for expected tracked path '{path}'"));
+            .unwrap_or_else(|| panic!("缺少预期被跟踪路径 '{path}' 的条目"));
         assert!(
             !entry.is_ignored || entry.is_always_included,
-            "expected path '{path}' to be tracked, but got entry: {entry:?}",
+            "预期路径 '{path}' 被跟踪,但得到了条目: {entry:?}",
         );
     }
     for path in expectations.included_paths {
         let entry = tree
             .entry_for_path(rel_path(path))
-            .unwrap_or_else(|| panic!("Missing entry for expected included path '{path}'"));
+            .unwrap_or_else(|| panic!("缺少预期被包含路径 '{path}' 的条目"));
         assert!(
             entry.is_always_included,
-            "expected path '{path}' to always be included, but got entry: {entry:?}",
+            "预期路径 '{path}' 始终被包含,但得到了条目: {entry:?}",
         );
     }
 }
@@ -4361,7 +4361,7 @@ async fn test_root_repo_common_dir(executor: BackgroundExecutor, cx: &mut TestAp
     assert_eq!(
         event_count.get(),
         1,
-        "should have emitted UpdatedRootRepoCommonDir on removal"
+        "移除时本应发出 UpdatedRootRepoCommonDir 事件"
     );
 }
 
@@ -4472,7 +4472,7 @@ async fn test_linked_worktree_gitfile_event_preserves_repo(
         assert_eq!(
             tree.snapshot().root_repo_common_dir().map(|p| p.as_ref()),
             Some(Path::new(path!("/main_repo/.git"))),
-            "linked worktree repo should survive a gitfile change event"
+            "链接的工作树仓库应能在 gitfile 更改事件后存活"
         );
     });
 }
@@ -4553,7 +4553,7 @@ async fn test_shared_common_dir_event_updates_all_repositories(
             Arc::from(Path::new(path!("/project/linked"))),
             Arc::from(Path::new(path!("/project/main_repo"))),
         ],
-        "a ref update in the shared common dir should refresh both repositories"
+        "共享公共目录中的引用更新应刷新两个仓库"
     );
 }
 
@@ -4663,7 +4663,7 @@ async fn test_noisy_dot_git_events_do_not_emit_git_repo_update(
         assert_eq!(
             repo_update_count.get(),
             0,
-            "event for {path} should not emit UpdatedGitRepositories"
+            "{path} 的事件不应发出 UpdatedGitRepositories"
         );
     }
 
@@ -4684,7 +4684,7 @@ async fn test_noisy_dot_git_events_do_not_emit_git_repo_update(
         cx.run_until_parked();
         assert!(
             repo_update_count.get() > count_before,
-            "event for {path} should emit UpdatedGitRepositories"
+            "{path} 的事件应发出 UpdatedGitRepositories"
         );
     }
 }
@@ -4950,7 +4950,7 @@ async fn test_dot_git_dir_event_does_not_suppress_children(
         let got_git_update = drain_git_repo_updates(&mut events);
         assert!(
             !got_git_update,
-            "should NOT emit UpdatedGitRepositories when .git batch only contains index.lock"
+            "当 .git 批次仅包含 index.lock 时,不应发出 UpdatedGitRepositories"
         );
     }
 
@@ -4965,7 +4965,7 @@ async fn test_dot_git_dir_event_does_not_suppress_children(
         let got_git_update = drain_git_repo_updates(&mut events);
         assert!(
             got_git_update,
-            "should emit UpdatedGitRepositories for a bare .git directory event"
+            "对于裸 .git 目录事件,应发出 UpdatedGitRepositories"
         );
     }
 
@@ -4981,7 +4981,7 @@ async fn test_dot_git_dir_event_does_not_suppress_children(
         let got_git_update = drain_git_repo_updates(&mut events);
         assert!(
             got_git_update,
-            "should emit UpdatedGitRepositories when .git batch contains index"
+            "当 .git 批次包含 index 时,应发出 UpdatedGitRepositories"
         );
     }
 
@@ -4996,7 +4996,7 @@ async fn test_dot_git_dir_event_does_not_suppress_children(
         let got_git_update = drain_git_repo_updates(&mut events);
         assert!(
             got_git_update,
-            "should emit UpdatedGitRepositories for a .git/index event"
+            "对于 .git/index 事件,应发出 UpdatedGitRepositories"
         );
     }
 
@@ -5010,7 +5010,7 @@ async fn test_dot_git_dir_event_does_not_suppress_children(
         let got_git_update = drain_git_repo_updates(&mut events);
         assert!(
             got_git_update,
-            "should emit UpdatedGitRepositories for a .git rescan event"
+            "对于 .git 重新扫描事件,应发出 UpdatedGitRepositories"
         );
     }
 
@@ -5024,7 +5024,7 @@ async fn test_dot_git_dir_event_does_not_suppress_children(
         let got_git_update = drain_git_repo_updates(&mut events);
         assert!(
             got_git_update,
-            "should emit UpdatedGitRepositories for a .git rescan event"
+            "对于 .git 重新扫描事件,应发出 UpdatedGitRepositories"
         );
     }
 }
@@ -5142,7 +5142,7 @@ async fn test_dot_git_event_explained_by_filtered_sibling_does_not_emit_git_repo
         let got_git_update = drain_git_repo_updates(&mut events);
         assert!(
             got_git_update,
-            "a standalone bare .git event should still emit UpdatedGitRepositories"
+            "独立的裸 .git 事件仍应发出 UpdatedGitRepositories"
         );
     }
 }
@@ -5187,10 +5187,10 @@ async fn test_ref_updates_in_dot_git_subdirectories_are_detected(cx: &mut TestAp
         "1111111111111111111111111111111111111111\n",
     )
     .unwrap();
-    expect_git_repo_update(&mut events, cx, "updating a loose ref").await;
+    expect_git_repo_update(&mut events, cx, "正在更新松散引用").await;
 
     std::fs::create_dir_all(dir.path().join(".git/refs/remotes/origin")).unwrap();
-    expect_git_repo_update(&mut events, cx, "creating a directory under refs").await;
+    expect_git_repo_update(&mut events, cx, "正在 refs 下创建目录").await;
     tree.flush_fs_events(cx).await;
     drain_git_repo_updates(&mut events);
 
@@ -5202,7 +5202,7 @@ async fn test_ref_updates_in_dot_git_subdirectories_are_detected(cx: &mut TestAp
     expect_git_repo_update(
         &mut events,
         cx,
-        "updating a ref in a directory created after the initial scan",
+        "正在更新初始扫描后创建的目录中的引用",
     )
     .await;
 }
@@ -5223,7 +5223,7 @@ async fn expect_git_repo_update(
         }
         assert!(
             elapsed < timeout,
-            "timed out waiting for UpdatedGitRepositories after {description}"
+            "在 {description} 之后等待 UpdatedGitRepositories 超时"
         );
         cx.background_executor.timer(poll_interval).await;
         elapsed += poll_interval;
@@ -5262,7 +5262,7 @@ async fn wait_for_condition(
             .timer(std::time::Duration::from_millis(10))
             .await;
     }
-    panic!("timed out waiting for test condition");
+    panic!("等待测试条件超时");
 }
 
 #[gpui::test]
@@ -5331,7 +5331,7 @@ async fn test_load_file_encoding(cx: &mut TestAppContext) {
             expected_text: "こんにちは",
         },
         // UTF-16LE without BOM (ASCII only)
-        // This relies on the "null byte heuristic" we implemented.
+        // This relies on the "空字节启发式" we implemented.
         // "ABC" -> 41 00 42 00 43 00
         TestCase {
             name: "utf16le_ascii_no_bom.txt",
@@ -5392,12 +5392,12 @@ async fn test_load_file_encoding(cx: &mut TestAppContext) {
             .update(cx, |tree, cx| tree.load_file(&rel_path(case.name), cx))
             .await;
         if let Err(e) = &loaded {
-            panic!("Failed to load success case '{}': {:?}", case.name, e);
+            panic!("加载成功用例 '{}' 失败: {:?}", case.name, e);
         }
         let loaded = loaded.unwrap();
         assert_eq!(
             loaded.text, case.expected_text,
-            "Encoding mismatch for file: {}",
+            "文件编码不匹配: {}",
             case.name
         );
     }
@@ -5409,11 +5409,11 @@ async fn test_load_file_encoding(cx: &mut TestAppContext) {
             .await;
         assert!(
             loaded.is_err(),
-            "Failure case '{}' unexpectedly succeeded! It should have been detected as binary.",
+            "失败用例 '{}' 意外成功!它本应被检测为二进制文件。",
             case.name
         );
         let err_msg = loaded.unwrap_err().to_string();
-        println!("Got expected error for {}: {}", case.name, err_msg);
+        println!("对于 {} 得到了预期错误: {}", case.name, err_msg);
     }
 }
 
@@ -5453,7 +5453,7 @@ async fn test_write_file_encoding(cx: &mut gpui::TestAppContext) {
     let cases = vec![
         // Shift_JIS with Japanese
         TestCase {
-            name: "Shift_JIS with Japanese",
+            name: "带日文的 Shift_JIS",
             text: "こんにちは",
             encoding: encoding_rs::SHIFT_JIS,
             has_bom: false,
@@ -5461,7 +5461,7 @@ async fn test_write_file_encoding(cx: &mut gpui::TestAppContext) {
         },
         // UTF-8 No BOM
         TestCase {
-            name: "UTF-8 No BOM",
+            name: "UTF-8 无 BOM",
             text: "AB",
             encoding: encoding_rs::UTF_8,
             has_bom: false,
@@ -5469,7 +5469,7 @@ async fn test_write_file_encoding(cx: &mut gpui::TestAppContext) {
         },
         // UTF-8 with BOM
         TestCase {
-            name: "UTF-8 with BOM",
+            name: "带 BOM 的 UTF-8",
             text: "AB",
             encoding: encoding_rs::UTF_8,
             has_bom: true,
@@ -5478,7 +5478,7 @@ async fn test_write_file_encoding(cx: &mut gpui::TestAppContext) {
         // UTF-16LE No BOM with Japanese
         // NOTE: This passes thanks to the manual encoding fix implemented in `write_file`.
         TestCase {
-            name: "UTF-16LE No BOM with Japanese",
+            name: "带日文的 UTF-16LE 无 BOM",
             text: "こんにちは",
             encoding: encoding_rs::UTF_16LE,
             has_bom: false,
@@ -5486,7 +5486,7 @@ async fn test_write_file_encoding(cx: &mut gpui::TestAppContext) {
         },
         // UTF-16LE with BOM
         TestCase {
-            name: "UTF-16LE with BOM",
+            name: "带 BOM 的 UTF-16LE",
             text: "A",
             encoding: encoding_rs::UTF_16LE,
             has_bom: true,
@@ -5495,7 +5495,7 @@ async fn test_write_file_encoding(cx: &mut gpui::TestAppContext) {
         // UTF-16BE No BOM with Japanese
         // NOTE: This passes thanks to the manual encoding fix.
         TestCase {
-            name: "UTF-16BE No BOM with Japanese",
+            name: "带日文的 UTF-16BE 无 BOM",
             text: "こんにちは",
             encoding: encoding_rs::UTF_16BE,
             has_bom: false,
@@ -5503,7 +5503,7 @@ async fn test_write_file_encoding(cx: &mut gpui::TestAppContext) {
         },
         // UTF-16BE with BOM
         TestCase {
-            name: "UTF-16BE with BOM",
+            name: "带 BOM 的 UTF-16BE",
             text: "A",
             encoding: encoding_rs::UTF_16BE,
             has_bom: true,
@@ -5533,14 +5533,14 @@ async fn test_write_file_encoding(cx: &mut gpui::TestAppContext) {
         });
 
         if let Err(e) = task.await {
-            panic!("Unexpected error in case '{}': {:?}", case.name, e);
+            panic!("用例 '{}' 中出现意外错误: {:?}", case.name, e);
         }
 
         let bytes = fs.load_bytes(&file_path).await.unwrap();
 
         assert_eq!(
             bytes, case.expected_bytes,
-            "case '{}' mismatch. Expected {:?}, but got {:?}",
+            "用例 '{}' 不匹配。预期 {:?},但得到 {:?}",
             case.name, case.expected_bytes, bytes
         );
     }
@@ -5589,7 +5589,7 @@ async fn test_refresh_entries_for_paths_creates_ancestors(cx: &mut TestAppContex
                 .map(|e| e.path.as_ref())
                 .collect::<Vec<_>>(),
             &[rel_path("")],
-            "Only root entry should exist when scanning is disabled"
+            "禁用扫描时,应仅存在根条目"
         );
 
         assert!(tree.entry_for_path(rel_path("a")).is_none());
@@ -5623,7 +5623,7 @@ async fn test_refresh_entries_for_paths_creates_ancestors(cx: &mut TestAppContex
                 rel_path("a/b/c/sibling.txt"),
                 rel_path("a/b/d"),
             ],
-            "All ancestors should be created when refreshing a deeply nested path"
+            "刷新深层嵌套路径时,应创建所有祖先目录"
         );
     });
 }
@@ -5657,7 +5657,7 @@ async fn test_single_file_worktree_deleted(cx: &mut TestAppContext) {
         .await;
 
     tree.read_with(cx, |tree, _| {
-        assert!(tree.is_single_file(), "Should be a single-file worktree");
+        assert!(tree.is_single_file(), "应为单文件工作树");
         assert_eq!(tree.abs_path().as_ref(), Path::new("/root/test.txt"));
     });
 
@@ -5688,7 +5688,7 @@ async fn test_single_file_worktree_deleted(cx: &mut TestAppContext) {
 
     assert!(
         deleted_event_received.get(),
-        "Should receive Deleted event when single-file worktree root is deleted"
+        "删除单文件工作树根目录时,应收到 Deleted 事件"
     );
 }
 
@@ -5780,7 +5780,7 @@ async fn test_remote_worktree_without_git_emits_root_repo_event_after_first_upda
     let fired = events.lock().unwrap();
     assert!(
         fired.contains(&"UpdatedEntries"),
-        "UpdatedEntries should fire after remote update"
+        "远程更新后应触发 UpdatedEntries 事件"
     );
     assert!(
         fired.contains(&"UpdatedRootRepoCommonDir"),
@@ -5874,7 +5874,7 @@ async fn test_remote_worktree_with_git_emits_root_repo_event_when_repo_info_arri
     let fired = events.lock().unwrap();
     assert!(
         fired.contains(&"UpdatedRootRepoCommonDir"),
-        "UpdatedRootRepoCommonDir should fire when repo info arrives (None -> Some)"
+        "仓库信息到达时(None -> Some)应触发 UpdatedRootRepoCommonDir 事件"
     );
     assert_eq!(
         fired
@@ -5882,7 +5882,7 @@ async fn test_remote_worktree_with_git_emits_root_repo_event_when_repo_info_arri
             .filter(|e| **e == "UpdatedRootRepoCommonDir")
             .count(),
         1,
-        "should fire exactly once, not duplicate"
+        "应恰好触发一次,不得重复"
     );
 }
 
@@ -5955,7 +5955,7 @@ async fn test_remote_worktree_root_repo_metadata_cleared_only_by_completed_scan(
     assert_eq!(
         root_repo_metadata(cx),
         (Some(Arc::from(Path::new("/home/user/monty/.bare"))), true,),
-        "mid-scan update without repo info should not clear seeded metadata"
+        "扫描中途更新(无仓库信息)不应清除预置元数据"
     );
 
     // A completed scan without repo info is authoritative: the repo is gone.
@@ -5970,7 +5970,7 @@ async fn test_remote_worktree_root_repo_metadata_cleared_only_by_completed_scan(
     assert_eq!(
         root_repo_metadata(cx),
         (None, false),
-        "completed scan without repo info should clear root repo metadata"
+        "扫描完成(无仓库信息)应清除根仓库元数据"
     );
 }
 
@@ -6099,7 +6099,7 @@ async fn test_remote_worktree_update_entries_carry_changed_paths(cx: &mut TestAp
                 .iter()
                 .any(|(path, change)| path == ".agents/skills/skill-1/SKILL.md"
                     && *change == PathChange::AddedOrUpdated),
-            "remote UpdatedEntries should carry the added skill path, got {:?}",
+            "远程 UpdatedEntries 应包含新增的技能路径,实际为 {:?}",
             changes
         );
     }

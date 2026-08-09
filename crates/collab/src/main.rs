@@ -33,7 +33,7 @@ use util::ResultExt as _;
 async fn main() -> Result<()> {
     if let Err(error) = env::load_dotenv() {
         eprintln!(
-            "error loading .env.toml (this is expected in production): {}",
+            "加载 .env.toml 时出错(在生产环境中这是预期的):{}",
             error
         );
     }
@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
                 }
             };
 
-            let config = envy::from_env::<Config>().expect("error loading config");
+            let config = envy::from_env::<Config>().expect("加载配置时出错");
             init_tracing(&config);
             init_panic_hook();
 
@@ -63,7 +63,7 @@ async fn main() -> Result<()> {
                 .layer(Extension(mode));
 
             let listener = TcpListener::bind(format!("0.0.0.0:{}", config.http_port))
-                .expect("failed to bind TCP listener");
+                .expect("无法绑定 TCP 监听器");
 
             let mut on_shutdown = None;
 
@@ -126,7 +126,7 @@ async fn main() -> Result<()> {
                             tracing::info!(
                                 duration_ms,
                                 status = response.status().as_u16(),
-                                "finished processing request"
+                                "请求处理完成"
                             );
                         },
                     ),
@@ -135,9 +135,9 @@ async fn main() -> Result<()> {
             #[cfg(unix)]
             let signal = async move {
                 let mut sigterm = tokio::signal::unix::signal(SignalKind::terminate())
-                    .expect("failed to listen for interrupt signal");
+                    .expect("无法监听中断信号");
                 let mut sigint = tokio::signal::unix::signal(SignalKind::interrupt())
-                    .expect("failed to listen for interrupt signal");
+                    .expect("无法监听中断信号");
                 let sigterm = sigterm.recv();
                 let sigint = sigint.recv();
                 futures::pin_mut!(sigterm, sigint);
@@ -151,9 +151,9 @@ async fn main() -> Result<()> {
                 // but system terminates the application soon after returning CTRL+CLOSE handler.
                 // So we should implement blocking handler to treat CTRL+CLOSE signal.
                 let mut ctrl_break = tokio::signal::windows::ctrl_break()
-                    .expect("failed to listen for interrupt signal");
+                    .expect("无法监听中断信号");
                 let mut ctrl_c = tokio::signal::windows::ctrl_c()
-                    .expect("failed to listen for interrupt signal");
+                    .expect("无法监听中断信号");
                 let ctrl_break = ctrl_break.recv();
                 let ctrl_c = ctrl_c.recv();
                 futures::pin_mut!(ctrl_break, ctrl_c);
@@ -165,7 +165,7 @@ async fn main() -> Result<()> {
                 .serve(app.into_make_service_with_connect_info::<SocketAddr>())
                 .with_graceful_shutdown(async move {
                     signal.await;
-                    tracing::info!("Received interrupt signal");
+                    tracing::info!("已收到中断信号");
 
                     if let Some(on_shutdown) = on_shutdown {
                         on_shutdown();
@@ -248,6 +248,6 @@ fn init_panic_hook() {
         let location = panic_info
             .location()
             .map(|loc| format!("{}:{}", loc.file(), loc.line()));
-        tracing::error!(panic = true, ?location, %panic_message, %backtrace, "Server Panic");
+        tracing::error!(panic = true, ?location, %panic_message, %backtrace, "服务器崩溃");
     }));
 }

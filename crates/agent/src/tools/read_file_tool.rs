@@ -229,16 +229,16 @@ impl AgentTool for ReadFileTool {
         {
             match (input.start_line, input.end_line) {
                 (Some(start), Some(end)) => {
-                    format!("Read file `{path}` (lines {}-{})", start, end,)
+                    format!("读取文件 `{path}`(第 {}-{} 行)", start, end,)
                 }
                 (Some(start), None) => {
-                    format!("Read file `{path}` (from line {})", start)
+                    format!("读取文件 `{path}`(从第 {} 行开始)", start)
                 }
-                _ => format!("Read file `{path}`"),
+                _ => format!("读取文件 `{path}`"),
             }
             .into()
         } else {
-            "Read file".into()
+            "读取文件".into()
         }
     }
 
@@ -295,7 +295,7 @@ impl AgentTool for ReadFileTool {
                     project.absolute_path(&project_path, cx)
                 })
                 .ok_or_else(|| {
-                    anyhow!("Failed to convert {} to absolute path", &input.path)
+                    anyhow!("无法将 {} 转换为绝对路径", &input.path)
                 }).map_err(tool_content_err)?;
 
             // Check settings exclusions synchronously
@@ -303,14 +303,14 @@ impl AgentTool for ReadFileTool {
                 let global_settings = WorktreeSettings::get_global(cx);
                 if global_settings.is_path_excluded(&project_path.path) {
                     anyhow::bail!(
-                        "Cannot read file because its path matches the global `file_scan_exclusions` setting: {}",
+                        "无法读取文件,因为其路径匹配全局 `file_scan_exclusions` 设置:{}",
                         &input.path
                     );
                 }
 
                 if global_settings.is_path_private(&project_path.path) {
                     anyhow::bail!(
-                        "Cannot read file because its path matches the global `private_files` setting: {}",
+                        "无法读取文件,因为其路径匹配全局 `private_files` 设置:{}",
                         &input.path
                     );
                 }
@@ -318,14 +318,14 @@ impl AgentTool for ReadFileTool {
                 let worktree_settings = WorktreeSettings::get(Some((&project_path).into()), cx);
                 if worktree_settings.is_path_excluded(&project_path.path) {
                     anyhow::bail!(
-                        "Cannot read file because its path matches the worktree `file_scan_exclusions` setting: {}",
+                        "无法读取文件,因为其路径匹配工作树 `file_scan_exclusions` 设置:{}",
                         &input.path
                     );
                 }
 
                 if worktree_settings.is_path_private(&project_path.path) {
                     anyhow::bail!(
-                        "Cannot read file because its path matches the worktree `private_files` setting: {}",
+                        "无法读取文件,因为其路径匹配工作树 `private_files` 设置:{}",
                         &input.path
                     );
                 }
@@ -335,7 +335,7 @@ impl AgentTool for ReadFileTool {
 
             if fs.is_dir(&abs_path).await {
                 return Err(tool_content_err(format!(
-                    "{} is a directory, not a file. Use the list_directory tool to explore directory contents.",
+                    "{} 是一个目录,不是文件。请使用 list_directory 工具浏览目录内容。",
                     &input.path
                 )));
             }
@@ -381,7 +381,7 @@ impl AgentTool for ReadFileTool {
                 let language_model_image = cx
                     .update(|cx| LanguageModelImage::from_image(image, cx))
                     .await
-                    .context("processing image")
+                    .context("处理图像")
                     .map_err(tool_content_err)?;
 
                 event_stream.update_fields(acp::ToolCallUpdateFields::new().content(vec![
@@ -400,7 +400,7 @@ impl AgentTool for ReadFileTool {
             let buffer = futures::select! {
                 result = open_buffer_task.fuse() => result.map_err(tool_content_err)?,
                 _ = event_stream.cancelled_by_user().fuse() => {
-                    return Err(tool_content_err("File read cancelled by user"));
+                    return Err(tool_content_err("用户已取消文件读取"));
                 }
             };
             if buffer.read_with(cx, |buffer, _| {
@@ -409,7 +409,7 @@ impl AgentTool for ReadFileTool {
                     .as_ref()
                     .is_none_or(|file| !file.disk_state().exists())
             }) {
-                return Err(tool_content_err(format!("{file_path} not found")));
+                return Err(tool_content_err(format!("未找到 {file_path}")));
             }
 
             let mut anchor = None;
@@ -765,8 +765,8 @@ mod test {
             result
                 .to_str()
                 .unwrap()
-                .starts_with("SUCCESS: File outline retrieved."),
-            "expected outline response, got: {:?}",
+                .starts_with("成功:已获取文件大纲。"),
+            "预期大纲响应,实际为:{:?}",
             result.to_str().unwrap()
         );
 
@@ -774,25 +774,25 @@ mod test {
         // markdown content destined for the tool-call UI.
         let _location_update = rx.expect_update_fields().await;
         let content_update = rx.expect_update_fields().await;
-        let content_blocks = content_update.content.expect("expected content update");
+        let content_blocks = content_update.content.expect("预期内容更新");
         let acp::ToolCallContent::Content(content) = content_blocks
             .first()
-            .expect("expected at least one content block")
+            .expect("预期至少有一个内容块")
         else {
-            panic!("expected ContentBlock, got {:?}", content_blocks.first());
+            panic!("预期 ContentBlock,实际为:{:?}", content_blocks.first());
         };
         let acp::ContentBlock::Text(text) = &content.content else {
-            panic!("expected text content block, got {:?}", content.content);
+            panic!("预期文本内容块,实际为:{:?}", content.content);
         };
 
         assert!(
             text.text.starts_with("```\n"),
-            "outline response must use an untagged fenced code block; got first line: {:?}",
+            "大纲响应必须使用无标签的围栏代码块;实际第一行:{:?}",
             text.text.lines().next()
         );
         assert!(
             !text.text.starts_with("```root/"),
-            "outline response must not include the file path as a code block tag"
+            "大纲响应不得将文件路径作为代码块标签"
         );
     }
 
@@ -830,20 +830,20 @@ mod test {
 
         let _location_update = rx.expect_update_fields().await;
         let content_update = rx.expect_update_fields().await;
-        let content_blocks = content_update.content.expect("expected content update");
+        let content_blocks = content_update.content.expect("预期内容更新");
         let acp::ToolCallContent::Content(content) = content_blocks
             .first()
-            .expect("expected at least one content block")
+            .expect("预期至少有一个内容块")
         else {
-            panic!("expected ContentBlock, got {:?}", content_blocks.first());
+            panic!("预期 ContentBlock,实际为:{:?}", content_blocks.first());
         };
         let acp::ContentBlock::Text(text) = &content.content else {
-            panic!("expected text content block, got {:?}", content.content);
+            panic!("预期文本内容块,实际为:{:?}", content.content);
         };
 
         assert!(
             text.text.starts_with("```root/small_file.rs\n"),
-            "full-file response must tag the code block with the file path; got first line: {:?}",
+            "完整文件响应必须使用文件路径作为代码块标签;实际第一行:{:?}",
             text.text.lines().next()
         );
     }
@@ -996,7 +996,7 @@ mod test {
     fn error_text(content: LanguageModelToolResultContent) -> String {
         match content {
             LanguageModelToolResultContent::Text(text) => text.to_string(),
-            other => panic!("Expected text error, got: {other:?}"),
+            other => panic!("预期文本错误,实际为:{other:?}"),
         }
     }
 
@@ -1088,7 +1088,7 @@ mod test {
             .await;
         assert!(
             result.is_err(),
-            "read_file_tool should error when attempting to read an absolute path outside a worktree"
+            "read_file_tool 在尝试读取工作树之外的绝对路径时应报错"
         );
 
         // Reading a file within the project should succeed
@@ -1108,7 +1108,7 @@ mod test {
             .await;
         assert!(
             result.is_ok(),
-            "read_file_tool should be able to read files inside worktrees"
+            "read_file_tool 应能读取工作树内的文件"
         );
 
         // Reading files that match file_scan_exclusions should fail
@@ -1128,7 +1128,7 @@ mod test {
             .await;
         assert!(
             result.is_err(),
-            "read_file_tool should error when attempting to read files in .secretdir (file_scan_exclusions)"
+            "read_file_tool 在尝试读取 .secretdir 中的文件时应报错(file_scan_exclusions)"
         );
 
         let result = cx
@@ -1147,7 +1147,7 @@ mod test {
             .await;
         assert!(
             result.is_err(),
-            "read_file_tool should error when attempting to read .mymetadata files (file_scan_exclusions)"
+            "read_file_tool 在尝试读取 .mymetadata 文件时应报错(file_scan_exclusions)"
         );
 
         // Reading private files should fail
@@ -1167,7 +1167,7 @@ mod test {
             .await;
         assert!(
             result.is_err(),
-            "read_file_tool should error when attempting to read .mysecrets (private_files)"
+            "read_file_tool 在尝试读取 .mysecrets 时应报错(private_files)"
         );
 
         let result = cx
@@ -1186,7 +1186,7 @@ mod test {
             .await;
         assert!(
             result.is_err(),
-            "read_file_tool should error when attempting to read .privatekey files (private_files)"
+            "read_file_tool 在尝试读取 .privatekey 文件时应报错(private_files)"
         );
 
         let result = cx
@@ -1205,7 +1205,7 @@ mod test {
             .await;
         assert!(
             result.is_err(),
-            "read_file_tool should error when attempting to read .mysensitive files (private_files)"
+            "read_file_tool 在尝试读取 .mysensitive 文件时应报错(private_files)"
         );
 
         // Reading a normal file should still work, even with private_files configured
@@ -1223,7 +1223,7 @@ mod test {
                 )
             })
             .await;
-        assert!(result.is_ok(), "Should be able to read normal files");
+        assert!(result.is_ok(), "应能读取普通文件");
         assert_eq!(result.unwrap(), "     1\tNormal file content".into());
 
         // Path traversal attempts with .. should fail
@@ -1243,7 +1243,7 @@ mod test {
             .await;
         assert!(
             result.is_err(),
-            "read_file_tool should error when attempting to read a relative path that resolves to outside a worktree"
+            "read_file_tool 在尝试读取解析到工作树之外的相对路径时应报错"
         );
     }
 
@@ -1286,8 +1286,8 @@ mod test {
                 .fields
                 .title
                 .as_deref()
-                .is_some_and(|title| title.contains("points outside the project")),
-            "Expected symlink escape authorization before reading the image"
+                .is_some_and(|title| title.contains("指向项目外部")),
+            "读取图像前应请求符号链接逃逸授权"
         );
         authorization
             .response
@@ -1415,8 +1415,8 @@ mod test {
 
         assert!(result.is_err());
         assert!(
-            error_text(result.unwrap_err()).contains("worktree `private_files` setting"),
-            "Error should mention worktree private_files setting"
+            error_text(result.unwrap_err()).contains("工作树 `private_files` 设置"),
+            "错误信息应提及工作树 private_files 设置"
         );
 
         // Test reading excluded file in worktree1 should fail
@@ -1437,8 +1437,8 @@ mod test {
 
         assert!(result.is_err());
         assert!(
-            error_text(result.unwrap_err()).contains("worktree `file_scan_exclusions` setting"),
-            "Error should mention worktree file_scan_exclusions setting"
+            error_text(result.unwrap_err()).contains("工作树 `file_scan_exclusions` 设置"),
+            "错误信息应提及工作树 file_scan_exclusions 设置"
         );
 
         // Test reading allowed files in worktree2
@@ -1481,8 +1481,8 @@ mod test {
 
         assert!(result.is_err());
         assert!(
-            error_text(result.unwrap_err()).contains("worktree `private_files` setting"),
-            "Error should mention worktree private_files setting"
+            error_text(result.unwrap_err()).contains("工作树 `private_files` 设置"),
+            "错误信息应提及工作树 private_files 设置"
         );
 
         // Test reading excluded file in worktree2 should fail
@@ -1503,8 +1503,8 @@ mod test {
 
         assert!(result.is_err());
         assert!(
-            error_text(result.unwrap_err()).contains("worktree `file_scan_exclusions` setting"),
-            "Error should mention worktree file_scan_exclusions setting"
+            error_text(result.unwrap_err()).contains("工作树 `file_scan_exclusions` 设置"),
+            "错误信息应提及工作树 file_scan_exclusions 设置"
         );
 
         // Test that files allowed in one worktree but not in another are handled correctly
@@ -1526,8 +1526,8 @@ mod test {
 
         assert!(result.is_err());
         assert!(
-            error_text(result.unwrap_err()).contains("worktree `private_files` setting"),
-            "Config.toml should be blocked by worktree1's private_files setting"
+            error_text(result.unwrap_err()).contains("工作树 `private_files` 设置"),
+            "Config.toml 应被 worktree1 的 private_files 设置阻止"
         );
     }
 
@@ -1578,8 +1578,8 @@ mod test {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("points outside the project"),
-            "title: {title}"
+            title.contains("指向项目外部"),
+            "标题:{title}"
         );
 
         auth.response
@@ -1590,7 +1590,7 @@ mod test {
             .unwrap();
 
         let result = task.await;
-        assert!(result.is_ok(), "should succeed after approval: {result:?}");
+        assert!(result.is_ok(), "批准后应成功: {result:?}");
     }
 
     #[gpui::test]
@@ -1643,7 +1643,7 @@ mod test {
         let result = task.await;
         assert!(
             result.is_err(),
-            "Tool should fail when authorization is denied"
+            "授权被拒绝时工具应失败"
         );
     }
 
@@ -1704,12 +1704,12 @@ mod test {
 
         assert!(
             result.is_err(),
-            "Expected read_file to fail on private path"
+            "预期 read_file 在私有路径上失败"
         );
         let error = error_text(result.unwrap_err());
         assert!(
             error.contains("private_files"),
-            "Expected private-files validation error, got: {error}"
+            "预期私有文件验证错误,实际为:{error}"
         );
 
         let event = event_rx.try_recv();
@@ -1718,7 +1718,7 @@ mod test {
                 event,
                 Ok(Ok(crate::thread::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "No authorization should be requested when validation fails before read",
+            "读取前验证失败时不应请求授权",
         );
     }
 
@@ -1768,7 +1768,7 @@ mod test {
 
         let content = result.unwrap();
         let LanguageModelToolResultContent::Text(text) = content else {
-            panic!("expected text content");
+            panic!("预期文本内容");
         };
         assert_eq!(
             text.as_ref(),
@@ -1816,7 +1816,7 @@ mod test {
             .await;
 
         let LanguageModelToolResultContent::Text(text) = result.unwrap() else {
-            panic!("expected text content");
+            panic!("预期文本内容");
         };
         // Mirrors the buffer-backed path: lines 2-3 inclusive, WITH trailing
         // newline of the last returned line.
@@ -1863,7 +1863,7 @@ mod test {
             .await;
 
         let LanguageModelToolResultContent::Text(text) = result.unwrap() else {
-            panic!("expected text content");
+            panic!("预期文本内容");
         };
         assert_eq!(text.as_ref(), "     1\tLine 1\n     2\tLine 2\n");
     }
@@ -1908,7 +1908,7 @@ mod test {
             .await;
 
         let LanguageModelToolResultContent::Text(text) = result.unwrap() else {
-            panic!("expected text content");
+            panic!("预期文本内容");
         };
         assert_eq!(text.as_ref(), "     1\tLine 1\n");
     }
@@ -1953,7 +1953,7 @@ mod test {
             .await;
 
         let LanguageModelToolResultContent::Text(text) = result.unwrap() else {
-            panic!("expected text content");
+            panic!("预期文本内容");
         };
         assert_eq!(text.as_ref(), "     3\tLine 3\n");
     }
@@ -1998,7 +1998,7 @@ mod test {
             .await;
 
         let LanguageModelToolResultContent::Text(text) = result.unwrap() else {
-            panic!("expected text content");
+            panic!("预期文本内容");
         };
         assert_eq!(text.as_ref(), "     1\tline one\r\n     2\tline two\r\n");
     }
@@ -2037,7 +2037,7 @@ mod test {
 
         assert!(
             result.is_err(),
-            "path outside skills dir should be rejected"
+            "技能目录之外的路径应被拒绝"
         );
     }
 }

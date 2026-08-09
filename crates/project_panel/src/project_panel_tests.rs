@@ -692,7 +692,7 @@ async fn test_auto_collapse_dir_paths(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             visible_entries_as_strings(&panel, 0..10, cx),
             &["> dir_1/nested_dir_1/nested_dir_2/nested_dir_3"],
-            "Single worktree with hide_root=true should hide root and show auto-folded paths"
+            "隐藏根目录为 true 的单个工作树应隐藏根目录并显示自动折叠的路径"
         );
 
         toggle_expand_dir(
@@ -709,7 +709,7 @@ async fn test_auto_collapse_dir_paths(cx: &mut gpui::TestAppContext) {
                 "      file_b.java",
                 "      file_c.java",
             ],
-            "Expanded auto-folded path with hidden root should show contents without root prefix"
+            "展开隐藏根目录的自动折叠路径时,应显示内容而不带根目录前缀"
         );
 
         toggle_expand_dir(
@@ -727,7 +727,7 @@ async fn test_auto_collapse_dir_paths(cx: &mut gpui::TestAppContext) {
                 "      file_b.java",
                 "      file_c.java",
             ],
-            "Nested expansion with hidden root should maintain proper indentation"
+            "隐藏根目录时,嵌套展开应保持正确的缩进"
         );
     }
 }
@@ -936,18 +936,18 @@ async fn test_editing_files(cx: &mut gpui::TestAppContext) {
             assert_eq!(
                 file_name_selections.len(),
                 1,
-                "File editing should have a single selection, but got: {file_name_selections:?}"
+                "文件编辑应只有一个选中项,但实际有: {file_name_selections:?}"
             );
             let file_name_selection = &file_name_selections[0];
             assert_eq!(
                 file_name_selection.start,
                 MultiBufferOffset(0),
-                "Should select the file name from the start"
+                "应从文件名开头开始选中"
             );
             assert_eq!(
                 file_name_selection.end,
                 MultiBufferOffset("another-filename".len()),
-                "Should not select file extension"
+                "不应选中文件扩展名"
             );
 
             editor.set_text("a-different-filename.tar.gz", window, cx)
@@ -1008,10 +1008,10 @@ async fn test_editing_files(cx: &mut gpui::TestAppContext) {
     panel.update_in(cx, |panel, window, cx| {
             panel.filename_editor.update(cx, |editor, cx| {
                 let file_name_selections = editor.selections.all::<MultiBufferOffset>(&editor.display_snapshot(cx));
-                assert_eq!(file_name_selections.len(), 1, "File editing should have a single selection, but got: {file_name_selections:?}");
+                assert_eq!(file_name_selections.len(), 1, "文件编辑应只有一个选中项,但实际有: {file_name_selections:?}");
                 let file_name_selection = &file_name_selections[0];
-                assert_eq!(file_name_selection.start, MultiBufferOffset(0), "Should select the file name from the start");
-                assert_eq!(file_name_selection.end, MultiBufferOffset("a-different-filename.tar".len()), "Should not select file extension, but still may select anything up to the last dot..");
+                assert_eq!(file_name_selection.start, MultiBufferOffset(0), "应从文件名开头开始选中");
+                assert_eq!(file_name_selection.end, MultiBufferOffset("a-different-filename.tar".len()), "不应选中文件扩展名,但仍可选中直到最后一个点之前的内容..");
 
             });
             panel.cancel(&menu::Cancel, window, cx)
@@ -1206,7 +1206,7 @@ async fn test_rename_folder_with_dot_selects_whole_name(cx: &mut gpui::TestAppCo
             assert_eq!(
                 selections[0].end,
                 MultiBufferOffset("my.folder".len()),
-                "Renaming a folder should select the whole name, including dots"
+                "重命名文件夹时,应选中整个名称,包括点"
             );
         });
         panel.cancel(&Cancel, window, cx);
@@ -1224,7 +1224,7 @@ async fn test_rename_folder_with_dot_selects_whole_name(cx: &mut gpui::TestAppCo
             assert_eq!(
                 selections[0].end,
                 MultiBufferOffset("archive.tar".len()),
-                "Renaming a file should keep the last extension unselected"
+                "重命名文件时,应保持最后一个扩展名不被选中"
             );
         });
     });
@@ -1568,18 +1568,18 @@ async fn test_copy_paste(cx: &mut gpui::TestAppContext) {
             assert_eq!(
                 file_name_selections.len(),
                 1,
-                "File editing should have a single selection, but got: {file_name_selections:?}"
+                "文件编辑应只有一个选中项,但实际有: {file_name_selections:?}"
             );
             let file_name_selection = &file_name_selections[0];
             assert_eq!(
                 file_name_selection.start,
                 MultiBufferOffset(0),
-                "Should select from the beginning of the filename"
+                "应从文件名开头开始选中"
             );
             assert_eq!(
                 file_name_selection.end,
                 MultiBufferOffset("one copy".len()),
-                "Should select the file name disambiguation until the extension"
+                "应选中文件名消歧部分直到扩展名"
             );
         });
         assert!(panel.confirm_edit(true, window, cx).is_none());
@@ -1695,7 +1695,7 @@ async fn test_cut_paste(cx: &mut gpui::TestAppContext) {
             "          one.txt",
             "          two.txt  <== selected",
         ],
-        "Cut entries should only be copied for the second paste!"
+        "剪切的项目在第二次粘贴时只应被复制!"
     );
 }
 
@@ -1980,18 +1980,18 @@ async fn test_copy_paste_directory(cx: &mut gpui::TestAppContext) {
     cx.executor().run_until_parked();
 
     let pasted_dir = find_project_entry(&panel, "root/b/a", cx);
-    assert_ne!(pasted_dir, None, "Pasted directory should have an entry");
+    assert_ne!(pasted_dir, None, "粘贴的目录应有一个条目");
 
     let pasted_dir_file = find_project_entry(&panel, "root/b/a/one.txt", cx);
     assert_ne!(
         pasted_dir_file, None,
-        "Pasted directory file should have an entry"
+        "粘贴的目录文件应有一个条目"
     );
 
     let pasted_dir_inner_dir = find_project_entry(&panel, "root/b/a/inner_dir", cx);
     assert_ne!(
         pasted_dir_inner_dir, None,
-        "Directories inside pasted directory should have an entry"
+        "粘贴目录内的目录应有一个条目"
     );
 
     toggle_expand_dir(&panel, "root/b/a", cx);
@@ -2117,7 +2117,7 @@ async fn test_copy_paste_directory(cx: &mut gpui::TestAppContext) {
             "          default.conf",
             "    > [EDITOR: 'd.1.20 copy']  <== selected",
         ],
-        "Dotted directory names should not be split at the dot when disambiguating"
+        "带点的目录名在消歧时不应在点处拆分"
     );
 }
 
@@ -2170,7 +2170,7 @@ async fn test_copy_paste_directory_with_sibling_file(cx: &mut gpui::TestAppConte
             "      c.txt  <== selected  <== marked",
             "      d.txt",
         ],
-        "Initial state before copying dir1 and c.txt"
+        "复制 dir1 和 c.txt 之前的初始状态"
     );
 
     panel.update_in(cx, |panel, window, cx| {
@@ -2199,7 +2199,7 @@ async fn test_copy_paste_directory_with_sibling_file(cx: &mut gpui::TestAppConte
             "      c.txt  <== marked",
             "      d.txt",
         ],
-        "Should copy dir1 as well as c.txt into dir2"
+        "应将 dir1 和 c.txt 复制到 dir2 中"
     );
 
     // Disambiguating multiple files should not open the rename editor.
@@ -2226,7 +2226,7 @@ async fn test_copy_paste_directory_with_sibling_file(cx: &mut gpui::TestAppConte
             "      c.txt  <== marked",
             "      d.txt",
         ],
-        "Should copy dir1 as well as c.txt into dir2 and disambiguate them without opening the rename editor"
+        "应将 dir1 和 c.txt 复制到 dir2 中,并在不打开重命名编辑器的情况下对它们进行消歧"
     );
 }
 
@@ -2280,7 +2280,7 @@ async fn test_copy_paste_nested_and_root_entries(cx: &mut gpui::TestAppContext) 
             "      c.txt  <== selected  <== marked",
             "      d.txt",
         ],
-        "Initial state before copying a.txt, dir1 and c.txt"
+        "复制 a.txt、dir1 和 c.txt 之前的初始状态"
     );
 
     panel.update_in(cx, |panel, window, cx| {
@@ -2309,7 +2309,7 @@ async fn test_copy_paste_nested_and_root_entries(cx: &mut gpui::TestAppContext) 
             "      c.txt  <== marked",
             "      d.txt",
         ],
-        "Should copy dir1 and c.txt into dir2. a.txt is already present in copied dir1."
+        "应将 dir1 和 c.txt 复制到 dir2 中。a.txt 已存在于复制的 dir1 中。"
     );
 }
 
@@ -2402,11 +2402,11 @@ async fn test_copy_and_cut_write_to_system_clipboard(cx: &mut gpui::TestAppConte
 
     let clipboard = cx
         .read_from_clipboard()
-        .expect("clipboard should have content after copy");
-    let text = clipboard.text().expect("clipboard should contain text");
+        .expect("复制后剪贴板应有内容");
+    let text = clipboard.text().expect("剪贴板应包含文本");
     assert!(
         text.contains("file_a.txt"),
-        "System clipboard should contain the copied file path, got: {text}"
+        "系统剪贴板应包含复制的文件路径,实际为:{text}"
     );
 
     select_path(&panel, "root/file_b.txt", cx);
@@ -2416,11 +2416,11 @@ async fn test_copy_and_cut_write_to_system_clipboard(cx: &mut gpui::TestAppConte
 
     let clipboard = cx
         .read_from_clipboard()
-        .expect("clipboard should have content after cut");
-    let text = clipboard.text().expect("clipboard should contain text");
+        .expect("剪切后剪贴板应有内容");
+    let text = clipboard.text().expect("剪贴板应包含文本");
     assert!(
         text.contains("file_b.txt"),
-        "System clipboard should contain the cut file path, got: {text}"
+        "系统剪贴板应包含剪切的文件路径,实际为:{text}"
     );
 }
 
@@ -2475,7 +2475,7 @@ async fn test_remove_opened_file(cx: &mut gpui::TestAppContext) {
             "          second.rs  <== selected",
             "          third.rs"
         ],
-        "Project panel should have no deleted file, no other file is selected in it"
+        "项目面板中不应有已删除的文件,且没有其他文件被选中"
     );
     ensure_no_open_items_and_panes(&workspace, cx);
 
@@ -2504,16 +2504,16 @@ async fn test_remove_opened_file(cx: &mut gpui::TestAppContext) {
             .next()
             .unwrap()
             .downcast::<Editor>()
-            .expect("Open item should be an editor");
+            .expect("打开的项目应为编辑器");
         open_editor.update(cx, |editor, cx| {
-            editor.set_text("Another text!", window, cx)
+            editor.set_text("另一段文本!", window, cx)
         });
     });
     submit_deletion_skipping_prompt(&panel, cx);
     assert_eq!(
         visible_entries_as_strings(&panel, 0..10, cx),
         &["v src", "    v test", "          third.rs  <== selected"],
-        "Project panel should have no deleted file, with one last file remaining"
+        "项目面板中不应有已删除的文件,且还剩最后一个文件"
     );
     ensure_no_open_items_and_panes(&workspace, cx);
 }
@@ -2694,7 +2694,7 @@ async fn test_auto_open_on_paste_when_disabled(cx: &mut gpui::TestAppContext) {
     ensure_no_open_items_and_panes(&workspace, cx);
     assert!(
         find_project_entry(&panel, "root/target/original.rs", cx).is_some(),
-        "Pasted entry should exist even when auto-open is disabled"
+        "即使禁用自动打开,粘贴的条目也应存在"
     );
 }
 
@@ -2774,7 +2774,7 @@ async fn test_auto_open_on_drop_when_disabled(cx: &mut gpui::TestAppContext) {
     ensure_no_open_items_and_panes(&workspace, cx);
     assert!(
         find_project_entry(&panel, "root/manual.rs", cx).is_some(),
-        "Dropped entry should exist even when auto-open is disabled"
+        "即使禁用自动打开,拖放的条目也应存在"
     );
 }
 
@@ -2842,14 +2842,14 @@ async fn test_create_duplicate_items(cx: &mut gpui::TestAppContext) {
             .update(cx, |editor, cx| editor.set_text("test", window, cx));
         assert!(
             panel.confirm_edit(true, window, cx).is_none(),
-            "Should not allow to confirm on conflicting new directory name"
+            "不应允许在冲突的新目录名称上确认"
         );
     });
     cx.executor().run_until_parked();
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             panel.state.edit_state.is_some(),
-            "Edit state should not be None after conflicting new directory name"
+            "冲突的新目录名称后,编辑状态不应为 None"
         );
         panel.cancel(&menu::Cancel, window, cx);
     });
@@ -2861,7 +2861,7 @@ async fn test_create_duplicate_items(cx: &mut gpui::TestAppContext) {
             "v src  <== selected",
             "    > test"
         ],
-        "File list should be unchanged after failed folder create confirmation"
+        "文件夹创建确认失败后,文件列表应保持不变"
     );
 
     select_path(&panel, "src/test", cx);
@@ -2897,14 +2897,14 @@ async fn test_create_duplicate_items(cx: &mut gpui::TestAppContext) {
             .update(cx, |editor, cx| editor.set_text("first.rs", window, cx));
         assert!(
             panel.confirm_edit(true, window, cx).is_none(),
-            "Should not allow to confirm on conflicting new file name"
+            "不应允许在冲突的新文件名上确认"
         );
     });
     cx.executor().run_until_parked();
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             panel.state.edit_state.is_some(),
-            "Edit state should not be None after conflicting new file name"
+            "冲突的新文件名后,编辑状态不应为 None"
         );
         panel.cancel(&menu::Cancel, window, cx);
     });
@@ -2918,7 +2918,7 @@ async fn test_create_duplicate_items(cx: &mut gpui::TestAppContext) {
             "          second.rs",
             "          third.rs"
         ],
-        "File list should be unchanged after failed file create confirmation"
+        "文件创建确认失败后,文件列表应保持不变"
     );
 
     select_path(&panel, "src/test/first.rs", cx);
@@ -2955,14 +2955,14 @@ async fn test_create_duplicate_items(cx: &mut gpui::TestAppContext) {
             .update(cx, |editor, cx| editor.set_text("second.rs", window, cx));
         assert!(
             panel.confirm_edit(true, window, cx).is_none(),
-            "Should not allow to confirm on conflicting file rename"
+            "不应允许在冲突的文件重命名上确认"
         )
     });
     cx.executor().run_until_parked();
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             panel.state.edit_state.is_some(),
-            "Edit state should not be None after conflicting file rename"
+            "冲突的文件重命名后,编辑状态不应为 None"
         );
         panel.cancel(&menu::Cancel, window, cx);
     });
@@ -2976,7 +2976,7 @@ async fn test_create_duplicate_items(cx: &mut gpui::TestAppContext) {
             "          second.rs",
             "          third.rs"
         ],
-        "File list should be unchanged after failed rename confirmation"
+        "重命名确认失败后,文件列表应保持不变"
     );
 }
 
@@ -3048,14 +3048,14 @@ async fn test_create_duplicate_items_and_check_history(cx: &mut gpui::TestAppCon
             .update(cx, |editor, cx| editor.set_text("test", window, cx));
         assert!(
             panel.confirm_edit(true, window, cx).is_none(),
-            "Should not allow to confirm on conflicting new directory name"
+            "不应允许在冲突的新目录名称上确认"
         );
     });
     cx.executor().run_until_parked();
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             panel.state.edit_state.is_some(),
-            "Edit state should not be None after conflicting new directory name"
+            "冲突的新目录名称后,编辑状态不应为 None"
         );
         panel.cancel(&menu::Cancel, window, cx);
     });
@@ -3067,7 +3067,7 @@ async fn test_create_duplicate_items_and_check_history(cx: &mut gpui::TestAppCon
             "v src  <== selected",
             "    > test"
         ],
-        "File list should be unchanged after failed folder create confirmation"
+        "文件夹创建确认失败后,文件列表应保持不变"
     );
 
     select_path(&panel, "src/test", cx);
@@ -3103,14 +3103,14 @@ async fn test_create_duplicate_items_and_check_history(cx: &mut gpui::TestAppCon
             .update(cx, |editor, cx| editor.set_text("first.txt", window, cx));
         assert!(
             panel.confirm_edit(true, window, cx).is_none(),
-            "Should not allow to confirm on conflicting new file name"
+            "不应允许在冲突的新文件名上确认"
         );
     });
     cx.executor().run_until_parked();
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             panel.state.edit_state.is_some(),
-            "Edit state should not be None after conflicting new file name"
+            "冲突的新文件名后,编辑状态不应为 None"
         );
         panel.cancel(&menu::Cancel, window, cx);
     });
@@ -3124,7 +3124,7 @@ async fn test_create_duplicate_items_and_check_history(cx: &mut gpui::TestAppCon
             "          second.txt",
             "          third.txt"
         ],
-        "File list should be unchanged after failed file create confirmation"
+        "文件创建确认失败后,文件列表应保持不变"
     );
 
     select_path(&panel, "src/test/first.txt", cx);
@@ -3161,14 +3161,14 @@ async fn test_create_duplicate_items_and_check_history(cx: &mut gpui::TestAppCon
             .update(cx, |editor, cx| editor.set_text("second.txt", window, cx));
         assert!(
             panel.confirm_edit(true, window, cx).is_none(),
-            "Should not allow to confirm on conflicting file rename"
+            "不应允许在冲突的文件重命名上确认"
         )
     });
     cx.executor().run_until_parked();
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             panel.state.edit_state.is_some(),
-            "Edit state should not be None after conflicting file rename"
+            "冲突的文件重命名后,编辑状态不应为 None"
         );
         panel.cancel(&menu::Cancel, window, cx);
     });
@@ -3182,7 +3182,7 @@ async fn test_create_duplicate_items_and_check_history(cx: &mut gpui::TestAppCon
             "          second.txt",
             "          third.txt"
         ],
-        "File list should be unchanged after failed rename confirmation"
+        "重命名确认失败后,文件列表应保持不变"
     );
     panel.update_in(cx, |panel, window, cx| panel.open(&Open, window, cx));
     cx.executor().run_until_parked();
@@ -3223,7 +3223,7 @@ async fn test_create_duplicate_items_and_check_history(cx: &mut gpui::TestAppCon
             "          second.txt",
             "          third.txt"
         ],
-        "File list should be different after rename confirmation"
+        "重命名确认后,文件列表应有所不同"
     );
 
     panel.update_in(cx, |panel, window, cx| {
@@ -3345,7 +3345,7 @@ async fn test_rename_item_and_check_history(cx: &mut gpui::TestAppContext) {
             "          second.txt",
             "          third.txt"
         ],
-        "File list should be different after rename confirmation"
+        "重命名确认后,文件列表应有所不同"
     );
 
     panel.update_in(cx, |panel, window, cx| {
@@ -3865,7 +3865,7 @@ async fn test_select_first_last(cx: &mut gpui::TestAppContext) {
             "  file_1.py",
             "  file_2.py",
         ],
-        "With hide_root=true, root should be hidden"
+        "当 hide_root=true 时,根目录应被隐藏"
     );
 
     panel.update_in(cx, |panel, window, cx| {
@@ -3880,7 +3880,7 @@ async fn test_select_first_last(cx: &mut gpui::TestAppContext) {
             "  file_1.py",
             "  file_2.py",
         ],
-        "With hide_root=true, first entry should be dir_1, not the hidden root"
+        "当 hide_root=true 时,第一个条目应为 dir_1,而不是隐藏的根目录"
     );
 }
 
@@ -4153,7 +4153,7 @@ async fn test_collapse_all_entries_with_invisible_worktree(cx: &mut gpui::TestAp
     assert_eq!(
         visible_entries_as_strings(&panel, 0..10, cx),
         &["v project_root", "    > dir_1", "    > dir_2",],
-        "invisible worktree should not appear in project panel"
+        "不可见的工作树不应出现在项目面板中"
     );
 
     toggle_expand_dir(&panel, "project_root/dir_1", cx);
@@ -4166,7 +4166,7 @@ async fn test_collapse_all_entries_with_invisible_worktree(cx: &mut gpui::TestAp
     assert_eq!(
         visible_entries_as_strings(&panel, 0..10, cx),
         &["v project_root", "    > dir_1  <== selected", "    > dir_2",],
-        "with single visible worktree, root should stay expanded even if invisible worktrees exist"
+        "当只有一个可见工作树时,即使存在不可见工作树,根节点也应保持展开状态"
     );
 }
 
@@ -4192,7 +4192,7 @@ async fn test_new_file_move(cx: &mut gpui::TestAppContext) {
 
     cx.executor().run_until_parked();
 
-    // "Save as" the buffer, creating a new backing file for it
+    // "另存为" the buffer, creating a new backing file for it
     let save_task = workspace.update_in(cx, |workspace, window, cx| {
         workspace.save_active_item(workspace::SaveIntent::Save, window, cx)
     });
@@ -4272,7 +4272,7 @@ async fn test_rename_root_of_worktree(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..20, cx),
         &["v root1", "    v dir1  <== selected", "          file1.txt",],
-        "Initial state with worktrees"
+        "包含工作树的初始状态"
     );
 
     select_path(&panel, "root1", cx);
@@ -4308,7 +4308,7 @@ async fn test_rename_root_of_worktree(cx: &mut gpui::TestAppContext) {
             "    v dir1",
             "          file1.txt",
         ],
-        "Should update worktree name"
+        "应更新工作树名称"
     );
 
     // Ensure internal paths have been updated
@@ -4320,7 +4320,7 @@ async fn test_rename_root_of_worktree(cx: &mut gpui::TestAppContext) {
             "    v dir1",
             "          file1.txt  <== selected",
         ],
-        "Files in renamed worktree are selectable"
+        "重命名工作树中的文件应可被选中"
     );
 }
 
@@ -4378,7 +4378,7 @@ async fn test_rename_with_hide_root(cx: &mut gpui::TestAppContext) {
 
         assert!(
             panel.read_with(cx, |panel, _| panel.state.edit_state.is_none()),
-            "Rename should be blocked when hide_root=true with single worktree"
+            "当 hide_root=true 且只有一个工作树时,重命名应被阻止"
         );
     }
 
@@ -4412,14 +4412,14 @@ async fn test_rename_with_hide_root(cx: &mut gpui::TestAppContext) {
         #[cfg(target_os = "windows")]
         assert!(
             panel.read_with(cx, |panel, _| panel.state.edit_state.is_none()),
-            "Rename should be blocked on Windows even with multiple worktrees"
+            "在 Windows 上,即使有多个工作树,重命名也应被阻止"
         );
 
         #[cfg(not(target_os = "windows"))]
         {
             assert!(
                 panel.read_with(cx, |panel, _| panel.state.edit_state.is_some()),
-                "Rename should work with multiple worktrees on non-Windows when hide_root=true"
+                "在非 Windows 系统上,当 hide_root=true 且有多个工作树时,重命名应正常工作"
             );
             panel.update_in(cx, |panel, window, cx| {
                 panel.cancel(&menu::Cancel, window, cx)
@@ -4469,7 +4469,7 @@ async fn test_drag_worktree_root_reorders_worktrees(cx: &mut gpui::TestAppContex
             "v root3",
             "      c.txt",
         ],
-        "worktrees should start in insertion order"
+        "工作树应按插入顺序排列"
     );
 
     // [r1, r2, r3] -> [r2, r1, r3].
@@ -4484,7 +4484,7 @@ async fn test_drag_worktree_root_reorders_worktrees(cx: &mut gpui::TestAppContex
             "v root3",
             "      c.txt",
         ],
-        "dragging root1 onto root2 should swap their positions"
+        "将 root1 拖到 root2 上应交换它们的位置"
     );
 
     // [r2, r1, r3] -> [r3, r2, r1].
@@ -4499,7 +4499,7 @@ async fn test_drag_worktree_root_reorders_worktrees(cx: &mut gpui::TestAppContex
             "v root1",
             "      a.txt",
         ],
-        "dragging the last root onto the first should move it to the front"
+        "将最后一个根拖到第一个上应将其移到最前面"
     );
 }
 
@@ -4521,7 +4521,7 @@ async fn test_drag_including_worktree_root_only_reorders(cx: &mut gpui::TestAppC
             "v root1",
             "      a.txt",
         ],
-        "dropping a mixed selection on a root should only reorder worktrees"
+        "将混合选择拖放到根上应仅重新排序工作树"
     );
 
     // Drag {root2, root3/c.txt} onto root1/a.txt (a non-root entry): the root
@@ -4537,7 +4537,7 @@ async fn test_drag_including_worktree_root_only_reorders(cx: &mut gpui::TestAppC
             "v root2",
             "      b.txt",
         ],
-        "dropping a mixed selection on a non-root entry should only reorder worktrees"
+        "将混合选择拖放到非根条目上应仅重新排序工作树"
     );
 
     // With the copy modifier held, a selection containing a root should still
@@ -4559,7 +4559,7 @@ async fn test_drag_including_worktree_root_only_reorders(cx: &mut gpui::TestAppC
             "v root3",
             "      c.txt",
         ],
-        "copy-dragging a mixed selection should only reorder worktrees and copy nothing"
+        "复制拖拽混合选择应仅重新排序工作树且不复制任何内容"
     );
 }
 
@@ -4584,14 +4584,14 @@ async fn test_rename_survives_window_deactivation(cx: &mut gpui::TestAppContext)
     panel.update_in(cx, |panel, window, cx| panel.rename(&Rename, window, cx));
     assert!(
         panel.read_with(cx, |panel, _| panel.state.edit_state.is_some()),
-        "Rename should have started"
+        "重命名应已开始"
     );
 
     cx.deactivate_window();
 
     assert!(
         panel.read_with(cx, |panel, _| panel.state.edit_state.is_some()),
-        "Rename should not be cancelled when the window is deactivated, e.g. by a keyboard layout switcher grabbing keyboard focus"
+        "当窗口被停用时(例如键盘布局切换器抢占了键盘焦点),重命名不应被取消"
     );
 }
 
@@ -5091,7 +5091,7 @@ async fn test_dragged_selection_resolve_entry(cx: &mut gpui::TestAppContext) {
             "    > a/b/c",
             "    > target_destination/d  <== selected"
         ],
-        "Moving last empty directory 'd' should leave 'a/b/c' and move only 'd'"
+        "移动最后一个空目录 'd' 应保留 'a/b/c' 并仅移动 'd'"
     );
 
     // Reset
@@ -5137,7 +5137,7 @@ async fn test_dragged_selection_resolve_entry(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..10, cx),
         &["v root", "    v a", "    > target_destination/b/c/d"],
-        "Moving middle directory 'b' should leave only 'a' and move 'b/c/d'"
+        "移动中间目录 'b' 应仅保留 'a' 并移动 'b/c/d'"
     );
 
     // Reset
@@ -5183,7 +5183,7 @@ async fn test_dragged_selection_resolve_entry(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..10, cx),
         &["v root", "    > target_destination/a/b/c/d"],
-        "Moving first directory 'a' should move whole 'a/b/c/d' chain"
+        "移动第一个目录 'a' 应移动整个 'a/b/c/d' 链"
     );
 }
 
@@ -5268,7 +5268,7 @@ async fn test_drag_marked_entries_in_folded_directories(cx: &mut gpui::TestAppCo
             "        > b/c",
             "        > f/g  <== selected  <== marked"
         ],
-        "Should move 'b/c' and 'f/g' to target, leaving 'a' and 'e'"
+        "应将 'b/c' 和 'f/g' 移动到目标位置,保留 'a' 和 'e'"
     );
 }
 
@@ -5352,7 +5352,7 @@ async fn test_dragging_same_named_files_preserves_one_source_on_conflict(
 
     assert_eq!(
         remaining_sources, 1,
-        "one conflicting source file should remain in place"
+        "一个冲突的源文件应保留在原位"
     );
 }
 
@@ -5403,12 +5403,12 @@ async fn test_drag_entries_between_different_worktrees(cx: &mut gpui::TestAppCon
     drag_selection_to(&panel, "root_b/dst", false, cx);
     assert!(
         find_project_entry(&panel, "root_b/dst/main.rs", cx).is_some(),
-        "Dragged file should appear under destination worktree"
+        "拖拽的文件应出现在目标工作树下"
     );
     assert_eq!(
         find_project_entry(&panel, "root_a/src/main.rs", cx),
         None,
-        "Dragged file should be removed from the source worktree"
+        "拖拽的文件应从源工作树中移除"
     );
 
     // Case 2: drop a file onto another worktree file so it lands in the parent directory.
@@ -5416,12 +5416,12 @@ async fn test_drag_entries_between_different_worktrees(cx: &mut gpui::TestAppCon
     drag_selection_to(&panel, "root_b/dst/existing.md", true, cx);
     assert!(
         find_project_entry(&panel, "root_b/dst/guide.md", cx).is_some(),
-        "Dropping onto a file should place the entry beside the target file"
+        "拖放到文件上应将条目放置在目标文件旁边"
     );
     assert_eq!(
         find_project_entry(&panel, "root_a/docs/guide.md", cx),
         None,
-        "Source file should be removed after the move"
+        "移动后源文件应被移除"
     );
 
     // Case 3: move an entire directory.
@@ -5429,12 +5429,12 @@ async fn test_drag_entries_between_different_worktrees(cx: &mut gpui::TestAppCon
     drag_selection_to(&panel, "root_b/dst", false, cx);
     assert!(
         find_project_entry(&panel, "root_b/dst/src/lib.rs", cx).is_some(),
-        "Dragging a directory should move its nested contents"
+        "拖拽目录应移动其嵌套内容"
     );
     assert_eq!(
         find_project_entry(&panel, "root_a/src", cx),
         None,
-        "Directory should no longer exist in the source worktree"
+        "源工作树中不应再存在该目录"
     );
 
     // Case 4: multi-selection drag between worktrees.
@@ -5445,17 +5445,17 @@ async fn test_drag_entries_between_different_worktrees(cx: &mut gpui::TestAppCon
     assert!(
         find_project_entry(&panel, "root_b/dst/alpha.txt", cx).is_some()
             && find_project_entry(&panel, "root_b/dst/beta.txt", cx).is_some(),
-        "All marked entries should move to the destination worktree"
+        "所有标记的条目都应移动到目标工作树"
     );
     assert_eq!(
         find_project_entry(&panel, "root_a/multi/alpha.txt", cx),
         None,
-        "Marked entries should be removed from the origin worktree"
+        "标记的条目应从源工作树中移除"
     );
     assert_eq!(
         find_project_entry(&panel, "root_a/multi/beta.txt", cx),
         None,
-        "Marked entries should be removed from the origin worktree"
+        "标记的条目应从源工作树中移除"
     );
 }
 
@@ -5508,20 +5508,20 @@ async fn test_drag_multiple_entries(cx: &mut gpui::TestAppContext) {
 
     assert!(
         find_project_entry(&panel, "root/folder1", cx).is_some(),
-        "folder1 should be at root after drag"
+        "拖拽后 folder1 应位于根目录"
     );
     assert!(
         find_project_entry(&panel, "root/folder1/mod.rs", cx).is_some(),
-        "folder1/mod.rs should still be inside folder1 after drag"
+        "拖拽后 folder1/mod.rs 应仍在 folder1 内"
     );
     assert_eq!(
         find_project_entry(&panel, "root/src/folder1", cx),
         None,
-        "folder1 should no longer be in src"
+        "folder1 不应再位于 src 中"
     );
     assert!(
         find_project_entry(&panel, "root/mod.rs", cx).is_some(),
-        "mod.rs from folder2 should be at root"
+        "来自 folder2 的 mod.rs 应位于根目录"
     );
 
     // Case 2: Dragging a folder and its own child together.
@@ -5533,15 +5533,15 @@ async fn test_drag_multiple_entries(cx: &mut gpui::TestAppContext) {
 
     assert!(
         find_project_entry(&panel, "root/folder3", cx).is_some(),
-        "folder3 should be at root after drag"
+        "拖拽后 folder3 应位于根目录"
     );
     assert!(
         find_project_entry(&panel, "root/folder3/mod.rs", cx).is_some(),
-        "folder3/mod.rs should still be inside folder3"
+        "folder3/mod.rs 应仍在 folder3 内"
     );
     assert!(
         find_project_entry(&panel, "root/folder3/helper.rs", cx).is_some(),
-        "folder3/helper.rs should still be inside folder3"
+        "folder3/helper.rs 应仍在 folder3 内"
     );
 }
 
@@ -5606,14 +5606,14 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
     );
 
     let dir_1_file = find_project_entry(&panel, "project_root/dir_1/file_1.py", cx)
-        .expect("dir 1 file is not ignored and should have an entry");
+        .expect("dir 1 中的文件未被忽略,应有一个条目");
     let dir_2_file = find_project_entry(&panel, "project_root/dir_2/file_1.py", cx)
-        .expect("dir 2 file is not ignored and should have an entry");
+        .expect("dir 2 中的文件未被忽略,应有一个条目");
     let gitignored_dir_file =
         find_project_entry(&panel, "project_root/dir_1/gitignored_dir/file_a.py", cx);
     assert_eq!(
         gitignored_dir_file, None,
-        "File in the gitignored dir should not have an entry before its dir is toggled"
+        "在切换目录之前,gitignored 目录中的文件不应有条目"
     );
 
     toggle_expand_dir(&panel, "project_root/dir_1", cx);
@@ -5635,11 +5635,11 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
             "    > dir_2",
             "      .gitignore",
         ],
-        "Should show gitignored dir file list in the project panel"
+        "应在项目面板中显示 gitignored 目录的文件列表"
     );
     let gitignored_dir_file =
         find_project_entry(&panel, "project_root/dir_1/gitignored_dir/file_a.py", cx)
-            .expect("after gitignored dir got opened, a file entry should be present");
+            .expect("gitignored 目录打开后,应存在文件条目");
 
     toggle_expand_dir(&panel, "project_root/dir_1/gitignored_dir", cx);
     toggle_expand_dir(&panel, "project_root/dir_1", cx);
@@ -5652,7 +5652,7 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
             "    > dir_2",
             "      .gitignore",
         ],
-        "Should hide all dir contents again and prepare for the auto reveal test"
+        "应再次隐藏所有目录内容,并为自动显示测试做准备"
     );
 
     for file_entry in [dir_1_file, dir_2_file, gitignored_dir_file] {
@@ -5671,7 +5671,7 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
                 "    > dir_2",
                 "      .gitignore",
             ],
-            "When no auto reveal is enabled, the selected entry should not be revealed in the project panel"
+            "当未启用自动显示时,选中的条目不应在项目面板中显示"
         );
     }
 
@@ -5705,7 +5705,7 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
             "    > dir_2",
             "      .gitignore",
         ],
-        "When auto reveal is enabled, not ignored dir_1 entry should be revealed"
+        "当启用自动显示时,未被忽略的 dir_1 条目应被显示"
     );
 
     panel.update(cx, |panel, cx| {
@@ -5730,7 +5730,7 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
             "          file_3.py",
             "      .gitignore",
         ],
-        "When auto reveal is enabled, not ignored dir_2 entry should be revealed"
+        "当启用自动显示时,未被忽略的 dir_2 条目应被显示"
     );
 
     panel.update(cx, |panel, cx| {
@@ -5757,7 +5757,7 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
             "          file_3.py",
             "      .gitignore",
         ],
-        "When auto reveal is enabled, a gitignored selected entry should not be revealed in the project panel"
+        "当启用自动显示时,gitignored 的选中条目不应在项目面板中显示"
     );
 
     panel.update(cx, |panel, cx| {
@@ -5785,7 +5785,7 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
             "          file_3.py",
             "      .gitignore",
         ],
-        "When a gitignored entry is explicitly revealed, it should be shown in the project tree"
+        "当显式显示 gitignored 条目时,它应出现在项目树中"
     );
 
     panel.update(cx, |panel, cx| {
@@ -5813,7 +5813,7 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
             "          file_3.py",
             "      .gitignore",
         ],
-        "After switching to dir_2_file, it should be selected and marked"
+        "切换到 dir_2_file 后,它应被选中并标记"
     );
 
     panel.update(cx, |panel, cx| {
@@ -5843,7 +5843,7 @@ async fn test_autoreveal_and_gitignored_files(cx: &mut gpui::TestAppContext) {
             "          file_3.py",
             "      .gitignore",
         ],
-        "When a gitignored entry is already visible, auto reveal should mark it as selected"
+        "当 gitignored 条目已可见时,自动显示应将其标记为选中"
     );
 }
 
@@ -5922,10 +5922,10 @@ async fn test_gitignored_and_always_included(cx: &mut gpui::TestAppContext) {
         "project_root/always_included_but_ignored_dir/file_a.py",
         cx,
     )
-    .expect("file that is .gitignored but set to always be included should have an entry");
+    .expect("被 .gitignore 忽略但设置为始终包含的文件应有一个条目");
     assert_eq!(
         gitignored_dir_file, None,
-        "File in the gitignored dir should not have an entry unless its directory is toggled"
+        "除非切换其目录,否则 gitignored 目录中的文件不应有条目"
     );
 
     toggle_expand_dir(&panel, "project_root/dir_1", cx);
@@ -5967,7 +5967,7 @@ async fn test_gitignored_and_always_included(cx: &mut gpui::TestAppContext) {
             "    > dir_2",
             "      .gitignore",
         ],
-        "When auto reveal is enabled, a gitignored but always included selected entry should be revealed in the project panel"
+        "当启用自动显示时,gitignored 但始终包含的选中条目应在项目面板中显示"
     );
 }
 
@@ -6032,14 +6032,14 @@ async fn test_explicit_reveal(cx: &mut gpui::TestAppContext) {
     );
 
     let dir_1_file = find_project_entry(&panel, "project_root/dir_1/file_1.py", cx)
-        .expect("dir 1 file is not ignored and should have an entry");
+        .expect("dir 1 中的文件未被忽略,应有一个条目");
     let dir_2_file = find_project_entry(&panel, "project_root/dir_2/file_1.py", cx)
-        .expect("dir 2 file is not ignored and should have an entry");
+        .expect("dir 2 中的文件未被忽略,应有一个条目");
     let gitignored_dir_file =
         find_project_entry(&panel, "project_root/dir_1/gitignored_dir/file_a.py", cx);
     assert_eq!(
         gitignored_dir_file, None,
-        "File in the gitignored dir should not have an entry before its dir is toggled"
+        "在切换目录之前,gitignored 目录中的文件不应有条目"
     );
 
     toggle_expand_dir(&panel, "project_root/dir_1", cx);
@@ -6061,11 +6061,11 @@ async fn test_explicit_reveal(cx: &mut gpui::TestAppContext) {
             "    > dir_2",
             "      .gitignore",
         ],
-        "Should show gitignored dir file list in the project panel"
+        "应在项目面板中显示 gitignored 目录的文件列表"
     );
     let gitignored_dir_file =
         find_project_entry(&panel, "project_root/dir_1/gitignored_dir/file_a.py", cx)
-            .expect("after gitignored dir got opened, a file entry should be present");
+            .expect("gitignored 目录打开后,应存在文件条目");
 
     toggle_expand_dir(&panel, "project_root/dir_1/gitignored_dir", cx);
     toggle_expand_dir(&panel, "project_root/dir_1", cx);
@@ -6078,7 +6078,7 @@ async fn test_explicit_reveal(cx: &mut gpui::TestAppContext) {
             "    > dir_2",
             "      .gitignore",
         ],
-        "Should hide all dir contents again and prepare for the explicit reveal test"
+        "应再次隐藏所有目录内容,并为显式显示测试做准备"
     );
 
     for file_entry in [dir_1_file, dir_2_file, gitignored_dir_file] {
@@ -6097,7 +6097,7 @@ async fn test_explicit_reveal(cx: &mut gpui::TestAppContext) {
                 "    > dir_2",
                 "      .gitignore",
             ],
-            "When no auto reveal is enabled, the selected entry should not be revealed in the project panel"
+            "当未启用自动显示时,选中的条目不应在项目面板中显示"
         );
     }
 
@@ -6120,7 +6120,7 @@ async fn test_explicit_reveal(cx: &mut gpui::TestAppContext) {
             "    > dir_2",
             "      .gitignore",
         ],
-        "With no auto reveal, explicit reveal should show the dir_1 entry in the project panel"
+        "在无自动显示的情况下,显式显示应展示项目面板中的 dir_1 条目"
     );
 
     panel.update(cx, |panel, cx| {
@@ -6145,7 +6145,7 @@ async fn test_explicit_reveal(cx: &mut gpui::TestAppContext) {
             "          file_3.py",
             "      .gitignore",
         ],
-        "With no auto reveal, explicit reveal should show the dir_2 entry in the project panel"
+        "在无自动显示的情况下,显式显示应展示项目面板中的 dir_2 条目"
     );
 
     panel.update(cx, |panel, cx| {
@@ -6173,7 +6173,7 @@ async fn test_explicit_reveal(cx: &mut gpui::TestAppContext) {
             "          file_3.py",
             "      .gitignore",
         ],
-        "With no auto reveal, explicit reveal should show the gitignored entry in the project panel"
+        "在无自动显示的情况下,显式显示应展示项目面板中被 git 忽略的条目"
     );
 }
 
@@ -6357,7 +6357,7 @@ async fn test_autoreveal_follows_multibuffer_selection(cx: &mut gpui::TestAppCon
             "          file_1.py  <== selected  <== marked",
             "    > dir_2",
         ],
-        "When a multibuffer becomes active, its first excerpt's file should be revealed"
+        "当多缓冲区变为活动状态时,应显示其第一个摘录对应的文件"
     );
 
     let buffer_2_offset = multi_buffer.read_with(cx, |multi_buffer, cx| {
@@ -6366,10 +6366,10 @@ async fn test_autoreveal_follows_multibuffer_selection(cx: &mut gpui::TestAppCon
         let excerpt = snapshot
             .excerpts_for_buffer(buffer_2_id)
             .next()
-            .expect("buffer_2 excerpt must exist");
+            .expect("buffer_2 摘录必须存在");
         snapshot
             .anchor_in_excerpt(excerpt.context.start)
-            .expect("excerpt anchor must resolve")
+            .expect("摘录锚点必须能够解析")
             .to_offset(&snapshot)
     });
 
@@ -6389,7 +6389,7 @@ async fn test_autoreveal_follows_multibuffer_selection(cx: &mut gpui::TestAppCon
             "    v dir_2",
             "          file_2.py  <== selected  <== marked",
         ],
-        "Moving the cursor into a different excerpt buffer should reveal that buffer's entry"
+        "将光标移动到不同的摘录缓冲区时,应显示该缓冲区对应的条目"
     );
 
     // Wrappers re-emit inner-editor events through `to_item_events`, so a
@@ -6408,7 +6408,7 @@ async fn test_autoreveal_follows_multibuffer_selection(cx: &mut gpui::TestAppCon
             "    v dir_2",
             "          file_2.py  <== selected  <== marked",
         ],
-        "Wrapper-level title updates must not clobber the inner editor's reveal"
+        "包装器级别的标题更新不得覆盖内部编辑器的显示状态"
     );
 }
 
@@ -6448,14 +6448,14 @@ async fn test_reveal_in_project_panel_fallback(cx: &mut gpui::TestAppContext) {
             .update(cx, |workspace, cx| {
                 assert!(
                     workspace.active_item(cx).is_none(),
-                    "Workspace should not have an active item."
+                    "工作区不应有活动项。"
                 );
             })
             .unwrap();
 
         assert!(
             panel.focus_handle(cx).is_focused(window),
-            "Project panel should be focused, even when there's no active item."
+            "即使没有活动项,项目面板也应保持聚焦。"
         );
     });
 
@@ -6465,7 +6465,7 @@ async fn test_reveal_in_project_panel_fallback(cx: &mut gpui::TestAppContext) {
     fs.insert_tree(
         "/external",
         json!({
-            "file.txt": "External File",
+            "file.txt": "外部文件",
         }),
     )
     .await;
@@ -6492,7 +6492,7 @@ async fn test_reveal_in_project_panel_fallback(cx: &mut gpui::TestAppContext) {
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             !panel.focus_handle(cx).is_focused(window),
-            "Project panel should not be focused after opening an external file."
+            "打开外部文件后,项目面板不应保持聚焦。"
         );
     });
 
@@ -6505,14 +6505,14 @@ async fn test_reveal_in_project_panel_fallback(cx: &mut gpui::TestAppContext) {
             .update(cx, |workspace, cx| {
                 assert!(
                     workspace.active_item(cx).is_some(),
-                    "Workspace should have an active item."
+                    "工作区应有一个活动项。"
                 );
             })
             .unwrap();
 
         assert!(
             panel.focus_handle(cx).is_focused(window),
-            "Project panel should be focused even for invisible worktree entry."
+            "即使工作树条目不可见,项目面板也应保持聚焦。"
         );
     });
 
@@ -6528,14 +6528,14 @@ async fn test_reveal_in_project_panel_fallback(cx: &mut gpui::TestAppContext) {
 
         assert!(
             !panel.focus_handle(cx).is_focused(window),
-            "Project panel should not be focused after focusing on center pane."
+            "聚焦中央窗格后,项目面板不应保持聚焦。"
         );
     });
 
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             !panel.focus_handle(cx).is_focused(window),
-            "Project panel should not be focused after focusing the center pane."
+            "聚焦中央窗格后,项目面板不应保持聚焦。"
         );
     });
 
@@ -6543,7 +6543,7 @@ async fn test_reveal_in_project_panel_fallback(cx: &mut gpui::TestAppContext) {
     // still activates and focuses the panel.
     let pane = workspace.update(cx, |workspace, _| workspace.active_pane().clone());
     pane.update_in(cx, |pane, window, cx| {
-        let item = cx.new(|cx| TestItem::new(cx).with_label("Unsaved buffer"));
+        let item = cx.new(|cx| TestItem::new(cx).with_label("未保存的缓冲区"));
         pane.add_item(Box::new(item), false, false, None, window, cx);
     });
 
@@ -6556,14 +6556,14 @@ async fn test_reveal_in_project_panel_fallback(cx: &mut gpui::TestAppContext) {
             .update(cx, |workspace, cx| {
                 assert!(
                     workspace.active_item(cx).is_some(),
-                    "Workspace should have an active item."
+                    "工作区应有一个活动项。"
                 );
             })
             .unwrap();
 
         assert!(
             panel.focus_handle(cx).is_focused(window),
-            "Project panel should be focused even for an unsaved buffer."
+            "即使缓冲区未保存,项目面板也应保持聚焦。"
         );
     });
 }
@@ -6617,7 +6617,7 @@ async fn test_creating_excluded_entries(cx: &mut gpui::TestAppContext) {
     workspace.update_in(cx, |workspace, _, cx| {
         assert!(
             workspace.active_item(cx).is_none(),
-            "Should have no active items in the beginning"
+            "初始状态下不应有活动项"
         );
     });
 
@@ -6642,37 +6642,37 @@ async fn test_creating_excluded_entries(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..13, cx),
         &["v root1", "      .dockerignore"],
-        "Excluded dir should not be shown after opening a file in it"
+        "在排除目录中打开文件后,该目录不应显示"
     );
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             !panel.filename_editor.read(cx).is_focused(window),
-            "Should have closed the file name editor"
+            "应已关闭文件名编辑器"
         );
     });
     workspace.update_in(cx, |workspace, _, cx| {
         let active_entry_path = workspace
             .active_item(cx)
-            .expect("should have opened and activated the excluded item")
+            .expect("应已打开并激活被排除的项")
             .act_as::<TestProjectItemView>(cx)
-            .expect("should have opened the corresponding project item for the excluded item")
+            .expect("应为被排除的项打开对应的项目项")
             .read(cx)
             .path
             .clone();
         assert_eq!(
             active_entry_path.path.as_ref(),
             rel_path(excluded_file_path),
-            "Should open the excluded file"
+            "应打开被排除的文件"
         );
 
         assert!(
             workspace.notification_ids().is_empty(),
-            "Should have no notifications after opening an excluded file"
+            "打开被排除的文件后不应有通知"
         );
     });
     assert!(
         fs.is_file(Path::new("/root1/.git/COMMIT_EDITMSG")).await,
-        "Should have created the excluded file"
+        "应已创建被排除的文件"
     );
 
     select_path(&panel, "root1", cx);
@@ -6696,12 +6696,12 @@ async fn test_creating_excluded_entries(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..13, cx),
         &["v root1", "      .dockerignore"],
-        "Should not change the project panel after trying to create an excluded directorya directory with the same name as the excluded file"
+        "尝试创建与被排除文件同名的排除目录后,项目面板不应发生变化"
     );
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             !panel.filename_editor.read(cx).is_focused(window),
-            "Should have closed the file name editor"
+            "应已关闭文件名编辑器"
         );
     });
     workspace.update_in(cx, |workspace, _, cx| {
@@ -6709,7 +6709,7 @@ async fn test_creating_excluded_entries(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             notifications.len(),
             1,
-            "Should receive one notification with the error message"
+            "应收到一条包含错误消息的通知"
         );
         workspace.dismiss_notification(notifications.first().unwrap(), cx);
         assert!(workspace.notification_ids().is_empty());
@@ -6740,12 +6740,12 @@ async fn test_creating_excluded_entries(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..13, cx),
         &["v root1", "      .dockerignore"],
-        "Should not change the project panel after trying to create an excluded directory"
+        "尝试创建排除目录后,项目面板不应发生变化"
     );
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             !panel.filename_editor.read(cx).is_focused(window),
-            "Should have closed the file name editor"
+            "应已关闭文件名编辑器"
         );
     });
     workspace.update_in(cx, |workspace, _, cx| {
@@ -6753,14 +6753,14 @@ async fn test_creating_excluded_entries(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             notifications.len(),
             1,
-            "Should receive one notification explaining that no directory is actually shown"
+            "应收到一条通知,说明实际上没有显示任何目录"
         );
         workspace.dismiss_notification(notifications.first().unwrap(), cx);
         assert!(workspace.notification_ids().is_empty());
     });
     assert!(
         fs.is_dir(Path::new("/root1/excluded_dir")).await,
-        "Should have created the excluded directory"
+        "应已创建排除目录"
     );
 }
 
@@ -6916,7 +6916,7 @@ async fn test_basic_file_deletion_scenarios(cx: &mut gpui::TestAppContext) {
             "      file5.txt",
             "      file6.txt",
         ],
-        "Initial state before deleting middle file"
+        "删除中间文件前的初始状态"
     );
 
     submit_deletion(&panel, cx);
@@ -6934,7 +6934,7 @@ async fn test_basic_file_deletion_scenarios(cx: &mut gpui::TestAppContext) {
             "      file5.txt",
             "      file6.txt",
         ],
-        "Should select next file after deleting middle file"
+        "删除中间文件后应选择下一个文件"
     );
 
     // Test Case 2: Delete last file in directory
@@ -6952,7 +6952,7 @@ async fn test_basic_file_deletion_scenarios(cx: &mut gpui::TestAppContext) {
             "      file5.txt",
             "      file6.txt",
         ],
-        "Should select next directory when last file is deleted"
+        "删除最后一个文件后应选择下一个目录"
     );
 
     // Test Case 3: Delete root level file
@@ -6970,7 +6970,7 @@ async fn test_basic_file_deletion_scenarios(cx: &mut gpui::TestAppContext) {
             "      file5.txt",
             "      file6.txt  <== selected",
         ],
-        "Initial state before deleting root level file"
+        "删除根级文件前的初始状态"
     );
 
     submit_deletion(&panel, cx);
@@ -6986,7 +6986,7 @@ async fn test_basic_file_deletion_scenarios(cx: &mut gpui::TestAppContext) {
             "          file4.txt",
             "      file5.txt  <== selected",
         ],
-        "Should select prev entry at root level"
+        "在根级别应选择上一个条目"
     );
 }
 
@@ -7045,7 +7045,7 @@ async fn test_deletion_gitignored(cx: &mut gpui::TestAppContext) {
             "      gg",
             "      hh"
         ],
-        "Initial state should hide files on .gitignore"
+        "初始状态应隐藏 .gitignore 中列出的文件"
     );
 
     submit_deletion(&panel, cx);
@@ -7059,7 +7059,7 @@ async fn test_deletion_gitignored(cx: &mut gpui::TestAppContext) {
             "      gg",
             "      hh"
         ],
-        "Should select next entry not on .gitignore"
+        "应选择下一个不在 .gitignore 中的条目"
     );
 
     // Test 2: Auto selection with many gitignored files next to the deleted file
@@ -7072,7 +7072,7 @@ async fn test_deletion_gitignored(cx: &mut gpui::TestAppContext) {
             "      gg  <== selected",
             "      hh"
         ],
-        "Should select next entry not on .gitignore"
+        "应选择下一个不在 .gitignore 中的条目"
     );
 
     // Test 3: Auto selection of entry before deleted file
@@ -7085,13 +7085,13 @@ async fn test_deletion_gitignored(cx: &mut gpui::TestAppContext) {
             "      gg",
             "      hh  <== selected"
         ],
-        "Should select next entry not on .gitignore"
+        "应选择下一个不在 .gitignore 中的条目"
     );
     submit_deletion(&panel, cx);
     assert_eq!(
         visible_entries_as_strings(&panel, 0..10, cx),
         &["v root", "      .gitignore", "      gg  <== selected"],
-        "Should select next entry not on .gitignore"
+        "应选择下一个不在 .gitignore 中的条目"
     );
 }
 
@@ -7147,7 +7147,7 @@ async fn test_nested_deletion_gitignore(cx: &mut gpui::TestAppContext) {
             "      .gitignore",
             "      aa"
         ],
-        "Initial state should hide files on .gitignore"
+        "初始状态应隐藏 .gitignore 中列出的文件"
     );
     submit_deletion(&panel, cx);
 
@@ -7160,7 +7160,7 @@ async fn test_nested_deletion_gitignore(cx: &mut gpui::TestAppContext) {
             "      .gitignore",
             "      aa"
         ],
-        "Initial state should hide files on .gitignore"
+        "初始状态应隐藏 .gitignore 中列出的文件"
     );
 }
 
@@ -7229,7 +7229,7 @@ async fn test_complex_selection_scenarios(cx: &mut gpui::TestAppContext) {
             "          file2.txt",
             "      file3.txt",
         ],
-        "Initial state before deleting nested directory with parent"
+        "删除带有父目录的嵌套目录前的初始状态"
     );
 
     submit_deletion(&panel, cx);
@@ -7244,7 +7244,7 @@ async fn test_complex_selection_scenarios(cx: &mut gpui::TestAppContext) {
             "          file2.txt",
             "      file3.txt",
         ],
-        "Should select next directory after deleting directory with parent"
+        "删除带有父目录的目录后应选择下一个目录"
     );
 
     // Test Case 2: Select mixed files and directories across levels
@@ -7263,7 +7263,7 @@ async fn test_complex_selection_scenarios(cx: &mut gpui::TestAppContext) {
             "          file2.txt  <== marked",
             "      file3.txt  <== selected  <== marked",
         ],
-        "Initial state before deleting"
+        "删除前的初始状态"
     );
 
     submit_deletion(&panel, cx);
@@ -7275,7 +7275,7 @@ async fn test_complex_selection_scenarios(cx: &mut gpui::TestAppContext) {
             "        v subdir2",
             "              d.txt",
         ],
-        "Should select sibling directory"
+        "应选择同级目录"
     );
 }
 
@@ -7347,14 +7347,14 @@ async fn test_delete_all_files_and_directories(cx: &mut gpui::TestAppContext) {
             "      file3.txt  <== marked",
             "      file4.txt  <== selected  <== marked",
         ],
-        "State before deleting all contents"
+        "删除所有内容前的状态"
     );
 
     submit_deletion(&panel, cx);
     assert_eq!(
         visible_entries_as_strings(&panel, 0..20, cx),
         &["v root  <== selected"],
-        "Only empty root directory should remain after deleting all contents"
+        "删除所有内容后,应仅保留空的根目录"
     );
 }
 
@@ -7418,13 +7418,13 @@ async fn test_nested_selection_deletion(cx: &mut gpui::TestAppContext) {
             "    v dir2",
             "          file2.txt",
         ],
-        "State with parent dir, subdir, and file selected"
+        "选中父目录、子目录和文件的状态"
     );
     submit_deletion(&panel, cx);
     assert_eq!(
         visible_entries_as_strings(&panel, 0..20, cx),
         &["v root", "    v dir2  <== selected", "          file2.txt",],
-        "Only dir2 should remain after deletion"
+        "删除后应仅保留 dir2"
     );
 }
 
@@ -7498,7 +7498,7 @@ async fn test_multiple_worktrees_deletion(cx: &mut gpui::TestAppContext) {
             "          file5.txt",
             "      file6.txt",
         ],
-        "Initial state with files selected from different worktrees"
+        "从不同工作树中选择文件的初始状态"
     );
 
     submit_deletion(&panel, cx);
@@ -7515,7 +7515,7 @@ async fn test_multiple_worktrees_deletion(cx: &mut gpui::TestAppContext) {
             "          file5.txt  <== selected",
             "      file6.txt",
         ],
-        "Should select next file in the last worktree after deletion"
+        "删除后应选择最后一个工作树中的下一个文件"
     );
 
     // Test Case 2: Delete directories from different worktrees
@@ -7535,7 +7535,7 @@ async fn test_multiple_worktrees_deletion(cx: &mut gpui::TestAppContext) {
             "          file5.txt",
             "      file6.txt",
         ],
-        "State with directories marked from different worktrees"
+        "从不同工作树标记目录的状态"
     );
 
     submit_deletion(&panel, cx);
@@ -7548,7 +7548,7 @@ async fn test_multiple_worktrees_deletion(cx: &mut gpui::TestAppContext) {
             "v root2",
             "      file6.txt  <== selected",
         ],
-        "Should select remaining file in last worktree after directory deletion"
+        "删除目录后应选择最后一个工作树中剩余的文件"
     );
 
     // Test Case 4: Delete all remaining files except roots
@@ -7564,14 +7564,14 @@ async fn test_multiple_worktrees_deletion(cx: &mut gpui::TestAppContext) {
             "v root2",
             "      file6.txt  <== selected  <== marked",
         ],
-        "State with all remaining files marked"
+        "所有剩余文件都被标记的状态"
     );
 
     submit_deletion(&panel, cx);
     assert_eq!(
         visible_entries_as_strings(&panel, 0..20, cx),
         &["v root1", "    v dir2", "v root2  <== selected"],
-        "Second parent root should be selected after deleting"
+        "删除后应选择第二个父根目录"
     );
 }
 
@@ -7628,7 +7628,7 @@ async fn test_selection_vs_marked_entries_priority(cx: &mut gpui::TestAppContext
             "          file4.txt",
             "          file5.txt",
         ],
-        "Initial state with one marked entry and different selection"
+        "有一个标记条目和不同选择项的初始状态"
     );
 
     // Delete should operate on the selected entry (file1.txt)
@@ -7644,7 +7644,7 @@ async fn test_selection_vs_marked_entries_priority(cx: &mut gpui::TestAppContext
             "          file4.txt",
             "          file5.txt",
         ],
-        "Should delete selected file, not marked file"
+        "应删除选中的文件,而不是标记的文件"
     );
 
     select_path_with_mark(&panel, "root/dir1/file3.txt", cx);
@@ -7662,7 +7662,7 @@ async fn test_selection_vs_marked_entries_priority(cx: &mut gpui::TestAppContext
             "          file4.txt  <== marked",
             "          file5.txt  <== selected",
         ],
-        "Initial state with multiple marked entries and different selection"
+        "有多个标记条目和不同选择项的初始状态"
     );
 
     // Delete should operate on all marked entries, ignoring the selection
@@ -7675,7 +7675,7 @@ async fn test_selection_vs_marked_entries_priority(cx: &mut gpui::TestAppContext
             "    v dir2",
             "          file5.txt  <== selected",
         ],
-        "Should delete all marked files, leaving only the selected file"
+        "应删除所有标记的文件,仅保留选中的文件"
     );
 }
 
@@ -7732,7 +7732,7 @@ async fn test_selection_fallback_to_next_highest_worktree(cx: &mut gpui::TestApp
             "v root_c",
             "    v dir2",
         ],
-        "Initial state with files marked in root_b"
+        "在 root_b 中标记文件的初始状态"
     );
 
     submit_deletion(&panel, cx);
@@ -7744,7 +7744,7 @@ async fn test_selection_fallback_to_next_highest_worktree(cx: &mut gpui::TestApp
             "v root_c",
             "    v dir2",
         ],
-        "After deletion in root_b as it's last deletion, selection should be in root_b"
+        "在 root_b 中删除后,由于这是最后一次删除,选择项应位于 root_b 中"
     );
 
     select_path_with_mark(&panel, "root_c/dir2", cx);
@@ -7753,7 +7753,7 @@ async fn test_selection_fallback_to_next_highest_worktree(cx: &mut gpui::TestApp
     assert_eq!(
         visible_entries_as_strings(&panel, 0..20, cx),
         &["v root_b", "    v dir1", "v root_c  <== selected",],
-        "After deleting from root_c, it should remain in root_c"
+        "从 root_c 中删除后,选择项应保持在 root_c 中"
     );
 }
 
@@ -7772,7 +7772,7 @@ pub(crate) fn toggle_expand_dir(
                 return;
             }
         }
-        panic!("no worktree for path {:?}", path);
+        panic!("路径 {:?} 没有对应的工作树", path);
     });
     cx.run_until_parked();
 }
@@ -7836,7 +7836,7 @@ async fn test_expand_all_for_entry(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..20, cx),
         &["v root", "    > dir1", "      .gitignore",],
-        "Initial state should show collapsed root structure"
+        "初始状态应显示折叠的根目录结构"
     );
 
     toggle_expand_dir(&panel, "root/dir1", cx);
@@ -7850,7 +7850,7 @@ async fn test_expand_all_for_entry(cx: &mut gpui::TestAppContext) {
             "        > subdir1",
             "      .gitignore",
         ],
-        "Should show first level with auto-folded dirs and ignored dir visible"
+        "应显示第一级,包含自动折叠的目录和可见的忽略目录"
     );
 
     let entry_id = find_project_entry(&panel, "root/dir1", cx).unwrap();
@@ -7878,7 +7878,7 @@ async fn test_expand_all_for_entry(cx: &mut gpui::TestAppContext) {
             "              file2.txt",
             "      .gitignore",
         ],
-        "After expand_all with auto-fold: should not expand ignored_dir, should expand folded dirs, and should not expand ignored_nested"
+        "使用自动折叠执行全部展开后:不应展开 ignored_dir,应展开折叠的目录,且不应展开 ignored_nested"
     );
 
     // Test 2: When auto-fold is disabled
@@ -7908,7 +7908,7 @@ async fn test_expand_all_for_entry(cx: &mut gpui::TestAppContext) {
             "        > subdir1",
             "      .gitignore",
         ],
-        "With auto-fold disabled: should show all directories separately"
+        "禁用自动折叠时:应分别显示所有目录"
     );
 
     let entry_id = find_project_entry(&panel, "root/dir1", cx).unwrap();
@@ -7968,7 +7968,7 @@ async fn test_expand_all_for_entry(cx: &mut gpui::TestAppContext) {
             "              file2.txt",
             "      .gitignore",
         ],
-        "After expand_all on ignored_dir: should expand all contents of the ignored directory"
+        "对 ignored_dir 执行全部展开后:应展开该忽略目录的所有内容"
     );
 }
 
@@ -8030,7 +8030,7 @@ async fn test_collapse_all_for_entry(cx: &mut gpui::TestAppContext) {
                 "              file4.txt",
                 "    > dir2",
             ],
-            "Initial state with everything expanded"
+            "所有内容都已展开的初始状态"
         );
 
         let entry_id = find_project_entry(&panel, "root/dir1", cx).unwrap();
@@ -8045,7 +8045,7 @@ async fn test_collapse_all_for_entry(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             visible_entries_as_strings(&panel, 0..20, cx),
             &["v root", "    > dir1", "    > dir2",],
-            "All subdirs under dir1 should be collapsed"
+            "dir1 下的所有子目录都应折叠"
         );
     }
 
@@ -8080,7 +8080,7 @@ async fn test_collapse_all_for_entry(cx: &mut gpui::TestAppContext) {
                 "        > subdir2",
                 "    > dir2/single_file",
             ],
-            "Initial state with some dirs expanded"
+            "初始状态,部分目录已展开"
         );
 
         let entry_id = find_project_entry(&panel, "root/dir1", cx).unwrap();
@@ -8101,7 +8101,7 @@ async fn test_collapse_all_for_entry(cx: &mut gpui::TestAppContext) {
                 "        > subdir2",
                 "    > dir2/single_file",
             ],
-            "Subdirs should be collapsed and folded with auto-fold enabled"
+            "启用自动折叠时,子目录应折叠"
         );
     }
 
@@ -8137,7 +8137,7 @@ async fn test_collapse_all_for_entry(cx: &mut gpui::TestAppContext) {
                 "        > subdir2",
                 "    > dir2",
             ],
-            "Initial state with some dirs expanded and auto-fold disabled"
+            "初始状态,部分目录已展开且自动折叠已禁用"
         );
 
         let entry_id = find_project_entry(&panel, "root/dir1", cx).unwrap();
@@ -8158,7 +8158,7 @@ async fn test_collapse_all_for_entry(cx: &mut gpui::TestAppContext) {
                 "        > subdir2",
                 "    > dir2",
             ],
-            "Subdirs should be collapsed but not folded with auto-fold disabled"
+            "禁用自动折叠时,子目录应折叠但不隐藏"
         );
     }
 }
@@ -8219,7 +8219,7 @@ async fn test_collapse_selected_entry_and_children_action(cx: &mut gpui::TestApp
             "    v dir2  <== selected",
             "          file4.txt",
         ],
-        "Initial state with directories expanded"
+        "初始状态,目录已展开"
     );
 
     select_path(&panel, "root/dir1", cx);
@@ -8238,7 +8238,7 @@ async fn test_collapse_selected_entry_and_children_action(cx: &mut gpui::TestApp
             "    v dir2",
             "          file4.txt",
         ],
-        "dir1 and all its children should be collapsed, dir2 should remain expanded"
+        "dir1 及其所有子项应折叠,dir2 应保持展开"
     );
 
     toggle_expand_dir(&panel, "root/dir1", cx);
@@ -8254,7 +8254,7 @@ async fn test_collapse_selected_entry_and_children_action(cx: &mut gpui::TestApp
             "    v dir2",
             "          file4.txt",
         ],
-        "After re-expanding dir1, its children should still be collapsed"
+        "重新展开 dir1 后,其子项仍应折叠"
     );
 }
 
@@ -8304,7 +8304,7 @@ async fn test_collapse_root_single_worktree(cx: &mut gpui::TestAppContext) {
             "    v dir2  <== selected",
             "          file3.txt",
         ],
-        "Initial state with directories expanded"
+        "初始状态,目录已展开"
     );
 
     // Select the root and collapse it and its children
@@ -8320,7 +8320,7 @@ async fn test_collapse_root_single_worktree(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..20, cx),
         &["> root  <== selected"],
-        "Root and all children should be collapsed"
+        "根目录及其所有子项应折叠"
     );
 
     // Re-expand root and dir1, verify children were recursively collapsed
@@ -8337,7 +8337,7 @@ async fn test_collapse_root_single_worktree(cx: &mut gpui::TestAppContext) {
             "          file2.txt",
             "    > dir2",
         ],
-        "After re-expanding root and dir1, subdir1 should still be collapsed"
+        "重新展开根目录和 dir1 后,subdir1 仍应折叠"
     );
 }
 
@@ -8401,7 +8401,7 @@ async fn test_collapse_root_multi_worktree(cx: &mut gpui::TestAppContext) {
             "          file3.txt",
             "      file4.txt",
         ],
-        "Initial state with directories expanded across worktrees"
+        "初始状态,多个工作树中的目录已展开"
     );
 
     // Select root1 and collapse it and its children.
@@ -8424,7 +8424,7 @@ async fn test_collapse_root_multi_worktree(cx: &mut gpui::TestAppContext) {
             "          file3.txt",
             "      file4.txt",
         ],
-        "Only root1 should be collapsed, root2 should remain expanded"
+        "仅 root1 应折叠,root2 应保持展开"
     );
 
     // Re-expand root1 and verify its children were recursively collapsed
@@ -8440,7 +8440,7 @@ async fn test_collapse_root_multi_worktree(cx: &mut gpui::TestAppContext) {
             "          file3.txt",
             "      file4.txt",
         ],
-        "After re-expanding root1, dir1 should still be collapsed, root2 should be unaffected"
+        "重新展开 root1 后,dir1 仍应折叠,root2 应不受影响"
     );
 }
 
@@ -8508,7 +8508,7 @@ async fn test_collapse_non_root_multi_worktree(cx: &mut gpui::TestAppContext) {
             "              file3.txt",
             "          file4.txt",
         ],
-        "Initial state with directories expanded across worktrees"
+        "初始状态,多个工作树中的目录已展开"
     );
 
     // Select dir1 in root1 and collapse it
@@ -8531,7 +8531,7 @@ async fn test_collapse_non_root_multi_worktree(cx: &mut gpui::TestAppContext) {
             "              file3.txt",
             "          file4.txt",
         ],
-        "Only dir1 should be collapsed, root2 should be completely unaffected"
+        "仅 dir1 应折叠,root2 应完全不受影响"
     );
 
     // Re-expand dir1 and verify subdir1 was recursively collapsed
@@ -8550,7 +8550,7 @@ async fn test_collapse_non_root_multi_worktree(cx: &mut gpui::TestAppContext) {
             "              file3.txt",
             "          file4.txt",
         ],
-        "After re-expanding dir1, subdir1 should still be collapsed"
+        "重新展开 dir1 后,subdir1 仍应折叠"
     );
 }
 
@@ -8605,25 +8605,25 @@ async fn test_expand_all_entries(cx: &mut gpui::TestAppContext) {
     cx.executor().run_until_parked();
 
     let entries = visible_entries_as_strings(&panel, 0..20, cx);
-    assert_eq!(entries.len(), 13, "should show all 13 entries");
-    assert!(entries[0].starts_with("v project_root"), "root expanded");
-    assert!(entries[1].contains("v dir_1"), "dir_1 expanded");
-    assert!(entries[2].contains("v nested_dir"), "nested_dir expanded");
+    assert_eq!(entries.len(), 13, "应显示全部 13 个条目");
+    assert!(entries[0].starts_with("v project_root"), "根目录已展开");
+    assert!(entries[1].contains("v dir_1"), "dir_1 已展开");
+    assert!(entries[2].contains("v nested_dir"), "nested_dir 已展开");
     assert!(
         entries.iter().any(|e| e.contains("file_a.py")),
-        "file_a visible"
+        "file_a 可见"
     );
     assert!(
         entries.iter().any(|e| e.contains("file_c.py")),
-        "file_c visible"
+        "file_c 可见"
     );
     assert!(
         entries.iter().any(|e| e.contains("v dir_2")),
-        "dir_2 expanded"
+        "dir_2 已展开"
     );
     assert!(
         !entries.iter().any(|e| e.contains("> ")),
-        "no collapsed dirs"
+        "无折叠目录"
     );
 }
 
@@ -8893,7 +8893,7 @@ async fn test_expand_all_entries_with_auto_fold(cx: &mut gpui::TestAppContext) {
             "                v empty3",
             "                      file.txt",
         ],
-        "expand all should unfold auto-folded directories"
+        "全部展开应展开自动折叠的目录"
     );
 }
 
@@ -8933,7 +8933,7 @@ async fn test_create_entries_without_selection(cx: &mut gpui::TestAppContext) {
             "v root",
             "    > dir1",
         ],
-        "Initial state with nothing selected"
+        "初始状态,未选择任何项"
     );
 
     panel.update_in(cx, |panel, window, cx| {
@@ -8961,7 +8961,7 @@ async fn test_create_entries_without_selection(cx: &mut gpui::TestAppContext) {
             "    > dir1",
             "      hello_from_no_selections  <== selected  <== marked",
         ],
-        "A new file is created under the root directory"
+        "在根目录下创建新文件"
     );
 }
 
@@ -9013,13 +9013,13 @@ async fn test_create_entries_without_selection_hide_root(cx: &mut gpui::TestAppC
             "> existing_dir",
             "  existing_file.txt",
         ],
-        "Initial state with hide_root=true, root should be hidden and nothing selected"
+        "初始状态,hide_root=true,根目录应隐藏且未选择任何项"
     );
 
     panel.update(cx, |panel, _| {
         assert!(
             panel.selection.is_none(),
-            "Should have no selection initially"
+            "初始应无选择"
         );
     });
 
@@ -9040,7 +9040,7 @@ async fn test_create_entries_without_selection_hide_root(cx: &mut gpui::TestAppC
             "  [EDITOR: '']  <== selected",
             "  existing_file.txt",
         ],
-        "Editor should appear at root level when hide_root=true and no selection"
+        "当 hide_root=true 且无选择时,编辑器应出现在根级别"
     );
 
     let confirm = panel.update_in(cx, |panel, window, cx| {
@@ -9060,12 +9060,12 @@ async fn test_create_entries_without_selection_hide_root(cx: &mut gpui::TestAppC
             "  existing_file.txt",
             "  new_file_at_root.txt  <== selected  <== marked",
         ],
-        "New file should be created at root level and visible without root prefix"
+        "新文件应在根级别创建,且不带根前缀可见"
     );
 
     assert!(
         fs.is_file(Path::new("/root/new_file_at_root.txt")).await,
-        "File should be created in the actual root directory"
+        "文件应在实际根目录中创建"
     );
 
     // Test 2: Create new directory when no entry is selected
@@ -9091,7 +9091,7 @@ async fn test_create_entries_without_selection_hide_root(cx: &mut gpui::TestAppC
             "  existing_file.txt",
             "  new_file_at_root.txt",
         ],
-        "Directory editor should appear at root level when hide_root=true and no selection"
+        "当 hide_root=true 且无选择时,目录编辑器应出现在根级别"
     );
 
     let confirm = panel.update_in(cx, |panel, window, cx| {
@@ -9112,12 +9112,12 @@ async fn test_create_entries_without_selection_hide_root(cx: &mut gpui::TestAppC
             "  existing_file.txt",
             "  new_file_at_root.txt",
         ],
-        "New directory should be created at root level and visible without root prefix"
+        "新目录应在根级别创建,且不带根前缀可见"
     );
 
     assert!(
         fs.is_dir(Path::new("/root/new_dir_at_root")).await,
-        "Directory should be created in the actual root directory"
+        "目录应在实际根目录中创建"
     );
 }
 
@@ -9155,17 +9155,17 @@ async fn test_context_menu_new_file_in_empty_hidden_root(cx: &mut gpui::TestAppC
 
     assert!(
         visible_entries_as_strings(&panel, 0..20, cx).is_empty(),
-        "Empty worktree with hide_root=true should render no entries"
+        "hide_root=true 时,空工作树应不渲染任何条目"
     );
 
     panel.update(cx, |panel, _| {
         assert!(
             panel.selection.is_none(),
-            "Project panel should start without a selection"
+            "项目面板启动时不应有选择"
         );
         assert!(
             panel.state.last_worktree_root_id.is_some(),
-            "Project panel should still track the hidden root entry"
+            "项目面板仍应跟踪隐藏的根条目"
         );
     });
 
@@ -9173,7 +9173,7 @@ async fn test_context_menu_new_file_in_empty_hidden_root(cx: &mut gpui::TestAppC
         let root_entry_id = panel
             .state
             .last_worktree_root_id
-            .expect("hidden root should be available for background context menu actions");
+            .expect("隐藏的根应可用于后台上下文菜单操作");
         panel.deploy_context_menu(
             gpui::point(gpui::px(1.), gpui::px(1.)),
             root_entry_id,
@@ -9187,14 +9187,14 @@ async fn test_context_menu_new_file_in_empty_hidden_root(cx: &mut gpui::TestAppC
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             panel.filename_editor.read(cx).is_focused(window),
-            "New File from the background context menu should open the filename editor"
+            "后台上下文菜单中的“新建文件”应打开文件名编辑器"
         );
     });
 
     assert_eq!(
         visible_entries_as_strings(&panel, 0..20, cx),
         &["  [EDITOR: '']  <== selected"],
-        "New file editor should appear at the hidden root level"
+        "新文件编辑器应出现在隐藏的根级别"
     );
 
     let confirm = panel.update_in(cx, |panel, window, cx| {
@@ -9209,13 +9209,13 @@ async fn test_context_menu_new_file_in_empty_hidden_root(cx: &mut gpui::TestAppC
     assert_eq!(
         visible_entries_as_strings(&panel, 0..20, cx),
         &["  new_file_from_context_menu.txt  <== selected  <== marked"],
-        "Confirmed file should appear at the hidden root level"
+        "确认的文件应出现在隐藏的根级别"
     );
 
     assert!(
         fs.is_file(Path::new("/root/new_file_from_context_menu.txt"))
             .await,
-        "File should be created in the empty root directory"
+        "文件应在空根目录中创建"
     );
 }
 
@@ -9256,7 +9256,7 @@ async fn test_create_entry_with_trailing_dot_windows(cx: &mut gpui::TestAppConte
             "v root",
             "    > dir1",
         ],
-        "Initial state with nothing selected"
+        "初始状态,未选择任何项"
     );
 
     panel.update_in(cx, |panel, window, cx| {
@@ -9284,7 +9284,7 @@ async fn test_create_entry_with_trailing_dot_windows(cx: &mut gpui::TestAppConte
             "    > dir1",
             "      foo  <== selected  <== marked",
         ],
-        "A new file is created under the root directory without the trailing dot"
+        "在根目录下创建新文件,不带尾随点"
     );
 }
 
@@ -9327,7 +9327,7 @@ async fn test_highlight_entry_for_external_drag(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             result,
             Some(dir_entry.id),
-            "Should highlight directory itself"
+            "应高亮目录本身"
         );
 
         // Test 2: Target is nested file, should highlight immediate parent
@@ -9339,7 +9339,7 @@ async fn test_highlight_entry_for_external_drag(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             result,
             Some(nested_parent.id),
-            "Should highlight immediate parent"
+            "应高亮直接父级"
         );
 
         // Test 3: Target is root level file, should highlight root
@@ -9348,7 +9348,7 @@ async fn test_highlight_entry_for_external_drag(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             result,
             Some(worktree.root_entry().unwrap().id),
-            "Root level file should return None"
+            "根级别文件应返回 None"
         );
 
         // Test 4: Target is root itself, should highlight root
@@ -9357,7 +9357,7 @@ async fn test_highlight_entry_for_external_drag(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             result,
             Some(root_entry.id),
-            "Root level file should return None"
+            "根级别文件应返回 None"
         );
     });
 }
@@ -9427,7 +9427,7 @@ async fn test_highlight_entry_for_selection_drag(cx: &mut gpui::TestAppContext) 
         };
         let result =
             panel.highlight_entry_for_selection_drag(parent_dir, worktree, &dragged_selection, cx);
-        assert_eq!(result, None, "Should not highlight parent of dragged item");
+        assert_eq!(result, None, "不应高亮拖拽项的父级");
 
         // Test 2: Single item drag, don't highlight sibling files
         let result = panel.highlight_entry_for_selection_drag(
@@ -9436,7 +9436,7 @@ async fn test_highlight_entry_for_selection_drag(cx: &mut gpui::TestAppContext) 
             &dragged_selection,
             cx,
         );
-        assert_eq!(result, None, "Should not highlight sibling files");
+        assert_eq!(result, None, "不应高亮同级文件");
 
         // Test 3: Single item drag, highlight unrelated directory
         let result =
@@ -9444,7 +9444,7 @@ async fn test_highlight_entry_for_selection_drag(cx: &mut gpui::TestAppContext) 
         assert_eq!(
             result,
             Some(other_dir.id),
-            "Should highlight unrelated directory"
+            "应高亮无关目录"
         );
 
         // Test 4: Single item drag, highlight sibling directory
@@ -9453,7 +9453,7 @@ async fn test_highlight_entry_for_selection_drag(cx: &mut gpui::TestAppContext) 
         assert_eq!(
             result,
             Some(child_dir.id),
-            "Should highlight sibling directory"
+            "应高亮同级目录"
         );
 
         // Test 5: Multiple items drag, highlight parent directory
@@ -9478,7 +9478,7 @@ async fn test_highlight_entry_for_selection_drag(cx: &mut gpui::TestAppContext) 
         assert_eq!(
             result,
             Some(parent_dir.id),
-            "Should highlight parent with multiple items"
+            "应高亮包含多个项的父级"
         );
 
         // Test 6: Target is file in different directory, highlight parent
@@ -9487,7 +9487,7 @@ async fn test_highlight_entry_for_selection_drag(cx: &mut gpui::TestAppContext) 
         assert_eq!(
             result,
             Some(other_dir.id),
-            "Should highlight parent of target file"
+            "应高亮目标文件的父级"
         );
 
         // Test 7: Target is directory, always highlight
@@ -9496,7 +9496,7 @@ async fn test_highlight_entry_for_selection_drag(cx: &mut gpui::TestAppContext) 
         assert_eq!(
             result,
             Some(child_dir.id),
-            "Should always highlight directories"
+            "应始终高亮目录"
         );
     });
 }
@@ -9574,7 +9574,7 @@ async fn test_highlight_entry_for_selection_drag_cross_worktree(cx: &mut gpui::T
         assert_eq!(
             result,
             Some(src_dir_from_b.id),
-            "Should highlight target directory from different worktree even with same relative path"
+            "即使相对路径相同,也应高亮来自不同工作树的目标目录"
         );
 
         // Test dragging file from worktree A onto file with same relative path in worktree B
@@ -9587,7 +9587,7 @@ async fn test_highlight_entry_for_selection_drag_cross_worktree(cx: &mut gpui::T
         assert_eq!(
             result,
             Some(src_dir_from_b.id),
-            "Should highlight parent of target file from different worktree"
+            "应高亮来自不同工作树的目标文件的父级"
         );
     });
 }
@@ -9672,7 +9672,7 @@ async fn test_should_highlight_background_for_selection_drag(cx: &mut gpui::Test
             root1_entry.id,
             cx,
         );
-        assert!(result, "Should highlight background for multiple entries");
+        assert!(result, "应为多个条目高亮背景");
 
         // Test 2: Single entry with non-empty parent path - should highlight background
         let nested_dragged_selection = DraggedSelection {
@@ -9691,7 +9691,7 @@ async fn test_should_highlight_background_for_selection_drag(cx: &mut gpui::Test
             root1_entry.id,
             cx,
         );
-        assert!(result, "Should highlight background for nested file");
+        assert!(result, "应为嵌套文件高亮背景");
 
         // Test 3: Single entry at root level, same worktree - should NOT highlight background
         let root_file_dragged_selection = DraggedSelection {
@@ -9712,7 +9712,7 @@ async fn test_should_highlight_background_for_selection_drag(cx: &mut gpui::Test
         );
         assert!(
             !result,
-            "Should NOT highlight background for root file in same worktree"
+            "不应为同一工作树中的根文件高亮背景"
         );
 
         // Test 4: Single entry at root level, different worktree - should highlight background
@@ -9723,7 +9723,7 @@ async fn test_should_highlight_background_for_selection_drag(cx: &mut gpui::Test
         );
         assert!(
             result,
-            "Should highlight background for root file from different worktree"
+            "应为来自不同工作树的根文件高亮背景"
         );
 
         // Test 5: Single entry in subdirectory - should highlight background
@@ -9745,7 +9745,7 @@ async fn test_should_highlight_background_for_selection_drag(cx: &mut gpui::Test
         );
         assert!(
             result,
-            "Should highlight background for file with non-empty parent path"
+            "应为具有非空父路径的文件高亮背景"
         );
     });
 }
@@ -9814,7 +9814,7 @@ async fn test_hide_root(cx: &mut gpui::TestAppContext) {
                 "    > dir2",
                 "      file4.txt",
             ],
-            "With hide_root=false and single worktree, root should be visible"
+            "hide_root=false 且单个工作树时,根应可见"
         );
     }
 
@@ -9846,7 +9846,7 @@ async fn test_hide_root(cx: &mut gpui::TestAppContext) {
         assert_eq!(
             visible_entries_as_strings(&panel, 0..10, cx),
             &["> dir1", "> dir2", "  file4.txt",],
-            "With hide_root=true and single worktree, root should be hidden"
+            "hide_root=true 且单个工作树时,根应隐藏"
         );
 
         // Test expanding directories still works without root
@@ -9860,7 +9860,7 @@ async fn test_hide_root(cx: &mut gpui::TestAppContext) {
                 "> dir2",
                 "  file4.txt",
             ],
-            "Should be able to expand directories even when root is hidden"
+            "即使根隐藏,也应能展开目录"
         );
     }
 
@@ -9900,7 +9900,7 @@ async fn test_hide_root(cx: &mut gpui::TestAppContext) {
                 "    > dir3",
                 "      file6.txt",
             ],
-            "With hide_root=true and multiple worktrees, roots should still be visible"
+            "hide_root=true 且多个工作树时,根仍应可见"
         );
     }
 
@@ -9939,7 +9939,7 @@ async fn test_hide_root(cx: &mut gpui::TestAppContext) {
                 "    > dir3",
                 "      file6.txt",
             ],
-            "With hide_root=false and multiple worktrees, roots should be visible"
+            "hide_root=false 且多个工作树时,根应可见"
         );
     }
 }
@@ -9952,10 +9952,10 @@ async fn test_compare_selected_files(cx: &mut gpui::TestAppContext) {
     fs.insert_tree(
         "/root",
         json!({
-            "file1.txt": "content of file1",
-            "file2.txt": "content of file2",
+            "file1.txt": "file1 的内容",
+            "file2.txt": "file2 的内容",
             "dir1": {
-                "file3.txt": "content of file3"
+                "file3.txt": "file3 的内容"
             }
         }),
     )
@@ -9992,7 +9992,7 @@ async fn test_compare_selected_files(cx: &mut gpui::TestAppContext) {
             .next()
             .unwrap()
             .downcast::<FileDiffView>()
-            .expect("Open item should be an FileDiffView");
+            .expect("打开的项目应为 FileDiffView");
         assert_eq!(diff_view.tab_content_text(0, cx), "file1.txt ↔ file2.txt");
         assert_eq!(
             diff_view.tab_tooltip_text(cx).unwrap(),
@@ -10030,7 +10030,7 @@ async fn test_compare_selected_files(cx: &mut gpui::TestAppContext) {
     panel.update(cx, |panel, _cx| {
         assert_eq!(
             &panel.marked_entries, &expected_entries,
-            "Should keep marked entries after comparison"
+            "比较后应保留标记的条目"
         );
     });
 
@@ -10043,7 +10043,7 @@ async fn test_compare_selected_files(cx: &mut gpui::TestAppContext) {
     panel.update(cx, |panel, _cx| {
         assert_eq!(
             &panel.marked_entries, &expected_entries,
-            "Marked entries should persist after focusing back on the project panel"
+            "重新聚焦项目面板后,标记的条目应保留"
         );
     });
 }
@@ -10056,11 +10056,11 @@ async fn test_compare_files_context_menu(cx: &mut gpui::TestAppContext) {
     fs.insert_tree(
         "/root",
         json!({
-            "file1.txt": "content of file1",
-            "file2.txt": "content of file2",
+            "file1.txt": "file1 的内容",
+            "file2.txt": "file2 的内容",
             "dir1": {},
             "dir2": {
-                "file3.txt": "content of file3"
+                "file3.txt": "file3 的内容"
             }
         }),
     )
@@ -10081,7 +10081,7 @@ async fn test_compare_files_context_menu(cx: &mut gpui::TestAppContext) {
     let selected_files = panel.update(cx, |panel, cx| panel.file_abs_paths_to_diff(cx));
     assert_eq!(
         selected_files, None,
-        "Should not have compare option when only one file is selected"
+        "仅选择一个文件时,不应有比较选项"
     );
 
     // Test 2: When multiple files are selected, there should be a compare option
@@ -10091,13 +10091,13 @@ async fn test_compare_files_context_menu(cx: &mut gpui::TestAppContext) {
     let selected_files = panel.update(cx, |panel, cx| panel.file_abs_paths_to_diff(cx));
     assert!(
         selected_files.is_some(),
-        "Should have files selected for comparison"
+        "应有用于比较的文件被选中"
     );
     if let Some((file1, file2)) = selected_files {
         assert!(
             file1.to_string_lossy().ends_with("file1.txt")
                 && file2.to_string_lossy().ends_with("file2.txt"),
-            "Should have file1.txt and file2.txt as the selected files when multi-selecting"
+            "多选时,应选中 file1.txt 和 file2.txt"
         );
     }
 
@@ -10107,13 +10107,13 @@ async fn test_compare_files_context_menu(cx: &mut gpui::TestAppContext) {
     let selected_files = panel.update(cx, |panel, cx| panel.file_abs_paths_to_diff(cx));
     assert!(
         selected_files.is_some(),
-        "Directory selection should not affect comparable files"
+        "目录选择不应影响可比较的文件"
     );
     if let Some((file1, file2)) = selected_files {
         assert!(
             file1.to_string_lossy().ends_with("file1.txt")
                 && file2.to_string_lossy().ends_with("file2.txt"),
-            "Selecting a directory should not affect the number of comparable files"
+            "选择目录不应影响可比较文件的数量"
         );
     }
 
@@ -10123,13 +10123,13 @@ async fn test_compare_files_context_menu(cx: &mut gpui::TestAppContext) {
     let selected_files = panel.update(cx, |panel, cx| panel.file_abs_paths_to_diff(cx));
     assert!(
         selected_files.is_some(),
-        "Directory selection should not affect comparable files"
+        "目录选择不应影响可比较的文件"
     );
     if let Some((file1, file2)) = selected_files {
         assert!(
             file1.to_string_lossy().ends_with("file2.txt")
                 && file2.to_string_lossy().ends_with("file3.txt"),
-            "Selecting a directory should not affect the number of comparable files"
+            "选择目录不应影响可比较文件的数量"
         );
     }
 }
@@ -10162,10 +10162,10 @@ async fn test_reveal_in_file_manager_path_falls_back_to_worktree_root(
     select_path(&panel, "root/file.txt", cx);
     let selected_reveal_path = panel
         .update(cx, |panel, cx| panel.reveal_in_file_manager_path(cx))
-        .expect("selected entry should produce a reveal path");
+        .expect("选中的条目应生成显示路径");
     assert!(
         selected_reveal_path.ends_with(Path::new("file.txt")),
-        "Expected selected file path, got {:?}",
+        "应为选中的文件路径,实际为 {:?}",
         selected_reveal_path
     );
 
@@ -10175,10 +10175,10 @@ async fn test_reveal_in_file_manager_path_falls_back_to_worktree_root(
     });
     let fallback_reveal_path = panel
         .update(cx, |panel, cx| panel.reveal_in_file_manager_path(cx))
-        .expect("project root should be used when selection is empty");
+        .expect("选择为空时,应使用项目根目录");
     assert!(
         fallback_reveal_path.ends_with(Path::new("root")),
-        "Expected worktree root path, got {:?}",
+        "应为工作树根路径,实际为 {:?}",
         fallback_reveal_path
     );
 }
@@ -10191,25 +10191,25 @@ async fn test_hide_hidden_entries(cx: &mut gpui::TestAppContext) {
     fs.insert_tree(
         "/root",
         json!({
-            ".hidden-file.txt": "hidden file content",
-            "visible-file.txt": "visible file content",
+            ".hidden-file.txt": "隐藏文件内容",
+            "visible-file.txt": "可见文件内容",
             ".hidden-parent-dir": {
                 "nested-dir": {
-                    "file.txt": "file content",
+                    "file.txt": "文件内容",
                 }
             },
             "visible-dir": {
-                "file-in-visible.txt": "file content",
+                "file-in-visible.txt": "文件内容",
                 "nested": {
                     ".hidden-nested-dir": {
                         ".double-hidden-dir": {
-                            "deep-file-1.txt": "deep content 1",
-                            "deep-file-2.txt": "deep content 2"
+                            "deep-file-1.txt": "深层内容 1",
+                            "deep-file-2.txt": "深层内容 2"
                         },
-                        "hidden-nested-file-1.txt": "hidden nested 1",
-                        "hidden-nested-file-2.txt": "hidden nested 2"
+                        "hidden-nested-file-1.txt": "隐藏嵌套 1",
+                        "hidden-nested-file-2.txt": "隐藏嵌套 2"
                     },
-                    "visible-nested-file.txt": "visible nested content"
+                    "visible-nested-file.txt": "可见嵌套内容"
                 }
             }
         }),
@@ -10270,7 +10270,7 @@ async fn test_hide_hidden_entries(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..30, cx),
         &expanded,
-        "With hide_hidden=false, contents of hidden nested directory should be visible"
+        "hide_hidden=false 时,隐藏嵌套目录的内容应可见"
     );
 
     cx.update(|_, cx| {
@@ -10299,7 +10299,7 @@ async fn test_hide_hidden_entries(cx: &mut gpui::TestAppContext) {
             "          file-in-visible.txt",
             "      visible-file.txt",
         ],
-        "With hide_hidden=false, contents of hidden nested directory should be visible"
+        "hide_hidden=false 时,隐藏嵌套目录的内容应可见"
     );
 
     panel.update_in(cx, |panel, window, cx| {
@@ -10318,7 +10318,7 @@ async fn test_hide_hidden_entries(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         visible_entries_as_strings(&panel, 0..30, cx),
         &expanded,
-        "With hide_hidden=false, deeply nested hidden directories and their contents should be visible"
+        "hide_hidden=false 时,深层嵌套的隐藏目录及其内容应可见"
     );
 }
 
@@ -10339,7 +10339,7 @@ pub(crate) fn select_path(panel: &Entity<ProjectPanel>, path: &str, cx: &mut Vis
                 return;
             }
         }
-        panic!("no worktree for path {:?}", path);
+        panic!("路径 {:?} 没有对应的工作树", path);
     });
     cx.run_until_parked();
 }
@@ -10366,7 +10366,7 @@ pub(crate) fn select_path_with_mark(
                 return;
             }
         }
-        panic!("no worktree for path {:?}", path);
+        panic!("路径 {:?} 没有对应的工作树", path);
     });
 }
 
@@ -10405,14 +10405,14 @@ fn set_folded_active_ancestor(
         }
 
         let leaf_entry_id =
-            leaf_entry_id.unwrap_or_else(|| panic!("no entry for leaf path {leaf_path:?}"));
+            leaf_entry_id.unwrap_or_else(|| panic!("叶子路径 {leaf_path:?} 无条目"));
         let target_entry_id = target_entry_id
-            .unwrap_or_else(|| panic!("no entry for active path {active_ancestor_path:?}"));
+            .unwrap_or_else(|| panic!("活动路径 {active_ancestor_path:?} 无条目"));
         let folded_ancestors = panel
             .state
             .ancestors
             .get_mut(&leaf_entry_id)
-            .unwrap_or_else(|| panic!("leaf path {leaf_path:?} should be folded"));
+            .unwrap_or_else(|| panic!("叶子路径 {leaf_path:?} 应折叠"));
         let ancestor_ids = folded_ancestors.ancestors.clone();
 
         let mut depth_for_target = None;
@@ -10430,7 +10430,7 @@ fn set_folded_active_ancestor(
 
         folded_ancestors.current_ancestor_depth = depth_for_target.unwrap_or_else(|| {
             panic!(
-                "active path {active_ancestor_path:?} is not part of folded ancestors {ancestor_ids:?}"
+                "活动路径 {active_ancestor_path:?} 不属于折叠祖先 {ancestor_ids:?}"
             )
         });
     });
@@ -10443,12 +10443,12 @@ pub(crate) fn drag_selection_to(
     cx: &mut VisualTestContext,
 ) {
     let target_entry = find_project_entry(panel, target_path, cx)
-        .unwrap_or_else(|| panic!("no entry for target path {target_path:?}"));
+        .unwrap_or_else(|| panic!("目标路径 {target_path:?} 无条目"));
 
     panel.update_in(cx, |panel, window, cx| {
         let selection = panel
             .selection
-            .expect("a selection is required before dragging");
+            .expect("拖拽前需要先选择");
         let drag = DraggedSelection {
             active_selection: SelectedEntry {
                 worktree_id: selection.worktree_id,
@@ -10472,17 +10472,17 @@ pub(crate) fn drag_entries_onto(
     cx: &mut VisualTestContext,
 ) {
     let target_entry_id = find_project_entry(panel, target_path, cx)
-        .unwrap_or_else(|| panic!("no entry for target path {target_path:?}"));
+        .unwrap_or_else(|| panic!("目标路径 {target_path:?} 无条目"));
     let selections: Vec<SelectedEntry> = source_paths
         .iter()
         .map(|path| {
             let entry_id = find_project_entry(panel, path, cx)
-                .unwrap_or_else(|| panic!("no entry for source path {path:?}"));
+                .unwrap_or_else(|| panic!("源路径 {path:?} 无条目"));
             let worktree_id = panel
                 .update(cx, |panel, cx| {
                     panel.project.read(cx).worktree_id_for_entry(entry_id, cx)
                 })
-                .unwrap_or_else(|| panic!("no worktree for source path {path:?}"));
+                .unwrap_or_else(|| panic!("源路径 {path:?} 无工作树"));
             SelectedEntry {
                 worktree_id,
                 entry_id,
@@ -10491,7 +10491,7 @@ pub(crate) fn drag_entries_onto(
         .collect();
     let active_selection = *selections
         .first()
-        .expect("at least one source path is required");
+        .expect("至少需要一个源路径");
 
     panel.update_in(cx, |panel, window, cx| {
         let drag = DraggedSelection {
@@ -10516,7 +10516,7 @@ pub(crate) fn find_project_entry(
                 return worktree.entry_for_path(relative_path).map(|entry| entry.id);
             }
         }
-        panic!("no worktree for path {path:?}");
+        panic!("路径 {path:?} 无工作树");
     })
 }
 
@@ -10532,12 +10532,12 @@ fn visible_entries_as_strings(
     panel.update_in(cx, |panel, window, cx| {
         panel.for_each_visible_entry(range, window, cx, &mut |project_entry, details, _, _| {
             if details.is_editing {
-                assert!(!has_editor, "duplicate editor entry");
+                assert!(!has_editor, "重复的编辑器条目");
                 has_editor = true;
             } else {
                 assert!(
                     project_entries.insert(project_entry),
-                    "duplicate project entry {:?} {:?}",
+                    "重复的项目条目 {:?} {:?}",
                     project_entry,
                     details
                 );
@@ -10588,7 +10588,7 @@ async fn test_sort_mode_default_fallback(cx: &mut gpui::TestAppContext) {
     assert_eq!(
         default_settings.sort_mode,
         settings::ProjectPanelSortMode::DirectoriesFirst,
-        "sort_mode should default to DirectoriesFirst"
+        "sort_mode 应默认为 DirectoriesFirst"
     );
 }
 
@@ -10979,24 +10979,24 @@ async fn test_preserve_temporary_unfolded_active_index_on_blur_from_context_menu
     });
 
     let parent_entry_id = find_project_entry(&panel, "root1/parent", cx)
-        .expect("parent directory should exist for this test");
+        .expect("父目录应存在于本次测试中");
     let subdir_entry_id = find_project_entry(&panel, "root1/parent/subdir", cx)
-        .expect("subdir directory should exist for this test");
+        .expect("子目录应存在于本次测试中");
     let child_entry_id = find_project_entry(&panel, "root1/parent/subdir/child", cx)
-        .expect("child directory should exist for this test");
+        .expect("子目录的子目录应存在于本次测试中");
 
     panel.update(cx, |panel, _| {
         let selection = panel
             .selection
-            .expect("leaf directory should be selected before creating a new entry");
+            .expect("创建新条目前应选中叶子目录");
         assert_eq!(
             selection.entry_id, child_entry_id,
-            "initial selection should be the folded leaf entry"
+            "初始选中项应为折叠的叶子条目"
         );
         assert_eq!(
             panel.resolve_entry(selection.entry_id),
             subdir_entry_id,
-            "active folded component should start at subdir"
+            "活动折叠组件应从 subdir 开始"
         );
     });
 
@@ -11030,19 +11030,19 @@ async fn test_preserve_temporary_unfolded_active_index_on_blur_from_context_menu
     panel.update(cx, |panel, _| {
         assert!(
             panel.state.edit_state.is_none(),
-            "opening another context menu should blur the filename editor and discard edit state"
+            "打开另一个上下文菜单应使文件名编辑器失焦并丢弃编辑状态"
         );
         let selection = panel
             .selection
-            .expect("selection should restore to the previously focused leaf entry");
+            .expect("选中项应恢复到之前聚焦的叶子条目");
         assert_eq!(
             selection.entry_id, child_entry_id,
-            "blur-driven cancellation should restore the previous leaf selection"
+            "由失焦驱动的取消应恢复之前的叶子选中项"
         );
         assert_eq!(
             panel.resolve_entry(selection.entry_id),
             parent_entry_id,
-            "temporary unfolded pending state should preserve the active ancestor chosen before blur"
+            "临时展开的待处理状态应保留失焦前选择的活动祖先"
         );
     });
 
@@ -11058,18 +11058,18 @@ async fn test_preserve_temporary_unfolded_active_index_on_blur_from_context_menu
             "        > subdir/child",
             "          [EDITOR: '']  <== selected",
         ],
-        "new file after blur should use the preserved active ancestor"
+        "失焦后的新文件应使用保留的活动祖先"
     );
     panel.update(cx, |panel, _| {
         let edit_state = panel
             .state
             .edit_state
             .as_ref()
-            .expect("new file should enter edit state");
+            .expect("新文件应进入编辑状态");
         assert_eq!(
             edit_state.temporarily_unfolded,
             Some(parent_entry_id),
-            "temporary unfolding should now target parent after restoring the active ancestor"
+            "恢复活动祖先后的临时展开应针对父目录"
         );
     });
 
@@ -11080,22 +11080,22 @@ async fn test_preserve_temporary_unfolded_active_index_on_blur_from_context_menu
                 editor.set_text(file_name, window, cx);
             });
             panel.confirm_edit(true, window, cx).expect(
-                "confirm_edit should start creation for the file created after blur transition",
+                "confirm_edit 应为失焦转换后创建的文件启动创建流程",
             )
         })
         .await
-        .expect("creating file after blur transition should succeed");
+        .expect("失焦转换后创建文件应成功");
     cx.run_until_parked();
 
     assert!(
         fs.is_file(Path::new("/root1/parent/created_after_blur.txt"))
             .await,
-        "file should be created under parent after active ancestor is restored to parent"
+        "活动祖先恢复为父目录后,文件应创建在父目录下"
     );
     assert!(
         !fs.is_file(Path::new("/root1/parent/subdir/created_after_blur.txt"))
             .await,
-        "file should not be created under subdir when parent is the active ancestor"
+        "当父目录为活动祖先时,文件不应创建在 subdir 下"
     );
 }
 
@@ -11165,7 +11165,7 @@ async fn run_create_file_in_folded_path_case(
     assert_eq!(
         visible_entries_as_strings(&panel, 0..10, cx),
         expected_collapsed_state,
-        "case '{}' should start from a folded state",
+        "用例 '{}' 应从折叠状态开始",
         case_name
     );
 
@@ -11180,14 +11180,14 @@ async fn run_create_file_in_folded_path_case(
     assert_eq!(
         visible_entries_as_strings(&panel, 0..10, cx),
         expected_temporary_state,
-        "case '{}' ({}) should temporarily unfold the active ancestor while editing",
+        "用例 '{}' ({}) 在编辑时应临时展开活动祖先",
         case_name,
         if accept_creation { "accept" } else { "cancel" }
     );
 
     let relative_directory = active_ancestor_path
         .strip_prefix("root1/")
-        .expect("active_ancestor_path should start with root1/");
+        .expect("active_ancestor_path 应以 root1/ 开头");
     let created_file_path = PathBuf::from("/root1")
         .join(relative_directory)
         .join(created_file_name);
@@ -11207,12 +11207,12 @@ async fn run_create_file_in_folded_path_case(
         assert_eq!(
             visible_entries_as_strings(&panel, 0..10, cx),
             expected_final_state,
-            "case '{}' should keep the newly created file selected and marked after accept",
+            "用例 '{}' 在确认后应保持新创建的文件被选中并标记",
             case_name
         );
         assert!(
             fs.is_file(created_file_path.as_path()).await,
-            "case '{}' should create file '{}'",
+            "用例 '{}' 应创建文件 '{}'",
             case_name,
             created_file_path.display()
         );
@@ -11225,12 +11225,12 @@ async fn run_create_file_in_folded_path_case(
         assert_eq!(
             visible_entries_as_strings(&panel, 0..10, cx),
             expected_final_state,
-            "case '{}' should keep the expected panel state after cancel",
+            "用例 '{}' 在取消后应保持预期的面板状态",
             case_name
         );
         assert!(
             !fs.is_file(created_file_path.as_path()).await,
-            "case '{}' should not create a file after cancel",
+            "用例 '{}' 在取消后不应创建文件",
             case_name
         );
     }
@@ -11283,7 +11283,7 @@ async fn test_focus_follows_mouse_into_blank_area(cx: &mut gpui::TestAppContext)
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             !panel.focus_handle(cx).is_focused(window),
-            "Editor should be focused after opening a file"
+            "打开文件后编辑器应获得焦点"
         );
     });
 
@@ -11296,7 +11296,7 @@ async fn test_focus_follows_mouse_into_blank_area(cx: &mut gpui::TestAppContext)
     panel.update_in(cx, |panel, window, cx| {
         assert!(
             panel.focus_handle(cx).is_focused(window),
-            "Project panel should be focused after hovering the blank area below the entries"
+            "悬停条目下方空白区域后项目面板应获得焦点"
         );
     });
 }
@@ -11395,7 +11395,7 @@ fn ensure_single_file_is_opened(
                 worktree_id,
                 path: Arc::from(rel_path(expected_path))
             }],
-            "Should have opened file, selected in project panel"
+            "应已打开文件并在项目面板中选中"
         );
     });
 }
@@ -11403,19 +11403,19 @@ fn ensure_single_file_is_opened(
 fn submit_deletion(panel: &Entity<ProjectPanel>, cx: &mut VisualTestContext) {
     assert!(
         !cx.has_pending_prompt(),
-        "Should have no prompts before the deletion"
+        "删除前不应有提示"
     );
     panel.update_in(cx, |panel, window, cx| {
         panel.delete(&Delete { skip_prompt: false }, window, cx)
     });
     assert!(
         cx.has_pending_prompt(),
-        "Should have a prompt after the deletion"
+        "删除后应有一个提示"
     );
-    cx.simulate_prompt_answer("Delete");
+    cx.simulate_prompt_answer("删除");
     assert!(
         !cx.has_pending_prompt(),
-        "Should have no prompts after prompt was replied to"
+        "提示被回复后不应再有提示"
     );
     cx.executor().run_until_parked();
 }
@@ -11423,19 +11423,19 @@ fn submit_deletion(panel: &Entity<ProjectPanel>, cx: &mut VisualTestContext) {
 fn submit_deletion_skipping_prompt(panel: &Entity<ProjectPanel>, cx: &mut VisualTestContext) {
     assert!(
         !cx.has_pending_prompt(),
-        "Should have no prompts before the deletion"
+        "删除前不应有提示"
     );
     panel.update_in(cx, |panel, window, cx| {
         panel.delete(&Delete { skip_prompt: true }, window, cx)
     });
-    assert!(!cx.has_pending_prompt(), "Should have received no prompts");
+    assert!(!cx.has_pending_prompt(), "不应收到任何提示");
     cx.executor().run_until_parked();
 }
 
 fn ensure_no_open_items_and_panes(workspace: &Entity<Workspace>, cx: &mut VisualTestContext) {
     assert!(
         !cx.has_pending_prompt(),
-        "Should have no prompts after deletion operation closes the file"
+        "删除操作关闭文件后不应再有提示"
     );
     workspace.update_in(cx, |workspace, _window, cx| {
         let open_project_paths = workspace
@@ -11445,7 +11445,7 @@ fn ensure_no_open_items_and_panes(workspace: &Entity<Workspace>, cx: &mut Visual
             .collect::<Vec<_>>();
         assert!(
             open_project_paths.is_empty(),
-            "Deleted file's buffer should be closed, but got open files: {open_project_paths:?}"
+            "已删除文件的缓冲区应已关闭,但仍有打开的文件:{open_project_paths:?}"
         );
     });
 }
@@ -11552,11 +11552,11 @@ async fn test_delete_prompt_escapes_markdown_in_file_name(cx: &mut gpui::TestApp
     });
     let (message, _detail) = cx
         .pending_prompt()
-        .expect("delete should show a confirmation prompt");
+        .expect("删除应显示确认提示");
 
     assert_eq!(
         message,
-        "Are you sure you want to permanently delete `__somefile__`?"
+        "确定要永久删除 `__somefile__` 吗?"
     );
 }
 
@@ -11569,13 +11569,13 @@ async fn test_restore_file_prompt_escapes_markdown_in_file_name(cx: &mut gpui::T
         path!("/root"),
         json!({
             ".git": {},
-            "__init__.py": "modified contents",
+            "__init__.py": "修改后的内容",
         }),
     )
     .await;
     fs.set_head_and_index_for_repo(
         path!("/root/.git").as_ref(),
-        &[("__init__.py", "original contents".into())],
+        &[("__init__.py", "原始内容".into())],
     );
 
     let project = Project::test(fs.clone(), [path!("/root").as_ref()], cx).await;
@@ -11593,7 +11593,7 @@ async fn test_restore_file_prompt_escapes_markdown_in_file_name(cx: &mut gpui::T
     });
     let (message, _detail) = cx
         .pending_prompt()
-        .expect("restore should show a confirmation prompt");
+        .expect("恢复应显示确认提示");
 
-    assert_eq!(message, "Discard changes to `__init__.py`?");
+    assert_eq!(message, "放弃对 `__init__.py` 的更改?");
 }

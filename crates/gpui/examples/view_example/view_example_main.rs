@@ -84,7 +84,7 @@ impl Render for ViewExample {
             .p(px(24.))
             .gap(px(24.))
             .child(
-                section("Inputs — from a String (cursor stays internal)")
+                section("输入 — 来自字符串(光标保持内部)")
                     .child(Input::new(name).width(px(320.)))
                     .child(
                         Input::new(email)
@@ -93,7 +93,7 @@ impl Render for ViewExample {
                     ),
             )
             .child(
-                section("Input — from an Editor (read its cursor beside it)").child(
+                section("输入 — 来自编辑器(在旁边读取其光标)").child(
                     div()
                         .flex()
                         .items_center()
@@ -103,7 +103,7 @@ impl Render for ViewExample {
                 ),
             )
             .child(
-                section("Text areas — from a String, or from an Editor")
+                section("文本区域 — 来自字符串,或来自编辑器")
                     .child(TextArea::new(bio, 3))
                     .child(
                         div()

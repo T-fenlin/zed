@@ -247,9 +247,9 @@ impl RpcLogHeaderState {
 
         starts_new_group.then(|| {
             let direction = if kind == MessageKind::Receive {
-                "Receive"
+                "接收"
             } else {
-                "Send"
+                "发送"
             };
             match elapsed {
                 Some(elapsed) => format!("\n// {direction} (took {}):", format_duration(elapsed)),

@@ -73,14 +73,14 @@ impl MoveToApplicationsRequest {
         let response = cx
             .prompt(
                 PromptLevel::Info,
-                "Move Zed to Applications?",
+                "将 Zed 移动到应用程序文件夹?",
                 Some(
-                    "Zed is running from a temporary location. Move it to Applications to finish installing it.",
+                    "Zed 正在从临时位置运行。将其移动到应用程序文件夹以完成安装。",
                 ),
                 &[
-                    PromptButton::ok("Yes"),
-                    PromptButton::cancel("No"),
-                    PromptButton::new("Don't ask me again"),
+                    PromptButton::ok("是"),
+                    PromptButton::cancel("否"),
+                    PromptButton::new("不再询问"),
                 ],
             )
             .await?;
@@ -103,9 +103,9 @@ impl MoveToApplicationsRequest {
                         .ok();
                     cx.prompt(
                         PromptLevel::Critical,
-                        "Failed to move Zed to Applications",
+                        "无法将 Zed 移动到应用程序文件夹",
                         Some(&error.to_string()),
-                        &["OK"],
+                        &["确定"],
                     )
                     .await
                     .log_err();
@@ -178,7 +178,7 @@ impl Render for InstallingZedModal {
                     .py_3()
                     .border_b_1()
                     .border_color(theme.colors().border_variant)
-                    .child(Label::new("Installing Zed…")),
+                    .child(Label::new("正在安装 Zed…")),
             )
             .child(
                 h_flex()
@@ -196,9 +196,9 @@ impl Render for InstallingZedModal {
                     .child(
                         v_flex()
                             .gap_1()
-                            .child(Label::new("Moving Zed to Applications"))
+                            .child(Label::new("正在将 Zed 移动到应用程序文件夹"))
                             .child(
-                                Label::new("Zed will reopen when installation is complete.")
+                                Label::new("安装完成后 Zed 将重新打开。")
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             ),
@@ -220,7 +220,7 @@ async fn move_to_applications(app_path: &Path, cx: &mut AsyncWindowContext) -> R
 async fn install_destination(app_path: &Path) -> Result<PathBuf> {
     let app_name = app_path
         .file_name()
-        .context("invalid app path: missing app bundle name")?;
+        .context("无效的应用路径:缺少应用包名称")?;
 
     let system_destination = Path::new("/Applications").join(app_name);
     if system_destination.exists() {
@@ -228,7 +228,7 @@ async fn install_destination(app_path: &Path) -> Result<PathBuf> {
             .await
             .with_context(|| {
                 format!(
-                    "failed to replace existing app at {}",
+                    "无法替换 {} 处的现有应用",
                     system_destination.display()
                 )
             })?;
@@ -242,7 +242,7 @@ async fn install_destination(app_path: &Path) -> Result<PathBuf> {
             .await
             .with_context(|| {
                 format!(
-                    "failed to replace existing app at {}",
+                    "无法替换 {} 处的现有应用",
                     user_destination.display()
                 )
             })?;
@@ -253,18 +253,18 @@ async fn install_destination(app_path: &Path) -> Result<PathBuf> {
         Ok(()) => Ok(system_destination),
         Err(system_error) => {
             let user_applications_directory = user_applications_directory()
-                .context("could not determine a writable Applications directory")?;
+                .context("无法确定可写的应用程序目录")?;
             smol::fs::create_dir_all(&user_applications_directory)
                 .await
                 .with_context(|| {
-                    format!("failed to create {}", user_applications_directory.display())
+                    format!("无法创建 {}", user_applications_directory.display())
                 })?;
             let user_destination = user_applications_directory.join(app_name);
             copy_app_bundle(app_path, &user_destination)
                 .await
                 .with_context(|| {
                     format!(
-                        "failed to copy app to {} after system Applications copy failed: {system_error:#}",
+                        "系统应用程序复制失败后,无法将应用复制到 {}:{system_error:#}",
                         user_destination.display()
                     )
                 })?;
@@ -276,10 +276,10 @@ async fn install_destination(app_path: &Path) -> Result<PathBuf> {
 async fn copy_app_bundle(source: &Path, destination: &Path) -> Result<()> {
     let parent = destination
         .parent()
-        .context("invalid destination path: missing parent directory")?;
+        .context("无效的目标路径:缺少父目录")?;
     smol::fs::create_dir_all(parent)
         .await
-        .with_context(|| format!("failed to create {}", parent.display()))?;
+        .with_context(|| format!("无法创建 {}", parent.display()))?;
 
     let mut source_with_contents: OsString = source.into();
     source_with_contents.push("/");
@@ -294,11 +294,11 @@ async fn copy_app_bundle(source: &Path, destination: &Path) -> Result<()> {
     let output = command
         .output()
         .await
-        .with_context(|| format!("failed to run rsync for {}", source.display()))?;
+        .with_context(|| format!("无法为 {} 运行 rsync", source.display()))?;
 
     anyhow::ensure!(
         output.status.success(),
-        "failed to copy app bundle: {}",
+        "无法复制应用包:{}",
         String::from_utf8_lossy(&output.stderr)
     );
 

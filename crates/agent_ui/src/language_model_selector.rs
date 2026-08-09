@@ -276,14 +276,14 @@ impl GroupedModels {
         let mut entries = Vec::new();
 
         if !self.favorites.is_empty() {
-            entries.push(LanguageModelPickerEntry::Separator("Favorite".into()));
+            entries.push(LanguageModelPickerEntry::Separator("收藏".into()));
             for info in &self.favorites {
                 entries.push(LanguageModelPickerEntry::Model(info.clone()));
             }
         }
 
         if !self.recommended.is_empty() {
-            entries.push(LanguageModelPickerEntry::Separator("Recommended".into()));
+            entries.push(LanguageModelPickerEntry::Separator("推荐".into()));
             for info in &self.recommended {
                 entries.push(LanguageModelPickerEntry::Model(info.clone()));
             }
@@ -417,7 +417,7 @@ impl PickerDelegate for LanguageModelPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Select a model…".into()
+        "选择一个模型…".into()
     }
 
     fn update_matches(
@@ -681,14 +681,14 @@ mod tests {
         assert_eq!(
             result.len(),
             expected.len(),
-            "Number of models doesn't match"
+            "模型数量不匹配"
         );
 
         for (i, expected_name) in expected.iter().enumerate() {
             assert_eq!(
                 result[i].model.telemetry_id(),
                 *expected_name,
-                "Model at position {} doesn't match expected model",
+                "位置 {} 的模型与预期模型不匹配",
                 i
             );
         }
@@ -824,7 +824,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(LanguageModelPickerEntry::Separator(s)) if s == "Favorite"
+            Some(LanguageModelPickerEntry::Separator(s)) if s == "收藏"
         ));
 
         assert_models_eq(grouped_models.favorites, vec!["zed/gemini"]);
@@ -840,7 +840,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(LanguageModelPickerEntry::Separator(s)) if s == "Recommended"
+            Some(LanguageModelPickerEntry::Separator(s)) if s == "推荐"
         ));
 
         assert!(grouped_models.favorites.is_empty());
@@ -861,11 +861,11 @@ mod tests {
         for entry in &entries {
             if let LanguageModelPickerEntry::Model(info) = entry {
                 if info.model.telemetry_id() == "zed/claude" {
-                    assert!(info.is_favorite, "zed/claude should be a favorite");
+                    assert!(info.is_favorite, "zed/claude 应为收藏模型");
                 } else {
                     assert!(
                         !info.is_favorite,
-                        "{} should not be a favorite",
+                        "{} 不应为收藏模型",
                         info.model.telemetry_id()
                     );
                 }

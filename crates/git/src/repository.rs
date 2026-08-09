@@ -82,17 +82,17 @@ pub fn original_repo_path_from_common_dir(common_dir: &Path) -> Option<PathBuf> 
 fn linked_worktree_git_dir(worktree_path: &Path) -> Result<PathBuf> {
     let dot_git_path = worktree_path.join(".git");
     let git_file = std::fs::read_to_string(&dot_git_path)
-        .with_context(|| format!("failed to read {}", dot_git_path.display()))?;
+        .with_context(|| format!("无法读取 {}", dot_git_path.display()))?;
     let git_dir = git_file
         .strip_prefix("gitdir:")
-        .context("worktree .git file missing gitdir pointer")?
+        .context("工作树 .git 文件缺少 gitdir 指针")?
         .trim();
     Ok(worktree_path.join(git_dir))
 }
 
 fn normalize_git_metadata_path(path: PathBuf) -> Result<PathBuf> {
     paths::normalize_lexically(&path)
-        .map_err(|_| anyhow!("git metadata path escapes its filesystem root: {path:?}"))
+        .map_err(|_| anyhow!("git 元数据路径超出其文件系统根目录: {path:?}"))
 }
 
 /// Commit data needed for the git graph visualization.
@@ -148,10 +148,10 @@ impl CommitDataReader {
         self.request_tx
             .send(CommitDataRequest { sha, response_tx })
             .await
-            .map_err(|_| anyhow!("commit data reader task closed"))?;
+            .map_err(|_| anyhow!("提交数据读取任务已关闭"))?;
         response_rx
             .await
-            .map_err(|_| anyhow!("commit data reader task dropped response"))?
+            .map_err(|_| anyhow!("提交数据读取任务丢失响应"))?
     }
 
     #[cfg(any(test, feature = "test-support"))]
@@ -352,7 +352,7 @@ impl Worktree {
 
     pub fn directory_name(&self, main_worktree_path: Option<&Path>) -> String {
         if self.is_main {
-            return "main worktree".to_string();
+            return "主工作树".to_string();
         }
 
         let dir_name = self
@@ -591,7 +591,7 @@ async fn read_commit_blob<R: smol::io::AsyncBufRead + Unpin>(
     let len = info_line
         .trim_end()
         .parse()
-        .with_context(|| format!("invalid object size output from cat-file {info_line}"))?;
+        .with_context(|| format!("cat-file 输出的对象大小无效 {info_line}"))?;
 
     let mut bytes = vec![0; len];
     stdout.read_exact(&mut bytes).await?;
@@ -617,7 +617,7 @@ async fn load_commit_object<R: smol::io::AsyncBufRead + Unpin>(
     match object {
         Some(object) if object.kind == CommitDiffObjectKind::Gitlink => {
             Ok(Some(LoadedCommitObject {
-                text: format!("Subproject commit {}\n", object.oid),
+                text: format!("子项目提交 {}\n", object.oid),
                 is_binary: false,
             }))
         }
@@ -663,7 +663,7 @@ impl FetchOptions {
 
     pub fn name(&self) -> SharedString {
         match self {
-            Self::All => "Fetch all remotes".into(),
+            Self::All => "获取所有远程".into(),
             Self::Remote(remote) => remote.name.clone(),
         }
     }
@@ -1153,11 +1153,11 @@ impl RealGitRepository {
         let any_git_binary_path = system_git_binary_path
             .clone()
             .or(bundled_git_binary_path)
-            .context("no git binary available")?;
+            .context("没有可用的 git 可执行文件")?;
         log::info!(
-            "opening git repository at {dotgit_path:?} using git binary {any_git_binary_path:?}"
+            "正在使用 git 可执行文件 {any_git_binary_path:?} 打开位于 {dotgit_path:?} 的 git 仓库"
         );
-        let dotgit_parent = dotgit_path.parent().context(".git has no parent")?;
+        let dotgit_parent = dotgit_path.parent().context(".git 没有父目录")?;
         let has_working_directory =
             dotgit_path.is_file() || dotgit_path.file_name() == Some(OsStr::new(".git"));
         let working_directory = if has_working_directory {
@@ -1168,10 +1168,10 @@ impl RealGitRepository {
 
         let git_dir = if dotgit_path.is_file() {
             let content =
-                std::fs::read_to_string(dotgit_path).context("reading .git worktree file")?;
+                std::fs::read_to_string(dotgit_path).context("读取 .git 工作树文件")?;
             let path_str = content
                 .strip_prefix("gitdir: ")
-                .context("expected .git file to start with 'gitdir: '")?
+                .context("期望 .git 文件以 'gitdir: ' 开头")?
                 .trim();
             let resolved = PathBuf::from(path_str);
             let resolved = if resolved.is_absolute() {
@@ -1188,7 +1188,7 @@ impl RealGitRepository {
             let commondir_file = git_dir.join("commondir");
             if commondir_file.is_file() {
                 let content =
-                    std::fs::read_to_string(&commondir_file).context("reading commondir file")?;
+                    std::fs::read_to_string(&commondir_file).context("读取 commondir 文件")?;
                 let path_str = content.trim();
                 let resolved = PathBuf::from(path_str);
                 let resolved = if resolved.is_absolute() {
@@ -1217,7 +1217,7 @@ impl RealGitRepository {
     fn working_directory(&self) -> Result<PathBuf> {
         self.working_directory
             .clone()
-            .context("bare repositories do not have a working directory")
+            .context("裸仓库没有工作目录")
     }
 
     fn command_directory(&self) -> PathBuf {
@@ -1302,7 +1302,7 @@ pub async fn get_git_committer(cx: &AsyncApp) -> GitCommitter {
         if cfg!(target_os = "macos") && option_env!("ZED_BUNDLE").as_deref() == Some("true") {
             cx.update(|cx| {
                 cx.path_for_auxiliary_executable("git")
-                    .context("could not find git binary path")
+                    .context("找不到 git 可执行文件路径")
                     .log_err()
             })
         } else {
@@ -1393,10 +1393,10 @@ impl GitRepository for RealGitRepository {
                 .stderr(Stdio::piped())
                 .output()
                 .await
-                .context("starting git show process")?;
+                .context("正在启动 git show 进程")?;
             anyhow::ensure!(
                 show_output.status.success(),
-                "git show failed: {}",
+                "git show 失败: {}",
                 String::from_utf8_lossy(&show_output.stderr)
             );
 
@@ -1409,17 +1409,17 @@ impl GitRepository for RealGitRepository {
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped())
                 .spawn()
-                .context("starting git cat-file process")?;
+                .context("正在启动 git cat-file 进程")?;
 
             let mut files = Vec::<CommitFile>::new();
             let stdin = cat_file_process
                 .stdin
                 .take()
-                .context("git cat-file process has no stdin")?;
+                .context("git cat-file 进程没有标准输入")?;
             let stdout = cat_file_process
                 .stdout
                 .take()
-                .context("git cat-file process has no stdout")?;
+                .context("git cat-file 进程没有标准输出")?;
             let mut stdin = BufWriter::with_capacity(512, stdin);
             let mut stdout = BufReader::new(stdout);
             let mut info_line = String::new();
@@ -1503,7 +1503,7 @@ impl GitRepository for RealGitRepository {
                 .await?;
             anyhow::ensure!(
                 output.status.success(),
-                "Failed to reset:\n{}",
+                "重置失败:\n{}",
                 String::from_utf8_lossy(&output.stderr),
             );
             Ok(())
@@ -1532,7 +1532,7 @@ impl GitRepository for RealGitRepository {
                 .await?;
             anyhow::ensure!(
                 output.status.success(),
-                "Failed to checkout files:\n{}",
+                "检出文件失败:\n{}",
                 String::from_utf8_lossy(&output.stderr),
             );
             Ok(())
@@ -1560,7 +1560,7 @@ impl GitRepository for RealGitRepository {
                     .build_command(&["config", "--get", "commit.template"])
                     .output()
                     .await
-                    .context("failed to run git config --get commit.template")?;
+                    .context("运行 git config --get 提交.template 失败")?;
 
                 let raw_path = String::from_utf8_lossy(&output.stdout).trim().to_string();
                 if !output.status.success() || raw_path.is_empty() {
@@ -1579,7 +1579,7 @@ impl GitRepository for RealGitRepository {
                 let template = match std::fs::read_to_string(&path) {
                     Ok(s) if !s.trim().is_empty() => Some(s),
                     Err(err) => {
-                        log::warn!("failed to read commit template {}: {}", path.display(), err);
+                        log::warn!("读取提交模板 {} 失败: {}", path.display(), err);
                         None
                     }
                     _ => None,
@@ -1616,7 +1616,7 @@ impl GitRepository for RealGitRepository {
                     let output = child.output().await?.stdout;
                     let sha = str::from_utf8(&output)?.trim();
 
-                    log::debug!("indexing SHA: {sha}, path {path:?}");
+                    log::debug!("正在索引 SHA: {sha}, 路径 {path:?}");
 
                     let output = git
                         .build_command(&["update-index", "--add", "--cacheinfo", mode, sha])
@@ -1627,11 +1627,11 @@ impl GitRepository for RealGitRepository {
 
                     anyhow::ensure!(
                         output.status.success(),
-                        "Failed to stage:\n{}",
+                        "暂存失败:\n{}",
                         String::from_utf8_lossy(&output.stderr)
                     );
                 } else {
-                    log::debug!("removing path {path:?} from the index");
+                    log::debug!("正在从索引中移除路径 {path:?}");
                     let output = git
                         .build_command(&["update-index", "--force-remove", "--"])
                         .envs(env.iter())
@@ -1640,7 +1640,7 @@ impl GitRepository for RealGitRepository {
                         .await?;
                     anyhow::ensure!(
                         output.status.success(),
-                        "Failed to unstage:\n{}",
+                        "取消暂存失败:\n{}",
                         String::from_utf8_lossy(&output.stderr)
                     );
                 }
@@ -1683,7 +1683,7 @@ impl GitRepository for RealGitRepository {
                 let stdin = process
                     .stdin
                     .take()
-                    .context("no stdin for git cat-file subprocess")?;
+                    .context("git cat-file 子进程没有标准输入")?;
                 let mut stdin = BufWriter::new(stdin);
                 for rev in &revs {
                     stdin.write_all(rev.as_bytes()).await?;
@@ -1707,7 +1707,7 @@ impl GitRepository for RealGitRepository {
 
                 if shas.len() != revs.len() {
                     // In an octopus merge, git cat-file still only outputs the first sha from MERGE_HEAD.
-                    bail!("unexpected number of shas")
+                    bail!("SHA 数量意外")
                 }
 
                 Ok(shas)
@@ -1731,8 +1731,8 @@ impl GitRepository for RealGitRepository {
                     .kill_on_drop(true)
                     .spawn()?;
 
-                let mut stdin = BufWriter::new(process.stdin.take().context("no stdin")?);
-                let mut stdout = BufReader::new(process.stdout.take().context("no stdout")?);
+                let mut stdin = BufWriter::new(process.stdin.take().context("没有标准输入")?);
+                let mut stdout = BufReader::new(process.stdout.take().context("没有标准输出")?);
                 let mut newline = [0u8; 1];
 
                 let mut header_bytes = Vec::new();
@@ -1754,7 +1754,7 @@ impl GitRepository for RealGitRepository {
                         [_, object_type, size_str] => {
                             let size: usize = size_str
                                 .parse()
-                                .with_context(|| format!("invalid object size: {size_str}"))?;
+                                .with_context(|| format!("无效的对象大小: {size_str}"))?;
 
                             let mut content = vec![0u8; size];
                             stdout.read_exact(&mut content).await?;
@@ -1787,7 +1787,7 @@ impl GitRepository for RealGitRepository {
     fn status(&self, path_prefixes: &[RepoPath]) -> Task<Result<GitStatus>> {
         let git = self.git_binary_in_worktree();
         let args = git_status_args(path_prefixes);
-        log::debug!("Checking for git status in {path_prefixes:?}");
+        log::debug!("正在检查 {path_prefixes:?} 中的 git 状态");
         self.executor.spawn(async move {
             let git = git?;
             let output = git.build_command(&args).output().await?;
@@ -1796,7 +1796,7 @@ impl GitRepository for RealGitRepository {
                 stdout.parse()
             } else {
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                anyhow::bail!("git status failed: {stderr}");
+                anyhow::bail!("git status 失败: {stderr}");
             }
         })
     }
@@ -1862,7 +1862,7 @@ impl GitRepository for RealGitRepository {
                 let output = git.build_command(&args).output().await?;
                 if !output.status.success() {
                     let stderr = String::from_utf8_lossy(&output.stderr);
-                    anyhow::bail!("git diff-tree failed: {stderr}");
+                    anyhow::bail!("git 差异-tree 失败: {stderr}");
                 }
 
                 let stdout = String::from_utf8_lossy(&output.stdout);
@@ -1884,7 +1884,7 @@ impl GitRepository for RealGitRepository {
                 let status_output = git.build_command(&git_status_args(&[])).output().await?;
                 if !status_output.status.success() {
                     let stderr = String::from_utf8_lossy(&status_output.stderr);
-                    anyhow::bail!("git status failed: {stderr}");
+                    anyhow::bail!("git status 失败: {stderr}");
                 }
                 let status = String::from_utf8_lossy(&status_output.stdout).parse::<GitStatus>()?;
                 // Files the diff reports as deleted but that exist on disk
@@ -1919,7 +1919,7 @@ impl GitRepository for RealGitRepository {
                     .await?;
                 if !merge_base_output.status.success() {
                     let stderr = String::from_utf8_lossy(&merge_base_output.stderr);
-                    anyhow::bail!("git merge-base failed: {stderr}");
+                    anyhow::bail!("git merge-base 失败: {stderr}");
                 }
                 let merge_base = String::from_utf8_lossy(&merge_base_output.stdout);
                 let merge_base = merge_base.trim();
@@ -1974,7 +1974,7 @@ impl GitRepository for RealGitRepository {
                             .stdin(Stdio::piped())
                             .stdout(Stdio::piped())
                             .spawn()?;
-                        let mut stdin = child.stdin.take().context("hash-object has no stdin")?;
+                        let mut stdin = child.stdin.take().context("hash-object 没有标准输入")?;
                         stdin
                             .write_all(target.as_os_str().as_encoded_bytes())
                             .await?;
@@ -2022,7 +2022,7 @@ impl GitRepository for RealGitRepository {
                     stdout.parse()
                 } else {
                     let stderr = String::from_utf8_lossy(&output.stderr);
-                    anyhow::bail!("git status failed: {stderr}");
+                    anyhow::bail!("git status 失败: {stderr}");
                 }
             })
             .boxed()
@@ -2057,7 +2057,7 @@ impl GitRepository for RealGitRepository {
                     None
                 } else {
                     let error = format_branch_scan_error(&output);
-                    log::warn!("failed to get git branches with commit metadata: {error}");
+                    log::warn!("获取带提交元数据的 git 分支失败: {error}");
                     Some(error.into())
                 };
 
@@ -2104,7 +2104,7 @@ impl GitRepository for RealGitRepository {
                     ))
                 } else {
                     let stderr = String::from_utf8_lossy(&output.stderr);
-                    anyhow::bail!("git worktree list failed: {stderr}");
+                    anyhow::bail!("git 工作树 list 失败: {stderr}");
                 }
             })
             .boxed()
@@ -2122,16 +2122,16 @@ impl GitRepository for RealGitRepository {
                     }
                     Err(error) => {
                         return Err(error).with_context(|| {
-                            format!("failed to stat {}", worktree_path.display())
+                            format!("无法获取 {} 的状态", worktree_path.display())
                         });
                     }
                     Ok(_) => {}
                 }
                 let git_dir = linked_worktree_git_dir(&worktree_path)?;
                 let metadata = std::fs::metadata(&git_dir)
-                    .with_context(|| format!("failed to stat {}", git_dir.display()))?;
+                    .with_context(|| format!("无法获取 {} 的状态", git_dir.display()))?;
                 let created_at = metadata.created().with_context(|| {
-                    format!("creation time unavailable for {}", git_dir.display())
+                    format!("{} 的创建时间不可用", git_dir.display())
                 })?;
                 Ok(Some(created_at))
             })
@@ -2180,7 +2180,7 @@ impl GitRepository for RealGitRepository {
                     Ok(())
                 } else {
                     let stderr = String::from_utf8_lossy(&output.stderr);
-                    anyhow::bail!("git worktree add failed: {stderr}");
+                    anyhow::bail!("git 工作树 add 失败: {stderr}");
                 }
             })
             .boxed()
@@ -2276,7 +2276,7 @@ impl GitRepository for RealGitRepository {
                         Err(_) => name,
                     };
                     let (_, branch_name) =
-                        name.split_once('/').context("Unexpected branch format")?;
+                        name.split_once('/').context("意外的分支格式")?;
                     let local_branch_ref = format!("refs/heads/{branch_name}");
                     if git_binary
                         .run(&["show-ref", "--verify", "--quiet", &local_branch_ref])
@@ -2296,7 +2296,7 @@ impl GitRepository for RealGitRepository {
                     return anyhow::Ok(());
                 }
 
-                anyhow::bail!("Branch '{}' not found", name);
+                anyhow::bail!("找不到分支 '{}'", name);
             })
             .boxed()
     }
@@ -2391,7 +2391,7 @@ impl GitRepository for RealGitRepository {
 
                 anyhow::ensure!(
                     output.status.success(),
-                    "Failed to run git diff:\n{}",
+                    "运行 git 差异 失败:\n{}",
                     String::from_utf8_lossy(&output.stderr)
                 );
                 Ok(String::from_utf8_lossy(&output.stdout).to_string())
@@ -2449,7 +2449,7 @@ impl GitRepository for RealGitRepository {
                         .await?;
                     anyhow::ensure!(
                         output.status.success(),
-                        "Failed to stage paths:\n{}",
+                        "暂存路径失败:\n{}",
                         String::from_utf8_lossy(&output.stderr),
                     );
                 }
@@ -2478,7 +2478,7 @@ impl GitRepository for RealGitRepository {
 
                     anyhow::ensure!(
                         output.status.success(),
-                        "Failed to unstage:\n{}",
+                        "取消暂存失败:\n{}",
                         String::from_utf8_lossy(&output.stderr),
                     );
                 }
@@ -2505,7 +2505,7 @@ impl GitRepository for RealGitRepository {
 
                 anyhow::ensure!(
                     output.status.success(),
-                    "Failed to stash:\n{}",
+                    "暂存更改失败:\n{}",
                     String::from_utf8_lossy(&output.stderr)
                 );
                 Ok(())
@@ -2530,7 +2530,7 @@ impl GitRepository for RealGitRepository {
 
                 anyhow::ensure!(
                     output.status.success(),
-                    "Failed to stash pop:\n{}",
+                    "恢复暂存更改失败:\n{}",
                     String::from_utf8_lossy(&output.stderr)
                 );
                 Ok(())
@@ -2555,7 +2555,7 @@ impl GitRepository for RealGitRepository {
 
                 anyhow::ensure!(
                     output.status.success(),
-                    "Failed to apply stash:\n{}",
+                    "应用暂存更改失败:\n{}",
                     String::from_utf8_lossy(&output.stderr)
                 );
                 Ok(())
@@ -2580,7 +2580,7 @@ impl GitRepository for RealGitRepository {
 
                 anyhow::ensure!(
                     output.status.success(),
-                    "Failed to stash drop:\n{}",
+                    "删除暂存更改失败:\n{}",
                     String::from_utf8_lossy(&output.stderr)
                 );
                 Ok(())
@@ -2673,7 +2673,7 @@ impl GitRepository for RealGitRepository {
         // Note: Do not spawn this command on the background thread, it might pop open the credential helper
         // which we want to block on.
         async move {
-            let git_binary_path = git_binary_path.context("git not found on $PATH, can't push")?;
+            let git_binary_path = git_binary_path.context("$PATH 中找不到 git,无法推送")?;
             let git = GitBinary::new(
                 git_binary_path,
                 working_directory,
@@ -2716,7 +2716,7 @@ impl GitRepository for RealGitRepository {
         // Note: Do not spawn this command on the background thread, it might pop open the credential helper
         // which we want to block on.
         async move {
-            let git_binary_path = git_binary_path.context("git not found on $PATH, can't pull")?;
+            let git_binary_path = git_binary_path.context("$PATH 中找不到 git,无法拉取")?;
             let git = GitBinary::new(
                 git_binary_path,
                 working_directory,
@@ -2758,7 +2758,7 @@ impl GitRepository for RealGitRepository {
         // Note: Do not spawn this command on the background thread, it might pop open the credential helper
         // which we want to block on.
         async move {
-            let git_binary_path = git_binary_path.context("git not found on $PATH, can't fetch")?;
+            let git_binary_path = git_binary_path.context("$PATH 中找不到 git,无法获取")?;
             let git = GitBinary::new(
                 git_binary_path,
                 working_directory,
@@ -2830,7 +2830,7 @@ impl GitRepository for RealGitRepository {
 
                 anyhow::ensure!(
                     output.status.success(),
-                    "Failed to get all remotes:\n{}",
+                    "获取所有远程失败:\n{}",
                     String::from_utf8_lossy(&output.stderr)
                 );
                 let remote_names: HashSet<Remote> = String::from_utf8_lossy(&output.stdout)
@@ -2915,10 +2915,10 @@ impl GitRepository for RealGitRepository {
                     add_files_to_index(git, &untracked_files).await?;
                     let tree = git.run(&["write-tree"]).await?;
                     let checkpoint_sha = if let Some(head_sha) = head_sha.as_deref() {
-                        git.run(&["commit-tree", &tree, "-p", head_sha, "-m", "Checkpoint"])
+                        git.run(&["commit-tree", &tree, "-p", head_sha, "-m", "检查点"])
                             .await?
                     } else {
-                        git.run(&["commit-tree", &tree, "-m", "Checkpoint"]).await?
+                        git.run(&["commit-tree", &tree, "-m", "检查点"]).await?
                     };
 
                     Ok(GitRepositoryCheckpoint {
@@ -2968,13 +2968,13 @@ impl GitRepository for RealGitRepository {
                 let head_sha = git
                     .run(&["rev-parse", "HEAD"])
                     .await
-                    .context("failed to read HEAD")?;
+                    .context("读取 HEAD 失败")?;
 
                 // Capture the staged state: write-tree reads the current index
                 let staged_tree = git
                     .run(&["write-tree"])
                     .await
-                    .context("failed to write staged tree")?;
+                    .context("写入已暂存树失败")?;
                 let staged_sha = git
                     .run(&[
                         "commit-tree",
@@ -2982,10 +2982,10 @@ impl GitRepository for RealGitRepository {
                         "-p",
                         &head_sha,
                         "-m",
-                        "WIP staged",
+                        "WIP 已暂存",
                     ])
                     .await
-                    .context("failed to create staged commit")?;
+                    .context("创建已暂存提交失败")?;
 
                 // Capture the full state (staged + unstaged + untracked) using
                 // a temporary index so we don't disturb the real one.
@@ -3000,13 +3000,13 @@ impl GitRepository for RealGitRepository {
                                 "-p",
                                 &staged_sha,
                                 "-m",
-                                "WIP unstaged",
+                                "WIP 未暂存",
                             ])
                             .await?;
                         Ok(sha)
                     })
                     .await
-                    .context("failed to create unstaged commit")?;
+                    .context("创建未暂存提交失败")?;
 
                 Ok((staged_sha, unstaged_sha))
             })
@@ -3028,14 +3028,14 @@ impl GitRepository for RealGitRepository {
                 // modifications, and deletions to the working directory.
                 git.run(&["read-tree", "--reset", "-u", &unstaged_sha])
                     .await
-                    .context("failed to restore working directory from unstaged commit")?;
+                    .context("从未暂存提交恢复工作目录失败")?;
 
                 // Then replace just the index with the staged tree. Without -u
                 // this doesn't touch the working directory, so the result is:
                 // working tree = unstaged state, index = staged state.
                 git.run(&["read-tree", &staged_sha])
                     .await
-                    .context("failed to restore index from staged commit")?;
+                    .context("从已暂存提交恢复索引失败")?;
 
                 Ok(())
             })
@@ -3231,8 +3231,8 @@ impl GitRepository for RealGitRepository {
             command.stderr(Stdio::piped());
 
             let mut child = command.spawn()?;
-            let stdout = child.stdout.take().context("failed to get stdout")?;
-            let stderr = child.stderr.take().context("failed to get stderr")?;
+            let stdout = child.stdout.take().context("获取标准输出失败")?;
+            let stderr = child.stderr.take().context("无法获取标准错误输出")?;
             let mut reader = BufReader::new(stdout);
 
             let mut line_buffer = String::new();
@@ -3247,7 +3247,7 @@ impl GitRepository for RealGitRepository {
                         let commits = parse_initial_graph_output(lines.iter().map(|s| s.as_str()));
                         if request_tx.send(commits).await.is_err() {
                             log::warn!(
-                                "initial_graph_data: receiver dropped while sending commits"
+                                "initial_graph_data:发送提交时接收端已关闭"
                             );
                         }
                     }
@@ -3260,7 +3260,7 @@ impl GitRepository for RealGitRepository {
                 if lines.len() >= GRAPH_CHUNK_SIZE {
                     let commits = parse_initial_graph_output(lines.iter().map(|s| s.as_str()));
                     if request_tx.send(commits).await.is_err() {
-                        log::warn!("initial_graph_data: receiver dropped while streaming commits");
+                        log::warn!("initial_graph_data:流式传输提交时接收端已关闭");
                         break;
                     }
                     lines.clear();
@@ -3276,9 +3276,9 @@ impl GitRepository for RealGitRepository {
                     .log_err();
 
                 if stderr_output.is_empty() {
-                    anyhow::bail!("git log command failed with {}", status);
+                    anyhow::bail!("git log 命令失败,退出码:{}", status);
                 } else {
-                    anyhow::bail!("git log command failed with {}: {}", status, stderr_output);
+                    anyhow::bail!("git log 命令失败,退出码:{}:{}", status, stderr_output);
                 }
             }
             Ok(())
@@ -3317,7 +3317,7 @@ impl GitRepository for RealGitRepository {
             command.stderr(Stdio::null());
 
             let mut child = command.spawn()?;
-            let stdout = child.stdout.take().context("failed to get stdout")?;
+            let stdout = child.stdout.take().context("获取标准输出失败")?;
             let mut reader = BufReader::new(stdout);
 
             let mut line_buffer = String::new();
@@ -3384,7 +3384,7 @@ impl GitRepository for RealGitRepository {
             let output = git.build_command(&args).output().await?;
             anyhow::ensure!(
                 output.status.success(),
-                "git log failed:\n{}",
+                "git log 失败:\n{}",
                 String::from_utf8_lossy(&output.stderr)
             );
 
@@ -3401,7 +3401,7 @@ impl GitRepository for RealGitRepository {
 
         let task = self.executor.spawn(async move {
             if let Err(error) = run_commit_data_reader(git_binary, request_rx).await {
-                log::error!("commit data reader failed: {error:?}");
+                log::error!("提交数据读取器失败:{error:?}");
             }
         });
 
@@ -3431,10 +3431,10 @@ async fn run_commit_data_reader(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .context("starting git cat-file --batch process")?;
+        .context("正在启动 git cat-file --batch 进程")?;
 
-    let mut stdin = BufWriter::new(process.stdin.take().context("no stdin")?);
-    let mut stdout = BufReader::new(process.stdout.take().context("no stdout")?);
+    let mut stdin = BufWriter::new(process.stdin.take().context("没有标准输入")?);
+    let mut stdout = BufReader::new(process.stdout.take().context("没有标准输出")?);
 
     const MAX_BATCH_SIZE: usize = 64;
 
@@ -3476,21 +3476,21 @@ async fn read_single_commit_response<R: smol::io::AsyncBufRead + Unpin>(
 
     let parts: Vec<&str> = header_line.trim().split(' ').collect();
     if parts.len() < 3 {
-        bail!("invalid cat-file header: {header_line}");
+        bail!("无效的 cat-file 头部: {header_line}");
     }
 
     let object_type = parts[1];
     if object_type == "missing" {
-        bail!("object not found: {}", sha);
+        bail!("找不到对象:{}", sha);
     }
 
     if object_type != "commit" {
-        bail!("expected commit object, got {object_type}");
+        bail!("预期为提交对象,实际为 {object_type}");
     }
 
     let size: usize = parts[2]
         .parse()
-        .with_context(|| format!("invalid object size: {}", parts[2]))?;
+        .with_context(|| format!("无效的对象大小:{}", parts[2]))?;
 
     let mut content = vec![0u8; size];
     stdout.read_exact(&mut content).await?;
@@ -3500,7 +3500,7 @@ async fn read_single_commit_response<R: smol::io::AsyncBufRead + Unpin>(
 
     let content_str = String::from_utf8_lossy(&content);
     parse_cat_file_commit(*sha, &content_str)
-        .ok_or_else(|| anyhow!("failed to parse commit {}", sha))
+        .ok_or_else(|| anyhow!("无法解析提交 {}", sha))
 }
 
 fn parse_file_history_changed_files_output(
@@ -3674,7 +3674,7 @@ async fn add_files_to_index(git: &GitBinary, files: &[String]) -> Result<()> {
         process
             .stdin
             .take()
-            .context("no stdin for git update-index subprocess")?,
+            .context("git 更新-index 子进程没有标准输入")?,
     );
     for file in files {
         stdin.write_all(file.as_bytes()).await?;
@@ -3837,7 +3837,7 @@ impl GitBinary {
 }
 
 #[derive(Error, Debug)]
-#[error("Git command failed:\n{stdout}{stderr}\n")]
+#[error("Git 命令失败:\n{stdout}{stderr}\n")]
 struct GitBinaryCommandError {
     stdout: String,
     stderr: String,
@@ -3900,7 +3900,7 @@ async fn run_askpass_command(
                 }
                 AskPassResult::Timedout => {
                     // Unreachable since no timeout is passed to run()
-                    Err(anyhow!("Connecting to host timed out"))?
+                    Err(anyhow!("连接主机超时"))?
                 }
             }
         }
@@ -4054,7 +4054,7 @@ fn format_branch_scan_error(output: &Output) -> String {
         .trim()
         .replace('\n', " ");
     if stderr.is_empty() {
-        format!("git for-each-ref exited with {}", output.status)
+        format!("git for-each-ref 退出,退出码:{}", output.status)
     } else {
         stderr
     }
@@ -4076,10 +4076,10 @@ fn parse_upstream_track(upstream_track: &str) -> Result<UpstreamTracking> {
         if component == "gone" {
             return Ok(UpstreamTracking::Gone);
         }
-        if let Some(ahead_num) = component.strip_prefix("ahead ") {
+        if let Some(ahead_num) = component.strip_prefix("领先 ") {
             ahead = ahead_num.parse::<u32>()?;
         }
-        if let Some(behind_num) = component.strip_prefix("behind ") {
+        if let Some(behind_num) = component.strip_prefix("落后 ") {
             behind = behind_num.parse::<u32>()?;
         }
     }
@@ -4132,14 +4132,14 @@ mod tests {
             .env("GIT_COMMITTER_NAME", "test")
             .env("GIT_COMMITTER_EMAIL", "test@zed.dev")
             .output()
-            .expect("failed to run git command");
+            .expect("无法运行 git 命令");
         assert!(
             output.status.success(),
-            "git command failed: {}",
+            "git 命令失败:{}",
             String::from_utf8_lossy(&output.stderr)
         );
         String::from_utf8(output.stdout)
-            .expect("git command output was not valid UTF-8")
+            .expect("git 命令输出不是有效的 UTF-8")
             .trim()
             .to_string()
     }
@@ -4154,7 +4154,7 @@ mod tests {
     }
 
     fn git_init_repo(path: &Path) {
-        fs::create_dir_all(path).expect("failed to create repo directory");
+        fs::create_dir_all(path).expect("无法创建仓库目录");
         git_command(path, ["init", "-b", "main"]);
     }
 
@@ -4432,10 +4432,10 @@ mod tests {
         disable_git_global_config();
         cx.executor().allow_parking();
 
-        let repo_dir = tempfile::tempdir().expect("failed to create temporary repository");
+        let repo_dir = tempfile::tempdir().expect("无法创建临时仓库");
         git_init_repo(repo_dir.path());
         fs::write(repo_dir.path().join("file.txt"), "regular contents\n")
-            .expect("failed to write regular file");
+            .expect("无法写入普通文件");
         git_command(repo_dir.path(), ["add", "file.txt"]);
         git_command(repo_dir.path(), ["commit", "-m", "initial"]);
 
@@ -4445,15 +4445,15 @@ mod tests {
             Some("git".into()),
             cx.executor(),
         )
-        .expect("failed to open repository");
+        .expect("无法打开仓库");
         fs::write(repo_dir.path().join("file.txt"), "target")
-            .expect("failed to write symlink target");
+            .expect("无法写入符号链接目标");
 
         let symlink_blob = repository
             .git_binary()
             .run(&["hash-object", "-w", "file.txt"])
             .await
-            .expect("failed to write symlink blob");
+            .expect("无法写入符号链接 blob");
         git_command(
             repo_dir.path(),
             [
@@ -4464,18 +4464,18 @@ mod tests {
                 OsString::from("file.txt"),
             ],
         );
-        git_command(repo_dir.path(), ["commit", "-m", "type change"]);
+        git_command(repo_dir.path(), ["commit", "-m", "类型变更"]);
 
         let commit_diff = repository
             .load_commit("HEAD".to_string(), cx.to_async())
             .await
-            .expect("failed to load type-changed commit");
+            .expect("无法加载类型变更的提交");
         assert_eq!(commit_diff.files.len(), 1);
 
         let file = commit_diff
             .files
             .first()
-            .expect("type-changed file should be present");
+            .expect("类型变更的文件应存在");
         assert_eq!(file.path.as_unix_str(), "file.txt");
         assert_eq!(file.old_text.as_deref(), Some("regular contents\n"));
         assert_eq!(file.new_text.as_deref(), Some("target"));
@@ -4490,10 +4490,10 @@ mod tests {
         disable_git_global_config();
         cx.executor().allow_parking();
 
-        let repo_dir = tempfile::tempdir().expect("failed to create temporary repository");
+        let repo_dir = tempfile::tempdir().expect("无法创建临时仓库");
         git_init_repo(repo_dir.path());
         fs::write(repo_dir.path().join("README.md"), "parent repository\n")
-            .expect("failed to write regular file");
+            .expect("无法写入普通文件");
         git_command(repo_dir.path(), ["add", "README.md"]);
         git_command(
             repo_dir.path(),
@@ -4506,7 +4506,7 @@ mod tests {
                 "modules/example",
             ],
         );
-        git_command(repo_dir.path(), ["commit", "-m", "add submodule"]);
+        git_command(repo_dir.path(), ["commit", "-m", "添加子模块"]);
 
         let repository = RealGitRepository::new(
             &repo_dir.path().join(".git"),
@@ -4514,18 +4514,18 @@ mod tests {
             Some("git".into()),
             cx.executor(),
         )
-        .expect("failed to open repository");
+        .expect("无法打开仓库");
 
         let commit_diff = repository
             .load_commit("HEAD".to_string(), cx.to_async())
             .await
-            .expect("failed to load commit that adds a gitlink");
+            .expect("无法加载添加 gitlink 的提交");
         assert_eq!(commit_diff.files.len(), 2);
         let gitlink = commit_diff
             .files
             .iter()
             .find(|file| file.path.as_unix_str() == "modules/example")
-            .expect("gitlink should be present alongside the regular file");
+            .expect("gitlink 应与普通文件同时存在");
         assert_eq!(gitlink.status(), CommitFileStatus::Added);
         assert_eq!(gitlink.old_text, None);
         assert_eq!(
@@ -4544,14 +4544,14 @@ mod tests {
                 "modules/example",
             ],
         );
-        git_command(repo_dir.path(), ["commit", "-m", "update submodule"]);
+        git_command(repo_dir.path(), ["commit", "-m", "更新子模块"]);
 
         let commit_diff = repository
             .load_commit("HEAD".to_string(), cx.to_async())
             .await
-            .expect("failed to load commit that updates a gitlink");
+            .expect("无法加载更新 gitlink 的提交");
         let [gitlink] = commit_diff.files.as_slice() else {
-            panic!("expected one updated gitlink");
+            panic!("预期有一个更新的 gitlink");
         };
         assert_eq!(gitlink.status(), CommitFileStatus::Modified);
         assert_eq!(
@@ -4565,14 +4565,14 @@ mod tests {
         assert!(!gitlink.is_binary);
 
         git_command(repo_dir.path(), ["rm", "--cached", "modules/example"]);
-        git_command(repo_dir.path(), ["commit", "-m", "remove submodule"]);
+        git_command(repo_dir.path(), ["commit", "-m", "移除子模块"]);
 
         let commit_diff = repository
             .load_commit("HEAD".to_string(), cx.to_async())
             .await
-            .expect("failed to load commit that deletes a gitlink");
+            .expect("无法加载删除 gitlink 的提交");
         let [gitlink] = commit_diff.files.as_slice() else {
-            panic!("expected one deleted gitlink");
+            panic!("预期有一个已删除的 gitlink");
         };
         assert_eq!(gitlink.status(), CommitFileStatus::Deleted);
         assert_eq!(
@@ -4874,15 +4874,15 @@ mod tests {
             Some("git".into()),
             cx.executor(),
         ) {
-            Ok(_) => panic!("malformed .git file should be rejected"),
+            Ok(_) => panic!("格式错误的 .git 文件应被拒绝"),
             Err(error) => error,
         };
 
         assert!(
             error
                 .to_string()
-                .contains("expected .git file to start with 'gitdir: '"),
-            "unexpected error: {error:#}"
+                .contains("期望 .git 文件以 'gitdir: ' 开头"),
+            "意外错误: {error:#}"
         );
     }
 
@@ -4960,7 +4960,7 @@ mod tests {
         git_init_repo(repo_dir.path());
         fs::write(repo_dir.path().join("file"), "initial").unwrap();
         git_command(repo_dir.path(), ["add", "file"]);
-        git_command(repo_dir.path(), ["commit", "-m", "Initial commit"]);
+        git_command(repo_dir.path(), ["commit", "-m", "初始提交"]);
 
         let commit_sha: Oid = git_command_output(repo_dir.path(), ["rev-parse", "HEAD"])
             .parse()
@@ -5000,7 +5000,7 @@ mod tests {
             .build_command(&["version"])
             .output()
             .await
-            .expect("git version should succeed");
+            .expect("git version 应成功执行");
         assert!(output.status.success());
 
         let git = GitBinary::new(
@@ -5014,12 +5014,12 @@ mod tests {
             .build_command(&["config", "--get", "core.fsmonitor"])
             .output()
             .await
-            .expect("git config should run");
+            .expect("git config 应成功执行");
         let stdout = String::from_utf8_lossy(&output.stdout);
         assert_eq!(
             stdout.trim(),
             "false",
-            "fsmonitor should be disabled for untrusted repos"
+            "对于不受信任的仓库,应禁用 fsmonitor"
         );
 
         git_init_repo(dir.path());
@@ -5034,12 +5034,12 @@ mod tests {
             .build_command(&["config", "--get", "core.hooksPath"])
             .output()
             .await
-            .expect("git config should run");
+            .expect("git config 应成功执行");
         let stdout = String::from_utf8_lossy(&output.stdout);
         assert_eq!(
             stdout.trim(),
             "/dev/null",
-            "hooksPath should be /dev/null for untrusted repos"
+            "对于不受信任的仓库,hooksPath 应为 /dev/null"
         );
     }
 
@@ -5060,12 +5060,12 @@ mod tests {
             .build_command(&["config", "--get", "core.fsmonitor"])
             .output()
             .await
-            .expect("git config should run");
+            .expect("git config 应成功执行");
         let stdout = String::from_utf8_lossy(&output.stdout);
         assert_eq!(
             stdout.trim(),
             "false",
-            "fsmonitor should be disabled even for trusted repos"
+            "即使对于受信任的仓库,也应禁用 fsmonitor"
         );
 
         let git = GitBinary::new(
@@ -5079,10 +5079,10 @@ mod tests {
             .build_command(&["config", "--get", "core.hooksPath"])
             .output()
             .await
-            .expect("git config should run");
+            .expect("git config 应成功执行");
         assert!(
             !output.status.success(),
-            "hooksPath should NOT be overridden for trusted repos"
+            "对于受信任的仓库,不应覆盖 hooksPath"
         );
     }
 
@@ -5103,12 +5103,12 @@ mod tests {
             .build_command(&["config", "--get", "log.showSignature"])
             .output()
             .await
-            .expect("git config should run");
+            .expect("git config 应成功执行");
         let stdout = String::from_utf8_lossy(&output.stdout);
         assert_eq!(
             stdout.trim(),
             "false",
-            "log.showSignature should be disabled for trusted repos"
+            "对于受信任的仓库,应禁用 log.showSignature"
         );
 
         let git = GitBinary::new(
@@ -5122,12 +5122,12 @@ mod tests {
             .build_command(&["config", "--get", "log.showSignature"])
             .output()
             .await
-            .expect("git config should run");
+            .expect("git config 应成功执行");
         let stdout = String::from_utf8_lossy(&output.stdout);
         assert_eq!(
             stdout.trim(),
             "false",
-            "log.showSignature should be disabled for untrusted repos"
+            "对于不受信任的仓库,应禁用 log.showSignature"
         );
     }
 
@@ -5176,7 +5176,7 @@ mod tests {
             .await
             .unwrap();
         repo.commit(
-            "Initial commit".into(),
+            "初始提交".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
@@ -5185,7 +5185,7 @@ mod tests {
         .await
         .unwrap();
 
-        smol::fs::write(&file_path, "modified before checkpoint")
+        smol::fs::write(&file_path, "检查点之前已修改")
             .await
             .unwrap();
         smol::fs::write(repo_dir.path().join("new_file_before_checkpoint"), "1")
@@ -5196,14 +5196,14 @@ mod tests {
         // Ensure the user can't see any branches after creating a checkpoint.
         assert_eq!(repo.branches().await.unwrap().branches.len(), 1);
 
-        smol::fs::write(&file_path, "modified after checkpoint")
+        smol::fs::write(&file_path, "检查点之后已修改")
             .await
             .unwrap();
         repo.stage_paths(vec![repo_path("file")], Arc::new(HashMap::default()))
             .await
             .unwrap();
         repo.commit(
-            "Commit after checkpoint".into(),
+            "检查点之后的提交".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
@@ -5225,7 +5225,7 @@ mod tests {
 
         assert_eq!(
             smol::fs::read_to_string(&file_path).await.unwrap(),
-            "modified before checkpoint"
+            "检查点之前已修改"
         );
         assert_eq!(
             smol::fs::read_to_string(repo_dir.path().join("new_file_before_checkpoint"))
@@ -5277,14 +5277,14 @@ mod tests {
 
         // Hooks must not run for untrusted repositories.
         repo.commit(
-            "Commit in untrusted repo".into(),
+            "在不受信任的仓库中提交".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
             Arc::new(test_commit_envs()),
         )
         .await
-        .expect("failing pre-commit hook should be skipped in untrusted repos");
+        .expect("在不受信任的仓库中,应跳过失败的 pre-提交 钩子");
 
         repo.set_trusted(true);
 
@@ -5294,14 +5294,14 @@ mod tests {
             .unwrap();
 
         repo.commit(
-            "Commit blocked by hook".into(),
+            "提交被钩子阻止".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
             Arc::new(test_commit_envs()),
         )
         .await
-        .expect_err("failing pre-commit hook should abort the commit");
+        .expect_err("失败的 pre-commit 钩子应中止提交");
 
         write_hook("pre-commit", "#!/bin/sh\nexit 0\n");
         write_hook(
@@ -5310,7 +5310,7 @@ mod tests {
         );
 
         repo.commit(
-            "Original message".into(),
+            "原始消息".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
@@ -5320,7 +5320,7 @@ mod tests {
         .unwrap();
 
         let message = git_command_output(repo_dir.path(), ["log", "-1", "--pretty=%B"]);
-        assert_eq!(message, "rewritten by commit-msg hook");
+        assert_eq!(message, "由 提交-msg 钩子重写");
 
         write_hook("pre-commit", "#!/bin/sh\nexit 1\n");
         fs::write(repo_dir.path().join("file"), "three").unwrap();
@@ -5329,7 +5329,7 @@ mod tests {
             .unwrap();
 
         repo.commit(
-            "Commit without verification".into(),
+            "不进行验证的提交".into(),
             None,
             CommitOptions {
                 no_verify: true,
@@ -5339,10 +5339,10 @@ mod tests {
             Arc::new(test_commit_envs()),
         )
         .await
-        .expect("--no-verify should skip pre-commit and commit-msg hooks");
+        .expect("--no-verify 应跳过 pre-提交 和 提交-msg 钩子");
 
         let message = git_command_output(repo_dir.path(), ["log", "-1", "--pretty=%B"]);
-        assert_eq!(message, "Commit without verification");
+        assert_eq!(message, "不进行验证的提交");
     }
 
     #[gpui::test]
@@ -5357,13 +5357,13 @@ mod tests {
         let file2_path = repo_dir.path().join("file2");
         let space_file_path = repo_dir.path().join("file with spaces");
 
-        smol::fs::write(&file1_path, "file1 committed contents")
+        smol::fs::write(&file1_path, "file1 已提交内容")
             .await
             .unwrap();
-        smol::fs::write(&file2_path, "file2 committed contents")
+        smol::fs::write(&file2_path, "file2 已提交内容")
             .await
             .unwrap();
-        smol::fs::write(&space_file_path, "space file committed contents")
+        smol::fs::write(&space_file_path, "带空格文件的已提交内容")
             .await
             .unwrap();
 
@@ -5387,7 +5387,7 @@ mod tests {
         .await
         .unwrap();
         repo.commit(
-            "Initial commit".into(),
+            "初始提交".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
@@ -5397,7 +5397,7 @@ mod tests {
         .unwrap();
 
         // Now modify files in index but not yet committed
-        smol::fs::write(&file1_path, "file1 index contents")
+        smol::fs::write(&file1_path, "file1 索引内容")
             .await
             .unwrap();
         repo.stage_paths(vec![repo_path("file1")], Arc::new(HashMap::default()))
@@ -5405,7 +5405,7 @@ mod tests {
             .unwrap();
 
         // Write working tree contents (not indexed, not committed)
-        smol::fs::write(&file1_path, "file1 worktree contents")
+        smol::fs::write(&file1_path, "file1 工作树内容")
             .await
             .unwrap();
 
@@ -5431,12 +5431,12 @@ mod tests {
         assert_eq!(
             results,
             vec![
-                Some("file1 committed contents".into()),
-                Some("file1 index contents".into()),
-                Some("file2 committed contents".into()),
-                Some("file2 committed contents".into()), // untouched in index, should match HEAD
+                Some("file1 已提交内容".into()),
+                Some("file1 索引内容".into()),
+                Some("file2 已提交内容".into()),
+                Some("file2 已提交内容".into()), // untouched in index, should match HEAD
                 None,
-                Some("space file committed contents".into()),
+                Some("带空格文件的已提交内容".into()),
                 None,
             ]
         );
@@ -5513,7 +5513,7 @@ mod tests {
             .await
             .unwrap();
         repo.commit(
-            "Initial commit".into(),
+            "初始提交".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
@@ -5535,7 +5535,7 @@ mod tests {
             .branches
             .iter()
             .find(|branch| branch.is_head)
-            .expect("branch list should include HEAD");
+            .expect("分支列表应包含 HEAD");
         assert!(head_branch.ref_name.starts_with("refs/heads/"));
 
         assert!(
@@ -5618,7 +5618,7 @@ mod tests {
             .await
             .unwrap();
         repo.commit(
-            "Initial commit".into(),
+            "初始提交".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
@@ -5632,7 +5632,7 @@ mod tests {
         smol::fs::write(&text_path, "fn main() { println!(\"Modified\"); }")
             .await
             .unwrap();
-        smol::fs::write(&bin_path, "Modified binary file")
+        smol::fs::write(&bin_path, "已修改的二进制文件")
             .await
             .unwrap();
 
@@ -5647,13 +5647,13 @@ mod tests {
 
         assert_eq!(
             smol::fs::read_to_string(&bin_path).await.unwrap(),
-            "Modified binary file"
+            "已修改的二进制文件"
         );
     }
 
     #[test]
     fn test_branches_parsing() {
-        // suppress "help: octal escapes are not supported, `\0` is always null"
+        // suppress "帮助:不支持八进制转义,`\0` 始终为空字符"
         #[allow(clippy::octal_escapes)]
         let input = "*\0060964da10574cd9bf06463a53bf6e0769c5c45e\0\0refs/heads/zed-patches\0refs/remotes/origin/zed-patches\0\01733187470\0John Doe\0generated protobuf\n";
         assert_eq!(
@@ -5670,7 +5670,7 @@ mod tests {
                 }),
                 most_recent_commit: Some(CommitSummary {
                     sha: "060964da10574cd9bf06463a53bf6e0769c5c45e".into(),
-                    subject: "generated protobuf".into(),
+                    subject: "生成的 protobuf".into(),
                     commit_timestamp: 1733187470,
                     author_name: SharedString::new_static("John Doe"),
                     has_parent: false,
@@ -5695,7 +5695,7 @@ mod tests {
                     upstream: None,
                     most_recent_commit: Some(CommitSummary {
                         sha: "eb0cae33272689bd11030822939dd2701c52f81e".into(),
-                        subject: "Add feature".into(),
+                        subject: "添加功能".into(),
                         commit_timestamp: 1762948725,
                         author_name: SharedString::new_static("Zed"),
                         has_parent: true,
@@ -5707,7 +5707,7 @@ mod tests {
                     upstream: None,
                     most_recent_commit: Some(CommitSummary {
                         sha: "895951d681e5561478c0acdd6905e8aacdfd2249".into(),
-                        subject: "Initial commit".into(),
+                        subject: "初始提交".into(),
                         commit_timestamp: 1762948695,
                         author_name: SharedString::new_static("Zed"),
                         has_parent: false,
@@ -5884,7 +5884,7 @@ mod tests {
             .await
             .unwrap();
         repo.commit(
-            "Initial commit".into(),
+            "初始提交".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
@@ -5921,7 +5921,7 @@ mod tests {
         let new_worktree = worktrees
             .iter()
             .find(|w| w.display_name() == "test-branch")
-            .expect("should find worktree with test-branch");
+            .expect("应能找到带有 test-分支 的工作树");
         assert_eq!(
             new_worktree.path.canonicalize().unwrap(),
             worktree_path.canonicalize().unwrap(),
@@ -5935,7 +5935,7 @@ mod tests {
             .unwrap();
         assert!(
             created_at.is_some(),
-            "creation time should be available for a freshly created worktree"
+            "新创建的工作树应具有创建时间"
         );
 
         // A path with no worktree at all reports `None`.
@@ -5972,7 +5972,7 @@ mod tests {
             .await
             .unwrap();
         repo.commit(
-            "Initial commit".into(),
+            "初始提交".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
@@ -6003,7 +6003,7 @@ mod tests {
         assert_eq!(worktrees.len(), 1);
         assert!(
             worktrees.iter().all(|w| w.display_name() != "to-remove"),
-            "removed worktree should not appear in list"
+            "已移除的工作树不应出现在列表中"
         );
         assert!(!worktree_path.exists());
 
@@ -6030,7 +6030,7 @@ mod tests {
         let result = repo.remove_worktree(worktree_path.clone(), false).await;
         assert!(
             result.is_err(),
-            "non-force removal of dirty worktree should fail"
+            "非强制移除脏工作树应失败"
         );
 
         // Force removal should succeed
@@ -6070,7 +6070,7 @@ mod tests {
             .await
             .unwrap();
         repo.commit(
-            "Initial commit".into(),
+            "初始提交".into(),
             None,
             CommitOptions::default(),
             AskPassDelegate::new(&mut cx.to_async(), |_, _, _| {}),
@@ -6109,7 +6109,7 @@ mod tests {
         let moved_worktree = worktrees
             .iter()
             .find(|w| w.display_name() == "old-name")
-            .expect("should find worktree by branch name");
+            .expect("应能按分支名称找到工作树");
         assert_eq!(
             moved_worktree.path.canonicalize().unwrap(),
             new_path.canonicalize().unwrap()
@@ -6199,7 +6199,7 @@ mod tests {
 
         git_command(
             &repo_dir,
-            ["commit", "--allow-empty", "-m", "Initial commit"],
+            ["commit", "--allow-empty", "-m", "初始提交"],
         );
 
         // No remote branches exist yet
@@ -6224,7 +6224,7 @@ mod tests {
 
         // Switch to a new branch, commit but do not push
         git_command(&repo_dir, ["switch", "-c", "local-feature"]);
-        git_command(&repo_dir, ["commit", "--allow-empty", "-m", "Local commit"]);
+        git_command(&repo_dir, ["commit", "--allow-empty", "-m", "本地提交"]);
 
         // New commit has not been pushed
         assert!(repo.check_for_pushed_commit().await.unwrap().is_empty());
@@ -6278,7 +6278,7 @@ mod tests {
 
         git_command(
             repo_dir.path(),
-            ["commit", "--allow-empty", "-m", "Initial commit"],
+            ["commit", "--allow-empty", "-m", "初始提交"],
         );
 
         assert_eq!(

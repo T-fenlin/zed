@@ -361,7 +361,7 @@ pub fn init(cx: &mut App) {
         workspace.register_action(|_, _: &zed_actions::vim::OpenDefaultKeymap, _, cx| {
             cx.emit(workspace::Event::OpenBundledFile {
                 text: settings::vim_keymap(),
-                title: "Default Vim Bindings",
+                title: "默认 Vim 键位绑定",
                 language: "JSON",
             });
         });
@@ -577,7 +577,7 @@ impl Vim {
                 Mode::Insert => Mode::Insert,
                 // Otherwise, we panic with a note that we should never get there due to the
                 // possible values of VimSettings::get_global(cx).default_mode being either Mode::Normal or Mode::Insert.
-                _ => unreachable!("Invalid default mode"),
+                _ => unreachable!("无效的默认模式"),
             };
             (initial_helix_mode, Mode::HelixNormal)
         } else {
@@ -1789,7 +1789,7 @@ impl Vim {
 
     fn pop_operator(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Operator {
         let popped_operator = self.operator_stack.pop()
-            .expect("Operator popped when no operator was on the stack. This likely means there is an invalid keymap config");
+            .expect("弹出操作符时操作符栈为空。这通常意味着存在无效的键位映射配置");
         self.sync_vim_settings(window, cx);
         popped_operator
     }

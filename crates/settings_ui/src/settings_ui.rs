@@ -511,12 +511,12 @@ fn init_renderers(cx: &mut App) {
                     settings_window,
                     item,
                     settings_file,
-                    Button::new("open-in-settings-file", "Edit in settings.json")
+                    Button::new("open-in-settings-file", "在 设置.json 中编辑")
                         .style(ButtonStyle::Outlined)
                         .size(ButtonSize::Medium)
                         .tab_index(0_isize)
                         .tooltip(Tooltip::for_action_title_in(
-                            "Edit in settings.json",
+                            "在 设置.json 中编辑",
                             &OpenCurrentFile,
                             &settings_window.focus_handle,
                         ))
@@ -731,7 +731,7 @@ fn open_settings_editor_to_page(
             .iter()
             .position(|entry| entry.is_root && entry.title.eq_ignore_ascii_case(&page))
         else {
-            log::error!("settings page not found: {page}");
+            log::error!("未找到设置页面:{page}");
             return;
         };
 
@@ -759,7 +759,7 @@ fn open_settings_editor_at_target(
         cx: &mut Context<SettingsWindow>,
     ) {
         if path.starts_with("languages.$(language)") {
-            log::error!("language-specific settings links are not currently supported");
+            log::error!("目前不支持特定语言的设置链接");
             return;
         }
 
@@ -823,7 +823,7 @@ fn open_settings_editor_with(
     cx: &mut App,
     callback: impl FnOnce(&mut SettingsWindow, &mut Window, &mut Context<SettingsWindow>) + 'static,
 ) {
-    telemetry::event!("Settings Viewed");
+    telemetry::event!("设置已查看");
 
     let existing_window = cx
         .windows()
@@ -866,7 +866,7 @@ fn open_settings_editor_with(
         cx.open_window(
             WindowOptions {
                 titlebar: Some(TitlebarOptions {
-                    title: Some("Zed — Settings".into()),
+                    title: Some("Zed — 设置".into()),
                     appears_transparent: true,
                     traffic_light_position: Some(point(px(12.0), px(12.0))),
                 }),
@@ -965,21 +965,21 @@ pub struct SettingsWindow {
     /// Directory path of the skill whose share link was most recently copied,
     /// used to show a transient "copied" checkmark on its share button.
     pub(crate) last_copied_skill_directory_path: Option<PathBuf>,
-    /// State for the active "add OpenAI/Anthropic-compatible provider" form sub-page, if open.
+    /// State for the active "添加 OpenAI/Anthropic 兼容的提供商" form sub-page, if open.
     pub(crate) llm_provider_form: Option<LlmProviderForm>,
-    /// Stable focus handle for the LLM "Add Provider" button, so it can show a
+    /// Stable focus handle for the LLM "添加提供商" button, so it can show a
     /// focus ring when the page auto-focuses it on open (which happens via mouse,
     /// where `focus_visible` styling would otherwise be suppressed).
     pub(crate) llm_provider_add_focus_handle: FocusHandle,
-    /// State for the active "add/edit custom MCP server" form sub-page, if open.
+    /// State for the active "添加/编辑自定义 MCP 服务器" form sub-page, if open.
     pub(crate) mcp_server_form: Option<McpServerForm>,
-    /// Stable focus handle for the MCP "Add Server" button, so it can show a
+    /// Stable focus handle for the MCP "添加服务器" button, so it can show a
     /// focus ring when the page auto-focuses it on open (which happens via mouse,
     /// where `focus_visible` styling would otherwise be suppressed).
     pub(crate) mcp_add_server_focus_handle: FocusHandle,
-    /// State for the active "add/edit custom external agent" form sub-page, if open.
+    /// State for the active "添加/编辑自定义外部代理" form sub-page, if open.
     pub(crate) custom_agent_form: Option<CustomAgentForm>,
-    /// Stable focus handle for the external agents "Add Agent" button, so it can
+    /// Stable focus handle for the external agents "添加代理" button, so it can
     /// show a focus ring when the page auto-focuses it on open (which happens via
     /// mouse, where `focus_visible` styling would otherwise be suppressed).
     pub(crate) external_agent_add_focus_handle: FocusHandle,
@@ -1214,9 +1214,9 @@ impl SettingsPageItem {
                         .child(
                             Button::new(
                                 ("sub-page".into(), sub_page_link.title.clone()),
-                                "Configure",
+                                "配置",
                             )
-                            .aria_label(format!("Configure {}", sub_page_link.title))
+                            .aria_label(format!("配置 {}", sub_page_link.title))
                             .tab_index(0_isize)
                             .end_icon(
                                 Icon::new(IconName::ChevronRight)
@@ -1245,7 +1245,7 @@ impl SettingsPageItem {
 
                                     let Some(header) = header_text else {
                                         unreachable!(
-                                            "All items always have a section header above them"
+                                            "所有项目上方始终有节标题"
                                         )
                                     };
 
@@ -1293,7 +1293,7 @@ impl SettingsPageItem {
 
                 if rendered_ok {
                     let discriminant =
-                        discriminant.expect("This should be Some if rendered_ok is true");
+                        discriminant.expect("如果 rendered_ok 为 true,则此值应为 Some");
                     let sub_fields = &fields[discriminant];
                     let sub_field_count = sub_fields.len();
 
@@ -1413,8 +1413,8 @@ fn render_settings_item_layout(
                                 IconButton::new("reset-to-default-btn", IconName::Undo)
                                     .icon_color(Color::Muted)
                                     .icon_size(IconSize::Small)
-                                    .aria_label("Reset to Default")
-                                    .tooltip(Tooltip::text("Reset to Default"))
+                                    .aria_label("重置为默认值")
+                                    .tooltip(Tooltip::text("重置为默认值"))
                                     .on_click(move |_, window, cx| {
                                         reset_to_default(window, cx);
                                     }),
@@ -1422,7 +1422,7 @@ fn render_settings_item_layout(
                         })
                         .when_some(modified_in, |this, modified_in| {
                             this.child(
-                                Label::new(format!("\u{2014}  Modified in {modified_in}"))
+                                Label::new(format!("\u{2014}  修改于 {modified_in}"))
                                     .color(Color::Muted)
                                     .size(LabelSize::Small),
                             )
@@ -1486,9 +1486,9 @@ fn render_settings_item(
                     )
                     .tooltip(|_, cx| {
                         Tooltip::with_meta(
-                            "Overridden by Organization",
+                            "已被组织覆盖",
                             None,
-                            "Contact your organization admins to adjust this setting.",
+                            "请联系您的组织管理员来调整此设置。",
                             cx,
                         )
                     }),
@@ -1545,8 +1545,8 @@ fn render_settings_item_link(
                 .icon_color(link_icon_color)
                 .icon_size(IconSize::Small)
                 .shape(IconButtonShape::Square)
-                .aria_label("Copy Link")
-                .tooltip(Tooltip::text("Copy Link"))
+                .aria_label("复制链接")
+                .tooltip(Tooltip::text("复制链接"))
                 .when_some(json_path, |this, path| {
                     this.on_click(cx.listener(move |this, _, _, cx| {
                         let link = format!("zed://settings/{}", path);
@@ -1655,7 +1655,7 @@ struct SubPageLink {
     /// See [`SettingField.json_path`]
     json_path: Option<&'static str>,
     /// Whether or not the settings in this sub page are configurable in settings.json
-    /// Removes the "Edit in settings.json" button from the page.
+    /// Removes the "在 设置.json 中编辑" button from the page.
     in_json: bool,
     files: FileMask,
     render:
@@ -1689,7 +1689,7 @@ fn all_language_names(cx: &App) -> Vec<SharedString> {
         .languages
         .language_names()
         .into_iter()
-        .filter(|name| name.as_ref() != "Zed Keybind Context")
+        .filter(|name| name.as_ref() != "Zed 键位绑定上下文")
         .map(Into::into)
         .collect()
 }
@@ -1705,9 +1705,9 @@ enum SettingsUiFile {
 impl SettingsUiFile {
     fn setting_type(&self) -> &'static str {
         match self {
-            SettingsUiFile::User => "User",
-            SettingsUiFile::Project(_) => "Project",
-            SettingsUiFile::Server(_) => "Server",
+            SettingsUiFile::User => "用户",
+            SettingsUiFile::Project(_) => "项目",
+            SettingsUiFile::Server(_) => "服务器",
         }
     }
 
@@ -1727,7 +1727,7 @@ impl SettingsUiFile {
         Some(match file {
             settings::SettingsFile::User => SettingsUiFile::User,
             settings::SettingsFile::Project(location) => SettingsUiFile::Project(location),
-            settings::SettingsFile::Server => SettingsUiFile::Server("todo: server name"),
+            settings::SettingsFile::Server => SettingsUiFile::Server("待办:服务器名称"),
             settings::SettingsFile::Default => return None,
             settings::SettingsFile::Global => return None,
         })
@@ -1769,7 +1769,7 @@ impl SettingsWindow {
         let current_file = SettingsUiFile::User;
         let search_bar = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Search settings…", window, cx);
+            editor.set_placeholder_text("搜索设置…", window, cx);
             editor
         });
         cx.subscribe(&search_bar, |this, _, event: &EditorEvent, cx| {
@@ -1856,7 +1856,7 @@ impl SettingsWindow {
                 })
                 .ok();
 
-                telemetry::event!("Settings Closed")
+                telemetry::event!("设置已关闭")
             }
         })
         .detach();
@@ -1922,7 +1922,7 @@ impl SettingsWindow {
             // that window from cx.windows. If we deferred on the workspace's
             // window, then when fetch_files() tries to read ALL workspaces from
             // the store (including the newly created one), it would fail with
-            // "window not found" because that workspace's window would be
+            // "未找到窗口" because that workspace's window would be
             // temporarily removed from cx.windows for the duration of our callback.
             handle
                 .update(cx, move |_, window, cx| {
@@ -2347,7 +2347,7 @@ impl SettingsWindow {
             .ok();
 
             cx.background_executor().timer(Duration::from_secs(1)).await;
-            telemetry::event!("Settings Searched", query = query)
+            telemetry::event!("设置已搜索", query = query)
         }));
     }
 
@@ -2548,7 +2548,7 @@ impl SettingsWindow {
 
                 let Some(directory_name) = directory_name else {
                     log::error!(
-                        "No directory name found for settings file at worktree ID: {}",
+                        "在工作树 ID 为 {} 的位置未找到设置文件的目录名",
                         worktree_id
                     );
                     continue;
@@ -2709,7 +2709,7 @@ impl SettingsWindow {
         self.current_file = self.files[ix].0.clone();
 
         if let SettingsUiFile::Project((_, _)) = &self.current_file {
-            telemetry::event!("Setting Project Clicked");
+            telemetry::event!("设置项目已点击");
         }
 
         self.build_ui(window, cx);
@@ -2740,7 +2740,7 @@ impl SettingsWindow {
         self.current_file = self.files[ix].0.clone();
 
         if let SettingsUiFile::Project((_, _)) = &self.current_file {
-            telemetry::event!("Setting Project Clicked");
+            telemetry::event!("设置项目已点击");
         }
 
         self.last_copied_skill_directory_path = None;
@@ -2804,7 +2804,7 @@ impl SettingsWindow {
                 Button::new(
                     ix,
                     self.display_name(&file)
-                        .expect("Files should always have a name"),
+                        .expect("文件应始终有名称"),
                 )
                 .toggle_state(file == &self.current_file)
                 .selected_style(ButtonStyle::Tinted(ui::TintColor::Accent))
@@ -2838,7 +2838,7 @@ impl SettingsWindow {
         h_flex()
             .id("settings-ui-files-header")
             .role(Role::Group)
-            .aria_label("Settings File")
+            .aria_label("设置文件")
             .w_full()
             .gap_1()
             .justify_between()
@@ -2885,7 +2885,7 @@ impl SettingsWindow {
 
                                                 menu = menu.entry(
                                                     display_name
-                                                        .expect("Files should always have a name"),
+                                                        .expect("文件应始终有名称"),
                                                     None,
                                                     {
                                                         let this = this.clone();
@@ -2903,7 +2903,7 @@ impl SettingsWindow {
                                         }),
                                     )
                                     .style(DropdownStyle::Subtle)
-                                    .trigger_tooltip(Tooltip::text("View Other Projects"))
+                                    .trigger_tooltip(Tooltip::text("查看其他项目"))
                                     .trigger_icon(IconName::ChevronDown)
                                     .attach(gpui::Anchor::BottomLeft)
                                     .offset(gpui::Point {
@@ -2916,11 +2916,11 @@ impl SettingsWindow {
                     }),
             )
             .child(
-                Button::new(edit_in_json_id, "Edit in settings.json")
+                Button::new(edit_in_json_id, "在 设置.json 中编辑")
                     .tab_index(0_isize)
                     .style(ButtonStyle::OutlinedGhost)
                     .tooltip(Tooltip::for_action_title_in(
-                        "Edit in settings.json",
+                        "在 设置.json 中编辑",
                         &OpenCurrentFile,
                         &self.focus_handle,
                     ))
@@ -2932,7 +2932,7 @@ impl SettingsWindow {
 
     pub(crate) fn display_name(&self, file: &SettingsUiFile) -> Option<String> {
         match file {
-            SettingsUiFile::User => Some("User".to_string()),
+            SettingsUiFile::User => Some("用户".to_string()),
             SettingsUiFile::Project((worktree_id, path)) => self
                 .worktree_root_dirs
                 .get(&worktree_id)
@@ -2971,7 +2971,7 @@ impl SettingsWindow {
     //                     file_path.display(path_style)
     //                 )
     //             })
-    //             .expect("Current file should always be present in root dir map"),
+    //             .expect("当前文件应始终存在于根目录映射中"),
     //         SettingsUiFile::Server(file) => file.to_string(),
     //     }
     // }
@@ -2983,7 +2983,7 @@ impl SettingsWindow {
         h_flex()
             .id("settings-ui-search")
             .role(Role::SearchInput)
-            .aria_label("Search Settings")
+            .aria_label("搜索设置")
             .aria_value(a11y_value)
             .track_focus(&self.search_bar.focus_handle(cx))
             .a11y_synthetic_children(a11y_text_runs)
@@ -3015,13 +3015,13 @@ impl SettingsWindow {
                 .visible_navbar_entries()
                 .any(|(_, entry)| entry.focus_handle.is_focused(window))
         {
-            "Focus Content"
+            "聚焦内容"
         } else {
-            "Focus Navbar"
+            "聚焦导航栏"
         };
 
         let mut key_context = KeyContext::new_with_defaults();
-        key_context.add("NavigationMenu");
+        key_context.add("导航菜单");
         key_context.add("menu");
         if self.search_bar.focus_handle(cx).is_focused(window) {
             key_context.add("search");
@@ -3158,7 +3158,7 @@ impl SettingsWindow {
                 v_flex()
                     .id("settings-ui-nav")
                     .role(Role::Tree)
-                    .aria_label("Settings Navigation")
+                    .aria_label("设置导航")
                     .flex_1()
                     .overflow_hidden()
                     .track_focus(&self.navbar_focus_handle.focus_handle(cx))
@@ -3209,7 +3209,7 @@ impl SettingsWindow {
                                                 }
 
                                                 telemetry::event!(
-                                                    "Settings Navigation Clicked",
+                                                    "设置导航已点击",
                                                     category = category,
                                                     subcategory = subcategory
                                                 );
@@ -3296,7 +3296,7 @@ impl SettingsWindow {
         } else {
             let entry_item_index = self.navbar_entries[navbar_entry_index]
                 .item_index
-                .expect("Non-root items should have an item index");
+                .expect("非根项目应具有项目索引");
             self.scroll_to_content_item(entry_item_index, window, cx);
             if focus_content {
                 handle_to_focus = Some(self.focus_handle_for_content_element(entry_item_index, cx));
@@ -3441,13 +3441,13 @@ impl SettingsWindow {
                 "sub-page-scope-picker",
                 scope_name,
                 ContextMenu::build(window, cx, move |mut menu, _, _| {
-                    menu = menu.header("Scope");
+                    menu = menu.header("范围");
 
                     for ix in allowed_file_indices {
                         let (file, focus_handle) = &self.files[ix];
                         let display_name = self
                             .display_name(file)
-                            .expect("Files should always have a name");
+                            .expect("文件应始终有名称");
 
                         menu = menu.toggleable_entry(
                             display_name,
@@ -3471,7 +3471,7 @@ impl SettingsWindow {
                 }),
             )
             .style(DropdownStyle::Subtle)
-            .trigger_tooltip(Tooltip::text("Change Scope"))
+            .trigger_tooltip(Tooltip::text("更改范围"))
             .attach(gpui::Anchor::BottomLeft)
             .offset(gpui::Point {
                 x: px(0.0),
@@ -3518,9 +3518,9 @@ impl SettingsWindow {
             .items_center()
             .justify_center()
             .gap_1()
-            .child(Label::new("No Results"))
+            .child(Label::new("无结果"))
             .child(
-                Label::new(format!("No settings match \"{}\"", search_query))
+                Label::new(format!("没有与 \"{}\" 匹配的设置", search_query))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             )
@@ -3535,7 +3535,7 @@ impl SettingsWindow {
         let mut page_content = v_flex()
             .id("settings-ui-page")
             .role(Role::Group)
-            .aria_label("Settings Content")
+            .aria_label("设置内容")
             .size_full();
 
         let has_active_search = !self.search_bar.read(cx).is_empty(cx);
@@ -3726,7 +3726,7 @@ impl SettingsWindow {
             let is_skills_page =
                 current_sub_page.link.json_path == Some(AGENT_SKILLS_SETTINGS_PATH);
             let is_llm_providers_page = current_sub_page.link.json_path == Some("llm_providers")
-                && current_sub_page.link.title.as_ref() == "LLM Providers";
+                && current_sub_page.link.title.as_ref() == "LLM 提供商";
             let is_external_agents_page = current_sub_page.link.json_path == Some("agent_servers");
             let is_mcp_servers_page = current_sub_page.link.json_path == Some("context_servers");
 
@@ -3754,11 +3754,11 @@ impl SettingsWindow {
                         .flex_shrink_0()
                         .when(current_sub_page.link.in_json, |this| {
                             this.child(
-                                Button::new("open-in-settings-file", "Edit in settings.json")
+                                Button::new("open-in-settings-file", "在 设置.json 中编辑")
                                     .tab_index(0_isize)
                                     .style(ButtonStyle::OutlinedGhost)
                                     .tooltip(Tooltip::for_action_title_in(
-                                        "Edit in settings.json",
+                                        "在 设置.json 中编辑",
                                         &OpenCurrentFile,
                                         &self.focus_handle,
                                     ))
@@ -3772,7 +3772,7 @@ impl SettingsWindow {
                         })
                         .when(is_skills_page, |this| {
                             this.child(
-                                Button::new("open-skill-creator", "Create Skill")
+                                Button::new("open-skill-creator", "创建技能")
                                     .tab_index(0_isize)
                                     .style(ButtonStyle::OutlinedGhost)
                                     .on_click(cx.listener(|this, _, window, cx| {
@@ -3817,7 +3817,7 @@ impl SettingsWindow {
                 cx: &mut Context<SettingsWindow>,
             ) -> impl IntoElement {
                 if shown_errors.insert(error.clone()) {
-                    telemetry::event!("Settings Error Shown", label = label, error = &error);
+                    telemetry::event!("设置错误已显示", label = label, error = &error);
                 }
                 Banner::new()
                     .severity(Severity::Warning)
@@ -3830,7 +3830,7 @@ impl SettingsWindow {
                     )
                     .action_slot(
                         div().pr_1().pb_1().child(
-                            Button::new("fix-in-json", "Fix in settings.json")
+                            Button::new("fix-in-json", "在 设置.json 中修复")
                                 .tab_index(0_isize)
                                 .style(ButtonStyle::Tinted(ui::TintColor::Warning))
                                 .on_click(cx.listener(|this, _, window, cx| {
@@ -3847,7 +3847,7 @@ impl SettingsWindow {
                 .gap_2()
                 .when_some(parse_error, |this, err| {
                     this.child(banner(
-                        "Failed to load your settings. Some values may be incorrect and changes may be lost.",
+                        "无法加载您的设置。某些值可能不正确,更改可能会丢失。",
                         err,
                         &mut self.shown_errors,
                         cx,
@@ -3855,17 +3855,17 @@ impl SettingsWindow {
                 })
                 .map(|this| match &error.migration_status {
                     settings::MigrationStatus::Succeeded => this.child(banner(
-                        "Your settings are out of date, and need to be updated.",
+                        "您的设置已过时,需要更新。",
                         match &self.current_file {
-                            SettingsUiFile::User => "They can be automatically migrated to the latest version.",
-                            SettingsUiFile::Server(_) | SettingsUiFile::Project(_)  => "They must be manually migrated to the latest version."
+                            SettingsUiFile::User => "它们可以自动迁移到最新版本。",
+                            SettingsUiFile::Server(_) | SettingsUiFile::Project(_)  => "它们必须手动迁移到最新版本。"
                         }.to_string(),
                         &mut self.shown_errors,
                         cx,
                     )),
                     settings::MigrationStatus::Failed { error: err } if !parse_failed => this
                         .child(banner(
-                            "Your settings file is out of date, automatic migration failed",
+                            "您的设置文件已过时,自动迁移失败",
                             err.clone(),
                             &mut self.shown_errors,
                             cx,
@@ -3897,10 +3897,10 @@ impl SettingsWindow {
                         v_flex()
                             .my_0p5()
                             .gap_0p5()
-                            .child(Label::new("Restricted Mode"))
+                            .child(Label::new("受限模式"))
                             .child(
                                 Label::new(
-                                    "This project is in restricted mode. Some project settings may not apply.",
+                                    "此项目处于受限模式。某些项目设置可能不适用。",
                                 )
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
@@ -3908,7 +3908,7 @@ impl SettingsWindow {
                     )
                     .action_slot(
                         div().pr_2().pb_1().child(
-                            Button::new("manage-trust", "Manage Trust")
+                            Button::new("manage-trust", "管理信任")
                                 .style(ButtonStyle::Tinted(ui::TintColor::Warning))
                                 .on_click(cx.listener(move |_this, _, window, cx| {
                                     if let Some(original_window) = original_window {
@@ -4102,7 +4102,7 @@ impl SettingsWindow {
                     })
                 else {
                     log::error!(
-                        "No corresponding workspace contains worktree id: {}",
+                        "没有对应的工作区包含工作树 ID:{}",
                         worktree_id
                     );
 
@@ -4277,7 +4277,7 @@ impl SettingsWindow {
         self.skill_creator_page = Some((page.clone(), subscription));
 
         let sub_page_link = SubPageLink {
-            title: "Create Skill".into(),
+            title: "创建技能".into(),
             r#type: SubPageType::SkillCreator,
             description: None,
             search_aliases: &[],
@@ -4287,7 +4287,7 @@ impl SettingsWindow {
             render: pages::render_skill_creator_page,
         };
 
-        self.push_sub_page(sub_page_link, "Agent".into(), window, cx);
+        self.push_sub_page(sub_page_link, "代理".into(), window, cx);
 
         let creating_from_url = !matches!(open_mode, pages::SkillCreatorOpenMode::Url { .. });
         page.update(cx, |page, cx| {
@@ -4345,7 +4345,7 @@ impl SettingsWindow {
                             .take(item_index)
                             .rev()
                             .find_map(|item| item.header_text().map(SharedString::new_static))
-                            .unwrap_or_else(|| "Settings".into());
+                            .unwrap_or_else(|| "设置".into());
 
                         self.push_sub_page(sub_page_link.clone(), section_header, window, cx);
                         return true;
@@ -4473,7 +4473,7 @@ impl SettingsWindow {
         {
             index = prev_index.checked_sub(1);
         }
-        return index.expect("No root entry found");
+        return index.expect("未找到根条目");
     }
 }
 
@@ -4644,13 +4644,13 @@ fn update_settings_file(
     cx: &mut App,
     update: impl 'static + Send + FnOnce(&mut SettingsContent, &App),
 ) -> Result<()> {
-    telemetry::event!("Settings Change", setting = file_name, type = file.setting_type());
+    telemetry::event!("设置更改", setting = file_name, type = file.setting_type());
 
     match file {
         SettingsUiFile::Project((worktree_id, rel_path)) => {
             let rel_path = rel_path.join(paths::local_settings_file_relative_path());
             let Some(settings_window) = window.root::<SettingsWindow>().flatten() else {
-                anyhow::bail!("No settings window found");
+                anyhow::bail!("未找到设置窗口");
             };
 
             update_project_setting_file(worktree_id, rel_path.into(), update, settings_window, cx)
@@ -4686,7 +4686,7 @@ impl ProjectSettingsUpdateQueue {
         let task = cx.spawn(async move |mut cx| {
             while let Some(entry) = rx.next().await {
                 if let Err(err) = Self::process_entry(entry, &mut cx).await {
-                    log::error!("Failed to update project settings: {err:?}");
+                    log::error!("更新项目设置失败:{err:?}");
                 }
             }
         });
@@ -4696,7 +4696,7 @@ impl ProjectSettingsUpdateQueue {
     fn enqueue(cx: &mut App, entry: ProjectSettingsUpdateEntry) {
         cx.update_global::<Self, _>(|queue, _cx| {
             if let Err(err) = queue.tx.unbounded_send(entry) {
-                log::error!("Failed to enqueue project settings update: {err}");
+                log::error!("无法将项目设置更新加入队列:{err}");
             }
         });
     }
@@ -4745,14 +4745,14 @@ impl ProjectSettingsUpdateQueue {
                 cached_buffer
                     .update(cx, |buffer, cx| buffer.reload(cx))
                     .await
-                    .context("Failed to reload settings file")?;
+                    .context("重新加载设置文件失败")?;
             }
             cached_buffer
         } else {
             let buffer = buffer_store
                 .update(cx, |store, cx| store.open_buffer(project_path.clone(), cx))
                 .await
-                .context("Failed to open settings file")?;
+                .context("打开设置文件失败")?;
 
             let _ = settings_window.update(cx, |this, _cx| {
                 this.project_setting_file_buffers
@@ -4776,7 +4776,7 @@ impl ProjectSettingsUpdateQueue {
         buffer_store
             .update(cx, |store, cx| store.save_buffer(buffer, cx))
             .await
-            .context("Failed to save settings file")?;
+            .context("保存设置文件失败")?;
 
         Ok(())
     }
@@ -4797,7 +4797,7 @@ fn update_project_setting_file(
                 .zip(Some(project))
         })
     else {
-        anyhow::bail!("Could not find project with worktree id: {}", worktree_id);
+        anyhow::bail!("找不到具有工作树 ID 为 {} 的项目", worktree_id);
     };
 
     let entry = ProjectSettingsUpdateEntry {
@@ -4815,7 +4815,7 @@ fn update_project_setting_file(
 }
 
 /// Derives a human-readable label for assistive technology from a setting's
-/// JSON path, e.g. `"buffer_font_size"` becomes `"Buffer Font Size"`.
+/// JSON path, e.g. `"buffer_font_size"` becomes `"缓冲区字体大小"`.
 struct CurrentSettingsValue<'a, T> {
     value: &'a T,
     disabled: bool,
@@ -4937,7 +4937,7 @@ fn render_toggle_button<B: Into<bool> + From<bool> + Copy>(
         .disabled(disabled)
         .on_click({
             move |state, window, cx| {
-                telemetry::event!("Settings Change", setting = field.json_path, type = file.setting_type());
+                telemetry::event!("设置更改", setting = field.json_path, type = file.setting_type());
 
                 let state = *state == ui::ToggleState::Selected;
                 update_settings_file(file.clone(), field.json_path, window, cx, move |settings, app| {
@@ -5269,7 +5269,7 @@ pub mod test {
         pub fn test(window: &mut Window, cx: &mut Context<Self>) -> Self {
             let search_bar = cx.new(|cx| Editor::single_line(window, cx));
             let dummy_page = SettingsPage {
-                title: "Test",
+                title: "测试",
                 items: Box::new([]),
             };
             Self {
@@ -5362,7 +5362,7 @@ pub mod test {
             .filter(|line| !line.is_empty())
         {
             if let Some(pre) = line.strip_suffix('*') {
-                assert!(selected_idx.is_none(), "Only one selected entry allowed");
+                assert!(selected_idx.is_none(), "只允许一个选中的条目");
                 selected_idx = Some(index);
                 line = pre;
             }
@@ -5392,12 +5392,12 @@ pub mod test {
                     .items
                     .push(SettingsPageItem::SectionHeader(title));
                 if selected_idx == Some(index) && !in_expanded_section {
-                    panic!("Items in unexpanded sections cannot be selected");
+                    panic!("未展开部分中的项目无法选中");
                 }
                 index += 1;
             } else {
                 panic!(
-                    "Entries must start with one of 'v', '>', or '-'\n line: {}",
+                    "条目必须以 'v'、'>' 或 '-' 之一开头\n 行:{}",
                     line
                 );
             }
@@ -5420,7 +5420,7 @@ pub mod test {
             project_setting_file_buffers: HashMap::default(),
             pages,
             search_bar: cx.new(|cx| Editor::single_line(window, cx)),
-            navbar_entry: selected_idx.expect("Must have a selected navbar entry"),
+            navbar_entry: selected_idx.expect("必须有一个选中的导航栏条目"),
             navbar_entries: Vec::default(),
             navbar_scroll_handle: UniformListScrollHandle::default(),
             navbar_focus_subscriptions: vec![],
@@ -5488,12 +5488,12 @@ pub mod test {
             .pages
             .iter()
             .position(|page| page.title == toggle_page)
-            .expect("page not found");
+            .expect("未找到页面");
         let toggle_idx = settings_window
             .navbar_entries
             .iter()
             .position(|entry| entry.page_index == toggle_page_idx)
-            .expect("page not found");
+            .expect("未找到页面");
         settings_window.toggle_navbar_entry(toggle_idx);
 
         let expected_settings_window = parse(after, window, cx);
@@ -5536,7 +5536,7 @@ pub mod test {
         v Project
         - Project Settings
         ",
-        toggle_page: "General",
+        toggle_page: "常规",
         after: r"
         > General*
         v Project
@@ -5553,7 +5553,7 @@ pub mod test {
         v Project
         - Project Settings
         ",
-        toggle_page: "General",
+        toggle_page: "常规",
         after: r"
         v General*
         - General
@@ -5572,7 +5572,7 @@ pub mod test {
         v Project
         - Project Settings*
         ",
-        toggle_page: "Project",
+        toggle_page: "项目",
         after: r"
         > General
         > Project*
@@ -5591,7 +5591,7 @@ pub mod test {
         - General
         > Appearance & Behavior
         ",
-        toggle_page: "Project",
+        toggle_page: "项目",
         after: r"
         v General Page
         - General
@@ -5615,7 +5615,7 @@ pub mod test {
         - General*
         > Appearance & Behavior
         ",
-        toggle_page: "General Page",
+        toggle_page: "常规页面",
         after: r"
         > General Page*
         v Project
@@ -5638,7 +5638,7 @@ pub mod test {
         - General*
         > Appearance & Behavior
         ",
-        toggle_page: "General Page",
+        toggle_page: "常规页面",
         after: r"
         v General Page*
         - General
@@ -5674,13 +5674,13 @@ pub mod test {
             let general_idx = settings_window
                 .navbar_entries
                 .iter()
-                .position(|entry| entry.title == "General" && entry.is_root)
-                .expect("General root entry should exist");
+                .position(|entry| entry.title == "常规" && entry.is_root)
+                .expect("常规根条目应存在");
             let privacy_idx = settings_window
                 .navbar_entries
                 .iter()
-                .position(|entry| entry.title == "Privacy" && !entry.is_root)
-                .expect("Privacy nested entry should exist");
+                .position(|entry| entry.title == "隐私" && !entry.is_root)
+                .expect("隐私嵌套条目应存在");
 
             let click_event = |click_count| {
                 gpui::ClickEvent::Mouse(gpui::MouseClickEvent {
@@ -5704,7 +5704,7 @@ pub mod test {
                     window,
                     cx,
                 ),
-                "single-clicks should use the normal navigation path"
+                "单击应使用正常导航路径"
             );
             assert!(!settings_window.navbar_entries[general_idx].expanded);
 
@@ -5723,7 +5723,7 @@ pub mod test {
                     window,
                     cx,
                 ),
-                "triple-clicks should not toggle the entry again"
+                "三击不应再次切换条目"
             );
             assert!(settings_window.navbar_entries[general_idx].expanded);
 
@@ -5798,7 +5798,7 @@ pub mod test {
                 project.find_or_create_worktree("/workspace1/worktree_a", true, cx)
             })
             .await
-            .expect("Failed to create worktree_a");
+            .expect("创建 worktree_a 失败");
         project1
             .update(cx, |project, cx| {
                 project.find_or_create_worktree("/workspace1/worktree_b", true, cx)
@@ -5824,7 +5824,7 @@ pub mod test {
                 project.find_or_create_worktree("/workspace2/worktree_c", true, cx)
             })
             .await
-            .expect("Failed to create worktree_c");
+            .expect("创建 worktree_c 失败");
 
         let (_multi_workspace1, cx) = cx.add_window_view(|window, cx| {
             let workspace = cx.new(|cx| {
@@ -5870,7 +5870,7 @@ pub mod test {
 
             assert!(
                 worktree_names.iter().any(|name| name == "worktree_a"),
-                "Should contain worktree_a from workspace1, but found: {:?}",
+                "应包含来自 workspace1 的 worktree_a,但找到:{:?}",
                 worktree_names
             );
             assert!(
@@ -5880,14 +5880,14 @@ pub mod test {
             );
             assert!(
                 worktree_names.iter().any(|name| name == "worktree_c"),
-                "Should contain worktree_c from workspace2, but found: {:?}",
+                "应包含来自 workspace2 的 worktree_c,但找到:{:?}",
                 worktree_names
             );
 
             assert_eq!(
                 worktree_names.len(),
                 3,
-                "Should have exactly 3 worktrees from both workspaces, but found: {:?}",
+                "应恰好有来自两个工作区的 3 个工作树,但找到:{:?}",
                 worktree_names
             );
 
@@ -5904,7 +5904,7 @@ pub mod test {
             assert_eq!(
                 project_files.len(),
                 unique_project_files.len(),
-                "Should have no duplicate project files, but found duplicates. All files: {:?}",
+                "不应有重复的项目文件,但发现了重复项。所有文件:{:?}",
                 project_files
             );
         });
@@ -5969,7 +5969,7 @@ pub mod test {
                 project.find_or_create_worktree("/workspace1/worktree_a", true, cx)
             })
             .await
-            .expect("Failed to create worktree_a");
+            .expect("创建 worktree_a 失败");
 
         let (_multi_workspace1, cx) = cx.add_window_view(|window, cx| {
             let workspace = cx.new(|cx| {
@@ -5997,7 +5997,7 @@ pub mod test {
             assert_eq!(
                 settings_window.worktree_root_dirs.len(),
                 1,
-                "Should have 1 worktree initially"
+                "最初应有 1 个工作树"
             );
         });
 
@@ -6045,7 +6045,7 @@ pub mod test {
 
             assert!(
                 worktree_names.iter().any(|name| name == "worktree_a"),
-                "Should contain worktree_a, but found: {:?}",
+                "应包含 worktree_a,但找到:{:?}",
                 worktree_names
             );
             assert!(
@@ -6057,7 +6057,7 @@ pub mod test {
             assert_eq!(
                 worktree_names.len(),
                 2,
-                "Should have 2 worktrees after new workspace created, but found: {:?}",
+                "创建新工作区后应有 2 个工作树,但找到:{:?}",
                 worktree_names
             );
 
@@ -6074,7 +6074,7 @@ pub mod test {
             assert_eq!(
                 project_files.len(),
                 unique_project_files.len(),
-                "Should have no duplicate project files, but found duplicates. All files: {:?}",
+                "不应有重复的项目文件,但发现了重复项。所有文件:{:?}",
                 project_files
             );
         });
@@ -6146,7 +6146,7 @@ pub mod test {
                 project.find_or_create_worktree("/project", true, cx)
             })
             .await
-            .expect("Failed to create worktree");
+            .expect("创建工作树失败");
         let worktree_id = worktree.read_with(cx, |worktree, _| worktree.id());
 
         // Load both skills from the fake filesystem the same way the agent
@@ -6156,7 +6156,7 @@ pub mod test {
             load_skills_from_directory(&fs, Path::new("/global-skills"), SkillSource::Global)
                 .await
                 .into_iter()
-                .map(|result| result.expect("global skill should load"))
+                .map(|result| result.expect("全局技能应加载"))
                 .collect();
         let project_skills: Vec<Skill> = load_skills_from_directory(
             &fs,
@@ -6168,7 +6168,7 @@ pub mod test {
         )
         .await
         .into_iter()
-        .map(|result| result.expect("project skill should load"))
+        .map(|result| result.expect("项目技能应加载"))
         .collect();
         assert_eq!(global_skills.len(), 1);
         assert_eq!(project_skills.len(), 1);
@@ -6216,7 +6216,7 @@ pub mod test {
             assert_eq!(settings_window.current_file, SettingsUiFile::User);
             assert!(
                 settings_window.navigate_to_sub_page(AGENT_SKILLS_SETTINGS_PATH, window, cx),
-                "Skills sub-page should exist"
+                "技能子页面应存在"
             );
             assert_eq!(displayed_skill_names(settings_window, cx), ["global-skill"]);
 
@@ -6224,7 +6224,7 @@ pub mod test {
                 .files
                 .iter()
                 .position(|(file, _)| file.worktree_id() == Some(worktree_id))
-                .expect("project settings file should be listed");
+                .expect("项目设置文件应被列出");
             settings_window.change_file_in_sub_page(project_file_index, window, cx);
 
             assert_eq!(
@@ -6234,9 +6234,9 @@ pub mod test {
             assert_eq!(
                 settings_window.sub_page_stack.len(),
                 1,
-                "Skills sub-page should stay open when switching scope"
+                "切换范围时技能子页面应保持打开"
             );
-            assert_eq!(settings_window.sub_page_stack[0].link.title, "Skills");
+            assert_eq!(settings_window.sub_page_stack[0].link.title, "技能");
             assert_eq!(
                 displayed_skill_names(settings_window, cx),
                 ["project-skill"]
@@ -6246,7 +6246,7 @@ pub mod test {
                 .files
                 .iter()
                 .position(|(file, _)| file == &SettingsUiFile::User)
-                .expect("user settings file should be listed");
+                .expect("用户设置文件应被列出");
             settings_window.change_file_in_sub_page(user_file_index, window, cx);
 
             assert_eq!(settings_window.current_file, SettingsUiFile::User);
@@ -6292,7 +6292,7 @@ pub mod test {
                 project.find_or_create_worktree("/project", true, cx)
             })
             .await
-            .expect("Failed to create worktree");
+            .expect("创建工作树失败");
 
         let (_multi_workspace, cx) = cx.add_window_view(|window, cx| {
             let workspace = cx.new(|cx| {
@@ -6333,12 +6333,12 @@ pub mod test {
                 .collect();
             assert_eq!(
                 titles,
-                ["Skills", "Create Skill"],
-                "skill creator should be pushed on top of the skills page"
+                ["技能", "创建技能"],
+                "技能创建器应被推送到技能页面顶部"
             );
             assert!(
                 settings_window.skill_creator_page().is_some(),
-                "skill creator page state should exist"
+                "技能创建器页面状态应存在"
             );
         });
     }
@@ -6384,7 +6384,7 @@ pub mod test {
                 project.find_or_create_worktree("/project", true, cx)
             })
             .await
-            .expect("Failed to create worktree");
+            .expect("创建工作树失败");
 
         let (multi_workspace, cx) = cx.add_window_view(|window, cx| {
             let workspace = cx.new(|cx| {
@@ -6415,7 +6415,7 @@ pub mod test {
                     .into_iter()
                     .find_map(|window| window.downcast::<SettingsWindow>())
             })
-            .expect("dispatching agent::OpenSkillCreator should open the settings window");
+            .expect("调度 agent::OpenSkillCreator 应打开设置窗口");
 
         settings_window
             .read_with(cx, |settings_window, _| {
@@ -6426,8 +6426,8 @@ pub mod test {
                     .collect();
                 assert_eq!(
                     titles,
-                    ["Skills", "Create Skill"],
-                    "skill creator should be pushed on top of the skills page"
+                    ["技能", "创建技能"],
+                    "技能创建器应被推送到技能页面顶部"
                 );
             })
             .unwrap();
@@ -6484,7 +6484,7 @@ mod project_settings_update_tests {
         });
 
         let rel_path: Arc<RelPath> = RelPath::from_unix_str(".zed/settings.json")
-            .expect("valid path")
+            .expect("有效路径")
             .into_arc();
         let project_path = ProjectPath {
             worktree_id,
@@ -6525,12 +6525,12 @@ mod project_settings_update_tests {
         let buffer = buffer_store
             .update(cx, |store, cx| store.open_buffer(setup.project_path, cx))
             .await
-            .expect("buffer should exist");
+            .expect("缓冲区应存在");
 
         let text = buffer.read_with(cx, |buffer, _| buffer.text());
         assert!(
             text.contains("\"tab_size\": 4"),
-            "Expected tab_size setting in: {}",
+            "在 {} 中应有 tab_size 设置",
             text
         );
     }
@@ -6559,12 +6559,12 @@ mod project_settings_update_tests {
         let buffer = buffer_store
             .update(cx, |store, cx| store.open_buffer(setup.project_path, cx))
             .await
-            .expect("buffer should exist");
+            .expect("缓冲区应存在");
 
         let text = buffer.read_with(cx, |buffer, _| buffer.text());
         assert!(
             text.contains("\"tab_size\": 8"),
-            "Expected updated tab_size in: {}",
+            "在 {} 中应有更新后的 tab_size",
             text
         );
     }
@@ -6595,7 +6595,7 @@ mod project_settings_update_tests {
         cx.executor().run_until_parked();
 
         let order = update_order.lock().unwrap().clone();
-        assert_eq!(order, vec![1, 2, 3], "Updates should be processed in order");
+        assert_eq!(order, vec![1, 2, 3], "更新应按顺序处理");
 
         let buffer_store = setup
             .project
@@ -6603,12 +6603,12 @@ mod project_settings_update_tests {
         let buffer = buffer_store
             .update(cx, |store, cx| store.open_buffer(setup.project_path, cx))
             .await
-            .expect("buffer should exist");
+            .expect("缓冲区应存在");
 
         let text = buffer.read_with(cx, |buffer, _| buffer.text());
         assert!(
             text.contains("\"tab_size\": 3"),
-            "Final tab_size should be 3: {}",
+            "最终 tab_size 应为 3:{}",
             text
         );
     }
@@ -6673,7 +6673,7 @@ mod project_settings_update_tests {
         assert_eq!(
             successful_updates.load(Ordering::SeqCst),
             2,
-            "Two updates should have succeeded despite middle failure"
+            "尽管中间失败,两次更新应已成功"
         );
 
         let buffer_store = setup
@@ -6682,12 +6682,12 @@ mod project_settings_update_tests {
         let buffer = buffer_store
             .update(cx, |store, cx| store.open_buffer(setup.project_path, cx))
             .await
-            .expect("buffer should exist");
+            .expect("缓冲区应存在");
 
         let text = buffer.read_with(cx, |buffer, _| buffer.text());
         assert!(
             text.contains("\"tab_size\": 4"),
-            "Final tab_size should be 4 (third update): {}",
+            "最终 tab_size 应为 4(第三次更新):{}",
             text
         );
     }
@@ -6718,7 +6718,7 @@ mod project_settings_update_tests {
             .unwrap();
         assert_eq!(
             file_content, "{}",
-            "File should be unchanged when worktree is dropped"
+            "当工作树被丢弃时,文件应保持不变"
         );
     }
 
@@ -6734,14 +6734,14 @@ mod project_settings_update_tests {
                 store.open_buffer(setup.project_path.clone(), cx)
             })
             .await
-            .expect("buffer should exist");
+            .expect("缓冲区应存在");
 
         buffer.update(cx, |buffer, cx| {
             buffer.edit([(0..0, "// comment\n")], None, cx);
         });
 
         let has_unsaved_edits = buffer.read_with(cx, |buffer, _| buffer.has_unsaved_edits());
-        assert!(has_unsaved_edits, "Buffer should have unsaved edits");
+        assert!(has_unsaved_edits, "缓冲区应有未保存的编辑");
 
         setup
             .fs
@@ -6751,14 +6751,14 @@ mod project_settings_update_tests {
                 Default::default(),
             )
             .await
-            .expect("save should succeed");
+            .expect("保存应成功");
 
         cx.executor().run_until_parked();
 
         let has_conflict = buffer.read_with(cx, |buffer, _| buffer.has_conflict());
         assert!(
             has_conflict,
-            "Buffer should have conflict after external modification"
+            "外部修改后缓冲区应有冲突"
         );
 
         let (settings_window, _) = cx.add_window_view(|window, cx| {
@@ -6785,17 +6785,17 @@ mod project_settings_update_tests {
         let text = buffer.read_with(cx, |buffer, _| buffer.text());
         assert!(
             text.contains("\"tab_size\": 4"),
-            "Buffer should have the new tab_size after reload and update: {}",
+            "重新加载和更新后缓冲区应具有新的 tab_size:{}",
             text
         );
         assert!(
             !text.contains("// comment"),
-            "Buffer should not contain the unsaved edit after reload: {}",
+            "重新加载后缓冲区不应包含未保存的编辑:{}",
             text
         );
         assert!(
             !text.contains("99"),
-            "Buffer should not contain the external modification value: {}",
+            "缓冲区不应包含外部修改值:{}",
             text
         );
     }

@@ -51,10 +51,10 @@ fn write_tree(path: &Path, tree: serde_json::Value) {
                             .env("GIT_CONFIG_GLOBAL", "")
                             .env("GIT_CONFIG_SYSTEM", "")
                             .output()
-                            .expect("failed to init git repo");
+                            .expect("初始化 git 仓库失败");
                         assert!(
                             output.status.success(),
-                            "git init failed: {}",
+                            "git init 失败: {}",
                             String::from_utf8_lossy(&output.stderr)
                         );
                     }
@@ -68,12 +68,12 @@ fn write_tree(path: &Path, tree: serde_json::Value) {
                     fs::write(&path, contents).unwrap();
                 }
                 _ => {
-                    panic!("JSON object must contain only objects, strings, or null");
+                    panic!("JSON 对象只能包含对象、字符串或 null");
                 }
             }
         }
     } else {
-        panic!("You must pass a JSON object to this helper")
+        panic!("必须向此辅助函数传递一个 JSON 对象")
     }
 }
 

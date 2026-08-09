@@ -25,17 +25,17 @@ impl GithubBinaryMetadata {
     pub async fn read_from_file(metadata_path: &Path) -> Result<GithubBinaryMetadata> {
         let metadata_content = async_fs::read_to_string(metadata_path)
             .await
-            .with_context(|| format!("reading metadata file at {metadata_path:?}"))?;
+            .with_context(|| format!("正在读取元数据文件 {metadata_path:?}"))?;
         serde_json::from_str(&metadata_content)
-            .with_context(|| format!("parsing metadata file at {metadata_path:?}"))
+            .with_context(|| format!("正在解析元数据文件 {metadata_path:?}"))
     }
 
     pub async fn write_to_file(&self, metadata_path: &Path) -> Result<()> {
         let metadata_content = serde_json::to_string(self)
-            .with_context(|| format!("serializing metadata for {metadata_path:?}"))?;
+            .with_context(|| format!("正在序列化 {metadata_path:?} 的元数据"))?;
         async_fs::write(metadata_path, metadata_content.as_bytes())
             .await
-            .with_context(|| format!("writing metadata file at {metadata_path:?}"))?;
+            .with_context(|| format!("正在写入元数据文件 {metadata_path:?}"))?;
         Ok(())
     }
 }
@@ -47,16 +47,16 @@ pub async fn download_server_binary(
     destination_path: &Path,
     asset_kind: AssetKind,
 ) -> Result<(), anyhow::Error> {
-    log::info!("downloading github artifact from {url}");
+    log::info!("正在从 {url} 下载 GitHub 构件");
     let Some(destination_parent) = destination_path.parent() else {
-        anyhow::bail!("destination path has no parent: {destination_path:?}");
+        anyhow::bail!("目标路径没有父目录: {destination_path:?}");
     };
 
     let staging_path = staging_path(destination_parent, asset_kind)?;
     let mut response = http_client
         .get(url, Default::default(), true)
         .await
-        .with_context(|| format!("downloading release from {url}"))?;
+        .with_context(|| format!("正在从 {url} 下载发布版本"))?;
     let body = response.body_mut();
 
     if let Err(err) = extract_to_staging(body, digest, url, &staging_path, asset_kind).await {
@@ -79,9 +79,9 @@ pub async fn download_server_raw_binary(
     destination_path: &Path,
     binary_file_name: &str,
 ) -> Result<(), anyhow::Error> {
-    log::info!("downloading raw binary from {url}");
+    log::info!("正在从 {url} 下载原始二进制文件");
     let Some(destination_parent) = destination_path.parent() else {
-        anyhow::bail!("destination path has no parent: {destination_path:?}");
+        anyhow::bail!("目标路径没有父目录: {destination_path:?}");
     };
 
     let staging_path = staging_dir_path(destination_parent)?;
@@ -89,40 +89,40 @@ pub async fn download_server_raw_binary(
         let mut response = http_client
             .get(url, Default::default(), true)
             .await
-            .with_context(|| format!("downloading release from {url}"))?;
+            .with_context(|| format!("正在从 {url} 下载发布版本"))?;
 
         let binary_path = staging_path.join(binary_file_name);
         let mut writer = HashingWriter {
             writer: async_fs::File::create(&binary_path)
                 .await
-                .with_context(|| format!("creating a file {binary_path:?} for {url}"))?,
+                .with_context(|| format!("正在为 {url} 创建文件 {binary_path:?}"))?,
             hasher: Sha256::new(),
         };
         futures::io::copy(&mut BufReader::new(response.body_mut()), &mut writer)
             .await
-            .with_context(|| format!("saving binary contents from {url}"))?;
+            .with_context(|| format!("正在保存来自 {url} 的二进制内容"))?;
         let asset_sha_256 = writer
             .finish()
             .await
-            .with_context(|| format!("flushing binary contents for {url}"))?;
+            .with_context(|| format!("正在刷新 {url} 的二进制内容"))?;
 
         if let Some(expected_sha_256) = digest {
             anyhow::ensure!(
                 sha256_matches(&asset_sha_256, expected_sha_256),
-                "{url} asset got SHA-256 mismatch. Expected: {expected_sha_256}, Got: {asset_sha_256}",
+                "{url} 资源 SHA-256 不匹配。预期: {expected_sha_256},实际: {asset_sha_256}",
             );
         }
 
         util::fs::make_file_executable(&binary_path)
             .await
-            .with_context(|| format!("marking {binary_path:?} as executable"))?;
+            .with_context(|| format!("正在将 {binary_path:?} 标记为可执行文件"))?;
         finalize_download(&staging_path, destination_path).await
     }
     .await;
 
     if let Err(err) = result {
         if let Err(err) = async_fs::remove_dir_all(&staging_path).await {
-            log::warn!("failed to remove staging directory {staging_path:?}: {err:?}");
+            log::warn!("无法删除暂存目录 {staging_path:?}: {err:?}");
         }
         return Err(err);
     }
@@ -140,7 +140,7 @@ async fn extract_to_staging(
     match digest {
         Some(expected_sha_256) => {
             let temp_asset_file = tempfile::NamedTempFile::new()
-                .with_context(|| format!("creating a temporary file for {url}"))?;
+                .with_context(|| format!("正在为 {url} 创建临时文件"))?;
             let (temp_asset_file, _temp_guard) = temp_asset_file.into_parts();
             let mut writer = HashingWriter {
                 writer: async_fs::File::from(temp_asset_file),
@@ -149,30 +149,30 @@ async fn extract_to_staging(
             futures::io::copy(&mut BufReader::new(body), &mut writer)
                 .await
                 .with_context(|| {
-                    format!("saving archive contents into the temporary file for {url}")
+                    format!("正在将 {url} 的归档内容保存到临时文件")
                 })?;
             let asset_sha_256 = format!("{:x}", writer.hasher.finalize());
 
             anyhow::ensure!(
                 sha256_matches(&asset_sha_256, expected_sha_256),
-                "{url} asset got SHA-256 mismatch. Expected: {expected_sha_256}, Got: {asset_sha_256}",
+                "{url} 资源 SHA-256 不匹配。预期: {expected_sha_256},实际: {asset_sha_256}",
             );
             writer
                 .writer
                 .seek(std::io::SeekFrom::Start(0))
                 .await
-                .with_context(|| format!("seeking temporary file for {url}"))?;
+                .with_context(|| format!("正在定位 {url} 的临时文件"))?;
             stream_file_archive(&mut writer.writer, url, staging_path, asset_kind)
                 .await
                 .with_context(|| {
-                    format!("extracting downloaded asset for {url} into {staging_path:?}")
+                    format!("正在将 {url} 的下载资源解压到 {staging_path:?}")
                 })?;
         }
         None => {
             stream_response_archive(body, url, staging_path, asset_kind)
                 .await
                 .with_context(|| {
-                    format!("extracting response for asset {url} into {staging_path:?}")
+                    format!("正在将 {url} 资源的响应解压到 {staging_path:?}")
                 })?;
         }
     }
@@ -183,7 +183,7 @@ fn staging_dir_path(parent: &Path) -> Result<PathBuf> {
     let dir = tempfile::Builder::new()
         .prefix(".tmp-github-download-")
         .tempdir_in(parent)
-        .with_context(|| format!("creating staging directory in {parent:?}"))?;
+        .with_context(|| format!("正在 {parent:?} 中创建暂存目录"))?;
     Ok(dir.keep())
 }
 
@@ -194,10 +194,10 @@ fn staging_path(parent: &Path, asset_kind: AssetKind) -> Result<PathBuf> {
             let path = tempfile::Builder::new()
                 .prefix(".tmp-github-download-")
                 .tempfile_in(parent)
-                .with_context(|| format!("creating staging file in {parent:?}"))?
+                .with_context(|| format!("正在 {parent:?} 中创建暂存文件"))?
                 .into_temp_path()
                 .keep()
-                .with_context(|| format!("persisting staging file in {parent:?}"))?;
+                .with_context(|| format!("正在 {parent:?} 中持久化暂存文件"))?;
             Ok(path)
         }
     }
@@ -207,12 +207,12 @@ async fn cleanup_staging_path(staging_path: &Path, asset_kind: AssetKind) {
     match asset_kind {
         AssetKind::TarGz | AssetKind::TarBz2 | AssetKind::Zip => {
             if let Err(err) = async_fs::remove_dir_all(staging_path).await {
-                log::warn!("failed to remove staging directory {staging_path:?}: {err:?}");
+                log::warn!("无法删除暂存目录 {staging_path:?}: {err:?}");
             }
         }
         AssetKind::Gz => {
             if let Err(err) = async_fs::remove_file(staging_path).await {
-                log::warn!("failed to remove staging file {staging_path:?}: {err:?}");
+                log::warn!("无法删除暂存文件 {staging_path:?}: {err:?}");
             }
         }
     }
@@ -222,7 +222,7 @@ async fn finalize_download(staging_path: &Path, destination_path: &Path) -> Resu
     _ = async_fs::remove_dir_all(destination_path).await;
     async_fs::rename(staging_path, destination_path)
         .await
-        .with_context(|| format!("renaming {staging_path:?} to {destination_path:?}"))?;
+        .with_context(|| format!("正在将 {staging_path:?} 重命名为 {destination_path:?}"))?;
     Ok(())
 }
 
@@ -299,7 +299,7 @@ async fn unpack_tar_archive(
     archive
         .unpack(&destination_path)
         .await
-        .with_context(|| format!("extracting {url} to {destination_path:?}"))?;
+        .with_context(|| format!("正在将 {url} 解压到 {destination_path:?}"))?;
     Ok(())
 }
 
@@ -312,11 +312,11 @@ async fn extract_gz(
     let mut file = async_fs::File::create(&destination_path)
         .await
         .with_context(|| {
-            format!("creating a file {destination_path:?} for a download from {url}")
+            format!("正在为从 {url} 下载创建文件 {destination_path:?}")
         })?;
     futures::io::copy(&mut decompressed_bytes, &mut file)
         .await
-        .with_context(|| format!("extracting {url} to {destination_path:?}"))?;
+        .with_context(|| format!("正在将 {url} 解压到 {destination_path:?}"))?;
     Ok(())
 }
 
@@ -437,7 +437,7 @@ mod tests {
                     .unwrap()
                     .permissions()
                     .mode();
-                assert_eq!(mode & 0o111, 0o111, "binary should be executable");
+                assert_eq!(mode & 0o111, 0o111, "二进制文件应为可执行文件");
             }
         });
     }
@@ -461,10 +461,10 @@ mod tests {
             .await
             .unwrap_err();
 
-            assert!(error.to_string().contains("SHA-256 mismatch"));
+            assert!(error.to_string().contains("SHA-256 不匹配"));
             assert!(!destination_path.exists());
             let leftover_entries = std::fs::read_dir(temp_dir.path()).unwrap().count();
-            assert_eq!(leftover_entries, 0, "staging directory should be removed");
+            assert_eq!(leftover_entries, 0, "暂存目录应被删除");
         });
     }
 
@@ -523,10 +523,10 @@ mod tests {
             .await
             .unwrap_err();
 
-            assert!(error.to_string().contains("SHA-256 mismatch"));
+            assert!(error.to_string().contains("SHA-256 不匹配"));
             assert!(!destination_path.exists());
             let leftover_entries = std::fs::read_dir(temp_dir.path()).unwrap().count();
-            assert_eq!(leftover_entries, 0, "staging directory should be removed");
+            assert_eq!(leftover_entries, 0, "暂存目录应被删除");
         });
     }
 }

@@ -74,7 +74,7 @@ pub async fn move_folder_files_to_folder<P: AsRef<Path>>(
     target_path: P,
 ) -> Result<()> {
     if !target_path.as_ref().is_dir() {
-        bail!("Folder not found or is not a directory");
+        bail!("未找到文件夹或该路径不是目录");
     }
 
     let mut entries = fs::read_dir(source_path.as_ref()).await?;

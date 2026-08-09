@@ -92,7 +92,7 @@ impl<T: ReceiveData> DataOffer<T> {
         match read_fd_with_timeout(fd, PIPE_READ_TIMEOUT) {
             Ok(bytes) => Some(bytes),
             Err(err) => {
-                log::error!("error reading clipboard pipe: {err:?}");
+                log::error!("读取剪贴板管道时出错: {err:?}");
                 None
             }
         }
@@ -108,7 +108,7 @@ impl<T: ReceiveData> DataOffer<T> {
         let text_content = match String::from_utf8(bytes) {
             Ok(content) => content,
             Err(e) => {
-                log::error!("Failed to convert clipboard content to UTF-8: {}", e);
+                log::error!("无法将剪贴板内容转换为 UTF-8: {}", e);
                 return None;
             }
         };

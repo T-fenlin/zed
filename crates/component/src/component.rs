@@ -286,7 +286,7 @@ impl ComponentStatus {
                 "These components are design complete or partially implemented, \
                 and are ready for an engineer to complete their implementation."
             }
-            ComponentStatus::Live => "These components are ready for use in the app.",
+            ComponentStatus::Live => "这些组件已可在应用中使用。",
             ComponentStatus::Deprecated => {
                 "These components are no longer recommended for use in the app, \
                 and may be removed in a future release."

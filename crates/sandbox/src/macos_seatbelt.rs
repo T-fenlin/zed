@@ -101,7 +101,7 @@ impl SeatbeltConfigFile {
         permissions: SandboxPermissions,
     ) -> Result<Self> {
         let mut file =
-            NamedTempFile::new().context("failed to create temporary Seatbelt config file")?;
+            NamedTempFile::new().context("创建临时 Seatbelt 配置文件失败")?;
 
         let config = generate_seatbelt_config(
             writable_directories,
@@ -110,8 +110,8 @@ impl SeatbeltConfigFile {
             permissions,
         )?;
         file.write_all(config.as_bytes())
-            .context("failed to write Seatbelt config")?;
-        file.flush().context("failed to flush Seatbelt config")?;
+            .context("写入 Seatbelt 配置失败")?;
+        file.flush().context("刷新 Seatbelt 配置失败")?;
 
         let path = file.path().to_path_buf();
 
@@ -169,7 +169,7 @@ pub fn wrap_invocation(
             .to_str()
             .with_context(|| {
                 format!(
-                    "Seatbelt config file path contains invalid UTF-8: {}",
+                    "Seatbelt 配置文件路径包含无效的 UTF-8: {}",
                     config_file.path.display()
                 )
             })?
@@ -446,7 +446,7 @@ fn generate_seatbelt_config(
 fn escape_sandbox_path(path: &Path) -> Result<String> {
     let path_str = path
         .to_str()
-        .with_context(|| format!("path contains invalid UTF-8: {}", path.display()))?;
+        .with_context(|| format!("路径包含无效的 UTF-8: {}", path.display()))?;
     Ok(path_str.replace('\\', "\\\\").replace('"', "\\\""))
 }
 
@@ -606,14 +606,14 @@ mod tests {
             .tempdir_in("/tmp")
             .unwrap();
         let socket_path = temp_dir.path().join("agent.sock");
-        let listener = UnixListener::bind(&socket_path).expect("test socket should bind");
+        let listener = UnixListener::bind(&socket_path).expect("测试套接字应能绑定");
         listener
             .set_nonblocking(true)
-            .expect("listener should switch to non-blocking");
+            .expect("监听器应切换到非阻塞模式");
 
         let canonical_socket_path = socket_path
             .canonicalize()
-            .expect("bound socket path should canonicalize");
+            .expect("绑定的套接字路径应规范化");
 
         // Accept (and immediately drop) a single connection, with a bounded wait
         // so the test can't hang if the sandbox blocks the connection instead.
@@ -652,11 +652,11 @@ mod tests {
             .args(&args)
             .stdin(Stdio::null())
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             accepted.join().unwrap(),
-            "sandbox should allow connecting to the allow-listed unix socket: stderr={} stdout={}",
+            "沙箱应允许连接到白名单中的 Unix 套接字: stderr={} stdout={}",
             String::from_utf8_lossy(&output.stderr),
             String::from_utf8_lossy(&output.stdout),
         );
@@ -714,11 +714,11 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             output.status.success(),
-            "sandbox should allow protected reads but deny protected writes: stderr={} stdout={}",
+            "沙箱应允许受保护的读取但拒绝受保护的写入: stderr={} stdout={}",
             String::from_utf8_lossy(&output.stderr),
             String::from_utf8_lossy(&output.stdout),
         );
@@ -762,11 +762,11 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             output.status.success(),
-            "protected paths should stay readable but not writable even with unrestricted writes: stderr={} stdout={}",
+            "即使允许无限制写入,受保护的路径也应保持可读但不可写: stderr={} stdout={}",
             String::from_utf8_lossy(&output.stderr),
             String::from_utf8_lossy(&output.stdout),
         );
@@ -849,7 +849,7 @@ mod tests {
         let path = PathBuf::from(OsString::from_vec(b"/path/with/invalid/\xFF".to_vec()));
         let error = escape_sandbox_path(&path).unwrap_err();
 
-        assert!(error.to_string().contains("invalid UTF-8"));
+        assert!(error.to_string().contains("无效的 UTF-8"));
     }
 
     #[test]
@@ -891,11 +891,11 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             output.status.success(),
-            "sandbox should allow reading /etc/hosts: {}",
+            "沙箱应允许读取 /etc/hosts: {}",
             String::from_utf8_lossy(&output.stderr)
         );
     }
@@ -918,11 +918,11 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             output.status.success(),
-            "sandbox should allow redirecting to /dev/null by default: {}",
+            "沙箱默认应允许重定向到 /dev/null: {}",
             String::from_utf8_lossy(&output.stderr)
         );
     }
@@ -948,11 +948,11 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             output.status.success(),
-            "sandbox should allow redirecting to /dev/null: {}",
+            "沙箱应允许重定向到 /dev/null: {}",
             String::from_utf8_lossy(&output.stderr)
         );
     }
@@ -983,14 +983,14 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             output.status.success(),
-            "sandbox should allow writing to project dir: {}",
+            "沙箱应允许写入项目目录: {}",
             String::from_utf8_lossy(&output.stderr)
         );
-        assert!(test_file.exists(), "file should have been created");
+        assert!(test_file.exists(), "文件应已创建");
     }
 
     #[test]
@@ -1021,14 +1021,14 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             output.status.success(),
-            "sandbox should allow writing to a non-first writable directory: {}",
+            "沙箱应允许写入非第一个可写目录: {}",
             String::from_utf8_lossy(&output.stderr)
         );
-        assert!(test_file.exists(), "file should have been created");
+        assert!(test_file.exists(), "文件应已创建");
     }
 
     #[test]
@@ -1057,14 +1057,14 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             output.status.success(),
-            "sandbox should allow writing to project dir by default: {}",
+            "沙箱默认应允许写入项目目录: {}",
             String::from_utf8_lossy(&output.stderr)
         );
-        assert!(test_file.exists(), "file should have been created");
+        assert!(test_file.exists(), "文件应已创建");
     }
 
     #[test]
@@ -1094,14 +1094,14 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             output.status.success(),
-            "sandbox should allow writing to system tmp when filesystem writes are allowed: {}",
+            "当允许文件系统写入时,沙箱应允许写入系统临时目录: {}",
             String::from_utf8_lossy(&output.stderr)
         );
-        assert!(test_file.exists(), "file should have been created");
+        assert!(test_file.exists(), "文件应已创建");
         let _ = std::fs::remove_file(&test_file);
     }
 
@@ -1131,15 +1131,15 @@ mod tests {
         let output = Command::new(&program)
             .args(&args)
             .output()
-            .expect("failed to execute sandbox-exec");
+            .expect("执行 sandbox-exec 失败");
 
         assert!(
             !output.status.success(),
-            "sandbox should deny writing outside project dir when filesystem writes are not allowed"
+            "当不允许文件系统写入时,沙箱应拒绝在项目目录之外写入"
         );
         assert!(
             !forbidden_file.exists(),
-            "file should not have been created"
+            "文件不应被创建"
         );
     }
 }

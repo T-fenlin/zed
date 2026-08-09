@@ -51,17 +51,17 @@ impl RemoteClientDelegate for BenchmarkRemoteClient {
         tx: oneshot::Sender<EncryptedPassword>,
         _cx: &mut gpui::AsyncApp,
     ) {
-        eprintln!("SSH asking for password: {}", prompt);
+        eprintln!("SSH 请求输入密码:{}", prompt);
         match rpassword::prompt_password(&prompt) {
             Ok(password) => match EncryptedPassword::try_from(password.as_ref()) {
                 Ok(encrypted) => {
                     if tx.send(encrypted).is_err() {
-                        eprintln!("Failed to send password");
+                        eprintln!("发送密码失败");
                     }
                 }
-                Err(e) => eprintln!("Failed to encrypt password: {e}"),
+                Err(e) => eprintln!("加密密码失败:{e}"),
             },
-            Err(e) => eprintln!("Failed to read password: {e}"),
+            Err(e) => eprintln!("读取密码失败:{e}"),
         }
     }
 
@@ -87,7 +87,7 @@ impl RemoteClientDelegate for BenchmarkRemoteClient {
 
     fn set_status(&self, status: Option<&str>, _: &mut gpui::AsyncApp) {
         if let Some(status) = status {
-            println!("SSH status: {status}");
+            println!("SSH 状态:{status}");
         }
     }
 }
@@ -101,7 +101,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     let query_str = args
         .query
-        .ok_or_else(|| anyhow!("-q/--query is required"))?;
+        .ok_or_else(|| anyhow!("需要提供 -q/--query 参数"))?;
     let query = if args.regex {
         SearchQuery::regex(
             query_str,
@@ -141,7 +141,7 @@ fn main() -> Result<(), anyhow::Error> {
 
             cx.spawn(async move |cx| {
                 let project = if let Some(ssh_target) = args.ssh {
-                    println!("Setting up SSH connection for {}", &ssh_target);
+                    println!("正在为 {} 建立 SSH 连接", &ssh_target);
                     let ssh_connection_options = SshConnectionOptions::parse_command_line(&ssh_target)?;
 
                     let connection_options = remote::RemoteConnectionOptions::from(ssh_connection_options);
@@ -149,11 +149,11 @@ fn main() -> Result<(), anyhow::Error> {
                     let remote_connection = remote::connect(connection_options.clone(), delegate.clone(), cx).await.unwrap();
 
                     let (_tx, rx) = oneshot::channel();
-                    let remote_client =  cx.update(|cx| remote::RemoteClient::new(ConnectionIdentifier::setup(), remote_connection, rx, delegate.clone(), cx )).await?.ok_or_else(|| anyhow!("ssh initialization returned None"))?;
+                    let remote_client =  cx.update(|cx| remote::RemoteClient::new(ConnectionIdentifier::setup(), remote_connection, rx, delegate.clone(), cx )).await?.ok_or_else(|| anyhow!("SSH 初始化返回空值"))?;
 
                     cx.update(|cx| Project::remote(remote_client,  client, node, user_store, registry, fs, false, cx))
                 } else {
-                    println!("Setting up local project");
+                    println!("正在设置本地项目");
                     cx.update(|cx| Project::local(
                     client,
                     node,
@@ -168,7 +168,7 @@ fn main() -> Result<(), anyhow::Error> {
                     cx,
                 ))
                 };
-                println!("Loading worktrees");
+                println!("正在加载工作树");
                 let worktrees = project.update(cx, |this, cx| {
                     args.worktrees
                         .into_iter()
@@ -197,9 +197,9 @@ fn main() -> Result<(), anyhow::Error> {
                     }
 
                 }
-                println!("Worktrees loaded");
+                println!("工作树加载完成");
 
-                println!("Starting a project search");
+                println!("正在开始项目搜索");
                 let timer = std::time::Instant::now();
                 let mut first_match = None;
                 let matches = project.update(cx, |this, cx| this.search(query, cx));
@@ -209,7 +209,7 @@ fn main() -> Result<(), anyhow::Error> {
                     if first_match.is_none() {
                         let time = timer.elapsed();
                         first_match = Some(time);
-                        println!("First match found after {time:?}");
+                        println!("在 {time:?} 后找到首个匹配项");
                     }
                     match match_result {
                         SearchResult::Buffer { ranges, .. } => {
@@ -222,7 +222,7 @@ fn main() -> Result<(), anyhow::Error> {
                 }
                 let elapsed = timer.elapsed();
                 println!(
-                    "Finished project search after {elapsed:?}. Matched {matched_files} files and {matched_chunks} excerpts"
+                    "在 {elapsed:?} 后完成项目搜索。匹配了 {matched_files} 个文件和 {matched_chunks} 个片段"
                 );
                 drop(project);
                 cx.update(|cx| cx.quit());

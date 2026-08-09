@@ -517,7 +517,7 @@ impl RenderOnce for DiffStyleControls {
                 IconButton::new("diff-style-unified", IconName::DiffUnified)
                     .icon_size(IconSize::Small)
                     .toggle_state(diff_view_style == DiffViewStyle::Unified)
-                    .tooltip(Tooltip::text("Unified"))
+                    .tooltip(Tooltip::text("统一"))
                     .on_click({
                         let splittable_editor = self.splittable_editor.clone();
                         move |_, window, cx| {
@@ -536,9 +536,9 @@ impl RenderOnce for DiffStyleControls {
                     .toggle_state(is_split_set)
                     .tooltip(Tooltip::element(move |_, cx| {
                         let message = if is_split_pending {
-                            format!("Split when wider than {} columns", min_columns).into()
+                            format!("宽度超过 {} 列时拆分", min_columns).into()
                         } else {
-                            SharedString::from("Split")
+                            SharedString::from("拆分")
                         };
 
                         v_flex()
@@ -555,7 +555,7 @@ impl RenderOnce for DiffStyleControls {
                                         Some(TextSize::Small.rems(cx).into()),
                                         false,
                                     ))
-                                    .child("click to change min width"),
+                                    .child("点击更改最小宽度"),
                             )
                             .into_any_element()
                     }))
@@ -1922,7 +1922,7 @@ impl SplittableEditor {
         }
 
         eprintln!("{}", "═".repeat(terminal_width));
-        eprintln!("Legend: + added, - deleted, ~ modified, ~~~ block/spacer row");
+        eprintln!("图例:+ 新增,- 删除,~ 修改,~~~ 块/间隔行");
         eprintln!();
     }
 

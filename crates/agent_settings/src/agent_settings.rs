@@ -178,24 +178,24 @@ fn parse_auto_compact_threshold(raw: &str) -> anyhow::Result<AutoCompactThreshol
         let value: f64 = percent
             .trim_end()
             .parse()
-            .with_context(|| format!("invalid auto_compact threshold percentage {raw:?}"))?;
+            .with_context(|| format!("无效的自动压缩阈值百分比 {raw:?}"))?;
         anyhow::ensure!(
             value > 0.0 && value <= 100.0,
-            "auto_compact threshold percentage must be between 0% and 100%, got {raw:?}"
+            "自动压缩阈值百分比必须在 0% 到 100% 之间,实际为 {raw:?}"
         );
         Ok(AutoCompactThreshold::Percentage(value / 100.0))
     } else {
         let tokens: i64 = trimmed.parse().with_context(|| {
             format!(
                 "invalid auto_compact threshold {raw:?}; \
-                 expected a percentage like \"90%\" or an integer number of tokens"
+                 expected a percentage like \"90%\" 或整数形式的 token 数量"
             )
         })?;
         match tokens.cmp(&0) {
             Greater => Ok(AutoCompactThreshold::TokensUsed(tokens as u64)),
             Less => Ok(AutoCompactThreshold::TokensRemaining(tokens.unsigned_abs())),
             Equal => {
-                anyhow::bail!("auto_compact threshold of 0 is not valid")
+                anyhow::bail!("自动压缩阈值不能为 0")
             }
         }
     }
@@ -408,7 +408,7 @@ impl Default for AgentProfileId {
     }
 }
 
-/// Persistent "allow always" sandbox grants for agent-run terminal commands.
+/// Persistent "始终允许" sandbox grants for agent-run terminal commands.
 ///
 /// Coverage decisions for these grants are made in
 /// `agent::sandboxing::ThreadSandboxGrants::covers_with_persistent`, which
@@ -425,11 +425,11 @@ pub struct SandboxPermissions {
     pub network_hosts: Vec<String>,
     pub allow_fs_write_all: bool,
     /// Persistently run agent terminal commands outside the OS sandbox. This is
-    /// the model-facing "off switch": when set, the sandboxed terminal tool is
+    /// the model-facing "关闭开关": when set, the sandboxed terminal tool is
     /// not exposed and the system prompt omits the sandbox section, so the
     /// model uses the plain `terminal` tool (on Windows, WSL sandbox setup is
     /// skipped). Distinct from the model-requested `unsandboxed: true` escape
-    /// approved "once" or "for this thread", which keeps the sandboxed
+    /// approved "once" or "仅此对话线程", which keeps the sandboxed
     /// tool/prompt in place — see `agent::sandboxing`.
     pub allow_unsandboxed: bool,
     /// Directory subtree grants, each paired with the canonical
@@ -563,31 +563,31 @@ pub static HARDCODED_SECURITY_RULES: LazyLock<HardcodedSecurityRules> = LazyLock
                 &format!(r"\brm\s+{FLAGS}(--\s+)?/\*?{TRAILING_FLAGS}$"),
                 false,
             )
-            .expect("hardcoded regex should compile"),
+            .expect("硬编码的正则表达式应能编译"),
             // Recursive deletion of home via tilde - "rm -rf ~", "rm -rf ~/"
             CompiledRegex::new(
                 &format!(r"\brm\s+{FLAGS}(--\s+)?~/?\*?{TRAILING_FLAGS}$"),
                 false,
             )
-            .expect("hardcoded regex should compile"),
+            .expect("硬编码的正则表达式应能编译"),
             // Recursive deletion of home via env var - "rm -rf $HOME", "rm -rf ${HOME}"
             CompiledRegex::new(
                 &format!(r"\brm\s+{FLAGS}(--\s+)?(\$HOME|\$\{{HOME\}})/?(\*)?{TRAILING_FLAGS}$"),
                 false,
             )
-            .expect("hardcoded regex should compile"),
+            .expect("硬编码的正则表达式应能编译"),
             // Recursive deletion of current directory - "rm -rf .", "rm -rf ./"
             CompiledRegex::new(
                 &format!(r"\brm\s+{FLAGS}(--\s+)?\./?\*?{TRAILING_FLAGS}$"),
                 false,
             )
-            .expect("hardcoded regex should compile"),
+            .expect("硬编码的正则表达式应能编译"),
             // Recursive deletion of parent directory - "rm -rf ..", "rm -rf ../"
             CompiledRegex::new(
                 &format!(r"\brm\s+{FLAGS}(--\s+)?\.\./?\*?{TRAILING_FLAGS}$"),
                 false,
             )
-            .expect("hardcoded regex should compile"),
+            .expect("硬编码的正则表达式应能编译"),
         ],
     }
 });
@@ -928,7 +928,7 @@ fn compile_tool_permissions(content: Option<settings::ToolPermissionsContent>) -
             // attempt to use a tool with invalid patterns in their settings.
             for invalid in &invalid_patterns {
                 log::error!(
-                    "Invalid regex pattern in tool_permissions for '{}' tool ({}): '{}' - {}",
+                    "tool_permissions 中 '{}' 工具 ({}) 的正则表达式无效: '{}' - {}",
                     tool_name,
                     invalid.rule_type,
                     invalid.pattern,
@@ -966,7 +966,7 @@ fn compile_regex_rules(
             errors.push(InvalidRegexPattern {
                 pattern: rule.pattern,
                 rule_type: rule_type.to_string(),
-                error: "empty regex patterns are not allowed".to_string(),
+                error: "不允许使用空的正则表达式".to_string(),
             });
             continue;
         }
@@ -1078,7 +1078,7 @@ mod tests {
                 .unwrap();
             assert!(
                 new_text.contains(r#""terminal_init_command": " claude --resume ""#),
-                "updated settings JSON should include terminal_init_command, got {new_text}"
+                "更新后的设置 JSON 应包含 terminal_init_command,实际为 {new_text}"
             );
             store.set_user_settings(&new_text, cx).unwrap();
         });
@@ -1405,7 +1405,7 @@ mod tests {
             .invalid_patterns
             .iter()
             .find(|p| p.rule_type == "always_deny")
-            .expect("should have invalid pattern from always_deny");
+            .expect("应包含来自 always_deny 的无效模式");
         assert_eq!(deny_invalid.pattern, "[invalid(regex");
         assert!(!deny_invalid.error.is_empty());
 
@@ -1413,7 +1413,7 @@ mod tests {
             .invalid_patterns
             .iter()
             .find(|p| p.rule_type == "always_allow")
-            .expect("should have invalid pattern from always_allow");
+            .expect("应包含来自 always_allow 的无效模式");
         assert_eq!(allow_invalid.pattern, "[another_bad");
 
         // ToolPermissions helper methods should work
@@ -1439,16 +1439,16 @@ mod tests {
         let terminal = permissions.tools.get("terminal").unwrap();
 
         assert!(
-            terminal.always_deny[0].is_match("run dangerous command"),
-            "Deny rule should match"
+            terminal.always_deny[0].is_match("运行危险命令"),
+            "拒绝规则应匹配"
         );
         assert!(
-            terminal.always_allow[0].is_match("run dangerous command"),
-            "Allow rule should also match (but deny takes precedence at evaluation time)"
+            terminal.always_allow[0].is_match("运行危险命令"),
+            "允许规则也应匹配(但在评估时拒绝规则优先)"
         );
         assert!(
-            terminal.always_confirm[0].is_match("run dangerous command"),
-            "Confirm rule should also match (but deny takes precedence at evaluation time)"
+            terminal.always_confirm[0].is_match("运行危险命令"),
+            "确认规则也应匹配(但在评估时拒绝规则优先)"
         );
     }
 
@@ -1469,12 +1469,12 @@ mod tests {
         let terminal = permissions.tools.get("terminal").unwrap();
 
         assert!(
-            terminal.always_confirm[0].is_match("do risky thing"),
-            "Confirm rule should match"
+            terminal.always_confirm[0].is_match("执行有风险的操作"),
+            "确认规则应匹配"
         );
         assert!(
-            terminal.always_allow[0].is_match("do risky thing"),
-            "Allow rule should also match (but confirm takes precedence at evaluation time)"
+            terminal.always_allow[0].is_match("执行有风险的操作"),
+            "允许规则也应匹配(但在评估时确认规则优先)"
         );
     }
 
@@ -1497,19 +1497,19 @@ mod tests {
 
         assert!(
             terminal.always_deny[0].is_match("echo hello && rm -rf /"),
-            "Should match rm -rf in the middle of a command chain"
+            "应匹配命令链中间的 rm -rf"
         );
         assert!(
             terminal.always_deny[0].is_match("cd /tmp; rm -rf *"),
-            "Should match rm -rf after semicolon"
+            "应匹配分号后的 rm -rf"
         );
         assert!(
             terminal.always_deny[1].is_match("cat /etc/passwd | grep root"),
-            "Should match /etc/passwd in a pipeline"
+            "应匹配管道中的 /etc/passwd"
         );
         assert!(
             terminal.always_deny[1].is_match("vim /etc/passwd"),
-            "Should match /etc/passwd as argument"
+            "应匹配作为参数的 /etc/passwd"
         );
     }
 
@@ -1518,11 +1518,11 @@ mod tests {
         let fork_bomb_regex = CompiledRegex::new(r":\(\)\{\s*:\|:&\s*\};:", false).unwrap();
         assert!(
             fork_bomb_regex.is_match(":(){ :|:& };:"),
-            "Should match the classic fork bomb"
+            "应匹配经典的 fork 炸弹"
         );
         assert!(
             fork_bomb_regex.is_match(":(){ :|:&};:"),
-            "Should match fork bomb without spaces"
+            "应匹配不带空格的 fork 炸弹"
         );
     }
 
@@ -1601,30 +1601,30 @@ mod tests {
         assert_eq!(
             terminal.always_allow.len(),
             1,
-            "Should have one always_allow pattern"
+            "应有一个 always_allow 模式"
         );
 
         // Verify the pattern matches "echo hello"
         assert!(
             terminal.always_allow[0].is_match("echo hello"),
-            "Pattern ^echo\\s should match 'echo hello'"
+            "模式 ^echo\\s 应匹配 'echo hello'"
         );
 
         // Verify the pattern does NOT match "git status"
         assert!(
             !terminal.always_allow[0].is_match("git status"),
-            "Pattern ^echo\\s should NOT match 'git status'"
+            "模式 ^echo\\s 不应匹配 'git status'"
         );
 
         // Verify the pattern does NOT match "echoHello" (no space)
         assert!(
             !terminal.always_allow[0].is_match("echoHello"),
-            "Pattern ^echo\\s should NOT match 'echoHello' (requires whitespace)"
+            "模式 ^echo\\s 不应匹配 'echoHello'(需要空白字符)"
         );
 
         assert_eq!(
             terminal.default, None,
-            "default should be None when not specified"
+            "未指定时默认值应为 None"
         );
     }
 
@@ -1670,10 +1670,10 @@ mod tests {
         let value: serde_json_lenient::Value = serde_json_lenient::from_str(default_json).unwrap();
         let agent = value
             .get("agent")
-            .expect("default.json should have 'agent' key");
+            .expect("default.json 应包含 'agent' 键");
         let tool_permissions_value = agent
             .get("tool_permissions")
-            .expect("agent should have 'tool_permissions' key");
+            .expect("agent 应包含 'tool_permissions' 键");
 
         let content: ToolPermissionsContent =
             serde_json_lenient::from_value(tool_permissions_value.clone()).unwrap();
@@ -1683,7 +1683,7 @@ mod tests {
 
         assert!(
             permissions.tools.is_empty(),
-            "default.json should not have any active tool-specific rules, found: {:?}",
+            "default.json 不应包含任何活动的工具特定规则,发现: {:?}",
             permissions.tools.keys().collect::<Vec<_>>()
         );
     }
@@ -1715,7 +1715,7 @@ mod tests {
         // Should be Agent with an empty user layout (user hasn't customized).
         let layout = AgentSettings::get_layout(cx);
         let WindowLayout::Agent(Some(user_layout)) = layout else {
-            panic!("expected Agent(Some), got {:?}", layout);
+            panic!("预期 Agent(Some),实际为 {:?}", layout);
         };
         assert_eq!(user_layout, PanelLayout::default());
 
@@ -1730,7 +1730,7 @@ mod tests {
 
         let layout = AgentSettings::get_layout(cx);
         let WindowLayout::Agent(Some(user_layout)) = layout else {
-            panic!("expected Agent(Some), got {:?}", layout);
+            panic!("预期 Agent(Some),实际为 {:?}", layout);
         };
         assert_eq!(user_layout.agent_dock, Some(DockPosition::Left));
         assert_eq!(user_layout.project_panel_dock, None);
@@ -1754,7 +1754,7 @@ mod tests {
 
         let layout = AgentSettings::get_layout(cx);
         let WindowLayout::Custom(user_layout) = layout else {
-            panic!("expected Custom, got {:?}", layout);
+            panic!("预期 Custom,实际为 {:?}", layout);
         };
         assert_eq!(user_layout.agent_dock, Some(DockPosition::Left));
         assert_eq!(user_layout.project_panel_dock, Some(DockSide::Left));
@@ -1783,7 +1783,7 @@ mod tests {
 
         let original = AgentSettings::get_layout(cx);
         let WindowLayout::Custom(ref original_user_layout) = original else {
-            panic!("expected Custom, got {:?}", original);
+            panic!("预期 Custom,实际为 {:?}", original);
         };
         assert_eq!(original_user_layout.agent_dock, Some(DockPosition::Right));
         assert_eq!(
@@ -1812,7 +1812,7 @@ mod tests {
         // Should be back to the same custom layout.
         let restored = AgentSettings::get_layout(cx);
         let WindowLayout::Custom(restored_user_layout) = restored else {
-            panic!("expected Custom, got {:?}", restored);
+            panic!("预期 Custom,实际为 {:?}", restored);
         };
         assert_eq!(restored_user_layout.agent_dock, Some(DockPosition::Right));
         assert_eq!(
@@ -1965,7 +1965,7 @@ mod tests {
             let layout = AgentSettings::get_layout(cx);
             let WindowLayout::Custom(user_layout) = layout else {
                 panic!(
-                    "expected Custom (editor values override agent defaults), got {:?}",
+                    "预期 Custom(编辑器值覆盖代理默认值),实际为 {:?}",
                     layout
                 );
             };

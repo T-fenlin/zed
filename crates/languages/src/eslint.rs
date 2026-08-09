@@ -126,7 +126,7 @@ impl LspInstaller for EsLintLspAdapter {
                 .await?;
 
                 let mut dir = fs::read_dir(&destination_path).await?;
-                let first = dir.next().await.context("missing first file")??;
+                let first = dir.next().await.context("缺少第一个文件")??;
                 let repo_root = destination_path.join("vscode-eslint");
                 fs::rename(first.path(), &repo_root).await?;
 
@@ -573,7 +573,7 @@ fn match_glob_pattern(pattern: &str, file_path: &Path) -> Option<String> {
 async fn handle_symlink(src_dir: PathBuf, dest_dir: PathBuf) -> Result<()> {
     anyhow::ensure!(
         fs::metadata(&src_dir).await.is_ok(),
-        "Directory {src_dir:?} is not present"
+        "目录 {src_dir:?} 不存在"
     );
     if fs::metadata(&dest_dir).await.is_ok() {
         fs::remove_file(&dest_dir).await?;
@@ -815,7 +815,7 @@ mod tests {
 
         #[test]
         fn test_eslint_8_flat_root_repo_uses_experimental_flag() {
-            let version = Version::parse("8.56.0").expect("valid ESLint version");
+            let version = Version::parse("8.56.0").expect("有效的 ESLint 版本");
             let settings =
                 eslint_settings_overrides_for(Some(&version), Some(EslintConfigKind::Flat));
 
@@ -830,7 +830,7 @@ mod tests {
 
         #[test]
         fn test_eslint_8_57_flat_repo_uses_no_override() {
-            let version = Version::parse("8.57.0").expect("valid ESLint version");
+            let version = Version::parse("8.57.0").expect("有效的 ESLint 版本");
             let settings =
                 eslint_settings_overrides_for(Some(&version), Some(EslintConfigKind::Flat));
 
@@ -839,7 +839,7 @@ mod tests {
 
         #[test]
         fn test_eslint_9_legacy_repo_uses_use_flat_config_false() {
-            let version = Version::parse("9.0.0").expect("valid ESLint version");
+            let version = Version::parse("9.0.0").expect("有效的 ESLint 版本");
             let settings =
                 eslint_settings_overrides_for(Some(&version), Some(EslintConfigKind::Legacy));
 
@@ -854,7 +854,7 @@ mod tests {
 
         #[test]
         fn test_eslint_10_repo_uses_no_override() {
-            let version = Version::parse("10.0.0").expect("valid ESLint version");
+            let version = Version::parse("10.0.0").expect("有效的 ESLint 版本");
             let settings =
                 eslint_settings_overrides_for(Some(&version), Some(EslintConfigKind::Flat));
 
@@ -871,7 +871,7 @@ mod tests {
             .await;
             let worktree_root = PathBuf::from(unix_path_to_platform("/workspace"));
             let requested_file = PathBuf::from(unix_path_to_platform("/workspace/src/index.js"));
-            let version = Version::parse("8.56.0").expect("valid ESLint version");
+            let version = Version::parse("8.56.0").expect("有效的 ESLint 版本");
 
             let config_kind = find_eslint_config_kind(
                 &worktree_root,
@@ -894,7 +894,7 @@ mod tests {
             .await;
             let worktree_root = PathBuf::from(unix_path_to_platform("/workspace"));
             let requested_file = PathBuf::from(unix_path_to_platform("/workspace/src/index.js"));
-            let version = Version::parse("8.57.0").expect("valid ESLint version");
+            let version = Version::parse("8.57.0").expect("有效的 ESLint 版本");
 
             let config_kind = find_eslint_config_kind(
                 &worktree_root,
@@ -917,7 +917,7 @@ mod tests {
             .await;
             let worktree_root = PathBuf::from(unix_path_to_platform("/workspace"));
             let requested_file = PathBuf::from(unix_path_to_platform("/workspace/src/index.js"));
-            let version = Version::parse("10.0.0").expect("valid ESLint version");
+            let version = Version::parse("10.0.0").expect("有效的 ESLint 版本");
 
             let config_kind = find_eslint_config_kind(
                 &worktree_root,
@@ -951,7 +951,7 @@ mod tests {
             let requested_file = PathBuf::from(unix_path_to_platform(
                 "/workspace/packages/web/src/index.js",
             ));
-            let version = Version::parse("8.56.0").expect("valid ESLint version");
+            let version = Version::parse("8.56.0").expect("有效的 ESLint 版本");
 
             let config_kind = find_eslint_config_kind(
                 &worktree_root,
@@ -984,7 +984,7 @@ mod tests {
             let requested_file = PathBuf::from(unix_path_to_platform(
                 "/workspace/packages/web/src/index.js",
             ));
-            let version = Version::parse("9.0.0").expect("valid ESLint version");
+            let version = Version::parse("9.0.0").expect("有效的 ESLint 版本");
 
             let config_kind = find_eslint_config_kind(
                 &worktree_root,
@@ -1141,7 +1141,7 @@ mod tests {
                 assert_eq!(item.directory, expected_directory);
                 assert_eq!(item.not_cwd, Some(expected_not_cwd));
             }
-            other => panic!("Expected DirectoryItem, got {:?}", other),
+            other => panic!("预期 DirectoryItem,实际为 {:?}", other),
         }
     }
 }

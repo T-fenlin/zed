@@ -12,19 +12,19 @@
 //!
 //! The app behaves as follows:
 //! - It opens a single window.
-//! - The window's title is "GPUI Accessibility Demo".
+//! - The window's title is "GPUI 无障碍演示".
 //! - The window has a sequence of UI elements, stacked vertically:
-//!   - A heading with the text "Accessibility Demo".
+//!   - A heading with the text "无障碍演示".
 //!   - A row containing two elements:
 //!     - A spin button (role `SpinButton`) labelled "Counter: <n>", where
 //!       `<n>` is the current count. It supports `Increment` and `Decrement`
 //!       accessible actions, and also increments on click. The numeric value
 //!       is clamped to a minimum of 0.
-//!     - A button labelled "Reset counter" that resets the count to 0.
+//!     - A button labelled "重置计数器" that resets the count to 0.
 //!   - A row containing two elements:
 //!     - A switch, that can be toggled, and starts disabled. Toggling the switch
 //!       does nothing.
-//!     - The text "Enable feature".
+//!     - The text "启用功能".
 //!   - A "to-do" list, with three items, each represented with a `Text` element:
 //!     - "1. Write code"
 //!     - "2. Run tests"
@@ -61,7 +61,7 @@ impl Render for A11yDemo {
         div()
             .id("root")
             .role(Role::Application)
-            .aria_label("Accessibility Demo")
+            .aria_label("无障碍演示")
             .track_focus(&self.focus_handle)
             .on_action(cx.listener(|_, _: &Tab, window, cx| window.focus_next(cx)))
             .on_action(cx.listener(|_, _: &TabPrev, window, cx| window.focus_prev(cx)))
@@ -78,10 +78,10 @@ impl Render for A11yDemo {
                     .id("heading")
                     .role(Role::Heading)
                     .aria_level(1)
-                    .aria_label("Accessibility Demo")
+                    .aria_label("无障碍演示")
                     .text_xl()
                     .font_weight(gpui::FontWeight::BOLD)
-                    .child(text!("Accessibility Demo")),
+                    .child(text!("无障碍演示")),
             )
             // Counter — uses a SpinButton role with Increment/Decrement
             // actions so screen readers can adjust the value directly.
@@ -97,7 +97,7 @@ impl Render for A11yDemo {
                             .focusable()
                             .tab_stop(true)
                             .role(Role::SpinButton)
-                            .aria_label(SharedString::from(format!("Counter: {}", self.count)))
+                            .aria_label(SharedString::from(format!("计数器: {}", self.count)))
                             .aria_numeric_value(self.count as f64)
                             .aria_min_numeric_value(0.0)
                             .on_a11y_action(AccessibleAction::Increment, {
@@ -130,7 +130,7 @@ impl Render for A11yDemo {
                             .bg(rgb(0x89b4fa))
                             .text_color(rgb(0x1e1e2e))
                             .cursor_pointer()
-                            .child(text!(format!("Count: {}", self.count))),
+                            .child(text!(format!("计数: {}", self.count))),
                     )
                     .child(
                         div()
@@ -138,7 +138,7 @@ impl Render for A11yDemo {
                             .focusable()
                             .tab_stop(true)
                             .role(Role::Button)
-                            .aria_label("Reset counter")
+                            .aria_label("重置计数器")
                             .px_3()
                             .py_1()
                             .rounded_md()
@@ -148,7 +148,7 @@ impl Render for A11yDemo {
                                 this.count = 0;
                                 cx.notify();
                             }))
-                            .child(text!("Reset")),
+                            .child(text!("重置")),
                     ),
             )
             // A toggle switch
@@ -163,7 +163,7 @@ impl Render for A11yDemo {
                             .focusable()
                             .tab_stop(true)
                             .role(Role::Switch)
-                            .aria_label("Enable feature")
+                            .aria_label("启用功能")
                             .aria_toggled(if self.enabled {
                                 Toggled::True
                             } else {
@@ -189,14 +189,14 @@ impl Render for A11yDemo {
                                 cx.notify();
                             })),
                     )
-                    .child(text!("Enable feature")),
+                    .child(text!("启用功能")),
             )
             // A short list
             .child(
                 div()
                     .id("task-list")
                     .role(Role::List)
-                    .aria_label("Tasks")
+                    .aria_label("任务")
                     .flex()
                     .flex_col()
                     .gap_1()

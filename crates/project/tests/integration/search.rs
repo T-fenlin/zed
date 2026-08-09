@@ -19,10 +19,10 @@ fn path_matcher_creation_for_valid_paths() {
         "dir/[a-z].txt",
     ] {
         let path_matcher = PathMatcher::new(&[valid_path.to_owned()], PathStyle::local())
-            .unwrap_or_else(|e| panic!("Valid path {valid_path} should be accepted, but got: {e}"));
+            .unwrap_or_else(|e| panic!("有效路径 {valid_path} 应被接受,但出现错误:{e}"));
         assert!(
             path_matcher.is_match(&RelPath::new(valid_path.as_ref(), PathStyle::local()).unwrap()),
-            "Path matcher for valid path {valid_path} should match itself"
+            "有效路径 {valid_path} 的路径匹配器应能匹配自身"
         )
     }
 }
@@ -31,7 +31,7 @@ fn path_matcher_creation_for_valid_paths() {
 fn path_matcher_creation_for_globs() {
     for invalid_glob in ["dir/[].txt", "dir/[a-z.txt", "dir/{file"] {
         match PathMatcher::new(&[invalid_glob.to_owned()], PathStyle::local()) {
-            Ok(_) => panic!("Invalid glob {invalid_glob} should not be accepted"),
+            Ok(_) => panic!("无效的通配符 {invalid_glob} 不应被接受"),
             Err(_expected) => {}
         }
     }
@@ -45,7 +45,7 @@ fn path_matcher_creation_for_globs() {
     ] {
         match PathMatcher::new(&[valid_glob.to_owned()], PathStyle::local()) {
             Ok(_expected) => {}
-            Err(e) => panic!("Valid glob should be accepted, but got: {e}"),
+            Err(e) => panic!("有效的通配符应被接受,但出现错误:{e}"),
         }
     }
 }
@@ -64,12 +64,12 @@ fn test_case_sensitive_pattern_items() {
         false,
         None,
     )
-    .expect("Should be able to create a regex SearchQuery");
+    .expect("应能创建正则表达式搜索查询");
 
     assert_eq!(
         search_query.case_sensitive(),
         true,
-        "Case sensitivity should be enabled when \\C pattern item is present in the query."
+        "当查询中包含 \\C 模式项时,应启用区分大小写。"
     );
 
     let case_sensitive = true;
@@ -84,12 +84,12 @@ fn test_case_sensitive_pattern_items() {
         false,
         None,
     )
-    .expect("Should be able to create a regex SearchQuery");
+    .expect("应能创建正则表达式搜索查询");
 
     assert_eq!(
         search_query.case_sensitive(),
         false,
-        "Case sensitivity should be disabled when \\c pattern item is present, even if initially set to true."
+        "当存在 \\c 模式项时,即使初始设置为 true,也应禁用区分大小写。"
     );
 
     let case_sensitive = false;
@@ -104,12 +104,12 @@ fn test_case_sensitive_pattern_items() {
         false,
         None,
     )
-    .expect("Should be able to create a regex SearchQuery");
+    .expect("应能创建正则表达式搜索查询");
 
     assert_eq!(
         search_query.case_sensitive(),
         true,
-        "Case sensitivity should be enabled when \\C is the last pattern item, even after a \\c."
+        "当 \\C 是最后一个模式项时,即使前面有 \\c,也应启用区分大小写。"
     );
 
     let case_sensitive = false;
@@ -124,12 +124,12 @@ fn test_case_sensitive_pattern_items() {
         false,
         None,
     )
-    .expect("Should be able to create a regex SearchQuery");
+    .expect("应能创建正则表达式搜索查询");
 
     assert_eq!(
         search_query.case_sensitive(),
         false,
-        "Case sensitivity should not be enabled when \\C pattern item is preceded by a backslash."
+        "当 \\C 模式项前面有反斜杠时,不应启用区分大小写。"
     );
 }
 
@@ -146,7 +146,7 @@ async fn test_multiline_regex_crlf(cx: &mut gpui::TestAppContext) {
         false,
         None,
     )
-    .expect("Should be able to create a regex SearchQuery");
+    .expect("应能创建正则表达式搜索查询");
 
     let text = Rope::from("hello\r\nworld\r\nhello\r\nworld");
     let snapshot = cx
@@ -170,7 +170,7 @@ async fn test_multiline_regex(cx: &mut gpui::TestAppContext) {
         false,
         None,
     )
-    .expect("Should be able to create a regex SearchQuery");
+    .expect("应能创建正则表达式搜索查询");
 
     let text = Rope::from("hello\nworld\nhello\nworld");
     let snapshot = cx

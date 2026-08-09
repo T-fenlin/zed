@@ -77,7 +77,7 @@ impl TextDiffView {
         });
 
         let Some((source_buffer, expanded_selection_range)) = selection_data else {
-            log::warn!("There should always be at least one selection in Zed. This is a bug.");
+            log::warn!("Zed 中应始终至少有一个选区。这是一个 bug。");
             return None;
         };
 
@@ -227,8 +227,8 @@ impl TextDiffView {
 
         Self {
             diff_editor,
-            title: format!("Clipboard ↔ {selection_location_title}").into(),
-            path: Some(format!("Clipboard ↔ {selection_location_path}").into()),
+            title: format!("剪贴板 ↔ {selection_location_title}").into(),
+            path: Some(format!("剪贴板 ↔ {selection_location_path}").into()),
             buffer_changes_tx,
             _recalculate_diff_task: cx.spawn(async move |_, cx| {
                 while buffer_changes_rx.recv().await.is_ok() {
@@ -509,8 +509,8 @@ mod tests {
                       pass
                 ",
             ),
-            "Clipboard ↔ text.txt @ L1:1-L3:1",
-            &format!("Clipboard ↔ {} @ L1:1-L3:1", path!("test/text.txt")),
+            "剪贴板 ↔ text.txt @ L1:1-L3:1",
+            &format!("剪贴板 ↔ {} @ L1:1-L3:1", path!("test/text.txt")),
             cx,
         )
         .await;
@@ -532,8 +532,8 @@ mod tests {
                       pass
                 ",
             ),
-            "Clipboard ↔ text.txt @ L1:1-L3:1",
-            &format!("Clipboard ↔ {} @ L1:1-L3:1", path!("test/text.txt")),
+            "剪贴板 ↔ text.txt @ L1:1-L3:1",
+            &format!("剪贴板 ↔ {} @ L1:1-L3:1", path!("test/text.txt")),
             cx,
         )
         .await;
@@ -552,7 +552,7 @@ mod tests {
                 + ˇbb",
             ),
             "Clipboard ↔ text.txt @ L1:1-3",
-            &format!("Clipboard ↔ {} @ L1:1-3", path!("test/text.txt")),
+            &format!("剪贴板 ↔ {} @ L1:1-3", path!("test/text.txt")),
             cx,
         )
         .await;
@@ -571,7 +571,7 @@ mod tests {
                 + ˇbb",
             ),
             "Clipboard ↔ text.txt @ L1:1-3",
-            &format!("Clipboard ↔ {} @ L1:1-3", path!("test/text.txt")),
+            &format!("剪贴板 ↔ {} @ L1:1-3", path!("test/text.txt")),
             cx,
         )
         .await;
@@ -590,7 +590,7 @@ mod tests {
                 + ˇ    bb",
             ),
             "Clipboard ↔ text.txt @ L1:1-7",
-            &format!("Clipboard ↔ {} @ L1:1-7", path!("test/text.txt")),
+            &format!("剪贴板 ↔ {} @ L1:1-7", path!("test/text.txt")),
             cx,
         )
         .await;
@@ -611,7 +611,7 @@ mod tests {
                 + ˇ    bb",
             ),
             "Clipboard ↔ text.txt @ L1:1-7",
-            &format!("Clipboard ↔ {} @ L1:1-7", path!("test/text.txt")),
+            &format!("剪贴板 ↔ {} @ L1:1-7", path!("test/text.txt")),
             cx,
         )
         .await;
@@ -632,7 +632,7 @@ mod tests {
                 + ˇ    bb",
             ),
             "Clipboard ↔ text.txt @ L1:1-7",
-            &format!("Clipboard ↔ {} @ L1:1-7", path!("test/text.txt")),
+            &format!("剪贴板 ↔ {} @ L1:1-7", path!("test/text.txt")),
             cx,
         )
         .await;
@@ -653,7 +653,7 @@ mod tests {
                 + ˇ    bb",
             ),
             "Clipboard ↔ text.txt @ L1:1-7",
-            &format!("Clipboard ↔ {} @ L1:1-7", path!("test/text.txt")),
+            &format!("剪贴板 ↔ {} @ L1:1-7", path!("test/text.txt")),
             cx,
         )
         .await;
@@ -674,7 +674,7 @@ mod tests {
                 + ˇbb",
             ),
             "Clipboard ↔ text.txt @ L1:1-3",
-            &format!("Clipboard ↔ {} @ L1:1-3", path!("test/text.txt")),
+            &format!("剪贴板 ↔ {} @ L1:1-3", path!("test/text.txt")),
             cx,
         )
         .await;
@@ -762,8 +762,8 @@ mod tests {
 
         diff_view.read_with(cx, |diff_view, _cx| {
             assert!(
-                diff_view.title.contains("Clipboard"),
-                "diff view should have opened with a clipboard diff title, got: {}",
+                diff_view.title.contains("剪贴板"),
+                "差异视图应以剪贴板差异标题打开,实际为:{}",
                 diff_view.title
             );
         });
@@ -852,8 +852,8 @@ mod tests {
         // Empty selection should diff the full underlying buffer
         diff_view.read_with(cx, |diff_view, _cx| {
             assert!(
-                diff_view.title.contains("Clipboard"),
-                "diff view should have opened with a clipboard diff title, got: {}",
+                diff_view.title.contains("剪贴板"),
+                "差异视图应以剪贴板差异标题打开,实际为:{}",
                 diff_view.title
             );
         });

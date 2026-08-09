@@ -30,25 +30,25 @@ fn test_is_path_read_only_with_glob_patterns() {
         RelPath::new(Path::new("src/generated/schema.rs"), PathStyle::local()).unwrap();
     assert!(
         settings.is_path_read_only(&generated_file),
-        "Files in generated directory should be read-only"
+        "generated 目录中的文件应为只读"
     );
 
     let gen_rs_file = RelPath::new(Path::new("src/types.gen.rs"), PathStyle::local()).unwrap();
     assert!(
         settings.is_path_read_only(&gen_rs_file),
-        "Files with .gen.rs extension should be read-only"
+        "具有 .gen.rs 扩展名的文件应为只读"
     );
 
     let regular_file = RelPath::new(Path::new("src/main.rs"), PathStyle::local()).unwrap();
     assert!(
         !settings.is_path_read_only(&regular_file),
-        "Regular files should not be read-only"
+        "常规文件不应为只读"
     );
 
     let similar_name = RelPath::new(Path::new("src/generator.rs"), PathStyle::local()).unwrap();
     assert!(
         !settings.is_path_read_only(&similar_name),
-        "Files with 'generator' in name but not in generated dir should not be read-only"
+        "名称中包含 'generator' 但不在 generated 目录中的文件不应为只读"
     );
 }
 
@@ -59,7 +59,7 @@ fn test_is_path_read_only_with_specific_paths() {
     let vendor_file = RelPath::new(Path::new("vendor/lib/package.js"), PathStyle::local()).unwrap();
     assert!(
         settings.is_path_read_only(&vendor_file),
-        "Files in vendor directory should be read-only"
+        "vendor 目录中的文件应为只读"
     );
 
     let node_modules_file = RelPath::new(
@@ -69,13 +69,13 @@ fn test_is_path_read_only_with_specific_paths() {
     .unwrap();
     assert!(
         settings.is_path_read_only(&node_modules_file),
-        "Files in node_modules should be read-only"
+        "node_modules 中的文件应为只读"
     );
 
     let src_file = RelPath::new(Path::new("src/app.js"), PathStyle::local()).unwrap();
     assert!(
         !settings.is_path_read_only(&src_file),
-        "Files in src should not be read-only"
+        "src 中的文件不应为只读"
     );
 }
 
@@ -86,7 +86,7 @@ fn test_is_path_read_only_empty_patterns() {
     let any_file = RelPath::new(Path::new("src/main.rs"), PathStyle::local()).unwrap();
     assert!(
         !settings.is_path_read_only(&any_file),
-        "No files should be read-only when patterns are empty"
+        "当模式为空时,不应有任何文件为只读"
     );
 }
 
@@ -97,25 +97,25 @@ fn test_is_path_read_only_with_extension_pattern() {
     let lock_file = RelPath::new(Path::new("Cargo.lock"), PathStyle::local()).unwrap();
     assert!(
         settings.is_path_read_only(&lock_file),
-        "Lock files should be read-only"
+        "锁定文件应为只读"
     );
 
     let nested_lock =
         RelPath::new(Path::new("packages/app/yarn.lock"), PathStyle::local()).unwrap();
     assert!(
         settings.is_path_read_only(&nested_lock),
-        "Nested lock files should be read-only"
+        "嵌套的锁定文件应为只读"
     );
 
     let minified_js = RelPath::new(Path::new("dist/bundle.min.js"), PathStyle::local()).unwrap();
     assert!(
         settings.is_path_read_only(&minified_js),
-        "Minified JS files should be read-only"
+        "压缩的 JS 文件应为只读"
     );
 
     let regular_js = RelPath::new(Path::new("src/app.js"), PathStyle::local()).unwrap();
     assert!(
         !settings.is_path_read_only(&regular_js),
-        "Regular JS files should not be read-only"
+        "常规 JS 文件不应为只读"
     );
 }

@@ -225,16 +225,16 @@ impl TrashedEntry {
 
 #[derive(Debug, thiserror::Error)]
 pub enum TrashRestoreError {
-    #[error("The specified `path` ({}) was not found in the system's trash.", path.display())]
+    #[error("系统回收站中未找到指定的 `path` ({})。", path.display())]
     NotFound { path: PathBuf },
-    #[error("File or directory ({}) already exists at the restore destination.", path.display())]
+    #[error("恢复目标位置已存在文件或目录 ({})。", path.display())]
     Collision { path: PathBuf },
     // This should never occur, the only way to get a TrashId is to undo
     // consumes the Change::Trashed. We worry about remoting duplicate messages
     // we do not want to crash the app then which is why this error is there.
-    #[error("The item was already restored")]
+    #[error("该项目已恢复")]
     AlreadyRestored,
-    #[error("Unknown error ({description})")]
+    #[error("未知错误 ({description})")]
     Unknown { description: String },
 }
 
@@ -627,7 +627,7 @@ fn path_to_c_string(path: &Path) -> io::Result<CString> {
     CString::new(path.as_os_str().as_bytes()).map_err(|_| {
         io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!("path contains interior NUL: {}", path.display()),
+            format!("路径包含内部 NUL 字符: {}", path.display()),
         )
     })
 }
@@ -654,16 +654,16 @@ fn read_dir_entries(path: PathBuf) -> Result<impl Send + Iterator<Item = Result<
         OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC,
         Mode::empty(),
     )
-    .with_context(|| format!("failed to open directory {path:?}"))?;
+    .with_context(|| format!("无法打开目录 {path:?}"))?;
     let directory =
-        Dir::new(directory_fd).with_context(|| format!("failed to read directory {path:?}"))?;
+        Dir::new(directory_fd).with_context(|| format!("无法读取目录 {path:?}"))?;
 
     Ok(directory.filter_map(move |entry| {
         let entry = match entry {
             Ok(entry) => entry,
             Err(error) => {
                 return Some(Err(anyhow::Error::new(error)
-                    .context(format!("failed to read directory entry in {path:?}"))));
+                    .context(format!("无法读取 {path:?} 中的目录条目"))));
             }
         };
         let name = entry.file_name().to_bytes();
@@ -677,11 +677,11 @@ fn read_dir_entries(path: PathBuf) -> Result<impl Send + Iterator<Item = Result<
 #[cfg(not(unix))]
 fn read_dir_entries(path: PathBuf) -> Result<impl Send + Iterator<Item = Result<PathBuf>>> {
     let entries =
-        std::fs::read_dir(&path).with_context(|| format!("failed to open directory {path:?}"))?;
+        std::fs::read_dir(&path).with_context(|| format!("无法打开目录 {path:?}"))?;
     Ok(entries.map(move |entry| {
         entry
             .map(|entry| entry.path())
-            .with_context(|| format!("failed to read directory entry in {path:?}"))
+            .with_context(|| format!("无法读取 {path:?} 中的目录条目"))
     }))
 }
 
@@ -705,7 +705,7 @@ impl Fs for RealFs {
 
             if !status.success() {
                 return Err(anyhow::anyhow!(
-                    "Failed to create junction from {:?} to {:?}",
+                    "无法从 {:?} 创建联接到 {:?}",
                     path,
                     target
                 ));
@@ -728,7 +728,7 @@ impl Fs for RealFs {
         open_options
             .open(path)
             .await
-            .with_context(|| format!("Failed to create file at {:?}", path))?;
+            .with_context(|| format!("无法在 {:?} 创建文件", path))?;
         Ok(())
     }
 
@@ -739,7 +739,7 @@ impl Fs for RealFs {
     ) -> Result<()> {
         let mut file = smol::fs::File::create(&path)
             .await
-            .with_context(|| format!("Failed to create file at {:?}", path))?;
+            .with_context(|| format!("无法在 {:?} 创建文件", path))?;
         futures::io::copy(content, &mut file).await?;
         Ok(())
     }
@@ -758,7 +758,7 @@ impl Fs for RealFs {
             if options.ignore_if_exists {
                 return Ok(());
             } else {
-                anyhow::bail!("{target:?} already exists");
+                anyhow::bail!("{target:?} 已存在");
             }
         }
 
@@ -823,7 +823,7 @@ impl Fs for RealFs {
             if options.ignore_if_exists {
                 return Ok(());
             } else {
-                anyhow::bail!("{target:?} already exists");
+                anyhow::bail!("{target:?} 已存在");
             }
         }
 
@@ -879,11 +879,11 @@ impl Fs for RealFs {
         // We deliberately use `std::path::absolute` instead of `canonicalize`
         // to avoid resolving symlinks. Otherwise trashing a symlink would trash
         // its target and leave the link behind.
-        let path = std::path::absolute(path).context("Could not make the path absolute")?;
+        let path = std::path::absolute(path).context("无法将路径转换为绝对路径")?;
 
         let entry = smol::unblock(move || trash::delete_with_info(path))
             .await
-            .context("Could not trash file or dir")?
+            .context("无法将文件或目录移至回收站")?
             .into();
 
         Ok(self.trash.lock().insert(entry))
@@ -909,7 +909,7 @@ impl Fs for RealFs {
         self.executor
             .spawn(async move {
                 std::fs::read_to_string(&path)
-                    .with_context(|| format!("Failed to read file {}", path.display()))
+                    .with_context(|| format!("无法读取文件 {}", path.display()))
             })
             .await
     }
@@ -950,7 +950,7 @@ impl Fs for RealFs {
             // The system cannot move the file to a different disk drive. (os error 17)
             //
             // This is because `ReplaceFileW` does not support cross volume moves.
-            // See the remark section: "The backup file, replaced file, and replacement file must all reside on the same volume."
+            // See the remark section: "备份文件、被替换文件和替换文件必须位于同一卷上。"
             // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew#remarks
             //
             // So we use the directory of the destination as a temp dir to avoid it.
@@ -974,11 +974,11 @@ impl Fs for RealFs {
         if let Some(path) = path.parent() {
             self.create_dir(path)
                 .await
-                .with_context(|| format!("Failed to create directory at {:?}", path))?;
+                .with_context(|| format!("无法在 {:?} 创建目录", path))?;
         }
         let file = smol::fs::File::create(path)
             .await
-            .with_context(|| format!("Failed to create file at {:?}", path))?;
+            .with_context(|| format!("无法在 {:?} 创建文件", path))?;
         let mut writer = smol::io::BufWriter::with_capacity(buffer_size, file);
         for chunk in text::chunks_with_line_ending(text, line_ending) {
             writer.write_all(chunk.as_bytes()).await?;
@@ -991,7 +991,7 @@ impl Fs for RealFs {
         if let Some(path) = path.parent() {
             self.create_dir(path)
                 .await
-                .with_context(|| format!("Failed to create directory at {:?}", path))?;
+                .with_context(|| format!("无法在 {:?} 创建目录", path))?;
         }
         let path = path.to_owned();
         let contents = content.to_owned();
@@ -1013,7 +1013,7 @@ impl Fs for RealFs {
                 #[cfg(not(target_os = "windows"))]
                 let result = std::fs::canonicalize(&path);
 
-                result.with_context(|| format!("canonicalizing {path:?}"))
+                result.with_context(|| format!("正在规范化 {path:?}"))
             })
             .await
     }
@@ -1062,7 +1062,7 @@ impl Fs for RealFs {
                     if err.kind() != io::ErrorKind::NotFound {
                         // TODO: Also FilesystemLoop when that's stable
                         log::warn!(
-                            "Failed to read symlink target metadata for path {path:?}: {err}"
+                            "无法读取路径 {path:?} 的符号链接目标元数据: {err}"
                         );
                     }
                     // For a broken or recursive symlink, return the symlink metadata. (Or
@@ -1152,7 +1152,7 @@ impl Fs for RealFs {
 
         // Check if path is a symlink and follow the target parent
         if let Some(mut target) = self.read_link(path).await.ok() {
-            log::trace!("watch symlink {path:?} -> {target:?}");
+            log::trace!("监视符号链接 {path:?} -> {target:?}");
             // Check if symlink target is relative path, if so make it absolute
             if target.is_relative()
                 && let Some(parent) = path.parent()
@@ -1183,7 +1183,7 @@ impl Fs for RealFs {
                     async move {
                         executor.timer(latency).await;
                         let paths = std::mem::take(&mut *pending_paths.lock());
-                        log::debug!("pending path events: {:?}", paths);
+                        log::debug!("待处理的路径事件: {:?}", paths);
                         (!paths.is_empty()).then_some(paths)
                     }
                 }
@@ -1252,7 +1252,7 @@ impl Fs for RealFs {
 
         if !output.status.success() {
             anyhow::bail!(
-                "git clone failed: {}",
+                "git 克隆失败: {}",
                 String::from_utf8_lossy(&output.stderr).trim_end()
             );
         }
@@ -1336,7 +1336,7 @@ impl Fs for RealFs {
             case_sensitive
         }).await.unwrap_or_else(|e| {
             log::error!(
-                "Failed to determine whether filesystem is case sensitive (falling back to true) due to error: {e:#}"
+                "由于错误 {e:#},无法确定文件系统是否区分大小写(回退为 true)"
             );
             true
         });
@@ -1370,7 +1370,7 @@ impl Fs for RealFs {
 
         let (tx, rx) = futures::channel::oneshot::channel();
         std::thread::Builder::new()
-            .name("restore trashed item".to_string())
+            .name("恢复已删除的项目".to_string())
             .spawn(move || {
                 let res = trash::restore_all([trashed_entry.into_trash_item()]);
                 tx.send(res)
@@ -1437,7 +1437,7 @@ impl FakeFsState {
         let mtime = self.get_and_increment_mtime();
         self.write_path(&file_path, |entry| {
             let btree_map::Entry::Vacant(entry) = entry else {
-                anyhow::bail!("file already exists: {}", file_path.display());
+                anyhow::bail!("文件已存在: {}", file_path.display());
             };
             entry.insert(FakeFsEntry::File {
                 inode,
@@ -1621,7 +1621,7 @@ impl FakeFsState {
             .skip_while(|component| matches!(component, Component::Prefix(_)));
         let Some(Component::RootDir) = components.next() else {
             panic!(
-                "the path {:?} was not canonicalized properly {:?}",
+                "路径 {:?} 未被正确规范化 {:?}",
                 target, canonical_path
             )
         };
@@ -1638,7 +1638,7 @@ impl FakeFsState {
                 }
                 _ => {
                     panic!(
-                        "the path {:?} was not canonicalized properly {:?}",
+                        "路径 {:?} 未被正确规范化 {:?}",
                         target, canonical_path
                     )
                 }
@@ -1654,7 +1654,7 @@ impl FakeFsState {
             .ok_or_else(|| {
                 anyhow::anyhow!(io::Error::new(
                     io::ErrorKind::NotFound,
-                    format!("not found: {target:?}")
+                    format!("未找到: {target:?}")
                 ))
             })?
             .0)
@@ -1665,7 +1665,7 @@ impl FakeFsState {
         Fn: FnOnce(btree_map::Entry<String, FakeFsEntry>) -> Result<T>,
     {
         let path = normalize_path(path);
-        let filename = path.file_name().context("cannot overwrite the root")?;
+        let filename = path.file_name().context("无法覆盖根目录")?;
         let parent_path = path.parent().unwrap();
 
         let parent = self.entry(parent_path)?;
@@ -1749,7 +1749,7 @@ impl FakeFs {
                     if let Some(mut state) = this.state.try_lock() {
                         state.emit_event([(git_event, Some(PathEventKind::Changed))]);
                     } else {
-                        panic!("Failed to lock file system state, this execution would have caused a test hang");
+                        panic!("无法锁定文件系统状态,此执行会导致测试挂起");
                     }
                 }
             }
@@ -1868,7 +1868,7 @@ impl FakeFs {
                                 *inode = new_inode;
                             }
                         } else {
-                            anyhow::bail!("not a file")
+                            anyhow::bail!("不是文件")
                         }
                     }
                 }
@@ -1993,7 +1993,7 @@ impl FakeFs {
                         this.insert_file(&path, contents.into_bytes()).await;
                     }
                     _ => {
-                        panic!("JSON object must contain only objects, strings, or null");
+                        panic!("JSON 对象只能包含对象、字符串或 null");
                     }
                 }
             }
@@ -2037,11 +2037,11 @@ impl FakeFs {
     {
         let mut state = self.state.lock();
         let git_event_tx = state.git_event_tx.clone();
-        let entry = state.entry(dot_git).context("open .git")?;
+        let entry = state.entry(dot_git).context("打开 .git")?;
 
         if let FakeFsEntry::Dir { git_repo_state, .. } = entry {
             let repo_state = git_repo_state.get_or_insert_with(|| {
-                log::debug!("insert git state for {dot_git:?}");
+                log::debug!("为 {dot_git:?} 插入 git 状态");
                 Arc::new(Mutex::new(FakeGitRepositoryState::new(git_event_tx)))
             });
             let mut repo_state = repo_state.lock();
@@ -2069,14 +2069,14 @@ impl FakeFs {
                     let path = std::str::from_utf8(content)
                         .ok()
                         .and_then(|content| content.strip_prefix("gitdir:"))
-                        .context("not a valid gitfile")?
+                        .context("不是有效的 gitfile")?
                         .trim();
                     git_dir_path.insert(normalize_path(&dot_git.parent().unwrap().join(path)))
                 }
             }
             .clone();
             let Some((git_dir_entry, canonical_path)) = state.try_entry(&path, true) else {
-                anyhow::bail!("pointed-to git dir {path:?} not found")
+                anyhow::bail!("指向的 git 目录 {path:?} 未找到")
             };
             let FakeFsEntry::Dir {
                 git_repo_state,
@@ -2084,7 +2084,7 @@ impl FakeFs {
                 ..
             } = git_dir_entry
             else {
-                anyhow::bail!("gitfile points to a non-directory")
+                anyhow::bail!("gitfile 指向的不是目录")
             };
             let common_dir = if let Some(child) = entries.get("commondir") {
                 let raw = std::str::from_utf8(child.file_content("commondir".as_ref())?)
@@ -2116,7 +2116,7 @@ impl FakeFs {
 
             Ok(result)
         } else {
-            anyhow::bail!("not a valid git repository");
+            anyhow::bail!("不是有效的 git 仓库");
         }
     }
 
@@ -2171,7 +2171,7 @@ impl FakeFs {
         let ref_name = worktree
             .ref_name
             .as_ref()
-            .expect("linked worktree must have a ref_name");
+            .expect("链接的工作树必须具有 ref_name");
         let branch_name = ref_name
             .strip_prefix("refs/heads/")
             .unwrap_or(ref_name.as_ref());
@@ -2427,7 +2427,7 @@ impl FakeFs {
                         state
                             .unmerged_paths
                             .insert(repo_path.clone(), *unmerged_status);
-                        content.push_str(" (unmerged)");
+                        content.push_str(" (未合并)");
                         index_content = Some(content.clone());
                         head_content = Some(content);
                     }
@@ -2438,7 +2438,7 @@ impl FakeFs {
                         match worktree_status {
                             StatusCode::Modified => {
                                 let mut content = content.clone();
-                                content.push_str(" (modified in working copy)");
+                                content.push_str(" (在工作副本中修改)");
                                 index_content = Some(content);
                             }
                             StatusCode::TypeChanged | StatusCode::Unmodified => {
@@ -2446,26 +2446,26 @@ impl FakeFs {
                             }
                             StatusCode::Added => {}
                             StatusCode::Deleted | StatusCode::Renamed | StatusCode::Copied => {
-                                panic!("cannot create these statuses for an existing file");
+                                panic!("无法为现有文件创建这些状态");
                             }
                         };
                         match index_status {
                             StatusCode::Modified => {
                                 let mut content = index_content.clone().expect(
-                                    "file cannot be both modified in index and created in working copy",
+                                    "文件不能同时在索引中修改并在工作副本中创建",
                                 );
-                                content.push_str(" (modified in index)");
+                                content.push_str(" (在索引中修改)");
                                 head_content = Some(content);
                             }
                             StatusCode::TypeChanged | StatusCode::Unmodified => {
-                                head_content = Some(index_content.clone().expect("file cannot be both unmodified in index and created in working copy"));
+                                head_content = Some(index_content.clone().expect("文件不能同时在索引中未修改并在工作副本中创建"));
                             }
                             StatusCode::Added => {}
                             StatusCode::Deleted  => {
                                 head_content = Some("".into());
                             }
                             StatusCode::Renamed | StatusCode::Copied => {
-                                panic!("cannot create these statuses for an existing file");
+                                panic!("无法为现有文件创建这些状态");
                             }
                         };
                     }
@@ -2654,8 +2654,8 @@ impl FakeFs {
         {
             anyhow::bail!("{message}");
         }
-        let parent_path = path.parent().context("cannot remove the root")?;
-        let base_name = path.file_name().context("cannot remove the root")?;
+        let parent_path = path.parent().context("无法移除根目录")?;
+        let base_name = path.file_name().context("无法移除根目录")?;
 
         let mut state = self.state.lock();
         let parent_entry = state.entry(parent_path)?;
@@ -2666,7 +2666,7 @@ impl FakeFs {
         let removed = match entry {
             btree_map::Entry::Vacant(_) => {
                 if !options.ignore_if_not_exists {
-                    anyhow::bail!("{path:?} does not exist");
+                    anyhow::bail!("{path:?} 不存在");
                 }
 
                 None
@@ -2675,7 +2675,7 @@ impl FakeFs {
                 {
                     let children = entry.get_mut().dir_entries(&path)?;
                     if !options.recursive && !children.is_empty() {
-                        anyhow::bail!("{path:?} is not empty");
+                        anyhow::bail!("{path:?} 不为空");
                     }
                 }
 
@@ -2695,7 +2695,7 @@ impl FakeFs {
         self.simulate_random_delay().await;
 
         let path = normalize_path(path);
-        let parent_path = path.parent().context("cannot remove the root")?;
+        let parent_path = path.parent().context("无法移除根目录")?;
         let base_name = path.file_name().unwrap();
         let mut state = self.state.lock();
         let parent_entry = state.entry(parent_path)?;
@@ -2705,7 +2705,7 @@ impl FakeFs {
         let removed = match entry {
             btree_map::Entry::Vacant(_) => {
                 if !options.ignore_if_not_exists {
-                    anyhow::bail!("{path:?} does not exist");
+                    anyhow::bail!("{path:?} 不存在");
                 }
 
                 None
@@ -2749,7 +2749,7 @@ impl FakeFsEntry {
         if let Self::File { content, .. } = self {
             Ok(content)
         } else {
-            anyhow::bail!("not a file: {path:?}");
+            anyhow::bail!("不是文件: {path:?}");
         }
     }
 
@@ -2757,7 +2757,7 @@ impl FakeFsEntry {
         if let Self::Dir { entries, .. } = self {
             Ok(entries)
         } else {
-            anyhow::bail!("not a directory: {path:?}");
+            anyhow::bail!("不是目录: {path:?}");
         }
     }
 }
@@ -2883,7 +2883,7 @@ impl Fs for FakeFs {
                         kind = Some(PathEventKind::Changed);
                         *e.get_mut() = file;
                     } else if !options.ignore_if_exists {
-                        anyhow::bail!("path already exists: {path:?}");
+                        anyhow::bail!("路径已存在: {path:?}");
                     }
                 }
                 btree_map::Entry::Vacant(e) => {
@@ -2963,7 +2963,7 @@ impl Fs for FakeFs {
             if let btree_map::Entry::Occupied(e) = e {
                 Ok(e.get().clone())
             } else {
-                anyhow::bail!("path does not exist: {old_path:?}")
+                anyhow::bail!("路径不存在: {old_path:?}")
             }
         })?;
 
@@ -2981,7 +2981,7 @@ impl Fs for FakeFs {
                     if options.overwrite {
                         *e.get_mut() = moved_entry;
                     } else if !options.ignore_if_exists {
-                        anyhow::bail!("path already exists: {new_path:?}");
+                        anyhow::bail!("路径已存在: {new_path:?}");
                     }
                 }
                 btree_map::Entry::Vacant(e) => {
@@ -3025,7 +3025,7 @@ impl Fs for FakeFs {
                     kind = Some(PathEventKind::Changed);
                     Ok(Some(e.get().clone()))
                 } else if !options.ignore_if_exists {
-                    anyhow::bail!("{target:?} already exists");
+                    anyhow::bail!("{target:?} 已存在");
                 } else {
                     Ok(None)
                 }
@@ -3051,7 +3051,7 @@ impl Fs for FakeFs {
 
     async fn trash(&self, path: &Path, options: RemoveOptions) -> Result<TrashId> {
         let normalized_path = normalize_path(path);
-        let parent_path = normalized_path.parent().context("cannot remove the root")?;
+        let parent_path = normalized_path.parent().context("无法移除根目录")?;
         let base_name = normalized_path.file_name().unwrap();
         let result = if self.is_dir(path).await {
             self.remove_dir_inner(path, options).await?
@@ -3076,7 +3076,7 @@ impl Fs for FakeFs {
 
                 Ok(trash_id)
             }
-            None => anyhow::bail!("{normalized_path:?} does not exist"),
+            None => anyhow::bail!("{normalized_path:?} 不存在"),
         }
     }
 
@@ -3146,7 +3146,7 @@ impl Fs for FakeFs {
         let state = self.state.lock();
         let canonical_path = state
             .canonicalize(&path, true)
-            .with_context(|| format!("path does not exist: {path:?}"))?;
+            .with_context(|| format!("路径不存在: {path:?}"))?;
         Ok(canonical_path)
     }
 
@@ -3220,11 +3220,11 @@ impl Fs for FakeFs {
         let mut state = self.state.lock();
         let (entry, _) = state
             .try_entry(&path, false)
-            .with_context(|| format!("path does not exist: {path:?}"))?;
+            .with_context(|| format!("路径不存在: {path:?}"))?;
         if let FakeFsEntry::Symlink { target } = entry {
             Ok(target.clone())
         } else {
-            anyhow::bail!("not a symlink: {path:?}")
+            anyhow::bail!("不是符号链接: {path:?}")
         }
     }
 
@@ -3316,11 +3316,11 @@ impl Fs for FakeFs {
     }
 
     async fn git_clone(&self, _abs_work_directory: &Path, _repo_url: &str) -> Result<()> {
-        anyhow::bail!("Git clone is not supported in fake Fs")
+        anyhow::bail!("fake Fs 不支持 Git 克隆")
     }
 
     async fn git_config(&self, _abs_work_directory: &Path, _args: Vec<String>) -> Result<String> {
-        anyhow::bail!("Git config is not supported in fake Fs")
+        anyhow::bail!("fake Fs 不支持 Git 配置")
     }
 
     fn is_fake(&self) -> bool {
@@ -3363,7 +3363,7 @@ impl Fs for FakeFs {
                 Ok(())
             }
             btree_map::Entry::Occupied(_) => {
-                anyhow::bail!("Failed to restore {:?}", path);
+                anyhow::bail!("无法恢复 {:?}", path);
             }
         });
 
@@ -3408,7 +3408,7 @@ pub async fn copy_recursive<'a>(
                 if options.ignore_if_exists {
                     continue;
                 } else {
-                    anyhow::bail!("{target_item:?} already exists");
+                    anyhow::bail!("{target_item:?} 已存在");
                 }
             }
             let _ = fs
@@ -3448,7 +3448,7 @@ fn read_recursive<'a>(
         let metadata = fs
             .metadata(source)
             .await?
-            .with_context(|| format!("path does not exist: {source:?}"))?;
+            .with_context(|| format!("路径不存在: {source:?}"))?;
 
         if metadata.is_dir {
             output.push((source.to_path_buf(), true));

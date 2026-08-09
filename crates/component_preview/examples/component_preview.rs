@@ -38,10 +38,10 @@ fn main() {
         cx.set_global(db::AppDatabase::new());
         Assets
             .load_fonts(cx)
-            .expect("Failed to load embedded fonts");
+            .expect("加载内置字体失败");
 
         let http_client =
-            ReqwestClient::user_agent("component_preview").expect("Failed to create HTTP client");
+            ReqwestClient::user_agent("component_preview").expect("创建 HTTP 客户端失败");
         cx.set_http_client(Arc::new(http_client));
 
         let fs = Arc::new(RealFs::new(None, cx.background_executor().clone()));
@@ -133,7 +133,7 @@ fn main() {
                                 window,
                                 cx,
                             )
-                            .expect("Failed to create component preview")
+                            .expect("创建组件预览失败")
                         });
 
                         workspace.add_item_to_active_pane(
@@ -149,7 +149,7 @@ fn main() {
                 }
             },
         )
-        .expect("Failed to open component preview window");
+        .expect("打开组件预览窗口失败");
 
         cx.activate(true);
     });

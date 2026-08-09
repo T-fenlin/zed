@@ -86,7 +86,7 @@ impl From<NonZeroU64> for BufferId {
 impl BufferId {
     /// Returns Err if `id` is outside of BufferId domain.
     pub fn new(id: u64) -> anyhow::Result<Self> {
-        let id = NonZeroU64::new(id).context("Buffer id cannot be 0.")?;
+        let id = NonZeroU64::new(id).context("缓冲区 ID 不能为 0。")?;
         Ok(Self(id))
     }
 
@@ -1565,7 +1565,7 @@ impl Buffer {
         async move {
             for mut future in futures {
                 if future.recv().await.is_none() {
-                    anyhow::bail!("gave up waiting for edits");
+                    anyhow::bail!("放弃等待编辑操作");
                 }
             }
             Ok(())
@@ -1591,7 +1591,7 @@ impl Buffer {
         async move {
             for mut future in futures {
                 if future.recv().await.is_none() {
-                    anyhow::bail!("gave up waiting for anchors");
+                    anyhow::bail!("放弃等待锚点");
                 }
             }
             Ok(())
@@ -1612,7 +1612,7 @@ impl Buffer {
             if let Some(mut rx) = rx
                 && rx.recv().await.is_none()
             {
-                anyhow::bail!("gave up waiting for version");
+                anyhow::bail!("放弃等待版本");
             }
             Ok(())
         }
@@ -1669,7 +1669,7 @@ impl Buffer {
 
     pub fn fast_forward(&mut self, edited: EditedBufferSnapshot) {
         if self.version.changed_since(&edited.base_version) {
-            panic!("buffer cannot be fast-forwarded")
+            panic!("缓冲区无法快进")
         }
         self.snapshot = edited.snapshot.clone();
         for timestamp in edited.snapshot.version.iter() {
@@ -1703,7 +1703,7 @@ impl Buffer {
         assert_eq!(
             old_text[..ranges[0].start],
             new_text[..ranges[0].start],
-            "invalid edit"
+            "无效的编辑"
         );
 
         let mut delta = 0;
@@ -1723,7 +1723,7 @@ impl Buffer {
             let inserted_len = inserted_range.len();
             let deleted_len = old_text[old_start..]
                 .find(following_text)
-                .expect("invalid edit");
+                .expect("无效的编辑");
 
             let old_range = old_start..old_start + deleted_len;
             edits.push((old_range, new_text[inserted_range].to_string()));
@@ -1733,7 +1733,7 @@ impl Buffer {
         assert_eq!(
             old_text.len() as isize + delta,
             new_text.len() as isize,
-            "invalid edit"
+            "无效的编辑"
         );
 
         edits
@@ -1760,7 +1760,7 @@ impl Buffer {
                 .unwrap();
             assert_eq!(
                 insertion_fragment.fragment_id, fragment.id,
-                "fragment: {:?}\ninsertion: {:?}",
+                "片段: {:?}\n插入: {:?}",
                 fragment, insertion_fragment
             );
         }
@@ -1827,7 +1827,7 @@ impl Buffer {
         T: rand::Rng,
     {
         let mut edits = self.get_random_edits(rng, edit_count);
-        log::info!("mutating buffer {:?} with {:?}", self.replica_id, edits);
+        log::info!("正在使用 {:?} 修改缓冲区 {:?}", self.replica_id, edits);
 
         let op = self.edit(edits.iter().cloned());
         if let Operation::Edit(edit) = &op {
@@ -1850,7 +1850,7 @@ impl Buffer {
             if let Some(entry) = self.history.undo_stack.choose(rng) {
                 let transaction = entry.transaction.clone();
                 log::info!(
-                    "undoing buffer {:?} transaction {:?}",
+                    "正在撤销缓冲区 {:?} 的事务 {:?}",
                     self.replica_id,
                     transaction
                 );
@@ -2459,7 +2459,7 @@ impl BufferSnapshot {
 
             let Some(insertion) = self.try_find_fragment(&anchor) else {
                 panic!(
-                    "invalid insertion for buffer {}@{:?} with anchor {:?}",
+                    "缓冲区 {}@{:?} 的插入无效,锚点为 {:?}",
                     self.remote_id(),
                     self.version,
                     anchor
@@ -2470,7 +2470,7 @@ impl BufferSnapshot {
             assert_eq!(
                 insertion.timestamp,
                 anchor.timestamp(),
-                "invalid insertion for buffer {}@{:?}. anchor: {:?}, {:?}, {:?}, {:?}, {:?}. timestamp: {:?}, offset: {:?}, bias: {:?}",
+                "缓冲区 {}@{:?} 的插入无效。锚点: {:?}, {:?}, {:?}, {:?}, {:?}。时间戳: {:?}, 偏移量: {:?}, 偏向: {:?}",
                 self.remote_id(),
                 self.version,
                 anchor.timestamp_replica_id,
@@ -2511,7 +2511,7 @@ impl BufferSnapshot {
             debug_assert_eq!(anchor.buffer_id, self.remote_id);
             debug_assert!(
                 self.version.observed(anchor.timestamp()),
-                "Anchor timestamp {:?} not observed by buffer {:?}",
+                "缓冲区 {:?} 未观察到锚点时间戳 {:?}",
                 anchor.timestamp(),
                 self.version
             );
@@ -2542,17 +2542,17 @@ impl BufferSnapshot {
     fn panic_bad_anchor(&self, anchor: &Anchor) -> ! {
         if anchor.buffer_id != self.remote_id {
             panic!(
-                "invalid anchor - buffer id does not match: anchor {anchor:?}; buffer id: {}, version: {:?}",
+                "无效锚点 - 缓冲区 ID 不匹配: 锚点 {anchor:?}; 缓冲区 ID: {}, 版本: {:?}",
                 self.remote_id, self.version
             );
         } else if !self.version.observed(anchor.timestamp()) {
             panic!(
-                "invalid anchor - snapshot has not observed lamport: {:?}; version: {:?}",
+                "无效锚点 - 快照未观察到 Lamport 时间戳: {:?}; 版本: {:?}",
                 anchor, self.version
             );
         } else {
             panic!(
-                "invalid anchor {:?}. buffer id: {}, version: {:?}",
+                "无效锚点 {:?}。缓冲区 ID: {}, 版本: {:?}",
                 anchor, self.remote_id, self.version
             );
         }
@@ -2648,7 +2648,7 @@ impl BufferSnapshot {
             let Some(fragment) = item else {
                 // We got a bad offset, likely out of bounds
                 debug_panic!(
-                    "Failed to find fragment at offset {} (len: {})",
+                    "在偏移量 {} 处找不到片段(长度: {})",
                     offset,
                     self.len()
                 );
@@ -3317,7 +3317,7 @@ impl VersionedFullOffset {
         if let Self::Offset(position) = self {
             *position
         } else {
-            panic!("invalid version")
+            panic!("无效版本")
         }
     }
 }

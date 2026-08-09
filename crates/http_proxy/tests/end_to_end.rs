@@ -52,7 +52,7 @@ fn spawn_stub_upstream_proxy(
         let connect_request = read_until_double_crlf(&mut sock);
         assert!(
             connect_request.starts_with(b"CONNECT "),
-            "expected CONNECT, got: {:?}",
+            "预期 CONNECT,实际收到: {:?}",
             String::from_utf8_lossy(&connect_request)
         );
         sock.write_all(b"HTTP/1.1 200 Connection established\r\n\r\n")
@@ -95,7 +95,7 @@ fn spawn_proxy_with_upstream(
         upstream,
         events: events_tx,
     })
-    .expect("proxy spawn");
+    .expect("代理启动");
 
     drain_ready(&proxy, &mut events_rx);
     (proxy, events_rx)
@@ -109,7 +109,7 @@ fn spawn_unix_proxy(allowlist: Allowlist) -> (ProxyHandle, mpsc::UnboundedReceiv
         upstream: None,
         events: events_tx,
     })
-    .expect("proxy spawn");
+    .expect("代理启动");
 
     drain_ready(&proxy, &mut events_rx);
     (proxy, events_rx)
@@ -119,12 +119,12 @@ fn drain_ready(proxy: &ProxyHandle, events_rx: &mut mpsc::UnboundedReceiver<Prox
     let ready = futures::executor::block_on(events_rx.next());
     match ready {
         Some(ProxyEvent::Ready { port }) => assert_eq!(port, proxy.port()),
-        other => panic!("expected Ready event first, got {other:?}"),
+        other => panic!("预期首先收到 Ready 事件,实际收到 {other:?}"),
     }
 }
 
 fn next_event(events: &mut mpsc::UnboundedReceiver<ProxyEvent>) -> ProxyEvent {
-    futures::executor::block_on(events.next()).expect("events channel closed")
+    futures::executor::block_on(events.next()).expect("事件通道已关闭")
 }
 
 #[test]
@@ -152,7 +152,7 @@ fn connect_allowed_host_completes_tunnel_and_emits_events() {
     let resp_text = String::from_utf8_lossy(&response);
     assert!(
         resp_text.starts_with("HTTP/1.1 200"),
-        "expected 200 from proxy, got: {resp_text}"
+        "预期代理返回 200,实际收到: {resp_text}"
     );
 
     // Send tunnel payload.
@@ -163,7 +163,7 @@ fn connect_allowed_host_completes_tunnel_and_emits_events() {
     let origin_received = origin_join.join().unwrap();
     assert!(
         String::from_utf8_lossy(&origin_received).contains("hi origin"),
-        "origin saw: {:?}",
+        "源服务器收到: {:?}",
         String::from_utf8_lossy(&origin_received)
     );
 
@@ -179,13 +179,13 @@ fn connect_allowed_host_completes_tunnel_and_emits_events() {
             assert_eq!(method, RequestMethod::Connect);
             assert!(matches!(outcome, RequestOutcome::Allowed));
         }
-        other => panic!("expected RequestAttempt, got {other:?}"),
+        other => panic!("预期 RequestAttempt,实际收到 {other:?}"),
     }
     match next_event(&mut events) {
         ProxyEvent::RequestCompleted { host, .. } => {
             assert_eq!(host, "localhost");
         }
-        other => panic!("expected RequestCompleted, got {other:?}"),
+        other => panic!("预期 RequestCompleted,实际收到 {other:?}"),
     }
 }
 
@@ -196,7 +196,7 @@ fn unix_listener_denied_host_returns_511() {
     let (proxy, mut events) = spawn_unix_proxy(allowlist);
     let socket_path = proxy
         .socket_path()
-        .expect("Unix proxy socket path")
+        .expect("Unix 代理套接字路径")
         .to_path_buf();
 
     let mut client = UnixStream::connect(socket_path).unwrap();
@@ -209,7 +209,7 @@ fn unix_listener_denied_host_returns_511() {
     client.read_to_string(&mut response).unwrap();
     assert!(
         response.starts_with("HTTP/1.1 511 "),
-        "expected 511, got: {response}"
+        "预期 511,实际收到: {response}"
     );
     assert!(response.contains("denied.example"));
 
@@ -225,7 +225,7 @@ fn unix_listener_denied_host_returns_511() {
             assert_eq!(method, RequestMethod::Connect);
             assert!(matches!(outcome, RequestOutcome::Denied { .. }));
         }
-        other => panic!("expected RequestAttempt(Denied), got {other:?}"),
+        other => panic!("预期 RequestAttempt(Denied),实际收到 {other:?}"),
     }
 }
 
@@ -244,12 +244,12 @@ fn connect_denied_host_returns_511_with_via_header() {
     client.read_to_string(&mut response).unwrap();
     assert!(
         response.starts_with("HTTP/1.1 511 "),
-        "expected 511, got: {response}"
+        "预期 511,实际收到: {response}"
     );
     assert!(response.contains("Via: 1.1 zed-sandbox-proxy"));
     assert!(response.contains("Proxy-Status: zed-sandbox-proxy"));
     assert!(response.contains("denied.example"));
-    assert!(response.contains("not in this conversation's network allowlist"));
+    assert!(response.contains("不在当前对话的网络允许列表中"));
 
     match next_event(&mut events) {
         ProxyEvent::RequestAttempt {
@@ -268,10 +268,10 @@ fn connect_denied_host_returns_511_with_via_header() {
                         reason: DenyReason::HostNotInAllowlist { .. }
                     }
                 ),
-                "outcome was {outcome:?}"
+                "结果为 {outcome:?}"
             );
         }
-        other => panic!("expected RequestAttempt(Denied), got {other:?}"),
+        other => panic!("预期 RequestAttempt(Denied),实际收到 {other:?}"),
     }
 }
 
@@ -290,9 +290,9 @@ fn http_forward_denied_host_returns_511() {
     client.read_to_string(&mut response).unwrap();
     assert!(
         response.starts_with("HTTP/1.1 511 "),
-        "expected 511, got: {response}"
+        "预期 511,实际收到: {response}"
     );
-    assert!(response.contains("not in this conversation's network allowlist"));
+    assert!(response.contains("不在当前对话的网络允许列表中"));
 
     match next_event(&mut events) {
         ProxyEvent::RequestAttempt {
@@ -307,7 +307,7 @@ fn http_forward_denied_host_returns_511() {
             assert_eq!(host, "denied.example");
             assert_eq!(method, "GET");
         }
-        other => panic!("expected RequestAttempt(Denied), got {other:?}"),
+        other => panic!("预期 RequestAttempt(Denied),实际收到 {other:?}"),
     }
 }
 
@@ -325,7 +325,7 @@ fn ip_literal_connect_is_denied_for_pattern_allowlists() {
     let mut response = String::new();
     client.read_to_string(&mut response).unwrap();
     assert!(response.starts_with("HTTP/1.1 511 "));
-    assert!(response.contains("IP literal"));
+    assert!(response.contains("IP 字面量"));
 
     match next_event(&mut events) {
         ProxyEvent::RequestAttempt {
@@ -337,7 +337,7 @@ fn ip_literal_connect_is_denied_for_pattern_allowlists() {
         } => {
             assert_eq!(target, "1.2.3.4:443");
         }
-        other => panic!("expected IpLiteralRejected, got {other:?}"),
+        other => panic!("预期 IpLiteralRejected,实际收到 {other:?}"),
     }
 }
 
@@ -357,7 +357,7 @@ fn ip_literal_connect_is_allowed_when_allowlist_allows_any() {
     let resp_text = String::from_utf8_lossy(&response);
     assert!(
         resp_text.starts_with("HTTP/1.1 200"),
-        "expected 200 from proxy, got: {resp_text}"
+        "预期代理返回 200,实际收到: {resp_text}"
     );
 
     client.write_all(b"ping\r\n\r\n").unwrap();
@@ -370,7 +370,7 @@ fn ip_literal_connect_is_allowed_when_allowlist_allows_any() {
             assert_eq!(host, "127.0.0.1");
             assert!(matches!(outcome, RequestOutcome::Allowed));
         }
-        other => panic!("expected RequestAttempt(Allowed), got {other:?}"),
+        other => panic!("预期 RequestAttempt(Allowed),实际收到 {other:?}"),
     }
 }
 
@@ -397,7 +397,7 @@ fn host_resolving_to_loopback_is_denied_for_pattern_allowlists() {
     client.read_to_string(&mut response).unwrap();
     assert!(
         response.starts_with("HTTP/1.1 511 "),
-        "expected 511, got: {response}"
+        "预期 511,实际收到: {response}"
     );
 }
 
@@ -435,11 +435,11 @@ fn http_forward_allowed_rewrites_to_origin_form() {
     // origin-form — many real servers don't accept absolute-form.
     assert!(
         origin_saw_str.starts_with("GET /foo HTTP/1.1\r\n"),
-        "origin saw: {origin_saw_str}"
+        "源服务器收到: {origin_saw_str}"
     );
     assert!(
         origin_saw_str.contains(&format!("Host: localhost:{}\r\n", origin_addr.port())),
-        "origin saw: {origin_saw_str}"
+        "源服务器收到: {origin_saw_str}"
     );
 
     match next_event(&mut events) {
@@ -450,11 +450,11 @@ fn http_forward_allowed_rewrites_to_origin_form() {
         } => {
             assert_eq!(m, "GET");
         }
-        other => panic!("expected RequestAttempt(Allowed), got {other:?}"),
+        other => panic!("预期 RequestAttempt(Allowed),实际收到 {other:?}"),
     }
     match next_event(&mut events) {
         ProxyEvent::RequestCompleted { .. } => {}
-        other => panic!("expected RequestCompleted, got {other:?}"),
+        other => panic!("预期 RequestCompleted,实际收到 {other:?}"),
     }
 }
 
@@ -487,7 +487,7 @@ fn connect_chains_through_upstream_proxy_with_auth() {
     let resp_text = String::from_utf8_lossy(&response);
     assert!(
         resp_text.starts_with("HTTP/1.1 200"),
-        "expected 200 from proxy, got: {resp_text}"
+        "预期代理返回 200,实际收到: {resp_text}"
     );
 
     client.write_all(b"client tunnel bytes\r\n\r\n").unwrap();
@@ -500,16 +500,16 @@ fn connect_chains_through_upstream_proxy_with_auth() {
     let connect_text = String::from_utf8_lossy(&connect_request);
     assert!(
         connect_text.starts_with("CONNECT proxied.example:443 HTTP/1.1\r\n"),
-        "upstream saw: {connect_text}"
+        "上游服务器收到: {connect_text}"
     );
     // Basic auth from the upstream URL is injected on the CONNECT.
     assert!(
         connect_text.contains("Proxy-Authorization: Basic YWxpY2U6czNjcmV0\r\n"),
-        "upstream saw: {connect_text}"
+        "上游服务器收到: {connect_text}"
     );
     assert!(
-        String::from_utf8_lossy(&tunneled_request).contains("client tunnel bytes"),
-        "tunneled: {:?}",
+        String::from_utf8_lossy(&tunneled_request).contains("客户端隧道字节"),
+        "隧道传输: {:?}",
         String::from_utf8_lossy(&tunneled_request)
     );
 
@@ -519,7 +519,7 @@ fn connect_chains_through_upstream_proxy_with_auth() {
             outcome: RequestOutcome::Allowed,
             ..
         } => assert_eq!(host, "proxied.example"),
-        other => panic!("expected RequestAttempt(Allowed), got {other:?}"),
+        other => panic!("预期 RequestAttempt(Allowed),实际收到 {other:?}"),
     }
 }
 
@@ -552,7 +552,7 @@ fn http_forward_chains_through_upstream_via_connect_tunnel() {
     let response_str = String::from_utf8_lossy(&response);
     assert!(
         response_str.contains("HTTP/1.1 200") && response_str.contains("ok"),
-        "client got: {response_str}"
+        "客户端收到: {response_str}"
     );
     drop(client);
 
@@ -560,17 +560,17 @@ fn http_forward_chains_through_upstream_via_connect_tunnel() {
     let connect_text = String::from_utf8_lossy(&connect_request);
     assert!(
         connect_text.starts_with("CONNECT proxied.example:80 HTTP/1.1\r\n"),
-        "upstream saw: {connect_text}"
+        "上游服务器收到: {connect_text}"
     );
     // Inside the tunnel, the origin sees an origin-form request.
     let tunneled_text = String::from_utf8_lossy(&tunneled_request);
     assert!(
         tunneled_text.starts_with("GET /data HTTP/1.1\r\n"),
-        "tunneled: {tunneled_text}"
+        "隧道传输: {tunneled_text}"
     );
     assert!(
         tunneled_text.contains("Host: proxied.example\r\n"),
-        "tunneled: {tunneled_text}"
+        "隧道传输: {tunneled_text}"
     );
 }
 
@@ -588,6 +588,6 @@ fn dropping_handle_stops_listener() {
     );
     assert!(
         result.is_err(),
-        "listener should have stopped after ProxyHandle drop, but new connection succeeded"
+        "ProxyHandle 释放后监听器应已停止,但新连接仍然成功"
     );
 }

@@ -196,7 +196,7 @@ impl WaylandSurfaceState {
 
         if let WindowKind::AnchoredPopup(options) = &params.kind {
             let Some(parent) = parent.as_ref() else {
-                return Err(anyhow::anyhow!("popup parent window not found"));
+                return Err(anyhow::anyhow!("未找到弹出窗口的父窗口"));
             };
 
             let positioner = build_popup_positioner(
@@ -479,7 +479,7 @@ impl WaylandSurfaceState {
             true
         } else {
             log::warn!(
-                "ignoring exclusive edge {edge:?}: must be a single edge of the surface anchor {anchor:?}"
+                "忽略独占边缘 {edge:?}:必须是表面锚点 {anchor:?} 的单个边缘"
             );
             false
         }
@@ -975,10 +975,10 @@ impl WaylandWindowStatePtr {
                     }
                 }
                 WEnum::Value(_) => {
-                    log::warn!("Unknown decoration mode");
+                    log::warn!("未知的装饰模式");
                 }
                 WEnum::Unknown(v) => {
-                    log::warn!("Unknown decoration mode: {}", v);
+                    log::warn!("未知的装饰模式:{}", v);
                 }
             }
         }
@@ -1721,7 +1721,7 @@ impl PlatformWindow for WaylandWindow {
             match state.renderer.recover(&raw_window) {
                 Ok(()) => {}
                 Err(err) => {
-                    log::warn!("GPU recovery failed, will retry on next frame: {err}");
+                    log::warn!("GPU 恢复失败,将在下一帧重试: {err}");
                 }
             }
 
@@ -1868,7 +1868,7 @@ impl PlatformWindow for WaylandWindow {
             None => {
                 if matches!(decorations, WindowDecorations::Server) {
                     log::info!(
-                        "Server-side decorations requested, but the Wayland server does not support them. Falling back to client-side decorations."
+                        "请求了服务端装饰,但 Wayland 服务器不支持。回退到客户端装饰。"
                     );
                 }
                 state.decorations = WindowDecorations::Client;

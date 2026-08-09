@@ -107,7 +107,7 @@ impl BookmarkStore {
             }
 
             let count = rows.len();
-            log::debug!("Stored {count} unloaded bookmark(s) at {}", path.display());
+            log::debug!("在 {} 存储了 {count} 个未加载的书签", path.display());
 
             self.bookmarks.insert(path, BookmarkEntry::Unloaded(rows));
         }
@@ -136,7 +136,7 @@ impl BookmarkStore {
 
                 if point > max_point {
                     log::warn!(
-                        "Skipping out-of-range bookmark: {} row {} (file has {} rows)",
+                        "跳过超出范围的书签:{} 第 {} 行(文件共有 {} 行)",
                         abs_path.display(),
                         bookmark.row,
                         max_point.row
@@ -461,7 +461,7 @@ impl BookmarkStore {
         let opened: Vec<_> = open_tasks
             .inspect_err(|(path, error)| {
                 log::warn!(
-                    "Could not open buffer for bookmarked path {}: {error}",
+                    "无法为书签路径 {} 打开缓冲区:{error}",
                     path.display()
                 )
             })

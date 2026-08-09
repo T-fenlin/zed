@@ -23,7 +23,7 @@ impl PlainOpenAiClient {
     pub fn new() -> Result<Self> {
         let http_client: Arc<dyn http_client::HttpClient> = Arc::new(ReqwestClient::new());
         let api_key = std::env::var("OPENAI_API_KEY")
-            .map_err(|_| anyhow::anyhow!("OPENAI_API_KEY environment variable not set"))?;
+            .map_err(|_| anyhow::anyhow!("未设置 OPENAI_API_KEY 环境变量"))?;
         Ok(Self {
             http_client,
             api_key,
@@ -112,7 +112,7 @@ impl BatchingOpenAiClient {
     fn new(cache_path: &Path) -> Result<Self> {
         let http_client: Arc<dyn http_client::HttpClient> = Arc::new(ReqwestClient::new());
         let api_key = std::env::var("OPENAI_API_KEY")
-            .map_err(|_| anyhow::anyhow!("OPENAI_API_KEY environment variable not set"))?;
+            .map_err(|_| anyhow::anyhow!("未设置 OPENAI_API_KEY 环境变量"))?;
 
         let connection = sqlez::connection::Connection::open_file(cache_path.to_str().unwrap());
         let mut statement = sqlez::statement::Statement::prepare(
@@ -226,7 +226,7 @@ impl BatchingOpenAiClient {
 
     pub async fn import_batches(&self, batch_ids: &[String]) -> Result<()> {
         for batch_id in batch_ids {
-            log::info!("Importing OpenAI batch {}", batch_id);
+            log::info!("正在导入 OpenAI 批次 {}", batch_id);
 
             let batch_status = batches::retrieve_batch(
                 self.http_client.as_ref(),
@@ -235,13 +235,13 @@ impl BatchingOpenAiClient {
                 batch_id,
             )
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to retrieve batch {}: {:?}", batch_id, e))?;
+            .map_err(|e| anyhow::anyhow!("获取批次 {} 失败: {:?}", batch_id, e))?;
 
-            log::info!("Batch {} status: {}", batch_id, batch_status.status);
+            log::info!("批次 {} 状态: {}", batch_id, batch_status.status);
 
             if batch_status.status != "completed" {
                 log::warn!(
-                    "Batch {} is not completed (status: {}), skipping",
+                    "批次 {} 未完成(状态: {}),跳过",
                     batch_id,
                     batch_status.status
                 );
@@ -249,7 +249,7 @@ impl BatchingOpenAiClient {
             }
 
             let output_file_id = batch_status.output_file_id.ok_or_else(|| {
-                anyhow::anyhow!("Batch {} completed but has no output file", batch_id)
+                anyhow::anyhow!("批次 {} 已完成但没有输出文件", batch_id)
             })?;
 
             let results_content = batches::download_file(
@@ -260,11 +260,11 @@ impl BatchingOpenAiClient {
             )
             .await
             .map_err(|e| {
-                anyhow::anyhow!("Failed to download batch results for {}: {:?}", batch_id, e)
+                anyhow::anyhow!("下载批次 {} 的结果失败: {:?}", batch_id, e)
             })?;
 
             let results = batches::parse_batch_output(&results_content)
-                .map_err(|e| anyhow::anyhow!("Failed to parse batch output: {:?}", e))?;
+                .map_err(|e| anyhow::anyhow!("解析批次输出失败: {:?}", e))?;
 
             let mut updates: Vec<(String, String, String)> = Vec::new();
             let mut success_count = 0;
@@ -284,7 +284,7 @@ impl BatchingOpenAiClient {
                         success_count += 1;
                     } else {
                         log::error!(
-                            "Batch request {} failed with status {}",
+                            "批次请求 {} 失败,状态码 {}",
                             request_hash,
                             response_body.status_code
                         );
@@ -300,7 +300,7 @@ impl BatchingOpenAiClient {
                     }
                 } else if let Some(error) = result.error {
                     log::error!(
-                        "Batch request {} failed: {}: {}",
+                        "批次请求 {} 失败: {}: {}",
                         request_hash,
                         error.code,
                         error.message
@@ -336,7 +336,7 @@ impl BatchingOpenAiClient {
             })?;
 
             log::info!(
-                "Imported batch {}: {} successful, {} errors",
+                "已导入批次 {}: {} 成功, {} 错误",
                 batch_id,
                 success_count,
                 error_count
@@ -363,13 +363,13 @@ impl BatchingOpenAiClient {
             .await
             .map_err(|e| anyhow::anyhow!("{:?}", e))?;
 
-            log::info!("Batch {} status: {}", batch_id, batch_status.status);
+            log::info!("批次 {} 状态: {}", batch_id, batch_status.status);
 
             if batch_status.status == "completed" {
                 let output_file_id = match batch_status.output_file_id {
                     Some(id) => id,
                     None => {
-                        log::warn!("Batch {} completed but has no output file", batch_id);
+                        log::warn!("批次 {} 已完成但没有输出文件", batch_id);
                         continue;
                     }
                 };
@@ -384,7 +384,7 @@ impl BatchingOpenAiClient {
                 .map_err(|e| anyhow::anyhow!("{:?}", e))?;
 
                 let results = batches::parse_batch_output(&results_content)
-                    .map_err(|e| anyhow::anyhow!("Failed to parse batch output: {:?}", e))?;
+                    .map_err(|e| anyhow::anyhow!("解析批次输出失败: {:?}", e))?;
 
                 let mut updates: Vec<(String, String)> = Vec::new();
                 let mut success_count = 0;
@@ -403,7 +403,7 @@ impl BatchingOpenAiClient {
                             success_count += 1;
                         } else {
                             log::error!(
-                                "Batch request {} failed with status {}",
+                                "批次请求 {} 失败,状态码 {}",
                                 request_hash,
                                 response_body.status_code
                             );
@@ -418,7 +418,7 @@ impl BatchingOpenAiClient {
                         }
                     } else if let Some(error) = result.error {
                         log::error!(
-                            "Batch request {} failed: {}: {}",
+                            "批次请求 {} 失败: {}: {}",
                             request_hash,
                             error.code,
                             error.message
@@ -443,7 +443,7 @@ impl BatchingOpenAiClient {
                     }
                     Ok(())
                 })?;
-                log::info!("Downloaded {} successful requests", success_count);
+                log::info!("已下载 {} 个成功请求", success_count);
             }
         }
 
@@ -519,7 +519,7 @@ impl BatchingOpenAiClient {
                 let batch_item = batches::BatchRequestItem::new(custom_id, request);
                 let line = batch_item
                     .to_jsonl_line()
-                    .map_err(|e| anyhow::anyhow!("Failed to serialize batch item: {:?}", e))?;
+                    .map_err(|e| anyhow::anyhow!("序列化批次项失败: {:?}", e))?;
                 jsonl_content.push_str(&line);
                 jsonl_content.push('\n');
             }
@@ -533,7 +533,7 @@ impl BatchingOpenAiClient {
                 jsonl_content.into_bytes(),
             )
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to upload batch file: {:?}", e))?;
+            .map_err(|e| anyhow::anyhow!("上传批次文件失败: {:?}", e))?;
 
             let batch = batches::create_batch(
                 self.http_client.as_ref(),
@@ -542,7 +542,7 @@ impl BatchingOpenAiClient {
                 batches::CreateBatchRequest::new(file_obj.id),
             )
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to create batch: {:?}", e))?;
+            .map_err(|e| anyhow::anyhow!("创建批次失败: {:?}", e))?;
 
             {
                 let connection = self.connection.lock().unwrap();
@@ -559,7 +559,7 @@ impl BatchingOpenAiClient {
             let batch_len = rows.len();
             total_uploaded += batch_len;
             log::info!(
-                "Uploaded batch {} with {} requests ({} total)",
+                "已上传批次 {},包含 {} 个请求(共 {} 个)",
                 batch.id,
                 batch_len,
                 total_uploaded
@@ -570,7 +570,7 @@ impl BatchingOpenAiClient {
 
         if !all_batch_ids.is_empty() {
             log::info!(
-                "Finished uploading {} batches with {} total requests",
+                "已完成上传 {} 个批次,共 {} 个请求",
                 all_batch_ids.len(),
                 total_uploaded
             );
@@ -673,7 +673,7 @@ impl OpenAiClient {
                     .generate(model, max_tokens, messages, seed, cache_only)
                     .await
             }
-            OpenAiClient::Dummy => panic!("Dummy OpenAI client is not expected to be used"),
+            OpenAiClient::Dummy => panic!("不应使用 Dummy OpenAI 客户端"),
         }
     }
 
@@ -681,7 +681,7 @@ impl OpenAiClient {
         match self {
             OpenAiClient::Plain(_) => Ok(()),
             OpenAiClient::Batch(batching_client) => batching_client.sync_batches().await,
-            OpenAiClient::Dummy => panic!("Dummy OpenAI client is not expected to be used"),
+            OpenAiClient::Dummy => panic!("不应使用 Dummy OpenAI 客户端"),
         }
     }
 
@@ -689,17 +689,17 @@ impl OpenAiClient {
         match self {
             OpenAiClient::Plain(_) => Ok(0),
             OpenAiClient::Batch(batching_client) => batching_client.pending_batch_count(),
-            OpenAiClient::Dummy => panic!("Dummy OpenAI client is not expected to be used"),
+            OpenAiClient::Dummy => panic!("不应使用 Dummy OpenAI 客户端"),
         }
     }
 
     pub async fn import_batches(&self, batch_ids: &[String]) -> Result<()> {
         match self {
             OpenAiClient::Plain(_) => {
-                anyhow::bail!("Import batches is only supported with batching client")
+                anyhow::bail!("仅批处理客户端支持导入批次")
             }
             OpenAiClient::Batch(batching_client) => batching_client.import_batches(batch_ids).await,
-            OpenAiClient::Dummy => panic!("Dummy OpenAI client is not expected to be used"),
+            OpenAiClient::Dummy => panic!("不应使用 Dummy OpenAI 客户端"),
         }
     }
 }

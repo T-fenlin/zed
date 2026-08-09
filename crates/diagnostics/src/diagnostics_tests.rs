@@ -83,14 +83,14 @@ async fn test_diagnostics(cx: &mut TestAppContext) {
             diagnostics: vec![lsp::Diagnostic{
                 range: lsp::Range::new(lsp::Position::new(7, 6),lsp::Position::new(7, 7)),
                 severity:Some(lsp::DiagnosticSeverity::ERROR),
-                message: "use of moved value\nvalue used here after move".to_string(),
+                message: "使用了已移动的值\n移动后在此处使用".to_string(),
                 related_information: Some(vec![lsp::DiagnosticRelatedInformation {
                     location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(2,8),lsp::Position::new(2,9))),
-                    message: "move occurs because `y` has type `Vec<char>`, which does not implement the `Copy` trait".to_string()
+                    message: "发生移动是因为 `y` 的类型为 `Vec<char>`,该类型未实现 `复制` trait".to_string()
                 },
                 lsp::DiagnosticRelatedInformation {
                     location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(4,6),lsp::Position::new(4,7))),
-                    message: "value moved here".to_string()
+                    message: "值在此处移动".to_string()
                 },
                 ]),
                 ..Default::default()
@@ -98,14 +98,14 @@ async fn test_diagnostics(cx: &mut TestAppContext) {
             lsp::Diagnostic{
                 range: lsp::Range::new(lsp::Position::new(8, 6),lsp::Position::new(8, 7)),
                 severity:Some(lsp::DiagnosticSeverity::ERROR),
-                message: "use of moved value\nvalue used here after move".to_string(),
+                message: "使用了已移动的值\n移动后在此处使用".to_string(),
                 related_information: Some(vec![lsp::DiagnosticRelatedInformation {
                     location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(1,8),lsp::Position::new(1,9))),
-                    message: "move occurs because `x` has type `Vec<char>`, which does not implement the `Copy` trait".to_string()
+                    message: "发生移动是因为 `x` 的类型为 `Vec<char>`,该类型未实现 `复制` trait".to_string()
                 },
                 lsp::DiagnosticRelatedInformation {
                     location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(3,6),lsp::Position::new(3,7))),
-                    message: "value moved here".to_string()
+                    message: "值在此处移动".to_string()
                 },
                 ]),
                 ..Default::default()
@@ -180,7 +180,7 @@ async fn test_diagnostics(cx: &mut TestAppContext) {
                             lsp::Position::new(0, 15),
                         ),
                         severity: Some(lsp::DiagnosticSeverity::ERROR),
-                        message: "mismatched types expected `usize`, found `char`".to_string(),
+                        message: "类型不匹配,期望 `usize`,找到 `char`".to_string(),
                         ..Default::default()
                     }],
                     version: None,
@@ -259,7 +259,7 @@ async fn test_diagnostics(cx: &mut TestAppContext) {
                                 lsp::Position::new(0, 15),
                             ),
                             severity: Some(lsp::DiagnosticSeverity::ERROR),
-                            message: "mismatched types expected `usize`, found `char`".to_string(),
+                            message: "类型不匹配,期望 `usize`,找到 `char`".to_string(),
                             ..Default::default()
                         },
                         lsp::Diagnostic {
@@ -268,7 +268,7 @@ async fn test_diagnostics(cx: &mut TestAppContext) {
                                 lsp::Position::new(1, 15),
                             ),
                             severity: Some(lsp::DiagnosticSeverity::ERROR),
-                            message: "unresolved name `c`".to_string(),
+                            message: "未解析的名称 `c`".to_string(),
                             ..Default::default()
                         },
                     ],
@@ -370,7 +370,7 @@ async fn test_diagnostics_with_folds(cx: &mut TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(4, 0), lsp::Position::new(4, 4)),
                         severity: Some(lsp::DiagnosticSeverity::WARNING),
-                        message: "no method `tset`".to_string(),
+                        message: "没有方法 `tset`".to_string(),
                         related_information: Some(vec![lsp::DiagnosticRelatedInformation {
                             location: lsp::Location::new(
                                 lsp::Uri::from_file_path(path!("/test/main.js")).unwrap(),
@@ -379,7 +379,7 @@ async fn test_diagnostics_with_folds(cx: &mut TestAppContext) {
                                     lsp::Position::new(0, 13),
                                 ),
                             ),
-                            message: "method `test` defined here".to_string(),
+                            message: "方法 `test` 在此定义".to_string(),
                         }]),
                         ..Default::default()
                     }],
@@ -480,7 +480,7 @@ async fn test_diagnostics_multiple_servers(cx: &mut TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(0, 0), lsp::Position::new(0, 1)),
                         severity: Some(lsp::DiagnosticSeverity::WARNING),
-                        message: "error 1".to_string(),
+                        message: "错误 1".to_string(),
                         ..Default::default()
                     }],
                     version: None,
@@ -524,7 +524,7 @@ async fn test_diagnostics_multiple_servers(cx: &mut TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(1, 0), lsp::Position::new(1, 1)),
                         severity: Some(lsp::DiagnosticSeverity::ERROR),
-                        message: "warning 1".to_string(),
+                        message: "警告 1".to_string(),
                         ..Default::default()
                     }],
                     version: None,
@@ -567,7 +567,7 @@ async fn test_diagnostics_multiple_servers(cx: &mut TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(2, 0), lsp::Position::new(2, 1)),
                         severity: Some(lsp::DiagnosticSeverity::WARNING),
-                        message: "warning 2".to_string(),
+                        message: "警告 2".to_string(),
                         ..Default::default()
                     }],
                     version: None,
@@ -623,7 +623,7 @@ async fn test_diagnostics_multiple_servers(cx: &mut TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(3, 0), lsp::Position::new(3, 1)),
                         severity: Some(lsp::DiagnosticSeverity::WARNING),
-                        message: "warning 2".to_string(),
+                        message: "警告 2".to_string(),
                         ..Default::default()
                     }],
                     version: None,
@@ -661,7 +661,7 @@ async fn test_random_diagnostics_blocks(cx: &mut TestAppContext, mut rng: StdRng
     init_test(cx);
 
     let operations = env::var("OPERATIONS")
-        .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+        .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
         .unwrap_or(10);
 
     let fs = FakeFs::new(cx.executor());
@@ -698,7 +698,7 @@ async fn test_random_diagnostics_blocks(cx: &mut TestAppContext, mut rng: StdRng
             // language server completes its diagnostic check
             0..=20 if !updated_language_servers.is_empty() => {
                 let server_id = *updated_language_servers.iter().choose(&mut rng).unwrap();
-                log::info!("finishing diagnostic check for language server {server_id}");
+                log::info!("正在完成语言服务器 {server_id} 的诊断检查");
                 lsp_store.update(cx, |lsp_store, cx| {
                     lsp_store.disk_based_diagnostics_finished(server_id, cx)
                 });
@@ -746,7 +746,7 @@ async fn test_random_diagnostics_blocks(cx: &mut TestAppContext, mut rng: StdRng
                 updated_language_servers.insert(server_id);
 
                 lsp_store.update(cx, |lsp_store, cx| {
-                    log::info!("updating diagnostics. language server {server_id} path {path:?}");
+                    log::info!("正在更新诊断。语言服务器 {server_id} 路径 {path:?}");
                     randomly_update_diagnostics_for_path(
                         &fs,
                         &path,
@@ -779,12 +779,12 @@ async fn test_random_diagnostics_blocks(cx: &mut TestAppContext, mut rng: StdRng
         }
     }
 
-    log::info!("updating mutated diagnostics view");
+    log::info!("正在更新变更后的诊断视图");
     mutated_diagnostics.update_in(cx, |diagnostics, window, cx| {
         diagnostics.update_stale_excerpts(window, cx)
     });
 
-    log::info!("constructing reference diagnostics view");
+    log::info!("正在构建参考诊断视图");
     let reference_diagnostics = window.build_entity(cx, |window, cx| {
         ProjectDiagnosticsEditor::new(true, project.clone(), workspace.downgrade(), window, cx)
     });
@@ -804,8 +804,8 @@ async fn test_random_diagnostics_blocks(cx: &mut TestAppContext, mut rng: StdRng
     let mut ref_iter = reference_excerpts.lines().filter(|line| {
         // ignore $ ---- and $ <file>.rs
         !line.starts_with('§')
-            || line.starts_with("§ diagnostic")
-            || line.starts_with("§ related info")
+            || line.starts_with("§ 诊断")
+            || line.starts_with("§ 相关信息")
     });
     let mut next_ref_line = ref_iter.next();
     let mut skipped_block = false;
@@ -817,8 +817,8 @@ async fn test_random_diagnostics_blocks(cx: &mut TestAppContext, mut rng: StdRng
             } else if mut_line.contains('§')
                 // ignore $ ---- and $ <file>.rs
                 && (!mut_line.starts_with('§')
-                    || mut_line.starts_with("§ diagnostic")
-                    || mut_line.starts_with("§ related info"))
+                    || mut_line.starts_with("§ 诊断")
+                    || mut_line.starts_with("§ 相关信息"))
             {
                 skipped_block = true;
             }
@@ -836,7 +836,7 @@ async fn test_random_diagnostics_with_inlays(cx: &mut TestAppContext, mut rng: S
     init_test(cx);
 
     let operations = env::var("OPERATIONS")
-        .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+        .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
         .unwrap_or(10);
 
     let fs = FakeFs::new(cx.executor());
@@ -874,7 +874,7 @@ async fn test_random_diagnostics_with_inlays(cx: &mut TestAppContext, mut rng: S
             // language server completes its diagnostic check
             0..=20 if !updated_language_servers.is_empty() => {
                 let server_id = *updated_language_servers.iter().choose(&mut rng).unwrap();
-                log::info!("finishing diagnostic check for language server {server_id}");
+                log::info!("正在完成语言服务器 {server_id} 的诊断检查");
                 lsp_store.update(cx, |lsp_store, cx| {
                     lsp_store.disk_based_diagnostics_finished(server_id, cx)
                 });
@@ -892,7 +892,7 @@ async fn test_random_diagnostics_with_inlays(cx: &mut TestAppContext, mut rng: S
                             .random_range(MultiBufferOffset(0)..snapshot.buffer_snapshot().len());
                         let position = snapshot.buffer_snapshot().clip_offset(position, Bias::Left);
                         log::info!(
-                            "adding inlay at {position}/{}: {:?}",
+                            "正在 {position}/{} 处添加内联提示: {:?}",
                             snapshot.buffer_snapshot().len(),
                             snapshot.buffer_snapshot().text(),
                         );
@@ -902,7 +902,7 @@ async fn test_random_diagnostics_with_inlays(cx: &mut TestAppContext, mut rng: S
                             vec![Inlay::edit_prediction(
                                 post_inc(&mut next_inlay_id),
                                 snapshot.buffer_snapshot().anchor_before(position),
-                                Rope::from_iter(["Test inlay ", "next_inlay_id"]),
+                                Rope::from_iter(["测试内联提示 ", "next_inlay_id"]),
                             )],
                             cx,
                         );
@@ -948,7 +948,7 @@ async fn test_random_diagnostics_with_inlays(cx: &mut TestAppContext, mut rng: S
                 updated_language_servers.insert(server_id);
 
                 lsp_store.update(cx, |lsp_store, cx| {
-                    log::info!("updating diagnostics. language server {server_id} path {path:?}");
+                    log::info!("正在更新诊断。语言服务器 {server_id} 路径 {path:?}");
                     randomly_update_diagnostics_for_path(
                         &fs,
                         &path,
@@ -981,7 +981,7 @@ async fn test_random_diagnostics_with_inlays(cx: &mut TestAppContext, mut rng: S
         }
     }
 
-    log::info!("updating mutated diagnostics view");
+    log::info!("正在更新变更后的诊断视图");
     mutated_diagnostics.update_in(cx, |diagnostics, window, cx| {
         diagnostics.update_stale_excerpts(window, cx)
     });
@@ -1004,7 +1004,7 @@ async fn active_diagnostics_dismiss_after_invalidation(cx: &mut TestAppContext) 
         }
     "});
 
-    let message = "Something's wrong!";
+    let message = "出问题了!";
     cx.update(|_, cx| {
         lsp_store.update(cx, |lsp_store, cx| {
             lsp_store
@@ -1038,7 +1038,7 @@ async fn active_diagnostics_dismiss_after_invalidation(cx: &mut TestAppContext) 
         assert_eq!(
             editor.active_diagnostic_message(),
             Some(message),
-            "Should have a diagnostics group activated"
+            "应已激活诊断组"
         );
     });
     cx.assert_editor_state(indoc! {"
@@ -1275,7 +1275,7 @@ async fn test_diagnostics_with_links(cx: &mut TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(0, 8), lsp::Position::new(0, 12)),
                         severity: Some(lsp::DiagnosticSeverity::ERROR),
-                        message: "we've had problems with <https://link.one>, and <https://link.two> is broken".to_string(),
+                        message: "我们遇到了 <https://link.one> 的问题,且 <https://link.two> 已损坏".to_string(),
                         ..Default::default()
                     }],
                 },
@@ -1328,7 +1328,7 @@ async fn test_hover_diagnostic_and_info_popovers(cx: &mut gpui::TestAppContext) 
                     diagnostics: vec![lsp::Diagnostic {
                         range,
                         severity: Some(lsp::DiagnosticSeverity::ERROR),
-                        message: "A test diagnostic message.".to_string(),
+                        message: "一条测试诊断消息。".to_string(),
                         ..Default::default()
                     }],
                 },
@@ -1359,7 +1359,7 @@ async fn test_hover_diagnostic_and_info_popovers(cx: &mut gpui::TestAppContext) 
         Ok(Some(lsp::Hover {
             contents: lsp::HoverContents::Markup(lsp::MarkupContent {
                 kind: lsp::MarkupKind::Markdown,
-                value: "some new docs".to_string(),
+                value: "一些新文档".to_string(),
             }),
             range: Some(range),
         }))
@@ -1420,7 +1420,7 @@ async fn test_diagnostics_with_code(cx: &mut TestAppContext) {
                             severity: Some(lsp::DiagnosticSeverity::WARNING),
                             code: Some(lsp::NumberOrString::String("no-unused-vars".to_string())),
                             source: Some("eslint".to_string()),
-                            message: "'x' is assigned a value but never used".to_string(),
+                            message: "'x' 被赋值但从未使用".to_string(),
                             ..Default::default()
                         },
                         lsp::Diagnostic {
@@ -1431,7 +1431,7 @@ async fn test_diagnostics_with_code(cx: &mut TestAppContext) {
                             severity: Some(lsp::DiagnosticSeverity::WARNING),
                             code: Some(lsp::NumberOrString::String("no-unused-vars".to_string())),
                             source: Some("eslint".to_string()),
-                            message: "'y' is assigned a value but never used".to_string(),
+                            message: "'y' 被赋值但从未使用".to_string(),
                             ..Default::default()
                         },
                     ],
@@ -1478,7 +1478,7 @@ async fn go_to_diagnostic_with_severity(cx: &mut TestAppContext) {
     let lsp_store =
         cx.update_editor(|editor, _, cx| editor.project().unwrap().read(cx).lsp_store());
 
-    cx.set_state(indoc! {"error warning info hiˇnt"});
+    cx.set_state(indoc! {"错误 警告 信息 提ˇ示"});
 
     cx.update(|_, cx| {
         lsp_store.update(cx, |lsp_store, cx| {
@@ -1549,23 +1549,23 @@ async fn go_to_diagnostic_with_severity(cx: &mut TestAppContext) {
 
     // Default, should cycle through all diagnostics
     go!(GoToDiagnosticSeverityFilter::default());
-    cx.assert_editor_state(indoc! {"error warning info ˇhint"});
+    cx.assert_editor_state(indoc! {"错误 警告 信息 ˇ提示"});
     go!(GoToDiagnosticSeverityFilter::default());
-    cx.assert_editor_state(indoc! {"ˇerror warning info hint"});
+    cx.assert_editor_state(indoc! {"ˇ错误 警告 信息 提示"});
     go!(GoToDiagnosticSeverityFilter::default());
-    cx.assert_editor_state(indoc! {"error ˇwarning info hint"});
+    cx.assert_editor_state(indoc! {"错误 ˇ警告 信息 提示"});
     go!(GoToDiagnosticSeverityFilter::default());
-    cx.assert_editor_state(indoc! {"error warning ˇinfo hint"});
+    cx.assert_editor_state(indoc! {"错误 警告 ˇ信息 提示"});
     go!(GoToDiagnosticSeverityFilter::default());
-    cx.assert_editor_state(indoc! {"error warning info ˇhint"});
+    cx.assert_editor_state(indoc! {"错误 警告 信息 ˇ提示"});
     go!(GoToDiagnosticSeverityFilter::default());
-    cx.assert_editor_state(indoc! {"ˇerror warning info hint"});
+    cx.assert_editor_state(indoc! {"ˇ错误 警告 信息 提示"});
 
     let only_info = GoToDiagnosticSeverityFilter::Only(GoToDiagnosticSeverity::Information);
     go!(only_info);
-    cx.assert_editor_state(indoc! {"error warning ˇinfo hint"});
+    cx.assert_editor_state(indoc! {"错误 警告 ˇ信息 提示"});
     go!(only_info);
-    cx.assert_editor_state(indoc! {"error warning ˇinfo hint"});
+    cx.assert_editor_state(indoc! {"错误 警告 ˇ信息 提示"});
 
     let no_hints = GoToDiagnosticSeverityFilter::Range {
         min: GoToDiagnosticSeverity::Information,
@@ -1573,13 +1573,13 @@ async fn go_to_diagnostic_with_severity(cx: &mut TestAppContext) {
     };
 
     go!(no_hints);
-    cx.assert_editor_state(indoc! {"ˇerror warning info hint"});
+    cx.assert_editor_state(indoc! {"ˇ错误 警告 信息 提示"});
     go!(no_hints);
-    cx.assert_editor_state(indoc! {"error ˇwarning info hint"});
+    cx.assert_editor_state(indoc! {"错误 ˇ警告 信息 提示"});
     go!(no_hints);
-    cx.assert_editor_state(indoc! {"error warning ˇinfo hint"});
+    cx.assert_editor_state(indoc! {"错误 警告 ˇ信息 提示"});
     go!(no_hints);
-    cx.assert_editor_state(indoc! {"ˇerror warning info hint"});
+    cx.assert_editor_state(indoc! {"ˇ错误 警告 信息 提示"});
 
     let warning_info = GoToDiagnosticSeverityFilter::Range {
         min: GoToDiagnosticSeverity::Information,
@@ -1587,11 +1587,11 @@ async fn go_to_diagnostic_with_severity(cx: &mut TestAppContext) {
     };
 
     go!(warning_info);
-    cx.assert_editor_state(indoc! {"error ˇwarning info hint"});
+    cx.assert_editor_state(indoc! {"错误 ˇ警告 信息 提示"});
     go!(warning_info);
-    cx.assert_editor_state(indoc! {"error warning ˇinfo hint"});
+    cx.assert_editor_state(indoc! {"错误 警告 ˇ信息 提示"});
     go!(warning_info);
-    cx.assert_editor_state(indoc! {"error ˇwarning info hint"});
+    cx.assert_editor_state(indoc! {"错误 ˇ警告 信息 提示"});
 }
 
 #[gpui::test]
@@ -1657,15 +1657,15 @@ async fn test_buffer_diagnostics(cx: &mut TestAppContext) {
                 lsp::Diagnostic{
                     range: lsp::Range::new(lsp::Position::new(5, 6), lsp::Position::new(5, 7)),
                     severity: Some(lsp::DiagnosticSeverity::WARNING),
-                    message: "use of moved value\nvalue used here after move".to_string(),
+                    message: "使用了已移动的值\n移动后在此处使用".to_string(),
                     related_information: Some(vec![
                         lsp::DiagnosticRelatedInformation {
                             location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(2, 8), lsp::Position::new(2, 9))),
-                            message: "move occurs because `y` has type `Vec<char>`, which does not implement the `Copy` trait".to_string()
+                            message: "发生移动是因为 `y` 的类型为 `Vec<char>`,该类型未实现 `复制` trait".to_string()
                         },
                         lsp::DiagnosticRelatedInformation {
                             location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(4, 6), lsp::Position::new(4, 7))),
-                            message: "value moved here".to_string()
+                            message: "值在此处移动".to_string()
                         },
                     ]),
                     ..Default::default()
@@ -1673,15 +1673,15 @@ async fn test_buffer_diagnostics(cx: &mut TestAppContext) {
                 lsp::Diagnostic{
                     range: lsp::Range::new(lsp::Position::new(6, 6), lsp::Position::new(6, 7)),
                     severity: Some(lsp::DiagnosticSeverity::ERROR),
-                    message: "use of moved value\nvalue used here after move".to_string(),
+                    message: "使用了已移动的值\n移动后在此处使用".to_string(),
                     related_information: Some(vec![
                         lsp::DiagnosticRelatedInformation {
                             location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(1, 8), lsp::Position::new(1, 9))),
-                            message: "move occurs because `x` has type `Vec<char>`, which does not implement the `Copy` trait".to_string()
+                            message: "发生移动是因为 `x` 的类型为 `Vec<char>`,该类型未实现 `复制` trait".to_string()
                         },
                         lsp::DiagnosticRelatedInformation {
                             location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(3, 6), lsp::Position::new(3, 7))),
-                            message: "value moved here".to_string()
+                            message: "值在此处移动".to_string()
                         },
                     ]),
                     ..Default::default()
@@ -1699,13 +1699,13 @@ async fn test_buffer_diagnostics(cx: &mut TestAppContext) {
                 lsp::Diagnostic{
                     range: lsp::Range::new(lsp::Position::new(1, 8), lsp::Position::new(1, 14)),
                     severity: Some(lsp::DiagnosticSeverity::WARNING),
-                    message: "unused variable: `unused`".to_string(),
+                    message: "未使用的变量: `unused`".to_string(),
                     ..Default::default()
                 },
                 lsp::Diagnostic{
                     range: lsp::Range::new(lsp::Position::new(2, 4), lsp::Position::new(2, 22)),
                     severity: Some(lsp::DiagnosticSeverity::ERROR),
-                    message: "cannot find function `undefined_function` in this scope".to_string(),
+                    message: "在此作用域中找不到函数 `undefined_function`".to_string(),
                     ..Default::default()
                 }
             ],
@@ -1810,15 +1810,15 @@ async fn test_buffer_diagnostics_without_warnings(cx: &mut TestAppContext) {
                 lsp::Diagnostic{
                     range: lsp::Range::new(lsp::Position::new(5, 6), lsp::Position::new(5, 7)),
                     severity: Some(lsp::DiagnosticSeverity::WARNING),
-                    message: "use of moved value\nvalue used here after move".to_string(),
+                    message: "使用了已移动的值\n移动后在此处使用".to_string(),
                     related_information: Some(vec![
                         lsp::DiagnosticRelatedInformation {
                             location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(2, 8), lsp::Position::new(2, 9))),
-                            message: "move occurs because `y` has type `Vec<char>`, which does not implement the `Copy` trait".to_string()
+                            message: "发生移动是因为 `y` 的类型为 `Vec<char>`,该类型未实现 `复制` trait".to_string()
                         },
                         lsp::DiagnosticRelatedInformation {
                             location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(4, 6), lsp::Position::new(4, 7))),
-                            message: "value moved here".to_string()
+                            message: "值在此处移动".to_string()
                         },
                     ]),
                     ..Default::default()
@@ -1826,15 +1826,15 @@ async fn test_buffer_diagnostics_without_warnings(cx: &mut TestAppContext) {
                 lsp::Diagnostic{
                     range: lsp::Range::new(lsp::Position::new(6, 6), lsp::Position::new(6, 7)),
                     severity: Some(lsp::DiagnosticSeverity::ERROR),
-                    message: "use of moved value\nvalue used here after move".to_string(),
+                    message: "使用了已移动的值\n移动后在此处使用".to_string(),
                     related_information: Some(vec![
                         lsp::DiagnosticRelatedInformation {
                             location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(1, 8), lsp::Position::new(1, 9))),
-                            message: "move occurs because `x` has type `Vec<char>`, which does not implement the `Copy` trait".to_string()
+                            message: "发生移动是因为 `x` 的类型为 `Vec<char>`,该类型未实现 `复制` trait".to_string()
                         },
                         lsp::DiagnosticRelatedInformation {
                             location: lsp::Location::new(uri.clone(), lsp::Range::new(lsp::Position::new(3, 6), lsp::Position::new(3, 7))),
-                            message: "value moved here".to_string()
+                            message: "值在此处移动".to_string()
                         },
                     ]),
                     ..Default::default()
@@ -1945,7 +1945,7 @@ async fn test_buffer_diagnostics_multiple_servers(cx: &mut TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(5, 6), lsp::Position::new(5, 7)),
                         severity: Some(lsp::DiagnosticSeverity::WARNING),
-                        message: "use of moved value\nvalue used here after move".to_string(),
+                        message: "使用了已移动的值\n移动后在此处使用".to_string(),
                         related_information: None,
                         ..Default::default()
                     }],
@@ -1966,7 +1966,7 @@ async fn test_buffer_diagnostics_multiple_servers(cx: &mut TestAppContext) {
                     diagnostics: vec![lsp::Diagnostic {
                         range: lsp::Range::new(lsp::Position::new(6, 6), lsp::Position::new(6, 7)),
                         severity: Some(lsp::DiagnosticSeverity::WARNING),
-                        message: "use of moved value\nvalue used here after move".to_string(),
+                        message: "使用了已移动的值\n移动后在此处使用".to_string(),
                         related_information: None,
                         ..Default::default()
                     }],
@@ -2050,7 +2050,7 @@ fn randomly_update_diagnostics_for_path(
     for _ in 0..mutation_count {
         if rng.random_bool(0.3) && !diagnostics.is_empty() {
             let idx = rng.random_range(0..diagnostics.len());
-            log::info!("  removing diagnostic at index {idx}");
+            log::info!("  正在移除索引 {idx} 处的诊断");
             diagnostics.remove(idx);
         } else {
             let unique_id = *next_id;
@@ -2060,7 +2060,7 @@ fn randomly_update_diagnostics_for_path(
 
             let ix = rng.random_range(0..=diagnostics.len());
             log::info!(
-                "  inserting {} at index {ix}. {},{}..{},{}",
+                "  正在索引 {ix} 处插入 {}。 {},{}..{},{}",
                 new_diagnostic.message,
                 new_diagnostic.range.start.line,
                 new_diagnostic.range.start.character,
@@ -2112,7 +2112,7 @@ fn random_lsp_diagnostic(
         Some(lsp::DiagnosticSeverity::WARNING)
     };
 
-    let message = format!("diagnostic {unique_id}");
+    let message = format!("诊断 {unique_id}");
 
     let related_information = if rng.random_bool(0.3) {
         let info_count = rng.random_range(1..=3);
@@ -2133,7 +2133,7 @@ fn random_lsp_diagnostic(
 
             related_info.push(lsp::DiagnosticRelatedInformation {
                 location: lsp::Location::new(lsp::Uri::from_file_path(path).unwrap(), info_range),
-                message: format!("related info {i} for diagnostic {unique_id}"),
+                message: format!("诊断 {unique_id} 的相关信息 {i}"),
             });
         }
 

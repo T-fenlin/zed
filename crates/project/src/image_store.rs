@@ -136,7 +136,7 @@ impl ImageItem {
             let image_path = image
                 .read(cx)
                 .abs_path(cx)
-                .context("absolutizing image file path")?;
+                .context("正在获取图片文件的绝对路径")?;
             anyhow::Ok((fs, image_path))
         })?;
 
@@ -187,7 +187,7 @@ impl ImageItem {
         self.reload_task = Some(cx.spawn(async move |this, cx| {
             if let Some(image) = content
                 .await
-                .context("Failed to load image content")
+                .context("无法加载图片内容")
                 .and_then(create_gpui_image)
                 .log_err()
             {
@@ -386,7 +386,7 @@ impl ImageStore {
             .read(cx)
             .worktree_for_id(project_path.worktree_id, cx)
         else {
-            return Task::ready(Err(anyhow::anyhow!("no such worktree")));
+            return Task::ready(Err(anyhow::anyhow!("不存在该工作树")));
         };
 
         let loading_watch = match self.loading_images_by_path.entry(project_path.clone()) {
@@ -530,7 +530,7 @@ impl RemoteImageStore {
         match envelope.payload.variant {
             Some(Variant::State(state)) => {
                 let image_id =
-                    ImageId::from(NonZeroU64::new(state.id).context("invalid image id")?);
+                    ImageId::from(NonZeroU64::new(state.id).context("无效的图片 ID")?);
 
                 self.loading_remote_images_by_id.insert(
                     image_id,
@@ -544,12 +544,12 @@ impl RemoteImageStore {
             }
             Some(Variant::Chunk(chunk)) => {
                 let image_id =
-                    ImageId::from(NonZeroU64::new(chunk.image_id).context("invalid image id")?);
+                    ImageId::from(NonZeroU64::new(chunk.image_id).context("无效的图片 ID")?);
 
                 let loading = self
                     .loading_remote_images_by_id
                     .get_mut(&image_id)
-                    .context("received chunk for unknown image")?;
+                    .context("收到未知图片的数据块")?;
 
                 loading.received_size += chunk.data.len() as u64;
                 loading.chunks.push(chunk.data);
@@ -565,16 +565,16 @@ impl RemoteImageStore {
                     let image_metadata = ImageItem::compute_metadata_from_bytes(&content).log_err();
                     let image = create_gpui_image(content)?;
 
-                    let proto_file = loading.state.file.context("missing file in image state")?;
+                    let proto_file = loading.state.file.context("图片状态中缺少文件信息")?;
                     let worktree_id = WorktreeId::from_proto(proto_file.worktree_id);
                     let worktree = worktree_store
                         .read(cx)
                         .worktree_for_id(worktree_id, cx)
-                        .context("worktree not found")?;
+                        .context("未找到工作树")?;
 
                     let file = Arc::new(
                         worktree::File::from_proto(proto_file, worktree, cx)
-                            .context("invalid file in image state")?,
+                            .context("图片状态中的文件信息无效")?,
                     );
 
                     let entity = cx.new(|_cx| ImageItem {
@@ -703,7 +703,7 @@ impl ImageStoreImpl for Entity<RemoteImageStore> {
                 .await?;
 
             let image_id = ImageId::from(
-                NonZeroU64::new(response.image_id).context("invalid image_id in response")?,
+                NonZeroU64::new(response.image_id).context("响应中的 image_id 无效")?,
             );
 
             remote_store
@@ -720,7 +720,7 @@ impl ImageStoreImpl for Entity<RemoteImageStore> {
         _cx: &mut Context<ImageStore>,
     ) -> Task<Result<()>> {
         Task::ready(Err(anyhow::anyhow!(
-            "Reloading images from remote is not supported"
+            "不支持从远程重新加载图片"
         )))
     }
 
@@ -903,7 +903,7 @@ fn create_gpui_image(content: Vec<u8>) -> anyhow::Result<Arc<gpui::Image>> {
             image::ImageFormat::Tiff => gpui::ImageFormat::Tiff,
             image::ImageFormat::Ico => gpui::ImageFormat::Ico,
             image::ImageFormat::Pnm => gpui::ImageFormat::Pnm,
-            format => anyhow::bail!("Image format {format:?} not supported"),
+            format => anyhow::bail!("不支持 {format:?} 图片格式"),
         },
         content,
     )))

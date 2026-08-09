@@ -89,16 +89,16 @@ impl FetchTool {
             let location = response
                 .headers()
                 .get("location")
-                .context("redirect response is missing a Location header")?
+                .context("重定向响应缺少 Location 头")?
                 .to_str()
-                .context("redirect response has an invalid Location header")?;
+                .context("重定向响应包含无效的 Location 头")?;
             let target = url::Url::parse(&normalized)
-                .with_context(|| format!("could not parse URL {normalized:?}"))?
+                .with_context(|| format!("无法解析 URL {normalized:?}"))?
                 .join(location)
-                .with_context(|| format!("invalid redirect target {location:?}"))?;
+                .with_context(|| format!("无效的重定向目标 {location:?}"))?;
             anyhow::ensure!(
                 matches!(target.scheme(), "http" | "https"),
-                "refusing to follow redirect to non-HTTP(S) URL {target}"
+                "拒绝跟随重定向到非 HTTP(S) URL {target}"
             );
             return Ok(FetchStep::Redirect(target.to_string()));
         }
@@ -108,19 +108,19 @@ impl FetchTool {
             .body_mut()
             .read_to_end(&mut body)
             .await
-            .context("error reading response body")?;
+            .context("读取响应体时出错")?;
 
         if status.is_client_error() {
             let text = String::from_utf8_lossy(body.as_slice());
-            bail!("status error {}, response: {text:?}", status.as_u16());
+            bail!("状态错误 {}, 响应: {text:?}", status.as_u16());
         }
 
         let Some(content_type) = response.headers().get("content-type") else {
-            bail!("missing Content-Type header");
+            bail!("缺少 Content-Type 头");
         };
         let content_type = content_type
             .to_str()
-            .context("invalid Content-Type header")?;
+            .context("无效的 Content-Type 头")?;
 
         let content_type = if content_type.starts_with("text/plain") {
             ContentType::Plaintext
@@ -177,10 +177,10 @@ impl FetchTool {
 fn verify_host_not_forbidden(url: &str) -> Result<()> {
     let normalized = normalize_url(url);
     let parsed =
-        url::Url::parse(&normalized).with_context(|| format!("could not parse URL {url:?}"))?;
+        url::Url::parse(&normalized).with_context(|| format!("无法解析 URL {url:?}"))?;
     let host = parsed
         .host_str()
-        .with_context(|| format!("URL {url:?} has no host to reach"))?;
+        .with_context(|| format!("URL {url:?} 没有可访问的主机"))?;
     // Default to the scheme's port when the URL omits one; resolution needs a
     // port but the value doesn't affect which IPs a host resolves to.
     let port = parsed
@@ -197,17 +197,17 @@ fn verify_host_not_forbidden(url: &str) -> Result<()> {
 fn host_pattern_for_url(url: &str) -> Result<http_proxy::HostPattern> {
     let normalized = normalize_url(url);
     let parsed =
-        url::Url::parse(&normalized).with_context(|| format!("could not parse URL {url:?}"))?;
+        url::Url::parse(&normalized).with_context(|| format!("无法解析 URL {url:?}"))?;
     let host = parsed
         .host_str()
-        .with_context(|| format!("URL {url:?} has no host to authorize network access for"))?;
+        .with_context(|| format!("URL {url:?} 没有可授权网络访问的主机"))?;
     http_proxy::HostPattern::parse(host).map_err(|error| match error {
         http_proxy::HostPatternError::IpLiteral(_) => anyhow::anyhow!(
             "cannot fetch {host:?}: loopback and IP-literal hosts can't be granted network \
              access individually. They are only reachable once unsandboxed access has been \
              granted (for example, via a terminal command that requests it)."
         ),
-        error => anyhow::anyhow!("cannot authorize network access to {host:?}: {error}"),
+        error => anyhow::anyhow!("无法授权对 {host:?} 的网络访问: {error}"),
     })
 }
 
@@ -231,8 +231,8 @@ impl AgentTool for FetchTool {
         _cx: &mut App,
     ) -> SharedString {
         match input {
-            Ok(input) => format!("Fetch {}", MarkdownEscaped(&input.url)).into(),
-            Err(_) => "Fetch URL".into(),
+            Ok(input) => format!("获取 {}", MarkdownEscaped(&input.url)).into(),
+            Err(_) => "获取 URL".into(),
         }
     }
 
@@ -253,7 +253,7 @@ impl AgentTool for FetchTool {
                     crate::ToolPermissionContext::new(Self::NAME, vec![input.url.clone()]);
 
                 event_stream.authorize(
-                    format!("Fetch {}", MarkdownInlineCode(&input.url)),
+                    format!("获取 {}", MarkdownInlineCode(&input.url)),
                     context,
                     cx,
                 )
@@ -261,7 +261,7 @@ impl AgentTool for FetchTool {
             futures::select! {
                 result = authorize.fuse() => result.map_err(|e| e.to_string())?,
                 _ = event_stream.cancelled_by_user().fuse() => {
-                    return Err("Fetch cancelled by user".to_string());
+                    return Err("用户已取消获取".to_string());
                 }
             };
 
@@ -305,7 +305,7 @@ impl AgentTool for FetchTool {
                     futures::select! {
                         result = authorize_host.fuse() => result.map_err(|e| e.to_string())?,
                         _ = event_stream.cancelled_by_user().fuse() => {
-                            return Err("Fetch cancelled by user".to_string());
+                            return Err("用户已取消获取".to_string());
                         }
                     };
 
@@ -331,7 +331,7 @@ impl AgentTool for FetchTool {
                     futures::select! {
                         result = verify_task.fuse() => result.map_err(|e| e.to_string())?,
                         _ = event_stream.cancelled_by_user().fuse() => {
-                            return Err("Fetch cancelled by user".to_string());
+                            return Err("用户已取消获取".to_string());
                         }
                     };
                 }
@@ -345,7 +345,7 @@ impl AgentTool for FetchTool {
                 let step = futures::select! {
                     result = fetch_task.fuse() => result.map_err(|e| e.to_string())?,
                     _ = event_stream.cancelled_by_user().fuse() => {
-                        return Err("Fetch cancelled by user".to_string());
+                        return Err("用户已取消获取".to_string());
                     }
                 };
 
@@ -355,7 +355,7 @@ impl AgentTool for FetchTool {
                         redirects += 1;
                         if redirects > MAX_REDIRECTS {
                             return Err(format!(
-                                "exceeded the maximum of {MAX_REDIRECTS} redirects"
+                                "超过最大重定向次数 {MAX_REDIRECTS}"
                             ));
                         }
                         current_url = target;
@@ -364,7 +364,7 @@ impl AgentTool for FetchTool {
             };
 
             if text.trim().is_empty() {
-                return Err("no textual content found".to_string());
+                return Err("未找到文本内容".to_string());
             }
             Ok(text)
         })
@@ -384,10 +384,10 @@ mod tests {
     #[test]
     fn verify_host_rejects_loopback_literal() {
         let error = verify_host_not_forbidden("http://127.0.0.1/internal")
-            .expect_err("loopback must be refused");
+            .expect_err("必须拒绝回环地址");
         assert!(
             error.to_string().contains("loopback"),
-            "error should explain the forbidden range, got: {error}"
+            "错误应说明被禁止的范围,实际为: {error}"
         );
     }
 
@@ -401,7 +401,7 @@ mod tests {
         ] {
             assert!(
                 verify_host_not_forbidden(url).is_err(),
-                "expected {url} to be refused as a forbidden destination"
+                "预期 {url} 应作为被禁止的目标而被拒绝"
             );
         }
     }
@@ -409,6 +409,6 @@ mod tests {
     #[test]
     fn verify_host_allows_public_literal() {
         verify_host_not_forbidden("https://93.184.215.14/")
-            .expect("a public address must be allowed through the gate");
+            .expect("公共地址必须被允许通过此检查");
     }
 }

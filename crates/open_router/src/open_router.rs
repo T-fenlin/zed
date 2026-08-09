@@ -54,7 +54,7 @@ impl TryFrom<String> for Role {
             "assistant" => Ok(Self::Assistant),
             "system" => Ok(Self::System),
             "tool" => Ok(Self::Tool),
-            _ => Err(anyhow!("invalid role '{value}'")),
+            _ => Err(anyhow!("无效角色 '{value}'")),
         }
     }
 }
@@ -87,7 +87,7 @@ impl Model {
     pub fn default() -> Self {
         Self::new(
             "openrouter/auto",
-            Some("Auto Router"),
+            Some("自动路由"),
             Some(2000000),
             Some(true),
             Some(false),
@@ -723,7 +723,7 @@ pub struct OpenRouterErrorResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize, Error)]
-#[error("OpenRouter API Error: {code}: {message}")]
+#[error("OpenRouter API 错误: {code}: {message}")]
 pub struct ApiError {
     pub code: ApiErrorCode,
     pub message: String,
@@ -825,7 +825,7 @@ impl From<ApiError> for language_model_core::LanguageModelCompletionError {
             },
             PaymentRequiredError => Self::AuthenticationError {
                 provider,
-                message: format!("Payment required: {}", error.message),
+                message: format!("需要付费: {}", error.message),
             },
             PermissionError => Self::PermissionError {
                 provider,

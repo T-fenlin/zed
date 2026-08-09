@@ -109,7 +109,7 @@ async fn download_latest_extension(
         .db
         .get_extension(&params.extension_id, constraints.as_ref())
         .await?
-        .context("unknown extension")?;
+        .context("未知扩展")?;
     download_extension(
         Extension(app),
         Path(DownloadExtensionParams {
@@ -137,7 +137,7 @@ async fn download_extension(
     else {
         Err(Error::http(
             StatusCode::NOT_IMPLEMENTED,
-            "not supported".into(),
+            "不支持".into(),
         ))?
     };
 
@@ -154,7 +154,7 @@ async fn download_extension(
     if !version_exists {
         Err(Error::http(
             StatusCode::NOT_FOUND,
-            "unknown extension version".into(),
+            "未知扩展版本".into(),
         ))?;
     }
 
@@ -166,7 +166,7 @@ async fn download_extension(
         ))
         .presigned(PresigningConfig::expires_in(EXTENSION_DOWNLOAD_URL_LIFETIME).unwrap())
         .await
-        .context("creating presigned extension download url")?;
+        .context("创建预签名扩展下载 URL")?;
 
     Ok(Redirect::temporary(url.uri()))
 }
@@ -176,11 +176,11 @@ const EXTENSION_DOWNLOAD_URL_LIFETIME: Duration = Duration::from_secs(3 * 60);
 
 pub fn fetch_extensions_from_blob_store_periodically(app_state: Arc<AppState>) {
     let Some(blob_store_client) = app_state.blob_store_client.clone() else {
-        log::info!("no blob store client");
+        log::info!("无 Blob 存储客户端");
         return;
     };
     let Some(blob_store_bucket) = app_state.config.blob_store_bucket.clone() else {
-        log::info!("no blob store bucket");
+        log::info!("无 Blob 存储桶");
         return;
     };
 
@@ -207,7 +207,7 @@ async fn fetch_extensions_from_blob_store(
     blob_store_bucket: &String,
     app_state: &Arc<AppState>,
 ) -> anyhow::Result<()> {
-    log::info!("fetching extensions from blob store");
+    log::info!("正在从 Blob 存储获取扩展");
 
     let mut next_marker = None;
     let mut published_versions = HashMap::<String, Vec<String>>::default();
@@ -221,7 +221,7 @@ async fn fetch_extensions_from_blob_store(
             .send()
             .await?;
         let objects = list.contents.unwrap_or_default();
-        log::info!("fetched {} object(s) from blob store", objects.len());
+        log::info!("已从 Blob 存储获取 {} 个对象", objects.len());
 
         for object in &objects {
             let Some(key) = object.key.as_ref() else {
@@ -252,7 +252,7 @@ async fn fetch_extensions_from_blob_store(
         }
     }
 
-    log::info!("found {} published extensions", published_versions.len());
+    log::info!("发现 {} 个已发布的扩展", published_versions.len());
 
     let known_versions = app_state.db.get_known_extension_versions().await?;
 
@@ -288,7 +288,7 @@ async fn fetch_extensions_from_blob_store(
         .await?;
 
     log::info!(
-        "fetched {} new extensions from blob store",
+        "已从 Blob 存储获取 {} 个新扩展",
         new_versions.values().map(|v| v.len()).sum::<usize>()
     );
 
@@ -313,23 +313,23 @@ async fn fetch_extension_manifest(
         .await
         .map(|data| data.into_bytes())
         .with_context(|| {
-            format!("failed to download manifest for extension {extension_id} version {version}")
+            format!("下载扩展 {extension_id} 版本 {version} 的清单失败")
         })?
         .to_vec();
     let manifest =
         serde_json::from_slice::<ExtensionApiManifest>(&manifest_bytes).with_context(|| {
             format!(
-                "invalid manifest for extension {extension_id} version {version}: {}",
+                "扩展 {extension_id} 版本 {version} 的清单无效: {}",
                 String::from_utf8_lossy(&manifest_bytes)
             )
         })?;
     let published_at = object.last_modified.with_context(|| {
-        format!("missing last modified timestamp for extension {extension_id} version {version}")
+        format!("扩展 {extension_id} 版本 {version} 缺少最后修改时间戳")
     })?;
     let published_at = time::OffsetDateTime::from_unix_timestamp_nanos(published_at.as_nanos())?;
     let published_at = PrimitiveDateTime::new(published_at.date(), published_at.time());
     let version = semver::Version::parse(&manifest.version).with_context(|| {
-        format!("invalid version for extension {extension_id} version {version}")
+        format!("扩展 {extension_id} 版本 {version} 的版本号无效")
     })?;
     Ok(NewExtensionVersion {
         name: manifest.name,

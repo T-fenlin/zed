@@ -732,7 +732,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
         futures::select! {
             output = future.fuse() => output,
             _ = futures::FutureExt::fuse(timeout) => panic!(
-            "[test_extension_store_with_test_extension] timed out after {seconds}s while {what}"
+            "[test_extension_store_with_test_extension] 在 {what} 时超过 {seconds} 秒超时"
         )
         }
     }
@@ -760,7 +760,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
 
     let project = await_or_timeout(
         &executor,
-        "awaiting Project::test",
+        "等待 项目::test",
         5,
         Project::test(fs.clone(), [project_dir.as_path()], cx),
     )
@@ -856,7 +856,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
                     encoder.read_to_end(&mut gzipped_bytes).await.unwrap();
                     Ok(Response::new(gzipped_bytes.into()))
                 } else {
-                    Ok(Response::builder().status(404).body("not found".into())?)
+                    Ok(Response::builder().status(404).body("未找到".into())?)
                 }
             }
         }
@@ -870,7 +870,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
         )
     });
     let builder_client =
-        Arc::new(ReqwestClient::user_agent(&user_agent).expect("Could not create HTTP client"));
+        Arc::new(ReqwestClient::user_agent(&user_agent).expect("无法创建 HTTP 客户端"));
 
     let extension_store = cx.new(|cx| {
         ExtensionStore::new(
@@ -900,7 +900,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     extension_store.update(cx, |_, cx| {
         cx.subscribe(&extension_store, |_, _, event, _| {
             if matches!(event, Event::ExtensionFailedToLoad(_)) {
-                panic!("extension failed to load");
+                panic!("扩展加载失败");
             }
         })
         .detach();
@@ -908,13 +908,13 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
 
     let mut extension_events = cx.events(&cx.update(|cx| {
         extension::ExtensionEvents::try_global(cx)
-            .expect("ExtensionEvents should be initialized in tests")
+            .expect("在测试中应初始化 ExtensionEvents")
     }));
 
     let executor = cx.executor();
     await_or_timeout(
         &executor,
-        "awaiting install_dev_extension",
+        "等待安装开发扩展",
         60,
         extension_store.update(cx, |store, cx| {
             store.install_dev_extension(test_extension_dir.clone(), cx)
@@ -925,7 +925,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
 
     await_or_timeout(
         &executor,
-        "awaiting ExtensionsInstalledChanged",
+        "等待扩展安装变更",
         10,
         async {
             while let Some(event) = extension_events.next().await {
@@ -935,7 +935,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
             }
 
             panic!(
-                "[test_extension_store_with_test_extension] extension event stream ended before ExtensionsInstalledChanged"
+                "[test_extension_store_with_test_extension] 扩展事件流在 ExtensionsInstalledChanged 之前结束"
             );
         },
     )
@@ -955,7 +955,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     let buffer_path = project_dir.join("test.gleam");
     let (buffer, _handle) = await_or_timeout(
         &executor,
-        "awaiting open_local_buffer_with_lsp",
+        "等待打开带 LSP 的本地缓冲区",
         5,
         project.update(cx, |project, cx| {
             project.open_local_buffer_with_lsp(buffer_path.clone(), cx)
@@ -969,7 +969,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
 
     let fake_server = await_or_timeout(
         &executor,
-        "awaiting first fake server spawn",
+        "等待第一个模拟服务器启动",
         10,
         fake_servers.next(),
     )
@@ -991,7 +991,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     assert_eq!(
         await_or_timeout(
             &executor,
-            "awaiting fs.load(expected_server_path)",
+            "等待 fs.load(expected_server_path)",
             5,
             fs.load(&expected_server_path)
         )
@@ -1004,7 +1004,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
         [
             await_or_timeout(
                 &executor,
-                "awaiting status_updates #1",
+                "等待状态更新 #1",
                 5,
                 status_updates.next()
             )
@@ -1012,7 +1012,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
             .unwrap(),
             await_or_timeout(
                 &executor,
-                "awaiting status_updates #2",
+                "等待状态更新 #2",
                 5,
                 status_updates.next()
             )
@@ -1020,7 +1020,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
             .unwrap(),
             await_or_timeout(
                 &executor,
-                "awaiting status_updates #3",
+                "等待状态更新 #3",
                 5,
                 status_updates.next()
             )
@@ -1028,7 +1028,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
             .unwrap(),
             await_or_timeout(
                 &executor,
-                "awaiting status_updates #4",
+                "等待状态更新 #4",
                 5,
                 status_updates.next()
             )
@@ -1087,7 +1087,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     // before issuing requests like completion.
     await_or_timeout(
         &executor,
-        "awaiting LanguageServerBufferRegistered",
+        "等待语言服务器缓冲区注册",
         5,
         async {
             while let Some(event) = project_events.next().await {
@@ -1099,7 +1099,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
             }
 
             panic!(
-                "[test_extension_store_with_test_extension] project event stream ended before buffer registration for {}",
+                "[test_extension_store_with_test_extension] 项目事件流在 {} 的缓冲区注册之前结束",
                 buffer_path.display()
             );
         },
@@ -1108,7 +1108,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
 
     let completion_labels = await_or_timeout(
         &executor,
-        "awaiting completions",
+        "等待补全",
         5,
         project.update(cx, |project, cx| {
             project.completions(&buffer, 0, DEFAULT_COMPLETION_CONTEXT, cx)
@@ -1150,7 +1150,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     // to reinstall it.
     let fake_server = await_or_timeout(
         &executor,
-        "awaiting second fake server spawn",
+        "等待第二个模拟服务器启动",
         5,
         fake_servers.next(),
     )
@@ -1160,7 +1160,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     assert_eq!(
         await_or_timeout(
             &executor,
-            "awaiting fs.load(expected_server_path) after restart",
+            "重启后等待 fs.load(expected_server_path)",
             5,
             fs.load(&expected_server_path)
         )
@@ -1174,7 +1174,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     // Start a new instance of the language server.
     await_or_timeout(
         &executor,
-        "awaiting extension_store.reload(test-extension)",
+        "等待 扩展_store.reload(test-扩展)",
         5,
         extension_store.update(cx, |store, cx| {
             store.reload(Some("test-extension".into()), cx)
@@ -1194,7 +1194,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     // The extension re-fetches the latest version of the language server.
     let fake_server = await_or_timeout(
         &executor,
-        "awaiting third fake server spawn",
+        "等待第三个模拟服务器启动",
         5,
         fake_servers.next(),
     )
@@ -1208,7 +1208,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     assert_eq!(
         await_or_timeout(
             &executor,
-            "awaiting fs.load(new_expected_server_path)",
+            "等待 fs.load(new_expected_server_path)",
             5,
             fs.load(&new_expected_server_path)
         )
@@ -1221,7 +1221,7 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     assert!(
         await_or_timeout(
             &executor,
-            "awaiting fs.metadata(expected_server_path)",
+            "等待 fs.metadata(expected_server_path)",
             5,
             fs.metadata(&expected_server_path)
         )

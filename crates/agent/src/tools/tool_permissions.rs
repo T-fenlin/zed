@@ -397,11 +397,11 @@ pub fn resolve_project_path(
     let path = path.as_ref();
     let project_path = project
         .find_project_path(path, cx)
-        .ok_or_else(|| anyhow!("Path {} is not in the project", path.display()))?;
+        .ok_or_else(|| anyhow!("路径 {} 不在项目中", path.display()))?;
 
     let worktree = project
         .worktree_for_id(project_path.worktree_id, cx)
-        .ok_or_else(|| anyhow!("Could not resolve path {}", path.display()))?;
+        .ok_or_else(|| anyhow!("无法解析路径 {}", path.display()))?;
     let snapshot = worktree.read(cx);
 
     // Fast path: if the entry exists in the snapshot and is not marked
@@ -446,7 +446,7 @@ pub fn resolve_project_path(
 
         let suffix = project_path.path.strip_prefix(ancestor).map_err(|_| {
             anyhow!(
-                "Path {} could not be resolved in the project",
+                "路径 {} 无法在项目中解析",
                 path.display()
             )
         })?;
@@ -482,7 +482,7 @@ pub fn authorize_symlink_access(
     cx: &mut App,
 ) -> Task<Result<()>> {
     let title = format!(
-        "`{}` points outside the project (symlink to `{}`)",
+        "`{}` 指向项目外部(符号链接到 `{}`)",
         display_path,
         canonical_target.display(),
     );
@@ -504,13 +504,13 @@ pub fn authorize_with_sensitive_settings(
 ) -> Task<Result<()>> {
     match kind {
         Some(SensitiveSettingsKind::Local) => {
-            event_stream.authorize_always_prompt(format!("{title} (local settings)"), context, cx)
+            event_stream.authorize_always_prompt(format!("{title}(本地设置)"), context, cx)
         }
         Some(SensitiveSettingsKind::Global) => {
-            event_stream.authorize_always_prompt(format!("{title} (settings)"), context, cx)
+            event_stream.authorize_always_prompt(format!("{title}(设置)"), context, cx)
         }
         Some(SensitiveSettingsKind::AgentSkills) => event_stream.authorize_always_prompt(
-            format!("{title} (agent skills)"),
+            format!("{title}(代理技能)"),
             context.for_agent_skills(),
             cx,
         ),
@@ -540,8 +540,8 @@ pub fn authorize_symlink_escapes(
         .iter()
         .map(|(path, target)| format!("`{}` → `{}`", path, target.display()))
         .collect::<Vec<_>>()
-        .join(" and ");
-    let title = format!("{} (symlinks outside project)", targets);
+        .join(" 和 ");
+    let title = format!("{}(项目外部的符号链接)", targets);
 
     let context = ToolPermissionContext::symlink_target(
         tool_name,
@@ -641,7 +641,7 @@ pub fn authorize_file_edit(
     }
 
     let path_owned = path.to_path_buf();
-    let title = format!("Edit {}", util::markdown::MarkdownInlineCode(&path_str));
+    let title = format!("编辑 {}", util::markdown::MarkdownInlineCode(&path_str));
     let tool_name = tool_name.to_string();
     let thread = thread.clone();
     let event_stream = event_stream.clone();
@@ -741,7 +741,7 @@ pub fn authorize_file_edit(
                         vec![path_owned.to_string_lossy().to_string()],
                     );
                     event_stream.authorize_always_prompt(
-                        format!("{title} (local settings)"),
+                        format!("{title}(本地设置)"),
                         context,
                         cx,
                     )
@@ -754,7 +754,7 @@ pub fn authorize_file_edit(
                         &tool_name,
                         vec![path_owned.to_string_lossy().to_string()],
                     );
-                    event_stream.authorize_always_prompt(format!("{title} (settings)"), context, cx)
+                    event_stream.authorize_always_prompt(format!("{title}(设置)"), context, cx)
                 });
                 return authorize.await;
             }
@@ -766,7 +766,7 @@ pub fn authorize_file_edit(
                     )
                     .for_agent_skills();
                     event_stream.authorize_always_prompt(
-                        format!("{title} (agent skills)"),
+                        format!("{title}(代理技能)"),
                         context,
                         cx,
                     )
@@ -836,27 +836,27 @@ pub fn authorize_dirty_buffer(
             vec![
                 acp::PermissionOption::new(
                     acp::PermissionOptionId::new("save"),
-                    "Save",
+                    "保存",
                     acp::PermissionOptionKind::AllowOnce,
                 ),
                 acp::PermissionOption::new(
                     acp::PermissionOptionId::new("discard"),
-                    "Discard",
+                    "放弃",
                     acp::PermissionOptionKind::RejectOnce,
                 ),
             ],
         ),
         DirtyBufferPromptKind::Overwrite => (
-            "This file has unsaved changes and the agent wants to overwrite it.".to_string(),
+            "此文件有未保存的更改,代理想要覆盖它。".to_string(),
             vec![
                 acp::PermissionOption::new(
                     acp::PermissionOptionId::new("discard"),
-                    "Overwrite",
+                    "覆盖",
                     acp::PermissionOptionKind::AllowOnce,
                 ),
                 acp::PermissionOption::new(
                     acp::PermissionOptionId::new("keep"),
-                    "Cancel",
+                    "取消",
                     acp::PermissionOptionKind::RejectOnce,
                 ),
             ],
@@ -871,7 +871,7 @@ pub fn authorize_dirty_buffer(
             "discard" => Ok(DirtyBufferDecision::Discard),
             "keep" => Ok(DirtyBufferDecision::Keep),
             other => Err(anyhow!(
-                "Unexpected dirty-buffer decision option_id: {other}"
+                "意外的脏缓冲区决策选项 ID:{other}"
             )),
         }
     })
@@ -929,7 +929,7 @@ mod tests {
 
         let resolved = resolve_creatable_global_skill_path(&input_path, fs.as_ref())
             .await
-            .expect("global skill path should resolve");
+            .expect("全局技能路径应能解析");
 
         assert_eq!(resolved, expected_path);
     }
@@ -945,7 +945,7 @@ mod tests {
         fs.insert_tree(
             skill_file
                 .parent()
-                .expect("skill file should have a parent"),
+                .expect("技能文件应有父目录"),
             json!({ "SKILL.md": "---\nname: my-skill\ndescription: test\n---" }),
         )
         .await;
@@ -957,7 +957,7 @@ mod tests {
             .join("SKILL.md");
         let resolved = resolve_global_skill_path(&input_path, fs.as_ref())
             .await
-            .expect("global skill file should resolve");
+            .expect("全局技能文件应能解析");
 
         assert_eq!(resolved, skill_file);
     }
@@ -978,13 +978,13 @@ mod tests {
         .await;
         fs.create_dir(&skills_dir)
             .await
-            .expect("global skills directory should be created");
+            .expect("应创建全局技能目录");
         fs.create_symlink(
             &skills_dir.join("my-skill"),
             PathBuf::from(path!("/external/my-skill")),
         )
         .await
-        .expect("skill directory should be symlinked");
+        .expect("技能目录应被符号链接");
 
         let input_path = PathBuf::from("~")
             .join(".agents")
@@ -994,7 +994,7 @@ mod tests {
             .join("guide.md");
         let resolved = resolve_global_skill_path(&input_path, fs.as_ref())
             .await
-            .expect("symlinked global skill resource should resolve");
+            .expect("符号链接的全局技能资源应能解析");
 
         assert_eq!(
             resolved,
@@ -1024,16 +1024,16 @@ mod tests {
             PathBuf::from(path!("/private")),
         )
         .await
-        .expect("nested symlink should be created");
+        .expect("应创建嵌套符号链接");
         fs.create_dir(&skills_dir)
             .await
-            .expect("global skills directory should be created");
+            .expect("应创建全局技能目录");
         fs.create_symlink(
             &skills_dir.join("my-skill"),
             PathBuf::from(path!("/external/my-skill")),
         )
         .await
-        .expect("skill directory should be symlinked");
+        .expect("技能目录应被符号链接");
 
         let input_path = PathBuf::from("~")
             .join(".agents")
@@ -1046,7 +1046,7 @@ mod tests {
             resolve_global_skill_path(&input_path, fs.as_ref())
                 .await
                 .is_none(),
-            "nested symlinks inside a symlinked skill must not broaden global skill access",
+            "符号链接技能内的嵌套符号链接不得扩大全局技能访问范围",
         );
     }
 
@@ -1086,13 +1086,13 @@ mod tests {
         let skills_dir = agent_skills::global_skills_dir();
         fs.create_dir(&skills_dir)
             .await
-            .expect("global skills directory should be created");
+            .expect("应创建全局技能目录");
         fs.create_dir(path!("/external").as_ref())
             .await
-            .expect("external directory should be created");
+            .expect("应创建外部目录");
         fs.create_symlink(&skills_dir.join("link"), PathBuf::from(path!("/external")))
             .await
-            .expect("symlink should be created");
+            .expect("应创建符号链接");
 
         let escaped_path = PathBuf::from("~")
             .join(".agents")
@@ -1122,20 +1122,20 @@ mod tests {
         let skills_dir = agent_skills::global_skills_dir();
         fs.create_symlink(&skills_dir, PathBuf::from(path!("/")))
             .await
-            .expect("global skills directory should be symlinked to root");
+            .expect("全局技能目录应符号链接到根目录");
 
         let outside_path = PathBuf::from(path!("/tmp/outside.txt"));
         assert!(
             resolve_global_skill_path(&outside_path, fs.as_ref())
                 .await
                 .is_none(),
-            "existing absolute paths outside the lexical global skills tree should not resolve",
+            "词法全局技能树之外的现有绝对路径不应解析",
         );
         assert!(
             resolve_creatable_global_skill_path(&outside_path, fs.as_ref())
                 .await
                 .is_none(),
-            "creatable absolute paths outside the lexical global skills tree should not resolve",
+            "词法全局技能树之外的可创建绝对路径不应解析",
         );
 
         let traversed_path = PathBuf::from("~")
@@ -1147,7 +1147,7 @@ mod tests {
             resolve_creatable_global_skill_path(&traversed_path, fs.as_ref())
                 .await
                 .is_none(),
-            "paths that normalize outside the lexical global skills tree should not resolve",
+            "规范化后位于词法全局技能树之外的路径不应解析",
         );
     }
 
@@ -1170,20 +1170,20 @@ mod tests {
         let skills_dir = agent_skills::global_skills_dir();
         fs.create_symlink(&skills_dir, paths::home_dir().clone())
             .await
-            .expect("global skills directory should be symlinked to home");
+            .expect("全局技能目录应符号链接到主目录");
 
         let outside_path = paths::home_dir().join("outside.txt");
         assert!(
             resolve_global_skill_path(&outside_path, fs.as_ref())
                 .await
                 .is_none(),
-            "existing absolute paths outside the lexical global skills tree should not resolve",
+            "词法全局技能树之外的现有绝对路径不应解析",
         );
         assert!(
             resolve_creatable_global_skill_path(&outside_path, fs.as_ref())
                 .await
                 .is_none(),
-            "creatable absolute paths outside the lexical global skills tree should not resolve",
+            "词法全局技能树之外的可创建绝对路径不应解析",
         );
     }
 
@@ -1213,18 +1213,18 @@ mod tests {
             let project = project.read(cx);
 
             let resolved = resolve_project_path(project, "project/src/main.rs", &roots, cx)
-                .expect("should resolve normal file");
+                .expect("应解析普通文件");
             assert!(
                 matches!(resolved, ResolvedProjectPath::Safe(_)),
-                "normal file should be Safe, got: {:?}",
+                "普通文件应为安全,得到:{:?}",
                 resolved
             );
 
             let resolved = resolve_project_path(project, "project/README.md", &roots, cx)
-                .expect("should resolve readme");
+                .expect("应解析 readme");
             assert!(
                 matches!(resolved, ResolvedProjectPath::Safe(_)),
-                "readme should be Safe, got: {:?}",
+                "readme 应为安全,得到:{:?}",
                 resolved
             );
         });
@@ -1252,7 +1252,7 @@ mod tests {
 
         fs.create_symlink(path!("/root/project/link").as_ref(), "../external".into())
             .await
-            .expect("should create symlink");
+            .expect("应创建符号链接");
 
         let project = Project::test(fs.clone(), [path!("/root/project").as_ref()], cx).await;
         cx.run_until_parked();
@@ -1263,7 +1263,7 @@ mod tests {
             let project = project.read(cx);
 
             let resolved = resolve_project_path(project, "project/link", &roots, cx)
-                .expect("should resolve symlink path");
+                .expect("应解析符号链接路径");
             match &resolved {
                 ResolvedProjectPath::SymlinkEscape {
                     canonical_target, ..
@@ -1271,11 +1271,11 @@ mod tests {
                     assert_eq!(
                         canonical_target,
                         Path::new(path!("/root/external")),
-                        "canonical target should point to external directory"
+                        "规范目标应指向外部目录"
                     );
                 }
                 ResolvedProjectPath::Safe(_) => {
-                    panic!("symlink escaping project should be detected as SymlinkEscape");
+                    panic!("符号链接逃逸项目应被检测为 SymlinkEscape");
                 }
             }
         });
@@ -1298,7 +1298,7 @@ mod tests {
 
         fs.create_symlink(path!("/root/project/link_dir").as_ref(), "real_dir".into())
             .await
-            .expect("should create symlink");
+            .expect("应创建符号链接");
 
         let project = Project::test(fs.clone(), [path!("/root/project").as_ref()], cx).await;
         cx.run_until_parked();
@@ -1309,10 +1309,10 @@ mod tests {
             let project = project.read(cx);
 
             let resolved = resolve_project_path(project, "project/link_dir", &roots, cx)
-                .expect("should resolve intra-project symlink");
+                .expect("应解析项目内符号链接");
             assert!(
                 matches!(resolved, ResolvedProjectPath::Safe(_)),
-                "intra-project symlink should be Safe, got: {:?}",
+                "项目内符号链接应为安全,得到:{:?}",
                 resolved
             );
         });
@@ -1338,7 +1338,7 @@ mod tests {
 
         fs.create_symlink(path!("/root/project/link").as_ref(), "../external".into())
             .await
-            .expect("should create symlink");
+            .expect("应创建符号链接");
 
         let project = Project::test(fs.clone(), [path!("/root/project").as_ref()], cx).await;
         cx.run_until_parked();
@@ -1349,7 +1349,7 @@ mod tests {
             let project = project.read(cx);
 
             let resolved = resolve_project_path(project, "project/link/new_dir", &roots, cx)
-                .expect("should resolve missing child path under symlink");
+                .expect("应解析符号链接下的缺失子路径");
             match resolved {
                 ResolvedProjectPath::SymlinkEscape {
                     canonical_target, ..
@@ -1357,11 +1357,11 @@ mod tests {
                     assert_eq!(
                         canonical_target,
                         Path::new(path!("/root/external/new_dir")),
-                        "missing child path should resolve to escaped canonical target",
+                        "缺失子路径应解析为逃逸的规范目标",
                     );
                 }
                 ResolvedProjectPath::Safe(_) => {
-                    panic!("missing child under external symlink should be SymlinkEscape");
+                    panic!("外部符号链接下的缺失子项应为 SymlinkEscape");
                 }
             }
         });
@@ -1390,7 +1390,7 @@ mod tests {
             PathBuf::from("../worktree_two/shared_dir"),
         )
         .await
-        .expect("should create symlink");
+        .expect("应创建符号链接");
 
         let project = Project::test(
             fs.clone(),
@@ -1410,10 +1410,10 @@ mod tests {
 
             let resolved =
                 resolve_project_path(project, "worktree_one/link_to_worktree_two", &roots, cx)
-                    .expect("should resolve cross-worktree symlink");
+                    .expect("应解析跨工作树符号链接");
             assert!(
                 matches!(resolved, ResolvedProjectPath::Safe(_)),
-                "cross-worktree symlink should be Safe, got: {:?}",
+                "跨工作树符号链接应为安全,得到:{:?}",
                 resolved
             );
         });
@@ -1442,7 +1442,7 @@ mod tests {
             PathBuf::from("../worktree_two/shared_dir"),
         )
         .await
-        .expect("should create symlink");
+        .expect("应创建符号链接");
 
         let project = Project::test(
             fs.clone(),
@@ -1466,10 +1466,10 @@ mod tests {
                 &roots,
                 cx,
             )
-            .expect("should resolve missing child under cross-worktree symlink");
+            .expect("应解析跨工作树符号链接下的缺失子项");
             assert!(
                 matches!(resolved, ResolvedProjectPath::Safe(_)),
-                "missing child under cross-worktree symlink should be Safe, got: {:?}",
+                "跨工作树符号链接下的缺失子项应为安全,得到:{:?}",
                 resolved
             );
         });

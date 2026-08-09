@@ -43,7 +43,7 @@ pub fn switch_source_header(
                 .file()
                 .map(|file| file.path())
                 .map(|path| path.display(PathStyle::local()).to_string())
-                .unwrap_or_else(|| "Unknown".to_string())
+                .unwrap_or_else(|| "未知".to_string())
         });
 
         let switch_source_header = if let Some((client, project_id)) = upstream_client {
@@ -69,7 +69,7 @@ pub fn switch_source_header(
                 })
                 .await
                 .with_context(|| {
-                    format!("Switch source/header LSP request for path \"{source_file}\" failed")
+                    format!("切换源文件/头文件的 LSP 请求失败,路径为 \"{source_file}\"")
                 })?
         };
 
@@ -79,13 +79,13 @@ pub fn switch_source_header(
         let path_style = workspace.update(cx, |ws, cx| ws.path_style(cx));
         let path = Url::parse(&switch_source_header.0).with_context(|| {
             format!(
-                "Parsing URL \"{}\" returned from switch source/header failed",
+                "解析切换源文件/头文件返回的 URL \"{}\" 失败",
                 switch_source_header.0
             )
         })?;
         let path = path.to_file_path_ext(path_style).map_err(|()| {
             anyhow::anyhow!(
-                "URL conversion to file path failed for \"{}\"",
+                "将 URL \"{}\" 转换为文件路径失败",
                 switch_source_header.0
             )
         })?;
@@ -104,7 +104,7 @@ pub fn switch_source_header(
             })
             .with_context(|| {
                 format!(
-                    "Switch source/header could not open \"{}\" in workspace",
+                    "无法在工作区中打开 \"{}\" 以切换源文件/头文件",
                     switch_source_header.0
                 )
             })?

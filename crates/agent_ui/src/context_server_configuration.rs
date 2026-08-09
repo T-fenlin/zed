@@ -15,7 +15,7 @@ use crate::agent_configuration::ConfigureContextServerModal;
 pub(crate) fn init(language_registry: Arc<LanguageRegistry>, fs: Arc<dyn Fs>, cx: &mut App) {
     let Some(extension_events) = extension::ExtensionEvents::try_global(cx) else {
         log::info!(
-            "No extension events global found. Skipping context server configuration wizard"
+            "未找到全局扩展事件,跳过上下文服务器配置向导"
         );
         return;
     };

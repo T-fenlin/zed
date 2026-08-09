@@ -30,7 +30,7 @@ fn migrate(text: &str, patterns: MigrationPatterns, query: &Query) -> Result<Opt
     parser.set_language(&tree_sitter_json::LANGUAGE.into())?;
     let syntax_tree = parser
         .parse(text, None)
-        .context("failed to parse settings")?;
+        .context("无法解析设置")?;
 
     let mut cursor = tree_sitter::QueryCursor::new();
     let mut matches = cursor.matches(query, syntax_tree.root_node(), text.as_bytes());
@@ -56,7 +56,7 @@ fn migrate(text: &str, patterns: MigrationPatterns, query: &Query) -> Result<Opt
         }
         if new_text == text {
             log::error!(
-                "Edits computed for configuration migration do not cause a change: {:?}",
+                "为配置迁移计算的编辑未导致更改:{:?}",
                 edits
             );
             Ok(None)

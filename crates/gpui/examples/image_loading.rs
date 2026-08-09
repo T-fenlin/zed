@@ -58,8 +58,8 @@ impl Asset for LoadImageWithParameters {
         async move {
             timer.await;
             if parameters.fail {
-                log::error!("Intentionally failed to load image");
-                Err(anyhow::anyhow!("Failed to load image").into())
+                log::error!("故意加载图片失败");
+                Err(anyhow::anyhow!("加载图片失败").into())
             } else {
                 data.await
             }

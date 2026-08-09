@@ -150,7 +150,7 @@ impl CanonicalPathBuf {
                 return Err(io::Error::new(
                     io::ErrorKind::PermissionDenied,
                     format!(
-                        "sandbox write grant {} is a symlink, not a directory",
+                        "沙箱写入授权 {} 是符号链接,不是目录",
                         path.display()
                     ),
                 ));
@@ -164,7 +164,7 @@ impl CanonicalPathBuf {
                 return Err(io::Error::new(
                     io::ErrorKind::PermissionDenied,
                     format!(
-                        "sandbox write grant {} was redirected to {}",
+                        "沙箱写入授权 {} 被重定向到 {}",
                         path.display(),
                         current.display()
                     ),
@@ -220,7 +220,7 @@ fn require_absolute(path: &Path) -> io::Result<()> {
     } else {
         Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!("sandbox grant path {} is not absolute", path.display()),
+            format!("沙箱授权路径 {} 不是绝对路径", path.display()),
         ))
     }
 }
@@ -275,7 +275,7 @@ impl PartialEq for CanonicalPathBuf {
                 // (the safe answer) and leave a trace.
                 _ => {
                     log::error!(
-                        "failed to fstat an O_PATH descriptor while comparing sandbox locations"
+                        "比较沙箱位置时,对 O_PATH 描述符执行 fstat 失败"
                     );
                     false
                 }
@@ -313,11 +313,11 @@ mod tests {
         // (`CanonicalPathBuf` is deliberately not `Debug`, so match rather than
         // `expect_err`.)
         match CanonicalPathBuf::resolve("relative/dir") {
-            Ok(_) => panic!("resolve must reject a relative path"),
+            Ok(_) => panic!("resolve 必须拒绝相对路径"),
             Err(error) => assert_eq!(error.kind(), std::io::ErrorKind::InvalidInput),
         }
         match CanonicalPathBuf::from_canonical(PathBuf::from("relative/dir")) {
-            Ok(_) => panic!("from_canonical must reject a relative path"),
+            Ok(_) => panic!("from_canonical 必须拒绝相对路径"),
             Err(error) => assert_eq!(error.kind(), std::io::ErrorKind::InvalidInput),
         }
     }
@@ -339,7 +339,7 @@ mod windows_tests {
         ] {
             assert!(
                 CanonicalPathBuf::from_canonical(PathBuf::from(ok)).is_ok(),
-                "{ok} should be accepted"
+                "{ok} 应被接受"
             );
         }
         // Rejected: `\\wsl.localhost\...`, other UNC, and relative paths.
@@ -351,7 +351,7 @@ mod windows_tests {
             "also/relative",
         ] {
             match CanonicalPathBuf::from_canonical(PathBuf::from(bad)) {
-                Ok(_) => panic!("{bad} should be rejected"),
+                Ok(_) => panic!("{bad} 应被拒绝"),
                 Err(error) => assert_eq!(error.kind(), std::io::ErrorKind::InvalidInput),
             }
         }

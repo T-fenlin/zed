@@ -15,7 +15,7 @@ pub fn init(cx: &mut App) {
         .worker_threads(2)
         .enable_all()
         .build()
-        .expect("Failed to initialize Tokio");
+        .expect("无法初始化 Tokio");
 
     let handle = runtime.handle().clone();
     cx.set_global(GlobalTokio {

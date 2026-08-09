@@ -104,7 +104,7 @@ impl State {
                                 Ok(creds) => state.credentials = Some(creds),
                                 Err(err) => {
                                     log::warn!(
-                                        "Failed to deserialize ChatGPT subscription credentials: {err}"
+                                        "无法反序列化 ChatGPT 订阅凭据:{err}"
                                     );
                                 }
                             }
@@ -185,12 +185,12 @@ impl State {
                         }
                         Err(err) => {
                             log::error!(
-                                "ChatGPT subscription sign-in failed to persist credentials: {err:?}"
+                                "ChatGPT 订阅登录后无法保存凭据:{err:?}"
                             );
                             this.update(cx, |state, cx| {
                                 state.sign_in_task = None;
                                 state.last_auth_error =
-                                    Some("Failed to save credentials. Please try again.".into());
+                                    Some("无法保存凭据,请重试。".into());
                                 cx.notify();
                             })
                             .log_err();
@@ -198,10 +198,10 @@ impl State {
                     }
                 }
                 Err(err) => {
-                    log::error!("ChatGPT subscription sign-in failed: {err:?}");
+                    log::error!("ChatGPT 订阅登录失败:{err:?}");
                     this.update(cx, |state, cx| {
                         state.sign_in_task = None;
-                        state.last_auth_error = Some("Sign-in failed. Please try again.".into());
+                        state.last_auth_error = Some("登录失败,请重试。".into());
                         cx.notify();
                     })
                     .log_err();
@@ -231,7 +231,7 @@ impl State {
             credentials_provider
                 .delete_credentials(CREDENTIALS_KEY, cx)
                 .await
-                .context("Failed to delete ChatGPT subscription credentials from keychain")?;
+                .context("无法从钥匙串中删除 ChatGPT 订阅凭据")?;
             anyhow::Ok(())
         })
     }
@@ -518,12 +518,12 @@ impl LanguageModel for OpenAiSubscribedLanguageModel {
             .filter_map(|effort| {
                 let (name, value) = match effort {
                     ReasoningEffort::None => return None,
-                    ReasoningEffort::Minimal => ("Minimal", "minimal"),
-                    ReasoningEffort::Low => ("Low", "low"),
-                    ReasoningEffort::Medium => ("Medium", "medium"),
-                    ReasoningEffort::High => ("High", "high"),
-                    ReasoningEffort::XHigh => ("Extra High", "xhigh"),
-                    ReasoningEffort::Max => ("Max", "max"),
+                    ReasoningEffort::Minimal => ("最低", "minimal"),
+                    ReasoningEffort::Low => ("低", "low"),
+                    ReasoningEffort::Medium => ("中", "medium"),
+                    ReasoningEffort::High => ("高", "high"),
+                    ReasoningEffort::XHigh => ("额外高", "xhigh"),
+                    ReasoningEffort::Max => ("最大", "max"),
                 };
 
                 Some(LanguageModelEffortLevel {
@@ -646,7 +646,7 @@ async fn get_fresh_credentials(
                             .map_err(|e| Arc::new(e))?;
                         if current_generation != generation {
                             return Err(Arc::new(anyhow!(
-                                "Sign-out occurred during token refresh"
+                                "令牌刷新期间发生退出登录"
                             )));
                         }
 
@@ -685,13 +685,13 @@ async fn get_fresh_credentials(
                     persist_result
                 }
                 Err(RefreshError::Fatal(e)) => {
-                    log::error!("ChatGPT subscription token refresh failed fatally: {e:?}");
+                    log::error!("ChatGPT 订阅令牌刷新发生致命错误:{e:?}");
                     state_clone
                         .update(cx, |s, cx| {
                             s.refresh_task = None;
                             s.credentials = None;
                             s.last_auth_error =
-                                Some("Your session has expired. Please sign in again.".into());
+                                Some("您的会话已过期,请重新登录。".into());
                             cx.notify();
                         })
                         .ok();
@@ -707,7 +707,7 @@ async fn get_fresh_credentials(
                     Err(Arc::new(e))
                 }
                 Err(RefreshError::Transient(e)) => {
-                    log::warn!("ChatGPT subscription token refresh failed transiently: {e:?}");
+                    log::warn!("ChatGPT 订阅令牌刷新发生临时错误:{e:?}");
                     state_clone
                         .update(cx, |s, _| {
                             s.refresh_task = None;
@@ -767,7 +767,7 @@ async fn do_oauth_flow(
                 path: CODEX_CALLBACK_PATH,
             },
         )
-        .context("Failed to start OAuth callback server")?;
+        .context("无法启动 OAuth 回调服务器")?;
 
     // PKCE verifier: 32 random bytes → base64url (no padding)
     let mut verifier_bytes = [0u8; 32];
@@ -809,17 +809,17 @@ async fn do_oauth_flow(
     // Await the callback
     let callback = callback_rx
         .await
-        .map_err(|_| anyhow!("OAuth callback was cancelled"))?
-        .context("OAuth callback failed")?;
+        .map_err(|_| anyhow!("OAuth 回调已取消"))?
+        .context("OAuth 回调失败")?;
 
     // Validate CSRF state
     if callback.state != oauth_state {
-        return Err(anyhow!("OAuth state mismatch"));
+        return Err(anyhow!("OAuth 状态不匹配"));
     }
 
     let tokens = exchange_code(&http_client, &callback.code, &verifier, &redirect_uri)
         .await
-        .context("Token exchange failed")?;
+        .context("令牌交换失败")?;
 
     let jwt = tokens
         .id_token
@@ -862,12 +862,12 @@ async fn exchange_code(
 
     if !response.status().is_success() {
         return Err(anyhow!(
-            "Token exchange failed (HTTP {}): {body}",
+            "令牌交换失败(HTTP {}):{body}",
             response.status()
         ));
     }
 
-    serde_json::from_str::<TokenResponse>(&body).context("Failed to parse token response")
+    serde_json::from_str::<TokenResponse>(&body).context("无法解析令牌响应")
 }
 
 async fn refresh_token(
@@ -898,7 +898,7 @@ async fn refresh_token(
         .map_err(|e| RefreshError::Transient(e.into()))?;
 
     if !status.is_success() {
-        let err = anyhow!("Token refresh failed (HTTP {}): {body}", status);
+        let err = anyhow!("令牌刷新失败(HTTP {}):{body}", status);
         // 400/401/403 indicate a revoked or invalid refresh token.
         // 5xx and other errors are treated as transient.
         if status == http_client::StatusCode::BAD_REQUEST
@@ -987,7 +987,7 @@ fn now_ms() -> u64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_millis() as u64)
         .unwrap_or_else(|err| {
-            log::error!("System clock is before UNIX epoch: {err}");
+            log::error!("系统时钟早于 UNIX 纪元:{err}");
             0
         })
 }
@@ -1039,14 +1039,14 @@ mod tests {
         let result1 = task1.await;
         let result2 = task2.await;
 
-        assert!(result1.is_ok(), "first refresh should succeed");
-        assert!(result2.is_ok(), "second refresh should succeed");
+        assert!(result1.is_ok(), "第一次刷新应成功");
+        assert!(result2.is_ok(), "第二次刷新应成功");
         assert_eq!(result1.unwrap().access_token, "fresh_access");
         assert_eq!(result2.unwrap().access_token, "fresh_access");
         assert_eq!(
             refresh_count.load(Ordering::SeqCst),
             1,
-            "refresh_token should only be called once despite two concurrent callers"
+            "尽管有两个并发调用者,refresh_token 应只被调用一次"
         );
     }
 
@@ -1082,7 +1082,7 @@ mod tests {
         assert_eq!(
             refresh_count.load(Ordering::SeqCst),
             0,
-            "no refresh should happen when credentials are fresh"
+            "凭据有效时不应发生刷新"
         );
     }
 
@@ -1132,16 +1132,16 @@ mod tests {
 
         cx.run_until_parked();
 
-        assert!(result.is_err(), "fatal refresh should return an error");
+        assert!(result.is_err(), "致命刷新应返回错误");
         cx.read(|cx| {
             let s = state.read(cx);
             assert!(
                 s.credentials.is_none(),
-                "credentials should be cleared on fatal refresh failure"
+                "致命刷新失败时应清除凭据"
             );
             assert!(
                 s.last_auth_error.is_some(),
-                "last_auth_error should be set on fatal refresh failure"
+                "致命刷新失败时应设置 last_auth_error"
             );
         });
     }
@@ -1151,7 +1151,7 @@ mod tests {
         let http_client = FakeHttpClient::create(move |_request| async move {
             Ok(http_client::Response::builder()
                 .status(500)
-                .body(http_client::AsyncBody::from("Internal Server Error"))?)
+                .body(http_client::AsyncBody::from("内部服务器错误"))?)
         });
 
         let http: Arc<dyn HttpClient> = http_client;
@@ -1167,16 +1167,16 @@ mod tests {
 
         cx.run_until_parked();
 
-        assert!(result.is_err(), "transient refresh should return an error");
+        assert!(result.is_err(), "临时刷新应返回错误");
         cx.read(|cx| {
             let s = state.read(cx);
             assert!(
                 s.credentials.is_some(),
-                "credentials should be kept on transient refresh failure"
+                "临时刷新失败时应保留凭据"
             );
             assert!(
                 s.last_auth_error.is_none(),
-                "last_auth_error should not be set on transient refresh failure"
+                "临时刷新失败时不应设置 last_auth_error"
             );
         });
     }
@@ -1226,13 +1226,13 @@ mod tests {
         cx.run_until_parked();
 
         let result = refresh_task.await;
-        assert!(result.is_err(), "refresh should fail after sign-out");
+        assert!(result.is_err(), "退出登录后刷新应失败");
 
         cx.read(|cx| {
             let s = state.read(cx);
             assert!(
                 s.credentials.is_none(),
-                "sign-out should have cleared credentials"
+                "退出登录应已清除凭据"
             );
         });
     }
@@ -1261,16 +1261,16 @@ mod tests {
         let sign_out_task = state.update(cx, |state, cx| state.sign_out(cx));
 
         cx.run_until_parked();
-        sign_out_task.await.expect("sign-out should succeed");
+        sign_out_task.await.expect("退出登录应成功");
 
         assert!(
             creds_provider.storage.lock().is_none(),
-            "credential store should be empty after sign-out"
+            "退出登录后凭据存储应为空"
         );
         cx.read(|cx| {
             assert!(
                 !state.read(cx).is_authenticated(),
-                "state should show not authenticated"
+                "状态应显示未认证"
             );
         });
     }
@@ -1295,10 +1295,10 @@ mod tests {
 
         let load_task = cx
             .read(|cx| state.read(cx).load_task())
-            .expect("constructor should start the credentials load");
+            .expect("构造函数应启动凭据加载");
 
         cx.run_until_parked();
-        load_task.await.expect("load should succeed");
+        load_task.await.expect("加载应成功");
 
         cx.read(|cx| {
             let state = state.read(cx);
@@ -1372,18 +1372,18 @@ mod tests {
         let result = model
             .compact(request, &async_cx)
             .await
-            .expect("compaction should succeed");
+            .expect("压缩应成功");
 
         assert_eq!(compact_request_count.load(Ordering::SeqCst), 1);
         assert_eq!(result.usage, language_model::TokenUsage::default());
         let language_model::CompactedContext::ProviderState(compaction_state) = result.context
         else {
-            panic!("expected provider compaction state");
+            panic!("预期的提供方压缩状态");
         };
         assert_eq!(compaction_state.provider_id(), &PROVIDER_ID);
         let items = open_ai::responses::provider_compaction_items(&compaction_state, &PROVIDER_ID)
-            .expect("the compacted state should parse")
-            .expect("the compacted state should be owned by the subscription provider");
+            .expect("压缩后的状态应能解析")
+            .expect("压缩后的状态应归订阅提供程序所有");
         assert_eq!(
             items,
             vec![serde_json::json!({

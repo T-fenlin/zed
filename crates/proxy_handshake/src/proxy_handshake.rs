@@ -114,40 +114,40 @@ pub const MAX_HTTP_RESPONSE_LENGTH: usize = 8192;
 #[derive(Debug, thiserror::Error)]
 pub enum ProxyError {
     #[error(
-        "unsupported proxy scheme `{0}` (expected http, https, socks4, socks4a, socks5, or socks5h)"
+        "不支持的代理协议 `{0}`(预期为 http、https、socks4、socks4a、socks5 或 socks5h)"
     )]
     UnsupportedScheme(String),
-    #[error("proxy URL is missing a host")]
+    #[error("代理 URL 缺少主机名")]
     MissingHost,
-    #[error("proxy credentials are not valid UTF-8 after percent-decoding")]
+    #[error("代理凭据在百分号解码后不是有效的 UTF-8")]
     InvalidCredentials,
-    #[error("SOCKS5 usernames and passwords are limited to 255 bytes")]
+    #[error("SOCKS5 用户名和密码限制为 255 字节")]
     CredentialsTooLong,
-    #[error("SOCKS target domains are limited to 255 bytes")]
+    #[error("SOCKS 目标域名限制为 255 字节")]
     DomainTooLong,
-    #[error("target domain contains ASCII control bytes")]
+    #[error("目标域名包含 ASCII 控制字节")]
     DomainContainsControlBytes,
-    #[error("SOCKS4 proxies only support IPv4 targets")]
+    #[error("SOCKS4 代理仅支持 IPv4 目标")]
     Socks4Ipv4Only,
-    #[error("SOCKS4 user ids cannot contain NUL bytes")]
+    #[error("SOCKS4 用户 ID 不能包含 NUL 字节")]
     Socks4UserIdContainsNul,
-    #[error("proxy sent a malformed HTTP response: {0}")]
+    #[error("代理发送了格式错误的 HTTP 响应:{0}")]
     MalformedHttpResponse(String),
-    #[error("proxy refused CONNECT with HTTP status {0}")]
+    #[error("代理以 HTTP 状态 {0} 拒绝了 CONNECT 请求")]
     HttpConnectRefused(u16),
-    #[error("HTTP response from proxy exceeded {MAX_HTTP_RESPONSE_LENGTH} bytes")]
+    #[error("代理的 HTTP 响应超过 {MAX_HTTP_RESPONSE_LENGTH} 字节")]
     HttpResponseTooLarge,
-    #[error("proxy replied with SOCKS version {0:#04x}")]
+    #[error("代理回复了 SOCKS 版本 {0:#04x}")]
     UnexpectedSocksVersion(u8),
-    #[error("SOCKS5 proxy rejected the offered authentication method (selected {selected:#04x})")]
+    #[error("SOCKS5 代理拒绝了提供的认证方法(选择了 {selected:#04x})")]
     AuthMethodRejected { selected: u8 },
-    #[error("SOCKS5 proxy rejected the username/password")]
+    #[error("SOCKS5 代理拒绝了用户名/密码")]
     AuthenticationFailed,
-    #[error("SOCKS5 proxy refused the connection: {}", socks5_refusal_message(*.0))]
+    #[error("SOCKS5 代理拒绝了连接:{}", socks5_refusal_message(*.0))]
     Socks5ConnectRefused(u8),
-    #[error("SOCKS5 proxy sent unknown address type {0:#04x}")]
+    #[error("SOCKS5 代理发送了未知的地址类型 {0:#04x}")]
     UnknownAddressType(u8),
-    #[error("SOCKS4 proxy rejected the connection (code {0:#04x})")]
+    #[error("SOCKS4 代理拒绝了连接(代码 {0:#04x})")]
     Socks4ConnectRefused(u8),
 }
 
@@ -271,15 +271,15 @@ pub fn no_proxy_matches(no_proxy: &str, host: &str) -> bool {
 /// verbatim from RFC 1928 §6.
 fn socks5_refusal_message(code: u8) -> String {
     match code {
-        0x01 => "general SOCKS server failure".to_string(),
-        0x02 => "connection not allowed by ruleset".to_string(),
-        0x03 => "network unreachable".to_string(),
-        0x04 => "host unreachable".to_string(),
-        0x05 => "connection refused".to_string(),
-        0x06 => "TTL expired".to_string(),
-        0x07 => "command not supported".to_string(),
-        0x08 => "address type not supported".to_string(),
-        other => format!("unknown error code {other:#04x}"),
+        0x01 => "一般 SOCKS 服务器故障".to_string(),
+        0x02 => "规则集不允许连接".to_string(),
+        0x03 => "网络不可达".to_string(),
+        0x04 => "主机不可达".to_string(),
+        0x05 => "连接被拒绝".to_string(),
+        0x06 => "TTL 已过期".to_string(),
+        0x07 => "不支持的命令".to_string(),
+        0x08 => "不支持的地址类型".to_string(),
+        other => format!("未知错误代码 {other:#04x}"),
     }
 }
 

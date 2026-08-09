@@ -58,7 +58,7 @@ impl LanguageModelImageExt for LanguageModelImage {
 
     fn from_base64_image(data: &str, mime_type: &str) -> Result<Option<LanguageModelImage>> {
         let format = image::ImageFormat::from_mime_type(mime_type)
-            .ok_or_else(|| anyhow!("unsupported image MIME type `{}`", mime_type))?;
+            .ok_or_else(|| anyhow!("不支持的图片 MIME 类型 `{}`", mime_type))?;
         let bytes = base64::engine::general_purpose::STANDARD.decode(data.as_bytes())?;
         let dynamic_image = image::load_from_memory_with_format(&bytes, format)?;
         language_model_image_from_dynamic_image(dynamic_image)
@@ -209,7 +209,7 @@ mod tests {
         let raw_png = make_noisy_png_bytes(4096, 4096);
         assert!(
             raw_png.len() > DEFAULT_IMAGE_MAX_BYTES,
-            "Test image should exceed the 5 MB limit (actual: {} bytes)",
+            "测试图片应超过 5 MB 限制(实际:{} 字节)",
             raw_png.len()
         );
 
@@ -255,7 +255,7 @@ mod tests {
         let decoded_png = base64_to_png_bytes(base64_png);
         assert!(
             decoded_png.len() <= DEFAULT_IMAGE_MAX_BYTES,
-            "Encoded PNG should be ≤ {} bytes after downscale, but was {} bytes",
+            "缩小后编码的 PNG 应 ≤ {} 字节,但实际为 {} 字节",
             DEFAULT_IMAGE_MAX_BYTES,
             decoded_png.len()
         );
@@ -263,7 +263,7 @@ mod tests {
         let (downsized_width, downsized_height) = png_dimensions(&decoded_png);
         assert!(
             downsized_width < width && downsized_height < height,
-            "Dimensions should have shrunk: got {}×{}",
+            "尺寸应已缩小:得到 {}×{}",
             downsized_width,
             downsized_height
         );

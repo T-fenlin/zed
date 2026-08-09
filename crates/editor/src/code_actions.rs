@@ -179,9 +179,9 @@ impl Editor {
             match toggle_task.await {
                 Ok(code_action_spawn) => match code_action_spawn.await {
                     Ok(()) => {}
-                    Err(e) => log::error!("failed to spawn a toggled code action: {e:#}"),
+                    Err(e) => log::error!("启动切换的代码操作失败: {e:#}"),
                 },
-                Err(e) => log::error!("failed to toggle code actions: {e:#}"),
+                Err(e) => log::error!("切换代码操作失败: {e:#}"),
             }
         })
     }
@@ -349,7 +349,7 @@ impl Editor {
                     let focus_handle = self.focus_handle.clone();
                     move |_window, cx| {
                         Tooltip::for_action_in(
-                            "Toggle Code Actions",
+                            "切换代码操作",
                             &ToggleCodeActions {
                                 deployed_from: None,
                                 quick_launch: false,
@@ -548,12 +548,12 @@ impl CodeActionProvider for Entity<Project> {
             let code_actions = project.code_actions(buffer, range, None, cx);
             cx.background_spawn(async move {
                 let code_lens_actions = match code_lens_actions {
-                    Some(task) => task.await.context("code lens fetch")?.unwrap_or_default(),
+                    Some(task) => task.await.context("代码透镜获取")?.unwrap_or_default(),
                     None => Vec::new(),
                 };
                 let code_actions = code_actions
                     .await
-                    .context("code action fetch")?
+                    .context("代码操作获取")?
                     .unwrap_or_default();
                 Ok(code_lens_actions.into_iter().chain(code_actions).collect())
             })

@@ -1148,7 +1148,7 @@ impl Markdown {
 
     /// Returns the URL of the link that was most recently right-clicked, if any.
     /// This is set during a right-click mouse-down event and can be read by parent
-    /// views to include a "Copy Link" item in their context menus.
+    /// views to include a "复制链接" item in their context menus.
     pub fn context_menu_link(&self) -> Option<&SharedString> {
         self.context_menu_link.as_ref()
     }
@@ -1849,11 +1849,11 @@ impl MarkdownElement {
 
         let header = kind.map(|kind| {
             let (icon_name, label) = match kind {
-                BlockQuoteKind::Note => (IconName::Info, "Note"),
-                BlockQuoteKind::Tip => (IconName::Sparkle, "Tip"),
-                BlockQuoteKind::Important => (IconName::Chat, "Important"),
-                BlockQuoteKind::Warning => (IconName::Warning, "Warning"),
-                BlockQuoteKind::Caution => (IconName::Stop, "Caution"),
+                BlockQuoteKind::Note => (IconName::Info, "备注"),
+                BlockQuoteKind::Tip => (IconName::Sparkle, "提示"),
+                BlockQuoteKind::Important => (IconName::Chat, "重要"),
+                BlockQuoteKind::Warning => (IconName::Warning, "警告"),
+                BlockQuoteKind::Caution => (IconName::Stop, "注意"),
             };
             h_flex()
                 .gap_1()
@@ -2886,7 +2886,7 @@ impl Element for MarkdownElement {
                                 markdown_end,
                             );
                         }
-                        _ => log::debug!("unsupported markdown tag {:?}", tag),
+                        _ => log::debug!("不支持的 Markdown 标签 {:?}", tag),
                     }
                 }
                 MarkdownEvent::End(tag) => match tag {
@@ -3022,7 +3022,7 @@ impl Element for MarkdownElement {
                         builder.pop_div();
                     }
                     MarkdownTagEnd::MetadataBlock(_) => {}
-                    _ => log::debug!("unsupported markdown tag end: {:?}", tag),
+                    _ => log::debug!("不支持的 Markdown 结束标签 {:?}", tag),
                 },
                 MarkdownEvent::Text => {
                     builder.push_text(&parsed_markdown.source[range.clone()], range.clone());
@@ -3213,14 +3213,14 @@ fn image_fallback_element(
         .filter(|alt| !alt.is_empty())
         .unwrap_or_else(|| dest_url.clone());
 
-    let label = format!("Failed to Load: {link_label}");
+    let label = format!("加载失败:{link_label}");
 
     div()
         .id("image-fallback")
         .min_w_0()
         .child(Label::new(label).color(Color::Warning).underline())
         .tooltip(Tooltip::text(
-            "Image failed to load. Open `zed: log` for more details.",
+            "图片加载失败。打开 `zed: log` 查看详细信息。",
         ))
         .when(open_image_url_on_click, |this| {
             this.cursor_pointer()
@@ -3284,9 +3284,9 @@ fn render_wrap_code_block_button(
     markdown: Entity<Markdown>,
 ) -> impl IntoElement {
     let (icon, tooltip) = if is_wrapped {
-        (IconName::TextUnwrap, "Unwrap Content")
+        (IconName::TextUnwrap, "展开内容")
     } else {
-        (IconName::TextWrap, "Wrap Content")
+        (IconName::TextWrap, "折叠内容")
     };
     let button_id = ElementId::NamedChild(
         Arc::new(ElementId::from(("wrap-code-block", markdown.entity_id()))),
@@ -3801,7 +3801,7 @@ impl MarkdownElementBuilder {
         let marker_rendered = leading_ws..leading_ws + trimmed.len();
         let marker_source = self
             .source_range_for_rendered(&marker_rendered)
-            .expect("pending checkbox text must have source mappings");
+            .expect("待处理的复选框文本必须具有源映射");
 
         self.pending_line = PendingLine::default();
 
@@ -4602,7 +4602,7 @@ mod tests {
         rendered_text
             .borrow()
             .clone()
-            .expect("markdown should be rendered in the test view")
+            .expect("Markdown 应在测试视图中渲染")
     }
 
     #[gpui::test]
@@ -4856,7 +4856,7 @@ mod tests {
                     br#"<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>"#,
                     1.0,
                 )
-                .expect("test svg should render")
+                .expect("测试 SVG 应能渲染")
         })
     }
 
@@ -4876,11 +4876,11 @@ mod tests {
             .collect();
         assert!(
             text.contains("more text that continues"),
-            "soft break in an image paragraph should still separate words with a space; got: {text:?}"
+            "图片段落中的软换行仍应用空格分隔单词;得到:{text:?}"
         );
         assert!(
             !text.contains("textthat"),
-            "soft break between words must not be dropped; got: {text:?}"
+            "单词之间的软换行不能被丢弃;得到:{text:?}"
         );
     }
 
@@ -4900,7 +4900,7 @@ mod tests {
             .collect();
         assert_eq!(
             text, "caption",
-            "a soft break after an image should not insert leading whitespace before caption text; got: {text:?}"
+            "图片后的软换行不应在标题文本前插入前导空格;得到:{text:?}"
         );
     }
 
@@ -4946,7 +4946,7 @@ mod tests {
             .collect();
         assert!(
             text.contains("first\nsecond"),
-            "break in a text-only tight list item should render as a newline; got: {text:?}"
+            "纯文本紧凑列表项中的换行应渲染为换行符;得到:{text:?}"
         );
     }
 
@@ -4992,7 +4992,7 @@ mod tests {
                 .bounds_for_source_range(caption_range.clone())
                 .into_iter()
                 .next()
-                .expect("caption should have text bounds")
+                .expect("标题应具有文本边界")
                 .top()
         };
 
@@ -5232,7 +5232,7 @@ mod tests {
         assert_eq!(
             checkbox_cells.len(),
             2,
-            "Expected 2 checkbox cells, got: {cell_texts:?}"
+            "预期 2 个复选框单元格,得到:{cell_texts:?}"
         );
         assert_eq!(checkbox_cells[0].trim(), "[x]");
         assert_eq!(checkbox_cells[1].trim(), "[ ]");
@@ -5262,7 +5262,7 @@ mod tests {
                             let leading = pending_text.len() - pending_text.trim_start().len();
                             let rendered = leading..leading + trimmed.len();
                             let marker_source = source_range_for_rendered(&mappings, &rendered)
-                                .expect("marker source range");
+                                .expect("标记源范围");
                             cell_ranges.push(marker_source);
                         }
                     }
@@ -5284,7 +5284,7 @@ mod tests {
             let slice = &md[marker_range.clone()];
             assert!(
                 slice == "[x]" || slice == "[X]" || slice == "[ ]",
-                "expected `[x]`/`[X]`/`[ ]`, got {slice:?} at {marker_range:?}"
+                "预期 `[x]`/`[X]`/`[ ]`,在 {marker_range:?} 处得到 {slice:?}"
             );
         }
     }
@@ -5581,7 +5581,7 @@ mod tests {
                 escaper.next(c).write_to(c, &mut output);
             }
 
-            assert_eq!(precomputed, output.len(), "length mismatch for {:?}", input);
+            assert_eq!(precomputed, output.len(), "{:?} 的长度不匹配", input);
         }
     }
 
@@ -5602,11 +5602,11 @@ mod tests {
                 .collect();
             assert!(
                 !text.contains(br),
-                "{br} should not appear as literal text; got: {text:?}"
+                "{br} 不应作为字面文本出现;得到:{text:?}"
             );
             assert!(
                 text.contains("first\nsecond"),
-                "{br} should produce a newline between 'first' and 'second'; got: {text:?}"
+                "{br} 应在 'first' 和 'second' 之间产生换行;得到:{text:?}"
             );
         }
     }
@@ -5627,11 +5627,11 @@ mod tests {
             .join("\n");
         assert!(
             all_text.contains("first") && all_text.contains("second"),
-            "both sides of <br> should be present; got: {all_text:?}"
+            "<br> 的两侧都应存在;得到:{all_text:?}"
         );
         assert!(
             !all_text.contains("<br>"),
-            "<br> should not appear as literal text; got: {all_text:?}"
+            "<br> 不应作为字面文本出现;得到:{all_text:?}"
         );
     }
 
@@ -5649,7 +5649,7 @@ mod tests {
         assert_eq!(rendered.links.len(), 1);
         assert_eq!(rendered.links[0].destination_url, "https://example.com");
 
-        // Source index 1 ('C' in "Click") is inside the link's source range
+        // Source index 1 ('C' in "点击") is inside the link's source range
         let link = rendered.link_for_source_index(1);
         assert!(link.is_some());
         assert_eq!(link.unwrap().destination_url, "https://example.com");
@@ -5916,7 +5916,7 @@ mod tests {
             let style = MarkdownStyle::themed(MarkdownFont::Preview, window, cx);
             assert!(
                 matches!(style.base_text_style.font_size, AbsoluteLength::Rems(_)),
-                "preview body font size must be rem-based, got {:?}",
+                "预览正文的字体大小必须基于 rem,得到 {:?}",
                 style.base_text_style.font_size
             );
             assert!(
@@ -5924,7 +5924,7 @@ mod tests {
                     style.container_style.text.font_size,
                     Some(AbsoluteLength::Rems(_))
                 ),
-                "preview container font size must be rem-based, got {:?}",
+                "预览容器的字体大小必须基于 rem,得到 {:?}",
                 style.container_style.text.font_size
             );
         });
@@ -5933,7 +5933,7 @@ mod tests {
     fn failing_image_source() -> ImageSource {
         ImageSource::Custom(Arc::new(|_, _| {
             Some(Err(gpui::ImageCacheError::Asset(
-                "failed to load image".into(),
+                "加载图片失败".into(),
             )))
         }))
     }
@@ -6024,7 +6024,7 @@ mod tests {
 
     #[track_caller]
     fn assert_mappings(rendered: &RenderedText, expected: Vec<Vec<(usize, usize)>>) {
-        assert_eq!(rendered.lines.len(), expected.len(), "line count mismatch");
+        assert_eq!(rendered.lines.len(), expected.len(), "行数不匹配");
         for (line_ix, line_mappings) in expected.into_iter().enumerate() {
             let line = &rendered.lines[line_ix];
 
@@ -6033,7 +6033,7 @@ mod tests {
                     mappings[0].source_index < mappings[1].source_index
                         && mappings[0].rendered_index < mappings[1].rendered_index
                 }),
-                "line {} has duplicate mappings: {:?}",
+                "第 {} 行有重复的映射:{:?}",
                 line_ix,
                 line.source_mappings
             );
@@ -6042,7 +6042,7 @@ mod tests {
                 assert_eq!(
                     line.source_index_for_rendered_index(rendered_ix),
                     source_ix,
-                    "line {}, rendered_ix {}",
+                    "第 {} 行,渲染索引 {}",
                     line_ix,
                     rendered_ix
                 );
@@ -6050,7 +6050,7 @@ mod tests {
                 assert_eq!(
                     line.rendered_index_for_source_index(source_ix),
                     rendered_ix,
-                    "line {}, source_ix {}",
+                    "第 {} 行,源索引 {}",
                     line_ix,
                     source_ix
                 );
@@ -6096,7 +6096,7 @@ mod tests {
             assert_eq!(row_bounds.bottom(), row_top + line_height);
             assert!(
                 row_bounds.size.width > Pixels::ZERO,
-                "row {row_index} should have a non-empty highlight"
+                "第 {row_index} 行应具有非空的高亮"
             );
             row_top += line_height;
         }
@@ -6108,7 +6108,7 @@ mod tests {
 
         assert!(
             rendered.lines.len() >= 4,
-            "expected at least 4 rendered lines, got {}",
+            "预期至少 4 行渲染结果,得到 {}",
             rendered.lines.len()
         );
 
@@ -6119,15 +6119,15 @@ mod tests {
 
         assert!(
             h1_line_height > h2_line_height,
-            "H1 line height ({h1_line_height:?}) should be greater than H2 ({h2_line_height:?})"
+            "H1 行高 ({h1_line_height:?}) 应大于 H2 ({h2_line_height:?})"
         );
         assert!(
             h2_line_height > h3_line_height,
-            "H2 line height ({h2_line_height:?}) should be greater than H3 ({h3_line_height:?})"
+            "H2 行高 ({h2_line_height:?}) 应大于 H3 ({h3_line_height:?})"
         );
         assert!(
             h3_line_height > body_line_height,
-            "H3 line height ({h3_line_height:?}) should be greater than body text ({body_line_height:?})"
+            "H3 行高 ({h3_line_height:?}) 应大于正文文本 ({body_line_height:?})"
         );
     }
 
@@ -6203,12 +6203,12 @@ mod tests {
             | --- | --- |
             | value | far_right_cell_content_that_is_much_wider_than_the_viewport |
         "#};
-        let left_cell_start = source.find("left").expect("left cell should be present");
+        let left_cell_start = source.find("left").expect("左侧单元格应存在");
         let left_cell_range = left_cell_start..left_cell_start + "left".len();
         let right_cell = "far_right_cell_content_that_is_much_wider_than_the_viewport";
         let right_cell_start = source
             .find(right_cell)
-            .expect("right cell should be present");
+            .expect("右侧单元格应存在");
         let right_cell_range = right_cell_start..right_cell_start + right_cell.len();
 
         let markdown = cx.new(|cx| Markdown::new(source.into(), None, None, cx));
@@ -6232,18 +6232,18 @@ mod tests {
             let rendered_text = rendered_text.borrow();
             let rendered_text = rendered_text
                 .as_ref()
-                .expect("markdown should be rendered before scrolling");
+                .expect("滚动前应渲染 Markdown");
             let event_position = rendered_text
                 .bounds_for_source_range(left_cell_range)
                 .into_iter()
                 .next()
-                .expect("left cell should have bounds")
+                .expect("左侧单元格应具有边界")
                 .center();
             let right_cell_bounds = rendered_text
                 .bounds_for_source_range(right_cell_range.clone())
                 .into_iter()
                 .next()
-                .expect("right cell should have bounds");
+                .expect("右侧单元格应具有边界");
             (event_position, right_cell_bounds)
         };
 
@@ -6258,11 +6258,11 @@ mod tests {
         let right_cell_after_scroll = rendered_text
             .borrow()
             .as_ref()
-            .expect("markdown should be rendered after scrolling")
+            .expect("滚动后应渲染 Markdown")
             .bounds_for_source_range(right_cell_range)
             .into_iter()
             .next()
-            .expect("right cell should have bounds after scrolling");
+            .expect("滚动后右侧单元格应具有边界");
 
         assert!(right_cell_after_scroll.left() < right_cell_before_scroll.left());
         assert_eq!(

@@ -63,14 +63,14 @@ impl SerializedThread {
                 SerializedThread::VERSION => Ok(serde_json::from_value::<SerializedThread>(
                     saved_thread_json,
                 )?),
-                _ => anyhow::bail!("unrecognized serialized thread version: {version:?}"),
+                _ => anyhow::bail!("无法识别的序列化线程版本:{version:?}"),
             },
             None => {
                 let saved_thread =
                     serde_json::from_value::<LegacySerializedThread>(saved_thread_json)?;
                 Ok(saved_thread.upgrade())
             }
-            version => anyhow::bail!("unrecognized serialized thread version: {version:?}"),
+            version => anyhow::bail!("无法识别的序列化线程版本:{version:?}"),
         }
     }
 }

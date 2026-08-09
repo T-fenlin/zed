@@ -231,7 +231,7 @@ fn log_worktree_diagnostics(workspace_store: &Entity<WorkspaceStore>, cx: &App) 
 
 pub async fn upload_previous_minidumps(client: Arc<Client>) -> anyhow::Result<()> {
     let Some(minidump_endpoint) = MINIDUMP_ENDPOINT.as_ref() else {
-        log::warn!("Minidump endpoint not set");
+        log::warn!("未设置 Minidump 端点");
         return Ok(());
     };
 
@@ -256,7 +256,7 @@ pub async fn upload_previous_minidumps(client: Arc<Client>) -> anyhow::Result<()
             minidump_endpoint,
             smol::fs::read(&child_path)
                 .await
-                .context("Failed to read minidump")?,
+                .context("读取 minidump 失败")?,
             &metadata,
         )
         .await
@@ -277,7 +277,7 @@ async fn upload_minidump(
     metadata: &crashes::CrashInfo,
 ) -> Result<()> {
     if metadata.init.commit_sha == "no sha" {
-        log::warn!("No commit sha set, skipping minidump upload");
+        log::warn!("未设置提交 SHA,跳过 minidump 上传");
         return Ok(());
     }
     let mut form = Form::new()
@@ -343,7 +343,7 @@ async fn upload_minidump(
     }
 
     ::telemetry::event!(
-        "Minidump Uploaded",
+        "Minidump 已上传",
         panic_message = panic_message,
         crashed_version = metadata.init.zed_version.clone(),
         commit_sha = metadata.init.commit_sha.clone(),
@@ -369,7 +369,7 @@ async fn upload_minidump(
         form = form
             .text(
                 format!("{root}[Description]"),
-                "A GPU found on the users system. May or may not be the GPU Zed is running on",
+                "用户系统上发现的 GPU。可能是也可能不是 Zed 正在运行的 GPU。",
             )
             .text(format!("{root}[type]"), "gpu")
             .text(format!("{root}[name]"), device_name.unwrap_or(name))
@@ -386,7 +386,7 @@ async fn upload_minidump(
         form = form
             .text(
                 "sentry[contexts][Active_GPU][Description]",
-                "The GPU Zed is running on",
+                "Zed 正在运行的 GPU",
             )
             .text("sentry[contexts][Active_GPU][type]", "gpu")
             .text("sentry[contexts][Active_GPU][name]", active_gpu.device_name)
@@ -425,9 +425,9 @@ async fn upload_minidump(
         .read_to_string(&mut response_text)
         .await?;
     if !response.status().is_success() {
-        anyhow::bail!("failed to upload minidump: {response_text}");
+        anyhow::bail!("上传 minidump 失败: {response_text}");
     }
-    log::info!("Uploaded minidump. event id: {response_text}");
+    log::info!("已上传 minidump。事件 ID: {response_text}");
     Ok(())
 }
 
@@ -473,7 +473,7 @@ async fn upload_build_timings(_client: Arc<Client>) -> Result<()> {
         let contents = match smol::fs::read_to_string(&path).await {
             Ok(contents) => contents,
             Err(err) => {
-                log::warn!("Failed to read build timing file {:?}: {}", path, err);
+                log::warn!("读取构建计时文件 {:?} 失败: {}", path, err);
                 continue;
             }
         };
@@ -481,13 +481,13 @@ async fn upload_build_timings(_client: Arc<Client>) -> Result<()> {
         let timing: BuildTiming = match serde_json::from_str(&contents) {
             Ok(timing) => timing,
             Err(err) => {
-                log::warn!("Failed to parse build timing file {:?}: {}", path, err);
+                log::warn!("解析构建计时文件 {:?} 失败: {}", path, err);
                 continue;
             }
         };
 
         telemetry::event!(
-            "Build Timing: Cargo Build",
+            "构建计时: Cargo 构建",
             started_at = timing.started_at.to_rfc3339(),
             duration_ms = timing.duration_ms,
             first_crate = timing.first_crate,
@@ -499,7 +499,7 @@ async fn upload_build_timings(_client: Arc<Client>) -> Result<()> {
         );
 
         if let Err(err) = smol::fs::remove_file(&path).await {
-            log::warn!("Failed to delete build timing file {:?}: {}", path, err);
+            log::warn!("删除构建计时文件 {:?} 失败: {}", path, err);
         }
     }
 

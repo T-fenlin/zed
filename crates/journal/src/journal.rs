@@ -59,7 +59,7 @@ pub fn new_journal_entry(workspace: &Workspace, window: &mut Window, cx: &mut Ap
     let journal_dir = match journal_dir(&settings.path) {
         Some(journal_dir) => journal_dir,
         None => {
-            log::error!("Can't determine journal directory");
+            log::error!("无法确定日志目录");
             return;
         }
     };
@@ -184,7 +184,7 @@ fn journal_dir(path: &str) -> Option<PathBuf> {
     let absolute_path = if base_path.is_absolute() {
         base_path.to_path_buf()
     } else {
-        log::warn!("Invalid journal path {path:?} (not absolute), falling back to home directory",);
+        log::warn!("无效的日志路径 {path:?}(不是绝对路径),回退到主目录",);
         std::env::home_dir()?
     };
     Some(absolute_path.join("journal"))
@@ -256,7 +256,7 @@ mod tests {
             assert!(result.is_some());
             let path = result.unwrap();
 
-            assert!(path.is_absolute(), "Tilde should expand to absolute path");
+            assert!(path.is_absolute(), "波浪号应展开为绝对路径");
 
             if let Some(home) = std::env::home_dir() {
                 assert_eq!(path, home.join("documents").join("journal"));
@@ -267,12 +267,12 @@ mod tests {
         fn test_relative_path_falls_back_to_home() {
             for relative_path in ["relative/path", "NONEXT/some/path", "../some/path"] {
                 let result = journal_dir(relative_path);
-                assert!(result.is_some(), "Failed for path: {}", relative_path);
+                assert!(result.is_some(), "路径 {} 失败", relative_path);
                 let path = result.unwrap();
 
                 assert!(
                     path.is_absolute(),
-                    "Path should be absolute for input '{}', got: {:?}",
+                    "输入 '{}' 的路径应为绝对路径,实际为: {:?}",
                     relative_path,
                     path
                 );
@@ -281,7 +281,7 @@ mod tests {
                     assert_eq!(
                         path,
                         home.join("journal"),
-                        "Should fall back to home directory for input '{}'",
+                        "输入 '{}' 应回退到主目录",
                         relative_path
                     );
                 }

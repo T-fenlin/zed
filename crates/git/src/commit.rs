@@ -95,10 +95,10 @@ pub(crate) async fn get_tag_names(
         ])
         .output()
         .await
-        .context("starting git for-each-ref process")?;
+        .context("启动 git for-each-ref 进程")?;
     anyhow::ensure!(
         output.status.success(),
-        "'git for-each-ref' failed with error {:?}",
+        "'git for-each-ref' 失败,错误 {:?}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -141,10 +141,10 @@ async fn get_messages_impl(git: &GitBinary, shas: &[Oid]) -> Result<Vec<String>>
         .args(shas.iter().map(ToString::to_string))
         .output()
         .await
-        .context("starting git show process")?;
+        .context("正在启动 git show 进程")?;
     anyhow::ensure!(
         output.status.success(),
-        "'git show' failed with error {:?}",
+        "'git show' 失败,错误 {:?}",
         String::from_utf8_lossy(&output.stderr)
     );
     Ok(String::from_utf8_lossy(&output.stdout)
@@ -189,7 +189,7 @@ pub(crate) fn parse_git_diff_raw(
 
         let path = match parts.next() {
             Some(path) => path,
-            None => return Some(Err(anyhow::anyhow!("raw diff is missing the path"))),
+            None => return Some(Err(anyhow::anyhow!("原始差异缺少路径"))),
         };
         Some(parse_git_diff_raw_entry(metadata, path))
     })
@@ -198,23 +198,23 @@ pub(crate) fn parse_git_diff_raw(
 fn parse_git_diff_raw_entry<'a>(metadata: &'a str, path: &'a str) -> Result<CommitDiffEntry<'a>> {
     let mut fields = metadata
         .strip_prefix(':')
-        .context("raw diff metadata is missing its ':' prefix")?
+        .context("原始差异元数据缺少 ':' 前缀")?
         .split_ascii_whitespace();
-    let old_mode = fields.next().context("raw diff is missing the old mode")?;
-    let new_mode = fields.next().context("raw diff is missing the new mode")?;
+    let old_mode = fields.next().context("原始差异缺少旧模式")?;
+    let new_mode = fields.next().context("原始差异缺少新模式")?;
     let old_oid = fields
         .next()
-        .context("raw diff is missing the old object ID")?;
+        .context("原始差异缺少旧对象 ID")?;
     let new_oid = fields
         .next()
-        .context("raw diff is missing the new object ID")?;
+        .context("原始差异缺少新对象 ID")?;
     let status = match fields.next() {
         Some("M") => StatusCode::Modified,
         Some("T") => StatusCode::TypeChanged,
         Some("A") => StatusCode::Added,
         Some("D") => StatusCode::Deleted,
-        Some(status) => anyhow::bail!("unsupported raw diff status {status}"),
-        None => anyhow::bail!("raw diff is missing the status"),
+        Some(status) => anyhow::bail!("不支持的原始差异状态 {status}"),
+        None => anyhow::bail!("原始差异缺少状态"),
     };
 
     Ok(CommitDiffEntry {
@@ -258,7 +258,7 @@ mod tests {
             .collect::<Result<Vec<_>>>()
             .unwrap();
         let [file, gitlink, added, deleted, type_change] = entries.as_slice() else {
-            panic!("expected five raw diff entries");
+            panic!("预期五个原始差异条目");
         };
 
         assert_eq!(file.path, "file.txt");
@@ -296,9 +296,9 @@ mod tests {
     fn test_parse_git_diff_raw_rejects_malformed_metadata() {
         let error = parse_git_diff_raw(":100644\x00file.txt\x00")
             .next()
-            .expect("expected a raw diff entry")
-            .expect_err("expected malformed metadata to fail");
-        assert!(error.to_string().contains("new mode"));
+            .expect("预期一个原始差异条目")
+            .expect_err("预期格式错误的元数据会失败");
+        assert!(error.to_string().contains("新模式"));
     }
 
     #[test]

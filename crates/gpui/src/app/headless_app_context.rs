@@ -227,7 +227,7 @@ impl AppContext for HeadlessAppContext {
     where
         T: 'static,
     {
-        panic!("Cannot use as_mut with HeadlessAppContext. Call update() instead.")
+        panic!("无法对 HeadlessAppContext 使用 as_mut。请改用 更新()。")
     }
 
     fn read_entity<T, R>(&self, handle: &Entity<T>, read: impl FnOnce(&T, &App) -> R) -> R

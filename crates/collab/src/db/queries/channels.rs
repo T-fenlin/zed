@@ -269,7 +269,7 @@ impl Database {
                 > 0;
 
             if channel_has_active_participants {
-                Err(anyhow!("can't delete channel while a call is in progress"))?;
+                Err(anyhow!("通话进行中无法删除频道"))?;
             }
 
             channel::Entity::delete_many()
@@ -336,7 +336,7 @@ impl Database {
     fn sanitize_channel_name(name: &str) -> Result<&str> {
         let new_name = name.trim().trim_start_matches('#');
         if new_name.is_empty() {
-            Err(anyhow!("channel name can't be blank"))?;
+            Err(anyhow!("频道名称不能为空"))?;
         }
         Ok(new_name)
     }
@@ -391,7 +391,7 @@ impl Database {
                     .rows_affected;
 
                 if rows_affected == 0 {
-                    Err(anyhow!("no such invitation"))?;
+                    Err(anyhow!("没有此类邀请"))?;
                 }
 
                 Some(
@@ -410,7 +410,7 @@ impl Database {
                     .await?
                     .rows_affected;
                 if rows_affected == 0 {
-                    Err(anyhow!("no such invitation"))?;
+                    Err(anyhow!("没有此类邀请"))?;
                 }
 
                 None
@@ -487,7 +487,7 @@ impl Database {
                 .await?;
 
             if result.rows_affected == 0 {
-                Err(anyhow!("no such member"))?;
+                Err(anyhow!("没有此类成员"))?;
             }
 
             Ok(RemoveChannelMemberResult {
@@ -664,7 +664,7 @@ impl Database {
                 )
                 .one(&*tx)
                 .await?
-                .context("no such member")?;
+                .context("没有此类成员")?;
 
             let mut update = membership.into_active_model();
             update.role = ActiveValue::Set(role);
@@ -744,7 +744,7 @@ impl Database {
             | Some(ChannelRole::Banned)
             | Some(ChannelRole::Guest)
             | None => Err(anyhow!(
-                "user is not a channel admin or channel does not exist"
+                "用户不是频道管理员或频道不存在"
             ))?,
         }
     }
@@ -763,7 +763,7 @@ impl Database {
             | Some(ChannelRole::Guest)
             | Some(ChannelRole::Talker)
             | None => Err(anyhow!(
-                "user is not a channel member or channel does not exist"
+                "用户不是频道成员或频道不存在"
             ))?,
         }
     }
@@ -782,7 +782,7 @@ impl Database {
             | Some(ChannelRole::Guest)
             | Some(ChannelRole::Talker) => Ok(role.unwrap()),
             Some(ChannelRole::Banned) | None => Err(anyhow!(
-                "user is not a channel participant or channel does not exist"
+                "用户不是频道参与者或频道不存在"
             ))?,
         }
     }

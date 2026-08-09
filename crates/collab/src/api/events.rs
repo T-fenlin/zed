@@ -68,7 +68,7 @@ pub async fn post_events(
     let Some(expected) = calculate_json_checksum(app.clone(), &body) else {
         return Err(Error::http(
             StatusCode::INTERNAL_SERVER_ERROR,
-            "events not enabled".into(),
+            "事件未启用".into(),
         ))?;
     };
 
@@ -76,12 +76,12 @@ pub async fn post_events(
 
     let request_body: telemetry_events::EventRequestBody =
         serde_json::from_slice(&body).map_err(|err| {
-            log::error!("can't parse event json: {err}");
+            log::error!("无法解析事件 JSON:{err}");
             Error::Internal(anyhow!(err))
         })?;
 
     let Some(last_event) = request_body.events.last() else {
-        return Err(Error::http(StatusCode::BAD_REQUEST, "no events".into()))?;
+        return Err(Error::http(StatusCode::BAD_REQUEST, "没有事件".into()))?;
     };
     let country_code = country_code_header.map(|h| h.to_string());
 

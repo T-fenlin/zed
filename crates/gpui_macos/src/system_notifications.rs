@@ -122,7 +122,7 @@ impl NotificationCenter {
         // via `cargo run`. A bundle identifier is only present when launched
         // from a real `.app`, so use it as the guard.
         if NSBundle::mainBundle().bundleIdentifier().is_none() {
-            log::info!("system notifications disabled: not running from an app bundle");
+            log::info!("系统通知已禁用:当前未从应用包中运行");
             return None;
         }
 
@@ -147,11 +147,11 @@ impl NotificationCenter {
             // duration of the callback.
             if let Some(error) = unsafe { error.as_ref() } {
                 log::warn!(
-                    "system notification authorization failed: {}",
+                    "系统通知授权失败:{}",
                     error.localizedDescription()
                 );
             } else if !granted.as_bool() {
-                log::info!("system notification authorization denied");
+                log::info!("系统通知授权被拒绝");
             }
         });
         self.center
@@ -185,7 +185,7 @@ impl NotificationCenter {
             // duration of the callback.
             if let Some(error) = unsafe { error.as_ref() } {
                 log::warn!(
-                    "failed to deliver system notification: {}",
+                    "系统通知发送失败:{}",
                     error.localizedDescription()
                 );
             }

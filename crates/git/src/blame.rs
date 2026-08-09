@@ -38,12 +38,12 @@ impl Blame {
         let shas = unique_shas.into_iter().collect::<Vec<_>>();
         let (messages, tag_names) = try_join!(
             get_messages(git, &shas)
-                .map_err(|error| error.context("failed to get commit messages")),
+                .map_err(|error| error.context("获取提交消息失败")),
             async {
                 match get_tag_names(git, &shas).await {
                     Ok(tag_names) => Ok(tag_names),
                     Err(error) => {
-                        log::warn!("failed to get commit tag names: {error:#}");
+                        log::warn!("获取提交标签名称失败: {error:#}");
                         Ok(HashMap::default())
                     }
                 }
@@ -70,7 +70,7 @@ async fn run_git_blame(
     line_ending: LineEnding,
 ) -> Result<Vec<BlameEntry>> {
     let mut child = {
-        let span = ztracing::debug_span!("spawning git-blame command", path = path.as_unix_str());
+        let span = ztracing::debug_span!("正在启动 git-追溯 命令", path = path.as_unix_str());
         let _enter = span.enter();
         git.build_command(&["blame", "--incremental", "--contents", "-", "--"])
             .arg(path.as_unix_str())
@@ -79,21 +79,21 @@ async fn run_git_blame(
             .stderr(Stdio::piped())
             .kill_on_drop(true)
             .spawn()
-            .context("starting git blame process")?
+            .context("启动 git 追溯 进程")?
     };
 
     let mut stdin = child
         .stdin
         .take()
-        .context("failed to get pipe to stdin of git blame command")?;
+        .context("无法获取 git 追溯 命令的标准输入管道")?;
     let stdout = child
         .stdout
         .take()
-        .context("failed to get stdout from git blame command")?;
+        .context("无法从 git 追溯 命令获取标准输出")?;
     let stderr = child
         .stderr
         .take()
-        .context("failed to get stderr from git blame command")?;
+        .context("无法从 git 追溯 命令获取标准错误")?;
 
     let write_stdin = async move {
         for chunk in text::chunks_with_line_ending(contents, line_ending) {
@@ -113,7 +113,7 @@ async fn run_git_blame(
             let bytes_read = reader
                 .read_line(&mut line_buffer)
                 .await
-                .context("reading git blame stdout")?;
+                .context("读取 git 追溯 标准输出")?;
             if bytes_read == 0 {
                 break;
             }
@@ -135,7 +135,7 @@ async fn run_git_blame(
         BufReader::new(stderr)
             .read_to_string(&mut stderr_output)
             .await
-            .context("reading git blame stderr")?;
+            .context("读取 git 追溯 标准错误")?;
         Result::<String>::Ok(stderr_output)
     };
 
@@ -143,7 +143,7 @@ async fn run_git_blame(
         child
             .status()
             .await
-            .context("waiting for git blame process")
+            .context("等待 git 追溯 进程")
     };
 
     let ((), entries, stderr, status) =
@@ -154,7 +154,7 @@ async fn run_git_blame(
         if trimmed == GIT_BLAME_NO_COMMIT_ERROR || trimmed.contains(GIT_BLAME_NO_PATH) {
             return Ok(Vec::new());
         }
-        anyhow::bail!("git blame process failed: {stderr}");
+        anyhow::bail!("git 追溯 进程失败: {stderr}");
     }
 
     Ok(entries)
@@ -195,21 +195,21 @@ impl BlameEntry {
         let sha = parts
             .next()
             .and_then(|line| line.parse::<Oid>().ok())
-            .context("parsing sha")?;
+            .context("解析 SHA")?;
 
         let original_line_number = parts
             .next()
             .and_then(|line| line.parse::<u32>().ok())
-            .context("parsing original line number")?;
+            .context("解析原始行号")?;
         let final_line_number = parts
             .next()
             .and_then(|line| line.parse::<u32>().ok())
-            .context("parsing final line number")?;
+            .context("解析最终行号")?;
 
         let line_count = parts
             .next()
             .and_then(|line| line.parse::<u32>().ok())
-            .context("parsing line count")?;
+            .context("解析行数")?;
 
         let start_line = final_line_number.saturating_sub(1);
         let end_line = start_line + line_count;
@@ -407,7 +407,7 @@ mod tests {
         path.push(filename);
 
         std::fs::read_to_string(&path)
-            .unwrap_or_else(|_| panic!("Could not read test data at {:?}. Is it generated?", path))
+            .unwrap_or_else(|_| panic!("无法读取 {:?} 处的测试数据。是否已生成?", path))
     }
 
     fn assert_eq_golden(entries: &Vec<BlameEntry>, golden_filename: &str) {
@@ -417,7 +417,7 @@ mod tests {
         path.push(format!("{}.json", golden_filename));
 
         let mut have_json =
-            serde_json::to_string_pretty(&entries).expect("could not serialize entries to JSON");
+            serde_json::to_string_pretty(&entries).expect("无法将条目序列化为 JSON");
         // We always want to save with a trailing newline.
         have_json.push('\n');
 
@@ -427,15 +427,15 @@ mod tests {
 
         if update {
             std::fs::create_dir_all(path.parent().unwrap())
-                .expect("could not create golden test data directory");
-            std::fs::write(&path, have_json).expect("could not write out golden data");
+                .expect("无法创建黄金测试数据目录");
+            std::fs::write(&path, have_json).expect("无法写出黄金数据");
         } else {
             let want_json =
                 std::fs::read_to_string(&path).unwrap_or_else(|_| {
-                    panic!("could not read golden test data file at {:?}. Did you run the test with UPDATE_GOLDEN=true before?", path);
+                    panic!("无法读取 {:?} 处的黄金测试数据文件。您之前是否使用 UPDATE_GOLDEN=true 运行过测试?", path);
                 }).replace("\r\n", "\n");
 
-            pretty_assertions::assert_eq!(have_json, want_json, "wrong blame entries");
+            pretty_assertions::assert_eq!(have_json, want_json, "错误的追溯条目");
         }
     }
 

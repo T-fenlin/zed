@@ -22,11 +22,11 @@ impl Global for GlobalLanguageModelRegistry {}
 
 #[derive(Error)]
 pub enum ConfigurationError {
-    #[error("Configure at least one LLM provider to start using the panel.")]
+    #[error("请至少配置一个 LLM 提供商以开始使用面板。")]
     NoProvider,
-    #[error("LLM provider is not configured or does not support the configured model.")]
+    #[error("LLM 提供商未配置或不支持所配置的模型。")]
     ModelNotFound,
-    #[error("{} LLM provider is not configured.", .0.name().0)]
+    #[error("{} LLM 提供商未配置。", .0.name().0)]
     ProviderNotAuthenticated(Arc<dyn LanguageModelProvider>),
 }
 
@@ -76,13 +76,13 @@ impl FromStr for SelectedModel {
     fn from_str(id: &str) -> Result<SelectedModel, Self::Err> {
         let Some((provider_id, model_id)) = id.split_once('/') else {
             return Err(format!(
-                "Invalid model identifier format: `{}`. Expected `provider_id/model_id`",
+                "无效的模型标识符格式:`{}`。应为 `provider_id/model_id`",
                 id
             ));
         };
 
         if provider_id.is_empty() || model_id.is_empty() {
-            return Err(format!("Provider and model ids can't be empty: `{}`", id));
+            return Err(format!("提供商和模型 ID 不能为空:`{}`", id));
         }
 
         Ok(SelectedModel {

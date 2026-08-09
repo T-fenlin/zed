@@ -60,7 +60,7 @@ impl DockerInspectConfig {
         let mut map = HashMap::new();
         for env_var in &self.env {
             let Some((key, value)) = env_var.split_once('=') else {
-                log::warn!("Skipping environment variable without a value: {env_var}");
+                log::warn!("跳过没有值的环境变量: {env_var}");
                 continue;
             };
             map.insert(key.to_string(), value.to_string());
@@ -223,7 +223,7 @@ impl Docker {
         };
         if !has_buildx && docker_cli != "podman" {
             log::info!(
-                "Using the classic Docker builder for dev container builds (BuildKit unavailable or disabled)"
+                "使用经典 Docker 构建器进行开发容器构建(BuildKit 不可用或已禁用)"
             );
         }
         Self {
@@ -241,13 +241,13 @@ impl Docker {
         command.args(&["pull", "--", image]);
 
         let output = command.output().await.map_err(|e| {
-            log::error!("Error pulling image: {e}");
+            log::error!("拉取镜像时出错: {e}");
             DevContainerError::ResourceFetchFailed
         })?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            log::error!("Non-success result from docker pull: {stderr}");
+            log::error!("docker pull 返回非成功结果: {stderr}");
             return Err(DevContainerError::ResourceFetchFailed);
         }
         Ok(())
@@ -298,7 +298,7 @@ impl DockerClient for Docker {
         let command = self.create_docker_inspect(id);
         let Some(docker_inspect): Option<DockerInspect> = evaluate_json_command(command).await?
         else {
-            log::error!("Docker inspect produced no deserializable output");
+            log::error!("Docker inspect 未产生可反序列化的输出");
             return Err(DevContainerError::CommandFailed(self.docker_cli.clone()));
         };
         Ok(docker_inspect)
@@ -340,13 +340,13 @@ impl DockerClient for Docker {
         }
 
         let output = command.output().await.map_err(|e| {
-            log::error!("Error running docker compose up: {e}");
+            log::error!("运行 docker compose up 时出错: {e}");
             DevContainerError::CommandFailed(command.get_program().display().to_string())
         })?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            log::error!("Non-success status from docker compose up: {}", stderr);
+            log::error!("docker compose up 返回非成功状态: {}", stderr);
             return Err(DevContainerError::CommandFailed(
                 command.get_program().display().to_string(),
             ));
@@ -386,14 +386,14 @@ impl DockerClient for Docker {
         command.args(&["-c", &inner_program_script.join(" ")]);
 
         let output = command.output().await.map_err(|e| {
-            log::error!("Error running command {e} in container exec");
+            log::error!("在容器 exec 中运行命令 {e} 时出错");
             DevContainerError::ContainerNotValid(container_id.to_string())
         })?;
         let std_out = String::from_utf8_lossy(&output.stdout);
         log::debug!("Command output:\n {std_out}");
         if !output.status.success() {
             let std_err = String::from_utf8_lossy(&output.stderr);
-            log::error!("Command produced a non-successful output. StdErr: {std_err}");
+            log::error!("命令产生了非成功输出。StdErr: {std_err}");
             return Err(DevContainerError::DevContainerScriptsFailed);
         }
 
@@ -405,13 +405,13 @@ impl DockerClient for Docker {
         command.args(&["start", id]);
 
         let output = command.output().await.map_err(|e| {
-            log::error!("Error running docker start: {e}");
+            log::error!("运行 docker start 时出错: {e}");
             DevContainerError::CommandFailed(command.get_program().display().to_string())
         })?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            log::error!("Non-success status from docker start: {stderr}");
+            log::error!("docker start 返回非成功状态: {stderr}");
             return Err(DevContainerError::CommandFailed(
                 command.get_program().display().to_string(),
             ));
@@ -426,12 +426,12 @@ impl DockerClient for Docker {
     ) -> Result<Option<DockerPs>, DevContainerError> {
         let mut command = self.create_docker_query_containers(filters);
         let output = command.output().await.map_err(|e| {
-            log::error!("Error running command {:?}: {e}", command);
+            log::error!("运行命令 {:?} 时出错: {e}", command);
             DevContainerError::CommandFailed(command.get_program().display().to_string())
         })?;
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            log::error!("Non-success status from docker ps: {stderr}");
+            log::error!("docker ps 返回非成功状态: {stderr}");
             return Err(DevContainerError::CommandFailed(
                 command.get_program().display().to_string(),
             ));
@@ -442,7 +442,7 @@ impl DockerClient for Docker {
             if let DevContainerError::MultipleMatchingContainers(_) = &e {
                 e
             } else {
-                log::error!("Error parsing docker ps output: {e}");
+                log::error!("解析 docker ps 输出时出错: {e}");
                 DevContainerError::CommandFailed(command.get_program().display().to_string())
             }
         })
@@ -473,7 +473,7 @@ fn parse_find_process_output(raw: &str) -> Result<Option<DockerPs>, DevContainer
         .into_iter::<DockerPs>()
         .collect::<Result<_, _>>()
         .map_err(|e| {
-            DevContainerError::CommandFailed(format!("failed to parse docker ps output: {e}"))
+            DevContainerError::CommandFailed(format!("解析 docker ps 输出失败: {e}"))
         })?;
     match containers.len() {
         0 => Ok(None),
@@ -561,7 +561,7 @@ where
         type Value = Option<HashMap<String, String>>;
 
         fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-            formatter.write_str("a sequence of strings or a map of string key-value pairs")
+            formatter.write_str("字符串序列或字符串键值对映射")
         }
 
         fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
@@ -624,7 +624,7 @@ where
         .map(|item| match item {
             VolumeItem::Object(mount) => Ok(mount),
             VolumeItem::String(s) => parse_compose_volume_string(&s)
-                .ok_or_else(|| de::Error::custom(format!("invalid volume string: {s}"))),
+                .ok_or_else(|| de::Error::custom(format!("无效的卷字符串: {s}"))),
         })
         .collect()
 }
@@ -739,7 +739,7 @@ where
                 serde_json_lenient::from_str(&json_string).or_else(|_| {
                     let single: HashMap<String, serde_json_lenient::Value> =
                         serde_json_lenient::from_str(&json_string).map_err(|e| {
-                            log::error!("Error deserializing metadata: {e}");
+                            log::error!("反序列化元数据时出错: {e}");
                             serde::de::Error::custom(e)
                         })?;
                     Ok(vec![single])
@@ -778,13 +778,13 @@ mod test {
         let forced_off = futures::executor::block_on(Docker::new("docker", Some(false)));
         assert!(
             !forced_off.supports_compose_buildkit(),
-            "use_buildkit=false must force the classic builder"
+            "use_buildkit=false 必须强制使用经典构建器"
         );
 
         let forced_on = futures::executor::block_on(Docker::new("docker", Some(true)));
         assert!(
             forced_on.supports_compose_buildkit(),
-            "use_buildkit=true must enable BuildKit"
+            "use_buildkit=true 必须启用 BuildKit"
         );
 
         // podman never supports the BuildKit/buildx path, regardless of the setting.
@@ -1002,7 +1002,7 @@ mod test {
     #[test]
     fn parse_find_process_output_single() {
         let raw = r#"{"ID":"abc123"}"#;
-        let result = parse_find_process_output(raw).expect("single match must parse");
+        let result = parse_find_process_output(raw).expect("单个匹配必须能解析");
         assert_eq!(result.unwrap().id, "abc123");
     }
 
@@ -1016,7 +1016,7 @@ mod test {
             Err(DevContainerError::MultipleMatchingContainers(ids)) => {
                 assert_eq!(ids, vec!["abc".to_string(), "def".to_string()]);
             }
-            other => panic!("expected MultipleMatchingContainers, got {other:?}"),
+            other => panic!("预期 MultipleMatchingContainers,实际为 {other:?}"),
         }
     }
 
@@ -1429,13 +1429,13 @@ mod test {
         let bare = config
             .volumes
             .get("postgres-data")
-            .expect("bare volume should exist");
+            .expect("裸卷应存在");
         assert_eq!(bare.name, None);
 
         let named = config
             .volumes
             .get("named-vol")
-            .expect("named volume should exist");
+            .expect("命名卷应存在");
         assert_eq!(named.name, Some("custom-name".to_string()));
     }
 

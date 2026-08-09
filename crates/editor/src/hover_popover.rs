@@ -476,7 +476,7 @@ fn show_hover(
 
             if let Some((invisible, range)) = invisible_char {
                 let blocks = vec![HoverBlock {
-                    text: format!("Unicode character U+{:02X}", invisible as u32),
+                    text: format!("Unicode 字符 U+{:02X}", invisible as u32),
                     kind: HoverBlockKind::PlainText,
                 }];
                 let parsed_content = parse_blocks(&blocks, language_registry.as_ref(), None, cx);
@@ -1003,7 +1003,7 @@ impl HoverState {
         }
 
         if !visible_rows.contains(&point.row()) {
-            log::error!("Hover popover point out of bounds after moving");
+            log::error!("移动后悬停弹窗点超出边界");
             return None;
         }
 
@@ -1250,7 +1250,7 @@ impl DiagnosticPopover {
                     )
                     .child(div().absolute().top_1().right_1().child({
                         let message = self.local_diagnostic.diagnostic.message.clone();
-                        CopyButton::new("copy-diagnostic", message).tooltip_label("Copy Diagnostic")
+                        CopyButton::new("copy-diagnostic", message).tooltip_label("复制诊断")
                     }))
                     .custom_scrollbars(
                         Scrollbars::for_settings::<EditorSettingsScrollbarProxy>()
@@ -1307,7 +1307,7 @@ mod tests {
         assert_eq!(
             rendered.matches('\n').count(),
             0,
-            "expected no hard line breaks, got {rendered:?}"
+            "预期没有硬换行,实际得到 {rendered:?}"
         );
         // The whole paragraph reflows onto a single line.
         assert_eq!(rendered, "This is a test for tooltip reflow");
@@ -1333,7 +1333,7 @@ mod tests {
         assert_eq!(
             rendered.matches('\n').count(),
             2,
-            "expected two hard line breaks, got {rendered:?}"
+            "预期两个硬换行,实际得到 {rendered:?}"
         );
         let lines: Vec<&str> = rendered.split('\n').collect();
         assert_eq!(lines, ["first line", "second line", "third line"]);
@@ -1451,7 +1451,7 @@ mod tests {
             assert_eq!(
                 editor.hover_state.info_popovers.len(),
                 1,
-                "Expected exactly one hover but got: {:?}",
+                "预期恰好一个悬停,实际得到: {:?}",
                 editor.hover_state.info_popovers.len()
             );
             let rendered_text = editor
@@ -1491,7 +1491,7 @@ mod tests {
             assert_eq!(
                 editor.hover_state.info_popovers.len(),
                 1,
-                "Expected exactly one hover but got: {:?}",
+                "预期恰好一个悬停,实际得到: {:?}",
                 editor.hover_state.info_popovers.len()
             );
             let rendered_text = editor
@@ -1586,7 +1586,7 @@ mod tests {
             assert_eq!(
                 editor.hover_state.info_popovers.len(),
                 1,
-                "Expected exactly one hover but got: {:?}",
+                "预期恰好一个悬停,实际得到: {:?}",
                 editor.hover_state.info_popovers.len()
             );
             let rendered_text = editor
@@ -1709,7 +1709,7 @@ mod tests {
             assert_eq!(
                 editor.hover_state.info_popovers.len(),
                 0,
-                "Expected no hovers but got but got: {:?}",
+                "预期没有悬停,实际得到: {:?}",
                 editor.hover_state.info_popovers.len()
             );
         });
@@ -1733,7 +1733,7 @@ mod tests {
             assert_eq!(
                 editor.hover_state.info_popovers.len(),
                 1,
-                "Expected exactly one hover but got: {:?}",
+                "预期恰好一个悬停,实际得到: {:?}",
                 editor.hover_state.info_popovers.len()
             );
 
@@ -1791,7 +1791,7 @@ mod tests {
             assert_eq!(
                 editor.hover_state.info_popovers.len(),
                 1,
-                "Expected exactly one hover but got: {:?}",
+                "预期恰好一个悬停,实际得到: {:?}",
                 editor.hover_state.info_popovers.len()
             );
             let rendered_text = editor
@@ -1804,7 +1804,7 @@ mod tests {
             assert_eq!(
                 rendered_text,
                 "regular text for hover to show".to_string(),
-                "No empty string hovers should be shown"
+                "不应显示空字符串悬停"
             );
         });
     }
@@ -1857,7 +1857,7 @@ mod tests {
             assert_eq!(
                 editor.hover_state.info_popovers.len(),
                 1,
-                "Expected exactly one hover but got: {:?}",
+                "预期恰好一个悬停,实际得到: {:?}",
                 editor.hover_state.info_popovers.len()
             );
             let rendered_text = editor
@@ -1869,7 +1869,7 @@ mod tests {
 
             assert_eq!(
                 rendered_text, code_str,
-                "Should not have extra line breaks at end of rendered hover"
+                "渲染的悬停内容末尾不应有多余换行"
             );
         });
     }
@@ -1926,7 +1926,7 @@ mod tests {
             let popover = editor.hover_state.info_popovers.first().unwrap();
             let content = popover.get_rendered_text(cx);
 
-            assert!(content.contains("Function to read a file"));
+            assert!(content.contains("读取文件的函数"));
         });
     }
 
@@ -2097,7 +2097,7 @@ mod tests {
                     let task_uri = resolve_closure_uri.clone();
                     async move {
                         let inserted = resolved_hint_positions.insert(hint_to_resolve.position);
-                        assert!(inserted, "Hint {hint_to_resolve:?} was resolved twice");
+                        assert!(inserted, "提示 {hint_to_resolve:?} 被解析了两次");
 
                         // `: TestNewType<TestStruct>`
                         hint_to_resolve.label = lsp::InlayHintLabel::LabelParts(vec![
@@ -2112,7 +2112,7 @@ mod tests {
                                     range: new_type_target_range,
                                 }),
                                 tooltip: Some(lsp::InlayHintLabelPartTooltip::String(format!(
-                                    "A tooltip for `{new_type_label}`"
+                                    "`{new_type_label}` 的提示"
                                 ))),
                                 ..Default::default()
                             },
@@ -2129,7 +2129,7 @@ mod tests {
                                 tooltip: Some(lsp::InlayHintLabelPartTooltip::MarkupContent(
                                     lsp::MarkupContent {
                                         kind: lsp::MarkupKind::Markdown,
-                                        value: format!("A tooltip for `{struct_label}`"),
+                                        value: format!("`{struct_label}` 的提示"),
                                     },
                                 )),
                                 ..Default::default()
@@ -2177,11 +2177,11 @@ mod tests {
                         .anchor_after(MultiBufferOffset(inlay_range.start)),
                     range: ": ".len()..": ".len() + new_type_label.len(),
                 }),
-                "Popover range should match the new type label part"
+                "弹窗范围应与新类型标签部分匹配"
             );
             assert_eq!(
                 popover.get_rendered_text(cx),
-                format!("A tooltip for {new_type_label}"),
+                format!("{new_type_label} 的提示"),
             );
         });
 
@@ -2235,12 +2235,12 @@ mod tests {
                     range: ": ".len() + new_type_label.len() + "<".len()
                         ..": ".len() + new_type_label.len() + "<".len() + struct_label.len(),
                 }),
-                "Popover range should match the struct label part"
+                "弹窗范围应与结构体标签部分匹配"
             );
             assert_eq!(
                 popover.get_rendered_text(cx),
-                format!("A tooltip for {struct_label}"),
-                "Rendered markdown element should remove backticks from text"
+                format!("{struct_label} 的提示"),
+                "渲染的 Markdown 元素应从文本中移除反引号"
             );
         });
     }
@@ -2270,7 +2270,7 @@ mod tests {
         let result = find_hovered_hint_part(label_parts.clone(), hint_start, last_byte_offset);
         assert!(
             result.is_some(),
-            "Should find part when hovering at last byte"
+            "在最后一个字节悬停时应找到部分"
         );
         let (part, range) = result.unwrap();
         assert_eq!(part.value, label);
@@ -2282,7 +2282,7 @@ mod tests {
         let result = find_hovered_hint_part(label_parts.clone(), hint_start, first_byte_offset);
         assert!(
             result.is_some(),
-            "Should find part when hovering at first byte"
+            "在第一个字节悬停时应找到部分"
         );
 
         // Test hovering in the middle of "→" (byte 1, still part of the arrow character)
@@ -2290,7 +2290,7 @@ mod tests {
         let result = find_hovered_hint_part(label_parts, hint_start, mid_arrow_offset);
         assert!(
             result.is_some(),
-            "Should find part when hovering in middle of multi-byte char"
+            "在多字节字符中间悬停时应找到部分"
         );
 
         // Test with multiple parts containing multi-byte characters
@@ -2312,7 +2312,7 @@ mod tests {
         // Hover at byte 3 (last byte of "→ ", the space character)
         let arrow_last_byte = InlayOffset(MultiBufferOffset(100 + 3));
         let result = find_hovered_hint_part(parts.clone(), hint_start, arrow_last_byte);
-        assert!(result.is_some(), "Should find first part at its last byte");
+        assert!(result.is_some(), "应在第一个部分的最后一个字节找到它");
         let (part, range) = result.unwrap();
         assert_eq!(part.value, "→ ");
         assert_eq!(
@@ -2323,14 +2323,14 @@ mod tests {
         // Hover at byte 4 (first byte of "path", at the boundary)
         let path_start_offset = InlayOffset(MultiBufferOffset(100 + 4));
         let result = find_hovered_hint_part(parts.clone(), hint_start, path_start_offset);
-        assert!(result.is_some(), "Should find second part at boundary");
+        assert!(result.is_some(), "应在边界处找到第二个部分");
         let (part, _) = result.unwrap();
         assert_eq!(part.value, "path");
 
         // Hover at byte 7 (last byte of "path")
         let path_end_offset = InlayOffset(MultiBufferOffset(100 + 7));
         let result = find_hovered_hint_part(parts, hint_start, path_end_offset);
-        assert!(result.is_some(), "Should find second part at last byte");
+        assert!(result.is_some(), "应在第二个部分的最后一个字节找到它");
         let (part, range) = result.unwrap();
         assert_eq!(part.value, "path");
         assert_eq!(
@@ -2408,7 +2408,7 @@ mod tests {
         cx.editor(|editor, _, _| {
             assert!(
                 editor.hover_state.visible(),
-                "Popover should remain visible before the hiding delay expires"
+                "在隐藏延迟到期前弹窗应保持可见"
             );
         });
 
@@ -2418,7 +2418,7 @@ mod tests {
         cx.editor(|editor, _, _| {
             assert!(
                 !editor.hover_state.visible(),
-                "Popover should be hidden after the hiding delay expires"
+                "隐藏延迟到期后弹窗应被隐藏"
             );
         });
     }
@@ -2488,7 +2488,7 @@ mod tests {
         cx.editor(|editor, _, _| {
             assert!(
                 !editor.hover_state.visible(),
-                "Popover should be hidden immediately when sticky is disabled"
+                "禁用粘性时弹窗应立即隐藏"
             );
         });
     }
@@ -2592,7 +2592,7 @@ mod tests {
         cx.editor(|editor, _, _| {
             assert!(
                 editor.hover_state.visible(),
-                "Popover should remain visible because moving closer restarts the hiding timer"
+                "弹窗应保持可见,因为移近会重新启动隐藏计时器"
             );
         });
 
@@ -2603,7 +2603,7 @@ mod tests {
         cx.editor(|editor, _, _| {
             assert!(
                 !editor.hover_state.visible(),
-                "Popover should hide after the restarted hiding timer expires"
+                "重新启动的隐藏计时器到期后弹窗应隐藏"
             );
         });
     }
@@ -2675,7 +2675,7 @@ mod tests {
         cx.editor(|editor, _, _| {
             assert!(
                 editor.hover_state.visible(),
-                "Popover should still be visible before hiding delay expires"
+                "在隐藏延迟到期前弹窗仍应可见"
             );
         });
 
@@ -2696,11 +2696,11 @@ mod tests {
         cx.editor(|editor, _, _| {
             assert!(
                 editor.hover_state.visible(),
-                "Popover should remain visible after re-hovering the symbol"
+                "重新悬停符号后弹窗应保持可见"
             );
             assert!(
                 editor.hover_state.hiding_delay_task.is_none(),
-                "Hiding delay task should have been cleared by re-hover"
+                "重新悬停应已清除隐藏延迟任务"
             );
         });
 
@@ -2713,7 +2713,7 @@ mod tests {
         cx.editor(|editor, _, _| {
             assert!(
                 !editor.hover_state.visible(),
-                "Popover should hide after the new hiding timer expires"
+                "新的隐藏计时器到期后弹窗应隐藏"
             );
         });
     }
@@ -2762,11 +2762,11 @@ mod tests {
         cx.editor(|editor, _, _| {
             assert!(
                 !editor.hover_state.visible(),
-                "Popover should not appear when hover_popover_enabled is false"
+                "当 hover_popover_enabled 为 false 时弹窗不应出现"
             );
             assert!(
                 editor.hover_state.info_task.is_none(),
-                "No hover info task should be scheduled when hover is disabled"
+                "禁用悬停时不应调度悬停信息任务"
             );
         });
     }

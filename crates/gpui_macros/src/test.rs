@@ -32,11 +32,11 @@ impl Parse for Args {
                     Meta::NameValue(meta) => &meta.path,
                     Meta::List(list) => &list.path,
                     Meta::Path(path) => {
-                        return Err(syn::Error::new(path.span(), "invalid path argument"));
+                        return Err(syn::Error::new(path.span(), "无效的路径参数"));
                     }
                 };
                 let Some(ident) = meta_path.get_ident() else {
-                    return Err(syn::Error::new(meta_path.span(), "unexpected path"));
+                    return Err(syn::Error::new(meta_path.span(), "意外的路径"));
                 };
                 ident.to_string()
             };
@@ -56,7 +56,7 @@ impl Parse for Args {
                     else {
                         return Err(syn::Error::new(
                             meta.value.span(),
-                            "on_failure argument must be a string",
+                            "on_failure 参数必须是字符串",
                         ));
                     };
                     let segments = name
@@ -75,10 +75,10 @@ impl Parse for Args {
                 }
                 (Meta::List(list), "seeds") => seeds = parse_u64_array(list)?,
                 (Meta::Path(_), _) => {
-                    return Err(syn::Error::new(meta.span(), "invalid path argument"));
+                    return Err(syn::Error::new(meta.span(), "无效的路径参数"));
                 }
                 (_, _) => {
-                    return Err(syn::Error::new(meta.span(), "invalid argument name"));
+                    return Err(syn::Error::new(meta.span(), "无效的参数名称"));
                 }
             }
         }
@@ -179,7 +179,7 @@ fn generate_test_function(
                 }
             }
 
-            return Err(error_with_message("invalid function signature", arg));
+            return Err(error_with_message("无效的函数签名", arg));
         }
 
         parse_quote! {
@@ -272,7 +272,7 @@ fn generate_test_function(
                 }
             }
 
-            return Err(error_with_message("invalid function signature", arg));
+            return Err(error_with_message("无效的函数签名", arg));
         }
 
         parse_quote! {
@@ -310,10 +310,10 @@ fn parse_usize_from_expr(expr: &Expr) -> Result<usize, syn::Error> {
         lit: Lit::Int(int), ..
     }) = expr
     else {
-        return Err(syn::Error::new(expr.span(), "expected an integer"));
+        return Err(syn::Error::new(expr.span(), "应为整数"));
     };
     int.base10_parse()
-        .map_err(|_| syn::Error::new(int.span(), "failed to parse integer"))
+        .map_err(|_| syn::Error::new(int.span(), "解析整数失败"))
 }
 
 fn parse_u64_array(meta_list: &MetaList) -> Result<Vec<u64>, syn::Error> {
@@ -329,7 +329,7 @@ fn parse_u64_array(meta_list: &MetaList) -> Result<Vec<u64>, syn::Error> {
                 let value: usize = int.base10_parse()?;
                 result.push(value as u64);
             } else {
-                return Err(syn::Error::new(expr.span(), "expected an integer"));
+                return Err(syn::Error::new(expr.span(), "应为整数"));
             }
         }
         Ok(())

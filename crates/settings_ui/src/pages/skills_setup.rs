@@ -58,9 +58,9 @@ pub(crate) fn render_skills_setup_page(
         .map(|this| {
             if skills.is_empty() {
                 let message = match &settings_window.current_file {
-                    SettingsUiFile::User => "No global skills installed.",
-                    SettingsUiFile::Project(_) => "No project skills found.",
-                    _ => "No skills available for this context.",
+                    SettingsUiFile::User => "未安装全局技能。",
+                    SettingsUiFile::Project(_) => "未找到项目技能。",
+                    _ => "此上下文没有可用技能。",
                 };
 
                 this.px_8().items_center().justify_center().child(
@@ -69,7 +69,7 @@ pub(crate) fn render_skills_setup_page(
                         .gap_2()
                         .child(Label::new(message).color(Color::Muted))
                         .child(
-                            Button::new("open-skill-creator-empty", "Create a Skill")
+                            Button::new("open-skill-creator-empty", "创建技能")
                                 .tab_index(0_isize)
                                 .style(ButtonStyle::Outlined)
                                 .start_icon(
@@ -119,8 +119,8 @@ fn render_skill_row(
     let skill_name = skill.name.clone();
 
     let (skill_scope, shared_scope) = match &skill.source {
-        SkillSource::ProjectLocal { .. } => ("project", "used in this project"),
-        _ => ("global", "on this machine"),
+        SkillSource::ProjectLocal { .. } => ("project", "在此项目中使用"),
+        _ => ("global", "在此机器上"),
     };
 
     let share_copied = settings_window.last_copied_skill_directory_path.as_deref()
@@ -149,7 +149,7 @@ fn render_skill_row(
             .shape(ui::IconButtonShape::Square)
             .icon_size(IconSize::Small)
             .icon_color(share_icon_color)
-            .tooltip(Tooltip::text("Copy Share Link"))
+            .tooltip(Tooltip::text("复制分享链接"))
             .visible_on_hover(&group)
             .on_click(cx.listener(move |_settings_window, _event, _window, cx| {
                 let skill_file_path = share_skill_file_path.clone();
@@ -171,7 +171,7 @@ fn render_skill_row(
                         }
                         Err(error) => {
                             log::error!(
-                                "failed to read skill file {} for sharing: {error:#}",
+                                "读取技能文件 {} 以进行分享失败:{error:#}",
                                 skill_file_path.display()
                             );
                         }
@@ -219,7 +219,7 @@ fn render_skill_row(
                     )
                     .tab_index(0_isize)
                     .icon_size(IconSize::Small)
-                    .tooltip(Tooltip::text("Delete Skill"))
+                    .tooltip(Tooltip::text("删除技能"))
                     .on_click(cx.listener(
                         move |settings_window, _event, window, cx| {
                             let directory_path = directory_path.clone();
@@ -242,7 +242,7 @@ fn render_skill_row(
                                 PromptLevel::Info,
                                 &prompt_message,
                                 Some(&prompt_detail),
-                                &["Delete", "Cancel"],
+                                &["删除", "取消"],
                                 cx,
                             );
 
@@ -279,7 +279,7 @@ fn render_skill_row(
                                     .await;
                                 if let Err(error) = trash_result {
                                     log::error!(
-                                        "failed to move skill directory {} to trash: {error:#}",
+                                        "将技能目录 {} 移至废纸篓失败:{error:#}",
                                         directory_path.display()
                                     );
                                     settings_window
@@ -297,7 +297,7 @@ fn render_skill_row(
                     )),
                 )
                 .child(
-                    Button::new(SharedString::from(format!("open-{}", skill.name)), "Open")
+                    Button::new(SharedString::from(format!("open-{}", skill.name)), "打开")
                         .tab_index(0_isize)
                         .style(ButtonStyle::OutlinedGhost)
                         .size(ButtonSize::Medium)

@@ -50,7 +50,7 @@ impl AgentTool for StreamingEchoTool {
         _input: Result<Self::Input, serde_json::Value>,
         _cx: &mut App,
     ) -> SharedString {
-        "Streaming Echo".into()
+        "流式回显".into()
     }
 
     fn run(
@@ -97,7 +97,7 @@ impl AgentTool for StreamingJsonErrorContextTool {
         _input: Result<Self::Input, serde_json::Value>,
         _cx: &mut App,
     ) -> SharedString {
-        "Streaming JSON Error Context".into()
+        "流式 JSON 错误上下文".into()
     }
 
     fn run(
@@ -120,7 +120,7 @@ impl AgentTool for StreamingJsonErrorContextTool {
                     Ok(ToolInputPayload::InvalidJson { error_message }) => {
                         let partial_text = last_partial_text.unwrap_or_default();
                         return Err(format!(
-                            "Saw partial text '{partial_text}' before invalid JSON: {error_message}"
+                            "在无效 JSON 之前看到部分文本 '{partial_text}':{error_message}"
                         ));
                     }
                     Err(error) => {
@@ -207,7 +207,7 @@ impl AgentTool for EchoTool {
         _input: Result<Self::Input, serde_json::Value>,
         _cx: &mut App,
     ) -> SharedString {
-        "Echo".into()
+        "回显".into()
     }
 
     fn run(
@@ -244,9 +244,9 @@ impl AgentTool for DelayTool {
         _cx: &mut App,
     ) -> SharedString {
         if let Ok(input) = input {
-            format!("Delay {}ms", input.ms).into()
+            format!("延迟 {} 毫秒", input.ms).into()
         } else {
-            "Delay".into()
+            "延迟".into()
         }
     }
 
@@ -267,7 +267,7 @@ impl AgentTool for DelayTool {
         cx.foreground_executor().spawn(async move {
             let input = input.recv().await.map_err(|e| e.to_string())?;
             executor.timer(Duration::from_millis(input.ms)).await;
-            Ok("Ding".to_string())
+            Ok("叮".to_string())
         })
     }
 }
@@ -292,7 +292,7 @@ impl AgentTool for ToolRequiringPermission {
         _input: Result<Self::Input, serde_json::Value>,
         _cx: &mut App,
     ) -> SharedString {
-        "This tool requires permission".into()
+        "此工具需要权限".into()
     }
 
     fn run(
@@ -306,10 +306,10 @@ impl AgentTool for ToolRequiringPermission {
 
             let authorize = cx.update(|cx| {
                 let context = crate::ToolPermissionContext::new(Self::NAME, vec![String::new()]);
-                event_stream.authorize("Authorize?", context, cx)
+                event_stream.authorize("授权?", context, cx)
             });
             authorize.await.map_err(|e| e.to_string())?;
-            Ok("Allowed".to_string())
+            Ok("已允许".to_string())
         })
     }
 }
@@ -337,7 +337,7 @@ impl AgentTool for ToolRequiringPermission2 {
         _input: Result<Self::Input, serde_json::Value>,
         _cx: &mut App,
     ) -> SharedString {
-        "This tool also requires permission".into()
+        "此工具也需要权限".into()
     }
 
     fn run(
@@ -351,10 +351,10 @@ impl AgentTool for ToolRequiringPermission2 {
 
             let authorize = cx.update(|cx| {
                 let context = crate::ToolPermissionContext::new(Self::NAME, vec![String::new()]);
-                event_stream.authorize("Authorize?", context, cx)
+                event_stream.authorize("授权?", context, cx)
             });
             authorize.await.map_err(|e| e.to_string())?;
-            Ok("Allowed".to_string())
+            Ok("已允许".to_string())
         })
     }
 }
@@ -379,7 +379,7 @@ impl AgentTool for InfiniteTool {
         _input: Result<Self::Input, serde_json::Value>,
         _cx: &mut App,
     ) -> SharedString {
-        "Infinite Tool".into()
+        "无限工具".into()
     }
 
     fn run(
@@ -432,7 +432,7 @@ impl AgentTool for CancellationAwareTool {
         _input: Result<Self::Input, serde_json::Value>,
         _cx: &mut App,
     ) -> SharedString {
-        "Cancellation Aware Tool".into()
+        "可感知取消的工具".into()
     }
 
     fn run(
@@ -446,7 +446,7 @@ impl AgentTool for CancellationAwareTool {
             // Wait for cancellation - this tool does nothing but wait to be cancelled
             event_stream.cancelled_by_user().await;
             self.was_cancelled.store(true, Ordering::SeqCst);
-            Err("Tool cancelled by user".to_string())
+            Err("工具已被用户取消".to_string())
         })
     }
 }
@@ -488,7 +488,7 @@ impl AgentTool for WordListTool {
         _input: Result<Self::Input, serde_json::Value>,
         _cx: &mut App,
     ) -> SharedString {
-        "List of random words".into()
+        "随机单词列表".into()
     }
 
     fn run(

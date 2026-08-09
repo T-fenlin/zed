@@ -26,6 +26,6 @@ pub static FAILED_EXAMPLES_DIR: LazyLock<PathBuf> =
     LazyLock::new(|| ensure_dir(&RUN_DIR.join("failed")));
 
 fn ensure_dir(path: &Path) -> PathBuf {
-    std::fs::create_dir_all(path).expect("Failed to create directory");
+    std::fs::create_dir_all(path).expect("无法创建目录");
     path.to_path_buf()
 }

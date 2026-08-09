@@ -324,7 +324,7 @@ async fn test_zeta_request_sends_settled_body_when_data_collection_is_disabled(
         .next()
         .now_or_never()
         .flatten()
-        .expect("settled request should be sent");
+        .expect("应发送已确定的请求");
     assert!(!settled_request.can_collect_data);
     assert_eq!(settled_request.settled_editable_region, None);
     assert_eq!(settled_request.sample_data, None);
@@ -554,7 +554,7 @@ async fn test_predicted_edits_are_separated_in_edit_history(cx: &mut TestAppCont
              Line 15
              Line 16
         "},
-        "After first edit"
+        "第一次编辑后"
     );
 
     // Second edit: insert ABOVE the first edit's range (row 5, within 8 lines of row 10)
@@ -589,7 +589,7 @@ async fn test_predicted_edits_are_separated_in_edit_history(cx: &mut TestAppCont
              Line 15
              Line 16
         "},
-        "After inserting above (should coalesce)"
+        "在上方插入后(应合并)"
     );
 
     // Third edit: insert BELOW the first edit's range (row 14 in current buffer, within 8 lines of row 12)
@@ -626,7 +626,7 @@ async fn test_predicted_edits_are_separated_in_edit_history(cx: &mut TestAppCont
              Line 16
              Line 17
         "},
-        "After inserting below (should coalesce)"
+        "在下方插入后(应合并)"
     );
 
     // Fourth edit: insert FAR BELOW (row 25, beyond 8 lines from the current range end ~row 15)
@@ -673,7 +673,7 @@ async fn test_predicted_edits_are_separated_in_edit_history(cx: &mut TestAppCont
              Line 26
              Line 27
         "},
-        "After inserting far below (should NOT coalesce)"
+        "在远处下方插入后(不应合并)"
     );
 }
 
@@ -770,7 +770,7 @@ async fn test_nearby_collaborator_edits_are_kept_in_history(cx: &mut TestAppCont
     });
 
     buffer.update(cx, |buffer, cx| {
-        buffer.edit(vec![(0..6, "LOCAL ZERO")], None, cx);
+        buffer.edit(vec![(0..6, "本地零")], None, cx);
     });
 
     let (collaborator, mut collaborator_version) = make_collaborator_replica(&buffer, cx);
@@ -784,7 +784,7 @@ async fn test_nearby_collaborator_edits_are_kept_in_history(cx: &mut TestAppCont
         &buffer,
         &mut collaborator_version,
         line_one_start..line_one_start + line_one_len as usize,
-        "REMOTE ONE",
+        "远程一",
         cx,
     )
     .await;
@@ -841,7 +841,7 @@ async fn test_distant_collaborator_edits_are_omitted_from_history(cx: &mut TestA
     });
 
     buffer.update(cx, |buffer, cx| {
-        buffer.edit(vec![(0..6, "LOCAL ZERO")], None, cx);
+        buffer.edit(vec![(0..6, "本地零")], None, cx);
     });
 
     let (collaborator, mut collaborator_version) = make_collaborator_replica(&buffer, cx);
@@ -853,7 +853,7 @@ async fn test_distant_collaborator_edits_are_omitted_from_history(cx: &mut TestA
         &buffer,
         &mut collaborator_version,
         far_line_start..far_line_start + 7,
-        "REMOTE FAR",
+        "远程远处",
         cx,
     )
     .await;
@@ -923,7 +923,7 @@ async fn test_irrelevant_collaborator_edits_in_different_files_are_omitted_from_
         &bar_buffer,
         &mut bar_version,
         0..6,
-        "REMOTE BAR",
+        "远程 BAR",
         cx,
     )
     .await;
@@ -967,7 +967,7 @@ async fn test_large_edits_are_omitted_from_history(cx: &mut TestAppContext) {
     });
 
     buffer.update(cx, |buffer, cx| {
-        buffer.edit(vec![(0..6, "LOCAL ZERO")], None, cx);
+        buffer.edit(vec![(0..6, "本地零")], None, cx);
     });
 
     let (collaborator, mut collaborator_version) = make_collaborator_replica(&buffer, cx);
@@ -991,7 +991,7 @@ async fn test_large_edits_are_omitted_from_history(cx: &mut TestAppContext) {
         let line_seven_start = Point::new(7, 0).to_offset(buffer);
         let line_seven_end = Point::new(7, 6).to_offset(buffer);
         buffer.edit(
-            vec![(line_seven_start..line_seven_end, "LOCAL SEVEN")],
+            vec![(line_seven_start..line_seven_end, "本地七")],
             None,
             cx,
         );
@@ -1004,9 +1004,9 @@ async fn test_large_edits_are_omitted_from_history(cx: &mut TestAppContext) {
     let rendered_events = render_events_with_predicted(&events);
 
     assert_eq!(rendered_events.len(), 2);
-    assert!(rendered_events[0].contains("+LOCAL ZERO"));
+    assert!(rendered_events[0].contains("+本地零"));
     assert!(!rendered_events[0].contains(&large_edit));
-    assert!(rendered_events[1].contains("+LOCAL SEVEN"));
+    assert!(rendered_events[1].contains("+本地七"));
     assert!(!rendered_events[1].contains(&large_edit));
 }
 
@@ -1037,7 +1037,7 @@ async fn test_predicted_flag_coalescing(cx: &mut TestAppContext) {
 
     // Case 1: Manual edits have `predicted` set to false.
     buffer.update(cx, |buffer, cx| {
-        buffer.edit(vec![(0..6, "LINE ZERO")], None, cx);
+        buffer.edit(vec![(0..6, "行零")], None, cx);
     });
 
     let events = ep_store.update(cx, |ep_store, cx| {
@@ -1062,7 +1062,7 @@ async fn test_predicted_flag_coalescing(cx: &mut TestAppContext) {
     buffer.update(cx, |buffer, cx| {
         let offset = Point::new(1, 0).to_offset(buffer);
         let end = Point::new(1, 6).to_offset(buffer);
-        buffer.edit(vec![(offset..end, "LINE ONE")], None, cx);
+        buffer.edit(vec![(offset..end, "行一")], None, cx);
     });
 
     let events = ep_store.update(cx, |ep_store, cx| {
@@ -1090,7 +1090,7 @@ async fn test_predicted_flag_coalescing(cx: &mut TestAppContext) {
         buffer.update(cx, |buffer, cx| {
             let offset = Point::new(2, 0).to_offset(buffer);
             let end = Point::new(2, 6).to_offset(buffer);
-            buffer.edit(vec![(offset..end, "LINE TWO")], None, cx);
+            buffer.edit(vec![(offset..end, "行二")], None, cx);
         });
         ep_store.report_changes_for_buffer(&buffer, &project, true, true, cx);
     });
@@ -1132,7 +1132,7 @@ async fn test_predicted_flag_coalescing(cx: &mut TestAppContext) {
         buffer.update(cx, |buffer, cx| {
             let offset = Point::new(3, 0).to_offset(buffer);
             let end = Point::new(3, 6).to_offset(buffer);
-            buffer.edit(vec![(offset..end, "LINE THREE")], None, cx);
+            buffer.edit(vec![(offset..end, "行三")], None, cx);
         });
         ep_store.report_changes_for_buffer(&buffer, &project, true, true, cx);
     });
@@ -1175,7 +1175,7 @@ async fn test_predicted_flag_coalescing(cx: &mut TestAppContext) {
     buffer.update(cx, |buffer, cx| {
         let offset = Point::new(4, 0).to_offset(buffer);
         let end = Point::new(4, 6).to_offset(buffer);
-        buffer.edit(vec![(offset..end, "LINE FOUR")], None, cx);
+        buffer.edit(vec![(offset..end, "行四")], None, cx);
     });
 
     let events = ep_store.update(cx, |ep_store, cx| {
@@ -1230,7 +1230,7 @@ async fn test_predicted_flag_coalescing(cx: &mut TestAppContext) {
     buffer.update(cx, |buffer, cx| {
         let offset = Point::new(14, 0).to_offset(buffer);
         let end = Point::new(14, 7).to_offset(buffer);
-        buffer.edit(vec![(offset..end, "LINE FOURTEEN")], None, cx);
+        buffer.edit(vec![(offset..end, "行十四")], None, cx);
     });
 
     let events = ep_store.update(cx, |ep_store, cx| {
@@ -1350,7 +1350,7 @@ async fn test_empty_prediction(cx: &mut TestAppContext) {
         .next()
         .now_or_never()
         .flatten()
-        .expect("empty prediction should still send settled request");
+        .expect("空预测仍应发送已确定的请求");
     assert_eq!(settled_request.request_id, id);
     assert_eq!(settled_request.settled_editable_region, None);
     assert_eq!(settled_request.sample_data, None);
@@ -2293,9 +2293,9 @@ fn test_active_buffer_diagnostics_fetching(cx: &mut TestAppContext) {
                             _ => DiagnosticSeverity::HINT,
                         },
                         message: match index {
-                            0 => "first warning".to_string(),
-                            1 => "second error".to_string(),
-                            _ => "third hint".to_string(),
+                            0 => "第一个警告".to_string(),
+                            1 => "第二个错误".to_string(),
+                            _ => "第三个提示".to_string(),
                         },
                         group_id: index + 1,
                         is_primary: true,
@@ -2318,7 +2318,7 @@ fn test_active_buffer_diagnostics_fetching(cx: &mut TestAppContext) {
         active_buffer_diagnostics,
         vec![zeta_prompt::ActiveBufferDiagnostic {
             severity: Some(1),
-            message: "second error".to_string(),
+            message: "第二个错误".to_string(),
             snippet: "    let second_value = 2;".to_string(),
             snippet_buffer_row_range: 5..5,
             diagnostic_range_in_snippet: 8..20,
@@ -2332,21 +2332,21 @@ fn test_active_buffer_diagnostics_fetching(cx: &mut TestAppContext) {
         vec![
             zeta_prompt::ActiveBufferDiagnostic {
                 severity: Some(1),
-                message: "second error".to_string(),
+                message: "第二个错误".to_string(),
                 snippet: String::new(),
                 snippet_buffer_row_range: 5..5,
                 diagnostic_range_in_snippet: 0..0,
             },
             zeta_prompt::ActiveBufferDiagnostic {
                 severity: Some(2),
-                message: "first warning".to_string(),
+                message: "第一个警告".to_string(),
                 snippet: String::new(),
                 snippet_buffer_row_range: 1..1,
                 diagnostic_range_in_snippet: 0..0,
             },
             zeta_prompt::ActiveBufferDiagnostic {
                 severity: Some(4),
-                message: "third hint".to_string(),
+                message: "第三个提示".to_string(),
                 snippet: String::new(),
                 snippet_buffer_row_range: 10..10,
                 diagnostic_range_in_snippet: 0..0,
@@ -2375,7 +2375,7 @@ fn test_active_buffer_diagnostics_fetching(cx: &mut TestAppContext) {
                     range: text::PointUtf16::new(0, 0)..text::PointUtf16::new(0, 3),
                     diagnostic: Diagnostic {
                         severity: DiagnosticSeverity::ERROR,
-                        message: "row zero".to_string(),
+                        message: "行零".to_string(),
                         group_id: 1,
                         is_primary: true,
                         source_kind: language::DiagnosticSourceKind::Pushed,
@@ -2386,7 +2386,7 @@ fn test_active_buffer_diagnostics_fetching(cx: &mut TestAppContext) {
                     range: text::PointUtf16::new(2, 0)..text::PointUtf16::new(2, 5),
                     diagnostic: Diagnostic {
                         severity: DiagnosticSeverity::WARNING,
-                        message: "row two".to_string(),
+                        message: "行二".to_string(),
                         group_id: 2,
                         is_primary: true,
                         source_kind: language::DiagnosticSourceKind::Pushed,
@@ -2397,7 +2397,7 @@ fn test_active_buffer_diagnostics_fetching(cx: &mut TestAppContext) {
                     range: text::PointUtf16::new(4, 0)..text::PointUtf16::new(4, 4),
                     diagnostic: Diagnostic {
                         severity: DiagnosticSeverity::INFORMATION,
-                        message: "row four".to_string(),
+                        message: "行四".to_string(),
                         group_id: 3,
                         is_primary: true,
                         source_kind: language::DiagnosticSourceKind::Pushed,
@@ -2429,14 +2429,14 @@ fn test_active_buffer_diagnostics_fetching(cx: &mut TestAppContext) {
         vec![
             (
                 Some(2),
-                "row two".to_string(),
+                "行二".to_string(),
                 "three".to_string(),
                 2..2,
                 0..5,
             ),
             (
                 Some(3),
-                "row four".to_string(),
+                "行四".to_string(),
                 "five".to_string(),
                 4..4,
                 0..4,
@@ -2492,7 +2492,7 @@ fn test_active_buffer_diagnostics_collection_limits(cx: &mut TestAppContext) {
     let text = (0..300)
         .map(|row| format!("line {row} has some diagnostic context\n"))
         .collect::<String>();
-    let long_message = "diagnostic message ".repeat(1000);
+    let long_message = "诊断消息 ".repeat(1000);
     let buffer = cx.new(|cx| Buffer::local(&text, cx));
 
     buffer.update(cx, |buffer, cx| {
@@ -2575,14 +2575,14 @@ fn request_timeout_response() -> PredictEditsV3Response {
 
 fn prompt_from_request(request: &PredictEditsV3Request) -> String {
     zeta_prompt::format_zeta_prompt(&request.input, zeta_prompt::ZetaFormat::default())
-        .expect("default zeta prompt formatting should succeed in edit prediction tests")
+        .expect("默认 zeta 提示词格式化应在编辑预测测试中成功")
 }
 
 fn assert_no_predict_request_ready<Request, Response>(
     requests: &mut mpsc::UnboundedReceiver<(Request, oneshot::Sender<Response>)>,
 ) {
     if requests.next().now_or_never().flatten().is_some() {
-        panic!("Unexpected prediction request while throttled.");
+        panic!("在限流期间出现意外的预测请求。");
     }
 }
 
@@ -2623,8 +2623,8 @@ fn init_test_with_fake_client_and_legacy_data_collection(
                     legacy_data_collection_choice.to_string(),
                 )
                 .now_or_never()
-                .expect("legacy data collection write should complete immediately")
-                .expect("legacy data collection write should succeed");
+                .expect("旧版数据收集写入应立即完成")
+                .expect("旧版数据收集写入应成功");
         }
 
         let (predict_req_tx, predict_req_rx) = mpsc::unbounded();
@@ -2718,7 +2718,7 @@ fn init_test_with_fake_client_and_legacy_data_collection(
                             serde_json::to_string(&SubmitEditPredictionSettledResponse {}).unwrap()
                         }
                         _ => {
-                            panic!("Unexpected path: {}", uri)
+                            panic!("意外的路径: {}", uri)
                         }
                     };
 
@@ -2765,7 +2765,7 @@ fn set_test_organization(user_store: &Entity<UserStore>, cx: &mut TestAppContext
             store.set_current_organization_configuration_for_test(
                 Arc::new(Organization {
                     id: OrganizationId("org_1".into()),
-                    name: "Organization 1".into(),
+                    name: "组织 1".into(),
                     is_personal: false,
                 }),
                 OrganizationConfiguration {
@@ -3012,7 +3012,7 @@ async fn test_edit_prediction_v4_end_of_buffer(cx: &mut TestAppContext) {
     let edits = ep_store.update(cx, |ep_store, cx| {
         let prediction = ep_store
             .prediction_at(&buffer, None, &project, cx)
-            .expect("should have prediction");
+            .expect("应有预测");
         let prediction = match prediction {
             BufferEditPrediction::Local { prediction }
             | BufferEditPrediction::Jump { prediction } => prediction,
@@ -3089,7 +3089,7 @@ async fn test_edit_prediction_no_spurious_trailing_newline(cx: &mut TestAppConte
     ep_store.update(cx, |ep_store, cx| {
         let prediction = ep_store
             .prediction_at(&buffer, None, &project, cx)
-            .expect("should have prediction");
+            .expect("应有预测");
         let edits: Vec<_> = prediction
             .edits
             .iter()
@@ -3156,7 +3156,7 @@ async fn test_v3_prediction_strips_cursor_marker_from_edit_text(cx: &mut TestApp
     ep_store.update(cx, |ep_store, cx| {
         let prediction = ep_store
             .prediction_at(&buffer, None, &project, cx)
-            .expect("should have prediction");
+            .expect("应有预测");
         let snapshot = buffer.read(cx).snapshot();
         let edits: Vec<_> = prediction
             .edits
@@ -3208,7 +3208,7 @@ async fn apply_edit_prediction(
     *response.lock() = completion_response.to_string();
     let edit_prediction = run_edit_prediction(&buffer, &project, &ep_store, Point::new(1, 0), cx)
         .await
-        .expect("expected an edit prediction")
+        .expect("预期一个编辑预测")
         .prediction;
     buffer.update(cx, |buffer, cx| {
         buffer.edit(edit_prediction.edits.iter().cloned(), None, cx)
@@ -3304,11 +3304,11 @@ async fn make_test_ep_store(
                             .iter()
                             .find(|file| file.path == req.input.cursor_path)
                             .or_else(|| req.input.editable_context.first())
-                            .expect("V4 requests should include editable context");
+                            .expect("V4 请求应包含可编辑上下文");
                         let excerpt = file
                             .excerpts
                             .first()
-                            .expect("V4 editable context should include an excerpt");
+                            .expect("V4 可编辑上下文应包含一个摘录");
                         let diff = unified_diff_with_offsets(
                             &excerpt.text,
                             &output,
@@ -3328,7 +3328,7 @@ async fn make_test_ep_store(
                     }
                     _ => Ok(http_client::Response::builder()
                         .status(404)
-                        .body("Not Found".to_string().into())
+                        .body("未找到".to_string().into())
                         .unwrap()),
                 }
             }
@@ -3414,7 +3414,7 @@ async fn make_sweep_prompt_test_ep_store(
                         let mut body_bytes = Vec::new();
                         body.read_to_end(&mut body_bytes)
                             .await
-                            .expect("fake completion server should read request body");
+                            .expect("模拟补全服务器应读取请求体");
                         let request: RawCompletionRequest =
                             serde_json::from_slice(&body_bytes).unwrap();
                         requests.lock().push(request);
@@ -3443,7 +3443,7 @@ async fn make_sweep_prompt_test_ep_store(
                     }
                     _ => Ok(http_client::Response::builder()
                         .status(404)
-                        .body("Not Found".to_string().into())
+                        .body("未找到".to_string().into())
                         .unwrap()),
                 }
             }
@@ -3527,7 +3527,7 @@ async fn test_unauthenticated_without_custom_url_blocks_prediction_impl(cx: &mut
             async move {
                 Ok(gpui::http_client::Response::builder()
                     .status(401)
-                    .body("Unauthorized".into())
+                    .body("未授权".into())
                     .unwrap())
             }
         }
@@ -3605,11 +3605,11 @@ async fn test_sweep_prompt_request_prediction_diffs_rewritten_window_into_anchor
 
     let result = run_edit_prediction(&buffer, &project, &ep_store, Point::new(1, 0), cx)
         .await
-        .expect("expected a sweep prompt prediction");
+        .expect("预期一个 sweep 提示词预测");
     let prediction = result.prediction;
 
     let edits = cx.update(|cx| from_completion_edits(&prediction.edits, &buffer, cx));
-    assert_eq!(edits, vec![(13..13, " updated".into())]);
+    assert_eq!(edits, vec![(13..13, " 已更新".into())]);
 
     buffer.update(cx, |buffer, cx| {
         buffer.edit(prediction.edits.iter().cloned(), None, cx)
@@ -3663,14 +3663,14 @@ async fn test_sweep_prompt_request_prediction_returns_none_for_identical_rewrite
 
     assert!(
         result.is_none(),
-        "identical rewrites should produce no prediction"
+        "相同的重写不应产生预测"
     );
 
     let requests = requests.lock();
     assert_eq!(requests.len(), 1);
     assert!(
         requests[0].prompt.contains("<|file_sep|>updated/"),
-        "expected Sweep-style rewrite prompt"
+        "预期 Sweep 风格的重写提示词"
     );
 }
 
@@ -3721,7 +3721,7 @@ async fn test_edit_prediction_settled(cx: &mut TestAppContext) {
 
     buffer.update(cx, |buffer, cx| {
         // Edit at the start of line 0.
-        buffer.edit(vec![(0..0, "ADDED ")], None, cx);
+        buffer.edit(vec![(0..0, "已添加 ")], None, cx);
     });
     cx.run_until_parked();
 
@@ -3774,7 +3774,7 @@ async fn test_edit_prediction_settled(cx: &mut TestAppContext) {
         cx.run_until_parked();
         assert!(
             settled_events.lock().is_empty(),
-            "no settled events should fire while region A is still being edited"
+            "在区域 A 仍在编辑时不应触发已确定事件"
         );
     }
 
@@ -3794,7 +3794,7 @@ async fn test_edit_prediction_settled(cx: &mut TestAppContext) {
     let line_20_offset = snapshot_b.point_to_offset(Point::new(20, 0));
 
     buffer.update(cx, |buffer, cx| {
-        buffer.edit(vec![(line_20_offset..line_20_offset, "NEW ")], None, cx);
+        buffer.edit(vec![(line_20_offset..line_20_offset, "新建 ")], None, cx);
     });
     cx.run_until_parked();
 
@@ -3841,7 +3841,7 @@ async fn test_edit_prediction_settled(cx: &mut TestAppContext) {
         assert_eq!(
             events.len(),
             1,
-            "prediction and capture_sample for A should have settled, got: {events:?}"
+            "A 的预测和 capture_sample 应已确定,得到: {events:?}"
         );
         assert_eq!(events[0].0, EditPredictionId("prediction-a".into()));
     }
@@ -3858,7 +3858,7 @@ async fn test_edit_prediction_settled(cx: &mut TestAppContext) {
         assert_eq!(
             events.len(),
             2,
-            "both prediction and capture_sample settled events should be emitted for each request, got: {events:?}"
+            "每个请求都应发出预测和 capture_sample 已确定事件,得到: {events:?}"
         );
         assert_eq!(events[1].0, EditPredictionId("prediction-b".into()));
     }
@@ -3868,7 +3868,7 @@ const MIT_LICENSE: &str = indoc! {r#"
     MIT License
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
+    of this software and associated documentation files (the "软件"), to deal
     in the Software without restriction, including without limitation the rights
     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
     copies of the Software, and to permit persons to whom the Software is
@@ -3877,7 +3877,7 @@ const MIT_LICENSE: &str = indoc! {r#"
     The above copyright notice and this permission notice shall be included in all
     copies or substantial portions of the Software.
 
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    THE SOFTWARE IS PROVIDED "按现状", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -3974,7 +3974,7 @@ async fn enqueue_sample_capture(
 async fn test_edit_prediction_settled_sends_sample_data_after_quiescence(cx: &mut TestAppContext) {
     let (ep_store, mut requests, project, buffer) = init_sample_capture_test(
         json!({
-            "LICENSE": MIT_LICENSE,
+            "许可证": MIT_LICENSE,
             "foo.md": (0..60).map(|ix| format!("line {ix}\n")).collect::<String>(),
         }),
         cx,
@@ -3983,7 +3983,7 @@ async fn test_edit_prediction_settled_sends_sample_data_after_quiescence(cx: &mu
 
     buffer.update(cx, |buffer, cx| {
         let offset = Point::new(1, 0).to_offset(buffer);
-        buffer.edit(vec![(offset..offset, "prompted ")], None, cx);
+        buffer.edit(vec![(offset..offset, "已提示 ")], None, cx);
     });
     cx.run_until_parked();
 
@@ -4014,7 +4014,7 @@ async fn test_edit_prediction_settled_sends_sample_data_after_quiescence(cx: &mu
             uncommitted_diff: Some("--- a/foo.md\n+++ b/foo.md\n".to_string()),
             buffer_diagnostics: vec![zeta_prompt::ActiveBufferDiagnostic {
                 severity: Some(1),
-                message: "sample diagnostic".to_string(),
+                message: "示例诊断".to_string(),
                 snippet: String::new(),
                 snippet_buffer_row_range: 0..0,
                 diagnostic_range_in_snippet: 0..0,
@@ -4109,7 +4109,7 @@ async fn test_edit_prediction_settled_sends_sample_data_after_quiescence(cx: &mu
             .settled
             .next()
             .await
-            .expect("settled request should be sent");
+            .expect("应发送已确定的请求");
         settled_by_id.insert(request.request_id.clone(), request);
     }
 
@@ -4121,7 +4121,7 @@ async fn test_edit_prediction_settled_sends_sample_data_after_quiescence(cx: &mu
     let settled_request = settled_by_id.remove("prediction-sample").unwrap();
     let sample_data = settled_request
         .sample_data
-        .expect("sample data should be sent after quiescence");
+        .expect("静默后应发送示例数据");
     assert_eq!(
         sample_data.repository_url.as_deref(),
         Some("https://example.com/repo.git")
@@ -4159,7 +4159,7 @@ async fn test_edit_prediction_settled_sends_sample_data_after_quiescence(cx: &mu
         .collect::<Vec<_>>();
     assert!(future_event_diffs.iter().all(|diff| {
         diff.lines()
-            .all(|line| !line.starts_with("+prompted ") && line != "-line 1")
+            .all(|line| !line.starts_with("+已提示 ") && line != "-行 1")
     }));
     assert!(
         future_event_diffs
@@ -4179,7 +4179,7 @@ async fn test_edit_prediction_settled_sample_data_requires_observing_all_events_
 ) {
     let (ep_store, mut requests, project, buffer) = init_sample_capture_test(
         json!({
-            "LICENSE": MIT_LICENSE,
+            "许可证": MIT_LICENSE,
             "foo.md": (0..30).map(|ix| format!("line {ix}\n")).collect::<String>(),
         }),
         cx,
@@ -4235,12 +4235,12 @@ async fn test_edit_prediction_settled_sample_data_requires_observing_all_events_
 
     buffer.update(cx, |buffer, cx| {
         let offset = Point::new(1, 0).to_offset(buffer);
-        buffer.edit(vec![(offset..offset, "first ")], None, cx);
+        buffer.edit(vec![(offset..offset, "第一个 ")], None, cx);
     });
     cx.run_until_parked();
     buffer.update(cx, |buffer, cx| {
         let offset = Point::new(20, 0).to_offset(buffer);
-        buffer.edit(vec![(offset..offset, "second ")], None, cx);
+        buffer.edit(vec![(offset..offset, "第二个 ")], None, cx);
     });
     cx.run_until_parked();
 
@@ -4275,14 +4275,14 @@ async fn test_edit_prediction_settled_sample_data_requires_observing_all_events_
             .settled
             .next()
             .await
-            .expect("settled request should be sent");
+            .expect("应发送已确定的请求");
         settled_by_id.insert(request.request_id.clone(), request);
     }
 
     let observed_request = settled_by_id.remove("prediction-observed").unwrap();
     let sample_data = observed_request
         .sample_data
-        .expect("sample data should be sent");
+        .expect("应发送示例数据");
     assert_eq!(sample_data.edit_events_before_quiescence, 2);
     assert_eq!(sample_data.future_edit_history_events.len(), 2);
 
@@ -4323,7 +4323,7 @@ async fn test_edit_prediction_settled_drops_future_events_when_their_oss_status_
     // and the sample must be dropped.
     buffer.update(cx, |buffer, cx| {
         let offset = Point::new(20, 0).to_offset(buffer);
-        buffer.edit(vec![(offset..offset, "outside ")], None, cx);
+        buffer.edit(vec![(offset..offset, "外部 ")], None, cx);
     });
     cx.run_until_parked();
 
@@ -4335,7 +4335,7 @@ async fn test_edit_prediction_settled_drops_future_events_when_their_oss_status_
         .settled
         .next()
         .await
-        .expect("settled request should be sent");
+        .expect("应发送已确定的请求");
     assert_eq!(settled_request.sample_data, None);
 }
 
@@ -4481,7 +4481,7 @@ async fn test_data_collection_disabled_by_organization_configuration(cx: &mut Te
             user_store.set_current_organization_configuration_for_test(
                 Arc::new(Organization {
                     id: OrganizationId("org-1".into()),
-                    name: "Org 1".into(),
+                    name: "组织 1".into(),
                     is_personal: false,
                 }),
                 OrganizationConfiguration {
@@ -4512,7 +4512,7 @@ async fn test_toggle_data_collection_from_kv_enabled_state(cx: &mut TestAppConte
     cx.update(|cx| {
         assert!(
             ep_store.read(cx).is_data_collection_enabled(cx),
-            "data collection should be enabled via KV store before toggle"
+            "切换前应通过 KV 存储启用数据收集"
         );
     });
 
@@ -4537,7 +4537,7 @@ async fn test_toggle_data_collection_from_kv_enabled_state(cx: &mut TestAppConte
     cx.update(|cx| {
         assert!(
             !ep_store.read(cx).is_data_collection_enabled(cx),
-            "data collection should be disabled after toggling off from KV-enabled state"
+            "从 KV 启用状态切换关闭后,数据收集应被禁用"
         );
     });
 }
@@ -4569,7 +4569,7 @@ async fn test_upsell_dismissed_when_data_collection_choice_in_kv_store(cx: &mut 
         cx.update(|cx| {
             assert!(
                 !should_show_upsell_modal(cx),
-                "upsell should be suppressed when data collection choice is '{value}'"
+                "当数据收集选择为 '{value}' 时,应抑制追加销售"
             );
         });
     }

@@ -860,7 +860,7 @@ impl Editor {
                     }
                     Err(e) => {
                         log::error!(
-                            "Failed to query inlays for buffer row range {chunk_range:?}, {e:#}"
+                            "查询缓冲区行范围 {chunk_range:?} 的内联提示失败,{e:#}"
                         );
                         if let Some((for_version, chunks_fetched)) = chunks_fetched {
                             if for_version == &query_version {
@@ -1084,13 +1084,13 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should get its first hints when opening the editor"
+                    "打开编辑器时应获取其首批提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
                 assert_eq!(
                     allowed_hint_kinds_for_editor(editor),
                     allowed_hint_kinds,
-                    "Cache should use editor settings to get the allowed hint kinds"
+                    "缓存应使用编辑器设置来获取允许的提示类型"
                 );
             })
             .unwrap();
@@ -1110,13 +1110,13 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should get new hints after an edit"
+                    "编辑后应获取新的提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
                 assert_eq!(
                     allowed_hint_kinds_for_editor(editor),
                     allowed_hint_kinds,
-                    "Cache should use editor settings to get the allowed hint kinds"
+                    "缓存应使用编辑器设置来获取允许的提示类型"
                 );
             })
             .unwrap();
@@ -1125,7 +1125,7 @@ pub mod tests {
             .request::<lsp::request::InlayHintRefreshRequest>((), DEFAULT_LSP_REQUEST_TIMEOUT)
             .await
             .into_response()
-            .expect("inlay refresh request failed");
+            .expect("内联提示刷新请求失败");
         cx.executor().run_until_parked();
         editor
             .update(cx, |editor, _window, cx| {
@@ -1133,13 +1133,13 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should get new hints after hint refresh/ request"
+                    "提示刷新/请求后应获取新的提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
                 assert_eq!(
                     allowed_hint_kinds_for_editor(editor),
                     allowed_hint_kinds,
-                    "Cache should use editor settings to get the allowed hint kinds"
+                    "缓存应使用编辑器设置来获取允许的提示类型"
                 );
             })
             .unwrap();
@@ -1188,7 +1188,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should get its first hints when opening the editor"
+                    "打开编辑器时应获取其首批提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1215,7 +1215,7 @@ pub mod tests {
         editor
             .update(cx, |editor, _window, cx| {
                 let expected_hints = vec!["2".to_string()];
-                assert_eq!(expected_hints, cached_hint_labels(editor, cx), "Despite multiple simultaneous refreshes, only one inlay hint query should be issued");
+                assert_eq!(expected_hints, cached_hint_labels(editor, cx), "尽管有多个同时发生的刷新,只应发出一次内联提示查询");
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
             .unwrap();
@@ -1273,7 +1273,7 @@ pub mod tests {
             .update(cx, |editor, _window, cx| {
                 assert!(
                     cached_hint_labels(editor, cx).is_empty(),
-                    "The initial hint fetch is blocked and should not have populated the cache yet"
+                    "初始提示获取被阻止,不应已填充缓存"
                 );
             })
             .unwrap();
@@ -1293,7 +1293,7 @@ pub mod tests {
         assert_eq!(
             2,
             lsp_request_count.load(Ordering::Acquire),
-            "The refresh should have re-queried the server"
+            "刷新应已重新查询服务器"
         );
 
         editor
@@ -1302,7 +1302,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "A refresh racing with an in-flight fetch should replace its hints, not duplicate them"
+                    "与进行中的获取竞争的刷新应替换其提示,而不是重复它们"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1360,7 +1360,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should get its first hints when opening the editor"
+                    "打开编辑器时应获取其首批提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1376,7 +1376,7 @@ pub mod tests {
             )
             .await
             .into_response()
-            .expect("work done progress create request failed");
+            .expect("工作完成进度创建请求失败");
         cx.executor().run_until_parked();
         fake_server.notify::<lsp::notification::Progress>(lsp::ProgressParams {
             token: lsp::ProgressToken::Number(progress_token),
@@ -1392,7 +1392,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should not update hints while the work task is running"
+                    "工作任务运行时不应更新提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1412,7 +1412,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "New hints should be queried after the work task is done"
+                    "工作任务完成后应查询新的提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1426,7 +1426,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Repeated work cycles without buffer changes should not invalidate hints again"
+                    "没有缓冲区更改的重复工作周期不应再次使提示失效"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1444,7 +1444,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "A buffer edit should invalidate and re-query the hints"
+                    "缓冲区编辑应使提示失效并重新查询"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1458,7 +1458,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "A buffer edit should re-allow the work-end hint refresh"
+                    "缓冲区编辑应重新允许工作结束时的提示刷新"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1544,7 +1544,7 @@ pub mod tests {
                                                     + 1
                                             }
                                             unexpected => {
-                                                panic!("Unexpected language: {unexpected}")
+                                                panic!("意外的语言:{unexpected}")
                                             }
                                         };
 
@@ -1605,7 +1605,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should get its first hints when opening the editor"
+                    "打开编辑器时应获取其首批提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1641,7 +1641,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Markdown editor should have a separate version, repeating Rust editor rules"
+                    "Markdown 编辑器应有独立的版本,重复 Rust 编辑器的规则"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1662,7 +1662,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Rust inlay cache should change after the edit"
+                    "编辑后 Rust 内联提示缓存应发生变化"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1673,7 +1673,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Markdown editor should not be affected by Rust editor changes"
+                    "Markdown 编辑器不应受 Rust 编辑器更改的影响"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1694,7 +1694,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Rust editor should not be affected by Markdown editor changes"
+                    "Rust 编辑器不应受 Markdown 编辑器更改的影响"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1705,7 +1705,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Markdown editor should also change independently"
+                    "Markdown 编辑器也应独立变化"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -1747,7 +1747,7 @@ pub mod tests {
                             Ok(Some(vec![
                                 lsp::InlayHint {
                                     position: lsp::Position::new(0, 1),
-                                    label: lsp::InlayHintLabel::String("type hint".to_string()),
+                                    label: lsp::InlayHintLabel::String("类型提示".to_string()),
                                     kind: Some(lsp::InlayHintKind::TYPE),
                                     text_edits: None,
                                     tooltip: None,
@@ -1758,7 +1758,7 @@ pub mod tests {
                                 lsp::InlayHint {
                                     position: lsp::Position::new(0, 2),
                                     label: lsp::InlayHintLabel::String(
-                                        "parameter hint".to_string(),
+                                        "参数提示".to_string(),
                                     ),
                                     kind: Some(lsp::InlayHintKind::PARAMETER),
                                     text_edits: None,
@@ -1769,7 +1769,7 @@ pub mod tests {
                                 },
                                 lsp::InlayHint {
                                     position: lsp::Position::new(0, 3),
-                                    label: lsp::InlayHintLabel::String("other hint".to_string()),
+                                    label: lsp::InlayHintLabel::String("其他提示".to_string()),
                                     kind: None,
                                     text_edits: None,
                                     tooltip: None,
@@ -1791,25 +1791,25 @@ pub mod tests {
                 assert_eq!(
                     lsp_request_count.load(Ordering::Relaxed),
                     1,
-                    "Should query new hints once"
+                    "应查询一次新提示"
                 );
                 assert_eq!(
                     vec![
-                        "type hint".to_string(),
-                        "parameter hint".to_string(),
-                        "other hint".to_string(),
+                        "类型提示".to_string(),
+                        "参数提示".to_string(),
+                        "其他提示".to_string(),
                     ],
                     cached_hint_labels(editor, cx),
-                    "Should get its first hints when opening the editor"
+                    "打开编辑器时应获取其首批提示"
                 );
                 assert_eq!(
-                    vec!["type hint".to_string(), "other hint".to_string()],
+                    vec!["类型提示".to_string(), "其他提示".to_string()],
                     visible_hint_labels(editor, cx)
                 );
                 assert_eq!(
                     allowed_hint_kinds_for_editor(editor),
                     allowed_hint_kinds,
-                    "Cache should use editor settings to get the allowed hint kinds"
+                    "缓存应使用编辑器设置来获取允许的提示类型"
                 );
             })
             .unwrap();
@@ -1818,52 +1818,52 @@ pub mod tests {
             .request::<lsp::request::InlayHintRefreshRequest>((), DEFAULT_LSP_REQUEST_TIMEOUT)
             .await
             .into_response()
-            .expect("inlay refresh request failed");
+            .expect("内联提示刷新请求失败");
         cx.executor().run_until_parked();
         editor
             .update(cx, |editor, _, cx| {
                 assert_eq!(
                     lsp_request_count.load(Ordering::Relaxed),
                     2,
-                    "Should load new hints twice"
+                    "应加载两次新提示"
                 );
                 assert_eq!(
                     vec![
-                        "type hint".to_string(),
-                        "parameter hint".to_string(),
-                        "other hint".to_string(),
+                        "类型提示".to_string(),
+                        "参数提示".to_string(),
+                        "其他提示".to_string(),
                     ],
                     cached_hint_labels(editor, cx),
-                    "Cached hints should not change due to allowed hint kinds settings update"
+                    "缓存的提示不应因允许的提示类型设置更新而改变"
                 );
                 assert_eq!(
-                    vec!["type hint".to_string(), "other hint".to_string()],
+                    vec!["类型提示".to_string(), "其他提示".to_string()],
                     visible_hint_labels(editor, cx)
                 );
             })
             .unwrap();
 
         for (new_allowed_hint_kinds, expected_visible_hints) in [
-            (HashSet::from_iter([None]), vec!["other hint".to_string()]),
+            (HashSet::from_iter([None]), vec!["其他提示".to_string()]),
             (
                 HashSet::from_iter([Some(InlayHintKind::Type)]),
-                vec!["type hint".to_string()],
+                vec!["类型提示".to_string()],
             ),
             (
                 HashSet::from_iter([Some(InlayHintKind::Parameter)]),
-                vec!["parameter hint".to_string()],
+                vec!["参数提示".to_string()],
             ),
             (
                 HashSet::from_iter([None, Some(InlayHintKind::Type)]),
-                vec!["type hint".to_string(), "other hint".to_string()],
+                vec!["类型提示".to_string(), "其他提示".to_string()],
             ),
             (
                 HashSet::from_iter([None, Some(InlayHintKind::Parameter)]),
-                vec!["parameter hint".to_string(), "other hint".to_string()],
+                vec!["参数提示".to_string(), "其他提示".to_string()],
             ),
             (
                 HashSet::from_iter([Some(InlayHintKind::Type), Some(InlayHintKind::Parameter)]),
-                vec!["type hint".to_string(), "parameter hint".to_string()],
+                vec!["类型提示".to_string(), "参数提示".to_string()],
             ),
             (
                 HashSet::from_iter([
@@ -1872,9 +1872,9 @@ pub mod tests {
                     Some(InlayHintKind::Parameter),
                 ]),
                 vec![
-                    "type hint".to_string(),
-                    "parameter hint".to_string(),
-                    "other hint".to_string(),
+                    "类型提示".to_string(),
+                    "参数提示".to_string(),
+                    "其他提示".to_string(),
                 ],
             ),
         ] {
@@ -1900,26 +1900,26 @@ pub mod tests {
                 assert_eq!(
                     lsp_request_count.load(Ordering::Relaxed),
                     2,
-                    "Should not load new hints on allowed hint kinds change for hint kinds {new_allowed_hint_kinds:?}"
+                    "对于提示类型 {new_allowed_hint_kinds:?},在允许的提示类型更改时不应加载新提示"
                 );
                 assert_eq!(
                     vec![
-                        "type hint".to_string(),
-                        "parameter hint".to_string(),
-                        "other hint".to_string(),
+                        "类型提示".to_string(),
+                        "参数提示".to_string(),
+                        "其他提示".to_string(),
                     ],
                     cached_hint_labels(editor, cx),
-                    "Should get its cached hints unchanged after the settings change for hint kinds {new_allowed_hint_kinds:?}"
+                    "对于提示类型 {new_allowed_hint_kinds:?},设置更改后应保持缓存的提示不变"
                 );
                 assert_eq!(
                     expected_visible_hints,
                     visible_hint_labels(editor, cx),
-                    "Should get its visible hints filtered after the settings change for hint kinds {new_allowed_hint_kinds:?}"
+                    "对于提示类型 {new_allowed_hint_kinds:?},设置更改后应过滤可见提示"
                 );
                 assert_eq!(
                     allowed_hint_kinds_for_editor(editor),
                     new_allowed_hint_kinds,
-                    "Cache should use editor settings to get the allowed hint kinds for hint kinds {new_allowed_hint_kinds:?}"
+                    "对于提示类型 {new_allowed_hint_kinds:?},缓存应使用编辑器设置来获取允许的提示类型"
                 );
             }).unwrap();
         }
@@ -1948,26 +1948,26 @@ pub mod tests {
                 assert_eq!(
                     lsp_request_count.load(Ordering::Relaxed),
                     2,
-                    "Should not load new hints when hints got disabled"
+                    "提示被禁用时不应加载新提示"
                 );
                 assert_eq!(
                     vec![
-                        "type hint".to_string(),
-                        "parameter hint".to_string(),
-                        "other hint".to_string(),
+                        "类型提示".to_string(),
+                        "参数提示".to_string(),
+                        "其他提示".to_string(),
                     ],
                     cached_hint_labels(editor, cx),
-                    "Should not clear the cache when hints got disabled"
+                    "提示被禁用时不应清除缓存"
                 );
                 assert_eq!(
                     Vec::<String>::new(),
                     visible_hint_labels(editor, cx),
-                    "Should clear visible hints when hints got disabled"
+                    "提示被禁用时应清除可见提示"
                 );
                 assert_eq!(
                     allowed_hint_kinds_for_editor(editor),
                     another_allowed_hint_kinds,
-                    "Should update its allowed hint kinds even when hints got disabled"
+                    "即使提示被禁用,也应更新其允许的提示类型"
                 );
             })
             .unwrap();
@@ -1976,20 +1976,20 @@ pub mod tests {
             .request::<lsp::request::InlayHintRefreshRequest>((), DEFAULT_LSP_REQUEST_TIMEOUT)
             .await
             .into_response()
-            .expect("inlay refresh request failed");
+            .expect("内联提示刷新请求失败");
         cx.executor().run_until_parked();
         editor
             .update(cx, |editor, _window, cx| {
                 assert_eq!(
                     lsp_request_count.load(Ordering::Relaxed),
                     2,
-                    "Should not load new hints when they got disabled"
+                    "提示被禁用时不应加载新提示"
                 );
                 assert_eq!(
                     vec![
-                        "type hint".to_string(),
-                        "parameter hint".to_string(),
-                        "other hint".to_string(),
+                        "类型提示".to_string(),
+                        "参数提示".to_string(),
+                        "其他提示".to_string(),
                     ],
                     cached_hint_labels(editor, cx)
                 );
@@ -2021,26 +2021,26 @@ pub mod tests {
                 assert_eq!(
                     lsp_request_count.load(Ordering::Relaxed),
                     2,
-                    "Should not query for new hints when they got re-enabled, as the file version did not change"
+                    "提示重新启用时不应查询新提示,因为文件版本未更改"
                 );
                 assert_eq!(
                     vec![
-                        "type hint".to_string(),
-                        "parameter hint".to_string(),
-                        "other hint".to_string(),
+                        "类型提示".to_string(),
+                        "参数提示".to_string(),
+                        "其他提示".to_string(),
                     ],
                     cached_hint_labels(editor, cx),
-                    "Should get its cached hints fully repopulated after the hints got re-enabled"
+                    "提示重新启用后,应完全重新填充其缓存的提示"
                 );
                 assert_eq!(
-                    vec!["parameter hint".to_string()],
+                    vec!["参数提示".to_string()],
                     visible_hint_labels(editor, cx),
-                    "Should get its visible hints repopulated and filtered after the h"
+                    "提示重新启用后,应重新填充并过滤其可见提示"
                 );
                 assert_eq!(
                     allowed_hint_kinds_for_editor(editor),
                     final_allowed_hint_kinds,
-                    "Cache should update editor settings when hints got re-enabled"
+                    "提示重新启用时,缓存应更新编辑器设置"
                 );
             })
             .unwrap();
@@ -2049,25 +2049,25 @@ pub mod tests {
             .request::<lsp::request::InlayHintRefreshRequest>((), DEFAULT_LSP_REQUEST_TIMEOUT)
             .await
             .into_response()
-            .expect("inlay refresh request failed");
+            .expect("内联提示刷新请求失败");
         cx.executor().run_until_parked();
         editor
             .update(cx, |editor, _, cx| {
                 assert_eq!(
                     lsp_request_count.load(Ordering::Relaxed),
                     3,
-                    "Should query for new hints again"
+                    "应再次查询新提示"
                 );
                 assert_eq!(
                     vec![
-                        "type hint".to_string(),
-                        "parameter hint".to_string(),
-                        "other hint".to_string(),
+                        "类型提示".to_string(),
+                        "参数提示".to_string(),
+                        "其他提示".to_string(),
                     ],
                     cached_hint_labels(editor, cx),
                 );
                 assert_eq!(
-                    vec!["parameter hint".to_string()],
+                    vec!["参数提示".to_string()],
                     visible_hint_labels(editor, cx),
                 );
             })
@@ -2123,9 +2123,9 @@ pub mod tests {
 
         let mut expected_changes = Vec::new();
         for change_after_opening in [
-            "initial change #1",
-            "initial change #2",
-            "initial change #3",
+            "初始更改 #1",
+            "初始更改 #2",
+            "初始更改 #3",
         ] {
             editor
                 .update(cx, |editor, window, cx| {
@@ -2146,19 +2146,19 @@ pub mod tests {
                 for change in &expected_changes {
                     assert!(
                         current_text.contains(change),
-                        "Should apply all changes made"
+                        "应应用所有已做的更改"
                     );
                 }
                 assert_eq!(
                     lsp_request_count.load(Ordering::Relaxed),
                     2,
-                    "Should query new hints twice: for editor init and for the last edit that interrupted all others"
+                    "应查询两次新提示:一次用于编辑器初始化,一次用于中断所有其他编辑的最后一次编辑"
                 );
                 let expected_hints = vec!["2".to_string()];
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should get hints from the last edit landed only"
+                    "应仅获取最后一次编辑产生的提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -2166,9 +2166,9 @@ pub mod tests {
 
         let mut edits = Vec::new();
         for async_later_change in [
-            "another change #1",
-            "another change #2",
-            "another change #3",
+            "另一个更改 #1",
+            "另一个更改 #2",
+            "另一个更改 #3",
         ] {
             expected_changes.push(async_later_change);
             let task_editor = editor;
@@ -2192,19 +2192,19 @@ pub mod tests {
                 for change in &expected_changes {
                     assert!(
                         current_text.contains(change),
-                        "Should apply all changes made"
+                        "应应用所有已做的更改"
                     );
                 }
                 assert_eq!(
                     lsp_request_count.load(Ordering::SeqCst),
                     3,
-                    "Should query new hints one more time, for the last edit only"
+                    "应再查询一次新提示,仅针对最后一次编辑"
                 );
                 let expected_hints = vec!["3".to_string()];
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should get hints from the last edit landed only"
+                    "应仅获取最后一次编辑产生的提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -2303,12 +2303,12 @@ pub mod tests {
         assert_eq!(
             hint_tasks.len(),
             1,
-            "Should have started a hint fetch for exactly the queried chunk"
+            "应已为精确查询的块启动提示获取"
         );
         cx.executor().run_until_parked();
         assert!(
             request_gate.lock().is_none(),
-            "Language server should have received the inlay hint request"
+            "语言服务器应已收到内联提示请求"
         );
 
         // Shrink the buffer while the response is still in flight, so that the buffer has
@@ -2325,10 +2325,10 @@ pub mod tests {
         for (chunk_range, hint_task) in hint_tasks {
             let hints = hint_task
                 .await
-                .expect("Stale inlay hint response should not fail the fetch");
+                .expect("过期的内联提示响应不应导致获取失败");
             assert!(
                 hints.is_empty(),
-                "Stale response for chunk {chunk_range:?} should yield no hints, got {hints:?}"
+                "块 {chunk_range:?} 的过期响应不应产生提示,实际得到 {hints:?}"
             );
         }
     }
@@ -2427,7 +2427,7 @@ pub mod tests {
         assert_eq!(
             ranges.len(),
             1,
-            "Should query 1 range initially, but got: {ranges:?}"
+            "最初应查询 1 个范围,但实际得到:{ranges:?}"
         );
 
         editor
@@ -2461,29 +2461,29 @@ pub mod tests {
                 assert_eq!(
                     ranges.len(),
                     2,
-                    "Should query 2 ranges after both scrolls, but got: {ranges:?}"
+                    "两次滚动后应查询 2 个范围,但实际得到:{ranges:?}"
                 );
                 let first_scroll = &ranges[0];
                 let second_scroll = &ranges[1];
                 assert_eq!(
                     first_scroll.end.line, second_scroll.start.line,
-                    "Should query 2 adjacent ranges after the scrolls, but got: {ranges:?}"
+                    "滚动后应查询 2 个相邻范围,但实际得到:{ranges:?}"
                 );
 
                 let lsp_requests = lsp_request_count.load(Ordering::Acquire);
                 assert_eq!(
                     lsp_requests, 3,
-                    "Should query hints initially, and after each scroll (2 times)"
+                    "最初应查询提示,并在每次滚动后查询(共 2 次)"
                 );
                 assert_eq!(
                     vec!["50".to_string(), "100".to_string(), "150".to_string()],
                     cached_hint_labels(editor, cx),
-                    "Chunks of 50 line width should have been queried each time"
+                    "每次都应查询 50 行宽的块"
                 );
                 assert_eq!(
                     vec!["50".to_string(), "100".to_string(), "150".to_string()],
                     visible_hint_labels(editor, cx),
-                    "Editor should show only hints that it's scrolled to"
+                    "编辑器应仅显示其滚动到的提示"
                 );
 
                 let mut selection_in_cached_range = visible_range_after_scrolls.end;
@@ -2510,8 +2510,8 @@ pub mod tests {
                 .drain(..)
                 .sorted_by_key(|r| r.start)
                 .collect::<Vec<_>>();
-            assert!(ranges.is_empty(), "No new ranges or LSP queries should be made after returning to the selection with cached hints");
-            assert_eq!(lsp_request_count.load(Ordering::Acquire), 3, "No new requests should be made when selecting within cached chunks");
+            assert!(ranges.is_empty(), "返回到带有缓存提示的选择后,不应再进行新的范围或 LSP 查询");
+            assert_eq!(lsp_request_count.load(Ordering::Acquire), 3, "在缓存的块内进行选择时,不应发出新的请求");
         }).unwrap();
 
         editor
@@ -2526,19 +2526,19 @@ pub mod tests {
             ranges.sort_by_key(|r| r.start);
 
             assert_eq!(ranges.len(), 2,
-                "On edit, should scroll to selection and query a range around it: that range should split into 2 50 rows wide chunks. Instead, got query ranges {ranges:?}");
+                "编辑时,应滚动到选择并查询其周围的范围:该范围应分成 2 个 50 行宽的块。但实际得到的查询范围为 {ranges:?}");
             let first_chunk = &ranges[0];
             let second_chunk = &ranges[1];
             assert!(first_chunk.end.line == second_chunk.start.line,
-                "First chunk {first_chunk:?} should be before second chunk {second_chunk:?}");
+                "第一个块 {first_chunk:?} 应在第二个块 {second_chunk:?} 之前");
             assert!(first_chunk.start.line < selection_in_cached_range.row,
-                "Hints should be queried with the selected range after the query range start");
+                "提示应在查询范围开始后与所选范围一起查询");
 
             let lsp_requests = lsp_request_count.load(Ordering::Acquire);
-            assert_eq!(lsp_requests, 5, "Two chunks should be re-queried");
+            assert_eq!(lsp_requests, 5, "应重新查询两个块");
             assert_eq!(vec!["100".to_string(), "150".to_string()], cached_hint_labels(editor, cx),
-                "Should have (less) hints from the new LSP response after the edit");
-            assert_eq!(vec!["100".to_string(), "150".to_string()], visible_hint_labels(editor, cx), "Should show only visible hints (in the center) from the new cached set");
+                "编辑后应具有来自新 LSP 响应的(更少的)提示");
+            assert_eq!(vec!["100".to_string(), "150".to_string()], visible_hint_labels(editor, cx), "应仅显示新缓存集中的可见提示(在中心)");
         }).unwrap();
     }
 
@@ -2552,7 +2552,7 @@ pub mod tests {
         assert_eq!(
             ranges.len(),
             1,
-            "Single buffer should produce a single excerpt with visible range"
+            "单个缓冲区应产生具有可见范围的单个摘录"
         );
         let (buffer_snapshot, visible_range, _) = ranges.into_iter().next().unwrap();
         visible_range.to_point(&buffer_snapshot)
@@ -2660,13 +2660,13 @@ pub mod tests {
                     let hint_text = if params.text_document.uri
                         == lsp::Uri::from_file_path(path!("/a/main.rs")).unwrap()
                     {
-                        "main hint"
+                        "主要提示"
                     } else if params.text_document.uri
                         == lsp::Uri::from_file_path(path!("/a/other.rs")).unwrap()
                     {
-                        "other hint"
+                        "其他提示"
                     } else {
-                        panic!("unexpected uri: {:?}", params.text_document.uri);
+                        panic!("意外的 URI:{:?}", params.text_document.uri);
                     };
 
                     // one hint per excerpt
@@ -2684,7 +2684,7 @@ pub mod tests {
                             params.range.start.character + 99,
                         ),
                         label: lsp::InlayHintLabel::String(
-                            "out of excerpt range, should be ignored".to_string(),
+                            "超出摘录范围,应被忽略".to_string(),
                         ),
                         kind: None,
                         text_edits: None,
@@ -2702,7 +2702,7 @@ pub mod tests {
                                     position,
                                     label: lsp::InlayHintLabel::String(format!(
                                         "{hint_text}{E} #{i}",
-                                        E = if edited { "(edited)" } else { "" },
+                                        E = if edited { "(已编辑)" } else { "" },
                                     )),
                                     kind: None,
                                     text_edits: None,
@@ -2723,17 +2723,17 @@ pub mod tests {
         editor
             .update(cx, |editor, _window, cx| {
                 let expected_hints = vec![
-                    "main hint #0".to_string(),
-                    "main hint #1".to_string(),
-                    "main hint #2".to_string(),
-                    "main hint #3".to_string(),
-                    "main hint #4".to_string(),
-                    "main hint #5".to_string(),
+                    "主要提示 #0".to_string(),
+                    "主要提示 #1".to_string(),
+                    "主要提示 #2".to_string(),
+                    "主要提示 #3".to_string(),
+                    "主要提示 #4".to_string(),
+                    "主要提示 #5".to_string(),
                 ];
                 assert_eq!(
                     expected_hints,
                     sorted_cached_hint_labels(editor, cx),
-                    "When scroll is at the edge of a multibuffer, its visible excerpts only should be queried for inlay hints"
+                    "当滚动到多缓冲区边缘时,应仅查询其可见摘录的内联提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -2765,15 +2765,15 @@ pub mod tests {
         editor
             .update(cx, |editor, _window, cx| {
                 let expected_hints = vec![
-                    "main hint #0".to_string(),
-                    "main hint #1".to_string(),
-                    "main hint #2".to_string(),
-                    "main hint #3".to_string(),
-                    "main hint #4".to_string(),
-                    "main hint #5".to_string(),
+                    "主要提示 #0".to_string(),
+                    "主要提示 #1".to_string(),
+                    "主要提示 #2".to_string(),
+                    "主要提示 #3".to_string(),
+                    "主要提示 #4".to_string(),
+                    "主要提示 #5".to_string(),
                 ];
                 assert_eq!(expected_hints, sorted_cached_hint_labels(editor, cx),
-                    "New hints are not shown right after scrolling, we need to wait for the buffer to be registered");
+                    "滚动后不会立即显示新提示,我们需要等待缓冲区注册");
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
             .unwrap();
@@ -2782,25 +2782,25 @@ pub mod tests {
         editor
             .update(cx, |editor, _window, cx| {
                 let expected_hints = vec![
-                    "main hint #0".to_string(),
-                    "main hint #1".to_string(),
-                    "main hint #2".to_string(),
-                    "main hint #3".to_string(),
-                    "main hint #4".to_string(),
-                    "main hint #5".to_string(),
-                    "other hint #0".to_string(),
-                    "other hint #1".to_string(),
-                    "other hint #2".to_string(),
-                    "other hint #3".to_string(),
+                    "主要提示 #0".to_string(),
+                    "主要提示 #1".to_string(),
+                    "主要提示 #2".to_string(),
+                    "主要提示 #3".to_string(),
+                    "主要提示 #4".to_string(),
+                    "主要提示 #5".to_string(),
+                    "其他提示 #0".to_string(),
+                    "其他提示 #1".to_string(),
+                    "其他提示 #2".to_string(),
+                    "其他提示 #3".to_string(),
                 ];
                 assert_eq!(
                     expected_hints,
                     sorted_cached_hint_labels(editor, cx),
-                    "After scrolling to the new buffer and waiting for it to be registered, new hints should appear");
+                    "滚动到新缓冲区并等待其注册后,应出现新的提示");
                 assert_eq!(
                     expected_hints,
                     visible_hint_labels(editor, cx),
-                    "Editor should show only visible hints",
+                    "编辑器应仅显示可见提示",
                 );
             })
             .unwrap();
@@ -2820,28 +2820,28 @@ pub mod tests {
         editor
             .update(cx, |editor, _window, cx| {
                 let expected_hints = vec![
-                    "main hint #0".to_string(),
-                    "main hint #1".to_string(),
-                    "main hint #2".to_string(),
-                    "main hint #3".to_string(),
-                    "main hint #4".to_string(),
-                    "main hint #5".to_string(),
-                    "other hint #0".to_string(),
-                    "other hint #1".to_string(),
-                    "other hint #2".to_string(),
-                    "other hint #3".to_string(),
-                    "other hint #4".to_string(),
-                    "other hint #5".to_string(),
+                    "主要提示 #0".to_string(),
+                    "主要提示 #1".to_string(),
+                    "主要提示 #2".to_string(),
+                    "主要提示 #3".to_string(),
+                    "主要提示 #4".to_string(),
+                    "主要提示 #5".to_string(),
+                    "其他提示 #0".to_string(),
+                    "其他提示 #1".to_string(),
+                    "其他提示 #2".to_string(),
+                    "其他提示 #3".to_string(),
+                    "其他提示 #4".to_string(),
+                    "其他提示 #5".to_string(),
                 ];
                 assert_eq!(
                     expected_hints,
                     sorted_cached_hint_labels(editor, cx),
-                    "After multibuffer was scrolled to the end, all hints for all excerpts should be fetched"
+                    "多缓冲区滚动到末尾后,应获取所有摘录的所有提示"
                 );
                 assert_eq!(
                     expected_hints,
                     visible_hint_labels(editor, cx),
-                    "Editor shows only hints for excerpts that were visible when scrolling"
+                    "编辑器仅显示滚动时可见的摘录的提示"
                 );
             })
             .unwrap();
@@ -2860,23 +2860,23 @@ pub mod tests {
         editor
             .update(cx, |editor, _window, cx| {
                 let expected_hints = vec![
-                    "main hint #0".to_string(),
-                    "main hint #1".to_string(),
-                    "main hint #2".to_string(),
-                    "main hint #3".to_string(),
-                    "main hint #4".to_string(),
-                    "main hint #5".to_string(),
-                    "other hint #0".to_string(),
-                    "other hint #1".to_string(),
-                    "other hint #2".to_string(),
-                    "other hint #3".to_string(),
-                    "other hint #4".to_string(),
-                    "other hint #5".to_string(),
+                    "主要提示 #0".to_string(),
+                    "主要提示 #1".to_string(),
+                    "主要提示 #2".to_string(),
+                    "主要提示 #3".to_string(),
+                    "主要提示 #4".to_string(),
+                    "主要提示 #5".to_string(),
+                    "其他提示 #0".to_string(),
+                    "其他提示 #1".to_string(),
+                    "其他提示 #2".to_string(),
+                    "其他提示 #3".to_string(),
+                    "其他提示 #4".to_string(),
+                    "其他提示 #5".to_string(),
                 ];
                 assert_eq!(
                     expected_hints,
                     sorted_cached_hint_labels(editor, cx),
-                    "After multibuffer was scrolled to the end, further scrolls up should not bring more hints"
+                    "多缓冲区滚动到末尾后,进一步向上滚动不应带来更多提示"
                 );
                 assert_eq!(
                     expected_hints,
@@ -2908,16 +2908,16 @@ pub mod tests {
         editor
             .update(cx, |editor, _window, cx| {
                 let expected_hints = vec![
-                    "main hint(edited) #0".to_string(),
-                    "main hint(edited) #1".to_string(),
-                    "main hint(edited) #2".to_string(),
-                    "main hint(edited) #3".to_string(),
-                    "main hint(edited) #4".to_string(),
-                    "main hint(edited) #5".to_string(),
-                    "other hint(edited) #0".to_string(),
-                    "other hint(edited) #1".to_string(),
-                    "other hint(edited) #2".to_string(),
-                    "other hint(edited) #3".to_string(),
+                    "主要提示(已编辑) #0".to_string(),
+                    "主要提示(已编辑) #1".to_string(),
+                    "主要提示(已编辑) #2".to_string(),
+                    "主要提示(已编辑) #3".to_string(),
+                    "主要提示(已编辑) #4".to_string(),
+                    "主要提示(已编辑) #5".to_string(),
+                    "其他提示(已编辑) #0".to_string(),
+                    "其他提示(已编辑) #1".to_string(),
+                    "其他提示(已编辑) #2".to_string(),
+                    "其他提示(已编辑) #3".to_string(),
                 ];
                 assert_eq!(
                     expected_hints,
@@ -2928,7 +2928,7 @@ pub mod tests {
                 assert_eq!(
                     expected_hints,
                     visible_hint_labels(editor, cx),
-                    "All excerpts should get their hints"
+                    "所有摘录都应获得其提示"
                 );
             })
             .unwrap();
@@ -2989,14 +2989,14 @@ let c = 3;"#
                                     closure_ranges_fetched.lock().push(("lib.rs", params.range));
                                     "lib.rs"
                                 } else {
-                                    panic!("Unexpected file path {:?}", params.text_document.uri);
+                                    panic!("意外的文件路径 {:?}", params.text_document.uri);
                                 };
                                 Ok(Some(
                                     (params.range.start.line..params.range.end.line)
                                         .map(|row| lsp::InlayHint {
                                             position: lsp::Position::new(row, 0),
                                             label: lsp::InlayHintLabel::String(format!(
-                                                "{prefix} Inlay hint #{row}"
+                                                "{prefix} 内联提示 #{row}"
                                             )),
                                             kind: Some(lsp::InlayHintKind::TYPE),
                                             text_edits: None,
@@ -3082,34 +3082,34 @@ let c = 3;"#
                 .drain(..)
                 .sorted_by_key(|(prefix, r)| (prefix.to_owned(), r.start))
                 .collect::<Vec<_>>(),
-            "For large buffers, should query chunks that cover both visible excerpt"
+            "对于大型缓冲区,应查询覆盖两个可见摘录的块"
         );
         editor
             .update(cx, |editor, _window, cx| {
                 assert_eq!(
                     (0..2)
-                        .map(|i| format!("lib.rs Inlay hint #{i}"))
-                        .chain((0..100).map(|i| format!("main.rs Inlay hint #{i}")))
+                        .map(|i| format!("lib.rs 内联提示 #{i}"))
+                        .chain((0..100).map(|i| format!("main.rs 内联提示 #{i}")))
                         .collect::<Vec<_>>(),
                     sorted_cached_hint_labels(editor, cx),
-                    "Both chunks should provide their inlay hints"
+                    "两个块都应提供其内联提示"
                 );
                 assert_eq!(
                     vec![
-                        "main.rs Inlay hint #49".to_owned(),
-                        "main.rs Inlay hint #50".to_owned(),
-                        "main.rs Inlay hint #51".to_owned(),
-                        "main.rs Inlay hint #52".to_owned(),
-                        "main.rs Inlay hint #53".to_owned(),
-                        "main.rs Inlay hint #70".to_owned(),
-                        "main.rs Inlay hint #71".to_owned(),
-                        "main.rs Inlay hint #72".to_owned(),
-                        "main.rs Inlay hint #73".to_owned(),
-                        "lib.rs Inlay hint #0".to_owned(),
+                        "main.rs 内联提示 #49".to_owned(),
+                        "main.rs 内联提示 #50".to_owned(),
+                        "main.rs 内联提示 #51".to_owned(),
+                        "main.rs 内联提示 #52".to_owned(),
+                        "main.rs 内联提示 #53".to_owned(),
+                        "main.rs 内联提示 #70".to_owned(),
+                        "main.rs 内联提示 #71".to_owned(),
+                        "main.rs 内联提示 #72".to_owned(),
+                        "main.rs 内联提示 #73".to_owned(),
+                        "lib.rs 内联提示 #0".to_owned(),
                         "lib.rs Inlay hint #1".to_owned(),
                     ],
                     visible_hint_labels(editor, cx),
-                    "Only hints from visible excerpt should be added into the editor"
+                    "只有可见摘录中的提示才应添加到编辑器中"
                 );
             })
             .unwrap();
@@ -3141,34 +3141,34 @@ let c = 3;"#
                 .drain(..)
                 .sorted_by_key(|(prefix, r)| (prefix.to_owned(), r.start))
                 .collect::<Vec<_>>(),
-            "Same chunks should be re-queried on edit"
+            "编辑时应重新查询相同的代码块"
         );
         editor
             .update(cx, |editor, _window, cx| {
                 assert_eq!(
                     (0..2)
-                        .map(|i| format!("lib.rs Inlay hint #{i}"))
-                        .chain((0..100).map(|i| format!("main.rs Inlay hint #{i}")))
+                        .map(|i| format!("lib.rs 内联提示 #{i}"))
+                        .chain((0..100).map(|i| format!("main.rs 内联提示 #{i}")))
                         .collect::<Vec<_>>(),
                     sorted_cached_hint_labels(editor, cx),
-                    "Same hints should be re-inserted after the edit"
+                    "编辑后应重新插入相同的提示"
                 );
                 assert_eq!(
                     vec![
-                        "main.rs Inlay hint #49".to_owned(),
-                        "main.rs Inlay hint #50".to_owned(),
-                        "main.rs Inlay hint #51".to_owned(),
-                        "main.rs Inlay hint #52".to_owned(),
-                        "main.rs Inlay hint #53".to_owned(),
-                        "main.rs Inlay hint #70".to_owned(),
-                        "main.rs Inlay hint #71".to_owned(),
-                        "main.rs Inlay hint #72".to_owned(),
-                        "main.rs Inlay hint #73".to_owned(),
-                        "lib.rs Inlay hint #0".to_owned(),
+                        "main.rs 内联提示 #49".to_owned(),
+                        "main.rs 内联提示 #50".to_owned(),
+                        "main.rs 内联提示 #51".to_owned(),
+                        "main.rs 内联提示 #52".to_owned(),
+                        "main.rs 内联提示 #53".to_owned(),
+                        "main.rs 内联提示 #70".to_owned(),
+                        "main.rs 内联提示 #71".to_owned(),
+                        "main.rs 内联提示 #72".to_owned(),
+                        "main.rs 内联提示 #73".to_owned(),
+                        "lib.rs 内联提示 #0".to_owned(),
                         "lib.rs Inlay hint #1".to_owned(),
                     ],
                     visible_hint_labels(editor, cx),
-                    "Same hints should be re-inserted into the editor after the edit"
+                    "编辑后应将相同的提示重新插入到编辑器中"
                 );
             })
             .unwrap();
@@ -3259,13 +3259,13 @@ let c = 3;"#
                     let hint_text = if params.text_document.uri
                         == lsp::Uri::from_file_path(path!("/a/main.rs")).unwrap()
                     {
-                        "main hint"
+                        "主要提示"
                     } else if params.text_document.uri
                         == lsp::Uri::from_file_path(path!("/a/other.rs")).unwrap()
                     {
-                        "other hint"
+                        "其他提示"
                     } else {
-                        panic!("unexpected uri: {:?}", params.text_document.uri);
+                        panic!("意外的 URI:{:?}", params.text_document.uri);
                     };
 
                     let positions = [
@@ -3282,7 +3282,7 @@ let c = 3;"#
                             params.range.start.character + 99,
                         ),
                         label: lsp::InlayHintLabel::String(
-                            "out of excerpt range, should be ignored".to_string(),
+                            "超出摘录范围,应被忽略".to_string(),
                         ),
                         kind: None,
                         text_edits: None,
@@ -3300,7 +3300,7 @@ let c = 3;"#
                                     position,
                                     label: lsp::InlayHintLabel::String(format!(
                                         "{hint_text}{} #{i}",
-                                        if edited { "(edited)" } else { "" },
+                                        if edited { "(已编辑)" } else { "" },
                                     )),
                                     kind: None,
                                     text_edits: None,
@@ -3322,22 +3322,22 @@ let c = 3;"#
             .update(cx, |editor, _, cx| {
                 assert_eq!(
                     vec![
-                        "main hint #0".to_string(),
-                        "main hint #1".to_string(),
-                        "main hint #2".to_string(),
-                        "main hint #3".to_string(),
-                        "other hint #0".to_string(),
-                        "other hint #1".to_string(),
-                        "other hint #2".to_string(),
-                        "other hint #3".to_string(),
+                        "主要提示 #0".to_string(),
+                        "主要提示 #1".to_string(),
+                        "主要提示 #2".to_string(),
+                        "主要提示 #3".to_string(),
+                        "其他提示 #0".to_string(),
+                        "其他提示 #1".to_string(),
+                        "其他提示 #2".to_string(),
+                        "其他提示 #3".to_string(),
                     ],
                     sorted_cached_hint_labels(editor, cx),
-                    "Cache should update for both excerpts despite hints display was disabled; after selecting 2nd buffer, it's now registered with the langserever and should get its hints"
+                    "尽管提示显示已禁用,缓存仍应更新两个摘录;选择第二个缓冲区后,它现在已注册到语言服务器,应获取其提示"
                 );
                 assert_eq!(
                     Vec::<String>::new(),
                     visible_hint_labels(editor, cx),
-                    "All hints are disabled and should not be shown despite being present in the cache"
+                    "所有提示均已禁用,即使缓存中存在也不应显示"
                 );
             })
             .unwrap();
@@ -3354,17 +3354,17 @@ let c = 3;"#
             .update(cx, |editor, _, cx| {
                 assert_eq!(
                     vec![
-                        "main hint #0".to_string(),
-                        "main hint #1".to_string(),
-                        "main hint #2".to_string(),
-                        "main hint #3".to_string(),
+                        "主要提示 #0".to_string(),
+                        "主要提示 #1".to_string(),
+                        "主要提示 #2".to_string(),
+                        "主要提示 #3".to_string(),
                     ],
                     cached_hint_labels(editor, cx),
-                    "For the removed excerpt, should clean corresponding cached hints as its buffer was dropped"
+                    "对于已移除的摘录,应清理相应的缓存提示,因为其缓冲区已被丢弃"
                 );
                 assert!(
                 visible_hint_labels(editor, cx).is_empty(),
-                "All hints are disabled and should not be shown despite being present in the cache"
+                "所有提示均已禁用,即使缓存中存在也不应显示"
             );
             })
             .unwrap();
@@ -3387,20 +3387,20 @@ let c = 3;"#
             .update(cx, |editor, _, cx| {
                 assert_eq!(
                     vec![
-                        "main hint #0".to_string(),
-                        "main hint #1".to_string(),
-                        "main hint #2".to_string(),
-                        "main hint #3".to_string(),
+                        "主要提示 #0".to_string(),
+                        "主要提示 #1".to_string(),
+                        "主要提示 #2".to_string(),
+                        "主要提示 #3".to_string(),
                     ],
                     cached_hint_labels(editor, cx),
-                    "Hint display settings change should not change the cache"
+                    "提示显示设置更改不应更改缓存"
                 );
                 assert_eq!(
                     vec![
-                        "main hint #0".to_string(),
+                        "主要提示 #0".to_string(),
                     ],
                     visible_hint_labels(editor, cx),
-                    "Settings change should make cached hints visible, but only the visible ones, from the remaining excerpt"
+                    "设置更改应使缓存提示可见,但仅显示剩余摘录中可见的提示"
                 );
             })
             .unwrap();
@@ -3507,11 +3507,11 @@ let c = 3;"#
             .update(cx, |editor, _, cx| {
                 assert!(
                     !cached_hint_labels(editor, cx).is_empty(),
-                    "Should have at least one hint after refresh"
+                    "刷新后应至少有一个提示"
                 );
                 assert!(
                     !visible_hint_labels(editor, cx).is_empty(),
-                    "Should have at least one visible hint"
+                    "应至少有一个可见提示"
                 );
             })
             .unwrap();
@@ -3574,7 +3574,7 @@ let c = 3;"#
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should display inlays after toggle despite them disabled in settings"
+                    "尽管在设置中已禁用,切换后仍应显示内联提示"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -3591,12 +3591,12 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     cached_hint_labels(editor, cx),
-                    "Cache does not change because of toggles in the editor"
+                    "编辑器中的切换操作不会更改缓存"
                 );
                 assert_eq!(
                     Vec::<String>::new(),
                     visible_hint_labels(editor, cx),
-                    "Should clear hints after 2nd toggle"
+                    "第二次切换后应清除提示"
                 );
             })
             .unwrap();
@@ -3621,7 +3621,7 @@ let c = 3;"#
                 assert_eq!(
                     expected_hints,
                     cached_hint_labels(editor, cx),
-                    "Should not query LSP hints after enabling hints in settings, as file version is the same"
+                    "在设置中启用提示后不应查询 LSP 提示,因为文件版本相同"
                 );
                 assert_eq!(expected_hints, visible_hint_labels(editor, cx));
             })
@@ -3638,12 +3638,12 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     cached_hint_labels(editor, cx),
-                    "Cache does not change because of toggles in the editor"
+                    "编辑器中的切换操作不会更改缓存"
                 );
                 assert_eq!(
                     Vec::<String>::new(),
                     visible_hint_labels(editor, cx),
-                    "Should clear hints after enabling in settings and a 3rd toggle"
+                    "在设置中启用并进行第三次切换后应清除提示"
                 );
             })
             .unwrap();
@@ -3659,7 +3659,7 @@ let c = 3;"#
             assert_eq!(
                 expected_hints,
                 cached_hint_labels(editor,cx),
-                "Should not query LSP hints after enabling hints in settings and toggling them back on"
+                "在设置中启用提示并重新打开后不应查询 LSP 提示"
             );
             assert_eq!(expected_hints, visible_hint_labels(editor, cx));
         }).unwrap();
@@ -3715,7 +3715,7 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     cached_hint_labels(editor, cx),
-                    "Should display inlays after toggle despite them disabled in settings"
+                    "尽管在设置中已禁用,切换后仍应显示内联提示"
                 );
                 assert_eq!(vec!["1".to_string()], visible_hint_labels(editor, cx));
             })
@@ -3732,12 +3732,12 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     cached_hint_labels(editor, cx),
-                    "Nothing happens with the cache on modifiers change"
+                    "修饰键更改时缓存不会发生任何变化"
                 );
                 assert_eq!(
                     Vec::<String>::new(),
                     visible_hint_labels(editor, cx),
-                    "On modifiers change and hints toggled on, should hide editor inlays"
+                    "当修饰键更改且提示已打开时,应隐藏编辑器内联提示"
                 );
             })
             .unwrap();
@@ -3753,7 +3753,7 @@ let c = 3;"#
                 assert_eq!(
                     Vec::<String>::new(),
                     visible_hint_labels(editor, cx),
-                    "Nothing changes on consequent modifiers change of the same kind"
+                    "后续相同类型的修饰键更改不会发生任何变化"
                 );
             })
             .unwrap();
@@ -3769,12 +3769,12 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     cached_hint_labels(editor, cx),
-                    "When modifiers change is off, no extra requests are sent"
+                    "当修饰键更改关闭时,不会发送额外请求"
                 );
                 assert_eq!(
                     vec!["1".to_string()],
                     visible_hint_labels(editor, cx),
-                    "When modifiers change is off, hints are back into the editor"
+                    "当修饰键更改关闭时,提示会重新显示在编辑器中"
                 );
             })
             .unwrap();
@@ -3790,7 +3790,7 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     visible_hint_labels(editor, cx),
-                    "Nothing changes on consequent modifiers change of the same kind (2)"
+                    "后续相同类型的修饰键更改不会发生任何变化(2)"
                 );
             })
             .unwrap();
@@ -3806,12 +3806,12 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     cached_hint_labels(editor, cx),
-                    "Nothing happens with the cache on modifiers change"
+                    "修饰键更改时缓存不会发生任何变化"
                 );
                 assert_eq!(
                     Vec::<String>::new(),
                     visible_hint_labels(editor, cx),
-                    "When toggled off, should hide editor inlays"
+                    "关闭时,应隐藏编辑器内联提示"
                 );
             })
             .unwrap();
@@ -3827,12 +3827,12 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     cached_hint_labels(editor, cx),
-                    "Nothing happens with the cache on modifiers change"
+                    "修饰键更改时缓存不会发生任何变化"
                 );
                 assert_eq!(
                     vec!["1".to_string()],
                     visible_hint_labels(editor, cx),
-                    "On modifiers change & hints toggled off, should show editor inlays"
+                    "当修饰键更改且提示已关闭时,应显示编辑器内联提示"
                 );
             })
             .unwrap();
@@ -3848,7 +3848,7 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     visible_hint_labels(editor, cx),
-                    "Nothing changes on consequent modifiers change of the same kind"
+                    "后续相同类型的修饰键更改不会发生任何变化"
                 );
             })
             .unwrap();
@@ -3864,12 +3864,12 @@ let c = 3;"#
                 assert_eq!(
                     vec!["1".to_string()],
                     cached_hint_labels(editor, cx),
-                    "When modifiers change is off, no extra requests are sent"
+                    "当修饰键更改关闭时,不会发送额外请求"
                 );
                 assert_eq!(
                     Vec::<String>::new(),
                     visible_hint_labels(editor, cx),
-                    "When modifiers change is off, editor hints are back into their toggled off state"
+                    "当修饰键更改关闭时,编辑器提示恢复到其关闭状态"
                 );
             })
             .unwrap();
@@ -3885,7 +3885,7 @@ let c = 3;"#
                 assert_eq!(
                     Vec::<String>::new(),
                     visible_hint_labels(editor, cx),
-                    "Nothing changes on consequent modifiers change of the same kind (3)"
+                    "后续相同类型的修饰键更改不会发生任何变化(3)"
                 );
             })
             .unwrap();
@@ -4053,7 +4053,7 @@ let c = 3;"#
             assert_eq!(
                 expected_hints,
                 cached_hint_labels(editor, cx),
-                "Editor inlay hints should repeat server's order when placed at the same spot"
+                "编辑器内联提示在放置在同一位置时应重复服务器的顺序"
             );
             assert_eq!(expected_hints, visible_hint_labels(editor, cx));
         });
@@ -4203,7 +4203,7 @@ let c = 3;"#
                                         },
                                     ]))
                                 } else {
-                                    panic!("Unexpected file path {:?}", params.text_document.uri);
+                                    panic!("意外的文件路径 {:?}", params.text_document.uri);
                                 }
                             }
                         },
@@ -4276,7 +4276,7 @@ let c = 3;"#
                                     },
                                 ]))
                             } else {
-                                panic!("Unexpected file path {:?}", params.text_document.uri);
+                                panic!("意外的文件路径 {:?}", params.text_document.uri);
                             }
                         },
                     );
@@ -4350,7 +4350,7 @@ let c = 3;"#
                         ": i35".to_string(),
                     ],
                     sorted_cached_hint_labels(editor, cx),
-                    "We receive duplicate hints from 2 servers and cache them all"
+                    "我们从 2 个服务器收到重复提示并全部缓存"
                 );
                 assert_eq!(
                     vec![
@@ -4360,14 +4360,14 @@ let c = 3;"#
                         ": i33".to_string(),
                     ],
                     visible_hint_labels(editor, cx),
-                    "lib.rs is added before main.rs , so its excerpts should be visible first; hints should be deduplicated per label"
+                    "lib.rs 在 main.rs 之前添加,因此其摘录应首先可见;提示应按标签去重"
                 );
             })
             .unwrap();
         assert_eq!(
             requests_count.load(Ordering::Acquire),
             2,
-            "Should have queried hints once per each file"
+            "每个文件应查询一次提示"
         );
 
         // Scroll all the way down so the 1st buffer is out of sight.
@@ -4411,7 +4411,7 @@ let c = 3;"#
                         ": i35".to_string(),
                     ],
                     sorted_cached_hint_labels(editor, cx),
-                    "No hint changes/duplicates should occur in the cache",
+                    "缓存中不应发生提示更改或重复",
                 );
                 assert_eq!(
                     vec![
@@ -4421,14 +4421,14 @@ let c = 3;"#
                         ": i33".to_string(),
                     ],
                     visible_hint_labels(editor, cx),
-                    "No hint changes/duplicates should occur in the editor excerpts",
+                    "编辑器摘录中不应发生提示更改或重复",
                 );
             })
             .unwrap();
         assert_eq!(
             requests_count.load(Ordering::Acquire),
             4,
-            "Should have queried hints once more per each file, after editing the file once"
+            "编辑文件一次后,每个文件应再查询一次提示"
         );
     }
 
@@ -4535,7 +4535,7 @@ let c = 3;"#
                 let visible = visible_hint_labels(editor, cx);
                 assert!(
                     visible.iter().any(|h| h.starts_with("chunk_0")),
-                    "Should have chunk_0 hints initially, got: {visible:?}"
+                    "最初应有 chunk_0 提示,实际为:{visible:?}"
                 );
             })
             .unwrap();
@@ -4617,7 +4617,7 @@ let c = 3;"#
                 let visible = visible_hint_labels(editor, cx);
                 assert!(
                     visible.iter().any(|h| h.starts_with("chunk_0")),
-                    "chunk_0 hints (from edit task) should be present. Got: {visible:?}"
+                    "应存在 chunk_0 提示(来自编辑任务)。实际为:{visible:?}"
                 );
                 assert!(
                     visible.iter().any(|h| h.starts_with("chunk_50")),
@@ -4885,7 +4885,7 @@ let c = 3;"#
                                         let prefix = match name {
                                             "Rust" => "rs_hint",
                                             "TypeScript" => "ts_hint",
-                                            other => panic!("Unexpected language: {other}"),
+                                            other => panic!("意外的语言:{other}"),
                                         };
                                         async move {
                                             Ok(Some(vec![lsp::InlayHint {
@@ -4972,12 +4972,12 @@ let c = 3;"#
                 assert_eq!(
                     rs_hints.len(),
                     1,
-                    "Should have exactly 1 Rust hint initially, got: {rs_hints:?}"
+                    "最初应恰好有 1 个 Rust 提示,实际为:{rs_hints:?}"
                 );
                 assert_eq!(
                     ts_hints.len(),
                     1,
-                    "Should have exactly 1 TypeScript hint initially, got: {ts_hints:?}"
+                    "最初应恰好有 1 个 TypeScript 提示,实际为:{ts_hints:?}"
                 );
             })
             .unwrap();
@@ -5028,7 +5028,7 @@ let c = 3;"#
                 assert_eq!(
                     rs_hints.len(),
                     1,
-                    "Rust hints should still be present after editing. Got: {rs_hints:?}"
+                    "编辑后 Rust 提示仍应存在。实际为:{rs_hints:?}"
                 );
             })
             .unwrap();
@@ -5171,7 +5171,7 @@ let c = 3;"#
             )
             .await
             .into_response()
-            .expect("work done progress create request failed");
+            .expect("工作完成进度创建请求失败");
         cx.executor().run_until_parked();
         fake_server.notify::<lsp::notification::Progress>(lsp::ProgressParams {
             token: lsp::ProgressToken::Number(progress_token),

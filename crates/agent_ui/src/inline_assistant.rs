@@ -278,7 +278,7 @@ impl InlineAssistant {
                             gpui::PromptLevel::Warning,
                             &error.to_string(),
                             None,
-                            &["Configure", "Cancel"],
+                            &["配置", "取消"],
                         )
                         .await
                         .ok();
@@ -404,7 +404,7 @@ impl InlineAssistant {
 
             if let Some(model) = LanguageModelRegistry::read_global(cx).inline_assistant_model() {
                 telemetry::event!(
-                    "Assistant Invoked",
+                    "助手已调用",
                     kind = "inline",
                     phase = "invoked",
                     model = model.model.telemetry_id(),
@@ -1721,13 +1721,13 @@ impl InlineAssist {
                                 if let Some(sender) = &mut this._inline_assistant_completions {
                                     sender
                                         .unbounded_send(Err(anyhow::anyhow!(
-                                            "Inline assistant error: {}",
+                                            "内联助手错误:{}",
                                             error
                                         )))
                                         .ok();
                                 }
 
-                                let error = format!("Inline assistant error: {}", error);
+                                let error = format!("内联助手错误:{}", error);
                                 workspace.update(cx, |workspace, cx| {
                                     struct InlineAssistantError;
 
@@ -2037,15 +2037,15 @@ pub mod evals {
                     if full_buffer_text.is_empty() {
                         EvalOutput::failed("expected some output".to_string())
                     } else {
-                        EvalOutput::passed(format!("Produced {full_buffer_text}"))
+                        EvalOutput::passed(format!("生成了 {full_buffer_text}"))
                     }
                 }
                 o @ InlineAssistantOutput::Failure { .. } => EvalOutput::failed(format!(
-                    "Assistant output does not match expected output: {:?}",
+                    "助手输出与预期输出不匹配:{:?}",
                     o
                 )),
                 o @ InlineAssistantOutput::Malformed { .. } => EvalOutput::failed(format!(
-                    "Assistant output does not match expected output: {:?}",
+                    "助手输出与预期输出不匹配:{:?}",
                     o
                 )),
             },
@@ -2076,9 +2076,9 @@ pub mod evals {
                         .unwrap_or("anthropic/claude-sonnet-4-latest".into());
 
                     let selected_model = SelectedModel::from_str(&model_name)
-                        .expect("Invalid model format. Use 'provider/model-id'");
+                        .expect("无效的模型格式。请使用“provider/model-id”格式");
 
-                    log::info!("Selected model: {selected_model:?}");
+                    log::info!("已选择模型:{selected_model:?}");
 
                     cx.update(|_, cx| {
                         LanguageModelRegistry::global(cx).update(cx, |registry, cx| {
@@ -2087,7 +2087,7 @@ pub mod evals {
                     });
                 },
                 |_cx| {
-                    log::info!("Waiting for actual response from the LLM...");
+                    log::info!("正在等待 LLM 的实际响应...");
                 },
                 &mut cx,
             );
@@ -2117,7 +2117,7 @@ pub mod evals {
             InlineAssistantOutput::Failure {
                 failure: error_message,
             } => EvalOutput::passed(format!(
-                "Assistant produced a failure message: {}",
+                "助手生成了失败消息:{}",
                 error_message
             )),
             o @ InlineAssistantOutput::Malformed { .. } => {
@@ -2137,7 +2137,7 @@ pub mod evals {
                 ..
             } => {
                 if full_buffer_text == correct_output && description.is_none() {
-                    EvalOutput::passed("Assistant output matches")
+                    EvalOutput::passed("助手输出匹配")
                 } else if full_buffer_text == correct_output {
                     EvalOutput::failed(format!(
                         "Assistant output produced an unescessary description description:\n{:?}",
@@ -2151,11 +2151,11 @@ pub mod evals {
                 }
             }
             o @ InlineAssistantOutput::Failure { .. } => EvalOutput::failed(format!(
-                "Assistant output does not match expected output: {:?}",
+                "助手输出与预期输出不匹配:{:?}",
                 o
             )),
             o @ InlineAssistantOutput::Malformed { .. } => EvalOutput::failed(format!(
-                "Assistant output does not match expected output: {:?}",
+                "助手输出与预期输出不匹配:{:?}",
                 o
             )),
         }

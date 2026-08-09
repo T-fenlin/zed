@@ -127,7 +127,7 @@ pub async fn run_context_retrieval(
 
     let ep_store = cx
         .update(|cx| EditPredictionStore::try_global(cx))
-        .context("EditPredictionStore not initialized")?;
+        .context("EditPredictionStore 未初始化")?;
 
     let mut context_files = Vec::new();
     let context_sources = context_sources_for_types(&context_types);
@@ -193,7 +193,7 @@ pub async fn run_context_retrieval(
     }
 
     let excerpt_count: usize = context_files.iter().map(|f| f.excerpts.len()).sum();
-    step_progress.set_info(format!("{} excerpts", excerpt_count), InfoStyle::Normal);
+    step_progress.set_info(format!("{} 个摘录", excerpt_count), InfoStyle::Normal);
 
     if let Some(prompt_inputs) = example.prompt_inputs.as_mut() {
         prompt_inputs.related_files = Some(context_files);
@@ -378,7 +378,7 @@ async fn wait_for_language_servers_to_start(
     });
 
     step_progress.set_substatus(format!(
-        "waiting for {} LSPs",
+        "正在等待 {} 个 LSP",
         servers_pending_diagnostics.len()
     ));
 
@@ -395,7 +395,7 @@ async fn wait_for_language_servers_to_start(
         let step_progress = step_progress.clone();
         move |lsp_store, event, cx| match event {
             project::LspStoreEvent::LanguageServerAdded(id, name, _) => {
-                step_progress.set_substatus(format!("LSP started: {}", name));
+                step_progress.set_substatus(format!("LSP 已启动: {}", name));
                 started_tx.try_send(*id).ok();
             }
             project::LspStoreEvent::DiskBasedDiagnosticsFinished { language_server_id } => {
@@ -404,7 +404,7 @@ async fn wait_for_language_servers_to_start(
                     .language_server_adapter_for_id(*language_server_id)
                     .unwrap()
                     .name();
-                step_progress.set_substatus(format!("LSP idle: {}", name));
+                step_progress.set_substatus(format!("LSP 空闲: {}", name));
                 diag_tx.try_send(*language_server_id).ok();
             }
             project::LspStoreEvent::LanguageServerUpdate {
@@ -432,7 +432,7 @@ async fn wait_for_language_servers_to_start(
                 }
             },
             _ = timeout.clone().fuse() => {
-                return Err(anyhow::anyhow!("LSP wait timed out after {} minutes", timeout_duration.as_secs() / 60));
+                return Err(anyhow::anyhow!("等待 LSP 超时,已超过 {} 分钟", timeout_duration.as_secs() / 60));
             }
         }
     }
@@ -451,7 +451,7 @@ async fn wait_for_language_servers_to_start(
                 }
             },
             _ = timeout.clone().fuse() => {
-                return Err(anyhow::anyhow!("LSP wait timed out after {} minutes", timeout_duration.as_secs() / 60));
+                return Err(anyhow::anyhow!("等待 LSP 超时,已超过 {} 分钟", timeout_duration.as_secs() / 60));
             }
         }
     }

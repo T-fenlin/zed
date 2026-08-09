@@ -75,13 +75,13 @@ impl ErrorAction {
         }
     }
 
-    /// Creates a dismiss-only action labelled "Dismiss".
+    /// Creates a dismiss-only action labelled "关闭".
     ///
     /// Useful as a sensible default for [`WorkspaceError::primary_action`] when the error has no
     /// recovery affordance beyond closing the notification.
     pub fn dismiss() -> Self {
         Self {
-            label: "Dismiss".into(),
+            label: "关闭".into(),
             icon: None,
             tooltip: None,
             handler: ErrorActionHandler::Dismiss,
@@ -197,7 +197,7 @@ impl WorkspaceError for PortalError {
 
     fn primary_action(&self) -> ErrorAction {
         ErrorAction::link(
-            "See docs",
+            "查看文档",
             "https://zed.dev/docs/linux#i-cant-open-any-files",
         )
     }

@@ -238,7 +238,7 @@ pub fn init(cx: &mut App) {
             open_bundled_file(
                 workspace,
                 asset_str::<Assets>("licenses.md"),
-                "Open Source License Attribution",
+                "开源许可证归属",
                 "Markdown",
                 window,
                 cx,
@@ -295,7 +295,7 @@ pub fn init(cx: &mut App) {
             open_bundled_file(
                 workspace,
                 settings::default_semantic_token_rules(),
-                "Default Semantic Token Rules",
+                "默认语义令牌规则",
                 "JSONC",
                 window,
                 cx,
@@ -307,7 +307,7 @@ pub fn init(cx: &mut App) {
             open_bundled_file(
                 workspace,
                 settings::default_settings(),
-                "Default Settings",
+                "默认设置",
                 "JSON",
                 window,
                 cx,
@@ -319,7 +319,7 @@ pub fn init(cx: &mut App) {
             open_bundled_file(
                 workspace,
                 settings::default_keymap(),
-                "Default Key Bindings",
+                "默认键位绑定",
                 "JSON",
                 window,
                 cx,
@@ -572,7 +572,7 @@ pub fn initialize_workspace(app_state: Arc<AppState>, cx: &mut App) {
         initialize_file_watcher(window, cx);
 
         if let Some(specs) = window.gpu_specs() {
-            log::info!("Using GPU: {:?}", specs);
+            log::info!("正在使用 GPU: {:?}", specs);
             show_software_emulation_warning_if_needed(specs.clone(), window, cx);
             if let Some(crash_client) = cx.try_global::<CrashHandler>() {
                 crashes::set_gpu_info(&crash_client.0, specs);
@@ -673,9 +673,9 @@ fn initialize_file_watcher(window: &mut Window, cx: &mut Context<Workspace>) {
         );
         let prompt = window.prompt(
             PromptLevel::Critical,
-            "Could not start inotify",
+            "无法启动 inotify",
             Some(&message),
-            &["Troubleshoot and Quit"],
+            &["排查并退出"],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -704,9 +704,9 @@ fn initialize_file_watcher(window: &mut Window, cx: &mut Context<Workspace>) {
         );
         let prompt = window.prompt(
             PromptLevel::Critical,
-            "Could not start ReadDirectoryChangesW",
+            "无法启动 ReadDirectoryChangesW",
             Some(&message),
-            &["Troubleshoot and Quit"],
+            &["排查并退出"],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -754,9 +754,9 @@ fn show_software_emulation_warning_if_needed(
         );
         let prompt = window.prompt(
             PromptLevel::Critical,
-            "Unsupported GPU",
+            "不支持的 GPU",
             Some(&message),
-            &["Skip", "Troubleshoot and Quit"],
+            &["跳过", "排查并退出"],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -786,7 +786,7 @@ fn initialize_panels(window: &mut Window, cx: &mut Context<Workspace>) -> Task<a
             workspace_handle: WeakEntity<Workspace>,
             mut cx: gpui::AsyncWindowContext,
         ) {
-            if let Some(panel) = panel_task.await.context("failed to load panel").log_err()
+            if let Some(panel) = panel_task.await.context("加载面板失败").log_err()
             {
                 workspace_handle
                     .update_in(&mut cx, |workspace, window, cx| {
@@ -979,7 +979,7 @@ fn register_actions(
                         buffer.set_text(json, cx);
                     });
                     workspace.update_in(cx, |workspace, window, cx| {
-                        let title = "Accessibility Tree".to_string();
+                        let title = "辅助功能树".to_string();
                         let buffer = cx.new(|cx| {
                             MultiBuffer::singleton(buffer, cx).with_title(title.clone())
                         });
@@ -1053,7 +1053,7 @@ fn register_actions(
             }
         })
         .register_action(|workspace, action: &workspace::Open, window, cx| {
-            telemetry::event!("Project Opened");
+            telemetry::event!("项目已打开");
             workspace::prompt_for_open_path_and_open(
                 workspace,
                 workspace.app_state().clone(),
@@ -1104,7 +1104,7 @@ fn register_actions(
                     DefaultOpenBehavior::NewWindow
                 )
             });
-            telemetry::event!("Project Opened");
+            telemetry::event!("项目已打开");
             let paths = workspace.prompt_for_open_path(
                 PathPromptOptions {
                     files: true,
@@ -1255,7 +1255,7 @@ fn register_actions(
                         Toast::new(
                             NotificationId::unique::<RegisterZedScheme>(),
                             format!(
-                                "zed:// links will now open in {}.",
+                                "zed:// 链接现在将在 {} 中打开。",
                                 ReleaseChannel::global(cx).display_name()
                             ),
                         ),
@@ -1265,7 +1265,7 @@ fn register_actions(
                 Ok(())
             })
             .detach_and_prompt_err(
-                "Error registering zed:// scheme",
+                "注册 zed:// 协议时出错",
                 window,
                 cx,
                 |_, _, _| None,
@@ -1386,7 +1386,7 @@ fn register_actions(
                                 buffer
                                     .read(cx)
                                     .project_path(cx)
-                                    .expect("Settings file must have a location"),
+                                    .expect("设置文件必须具有位置"),
                                 None,
                                 true,
                                 window,
@@ -1412,7 +1412,7 @@ fn register_actions(
         impl WorkspaceError for DebugError {
             fn primary_message(&self) -> SharedString {
                 SharedString::new_static(
-                    "Error: Prepare rename via rust-analyzer failed: No references found at position",
+                    "错误: 通过 rust-analyzer 准备重命名失败: 在指定位置未找到引用",
                 )
             }
 
@@ -1427,7 +1427,7 @@ fn register_actions(
 
         impl WorkspaceError for SecondDebugError {
             fn primary_message(&self) -> SharedString {
-                SharedString::new_static("This is some error to ignore.")
+                SharedString::new_static("这是需要忽略的某个错误。")
             }
 
             fn severity(&self) -> ErrorSeverity {
@@ -1547,7 +1547,7 @@ fn open_about_window(cx: &mut App) {
             let version = env!("CARGO_PKG_VERSION");
 
             let debug = if cfg!(debug_assertions) {
-                "(debug)"
+                "(调试)"
             } else {
                 ""
             };
@@ -1613,14 +1613,14 @@ fn open_about_window(cx: &mut App) {
                             .child(Headline::new(self.message.clone()))
                             .when_some(self.commit.clone(), |this, commit| {
                                 this.child(
-                                    Label::new("Commit")
+                                    Label::new("提交")
                                         .color(Color::Muted)
                                         .size(LabelSize::XSmall),
                                 )
                                 .child(Label::new(commit).size(LabelSize::Small))
                             })
                             .child(
-                                Label::new("Version")
+                                Label::new("版本")
                                     .color(Color::Muted)
                                     .size(LabelSize::XSmall),
                             )
@@ -1638,7 +1638,7 @@ fn open_about_window(cx: &mut App) {
                                         window.remove_window();
                                     }))
                                     .child(
-                                        Button::new("ok", "OK")
+                                        Button::new("ok", "确定")
                                             .full_width()
                                             .style(ButtonStyle::OutlinedGhost)
                                             .toggle_state(ok_is_focused)
@@ -1658,7 +1658,7 @@ fn open_about_window(cx: &mut App) {
                                         },
                                     ))
                                     .child(
-                                        Button::new("copy", "Copy")
+                                        Button::new("copy", "复制")
                                             .full_width()
                                             .style(ButtonStyle::Tinted(TintColor::Accent))
                                             .toggle_state(copy_is_focused)
@@ -1705,7 +1705,7 @@ fn open_about_window(cx: &mut App) {
     cx.open_window(
         WindowOptions {
             titlebar: Some(TitlebarOptions {
-                title: Some("About Zed".into()),
+                title: Some("关于 Zed".into()),
                 appears_transparent: true,
                 traffic_light_position: Some(point(px(12.), px(12.))),
             }),
@@ -1763,9 +1763,9 @@ fn quit(_: &Quit, cx: &mut App) {
                 .update(cx, |_, window, cx| {
                     window.prompt(
                         PromptLevel::Info,
-                        "Are you sure you want to quit?",
+                        "确定要退出吗?",
                         None,
-                        &["Quit", "Cancel"],
+                        &["退出", "取消"],
                         cx,
                     )
                 })
@@ -1942,14 +1942,14 @@ fn open_log_file(workspace: &mut Workspace, window: &mut Window, cx: &mut Contex
                 buffer.set_text(log, cx);
             });
 
-            let buffer = cx.new(|cx| MultiBuffer::singleton(buffer, cx).with_title("Log".into()));
+            let buffer = cx.new(|cx| MultiBuffer::singleton(buffer, cx).with_title("日志".into()));
 
             let editor = cx
                 .new_window_entity(|window, cx| {
                     let mut editor = Editor::for_multibuffer(buffer, Some(project), window, cx);
                     editor.set_read_only(true);
                     editor.set_breadcrumb_header(format!(
-                        "Last {} lines in {}",
+                        "{} 中的最后 {} 行",
                         MAX_LINES,
                         paths::log_file().display()
                     ));
@@ -1975,7 +1975,7 @@ fn open_log_file(workspace: &mut Workspace, window: &mut Window, cx: &mut Contex
 fn notify_settings_errors(result: settings::SettingsParseResult, is_user: bool, cx: &mut App) {
     if let settings::ParseStatus::Failed { error: err } = &result.parse_status {
         let settings_type = if is_user { "user" } else { "global" };
-        log::error!("Failed to load {} settings: {err}", settings_type);
+        log::error!("加载 {} 设置失败: {err}", settings_type);
     }
 
     let error = match result.parse_status {
@@ -1996,7 +1996,7 @@ fn notify_settings_errors(result: settings::SettingsParseResult, is_user: bool, 
                 show_app_notification(id, cx, move |cx| {
                     cx.new(|cx| {
                         MessageNotification::new(format!("Invalid user settings file\n{error}"), cx)
-                            .primary_message("Open Settings File")
+                            .primary_message("打开设置文件")
                             .primary_icon(IconName::Settings)
                             .primary_on_click(|window, cx| {
                                 window.dispatch_action(
@@ -2032,7 +2032,7 @@ fn notify_settings_errors(result: settings::SettingsParseResult, is_user: bool, 
                             ),
                             cx,
                         )
-                        .primary_message("Open Settings File")
+                        .primary_message("打开设置文件")
                         .primary_icon(IconName::Settings)
                         .primary_on_click(|window, cx| {
                             window.dispatch_action(zed_actions::OpenSettingsFile.boxed_clone(), cx);
@@ -2115,7 +2115,7 @@ pub fn watch_user_agents_md(fs: Arc<dyn fs::Fs>, cx: &mut App) {
         }
         UserAgentsMdState::Error(message) => {
             let path = paths::agents_file().display().to_string();
-            log::error!("Failed to load user AGENTS.md from {path}: {message}");
+            log::error!("从 {path} 加载用户 AGENTS.md 失败: {message}");
             let body = format!("Failed to load {path}\n{message}");
             let notification_id = notification_id.clone();
             show_app_notification(notification_id, cx, move |cx| {
@@ -2275,7 +2275,7 @@ fn show_keymap_file_json_error(
     show_app_notification(notification_id, cx, move |cx| {
         cx.new(|cx| {
             MessageNotification::new(message.clone(), cx)
-                .primary_message("Open Keymap File")
+                .primary_message("打开键位映射文件")
                 .primary_icon(IconName::Settings)
                 .primary_on_click(|window, cx| {
                     window.dispatch_action(zed_actions::OpenKeymapFile.boxed_clone(), cx);
@@ -2293,7 +2293,7 @@ fn show_keymap_file_load_error(
     show_markdown_app_notification(
         notification_id,
         error_message,
-        "Open Keymap File".into(),
+        "打开键位映射文件".into(),
         |window, cx| {
             window.dispatch_action(zed_actions::OpenKeymapFile.boxed_clone(), cx);
             cx.emit(DismissEvent);
@@ -2349,7 +2349,7 @@ fn reload_keymaps(cx: &mut App, mut user_key_bindings: Vec<KeyBinding>) {
     // On Windows, this is set in the `update_jump_list` method of the `HistoryManager`.
     #[cfg(not(target_os = "windows"))]
     cx.set_dock_menu(vec![gpui::MenuItem::action(
-        "New Window",
+        "新建窗口",
         workspace::NewWindow,
     )]);
     // todo: nicer api here?
@@ -2431,7 +2431,7 @@ pub fn open_new_ssh_project_from_project(
 ) -> Task<anyhow::Result<()>> {
     let app_state = workspace.app_state().clone();
     let Some(ssh_client) = workspace.project().read(cx).remote_client() else {
-        return Task::ready(Err(anyhow::anyhow!("Not an ssh project")));
+        return Task::ready(Err(anyhow::anyhow!("不是 SSH 项目")));
     };
     let connection_options = ssh_client.read(cx).connection_options();
     let requesting_window = if create_new_window {
@@ -2502,7 +2502,7 @@ fn open_worktree_setup_tasks_file(
     // Runs automatically after Zed creates a new git worktree.
     // $ZED_WORKTREE_ROOT is the new worktree's root directory, and
     // $ZED_MAIN_GIT_WORKTREE is the original repository's working directory.
-    "label": "Set up new worktree",
+    "label": "设置新工作树",
     "command": "echo \"Setting up $ZED_WORKTREE_ROOT — edit this command\"",
     "cwd": "$ZED_WORKTREE_ROOT",
     "hooks": ["create_worktree"]
@@ -2595,7 +2595,7 @@ fn open_local_file(
                             project.create_entry((tree_id, dir_path), true, cx)
                         })
                         .await
-                        .context("worktree was removed")?;
+                        .context("工作树已被移除")?;
                 }
 
                 if worktree.read_with(cx, |tree, _| {
@@ -2606,7 +2606,7 @@ fn open_local_file(
                             project.create_entry((tree_id, settings_relative_path), false, cx)
                         })
                         .await
-                        .context("worktree was removed")?;
+                        .context("工作树已被移除")?;
                 }
             }
 
@@ -2616,7 +2616,7 @@ fn open_local_file(
                 })?
                 .await?
                 .downcast::<Editor>()
-                .context("unexpected item type: expected editor item")?;
+                .context("意外的项目类型: 应为编辑器项目")?;
 
             editor.update(cx, |editor, cx| {
                 if let Some(buffer) = editor.buffer().read(cx).as_singleton()
@@ -2634,7 +2634,7 @@ fn open_local_file(
         struct NoOpenFolders;
 
         workspace.show_notification(NotificationId::unique::<NoOpenFolders>(), cx, |cx| {
-            cx.new(|cx| MessageNotification::new("This project has no folders open.", cx))
+            cx.new(|cx| MessageNotification::new("此项目没有打开的文件夹。", cx))
         });
         None
     }
@@ -3012,7 +3012,7 @@ mod tests {
             &mut async_cx,
         )
         .await
-        .expect("opening the initial remote project should succeed");
+        .expect("打开初始远程项目应该成功");
         executor.run_until_parked();
 
         assert_eq!(cx.update(|cx| cx.windows().len()), 1);
@@ -3026,7 +3026,7 @@ mod tests {
                         .project()
                         .read(cx)
                         .remote_client()
-                        .expect("initial project should have a remote client");
+                        .expect("初始项目应具有远程客户端");
                     remote_client.update(cx, |remote_client, cx| {
                         remote_client.force_server_not_running(cx);
                     });
@@ -3042,7 +3042,7 @@ mod tests {
                         let (sender, receiver) = futures::channel::oneshot::channel();
                         sender
                             .send(Some(vec![PathBuf::from(path!("/other-project"))]))
-                            .expect("path prompt receiver should be open");
+                            .expect("路径提示接收器应处于打开状态");
                         receiver
                     }));
                 });
@@ -3060,9 +3060,9 @@ mod tests {
         assert_eq!(
             cx.update(|cx| cx.windows().len()),
             1,
-            "create_new_window: false should reuse the current window"
+            "create_new_window: false 应重用当前窗口"
         );
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
         executor.run_until_parked();
     }
 
@@ -3413,7 +3413,7 @@ mod tests {
         // Editing a buffer marks the window as edited.
         window
             .update(cx, |_, window, cx| {
-                editor.update(cx, |editor, cx| editor.insert("EDIT", window, cx));
+                editor.update(cx, |editor, cx| editor.insert("编辑", window, cx));
             })
             .unwrap();
 
@@ -3451,7 +3451,7 @@ mod tests {
             .unwrap();
         executor.run_until_parked();
 
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         close.await.unwrap();
 
         // Advance the clock to ensure that the item has been serialized and dropped from the queue
@@ -3504,7 +3504,7 @@ mod tests {
         // Editing the buffer marks the window as edited.
         window
             .update(cx, |_, window, cx| {
-                editor.update(cx, |editor, cx| editor.insert("EDIT", window, cx));
+                editor.update(cx, |editor, cx| editor.insert("编辑", window, cx));
             })
             .unwrap();
         executor.run_until_parked();
@@ -3517,12 +3517,12 @@ mod tests {
         assert_eq!(cx.update(|cx| cx.windows().len()), 1);
 
         // The window is successfully closed after the user dismisses the prompt.
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         executor.run_until_parked();
         assert_eq!(cx.update(|cx| cx.windows().len()), 0);
     }
 
-    #[ignore = "This test has timing issues across platforms."]
+    #[ignore = "此测试在不同平台上存在时序问题。"]
     #[gpui::test]
     async fn test_window_edit_state_restoring_enabled(cx: &mut TestAppContext) {
         let app_state = init_test(cx);
@@ -3572,13 +3572,13 @@ mod tests {
         let initial_database_id = workspace_database_id(window, cx);
         assert!(
             initial_database_id.is_some(),
-            "a restored workspace must have a stable database id"
+            "恢复的工作区必须具有稳定的数据库 ID"
         );
 
         // Editing a buffer marks the window as edited.
         window
             .update(cx, |_, window, cx| {
-                editor.update(cx, |editor, cx| editor.insert("EDIT", window, cx));
+                editor.update(cx, |editor, cx| editor.insert("编辑", window, cx));
             })
             .unwrap();
         cx.run_until_parked();
@@ -3622,7 +3622,7 @@ mod tests {
         assert_eq!(
             workspace_database_id(window, cx),
             initial_database_id,
-            "the workspace must keep the same database id across a close/reopen cycle"
+            "工作区在关闭/重新打开周期内必须保持相同的数据库 ID"
         );
 
         window
@@ -3712,9 +3712,9 @@ mod tests {
                 path!("/root"),
                 json!({
                     "a": {
-                        "file1": "contents 1",
-                        "file2": "contents 2",
-                        "file3": "contents 3",
+                        "file1": "内容 1",
+                        "file2": "内容 2",
+                        "file3": "内容 3",
                     },
                 }),
             )
@@ -3906,20 +3906,20 @@ mod tests {
             ]
             .into_iter()
             .find_map(std::convert::identity)
-            .expect("found no project panels")
+            .expect("未找到项目面板")
             .read(cx);
             let (selected_worktree, selected_entry) = project_panel
                 .selected_entry(cx)
-                .expect("project panel should have a selected entry");
+                .expect("项目面板应具有选定的条目");
             assert_eq!(
                 selected_worktree.abs_path().as_ref(),
                 expected_worktree_path,
-                "Unexpected project panel selected worktree path"
+                "意外的项目面板选定工作树路径"
             );
             assert_eq!(
                 selected_entry.path.as_ref(),
                 expected_entry_path,
-                "Unexpected project panel selected entry path"
+                "意外的项目面板选定条目路径"
             );
         }
 
@@ -4156,18 +4156,18 @@ mod tests {
                         "HEAD": "ref: refs/heads/main",
                     },
                     "regular_dir": {
-                        "file": "regular file contents",
+                        "file": "常规文件内容",
                     },
                     "ignored_dir": {
                         "ignored_subdir": {
-                            "file": "ignored subfile contents",
+                            "file": "被忽略的子文件内容",
                         },
-                        "file": "ignored file contents",
+                        "file": "被忽略的文件内容",
                     },
                     "excluded_dir": {
-                        "file": "excluded file contents",
+                        "file": "被排除的文件内容",
                         "ignored_subdir": {
-                            "file": "ignored subfile contents",
+                            "file": "被忽略的子文件内容",
                         },
                     },
                 }),
@@ -4211,13 +4211,13 @@ mod tests {
                 .read_with(cx, |mw, _| mw.workspace().entity_id())
                 .unwrap(),
             workspace.entity_id(),
-            "Excluded files in subfolders of a workspace root should be opened in the workspace"
+            "工作区根目录子文件夹中被排除的文件应在工作区中打开"
         );
         let mut opened_paths = cx.read(|cx| {
             assert_eq!(
                 new_items.len(),
                 paths_to_open.len(),
-                "Expect to get the same number of opened items as submitted paths to open"
+                "期望打开的项目数量与提交的打开路径数量相同"
             );
             new_items
                 .iter()
@@ -4225,7 +4225,7 @@ mod tests {
                 .map(|(i, path)| {
                     match i {
                         Some(Ok(i)) => Some(i.project_path(cx).map(|p| p.path)),
-                        Some(Err(e)) => panic!("Excluded file {path:?} failed to open: {e:?}"),
+                        Some(Err(e)) => panic!("被排除的文件 {path:?} 打开失败: {e:?}"),
                         None => None,
                     }
                     .flatten()
@@ -4240,13 +4240,13 @@ mod tests {
                 Some(rel_path(".git/HEAD").into()),
                 Some(rel_path("excluded_dir/file").into()),
             ],
-            "Excluded files should get opened, excluded dir should not get opened"
+            "被排除的文件应被打开,被排除的目录不应被打开"
         );
 
         let entries = cx.read(|cx| workspace.file_project_paths(cx));
         assert_eq!(
             initial_entries, entries,
-            "Workspace entries should not change after opening excluded files and directories paths"
+            "打开被排除的文件和目录路径后,工作区条目不应更改"
         );
 
         cx.read(|cx| {
@@ -4255,7 +4255,7 @@ mod tests {
                     .items()
                     .map(|i| {
                         i.project_path(cx)
-                            .expect("all excluded files that got open should have a path")
+                            .expect("所有打开的被排除文件都应具有路径")
                             .path
                     })
                     .collect::<Vec<_>>();
@@ -4263,7 +4263,7 @@ mod tests {
                 assert_eq!(
                     opened_buffer_paths,
                     vec![rel_path(".git/HEAD").into(), rel_path("excluded_dir/file").into()],
-                    "Despite not being present in the worktrees, buffers for excluded files are opened and added to the pane"
+                    "尽管工作树中不存在,被排除文件的缓冲区仍会被打开并添加到窗格中"
                 );
             });
     }
@@ -4332,7 +4332,7 @@ mod tests {
             })
             .unwrap();
         cx.background_executor.run_until_parked();
-        cx.simulate_prompt_answer("Overwrite");
+        cx.simulate_prompt_answer("覆盖");
         save_task.await.unwrap();
         window
             .update(cx, |_, _, cx| {
@@ -4592,9 +4592,9 @@ mod tests {
                 path!("/root"),
                 json!({
                     "a": {
-                        "file1": "contents 1",
-                        "file2": "contents 2",
-                        "file3": "contents 3",
+                        "file1": "内容 1",
+                        "file2": "内容 2",
+                        "file3": "内容 3",
                     },
                 }),
             )
@@ -4658,7 +4658,7 @@ mod tests {
             close_pinned: false,
         });
         cx.background_executor.run_until_parked();
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         cx.background_executor.run_until_parked();
 
         workspace.read_with(cx, |workspace, cx| {
@@ -4745,7 +4745,7 @@ mod tests {
 
         assert_eq!(
             initial_font_size, font_size_after_disabled_zoom,
-            "Editor buffer font-size should not change when mouse_wheel_zoom is disabled"
+            "当 mouse_wheel_zoom 被禁用时,编辑器缓冲区字体大小不应更改"
         );
 
         // Enable mouse_wheel_zoom and verify zoom works.
@@ -4773,7 +4773,7 @@ mod tests {
 
         assert!(
             increased_font_size > initial_font_size,
-            "Editor buffer font-size should have increased from scroll-zoom"
+            "编辑器缓冲区字体大小应从滚动缩放中增加"
         );
 
         cx.update(|window, cx| {
@@ -4792,7 +4792,7 @@ mod tests {
 
         assert!(
             decreased_font_size < increased_font_size,
-            "Editor buffer font-size should have decreased from scroll-zoom"
+            "编辑器缓冲区字体大小应从滚动缩放中减小"
         );
 
         // Disable mouse_wheel_zoom again and verify zoom stops working.
@@ -4823,7 +4823,7 @@ mod tests {
 
         assert_eq!(
             font_size_before, font_size_after,
-            "Editor buffer font-size should not change when mouse_wheel_zoom is re-disabled"
+            "当 mouse_wheel_zoom 被重新禁用时,编辑器缓冲区字体大小不应更改"
         );
     }
 
@@ -5339,11 +5339,11 @@ mod tests {
         let after_go_back = active_path(&workspace, cx);
         assert!(
             after_go_back.is_some() && after_go_back != Some(file1.clone()),
-            "After go_back from file1, should be at a different file"
+            "从 file1 返回后,应位于不同的文件"
         );
 
         pane.read_with(cx, |pane, _| {
-            assert!(pane.can_navigate_forward(), "Should be able to go forward");
+            assert!(pane.can_navigate_forward(), "应能够前进");
         });
 
         fn active_path(
@@ -5411,24 +5411,24 @@ mod tests {
     fn test_emacs_cursor_keys_do_not_fall_back_to_default_bindings(cx: &mut TestAppContext) {
         init_keymap_test(cx);
 
-        let ctrl_n = emacs_bindings_for("ctrl-n", "Workspace Editor", cx);
+        let ctrl_n = emacs_bindings_for("ctrl-n", "工作区编辑器", cx);
         assert!(
             ctrl_n.contains(&"editor::MoveDown".to_string()),
-            "ctrl-n should still move down, got {ctrl_n:?}"
+            "ctrl-n 仍应向下移动,得到 {ctrl_n:?}"
         );
         assert!(
             !ctrl_n.contains(&"workspace::NewFile".to_string()),
-            "ctrl-n should not fall through to workspace::NewFile, got {ctrl_n:?}"
+            "ctrl-n 不应传递到 工作区::NewFile,得到 {ctrl_n:?}"
         );
 
-        let ctrl_p = emacs_bindings_for("ctrl-p", "Workspace Editor", cx);
+        let ctrl_p = emacs_bindings_for("ctrl-p", "工作区编辑器", cx);
         assert!(
             ctrl_p.contains(&"editor::MoveUp".to_string()),
-            "ctrl-p should still move up, got {ctrl_p:?}"
+            "ctrl-p 仍应向上移动,得到 {ctrl_p:?}"
         );
         assert!(
             !ctrl_p.contains(&"file_finder::Toggle".to_string()),
-            "ctrl-p should not fall through to file_finder::Toggle, got {ctrl_p:?}"
+            "ctrl-p 不应传递到 file_finder::切换,得到 {ctrl_p:?}"
         );
     }
 
@@ -5438,7 +5438,7 @@ mod tests {
     fn test_emacs_cursor_keys_keep_narrower_bindings(cx: &mut TestAppContext) {
         init_keymap_test(cx);
 
-        let completions = "Workspace Editor showing_completions";
+        let completions = "工作区编辑器 showing_completions";
         assert_eq!(
             emacs_bindings_for("ctrl-n", completions, cx).first(),
             Some(&"editor::ContextMenuNext".to_string())
@@ -5448,7 +5448,7 @@ mod tests {
             Some(&"editor::ContextMenuPrevious".to_string())
         );
 
-        let selection_mode = "Workspace Editor selection_mode";
+        let selection_mode = "工作区编辑器 selection_mode";
         assert_eq!(
             emacs_bindings_for("ctrl-n", selection_mode, cx).first(),
             Some(&"editor::SelectDown".to_string())
@@ -5910,17 +5910,17 @@ mod tests {
             .unwrap();
         assert!(
             active_editor.is_some(),
-            "Settings action should have opened an editor with the default file contents"
+            "设置操作应已打开包含默认文件内容的编辑器"
         );
 
         let active_editor = active_editor.unwrap();
         assert!(
             active_editor.read_with(cx, |editor, cx| editor.read_only(cx)),
-            "Default settings should be readonly"
+            "默认设置应为只读"
         );
         assert!(
             active_editor.read_with(cx, |editor, cx| editor.buffer().read(cx).read_only()),
-            "The underlying buffer should also be readonly for the shipped default settings"
+            "随附的默认设置的基础缓冲区也应为只读"
         );
     }
 
@@ -5943,7 +5943,7 @@ mod tests {
                 multi_workspace.workspace().update(cx, |workspace, cx| {
                     workspace
                         .active_item(cx)
-                        .expect("default settings should be open")
+                        .expect("默认设置应已打开")
                         .item_id()
                 })
             })
@@ -5960,7 +5960,7 @@ mod tests {
                     let pane = workspace.active_pane().read(cx);
                     (
                         pane.active_item()
-                            .expect("default settings should still be open")
+                            .expect("默认设置应仍处于打开状态")
                             .item_id(),
                         pane.items_len(),
                     )
@@ -5988,7 +5988,7 @@ mod tests {
             languages
                 .language_for_name(name.as_ref())
                 .await
-                .with_context(|| format!("language name {name}"))
+                .with_context(|| format!("语言名称 {name}"))
                 .unwrap();
         }
         cx.run_until_parked();
@@ -6102,7 +6102,7 @@ mod tests {
                     // actions match...
                     bound_action.partial_eq(action)
                 }),
-                "On {} Failed to find {}",
+                "在 {} 上找不到 {}",
                 line,
                 action.name(),
             );
@@ -6111,7 +6111,7 @@ mod tests {
                 bindings
                     .into_iter()
                     .any(|binding| binding.keystrokes().iter().any(|k| k.key() == key)),
-                "On {} Failed to find {} with key binding {}",
+                "在 {} 上找不到带有键绑定 {} 的 {}",
                 line,
                 action.name(),
                 key
@@ -6124,7 +6124,7 @@ mod tests {
         // Use the proper initialization for runtime state
         let app_state = init_keymap_test(cx);
 
-        eprintln!("Running test_opening_project_settings_when_excluded");
+        eprintln!("正在运行 test_opening_project_settings_when_excluded");
 
         // 1. Set up a project with some project settings
         let settings_init =
@@ -6142,7 +6142,7 @@ mod tests {
             )
             .await;
 
-        eprintln!("Created project with .zed/settings.json containing UNIQUEVALUE");
+        eprintln!("已创建包含 UNIQUEVALUE 的 .zed/设置.json 项目");
 
         // 2. Create a project with the file system and load it
         let project = Project::test(app_state.fs.clone(), [Path::new("/root")], cx).await;
@@ -6157,10 +6157,10 @@ mod tests {
         let original_settings_str = original_settings.clone();
 
         // Verify settings exist on disk and have expected content
-        eprintln!("Original settings content: {}", original_settings_str);
+        eprintln!("原始设置内容:{}", original_settings_str);
         assert!(
             original_settings_str.contains("UNIQUEVALUE"),
-            "Test setup failed - settings file doesn't contain our marker"
+            "测试设置失败 - 设置文件不包含我们的标记"
         );
 
         // 3. Add .zed to file scan exclusions in user settings
@@ -6171,7 +6171,7 @@ mod tests {
             });
         });
 
-        eprintln!("Added .zed to file_scan_exclusions in settings");
+        eprintln!("已将 .zed 添加到设置中的 file_scan_exclusions");
 
         // 4. Run tasks to apply settings
         cx.background_executor.run_until_parked();
@@ -6183,7 +6183,7 @@ mod tests {
             cx.update(|cx| worktree.read(cx).entry_for_path(rel_path(".zed")).is_some());
 
         eprintln!(
-            "Is .zed directory visible in worktree after exclusion: {}",
+            "排除后 .zed 目录在工作树中是否可见:{}",
             has_zed_entry
         );
 
@@ -6191,7 +6191,7 @@ mod tests {
         // If .zed is not excluded, the test will fail here
         assert!(
             !has_zed_entry,
-            "Test precondition failed: .zed directory should be excluded but was found in worktree"
+            "测试前置条件失败:.zed 目录应被排除,但在工作树中找到了它"
         );
 
         // 6. Create workspace and trigger the actual function that causes the bug
@@ -6204,7 +6204,7 @@ mod tests {
             .update(cx, |_, window, cx| {
                 workspace.update(cx, |workspace, cx| {
                     // Call the exact function that contains the bug
-                    eprintln!("About to call open_project_settings_file");
+                    eprintln!("即将调用 open_project_settings_file");
                     open_project_settings_file(workspace, &OpenProjectSettingsFile, window, cx);
                 });
             })
@@ -6221,17 +6221,17 @@ mod tests {
             .unwrap();
 
         let new_content_str = new_content;
-        eprintln!("New settings content: {}", new_content_str);
+        eprintln!("新设置内容:{}", new_content_str);
 
         // The bug causes the settings to be overwritten with empty settings
         // So if the unique value is no longer present, the bug has been reproduced
         let bug_exists = !new_content_str.contains("UNIQUEVALUE");
-        eprintln!("Bug reproduced: {}", bug_exists);
+        eprintln!("Bug 已复现:{}", bug_exists);
 
         // This assertion should fail if the bug exists - showing the bug is real
         assert!(
             new_content_str.contains("UNIQUEVALUE"),
-            "BUG FOUND: Project settings were overwritten when opening via command - original custom content was lost"
+            "发现 Bug:通过命令打开时项目设置被覆盖 - 原始自定义内容丢失"
         );
     }
 
@@ -6270,7 +6270,7 @@ mod tests {
             let has_ai_binding = keymap.bindings().any(|binding| is_ai_keybinding(binding));
             assert!(
                 has_ai_binding,
-                "expected AI-namespaced bindings in the default keymap before disabling AI"
+                "在禁用 AI 之前,默认键位映射中应有 AI 命名空间的绑定"
             );
         });
 
@@ -6293,7 +6293,7 @@ mod tests {
             let keymap = keymap.borrow();
             if let Some(binding) = keymap.bindings().find(|b| is_ai_keybinding(b)) {
                 panic!(
-                    "expected no AI-namespaced bindings after disabling AI, but found `{}`",
+                    "禁用 AI 后不应有 AI 命名空间的绑定,但找到了 `{}`",
                     binding.action().name()
                 );
             }
@@ -6311,7 +6311,7 @@ mod tests {
             let keymap = keymap.borrow();
             if let Some(binding) = keymap.bindings().find(|b| is_ai_keybinding(b)) {
                 panic!(
-                    "expected user binding `{}` to be filtered when AI is disabled",
+                    "禁用 AI 时,用户绑定 `{}` 应被过滤",
                     binding.action().name()
                 );
             }
@@ -6329,7 +6329,7 @@ mod tests {
             .insert_tree(
                 path!("/dir"),
                 json!({
-                    "document.txt": "Some of the documentation's content."
+                    "document.txt": "部分文档内容。"
                 }),
             )
             .await;
@@ -6394,13 +6394,13 @@ mod tests {
                 path!("/"),
                 json!({
                     "dir1": {
-                        "a.txt": "content a"
+                        "a.txt": "内容 a"
                     },
                     "dir2": {
-                        "b.txt": "content b"
+                        "b.txt": "内容 b"
                     },
                     "dir3": {
-                        "c.txt": "content c"
+                        "c.txt": "内容 c"
                     }
                 }),
             )
@@ -6420,7 +6420,7 @@ mod tests {
             .unwrap();
 
         cx.run_until_parked();
-        assert_eq!(cx.windows().len(), 1, "Should start with 1 window");
+        assert_eq!(cx.windows().len(), 1, "应以 1 个窗口开始");
 
         // Create workspace 2 with /dir2
         let project2 = Project::test(app_state.fs.clone(), [path!("/dir2").as_ref()], cx).await;
@@ -6465,7 +6465,7 @@ mod tests {
             .unwrap();
         assert_eq!(cx.windows().len(), 1);
 
-        // Open a file in /dir3 - should switch to workspace 3 (not just "the other one")
+        // Open a file in /dir3 - should switch to workspace 3 (not just "另一个")
         cx.update(|cx| {
             open_paths(
                 &[PathBuf::from(path!("/dir3/c.txt"))],
@@ -6485,7 +6485,7 @@ mod tests {
                 assert_eq!(
                     multi_workspace.workspace(),
                     &workspace3,
-                    "Should have switched to workspace 3 which contains /dir3"
+                    "应已切换到包含 /dir3 的工作区 3"
                 );
                 let active_item = multi_workspace
                     .workspace()
@@ -6493,11 +6493,11 @@ mod tests {
                     .active_pane()
                     .read(cx)
                     .active_item()
-                    .expect("Should have an active item");
+                    .expect("应有一个活动项");
                 assert_eq!(active_item.tab_content_text(0, cx), "c.txt");
             })
             .unwrap();
-        assert_eq!(cx.windows().len(), 1, "Should reuse existing window");
+        assert_eq!(cx.windows().len(), 1, "应重用现有窗口");
 
         // Open a file in /dir2 - should switch to workspace 2
         cx.update(|cx| {
@@ -6519,7 +6519,7 @@ mod tests {
                 assert_eq!(
                     multi_workspace.workspace(),
                     &workspace2,
-                    "Should have switched to workspace 2 which contains /dir2"
+                    "应已切换到包含 /dir2 的工作区 2"
                 );
                 let active_item = multi_workspace
                     .workspace()
@@ -6527,7 +6527,7 @@ mod tests {
                     .active_pane()
                     .read(cx)
                     .active_item()
-                    .expect("Should have an active item");
+                    .expect("应有一个活动项");
                 assert_eq!(active_item.tab_content_text(0, cx), "b.txt");
             })
             .unwrap();
@@ -6538,15 +6538,15 @@ mod tests {
                 .active_pane()
                 .read(cx)
                 .active_item()
-                .expect("Workspace 2 should have an active item");
+                .expect("工作区 2 应有一个活动项");
             assert_eq!(
                 active_item.tab_content_text(0, cx),
                 "c.txt",
-                "c.txt should have been opened in workspace 3, not the active workspace"
+                "c.txt 应在工作区 3 中打开,而不是在活动工作区中"
             );
         });
 
-        assert_eq!(cx.windows().len(), 1, "Should still have only 1 window");
+        assert_eq!(cx.windows().len(), 1, "应仍只有 1 个窗口");
 
         // Open a file in /dir1 - should switch back to workspace 0
         cx.update(|cx| {
@@ -6568,7 +6568,7 @@ mod tests {
                 assert_eq!(
                     multi_workspace.workspace(),
                     &workspace1,
-                    "Should have switched back to workspace 0 which contains /dir1"
+                    "应已切换回包含 /dir1 的工作区 0"
                 );
                 let active_item = multi_workspace
                     .workspace()
@@ -6576,11 +6576,11 @@ mod tests {
                     .active_pane()
                     .read(cx)
                     .active_item()
-                    .expect("Should have an active item");
+                    .expect("应有一个活动项");
                 assert_eq!(active_item.tab_content_text(0, cx), "a.txt");
             })
             .unwrap();
-        assert_eq!(cx.windows().len(), 1, "Should still have only 1 window");
+        assert_eq!(cx.windows().len(), 1, "应仍只有 1 个窗口");
     }
 
     #[gpui::test]
@@ -6664,11 +6664,11 @@ mod tests {
             workspace_roots.contains(&vec![PathBuf::from(path!(
                 "/project/.checkouts/worktrees/foo"
             ))]),
-            "the gitignored directory should be the root of its own workspace, got {workspace_roots:?}"
+            "被 git 忽略的目录应作为其自身工作区的根目录,实际为 {workspace_roots:?}"
         );
         assert!(
             workspace_roots.contains(&vec![PathBuf::from(path!("/project"))]),
-            "the original project workspace should be unchanged, got {workspace_roots:?}"
+            "原始项目工作区应保持不变,实际为 {workspace_roots:?}"
         );
     }
 
@@ -6684,13 +6684,13 @@ mod tests {
                 path!("/"),
                 json!({
                     "dir1": {
-                        "a.txt": "content a"
+                        "a.txt": "内容 a"
                     },
                     "dir2": {
-                        "b.txt": "content b"
+                        "b.txt": "内容 b"
                     },
                     "dir3": {
-                        "c.txt": "content c"
+                        "c.txt": "内容 c"
                     }
                 }),
             )
@@ -6762,7 +6762,7 @@ mod tests {
         window1
             .update(cx, |_, window, cx| {
                 editor1.update(cx, |editor, cx| {
-                    editor.insert("dirty in active workspace", window, cx);
+                    editor.insert("活动工作区中有未保存的更改", window, cx);
                 });
             })
             .unwrap();
@@ -6781,16 +6781,16 @@ mod tests {
 
         assert!(
             cx.has_pending_prompt(),
-            "Case 1: Should prompt to save dirty item in active workspace"
+            "案例 1:应提示保存活动工作区中未保存的更改项"
         );
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
         cx.run_until_parked();
 
         assert_eq!(
             cx.windows().len(),
             2,
-            "Case 1: Windows should still exist after cancelling quit"
+            "案例 1:取消退出后 Windows 应仍然存在"
         );
 
         // Clean up Case 1: Close the dirty item without saving
@@ -6804,7 +6804,7 @@ mod tests {
             })
             .unwrap();
         cx.run_until_parked();
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         close_task.await.ok();
         cx.run_until_parked();
 
@@ -6828,7 +6828,7 @@ mod tests {
         window1
             .update(cx, |_, window, cx| {
                 editor2.update(cx, |editor, cx| {
-                    editor.insert("dirty in non-active workspace", window, cx);
+                    editor.insert("非活动工作区中有未保存的更改", window, cx);
                 });
             })
             .unwrap();
@@ -6851,23 +6851,23 @@ mod tests {
                 assert_eq!(
                     multi_workspace.workspace(),
                     &workspace1_2,
-                    "Case 2: Non-active workspace should be activated when it has dirty item"
+                    "案例 2:当非活动工作区有未保存的更改项时,应激活该工作区"
                 );
             })
             .unwrap();
 
         assert!(
             cx.has_pending_prompt(),
-            "Case 2: Should prompt to save dirty item in non-active workspace"
+            "案例 2:应提示保存非活动工作区中未保存的更改项"
         );
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
         cx.run_until_parked();
 
         assert_eq!(
             cx.windows().len(),
             2,
-            "Case 2: Windows should still exist after cancelling quit"
+            "案例 2:取消退出后 Windows 应仍然存在"
         );
 
         // Clean up Case 2: Close the dirty item without saving
@@ -6881,7 +6881,7 @@ mod tests {
             })
             .unwrap();
         cx.run_until_parked();
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         close_task.await.ok();
         cx.run_until_parked();
 
@@ -6909,7 +6909,7 @@ mod tests {
         window2
             .update(cx, |_, window, cx| {
                 editor3.update(cx, |editor, cx| {
-                    editor.insert("dirty in other window", window, cx);
+                    editor.insert("其他窗口中有未保存的更改", window, cx);
                 });
             })
             .unwrap();
@@ -6926,7 +6926,7 @@ mod tests {
         assert_eq!(
             cx.update(|cx| window2.is_active(cx)),
             Some(false),
-            "Case 3: window2 should not be active before quit"
+            "案例 3:退出前 window2 不应处于活动状态"
         );
 
         // Dispatch quit from window1 (window2 has the dirty item)
@@ -6937,21 +6937,21 @@ mod tests {
         assert_eq!(
             cx.update(|cx| window2.is_active(cx)),
             Some(true),
-            "Case 3: window2 should be activated when it has dirty item"
+            "案例 3:当 window2 有未保存的更改项时,应激活该窗口"
         );
 
         assert!(
             cx.has_pending_prompt(),
-            "Case 3: Should prompt to save dirty item in non-active window"
+            "案例 3:应提示保存非活动窗口中未保存的更改项"
         );
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
         cx.run_until_parked();
 
         assert_eq!(
             cx.windows().len(),
             2,
-            "Case 3: Windows should still exist after cancelling quit"
+            "案例 3:取消退出后 Windows 应仍然存在"
         );
     }
 
@@ -6995,7 +6995,7 @@ mod tests {
                 )
             })
             .await
-            .expect("failed to open first workspace");
+            .expect("无法打开第一个工作区");
 
         window_a
             .update(cx, |multi_workspace, _, cx| {
@@ -7009,7 +7009,7 @@ mod tests {
             })
             .unwrap()
             .await
-            .expect("failed to open second workspace into window A");
+            .expect("无法在窗口 A 中打开第二个工作区");
         cx.run_until_parked();
 
         let workspace::OpenResult {
@@ -7027,7 +7027,7 @@ mod tests {
                 )
             })
             .await
-            .expect("failed to open third workspace");
+            .expect("无法打开第三个工作区");
 
         window_b
             .update(cx, |multi_workspace, _, cx| {
@@ -7056,11 +7056,11 @@ mod tests {
         let locations =
             workspace::last_session_workspace_locations(&db, &session_id, None, fs.as_ref())
                 .await
-                .expect("expected session workspace locations");
+                .expect("预期的会话工作区位置");
         assert_eq!(
             locations.len(),
             3,
-            "all 3 workspaces should have session_ids in the DB"
+            "所有 3 个工作区都应在数据库中有 session_ids"
         );
 
         // Close the original windows.
@@ -7086,9 +7086,9 @@ mod tests {
         let locations =
             workspace::last_session_workspace_locations(&db, &session_id, None, fs.as_ref())
                 .await
-                .expect("expected session workspace locations");
+                .expect("预期的会话工作区位置");
 
-        assert_eq!(locations.len(), 3, "expected 3 session workspaces");
+        assert_eq!(locations.len(), 3, "预期有 3 个会话工作区");
 
         let mut groups_by_window: HashMap<gpui::WindowId, Vec<WorkspaceId>> = HashMap::default();
         for session_workspace in &locations {
@@ -7102,21 +7102,21 @@ mod tests {
         assert_eq!(
             groups_by_window.len(),
             2,
-            "expected 2 window groups, got {groups_by_window:?}"
+            "预期有 2 个窗口组,实际为 {groups_by_window:?}"
         );
         assert!(
             groups_by_window.values().any(|g| g.len() == 2),
-            "expected one group with 2 workspaces"
+            "预期有一个包含 2 个工作区的组"
         );
         assert!(
             groups_by_window.values().any(|g| g.len() == 1),
-            "expected one group with 1 workspace"
+            "预期有一个包含 1 个工作区的组"
         );
 
         let mut async_cx = cx.to_async();
         crate::restore_or_create_workspace(app_state.clone(), &mut async_cx)
             .await
-            .expect("failed to restore workspaces");
+            .expect("无法恢复工作区");
         cx.run_until_parked();
 
         // --- Verify the restored windows ---
@@ -7142,8 +7142,8 @@ mod tests {
                 }
             }
             (
-                with_dir1.expect("expected a window with dir1 active"),
-                with_dir3.expect("expected a window with dir3 active"),
+                with_dir1.expect("预期有一个 dir1 处于活动状态的窗口"),
+                with_dir3.expect("预期有一个 dir3 处于活动状态的窗口"),
             )
         };
 
@@ -7205,7 +7205,7 @@ mod tests {
                 )
             })
             .await
-            .expect("failed to open first workspace");
+            .expect("无法打开第一个工作区");
 
         window
             .update(cx, |multi_workspace, _, cx| {
@@ -7219,7 +7219,7 @@ mod tests {
             })
             .unwrap()
             .await
-            .expect("failed to open second workspace");
+            .expect("无法打开第二个工作区");
         cx.run_until_parked();
 
         // Focus dir1 (the first workspace). dir2 was activated last when it was
@@ -7241,7 +7241,7 @@ mod tests {
                         .root_paths(cx)
                         .iter()
                         .any(|p| p.as_ref() == Path::new(dir1)),
-                    "dir1 should be the focused workspace before quitting"
+                    "退出前,dir1 应为聚焦的工作区"
                 );
             })
             .unwrap();
@@ -7260,11 +7260,11 @@ mod tests {
                 let active = mw.workspace().read(cx).root_paths(cx);
                 assert!(
                     active.iter().any(|p| p.as_ref() == Path::new(dir1)),
-                    "quitting must not change which workspace is focused"
+                    "退出不得改变聚焦的工作区"
                 );
                 assert!(
                     !active.iter().any(|p| p.as_ref() == Path::new(dir2)),
-                    "dir2 must not become the focused workspace after quitting"
+                    "退出后,dir2 不得成为聚焦的工作区"
                 );
             })
             .unwrap();
@@ -7286,7 +7286,7 @@ mod tests {
         let mut async_cx = cx.to_async();
         crate::restore_or_create_workspace(app_state.clone(), &mut async_cx)
             .await
-            .expect("failed to restore workspaces");
+            .expect("无法恢复工作区");
         cx.run_until_parked();
 
         let restored_windows: Vec<WindowHandle<MultiWorkspace>> = cx.read(|cx| {
@@ -7302,11 +7302,11 @@ mod tests {
                 let active = mw.workspace().read(cx).root_paths(cx);
                 assert!(
                     active.iter().any(|p| p.as_ref() == Path::new(dir1)),
-                    "the focused workspace (dir1) must be restored as active"
+                    "聚焦的工作区 (dir1) 必须恢复为活动状态"
                 );
                 assert!(
                     !active.iter().any(|p| p.as_ref() == Path::new(dir2)),
-                    "dir2 must not be restored as the active workspace"
+                    "dir2 不得恢复为活动工作区"
                 );
             })
             .unwrap();
@@ -7352,7 +7352,7 @@ mod tests {
                 )
             })
             .await
-            .expect("failed to open workspace");
+            .expect("无法打开工作区");
 
         window.update(cx, |mw, _, cx| mw.open_sidebar(cx)).unwrap();
 
@@ -7370,7 +7370,7 @@ mod tests {
             })
             .unwrap()
             .await
-            .expect("failed to add root_c");
+            .expect("无法添加 root_c");
         cx.run_until_parked();
 
         let key_b = ProjectGroupKey::new(None, PathList::new(&[path!("/root_b")]));
@@ -7387,7 +7387,7 @@ mod tests {
                             .iter()
                             .any(|p| p.as_ref() == Path::new(path!("/root_a")))
                     })
-                    .expect("workspace_a should exist")
+                    .expect("workspace_a 应存在")
                     .clone();
                 mw.activate(workspace_a, None, window, cx);
             })
@@ -7414,7 +7414,7 @@ mod tests {
         let mut async_cx = cx.to_async();
         crate::restore_or_create_workspace(app_state.clone(), &mut async_cx)
             .await
-            .expect("failed to restore workspace");
+            .expect("无法恢复工作区");
         cx.run_until_parked();
 
         let restored_windows: Vec<WindowHandle<MultiWorkspace>> = cx.read(|cx| {
@@ -7433,9 +7433,9 @@ mod tests {
                 assert_eq!(
                     keys.len(),
                     3,
-                    "restored window should have 3 groups; got {keys:?}"
+                    "恢复的窗口应有 3 个组;实际为 {keys:?}"
                 );
-                assert!(keys.contains(&key_b), "should contain key_b");
+                assert!(keys.contains(&key_b), "应包含 key_b");
                 assert!(keys.contains(&key_c), "should contain key_c");
             })
             .unwrap();
@@ -7451,7 +7451,7 @@ mod tests {
                 project.find_or_create_worktree(path!("/root_d"), true, cx)
             })
             .await
-            .expect("adding worktree should succeed");
+            .expect("添加工作树应成功");
         cx.run_until_parked();
 
         restored
@@ -7459,11 +7459,11 @@ mod tests {
                 let keys = mw.project_group_keys();
                 assert!(
                     keys.contains(&key_b),
-                    "restored group key_b should survive a workspace key change; got {keys:?}"
+                    "恢复的组 key_b 应在工作区键更改后仍然存在;实际为 {keys:?}"
                 );
                 assert!(
                     keys.contains(&key_c),
-                    "restored group key_c should survive a workspace key change; got {keys:?}"
+                    "恢复的组 key_c 应在工作区键更改后仍然存在;实际为 {keys:?}"
                 );
             })
             .unwrap();
@@ -7506,7 +7506,7 @@ mod tests {
         assert_eq!(
             keys,
             vec![project_key],
-            "project group should exist before CloseProject: {keys:?}"
+            "CloseProject 之前项目组应存在:{keys:?}"
         );
 
         cx.dispatch_action(window.into(), CloseProject);
@@ -7516,7 +7516,7 @@ mod tests {
             .unwrap();
         assert!(
             keys.is_empty(),
-            "project group should be removed after CloseProject: {keys:?}"
+            "CloseProject 之后项目组应被移除:{keys:?}"
         );
     }
 
@@ -7594,7 +7594,7 @@ mod tests {
         assert_eq!(
             keys_after.len(),
             1,
-            "one project group should remain after CloseProject: {keys_after:?}"
+            "CloseProject 之后应保留一个项目组:{keys_after:?}"
         );
 
         let active_paths = window
@@ -7604,7 +7604,7 @@ mod tests {
             .unwrap();
         assert!(
             !active_paths.is_empty(),
-            "active workspace should contain the remaining project, not be empty: {active_paths:?}"
+            "活动工作区应包含剩余项目,不应为空:{active_paths:?}"
         );
     }
 }

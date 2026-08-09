@@ -276,7 +276,7 @@ impl CosmicTextSystemState {
             let font = self
                 .font_system
                 .get_font(font_id, cosmic_text::Weight::NORMAL)
-                .context("Could not load font")?;
+                .context("无法加载字体")?;
 
             // HACK: To let the storybook run and render Windows caption icons. We should actually do better font fallback.
             let allowed_bad_font_names = [
@@ -336,7 +336,7 @@ impl CosmicTextSystemState {
         glyph_bounds: Bounds<DevicePixels>,
     ) -> Result<(Size<DevicePixels>, Vec<u8>)> {
         if glyph_bounds.size.width.0 == 0 || glyph_bounds.size.height.0 == 0 {
-            anyhow::bail!("glyph bounds are empty");
+            anyhow::bail!("字形边界为空");
         }
 
         let mut image = self.render_glyph_image(params)?;
@@ -404,7 +404,7 @@ impl CosmicTextSystemState {
         let glyph_id: u16 = params.glyph_id.0.try_into()?;
         renderer
             .render(&mut scaler, glyph_id)
-            .with_context(|| format!("unable to render glyph via swash for {params:?}"))
+            .with_context(|| format!("无法通过 swash 为 {params:?} 渲染字形"))
     }
 
     /// This is used when cosmic_text has chosen a fallback font instead of using the requested
@@ -426,12 +426,12 @@ impl CosmicTextSystemState {
             let font = self
                 .font_system
                 .get_font(id, cosmic_text::Weight::NORMAL)
-                .context("failed to get fallback font from cosmic-text font system")?;
+                .context("无法从 cosmic-text 字体系统获取回退字体")?;
             let face = self
                 .font_system
                 .db()
                 .face(id)
-                .context("fallback font face not found in cosmic-text database")?;
+                .context("在 cosmic-text 数据库中找不到回退字体")?;
 
             let font_id = FontId(self.loaded_fonts.len());
             self.loaded_fonts.push(LoadedFont {
@@ -555,7 +555,7 @@ impl CosmicTextSystemState {
             let loaded_font = self.loaded_font(run.font_id);
             let Some(face) = self.font_system.db().face(loaded_font.font.id()) else {
                 log::warn!(
-                    "font face not found in database for font_id {:?}",
+                    "在数据库中找不到 font_id {:?} 对应的字体",
                     run.font_id
                 );
                 offs = run_end;
@@ -563,7 +563,7 @@ impl CosmicTextSystemState {
             };
             let Some(first_family) = face.families.first() else {
                 log::warn!(
-                    "font face has no family names for font_id {:?}",
+                    "font_id {:?} 对应的字体没有字族名称",
                     run.font_id
                 );
                 offs = run_end;
@@ -667,7 +667,7 @@ impl CosmicTextSystemState {
                     }
                     Err(error) => {
                         log::warn!(
-                            "failed to resolve cosmic font id {:?}: {error:#}",
+                            "无法解析 cosmic 字体 id {:?}: {error:#}",
                             glyph.font_id
                         );
                         continue;
@@ -766,14 +766,14 @@ fn find_best_match(
                 .font_system
                 .db()
                 .face(database_id)
-                .context("font face not found in database")?;
+                .context("在数据库中找不到字体")?;
             Ok(face_info_into_properties(face_info))
         })
         .collect::<Result<SmallVec<[_; 4]>>>()?;
 
     let ix =
         font_kit::matching::find_best_match(&candidate_properties, &font_into_properties(font))
-            .context("requested font family contains no font matching the other parameters")?;
+            .context("请求的字体族中没有符合其他参数的字体")?;
 
     Ok(ix)
 }
@@ -785,7 +785,7 @@ fn find_best_match(
     state: &CosmicTextSystemState,
 ) -> Result<usize> {
     if candidates.is_empty() {
-        anyhow::bail!("requested font family contains no font matching the other parameters");
+        anyhow::bail!("请求的字体族中没有符合其他参数的字体");
     }
     if candidates.len() == 1 {
         return Ok(0);
@@ -806,7 +806,7 @@ fn find_best_match(
             .font_system
             .db()
             .face(database_id)
-            .context("font face not found in database")?;
+            .context("在数据库中找不到字体")?;
 
         let is_italic = matches!(
             face_info.style,
@@ -941,7 +941,7 @@ fn cosmic_font_features(features: &FontFeatures) -> Result<CosmicFontFeatures> {
             .0
             .as_bytes()
             .try_into()
-            .context("Incorrect feature flag format")?;
+            .context("功能标志格式不正确")?;
 
         let tag = cosmic_text::FeatureTag::new(&name_bytes);
 

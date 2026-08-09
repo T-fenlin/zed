@@ -168,10 +168,10 @@ impl Example {
                 .spec
                 .repository_url
                 .split_once(':')
-                .context("expected : in git url")?
+                .context("git URL 中缺少 ':'")?
                 .1
                 .split_once('/')
-                .context("expected / in git url")?;
+                .context("git URL 中缺少 '/'")?;
             Ok(RepoName {
                 owner: Cow::Borrowed(owner),
                 name: Cow::Borrowed(repo.trim_end_matches(".git")),
@@ -179,14 +179,14 @@ impl Example {
         // http://github.com/owner/repo.git
         } else {
             let url = Url::parse(&self.spec.repository_url)?;
-            let mut segments = url.path_segments().context("empty http url")?;
+            let mut segments = url.path_segments().context("HTTP URL 为空")?;
             let owner = segments
                 .next()
-                .context("expected owner path segment")?
+                .context("缺少所有者路径段")?
                 .to_string();
             let repo = segments
                 .next()
-                .context("expected repo path segment")?
+                .context("缺少仓库路径段")?
                 .trim_end_matches(".git")
                 .to_string();
             assert!(segments.next().is_none());
@@ -221,17 +221,17 @@ pub fn read_example_files(inputs: &[PathBuf]) -> Vec<Example> {
             let mut buffer = String::new();
             std::io::stdin()
                 .read_to_string(&mut buffer)
-                .expect("Failed to read from stdin");
+                .expect("无法从标准输入读取");
             buffer
         } else {
             std::fs::read_to_string(path)
-                .unwrap_or_else(|_| panic!("Failed to read path: {:?}", &path))
+                .unwrap_or_else(|_| panic!("无法读取路径: {:?}", &path))
         };
         let filename = path.file_stem().unwrap().to_string_lossy().to_string();
         let ext = if !is_stdin {
             path.extension()
                 .map(|ext| ext.to_string_lossy().to_string())
-                .unwrap_or_else(|| panic!("{} should have an extension", path.display()))
+                .unwrap_or_else(|| panic!("{} 应包含扩展名", path.display()))
         } else {
             "jsonl".to_string()
         };
@@ -275,7 +275,7 @@ pub fn read_example_files(inputs: &[PathBuf]) -> Vec<Example> {
                 examples.push(example);
             }
             ext => {
-                panic!("{} has invalid example extension `{ext}`", path.display())
+                panic!("{} 包含无效的示例扩展名 `{ext}`", path.display())
             }
         }
     }

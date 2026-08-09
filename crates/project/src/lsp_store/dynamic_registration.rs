@@ -116,7 +116,7 @@ impl LspStore {
             .position(|(source, _)| source.registration_id() == Some(registration_id.as_str()))
         {
             log::warn!(
-                "Received a duplicate {method} registration with ID {registration_id}, replacing the previous one"
+                "收到重复的 {method} 注册,ID 为 {registration_id},正在替换之前的注册"
             );
             registrations[index].1 = options;
         } else {
@@ -154,7 +154,7 @@ impl LspStore {
         });
         let (Some(registrations), Some(index)) = (registrations, index) else {
             log::warn!(
-                "Attempted to unregister non-existent {} registration with ID {}",
+                "尝试注销不存在的 {} 注册,ID 为 {}",
                 unregistration.method,
                 unregistration.id
             );
@@ -249,7 +249,7 @@ impl LspStore {
     ) -> anyhow::Result<()> {
         let server = self
             .language_server_for_id(server_id)
-            .with_context(|| format!("no server {server_id} found"))?;
+            .with_context(|| format!("未找到服务器 {server_id}"))?;
         for reg in params.registrations {
             match reg.method.as_str() {
                 "workspace/didChangeWatchedFiles" => {
@@ -700,7 +700,7 @@ impl LspStore {
                         }
                     }
                 }
-                _ => log::warn!("unhandled capability registration: {reg:?}"),
+                _ => log::warn!("未处理的能力注册: {reg:?}"),
             }
         }
 
@@ -715,7 +715,7 @@ impl LspStore {
     ) -> anyhow::Result<()> {
         let server = self
             .language_server_for_id(server_id)
-            .with_context(|| format!("no server {server_id} found"))?;
+            .with_context(|| format!("未找到服务器 {server_id}"))?;
         for unreg in params.unregisterations.iter() {
             match unreg.method.as_str() {
                 "workspace/didChangeWatchedFiles" => {
@@ -1020,7 +1020,7 @@ impl LspStore {
                         self.refresh_document_links(Some(server_id), cx);
                     }
                 }
-                _ => log::warn!("unhandled capability unregistration: {unreg:?}"),
+                _ => log::warn!("未处理的能力注销: {unreg:?}"),
             }
         }
 

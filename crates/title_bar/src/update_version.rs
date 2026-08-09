@@ -51,7 +51,7 @@ impl UpdateVersion {
                 version: Version::new(1, 99, 0),
             },
             AutoUpdateStatus::Updated { .. } => AutoUpdateStatus::Errored {
-                error: Arc::new(anyhow!("Network timeout")),
+                error: Arc::new(anyhow!("网络超时")),
             },
             AutoUpdateStatus::Errored { .. } => AutoUpdateStatus::Idle,
         };
@@ -147,7 +147,7 @@ mod tests {
     fn test_version_tooltip_message() {
         let message = UpdateVersion::version_tooltip_message(&Version::new(1, 0, 0));
 
-        assert_eq!(message, "Update to Version: 1.0.0");
+        assert_eq!(message, "更新到版本:1.0.0");
 
         let message = UpdateVersion::version_tooltip_message(
             &"1.0.0+nightly.14d9a4189f058d8736339b06ff2340101eaea5af"
@@ -157,7 +157,7 @@ mod tests {
 
         assert_eq!(
             message,
-            "Update to Version: 1.0.0+nightly.14d9a4189f058d8736339b06ff2340101eaea5af"
+            "更新到版本:1.0.0+nightly.14d9a4189f058d8736339b06ff2340101eaea5af"
         );
     }
 
@@ -166,12 +166,12 @@ mod tests {
         let version = Version::new(1, 0, 0);
 
         let message = UpdateButton::downloading_tooltip_message(&version, None);
-        assert_eq!(message, "Update to Version: 1.0.0");
+        assert_eq!(message, "更新到版本:1.0.0");
 
         let message = UpdateButton::downloading_tooltip_message(&version, Some(0.454));
-        assert_eq!(message, "Update to Version: 1.0.0 (45% downloaded)");
+        assert_eq!(message, "更新到版本:1.0.0(已下载 45%)");
 
         let message = UpdateButton::downloading_tooltip_message(&version, Some(1.5));
-        assert_eq!(message, "Update to Version: 1.0.0 (100% downloaded)");
+        assert_eq!(message, "更新到版本:1.0.0(已下载 100%)");
     }
 }

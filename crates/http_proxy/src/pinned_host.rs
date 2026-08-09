@@ -29,14 +29,14 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs as _};
 #[derive(Debug, thiserror::Error)]
 pub enum PinnedHostError {
     /// DNS resolution itself failed (or the host is malformed).
-    #[error("resolving {host}:{port}: {source}")]
+    #[error("解析 {host}:{port}:{source}")]
     Resolve {
         host: String,
         port: u16,
         source: std::io::Error,
     },
     /// The host resolved, but to no addresses at all.
-    #[error("{host}:{port} did not resolve to any address")]
+    #[error("{host}:{port} 未解析到任何地址")]
     NoAddresses { host: String, port: u16 },
     /// Every resolved address was in loopback / private / link-local space, so
     /// there is nothing safe to connect to (DNS-rebinding protection).
@@ -213,7 +213,7 @@ mod tests {
         ] {
             assert!(
                 is_forbidden_ip(ip.parse().unwrap()),
-                "expected {ip} to be forbidden"
+                "预期 {ip} 被禁止"
             );
         }
     }
@@ -230,7 +230,7 @@ mod tests {
         ] {
             assert!(
                 is_forbidden_ip(ip.parse().unwrap()),
-                "expected {ip} to be forbidden"
+                "预期 {ip} 被禁止"
             );
         }
     }
@@ -244,7 +244,7 @@ mod tests {
         ] {
             assert!(
                 !is_forbidden_ip(ip.parse().unwrap()),
-                "expected {ip} to be allowed"
+                "预期 {ip} 被允许"
             );
         }
     }
@@ -253,7 +253,7 @@ mod tests {
     fn resolve_pins_public_literal_addresses() {
         // An IP literal "resolves" to itself, so this exercises the vetting and
         // pinning without depending on real DNS.
-        let pinned = PinnedHost::resolve("93.184.215.14", 443).expect("public IP should pin");
+        let pinned = PinnedHost::resolve("93.184.215.14", 443).expect("公网 IP 应被固定");
         let addrs: HashSet<SocketAddr> = pinned.socket_addrs().collect();
         assert_eq!(addrs, HashSet::from(["93.184.215.14:443".parse().unwrap()]));
         assert_eq!(pinned.untrusted_host_display(), "93.184.215.14");
@@ -261,7 +261,7 @@ mod tests {
 
     #[test]
     fn resolve_rejects_forbidden_literal_address() {
-        let error = PinnedHost::resolve("127.0.0.1", 80).expect_err("loopback must be rejected");
+        let error = PinnedHost::resolve("127.0.0.1", 80).expect_err("回环地址必须被拒绝");
         assert!(matches!(
             error,
             PinnedHostError::AllAddressesForbidden { .. }
@@ -271,7 +271,7 @@ mod tests {
     #[test]
     fn resolve_allowing_any_keeps_forbidden_addresses() {
         let pinned =
-            PinnedHost::resolve_allowing_any("127.0.0.1", 80).expect("allow-any keeps loopback");
+            PinnedHost::resolve_allowing_any("127.0.0.1", 80).expect("允许任意主机时保留回环地址");
         let addrs: HashSet<SocketAddr> = pinned.socket_addrs().collect();
         assert_eq!(addrs, HashSet::from(["127.0.0.1:80".parse().unwrap()]));
     }

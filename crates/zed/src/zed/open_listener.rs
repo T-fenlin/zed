@@ -142,7 +142,7 @@ impl OpenRequest {
         if let Some(wsl) = request.wsl {
             let (user, distro_name) = if let Some((user, distro)) = wsl.split_once('@') {
                 if user.is_empty() {
-                    anyhow::bail!("user is empty in wsl argument");
+                    anyhow::bail!("wsl 参数中的用户名为空");
                 }
                 (Some(user.to_string()), distro.to_string())
             } else {
@@ -207,7 +207,7 @@ impl OpenRequest {
                     }
                 }
             } else {
-                log::error!("unhandled url: {}", url);
+                log::error!("未处理的 URL: {}", url);
             }
         }
 
@@ -246,12 +246,12 @@ impl OpenRequest {
 
         let query = clone_path
             .strip_prefix('?')
-            .context("invalid git clone url: missing query string")?;
+            .context("无效的 git 克隆 URL:缺少查询字符串")?;
 
         let repo_url = url::form_urlencoded::parse(query.as_bytes())
             .find_map(|(key, value)| (key == "repo").then_some(value))
             .filter(|s| !s.is_empty())
-            .context("invalid git clone url: missing repo query parameter")?
+            .context("无效的 git 克隆 URL:缺少 repo 查询参数")?
             .to_string()
             .into();
 
@@ -264,13 +264,13 @@ impl OpenRequest {
         // Format: <sha>?repo=<path>
         let (sha, query) = commit_path
             .split_once('?')
-            .context("invalid git commit url: missing query string")?;
-        anyhow::ensure!(!sha.is_empty(), "invalid git commit url: missing sha");
+            .context("无效的 git 提交 URL:缺少查询字符串")?;
+        anyhow::ensure!(!sha.is_empty(), "无效的 git 提交 URL:缺少 sha");
 
         let repo = url::form_urlencoded::parse(query.as_bytes())
             .find_map(|(key, value)| (key == "repo").then_some(value))
             .filter(|s| !s.is_empty())
-            .context("invalid git commit url: missing repo query parameter")?
+            .context("无效的 git 提交 URL:缺少 repo 查询参数")?
             .to_string();
 
         self.open_paths.push(repo);
@@ -286,7 +286,7 @@ impl OpenRequest {
         let url = parse_ssh_url(file)?;
         let host = match url
             .host()
-            .with_context(|| format!("missing host in ssh url: {url}"))?
+            .with_context(|| format!("ssh URL 中缺少主机: {url}"))?
         {
             url::Host::Domain(host) => host.to_string(),
             url::Host::Ipv4(host) => host.to_string(),
@@ -300,7 +300,7 @@ impl OpenRequest {
         let port = url.port();
         anyhow::ensure!(
             self.open_paths.is_empty(),
-            "cannot open both local and ssh paths"
+            "无法同时打开本地和 ssh 路径"
         );
         let mut connection_options =
             RemoteSettings::get_global(cx).connection_options_for(host, port, username);
@@ -312,7 +312,7 @@ impl OpenRequest {
         if let Some(ssh_connection) = &self.remote_connection {
             anyhow::ensure!(
                 *ssh_connection == connection_options,
-                "cannot open multiple different remote connections"
+                "无法打开多个不同的远程连接"
             );
         }
         self.remote_connection = Some(connection_options);
@@ -333,14 +333,14 @@ fn parse_ssh_url(url: &str) -> Result<url::Url> {
     // TODO: Add IPv6 support: "ssh://[2600::]:~/foo"
     let ssh_target = url
         .strip_prefix("ssh://")
-        .with_context(|| format!("invalid ssh url: {url}"))?;
+        .with_context(|| format!("无效的 ssh URL: {url}"))?;
 
     let (authority, path) = if let Some((authority, path)) = ssh_target.rsplit_once(":~/") {
         (authority, format!("/~/{path}"))
     } else if let Some((authority, path)) = ssh_target.rsplit_once(":/") {
         (authority, format!("/{path}"))
     } else {
-        anyhow::bail!("invalid ssh url: {url}");
+        anyhow::bail!("无效的 ssh URL: {url}");
     };
 
     let (userinfo, host) = authority
@@ -348,7 +348,7 @@ fn parse_ssh_url(url: &str) -> Result<url::Url> {
         .map_or((None, authority), |(userinfo, host)| (Some(userinfo), host));
     anyhow::ensure!(
         !host.is_empty() && !host.starts_with('[') && !host.contains(':'),
-        "invalid ssh url: {url}"
+        "无效的 ssh URL: {url}"
     );
 
     let normalized_authority = if let Some(userinfo) = userinfo {
@@ -401,7 +401,7 @@ impl OpenListener {
     pub fn open(&self, request: RawOpenRequest) {
         self.0
             .unbounded_send(request)
-            .context("no listener for open requests")
+            .context("没有用于打开请求的监听器")
             .log_err();
     }
 }
@@ -438,7 +438,7 @@ fn connect_to_cli(
     Box<dyn CliResponseSink>,
 )> {
     let handshake_tx = ipc::IpcSender::<IpcHandshake>::connect(server_name.to_string())
-        .context("error connecting to cli")?;
+        .context("连接到 CLI 时出错")?;
     let (request_tx, request_rx) = ipc::channel::<CliRequest>()?;
     let (response_tx, response_rx) = ipc::channel::<CliResponse>()?;
 
@@ -447,7 +447,7 @@ fn connect_to_cli(
             requests: request_tx,
             responses: response_rx,
         })
-        .context("error sending ipc handshake")?;
+        .context("发送 IPC 握手时出错")?;
 
     let (async_request_tx, async_request_rx) = futures::channel::mpsc::unbounded::<CliRequest>();
     thread::spawn(move || {
@@ -516,7 +516,7 @@ pub async fn open_paths_with_positions(
                 .fs
                 .canonicalize(&parsed.path)
                 .await
-                .with_context(|| format!("opening --diff path {:?}", parsed.path))
+                .with_context(|| format!("打开 --差异 路径 {:?}", parsed.path))
         };
         for diff_pair in diff_paths {
             let parsed = derive_paths_with_position(app_state.fs.as_ref(), diff_pair).await;
@@ -560,7 +560,7 @@ pub async fn open_paths_with_positions(
 
     for (item, path) in items.iter_mut().zip(&paths) {
         if let Some(Err(error)) = item {
-            *error = anyhow!("error opening {path:?}: {error:#}");
+            *error = anyhow!("打开 {path:?} 时出错: {error:#}");
         }
     }
 
@@ -674,7 +674,7 @@ pub async fn handle_cli_connection(
             CliRequest::SetOpenBehavior { .. } => {
                 // We handle this case in a situation-specific way in
                 // resolve_open_behavior
-                debug_panic!("unexpected SetOpenBehavior message");
+                debug_panic!("意外的 SetOpenBehavior 消息");
             }
         }
     }
@@ -944,7 +944,7 @@ async fn open_workspaces(
         }
     }
 
-    anyhow::ensure!(!errored, "failed to open a workspace");
+    anyhow::ensure!(!errored, "无法打开工作区");
 
     Ok(())
 }
@@ -993,10 +993,10 @@ async fn open_local_workspace(
                 .map(|p| p.path.display().to_string())
                 .collect::<Vec<_>>()
                 .join(", ");
-            log::error!("failed to open workspace [{paths}]: {error:#}");
+            log::error!("无法打开工作区 [{paths}]: {error:#}");
             responses
                 .send(CliResponse::Stderr {
-                    message: format!("error opening [{paths}]: {error:#}"),
+                    message: format!("打开 [{paths}] 时出错: {error:#}"),
                 })
                 .log_err();
             return true;
@@ -1373,7 +1373,7 @@ mod tests {
                     cx,
                 )
             });
-            assert!(result.is_err(), "{input} should be rejected");
+            assert!(result.is_err(), "{input} 应被拒绝");
         }
     }
 
@@ -1458,7 +1458,7 @@ mod tests {
             }) => {
                 assert_eq!(external_source_prompt, None);
             }
-            _ => panic!("Expected AgentPanel kind"),
+            _ => panic!("应为 AgentPanel 类型"),
         }
     }
 
@@ -1487,7 +1487,7 @@ mod tests {
             }) => {
                 assert_eq!(parsed_content, content);
             }
-            _ => panic!("Expected InstallSkill kind"),
+            _ => panic!("应为 InstallSkill 类型"),
         }
     }
 
@@ -1541,7 +1541,7 @@ mod tests {
                     Some("Write me a script\nThanks")
                 );
             }
-            _ => panic!("Expected AgentPanel kind"),
+            _ => panic!("应为 AgentPanel 类型"),
         }
     }
 
@@ -1571,7 +1571,7 @@ mod tests {
                     Some("hello")
                 );
             }
-            _ => panic!("Expected AgentPanel kind"),
+            _ => panic!("应为 AgentPanel 类型"),
         }
     }
 
@@ -1592,12 +1592,12 @@ mod tests {
             });
             assert!(
                 matches!(request.kind, Some(OpenRequestKind::FocusApp)),
-                "expected FocusApp for {url}, got {:?}",
+                "对于 {url} 应为 FocusApp,实际为 {:?}",
                 request.kind
             );
             assert!(
                 request.is_focus_app_only(),
-                "expected is_focus_app_only for {url}"
+                "对于 {url} 应为 is_focus_app_only"
             );
         }
     }
@@ -1623,7 +1623,7 @@ mod tests {
             }) => {
                 assert_eq!(external_source_prompt, None);
             }
-            _ => panic!("Expected AgentPanel kind"),
+            _ => panic!("应为 AgentPanel 类型"),
         }
     }
 
@@ -1647,7 +1647,7 @@ mod tests {
             OpenRequestKind::GitCommit { sha } => {
                 assert_eq!(sha, "abc123");
             }
-            _ => panic!("expected GitCommit variant"),
+            _ => panic!("应为 GitCommit 变体"),
         }
         // Verify path was added to open_paths for workspace routing
         assert_eq!(request.open_paths, vec!["path/to/repo"]);
@@ -1668,7 +1668,7 @@ mod tests {
             OpenRequestKind::GitCommit { sha } => {
                 assert_eq!(sha, "def456");
             }
-            _ => panic!("expected GitCommit variant"),
+            _ => panic!("应为 GitCommit 变体"),
         }
         assert_eq!(request.open_paths, vec!["path with spaces"]);
 
@@ -1684,7 +1684,7 @@ mod tests {
                 )
                 .unwrap_err()
                 .to_string()
-                .contains("missing repo")
+                .contains("缺少 repo")
             );
         });
 
@@ -1703,7 +1703,7 @@ mod tests {
             result
                 .unwrap_err()
                 .to_string()
-                .contains("missing repo query parameter")
+                .contains("缺少 repo 查询参数")
         );
     }
 
@@ -1878,7 +1878,7 @@ mod tests {
             .update(cx, |multi_workspace, _, cx| {
                 multi_workspace.workspace().update(cx, |workspace, cx| {
                     let items = workspace.items(cx).collect::<Vec<_>>();
-                    assert_eq!(items.len(), 2, "Workspace should have two items");
+                    assert_eq!(items.len(), 2, "工作区应包含两个项目");
                 });
             })
             .unwrap();
@@ -1902,7 +1902,7 @@ mod tests {
             .update(cx, |multi_workspace, _, cx| {
                 multi_workspace.workspace().update(cx, |workspace, cx| {
                     let items = workspace.items(cx).collect::<Vec<_>>();
-                    assert_eq!(items.len(), 1, "Workspace should have two items");
+                    assert_eq!(items.len(), 1, "工作区应包含两个项目");
                 });
             })
             .unwrap();
@@ -2067,7 +2067,7 @@ mod tests {
             Some(OpenRequestKind::GitClone { repo_url }) => {
                 assert_eq!(repo_url, "https://github.com/zed-industries/zed.git");
             }
-            _ => panic!("Expected GitClone kind"),
+            _ => panic!("应为 GitClone 类型"),
         }
     }
 
@@ -2092,7 +2092,7 @@ mod tests {
             Some(OpenRequestKind::GitClone { repo_url }) => {
                 assert_eq!(repo_url, "https://github.com/zed-industries/zed.git");
             }
-            _ => panic!("Expected GitClone kind"),
+            _ => panic!("应为 GitClone 类型"),
         }
     }
 
@@ -2118,7 +2118,7 @@ mod tests {
             Some(OpenRequestKind::GitClone { repo_url }) => {
                 assert_eq!(repo_url, "https://github.com/zed-industries/zed.git");
             }
-            _ => panic!("Expected GitClone kind"),
+            _ => panic!("应为 GitClone 类型"),
         }
     }
 
@@ -2273,7 +2273,7 @@ mod tests {
             .update(cx, |workspace, _, cx| {
                 let items = workspace.workspace().read(cx).items(cx).collect::<Vec<_>>();
                 // Should have 2 items now (file2.txt and new_file.txt)
-                assert_eq!(items.len(), 2, "Focused window should have 2 items");
+                assert_eq!(items.len(), 2, "聚焦的窗口应包含 2 个项目");
             })
             .unwrap();
 
@@ -2281,7 +2281,7 @@ mod tests {
         multi_workspace_1
             .update(cx, |workspace, _, cx| {
                 let items = workspace.workspace().read(cx).items(cx).collect::<Vec<_>>();
-                assert_eq!(items.len(), 1, "Other window should still have 1 item");
+                assert_eq!(items.len(), 1, "其他窗口应仍包含 1 个项目");
             })
             .unwrap();
     }
@@ -2339,7 +2339,7 @@ mod tests {
                 let flag = multi_workspace.workspace().read(cx).open_in_dev_container();
                 assert!(
                     !flag,
-                    "open_in_dev_container flag should be consumed by suggest_on_worktree_updated"
+                    "open_in_dev_container 标志应由 suggest_on_worktree_updated 消费"
                 );
             })
             .unwrap();
@@ -2402,7 +2402,7 @@ mod tests {
                     .open_in_dev_container();
                 assert!(
                     !flag,
-                    "open_in_dev_container flag should be cleared when no devcontainer config exists"
+                    "当不存在 devcontainer 配置时,应清除 open_in_dev_container 标志"
                 );
             })
             .unwrap();
@@ -2490,7 +2490,7 @@ mod tests {
                 }
             }
 
-            anyhow::bail!("CLI response channel closed without Exit")
+            anyhow::bail!("CLI 响应通道在未收到 Exit 的情况下关闭")
         });
 
         while !cli_thread.is_finished() {
@@ -2498,7 +2498,7 @@ mod tests {
             std::thread::sleep(std::time::Duration::from_millis(1));
         }
 
-        let exit_status = cli_thread.join().unwrap().expect("CLI loop failed");
+        let exit_status = cli_thread.join().unwrap().expect("CLI 循环失败");
         let prompt_shown = prompt_called.load(std::sync::atomic::Ordering::SeqCst);
 
         // Flush any remaining async work (e.g. settings file writes).
@@ -2532,7 +2532,7 @@ mod tests {
         assert_eq!(status, 0);
         assert!(
             !prompt_shown,
-            "no prompt should be shown when no windows exist"
+            "当不存在 Windows 时不应显示提示"
         );
         assert_eq!(cx.windows().len(), 1);
     }
@@ -2583,7 +2583,7 @@ mod tests {
             .unwrap_or_default();
         assert!(
             settings_text.contains("existing_window"),
-            "settings should contain 'existing_window', got: {settings_text}"
+            "设置应包含 'existing_window',实际为: {settings_text}"
         );
     }
 
@@ -2633,7 +2633,7 @@ mod tests {
             .unwrap_or_default();
         assert!(
             settings_text.contains("new_window"),
-            "settings should contain 'new_window', got: {settings_text}"
+            "设置应包含 'new_window',实际为: {settings_text}"
         );
     }
 
@@ -2676,7 +2676,7 @@ mod tests {
         assert_eq!(status, 0);
         assert!(
             !prompt_shown,
-            "no prompt should be shown when setting already configured"
+            "当设置已配置时不应显示提示"
         );
     }
 
@@ -2734,7 +2734,7 @@ mod tests {
         assert_eq!(status, 0);
         assert!(
             !prompt_shown,
-            "no prompt should be shown when no windows exist"
+            "当不存在 Windows 时不应显示提示"
         );
         assert_eq!(cx.windows().len(), 1);
 
@@ -2746,7 +2746,7 @@ mod tests {
                     root_paths
                         .iter()
                         .any(|path| path.as_ref() == Path::new(path!("/project"))),
-                    "expected CLI launch with no paths to restore /project, got {root_paths:?}"
+                    "期望 CLI 在无路径时启动以恢复 /项目,实际为 {root_paths:?}"
                 );
             })
             .unwrap();
@@ -2798,7 +2798,7 @@ mod tests {
         assert_eq!(status, 0);
         assert!(
             !prompt_shown,
-            "no prompt should be shown when setting already configured"
+            "当设置已配置时不应显示提示"
         );
         assert_eq!(cx.windows().len(), 2);
     }
@@ -2859,7 +2859,7 @@ mod tests {
         assert_eq!(status, 0);
         assert!(
             !prompt_shown,
-            "no prompt should be shown when setting already configured"
+            "当设置已配置时不应显示提示"
         );
         assert_eq!(cx.windows().len(), 1);
 
@@ -2876,7 +2876,7 @@ mod tests {
         assert_eq!(status, 0);
         assert!(
             !prompt_shown,
-            "no prompt should be shown when setting already configured"
+            "当设置已配置时不应显示提示"
         );
         assert_eq!(cx.windows().len(), 1);
     }
@@ -2906,7 +2906,7 @@ mod tests {
         );
 
         assert_eq!(status, 0);
-        assert!(!prompt_shown, "no prompt should be shown with -e flag");
+        assert!(!prompt_shown, "使用 -e 标志时不应显示提示");
         assert_eq!(cx.windows().len(), 1);
     }
 
@@ -2946,7 +2946,7 @@ mod tests {
         );
 
         assert_eq!(status, 0);
-        assert!(!prompt_shown, "no prompt should be shown with -n flag");
+        assert!(!prompt_shown, "使用 -n 标志时不应显示提示");
         assert_eq!(cx.windows().len(), 2);
     }
 
@@ -2975,7 +2975,7 @@ mod tests {
         );
 
         assert_eq!(status, 0);
-        assert!(!prompt_shown, "no prompt should be shown with -n flag");
+        assert!(!prompt_shown, "使用 -n 标志时不应显示提示");
         assert_eq!(cx.windows().len(), 2);
     }
 
@@ -3014,7 +3014,7 @@ mod tests {
         assert_eq!(status, 0);
         assert!(
             !prompt_shown,
-            "no prompt should be shown when paths are in an existing workspace"
+            "当路径位于现有工作区中时不应显示提示"
         );
         // File opened in existing window
         assert_eq!(cx.windows().len(), 1);

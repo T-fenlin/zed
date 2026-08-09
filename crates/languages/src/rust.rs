@@ -2272,7 +2272,7 @@ mod tests {
         std::fs::write(&main_rs_path, "// rust").unwrap();
 
         let e = smol::block_on(target_info_from_abs_path(&main_rs_path, None)).unwrap_err();
-        assert!(e.to_string().contains("Cargo metadata failed"));
+        assert!(e.to_string().contains("Cargo 元数据获取失败"));
     }
 
     #[test]
@@ -2309,30 +2309,30 @@ mod tests {
     fn test_convert_rust_analyzer_schema() {
         let raw_schema = serde_json::json!([
             {
-                "title": "Assist",
+                "title": "辅助操作",
                 "properties": {
                     "rust-analyzer.assist.emitMustUse": {
-                        "markdownDescription": "Insert #[must_use] when generating `as_` methods for enum variants.",
+                        "Markdown 描述": "为枚举变体生成 `as_` 方法时插入 #[must_use]。",
                         "default": false,
                         "type": "boolean"
                     }
                 }
             },
             {
-                "title": "Assist",
+                "title": "辅助操作",
                 "properties": {
                     "rust-analyzer.assist.expressionFillDefault": {
-                        "markdownDescription": "Placeholder expression to use for missing expressions in assists.",
+                        "Markdown 描述": "在辅助操作中用于缺失表达式的占位表达式。",
                         "default": "todo",
                         "type": "string"
                     }
                 }
             },
             {
-                "title": "Cache Priming",
+                "title": "缓存预热",
                 "properties": {
                     "rust-analyzer.cachePriming.enable": {
-                        "markdownDescription": "Warm up caches on project load.",
+                        "Markdown 描述": "在项目加载时预热缓存。",
                         "default": true,
                         "type": "boolean"
                     }
@@ -2349,9 +2349,9 @@ mod tests {
 
         let properties = converted
             .pointer("/properties")
-            .expect("should have properties")
+            .expect("应具有属性")
             .as_object()
-            .expect("properties should be object");
+            .expect("properties 应为对象");
 
         assert!(properties.contains_key("assist"));
         assert!(properties.contains_key("cachePriming"));
@@ -2359,18 +2359,18 @@ mod tests {
 
         let assist_props = properties
             .get("assist")
-            .expect("should have assist")
+            .expect("应包含 assist")
             .pointer("/properties")
-            .expect("assist should have properties")
+            .expect("assist 应包含 properties")
             .as_object()
-            .expect("assist properties should be object");
+            .expect("assist 的 properties 应为对象");
 
         assert!(assist_props.contains_key("emitMustUse"));
         assert!(assist_props.contains_key("expressionFillDefault"));
 
         let emit_must_use = assist_props
             .get("emitMustUse")
-            .expect("should have emitMustUse");
+            .expect("应包含 emitMustUse");
         assert_eq!(
             emit_must_use.get("type").and_then(|v| v.as_str()),
             Some("boolean")
@@ -2382,11 +2382,11 @@ mod tests {
 
         let cache_priming_props = properties
             .get("cachePriming")
-            .expect("should have cachePriming")
+            .expect("应包含 cachePriming")
             .pointer("/properties")
-            .expect("cachePriming should have properties")
+            .expect("cachePriming 应包含 properties")
             .as_object()
-            .expect("cachePriming properties should be object");
+            .expect("cachePriming 的 properties 应为对象");
 
         assert!(cache_priming_props.contains_key("enable"));
     }

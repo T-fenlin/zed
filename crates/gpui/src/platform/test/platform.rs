@@ -159,7 +159,7 @@ impl TestPlatform {
             .borrow_mut()
             .new_path
             .pop_front()
-            .expect("no pending new path prompt");
+            .expect("没有待处理的新路径提示");
         tx.send(Ok(select_path(&path))).ok();
     }
 
@@ -172,14 +172,14 @@ impl TestPlatform {
             .borrow_mut()
             .paths
             .pop_front()
-            .expect("no pending paths prompt");
+            .expect("没有待处理的路径提示");
         let selection = select_paths(&options);
         if let Some(paths) = &selection
             && !options.multiple
             && paths.len() > 1
         {
             panic!(
-                "selected {} paths for a prompt that does not allow multiple selection",
+                "为不允许多选的提示选择了 {} 个路径",
                 paths.len()
             );
         }
@@ -197,10 +197,10 @@ impl TestPlatform {
             .borrow_mut()
             .multiple_choice
             .pop_front()
-            .expect("no pending multiple choice prompt");
+            .expect("没有待处理的多选提示");
         let Some(ix) = prompt.answers.iter().position(|a| a == response) else {
             panic!(
-                "PROMPT: {}\n{:?}\n{:?}\nCannot respond with {}",
+                "提示:{}\n{:?}\n{:?}\n无法以 {} 响应",
                 prompt.msg, prompt.detail, prompt.answers, response
             )
         };

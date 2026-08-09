@@ -130,7 +130,7 @@ struct Args {
     system_specs: bool,
     /// Open the project in a dev container.
     ///
-    /// Automatically triggers "Reopen in Dev Container" if a `.devcontainer/`
+    /// Automatically triggers "在开发容器中重新打开" if a `.devcontainer/`
     /// configuration is found in the project directory.
     #[arg(long)]
     dev_container: bool,
@@ -167,7 +167,7 @@ fn parse_path_with_position(argument_str: &str) -> anyhow::Result<String> {
     match Path::new(argument_str).canonicalize() {
         Ok(existing_path) => Ok(PathWithPosition::from_path(existing_path)),
         Err(_) => PathWithPosition::parse_str(argument_str).map_path(|mut path| {
-            let curdir = env::current_dir().context("retrieving current directory")?;
+            let curdir = env::current_dir().context("获取当前目录")?;
             let mut children = Vec::new();
             let root;
             loop {
@@ -186,11 +186,11 @@ fn parse_path_with_position(argument_str: &str) -> anyhow::Result<String> {
                 }
                 children.push(
                     path.file_name()
-                        .with_context(|| format!("parsing as path with position {argument_str}"))?
+                        .with_context(|| format!("解析带位置的路径 {argument_str}"))?
                         .to_owned(),
                 );
                 if !path.pop() {
-                    unreachable!("parsing as path with position {argument_str}");
+                    unreachable!("解析带位置的路径 {argument_str}");
                 }
             }
             Ok(children.iter().rev().fold(root, |mut path, child| {
@@ -289,7 +289,7 @@ fn collect_files(root: &Path) -> anyhow::Result<BTreeMap<PathBuf, PathBuf>> {
             let rel = entry
                 .path()
                 .strip_prefix(root)
-                .context("stripping directory prefix")?
+                .context("去除目录前缀")?
                 .to_path_buf();
             files.insert(rel, entry.into_path());
         }
@@ -434,7 +434,7 @@ fn parse_path_in_wsl(source: &str, wsl: &str) -> Result<String> {
 
     let (user, distro_name) = if let Some((user, distro)) = wsl.split_once('@') {
         if user.is_empty() {
-            anyhow::bail!("user is empty in wsl argument");
+            anyhow::bail!("wsl 参数中的用户名为空");
         }
         (Some(user), distro)
     } else {
@@ -476,7 +476,7 @@ fn parse_path_in_wsl(source: &str, wsl: &str) -> Result<String> {
 
 fn main() {
     if let Err(error) = run() {
-        eprintln!("error: {error:#}");
+        eprintln!("错误: {error:#}");
         std::process::exit(1);
     }
 }
@@ -527,14 +527,14 @@ fn run() -> Result<()> {
     #[cfg(target_os = "linux")]
     let args = flatpak::set_bin_if_no_escape(args);
 
-    let app = Detect::detect(args.zed.as_deref()).context("Bundle detection")?;
+    let app = Detect::detect(args.zed.as_deref()).context("应用包检测")?;
 
     if let Some(shell) = &args.completions {
         let file_path = std::env::current_exe()?;
         let file_name = file_path
             .file_name()
             .and_then(OsStr::to_str)
-            .ok_or("--completions expects a UTF-8 name for cli bin")
+            .ok_or("--completions 需要 cli 二进制的 UTF-8 名称")
             .map_err(anyhow::Error::msg)?;
         let mut cmd = Args::command();
         cmd.set_bin_name(file_name);
@@ -551,8 +551,8 @@ fn run() -> Result<()> {
     if args.system_specs {
         let path = app.path();
         let msg = [
-            "The `--system-specs` argument is not supported in the Zed CLI, only on Zed binary.",
-            "To retrieve the system specs on the command line, run the following command:",
+            "`--system-specs` 参数在 Zed CLI 中不受支持,仅在 Zed 二进制文件中支持。",
+            "要在命令行中获取系统规格,请运行以下命令:",
             &format!("{} --system-specs", path.display()),
         ];
         anyhow::bail!(msg.join("\n"));
@@ -576,13 +576,13 @@ fn run() -> Result<()> {
             .arg(&script_path)
             .env("ZED_CHANNEL", &*release_channel::RELEASE_CHANNEL_NAME)
             .status()
-            .context("Failed to execute uninstall script")?;
+            .context("执行卸载脚本失败")?;
 
         std::process::exit(status.code().unwrap_or(1));
     }
 
     let (server, server_name) =
-        IpcOneShotServer::<IpcHandshake>::new().context("Handshake before Zed spawn")?;
+        IpcOneShotServer::<IpcHandshake>::new().context("Zed 启动前的握手")?;
     let url = format!("zed-cli://{server_name}");
 
     let open_behavior = if args.new {
@@ -650,7 +650,7 @@ fn run() -> Result<()> {
         for diff_path in [&left, &right] {
             anyhow::ensure!(
                 diff_path_exists(diff_path),
-                "--diff path does not exist: {diff_path}"
+                "--差异 路径不存在: {diff_path}"
             );
         }
         diff_paths.push([left, right]);
@@ -693,7 +693,7 @@ fn run() -> Result<()> {
 
     anyhow::ensure!(
         args.dev_server_token.is_none(),
-        "Dev servers were removed in v0.157.x please upgrade to SSH remoting: https://zed.dev/docs/remote-development"
+        "开发服务器已在 v0.157.x 中移除,请升级到 SSH 远程功能:https://zed.dev/docs/remote-development"
     );
 
     rayon::ThreadPoolBuilder::new()
@@ -709,7 +709,7 @@ fn run() -> Result<()> {
             let exit_status = exit_status.clone();
             let user_data_dir_for_thread = user_data_dir.clone();
             move || {
-                let (_, handshake) = server.accept().context("Handshake after Zed spawn")?;
+                let (_, handshake) = server.accept().context("Zed 启动后的握手")?;
                 let (tx, rx) = (handshake.requests, handshake.responses);
 
                 #[cfg(target_os = "windows")]
@@ -851,16 +851,16 @@ fn prompt_open_behavior() -> Option<cli::CliBehaviorSetting> {
     let blue = console::Style::new().blue();
     let items = [
         format!(
-            "Add to existing Zed window ({})",
+            "添加到现有 Zed 窗口 ({})",
             blue.apply_to("zed --existing")
         ),
-        format!("Open a new window ({})", blue.apply_to("zed --classic")),
+        format!("打开新窗口 ({})", blue.apply_to("zed --classic")),
     ];
 
     let prompt = format!(
-        "Configure default behavior for {}\n{}",
+        "为 {} 配置默认行为\n{}",
         blue.apply_to("zed <path>"),
-        console::style("You can change this later in Zed settings"),
+        console::style("您可以稍后在 Zed 设置中更改此设置"),
     );
 
     let selection = dialoguer::Select::new()
@@ -904,7 +904,7 @@ mod linux {
                 path.to_path_buf().canonicalize()?
             } else {
                 let cli = env::current_exe()?;
-                let dir = cli.parent().context("no parent path for cli")?;
+                let dir = cli.parent().context("cli 没有父路径")?;
 
                 // libexec is the standard, lib/zed is for Arch (and other non-libexec distros),
                 // ./zed is for the target directory in development builds.
@@ -914,7 +914,7 @@ mod linux {
                     .iter()
                     .find_map(|p| dir.join(p).canonicalize().ok().filter(|path| path != &cli))
                     .with_context(|| {
-                        format!("could not find any of: {}", possible_locations.join(", "))
+                        format!("找不到以下任何一项: {}", possible_locations.join(", "))
                     })?
             };
 
@@ -989,11 +989,11 @@ mod linux {
                 Ok(Fork::Child) => {
                     unsafe { std::env::set_var(FORCE_CLI_MODE_ENV_VAR_NAME, "") };
                     if fork::setsid().is_err() {
-                        eprintln!("failed to setsid: {}", std::io::Error::last_os_error());
+                        eprintln!("setsid 失败: {}", std::io::Error::last_os_error());
                         process::exit(1);
                     }
                     if fork::close_fd().is_err() {
-                        eprintln!("failed to close_fd: {}", std::io::Error::last_os_error());
+                        eprintln!("close_fd 失败: {}", std::io::Error::last_os_error());
                     }
                     let mut args: Vec<OsString> =
                         vec![path.as_os_str().to_owned(), OsString::from(ipc_url)];
@@ -1003,7 +1003,7 @@ mod linux {
                     }
                     let error = exec::execvp(path.clone(), &args);
                     // if exec succeeded, we never get here.
-                    eprintln!("failed to exec {:?}: {}", path, error);
+                    eprintln!("exec {:?} 失败: {}", path, error);
                     process::exit(1)
                 }
                 Err(_) => Err(anyhow!(io::Error::last_os_error())),
@@ -1078,7 +1078,7 @@ mod flatpak {
             }
 
             let error = exec::execvp("/usr/bin/flatpak-spawn", args);
-            eprintln!("failed restart cli on host: {:?}", error);
+            eprintln!("在主机上重启 cli 失败: {:?}", error);
             process::exit(1);
         }
     }
@@ -1089,7 +1089,7 @@ mod flatpak {
             && args.zed.is_none()
         {
             args.zed = Some("/app/libexec/zed-editor".into());
-            unsafe { env::set_var("ZED_UPDATE_EXPLANATION", "Please use flatpak to update zed") };
+            unsafe { env::set_var("ZED_UPDATE_EXPLANATION", "请使用 flatpak 更新 zed") };
         }
         args
     }
@@ -1160,7 +1160,7 @@ mod windows {
                 false,
                 &HSTRING::from(format!("{}-Instance-Mutex", app_identifier())),
             )
-            .expect("Unable to create instance sync event")
+            .expect("无法创建实例同步事件")
         };
         let last_err = unsafe { GetLastError() };
         let _ = unsafe { CloseHandle(mutex) };
@@ -1242,7 +1242,7 @@ mod windows {
                 path.to_path_buf().canonicalize()?
             } else {
                 let cli = std::env::current_exe()?;
-                let dir = cli.parent().context("no parent path for cli")?;
+                let dir = cli.parent().context("cli 没有父路径")?;
 
                 // ../Zed.exe is the standard, lib/zed is for MSYS2, ./zed.exe is for the target
                 // directory in development builds.
@@ -1251,7 +1251,7 @@ mod windows {
                     .iter()
                     .find_map(|p| dir.join(p).canonicalize().ok().filter(|path| path != &cli))
                     .context(format!(
-                        "could not find any of: {}",
+                        "找不到以下任何一项: {}",
                         possible_locations.join(", ")
                     ))?
             };
@@ -1308,7 +1308,7 @@ mod mac_os {
         while app_path.extension() != Some(OsStr::new("app")) {
             anyhow::ensure!(
                 app_path.pop(),
-                "cannot find app bundle containing {cli_path:?}"
+                "找不到包含 {cli_path:?} 的应用包"
             );
         }
         Ok(app_path)
@@ -1319,9 +1319,9 @@ mod mac_os {
             let bundle_path = if let Some(bundle_path) = path {
                 bundle_path
                     .canonicalize()
-                    .with_context(|| format!("Args bundle path {bundle_path:?} canonicalization"))?
+                    .with_context(|| format!("参数包路径 {bundle_path:?} 规范化"))?
             } else {
-                locate_bundle().context("bundle autodiscovery")?
+                locate_bundle().context("应用包自动发现")?
             };
 
             match bundle_path.extension().and_then(|ext| ext.to_str()) {
@@ -1329,7 +1329,7 @@ mod mac_os {
                     let plist_path = bundle_path.join("Contents/Info.plist");
                     let plist =
                         plist::from_file::<_, InfoPlist>(&plist_path).with_context(|| {
-                            format!("Reading *.app bundle plist file at {plist_path:?}")
+                            format!("正在读取位于 {plist_path:?} 的 *.app 应用包 plist 文件")
                         })?;
                     Ok(Bundle::App {
                         app_bundle: bundle_path,
@@ -1355,7 +1355,7 @@ mod mac_os {
 
                     let status = unsafe {
                         let app_url = CFURL::from_path(app_path, true)
-                            .with_context(|| format!("invalid app path {app_path:?}"))?;
+                            .with_context(|| format!("无效的应用路径 {app_path:?}"))?;
                         let url_to_open = CFURL::wrap_under_create_rule(CFURLCreateWithBytes(
                             ptr::null(),
                             url.as_ptr(),
@@ -1380,7 +1380,7 @@ mod mac_os {
 
                     anyhow::ensure!(
                         status == 0,
-                        "cannot start app bundle {}",
+                        "无法启动应用包 {}",
                         self.zed_version_string()
                     );
                 }
@@ -1388,14 +1388,14 @@ mod mac_os {
                 Self::LocalPath { executable, .. } => {
                     let executable_parent = executable
                         .parent()
-                        .with_context(|| format!("Executable {executable:?} path has no parent"))?;
+                        .with_context(|| format!("可执行文件 {executable:?} 的路径没有父目录"))?;
                     let subprocess_stdout_file = fs::File::create(
                         executable_parent.join("zed_dev.log"),
                     )
-                    .with_context(|| format!("Log file creation in {executable_parent:?}"))?;
+                    .with_context(|| format!("在 {executable_parent:?} 中创建日志文件"))?;
                     let subprocess_stdin_file =
                         subprocess_stdout_file.try_clone().with_context(|| {
-                            format!("Cloning descriptor for file {subprocess_stdout_file:?}")
+                            format!("正在为文件 {subprocess_stdout_file:?} 克隆描述符")
                         })?;
                     let mut command = std::process::Command::new(executable);
                     command.env(FORCE_CLI_MODE_ENV_VAR_NAME, "");
@@ -1409,7 +1409,7 @@ mod mac_os {
 
                     command
                         .spawn()
-                        .with_context(|| format!("Spawning {command:?}"))?;
+                        .with_context(|| format!("正在生成 {command:?}"))?;
                 }
             }
 
@@ -1446,7 +1446,7 @@ mod mac_os {
         fn version(&self) -> String {
             match self {
                 Self::App { plist, .. } => plist.bundle_short_version_string.clone(),
-                Self::LocalPath { .. } => "<development>".to_string(),
+                Self::LocalPath { .. } => "<开发版>".to_string(),
             }
         }
 
@@ -1465,7 +1465,7 @@ mod mac_os {
         use anyhow::bail;
 
         let app_path_prompt = format!(
-            "POSIX path of (path to application \"{}\")",
+            "应用程序 \"{}\" 路径的 POSIX 路径",
             channel.display_name()
         );
         let app_path_output = Command::new("osascript")
@@ -1474,7 +1474,7 @@ mod mac_os {
             .output()?;
         if !app_path_output.status.success() {
             bail!(
-                "Could not determine app path for {}",
+                "无法确定 {} 的应用路径",
                 channel.display_name()
             );
         }

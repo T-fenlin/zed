@@ -204,7 +204,7 @@ impl MacPlatform {
         let text_system = {
             if !headless {
                 log::warn!(
-                    "gpui_macos was compiled without the `font-kit` feature, so no text will be rendered."
+                    "gpui_macos 编译时未启用 `字体-kit` 功能,因此不会渲染任何文本。"
                 );
             }
             Arc::new(gpui::NoopTextSystem::new())
@@ -272,7 +272,7 @@ impl MacPlatform {
                 menu_item.setSubmenu_(menu);
                 application_menu.addItem_(menu_item);
 
-                if menu_config.name == "Window" {
+                if menu_config.name == "窗口" {
                     let app: id = msg_send![APP_CLASS, sharedApplication];
                     app.setWindowsMenu_(menu);
                 }
@@ -332,11 +332,11 @@ impl MacPlatform {
                             binding.predicate().is_none_or(|predicate| {
                                 predicate.eval(DEFAULT_CONTEXT.get_or_init(|| {
                                     let mut workspace_context = KeyContext::new_with_defaults();
-                                    workspace_context.add("Workspace");
+                                    workspace_context.add("工作区");
                                     let mut pane_context = KeyContext::new_with_defaults();
-                                    pane_context.add("Pane");
+                                    pane_context.add("窗格");
                                     let mut editor_context = KeyContext::new_with_defaults();
-                                    editor_context.add("Editor");
+                                    editor_context.add("编辑器");
 
                                     pane_context.extend(&editor_context);
                                     workspace_context.extend(&pane_context);
@@ -574,7 +574,7 @@ impl Platform for MacPlatform {
 
         match restart_process {
             Ok(_) => self.quit(),
-            Err(e) => log::error!("failed to spawn restart script: {:?}", e),
+            Err(e) => log::error!("无法生成重启脚本: {:?}", e),
         }
     }
 
@@ -705,7 +705,7 @@ impl Platform for MacPlatform {
         unsafe {
             let ns_url = NSURL::alloc(nil).initWithString_(ns_string(url));
             if ns_url.is_null() {
-                log::error!("Failed to create NSURL from string: {}", url);
+                log::error!("无法从字符串创建 NSURL: {}", url);
                 return;
             }
             let url = ns_url.autorelease();
@@ -720,7 +720,7 @@ impl Platform for MacPlatform {
         let (done_tx, done_rx) = oneshot::channel();
         if Self::os_version() < Version::new(12, 0, 0) {
             return Task::ready(Err(anyhow!(
-                "macOS 12.0 or later is required to register URL schemes"
+                "注册 URL 方案需要 macOS 12.0 或更高版本"
             )));
         }
 
@@ -728,7 +728,7 @@ impl Platform for MacPlatform {
             let bundle: id = msg_send![class!(NSBundle), mainBundle];
             let bundle_id: id = msg_send![bundle, bundleIdentifier];
             if bundle_id == nil {
-                return Task::ready(Err(anyhow!("Can only register URL scheme in bundled apps")));
+                return Task::ready(Err(anyhow!("只能在打包的应用中注册 URL 方案")));
             }
             bundle_id
         };
@@ -739,7 +739,7 @@ impl Platform for MacPlatform {
             let app: id = msg_send![workspace, URLForApplicationWithBundleIdentifier: bundle_id];
             if app == nil {
                 return Task::ready(Err(anyhow!(
-                    "Cannot register URL scheme until app is installed"
+                    "应用安装后才能注册 URL 方案"
                 )));
             }
             let done_tx = Cell::new(Some(done_tx));
@@ -748,7 +748,7 @@ impl Platform for MacPlatform {
                     Ok(())
                 } else {
                     let msg: id = msg_send![error, localizedDescription];
-                    Err(anyhow!("Failed to register: {msg:?}"))
+                    Err(anyhow!("注册失败: {msg:?}"))
                 };
 
                 if let Some(done_tx) = done_tx.take() {
@@ -927,7 +927,7 @@ impl Platform for MacPlatform {
                     .arg("--")
                     .arg(path)
                     .status()
-                    .context("invoking open command")
+                    .context("调用 打开 命令")
                     .log_err();
             })
             .detach();
@@ -1026,7 +1026,7 @@ impl Platform for MacPlatform {
     fn app_path(&self) -> Result<PathBuf> {
         unsafe {
             let bundle: id = NSBundle::mainBundle();
-            anyhow::ensure!(!bundle.is_null(), "app is not running inside a bundle");
+            anyhow::ensure!(!bundle.is_null(), "应用未在应用包内运行");
             Ok(path_from_objc(msg_send![bundle, bundlePath]))
         }
     }
@@ -1073,10 +1073,10 @@ impl Platform for MacPlatform {
     fn path_for_auxiliary_executable(&self, name: &str) -> Result<PathBuf> {
         unsafe {
             let bundle: id = NSBundle::mainBundle();
-            anyhow::ensure!(!bundle.is_null(), "app is not running inside a bundle");
+            anyhow::ensure!(!bundle.is_null(), "应用未在应用包内运行");
             let name = ns_string(name);
             let url: id = msg_send![bundle, URLForAuxiliaryExecutable: name];
-            anyhow::ensure!(!url.is_null(), "resource not found");
+            anyhow::ensure!(!url.is_null(), "未找到资源");
             ns_url_to_path(url)
         }
     }
@@ -1168,7 +1168,7 @@ impl Platform for MacPlatform {
                     verb = "creating";
                     status = SecItemAdd(attrs.as_concrete_TypeRef(), ptr::null_mut());
                 }
-                anyhow::ensure!(status == errSecSuccess, "{verb} password failed: {status}");
+                anyhow::ensure!(status == errSecSuccess, "{verb} 密码失败: {status}");
             }
             Ok(())
         })
@@ -1195,24 +1195,24 @@ impl Platform for MacPlatform {
                 match status {
                     security::errSecSuccess => {}
                     security::errSecItemNotFound | security::errSecUserCanceled => return Ok(None),
-                    _ => anyhow::bail!("reading password failed: {status}"),
+                    _ => anyhow::bail!("读取密码失败: {status}"),
                 }
 
                 let result = CFType::wrap_under_create_rule(result)
                     .downcast::<CFDictionary>()
-                    .context("keychain item was not a dictionary")?;
+                    .context("钥匙串项不是字典")?;
                 let username = result
                     .find(kSecAttrAccount as *const _)
-                    .context("account was missing from keychain item")?;
+                    .context("钥匙串项中缺少账户")?;
                 let username = CFType::wrap_under_get_rule(*username)
                     .downcast::<CFString>()
-                    .context("account was not a string")?;
+                    .context("账户不是字符串")?;
                 let password = result
                     .find(kSecValueData as *const _)
-                    .context("password was missing from keychain item")?;
+                    .context("钥匙串项中缺少密码")?;
                 let password = CFType::wrap_under_get_rule(*password)
                     .downcast::<CFData>()
-                    .context("password was not a string")?;
+                    .context("密码不是字符串")?;
 
                 Ok(Some((username.to_string(), password.bytes().to_vec())))
             }
@@ -1232,7 +1232,7 @@ impl Platform for MacPlatform {
                 query_attrs.set(kSecAttrServer as *const _, url.as_CFTypeRef());
 
                 let status = SecItemDelete(query_attrs.as_concrete_TypeRef());
-                anyhow::ensure!(status == errSecSuccess, "delete password failed: {status}");
+                anyhow::ensure!(status == errSecSuccess, "删除密码失败: {status}");
             }
             Ok(())
         })
@@ -1415,7 +1415,7 @@ extern "C" fn open_urls(this: &mut Object, _: Sel, _: id, urls: id) {
                 match CStr::from_ptr(url.absoluteString().UTF8String() as *mut c_char).to_str() {
                     Ok(string) => Some(string.to_string()),
                     Err(err) => {
-                        log::error!("error converting path to string: {}", err);
+                        log::error!("将路径转换为字符串时出错: {}", err);
                         None
                     }
                 }
@@ -1497,7 +1497,7 @@ extern "C" fn handle_dock_menu(this: &mut Object, _: Sel, _: id) -> id {
 
 unsafe fn ns_url_to_path(url: id) -> Result<PathBuf> {
     let path: *mut c_char = msg_send![url, fileSystemRepresentation];
-    anyhow::ensure!(!path.is_null(), "url is not a file path: {}", unsafe {
+    anyhow::ensure!(!path.is_null(), "URL 不是文件路径: {}", unsafe {
         CStr::from_ptr(url.absoluteString().UTF8String()).to_string_lossy()
     });
     Ok(PathBuf::from(OsStr::from_bytes(unsafe {

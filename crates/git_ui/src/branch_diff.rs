@@ -88,7 +88,7 @@ impl BranchDiff {
             let workspace = cx.entity().downgrade();
             window
                 .spawn(cx, async |_cx| {
-                    let result: Result<()> = Err(anyhow!("No active repository"));
+                    let result: Result<()> = Err(anyhow!("没有活动的仓库"));
                     result
                 })
                 .detach_and_notify_err(workspace, window, cx);
@@ -146,7 +146,7 @@ impl BranchDiff {
             let workspace = cx.entity().downgrade();
             window
                 .spawn(cx, async |_cx| {
-                    let result: Result<()> = Err(anyhow!("No active repository"));
+                    let result: Result<()> = Err(anyhow!("没有活动的仓库"));
                     result
                 })
                 .detach_and_notify_err(workspace, window, cx);
@@ -253,13 +253,13 @@ impl BranchDiff {
         cx: &mut App,
     ) -> Task<Result<Entity<Self>>> {
         let Some(repo) = project.read(cx).git_store().read(cx).active_repository() else {
-            return Task::ready(Err(anyhow!("No active repository")));
+            return Task::ready(Err(anyhow!("没有活动的仓库")));
         };
         let main_branch = repo.update(cx, |repo, _| repo.default_branch(true));
         window.spawn(cx, async move |cx| {
             let base_ref = main_branch
                 .await??
-                .context("Could not determine default branch")?;
+                .context("无法确定默认分支")?;
             cx.update(|window, cx| {
                 let git_store = project.read(cx).git_store().clone();
                 let branch_diff =
@@ -336,7 +336,7 @@ impl BranchDiff {
             DiffMultibuffer::new(
                 branch_diff,
                 Capability::ReadWrite,
-                "No changes",
+                "无更改",
                 move |editor, cx| {
                     editor.set_diff_hunk_delegate(Some(Arc::new(RestoreOnlyDiffHunkDelegate)), cx);
                     editor.rhs_editor().update(cx, move |rhs_editor, _cx| {
@@ -487,8 +487,8 @@ impl Item for BranchDiff {
 
     fn tab_content_text(&self, _detail: usize, cx: &App) -> SharedString {
         match self.diff_base(cx) {
-            DiffBase::Merge { base_ref } => format!("Changes since {}", base_ref).into(),
-            DiffBase::Head | DiffBase::Index | DiffBase::Staged => "Changes".into(),
+            DiffBase::Merge { base_ref } => format!("自 {} 以来的更改", base_ref).into(),
+            DiffBase::Head | DiffBase::Index | DiffBase::Staged => "更改".into(),
         }
     }
 
@@ -676,9 +676,9 @@ impl SerializableItem for BranchDiff {
         window.spawn(cx, async move |cx| {
             let diff_base = db.get_project_diff_base(item_id, workspace_id)?;
             let DiffBase::Merge { base_ref } = diff_base else {
-                anyhow::bail!("expected a merge base for a branch diff");
+                anyhow::bail!("分支差异需要合并基础");
             };
-            let workspace = workspace.upgrade().context("workspace gone")?;
+            let workspace = workspace.upgrade().context("工作区已关闭")?;
             cx.update(|window, cx| {
                 cx.new(|cx| {
                     Self::new_with_base_ref(project, workspace, base_ref, None, None, window, cx)
@@ -785,7 +785,7 @@ impl Render for BranchDiffToolbar {
             return div();
         };
         let selected_base_ref = base_ref.clone();
-        let base_ref_label = format!("Base: {base_ref}");
+        let base_ref_label = format!("基础: {base_ref}");
         let repository = branch_diff.read(cx).repo(cx);
         let workspace = branch_diff.read(cx).workspace.clone();
         let project = branch_diff.read(cx).project.clone();
@@ -880,13 +880,13 @@ impl Render for BranchDiffToolbar {
                                 .size(IconSize::XSmall)
                                 .color(Color::Muted),
                         ),
-                        Tooltip::text("Select Base Branch"),
+                        Tooltip::text("选择基础分支"),
                     ),
             )
             .when(show_review_button, |this| {
                 let focus_handle = focus_handle.clone();
                 this.child(Divider::vertical()).child(
-                    Button::new("review-diff", "Review Diff")
+                    Button::new("review-diff", "审查差异")
                         .start_icon(
                             Icon::new(IconName::ZedAssistant)
                                 .size(IconSize::Small)
@@ -894,9 +894,9 @@ impl Render for BranchDiffToolbar {
                         )
                         .tooltip(move |_, cx| {
                             Tooltip::with_meta_in(
-                                "Review Diff",
+                                "审查差异",
                                 Some(&ReviewDiff),
-                                "Send this diff for your last agent to review.",
+                                "将此差异发送给你的上一个助手进行审查。",
                                 &focus_handle,
                                 cx,
                             )
@@ -1227,7 +1227,7 @@ mod tests {
         let target_branch_diff = cx
             .update(|window, cx| {
                 let Some(repository) = project.read(cx).active_repository(cx) else {
-                    return Task::ready(Err(anyhow!("No active repository")));
+                    return Task::ready(Err(anyhow!("没有活动的仓库")));
                 };
                 BranchDiff::new_with_branch_base(
                     project.clone(),
@@ -1263,7 +1263,7 @@ mod tests {
             let active_base_ref = match active_item.read(cx).diff_base(cx) {
                 DiffBase::Merge { base_ref } => base_ref.to_string(),
                 DiffBase::Head | DiffBase::Index | DiffBase::Staged => {
-                    panic!("expected active item to be a branch diff")
+                    panic!("预期的活动项应为分支差异")
                 }
             };
             let base_refs = workspace

@@ -26,7 +26,7 @@ impl Render for SystemNotificationExample {
             .p_8()
             .bg(rgb(0x18181b))
             .text_color(rgb(0xf4f4f5))
-            .child(div().text_2xl().child("GPUI system notifications"))
+            .child(div().text_2xl().child("GPUI 系统通知"))
             .child(div().text_sm().text_color(rgb(0xa1a1aa)).child(
                 "Post repeatedly to replace the notification with the same tag. Click the \
                          notification body or an action button to send a response back to GPUI.",
@@ -35,33 +35,33 @@ impl Render for SystemNotificationExample {
                 div()
                     .flex()
                     .gap_3()
-                    .child(button("show", "Show or replace").on_click(cx.listener(
+                    .child(button("show", "显示或替换").on_click(cx.listener(
                         |this, _, _, cx| {
                             this.revision += 1;
                             let revision = this.revision;
                             cx.show_system_notification(SystemNotification {
                                 tag: NOTIFICATION_TAG.into(),
-                                title: format!("Example notification {revision}").into(),
-                                body: "This notification was posted by the GPUI example.".into(),
+                                title: format!("示例通知 {revision}").into(),
+                                body: "此通知由 GPUI 示例发布。".into(),
                                 actions: vec![
                                     SystemNotificationAction {
                                         id: "open".into(),
-                                        label: "Open".into(),
+                                        label: "打开".into(),
                                     },
                                     SystemNotificationAction {
                                         id: "snooze".into(),
-                                        label: "Snooze".into(),
+                                        label: "稍后提醒".into(),
                                     },
                                 ],
                             });
-                            this.status = format!("Posted notification revision {revision}").into();
+                            this.status = format!("已发布通知修订版 {revision}").into();
                             cx.notify();
                         },
                     )))
                     .child(
-                        button("dismiss", "Dismiss").on_click(cx.listener(|this, _, _, cx| {
+                        button("dismiss", "关闭").on_click(cx.listener(|this, _, _, cx| {
                             cx.dismiss_system_notification(NOTIFICATION_TAG);
-                            this.status = "Dismissed the notification".into();
+                            this.status = "已关闭通知".into();
                             cx.notify();
                         })),
                     ),
@@ -76,7 +76,7 @@ impl Render for SystemNotificationExample {
             )
             .when(cfg!(target_os = "macos"), |this| {
                 this.child(div().mt_2().text_xs().text_color(rgb(0x71717a)).child(
-                    "macOS only delivers notifications when this example runs from an app bundle.",
+                    "macOS 仅在从应用包运行时才会发送通知。",
                 ))
             })
     }
@@ -97,11 +97,11 @@ fn button(id: &'static str, label: &'static str) -> Stateful<Div> {
 
 fn run_example() {
     application().run(|cx: &mut App| {
-        cx.set_app_identity("dev.zed.gpui.system-notifications", "GPUI Notifications");
+        cx.set_app_identity("dev.zed.gpui.system-notifications", "GPUI 通知");
 
         let view = cx.new(|_| SystemNotificationExample {
             revision: 0,
-            status: "No notification posted yet".into(),
+            status: "尚未发布通知".into(),
         });
         cx.on_system_notification_response({
             let view = view.clone();
@@ -110,9 +110,9 @@ fn run_example() {
                 view.update(cx, |this, cx| {
                     this.status = match action_id {
                         Some(action_id) => {
-                            format!("Received action '{action_id}' for tag '{tag}'").into()
+                            format!("已收到标签 '{tag}' 的操作 '{action_id}'").into()
                         }
-                        None => format!("Notification body clicked for tag '{tag}'").into(),
+                        None => format!("已点击标签 '{tag}' 的通知正文").into(),
                     };
                     cx.notify();
                 });
@@ -124,14 +124,14 @@ fn run_example() {
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
                 titlebar: Some(gpui::TitlebarOptions {
-                    title: Some("System Notifications Example".into()),
+                    title: Some("系统通知示例".into()),
                     ..Default::default()
                 }),
                 ..Default::default()
             },
             move |_, _| view,
         )
-        .expect("failed to open system notifications example window");
+        .expect("无法打开系统通知示例窗口");
         cx.activate(true);
     });
 }

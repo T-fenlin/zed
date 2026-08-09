@@ -384,7 +384,7 @@ mod tests {
 
             assert!(
                 result.host_positions.iter().all(|&p| p < host.len()),
-                "host positions {:?} must be within host {:?} (len {})",
+                "主机位置 {:?} 必须在主机 {:?} (长度 {}) 内",
                 result.host_positions,
                 host,
                 host.len(),
@@ -395,7 +395,7 @@ mod tests {
             assert_eq!(proj.project_index, 0);
             assert!(
                 proj.path_positions.iter().all(|&p| p < path.len()),
-                "path positions {:?} must be within path {:?} (len {})",
+                "路径位置 {:?} 必须在路径 {:?} (长度 {}) 内",
                 proj.path_positions,
                 path,
                 path.len(),
@@ -403,11 +403,11 @@ mod tests {
 
             assert!(
                 !result.host_positions.is_empty(),
-                "query 'dev' should match host 'dev'"
+                "查询 'dev' 应匹配主机 'dev'"
             );
             assert!(
                 !proj.path_positions.is_empty(),
-                "query 'app' should match path '/src/app'"
+                "查询 'app' 应匹配路径 '/src/app'"
             );
         });
     }
@@ -420,7 +420,7 @@ mod tests {
             let host = servers[0].host;
             assert!(
                 results[0].host_positions.iter().all(|&p| p < host.len()),
-                "host positions {:?} out of bounds for {:?}",
+                "主机位置 {:?} 超出 {:?} 的范围",
                 results[0].host_positions,
                 host,
             );
@@ -442,7 +442,7 @@ mod tests {
                     .host_positions
                     .iter()
                     .all(|&p| p < host.len() && host.is_char_boundary(p)),
-                "host positions {:?} must be valid char boundaries in {:?}",
+                "主机位置 {:?} 必须是 {:?} 中的有效字符边界",
                 result.host_positions,
                 host,
             );
@@ -453,7 +453,7 @@ mod tests {
                 proj.path_positions
                     .iter()
                     .all(|&p| p < path.len() && path.is_char_boundary(p)),
-                "path positions {:?} must be valid char boundaries in {:?}",
+                "路径位置 {:?} 必须是 {:?} 中的有效字符边界",
                 proj.path_positions,
                 path,
             );
@@ -486,7 +486,7 @@ mod tests {
         let result = run_async(&data, "alpha", &cancel, executor).await;
         assert!(
             result.is_none(),
-            "cancel set before run should short-circuit"
+            "运行前设置的取消标志应短路"
         );
     }
 
@@ -497,7 +497,7 @@ mod tests {
         let executor = cx.background_executor.clone();
         let results = run_async(&data, "alpha", &cancel, executor)
             .await
-            .expect("uncancelled run should return results");
+            .expect("未取消的运行应返回结果");
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].server_index, 0);
         assert!(!results[0].host_positions.is_empty());
@@ -507,29 +507,29 @@ mod tests {
     fn test_filter_matches_nickname_and_host() {
         let servers = [mock_with_nickname("10.0.0.5", "prod", &["/srv/app"])];
         with_filter_data(&servers, |servers, data| {
-            let nickname = servers[0].nickname.expect("server has a nickname");
+            let nickname = servers[0].nickname.expect("服务器有昵称");
 
             let by_nickname = run_sync(data, "prod");
-            assert_eq!(by_nickname.len(), 1, "nickname should match");
+            assert_eq!(by_nickname.len(), 1, "昵称应匹配");
             assert!(
                 !by_nickname[0].host_positions.is_empty(),
-                "matching the nickname should highlight it"
+                "匹配昵称应高亮显示"
             );
             assert!(
                 by_nickname[0]
                     .host_positions
                     .iter()
                     .all(|&p| p < nickname.len()),
-                "host positions {:?} must stay within the displayed nickname {:?}",
+                "主机位置 {:?} 必须保持在显示的昵称 {:?} 内",
                 by_nickname[0].host_positions,
                 nickname,
             );
 
             let by_host = run_sync(data, "10.0");
-            assert_eq!(by_host.len(), 1, "real host should remain searchable");
+            assert_eq!(by_host.len(), 1, "真实主机应保持可搜索");
             assert!(
                 by_host[0].host_positions.is_empty(),
-                "alias-only matches are searchable but not highlighted, got {:?}",
+                "仅别名匹配可搜索但不高亮,得到 {:?}",
                 by_host[0].host_positions,
             );
         });

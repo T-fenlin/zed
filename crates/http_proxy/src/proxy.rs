@@ -101,10 +101,10 @@ impl DenyReason {
     pub(crate) fn human_explanation(&self) -> String {
         match self {
             DenyReason::HostNotInAllowlist { host } => {
-                format!("host '{host}' is not in this conversation's network allowlist")
+                format!("主机 '{host}' 不在当前对话的网络允许列表中")
             }
             DenyReason::IpLiteralRejected { target } => format!(
-                "target '{target}' is an IP literal; only hostnames are permitted by sandbox policy"
+                "目标 '{target}' 是 IP 字面量;沙箱策略仅允许主机名"
             ),
             DenyReason::ResolvedToForbiddenIp { host } => format!(
                 "host '{host}' resolves only to loopback/private/link-local addresses, \
@@ -162,10 +162,10 @@ impl ProxyHandle {
     /// vars and for the seatbelt rule narrowing `localhost:<port>`.
     pub fn spawn(config: ProxyConfig) -> Result<ProxyHandle> {
         let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
-            .context("failed to bind proxy listener on 127.0.0.1:0")?;
+            .context("无法在 127.0.0.1:0 上绑定代理监听器")?;
         let port = listener
             .local_addr()
-            .context("failed to read proxy local addr")?
+            .context("无法读取代理本地地址")?
             .port();
 
         // Inform the parent the proxy is ready before starting the accept
@@ -190,7 +190,7 @@ impl ProxyHandle {
                 let shutdown = shutdown.clone();
                 move || run_listener(listener, runtime_state, shutdown)
             })
-            .context("failed to spawn proxy listener thread")?;
+            .context("无法生成代理监听线程")?;
 
         Ok(ProxyHandle {
             port,
@@ -226,19 +226,19 @@ impl ProxyHandle {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).with_context(|| {
                 format!(
-                    "failed to create proxy socket directory {}",
+                    "无法创建代理套接字目录 {}",
                     parent.display()
                 )
             })?;
         }
         if path.exists() {
             std::fs::remove_file(&path).with_context(|| {
-                format!("failed to remove stale proxy socket {}", path.display())
+                format!("无法移除过期的代理套接字 {}", path.display())
             })?;
         }
 
         let listener = UnixListener::bind(&path)
-            .with_context(|| format!("failed to bind proxy Unix socket {}", path.display()))?;
+            .with_context(|| format!("无法绑定代理 Unix 套接字 {}", path.display()))?;
         let port = reserve_loopback_port()?;
 
         let _ = config.events.unbounded_send(ProxyEvent::Ready { port });
@@ -258,7 +258,7 @@ impl ProxyHandle {
                 let shutdown = shutdown.clone();
                 move || run_unix_listener(listener, runtime_state, shutdown)
             })
-            .context("failed to spawn proxy Unix listener thread")?;
+            .context("无法生成代理 Unix 监听线程")?;
 
         Ok(ProxyHandle {
             port,
@@ -303,7 +303,7 @@ impl Drop for ProxyHandle {
             // listener thread panicked; there's nothing to recover, but it
             // shouldn't pass unnoticed.
             if thread.join().is_err() {
-                log::warn!("[http_proxy] listener thread panicked");
+                log::warn!("[http_proxy] 监听线程发生恐慌");
             }
         }
         if let Some(path) = &self.socket_path
@@ -311,7 +311,7 @@ impl Drop for ProxyHandle {
             && error.kind() != std::io::ErrorKind::NotFound
         {
             log::debug!(
-                "[http_proxy] failed to remove proxy Unix socket {}: {error}",
+                "[http_proxy] 无法移除代理 Unix 套接字 {}: {error}",
                 path.display()
             );
         }
@@ -320,7 +320,7 @@ impl Drop for ProxyHandle {
             && error.kind() != std::io::ErrorKind::NotFound
         {
             log::debug!(
-                "[http_proxy] failed to remove proxy socket directory {}: {error}",
+                "[http_proxy] 无法移除代理套接字目录 {}: {error}",
                 directory.display()
             );
         }
@@ -362,17 +362,17 @@ impl Drop for ConnectionSlot {
 #[cfg(unix)]
 fn reserve_loopback_port() -> Result<u16> {
     let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
-        .context("failed to reserve proxy bridge port")?;
+        .context("无法保留代理桥接端口")?;
     Ok(listener
         .local_addr()
-        .context("failed to read reserved proxy bridge port")?
+        .context("无法读取保留的代理桥接端口")?
         .port())
 }
 
 fn run_listener(listener: TcpListener, state: Arc<RuntimeState>, shutdown: Arc<AtomicBool>) {
     for stream in listener.incoming() {
         if shutdown.load(Ordering::SeqCst) {
-            log::debug!("[http_proxy] listener stopping (shutdown signaled)");
+            log::debug!("[http_proxy] 监听器正在停止(已发出关闭信号)");
             break;
         }
         match stream {
@@ -381,7 +381,7 @@ fn run_listener(listener: TcpListener, state: Arc<RuntimeState>, shutdown: Arc<A
                 // EMFILE / per-process fd exhaustion is the realistic
                 // failure here. Log and keep going — accept errors are
                 // usually transient.
-                log::warn!("[http_proxy] accept failed: {e}");
+                log::warn!("[http_proxy] 接受连接失败: {e}");
             }
         }
     }
@@ -391,12 +391,12 @@ fn run_listener(listener: TcpListener, state: Arc<RuntimeState>, shutdown: Arc<A
 fn run_unix_listener(listener: UnixListener, state: Arc<RuntimeState>, shutdown: Arc<AtomicBool>) {
     for stream in listener.incoming() {
         if shutdown.load(Ordering::SeqCst) {
-            log::debug!("[http_proxy] Unix listener stopping (shutdown signaled)");
+            log::debug!("[http_proxy] Unix 监听器正在停止(已发出关闭信号)");
             break;
         }
         match stream {
             Ok(stream) => spawn_connection(connection::ClientStream::Unix(stream), &state),
-            Err(error) => log::warn!("[http_proxy] Unix accept failed: {error}"),
+            Err(error) => log::warn!("[http_proxy] Unix 接受连接失败: {error}"),
         }
     }
 }
@@ -420,10 +420,10 @@ fn spawn_connection(stream: connection::ClientStream, state: &Arc<RuntimeState>)
         .spawn(move || {
             let _slot = slot;
             if let Err(error) = connection::handle(stream, state) {
-                log::debug!("[http_proxy] connection handler error: {error}");
+                log::debug!("[http_proxy] 连接处理程序错误: {error}");
             }
         });
     if let Err(error) = result {
-        log::warn!("[http_proxy] failed to spawn connection thread: {error}");
+        log::warn!("[http_proxy] 无法生成连接线程: {error}");
     }
 }

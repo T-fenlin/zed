@@ -143,7 +143,7 @@ impl ProxySettings {
             .and_then(|input| {
                 input
                     .parse::<Url>()
-                    .inspect_err(|e| log::error!("Error parsing proxy settings: {}", e))
+                    .inspect_err(|e| log::error!("解析代理设置出错: {}", e))
                     .ok()
             })
             .or_else(read_proxy_from_env)
@@ -243,7 +243,7 @@ pub struct Client {
 
 #[derive(Error, Debug)]
 pub enum EstablishConnectionError {
-    #[error("upgrade required")]
+    #[error("需要升级")]
     UpgradeRequired,
     #[error("unauthorized")]
     Unauthorized,
@@ -334,7 +334,7 @@ struct ClientState {
     credentials: Option<Credentials>,
     status: (watch::Sender<Status>, watch::Receiver<Status>),
     /// Bumped each time the cloud websocket finishes its handshake. Starts at `0` so
-    /// subscribers can distinguish "no connection yet" from a real reconnect.
+    /// subscribers can distinguish "尚无连接" from a real reconnect.
     cloud_connection_id: (watch::Sender<u64>, watch::Receiver<u64>),
     _reconnect_task: Option<Task<()>>,
     _cloud_connection_task: Option<Task<()>>,
@@ -506,7 +506,7 @@ impl<T: 'static> PendingEntitySubscription<T> {
             let type_name = message.payload_type_name();
             let sender_id = message.original_sender_id();
             log::debug!(
-                "handling queued rpc message. client_id:{}, sender_id:{:?}, type:{}",
+                "处理排队的 rpc 消息。client_id:{}, sender_id:{:?}, type:{}",
                 client_id,
                 sender_id,
                 type_name
@@ -529,7 +529,7 @@ impl<T: 'static> Drop for PendingEntitySubscription<T> {
                 .remove(&(TypeId::of::<T>(), self.remote_id))
             {
                 for message in messages {
-                    log::info!("unhandled message {}", message.payload_type_name());
+                    log::info!("未处理的消息 {}", message.payload_type_name());
                 }
             }
         }
@@ -684,7 +684,7 @@ impl Client {
     }
 
     fn set_status(self: &Arc<Self>, status: Status, cx: &AsyncApp) {
-        log::info!("set status on client {}: {:?}", self.id(), status);
+        log::info!("设置客户端 {} 的状态:{:?}", self.id(), status);
         let mut state = self.state.write();
         *state.status.0.borrow_mut() = status;
 
@@ -704,14 +704,14 @@ impl Client {
                     loop {
                         match client.connect(true, cx).await {
                             ConnectionResult::Timeout => {
-                                log::error!("client connect attempt timed out")
+                                log::error!("客户端连接尝试超时")
                             }
                             ConnectionResult::ConnectionReset => {
-                                log::error!("client connect attempt reset")
+                                log::error!("客户端连接尝试已重置")
                             }
                             ConnectionResult::Result(r) => {
                                 if let Err(error) = r {
-                                    log::error!("failed to connect: {error}");
+                                    log::error!("连接失败:{error}");
                                 } else {
                                     break;
                                 }
@@ -760,7 +760,7 @@ impl Client {
         let mut state = self.handler_set.lock();
         anyhow::ensure!(
             !state.entities_by_type_and_remote_id.contains_key(&id),
-            "already subscribed to entity"
+            "已订阅该实体"
         );
 
         state
@@ -824,7 +824,7 @@ impl Client {
         if prev_handler.is_some() {
             let location = std::panic::Location::caller();
             panic!(
-                "{}:{} registered handler for the same message {} twice",
+                "{}:{} 为同一消息 {} 注册了两次处理器",
                 location.file(),
                 location.line(),
                 std::any::type_name::<M>()
@@ -936,7 +936,7 @@ impl Client {
                     }
                 }
                 _ = status_rx.next().fuse() => {
-                    return Err(anyhow!("authentication canceled"));
+                    return Err(anyhow!("身份验证已取消"));
                 }
             }
         }
@@ -971,7 +971,7 @@ impl Client {
             Ok(valid) => Ok(valid),
             Err(err) => {
                 self.set_status(Status::AuthenticationError, cx);
-                Err(err.context("failed to validate credentials"))
+                Err(err.context("验证凭据失败"))
             }
         }
     }
@@ -992,12 +992,12 @@ impl Client {
             loop {
                 match Self::run_cloud_connection(&this, cx).await {
                     Ok(()) => {
-                        log::info!("cloud websocket disconnected, will reconnect");
+                        log::info!("云端 WebSocket 已断开,将重新连接");
                         delay = INITIAL_RECONNECTION_DELAY;
                     }
                     Err(err) => {
                         log::warn!(
-                            "cloud websocket connect failed: {err:#}; retrying in {delay:?}"
+                            "云端 WebSocket 连接失败:{err:#};将在 {delay:?} 后重试"
                         );
                     }
                 }
@@ -1071,10 +1071,10 @@ impl Client {
                     let is_staff = is_staff_rx.await?;
                     if is_staff {
                         match client.connect_with_credentials(credentials, cx).await {
-                            ConnectionResult::Timeout => Err(anyhow!("connection timed out")),
-                            ConnectionResult::ConnectionReset => Err(anyhow!("connection reset")),
+                            ConnectionResult::Timeout => Err(anyhow!("连接超时")),
+                            ConnectionResult::ConnectionReset => Err(anyhow!("连接重置")),
                             ConnectionResult::Result(result) => {
-                                result.context("client auth and connect")
+                                result.context("客户端身份验证与连接")
                             }
                         }
                     } else {
@@ -1108,7 +1108,7 @@ impl Client {
             Status::UpgradeRequired => {
                 return ConnectionResult::Result(
                     Err(EstablishConnectionError::UpgradeRequired)
-                        .context("client auth and connect"),
+                        .context("客户端身份验证与连接"),
                 );
             }
         };
@@ -1139,7 +1139,7 @@ impl Client {
                     Ok(conn) => {
                         futures::select_biased! {
                             result = self.set_connection(conn, cx).fuse() => {
-                                match result.context("client auth and connect") {
+                                match result.context("客户端身份验证与连接") {
                                     Ok(()) => ConnectionResult::Result(Ok(())),
                                     Err(err) => {
                                         self.set_status(Status::ConnectionError, cx);
@@ -1155,15 +1155,15 @@ impl Client {
                     }
                     Err(EstablishConnectionError::Unauthorized) => {
                         self.set_status(Status::ConnectionError, cx);
-                        ConnectionResult::Result(Err(EstablishConnectionError::Unauthorized).context("client auth and connect"))
+                        ConnectionResult::Result(Err(EstablishConnectionError::Unauthorized).context("客户端身份验证与连接"))
                     }
                     Err(EstablishConnectionError::UpgradeRequired) => {
                         self.set_status(Status::UpgradeRequired, cx);
-                        ConnectionResult::Result(Err(EstablishConnectionError::UpgradeRequired).context("client auth and connect"))
+                        ConnectionResult::Result(Err(EstablishConnectionError::UpgradeRequired).context("客户端身份验证与连接"))
                     }
                     Err(error) => {
                         self.set_status(Status::ConnectionError, cx);
-                        ConnectionResult::Result(Err(error).context("client auth and connect"))
+                        ConnectionResult::Result(Err(error).context("客户端身份验证与连接"))
                     }
                 }
             }
@@ -1176,7 +1176,7 @@ impl Client {
 
     async fn set_connection(self: &Arc<Self>, conn: Connection, cx: &AsyncApp) -> Result<()> {
         let executor = cx.background_executor();
-        log::debug!("add connection to peer");
+        log::debug!("向对端添加连接");
         let (connection_id, handle_io, mut incoming) = self.peer.add_connection(conn, {
             let executor = executor.clone();
             move |duration| executor.timer(duration)
@@ -1184,20 +1184,20 @@ impl Client {
         let handle_io = executor.spawn(handle_io);
 
         let peer_id = async {
-            log::debug!("waiting for server hello");
-            let message = incoming.next().await.context("no hello message received")?;
-            log::debug!("got server hello");
+            log::debug!("等待服务器握手消息");
+            let message = incoming.next().await.context("未收到握手消息")?;
+            log::debug!("已收到服务器握手消息");
             let hello_message_type_name = message.payload_type_name().to_string();
             let hello = message
                 .into_any()
                 .downcast::<TypedEnvelope<proto::Hello>>()
                 .map_err(|_| {
                     anyhow!(
-                        "invalid hello message received: {:?}",
+                        "收到无效的握手消息:{:?}",
                         hello_message_type_name
                     )
                 })?;
-            let peer_id = hello.payload.peer_id.context("invalid peer id")?;
+            let peer_id = hello.payload.peer_id.context("无效的对等 ID")?;
             Ok(peer_id)
         };
 
@@ -1210,7 +1210,7 @@ impl Client {
         };
 
         log::debug!(
-            "set status to connected (connection id: {:?}, peer id: {:?})",
+            "将状态设置为已连接(连接 ID:{:?},对端 ID:{:?})",
             connection_id,
             peer_id
         );
@@ -1248,7 +1248,7 @@ impl Client {
                     }
                 }
                 Err(err) => {
-                    log::error!("connection error: {:?}", err);
+                    log::error!("连接错误:{:?}", err);
                     this.set_status(Status::ConnectionLost, cx);
                 }
             }
@@ -1295,7 +1295,7 @@ impl Client {
             }
 
             if let Some(url) = &*ZED_RPC_URL {
-                return Url::parse(url).context("invalid rpc url");
+                return Url::parse(url).context("无效的 RPC URL");
             }
 
             let mut url = http.build_url("/rpc");
@@ -1309,17 +1309,17 @@ impl Client {
             let response = http.get(&url, Default::default(), false).await?;
             anyhow::ensure!(
                 response.status().is_redirection(),
-                "unexpected /rpc response status {}",
+                "意外的 /rpc 响应状态 {}",
                 response.status()
             );
             let collab_url = response
                 .headers()
                 .get("Location")
-                .context("missing location header in /rpc response")?
+                .context("/rpc 响应中缺少 Location 头")?
                 .to_str()
                 .map_err(EstablishConnectionError::other)?
                 .to_string();
-            Url::parse(&collab_url).with_context(|| format!("parsing collab rpc url {collab_url}"))
+            Url::parse(&collab_url).with_context(|| format!("正在解析协作 RPC URL {collab_url}"))
         }
     }
 
@@ -1351,7 +1351,7 @@ impl Client {
             let url_scheme = match rpc_url.scheme() {
                 "https" => Https,
                 "http" => Http,
-                _ => Err(anyhow!("invalid rpc url: {}", rpc_url))?,
+                _ => Err(anyhow!("无效的 RPC URL:{}", rpc_url))?,
             };
 
             let stream = gpui_tokio::Tokio::spawn_result(cx, {
@@ -1360,7 +1360,7 @@ impl Client {
                     let rpc_host = rpc_url
                         .host_str()
                         .zip(rpc_url.port_or_known_default())
-                        .context("missing host in rpc url")?;
+                        .context("RPC URL 中缺少主机名")?;
                     Ok(match proxy {
                         Some(proxy) if !excluded_from_proxy(rpc_host.0) => {
                             connect_proxy_stream(&proxy, rpc_host).await?
@@ -1371,7 +1371,7 @@ impl Client {
             })
             .await?;
 
-            log::info!("connected to rpc endpoint {}", rpc_url);
+            log::info!("已连接到 RPC 端点 {}", rpc_url);
 
             rpc_url
                 .set_scheme(match url_scheme {
@@ -1450,15 +1450,15 @@ impl Client {
                     // zed server to encrypt the user's access token, so that it can'be intercepted by
                     // any other app running on the user's device.
                     let (public_key, private_key) =
-                        rpc::auth::keypair().context("failed to generate keypair for auth")?;
+                        rpc::auth::keypair().context("生成用于身份验证的密钥对失败")?;
                     let public_key = String::try_from(public_key)
-                        .context("failed to serialize public key for auth")?;
+                        .context("序列化用于身份验证的公钥失败")?;
 
                     if let Some((login, token)) =
                         IMPERSONATE_LOGIN.as_ref().zip(ADMIN_API_TOKEN.as_ref())
                     {
                         if !*USE_WEB_LOGIN {
-                            eprintln!("authenticate as admin {login}, {token}");
+                            eprintln!("以管理员身份进行身份验证 {login}, {token}");
 
                             return this
                                 .authenticate_as_admin(http, login.clone(), token.clone())
@@ -1468,11 +1468,11 @@ impl Client {
 
                     // Start an HTTP server to receive the redirect from Zed's sign-in page.
                     let server = tiny_http::Server::http("127.0.0.1:0")
-                        .map_err(|e| anyhow!(e).context("failed to bind callback port"))?;
+                        .map_err(|e| anyhow!(e).context("绑定回调端口失败"))?;
                     let port = server
                         .server_addr()
                         .to_ip()
-                        .context("server not bound to a TCP address")?
+                        .context("服务器未绑定到 TCP 地址")?
                         .port();
 
                     #[derive(Serialize)]
@@ -1512,11 +1512,11 @@ impl Client {
                                 if let Some(req) = server.recv_timeout(Duration::from_secs(1))? {
                                     let path = req.url();
                                     let url = Url::parse(&format!("http://example.com{}", path))
-                                        .context("failed to parse login notification url")?;
+                                        .context("解析登录通知 URL 失败")?;
                                     let callback_params: CallbackParams =
                                         serde_urlencoded::from_str(url.query().unwrap_or_default())
                                             .context(
-                                                "failed to parse sign-in callback query parameters",
+                                                "解析登录回调查询参数失败",
                                             )?;
 
                                     let post_auth_url =
@@ -1530,7 +1530,7 @@ impl Client {
                                             .unwrap(),
                                         ),
                                     )
-                                    .context("failed to respond to login http request")?;
+                                    .context("响应登录 HTTP 请求失败")?;
                                     return Ok((
                                         callback_params.user_id,
                                         callback_params.access_token,
@@ -1538,13 +1538,13 @@ impl Client {
                                 }
                             }
 
-                            anyhow::bail!("didn't receive login redirect");
+                            anyhow::bail!("未收到登录重定向");
                         })
                         .await?;
 
                     let access_token = private_key
                         .decrypt_string(&access_token)
-                        .context("failed to decrypt access token")?;
+                        .context("解密访问令牌失败")?;
 
                     Ok(Credentials {
                         user_id: user_id.parse()?,
@@ -1593,7 +1593,7 @@ impl Client {
         response.body_mut().read_to_string(&mut body).await?;
         anyhow::ensure!(
             response.status().is_success(),
-            "admin user request failed {} - {}",
+            "管理员用户请求失败 {} - {}",
             response.status().as_u16(),
             body,
         );
@@ -1619,7 +1619,7 @@ impl Client {
             Ok(token) => Ok(token),
             Err(ClientApiError::Unauthorized) => {
                 self.request_sign_out();
-                Err(ClientApiError::Unauthorized).context("Failed to create LLM token")
+                Err(ClientApiError::Unauthorized).context("创建 LLM 令牌失败")
             }
             Err(err) => Err(anyhow::Error::from(err)),
         }
@@ -1645,7 +1645,7 @@ impl Client {
         {
             return Ok(response);
         }
-        log::info!("LLM token rejected; refreshing and retrying request");
+        log::info!("LLM 令牌被拒绝;正在刷新并重试请求");
         let token = self.refresh_llm_token(llm_token, organization_id).await?;
         http_client.send(build_request(&token)?).await
     }
@@ -1664,7 +1664,7 @@ impl Client {
             Ok(token) => Ok(token),
             Err(ClientApiError::Unauthorized) => {
                 self.request_sign_out();
-                return Err(ClientApiError::Unauthorized).context("Failed to create LLM token");
+                return Err(ClientApiError::Unauthorized).context("创建 LLM 令牌失败");
             }
             Err(err) => return Err(anyhow::Error::from(err)),
         }
@@ -1684,7 +1684,7 @@ impl Client {
             Ok(token) => Ok(token),
             Err(ClientApiError::Unauthorized) => {
                 self.request_sign_out();
-                return Err(ClientApiError::Unauthorized).context("Failed to create LLM token");
+                return Err(ClientApiError::Unauthorized).context("创建 LLM 令牌失败");
             }
             Err(err) => return Err(anyhow::Error::from(err)),
         }
@@ -1724,12 +1724,12 @@ impl Client {
         if let Status::Connected { connection_id, .. } = *self.status().borrow() {
             Ok(connection_id)
         } else {
-            anyhow::bail!("not connected");
+            anyhow::bail!("未连接");
         }
     }
 
     pub fn send<T: EnvelopedMessage>(&self, message: T) -> Result<()> {
-        log::debug!("rpc send. client_id:{}, name:{}", self.id(), T::NAME);
+        log::debug!("RPC 发送。client_id:{}, name:{}", self.id(), T::NAME);
         self.peer.send(self.connection_id()?, message)
     }
 
@@ -1747,7 +1747,7 @@ impl Client {
     ) -> impl Future<Output = Result<impl Stream<Item = Result<T::Response>>>> {
         let client_id = self.id.load(Ordering::SeqCst);
         log::debug!(
-            "rpc request start. client_id:{}. name:{}",
+            "RPC 请求开始。client_id:{}. name:{}",
             client_id,
             T::NAME
         );
@@ -1757,7 +1757,7 @@ impl Client {
         async move {
             let response = response?.await;
             log::debug!(
-                "rpc request finish. client_id:{}. name:{}",
+                "RPC 请求结束。client_id:{}. name:{}",
                 client_id,
                 T::NAME
             );
@@ -1771,7 +1771,7 @@ impl Client {
     ) -> impl Future<Output = Result<TypedEnvelope<T::Response>>> + use<T> {
         let client_id = self.id();
         log::debug!(
-            "rpc request start. client_id:{}. name:{}",
+            "RPC 请求开始。client_id:{}. name:{}",
             client_id,
             T::NAME
         );
@@ -1781,7 +1781,7 @@ impl Client {
         async move {
             let response = response?.await;
             log::debug!(
-                "rpc request finish. client_id:{}. name:{}",
+                "RPC 请求结束。client_id:{}. name:{}",
                 client_id,
                 T::NAME
             );
@@ -1796,7 +1796,7 @@ impl Client {
     ) -> impl Future<Output = Result<proto::Envelope>> + use<> {
         let client_id = self.id();
         log::debug!(
-            "rpc request start. client_id:{}. name:{}",
+            "RPC 请求开始。client_id:{}. name:{}",
             client_id,
             request_type
         );
@@ -1806,7 +1806,7 @@ impl Client {
         async move {
             let response = response?.await;
             log::debug!(
-                "rpc request finish. client_id:{}. name:{}",
+                "RPC 请求结束。client_id:{}. name:{}",
                 client_id,
                 request_type
             );
@@ -1828,22 +1828,22 @@ impl Client {
         ) {
             let client_id = self.id();
             log::debug!(
-                "rpc message received. client_id:{}, sender_id:{:?}, type:{}",
+                "收到 RPC 消息。client_id:{}, sender_id:{:?}, type:{}",
                 client_id,
                 original_sender_id,
                 type_name
             );
             cx.spawn(async move |_| match future.await {
                 Ok(()) => {
-                    log::debug!("rpc message handled. client_id:{client_id}, sender_id:{original_sender_id:?}, type:{type_name}");
+                    log::debug!("RPC 消息已处理。client_id:{client_id}, sender_id:{original_sender_id:?}, type:{type_name}");
                 }
                 Err(error) => {
-                    log::error!("error handling message. client_id:{client_id}, sender_id:{original_sender_id:?}, type:{type_name}, error:{error:#}");
+                    log::error!("处理消息时出错。client_id:{client_id}, sender_id:{original_sender_id:?}, type:{type_name}, error:{error:#}");
                 }
             })
             .detach();
         } else {
-            log::info!("unhandled message {}", type_name);
+            log::info!("未处理的消息 {}", type_name);
             self.peer
                 .respond_with_unhandled_message(sender_id.into(), request_id, type_name)
                 .log_err();
@@ -1894,13 +1894,13 @@ impl ProtoClient for Client {
 
         async move {
             log::debug!(
-                "rpc stream request start. client_id:{}. name:{}",
+                "RPC 流请求开始。client_id:{}. name:{}",
                 client_id,
                 request_type
             );
             let response = response?.await;
             log::debug!(
-                "rpc stream request opened. client_id:{}. name:{}",
+                "RPC 流请求已打开。client_id:{}. name:{}",
                 client_id,
                 request_type
             );
@@ -1910,14 +1910,14 @@ impl ProtoClient for Client {
     }
 
     fn send(&self, envelope: proto::Envelope, message_type: &'static str) -> Result<()> {
-        log::debug!("rpc send. client_id:{}, name:{}", self.id(), message_type);
+        log::debug!("RPC 发送。client_id:{}, name:{}", self.id(), message_type);
         let connection_id = self.connection_id()?;
         self.peer.send_dynamic(connection_id, envelope)
     }
 
     fn send_response(&self, envelope: proto::Envelope, message_type: &'static str) -> Result<()> {
         log::debug!(
-            "rpc respond. client_id:{}, name:{}",
+            "RPC 响应。client_id:{}, name:{}",
             self.id(),
             message_type
         );
@@ -2272,14 +2272,14 @@ mod tests {
         http_client
             .as_fake()
             .replace_handler(|_, _request| async move {
-                Err(anyhow!("connection reset by peer").context("boom"))
+                Err(anyhow!("对端重置了连接").context("boom"))
             });
 
         let error = client.sign_in(false, &cx.to_async()).await.unwrap_err();
 
         assert_eq!(
             format!("{error:#}"),
-            "failed to validate credentials: boom: connection reset by peer"
+            "验证凭据失败:boom:对端重置了连接"
         );
     }
 

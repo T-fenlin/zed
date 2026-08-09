@@ -2715,7 +2715,7 @@ impl EditorElement {
                         });
                     })
                     .tooltip(Tooltip::for_action_title(
-                        "Expand Excerpt",
+                        "展开摘录",
                         &crate::actions::ExpandExcerpts::default(),
                     ))
                     .into_any_element();
@@ -6846,7 +6846,7 @@ pub fn render_breadcrumb_text(
                                     h_flex()
                                         .gap_1()
                                         .justify_between()
-                                        .child(Label::new("Show Symbol Outline"))
+                                        .child(Label::new("显示符号大纲"))
                                         .child(ui::KeyBinding::for_action_in(
                                             &zed_actions::outline::ToggleOutline,
                                             &focus_handle,
@@ -6861,7 +6861,7 @@ pub fn render_breadcrumb_text(
                                             .pt_1()
                                             .border_t_1()
                                             .border_color(cx.theme().colors().border_variant)
-                                            .child(Label::new("Right-Click to Copy Path")),
+                                            .child(Label::new("右键复制路径")),
                                     )
                                 })
                                 .into_any_element()

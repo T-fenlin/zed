@@ -199,7 +199,7 @@ pub fn granted_write_path_to_location_or_log(
     granted_write_path_to_location(granted)
         .inspect_err(|error| {
             log::warn!(
-                "dropping sandbox write grant {}: {error}",
+                "正在丢弃沙箱写入授权 {}: {error}",
                 granted.requested.display()
             );
         })
@@ -277,7 +277,7 @@ impl SandboxWrap {
             for path in &self.writable_paths {
                 let location = sandbox::HostFilesystemLocation::capture(path).map_err(|error| {
                     anyhow::anyhow!(error).context(format!(
-                        "cannot capture writable sandbox path `{}`",
+                        "无法捕获可写沙箱路径 `{}`",
                         path.display()
                     ))
                 })?;
@@ -603,7 +603,7 @@ impl Terminal {
 
     pub fn to_markdown(&self, cx: &App) -> String {
         format!(
-            "Terminal:\n```\n{}\n```\n",
+            "终端:\n```\n{}\n```\n",
             self.terminal.read(cx).get_content()
         )
     }
@@ -695,14 +695,14 @@ mod linux_tests {
 
         let error = wrap
             .to_policy()
-            .expect_err("a grant to a missing path must fail policy construction");
+            .expect_err("对不存在路径的授权必须导致策略构建失败");
         assert!(
             format!("{error:#}").contains("AGENTS.md"),
-            "error should name the failing grant: {error:#}"
+            "错误应指明失败的授权: {error:#}"
         );
         assert!(
             !missing.exists(),
-            "policy construction must never create the granted path"
+            "策略构建绝不能创建已授权的路径"
         );
     }
 
@@ -720,10 +720,10 @@ mod linux_tests {
         };
 
         wrap.to_policy()
-            .expect_err("a missing writable path must fail policy construction");
+            .expect_err("缺失的可写路径必须导致策略构建失败");
         assert!(
             !missing.exists(),
-            "policy construction must never create a writable path"
+            "策略构建绝不能创建可写路径"
         );
     }
 
@@ -753,6 +753,6 @@ mod linux_tests {
         };
 
         wrap.to_policy()
-            .expect("uncapturable protected paths must be dropped, not fail the policy");
+            .expect("无法捕获的受保护路径必须被丢弃,而不能导致策略失败");
     }
 }

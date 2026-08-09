@@ -79,7 +79,7 @@ impl FromStr for UsageLimit {
             limit => limit
                 .parse::<i32>()
                 .map(Self::Limited)
-                .context("failed to parse limit"),
+                .context("无法解析限制"),
         }
     }
 }

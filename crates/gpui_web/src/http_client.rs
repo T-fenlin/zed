@@ -89,7 +89,7 @@ impl HttpClient for FetchHttpClient {
                 });
             });
 
-            receiver.await.context("browser fetch task was canceled")?
+            receiver.await.context("浏览器 fetch 任务已取消")?
         })
     }
 }
@@ -125,27 +125,27 @@ async fn fetch(
 
     let url = parts.uri.to_string();
     let request = web_sys::Request::new_with_str_and_init(&url, &init)
-        .map_err(|error| anyhow!("failed to create fetch Request: {error:?}"))?;
+        .map_err(|error| anyhow!("创建 fetch 请求失败: {error:?}"))?;
 
     let request_headers = request.headers();
     for (name, value) in &parts.headers {
         let value_str = value
             .to_str()
-            .map_err(|_| anyhow!("non-ASCII header value for {name}"))?;
+            .map_err(|_| anyhow!("标头 {name} 的值包含非 ASCII 字符"))?;
         request_headers
             .set(name.as_str(), value_str)
-            .map_err(|error| anyhow!("failed to set header {name}: {error:?}"))?;
+            .map_err(|error| anyhow!("设置标头 {name} 失败: {error:?}"))?;
     }
 
     let promise =
-        global_fetch(&request).map_err(|error| anyhow!("fetch threw an error: {error:?}"))?;
+        global_fetch(&request).map_err(|error| anyhow!("fetch 抛出错误: {error:?}"))?;
     let response_value = wasm_bindgen_futures::JsFuture::from(promise)
         .await
-        .map_err(|error| anyhow!("fetch failed: {error:?}"))?;
+        .map_err(|error| anyhow!("fetch 失败: {error:?}"))?;
 
     let web_response: web_sys::Response = response_value
         .dyn_into()
-        .map_err(|error| anyhow!("fetch result is not a Response: {error:?}"))?;
+        .map_err(|error| anyhow!("fetch 结果不是 Response 对象: {error:?}"))?;
 
     let status = web_response.status();
     let mut builder = http_client::http::Response::builder().status(status);
@@ -167,7 +167,7 @@ async fn fetch(
                 }
             },
             Err(entry) => {
-                log::warn!("skipping non-array header entry at index {index}: {entry:?}");
+                log::warn!("跳过索引 {index} 处非数组的标头条目: {entry:?}");
             }
         }
     }
@@ -178,13 +178,13 @@ async fn fetch(
     // interop which is significantly more complex.
     let body_promise = web_response
         .array_buffer()
-        .map_err(|error| anyhow!("failed to initiate response body read: {error:?}"))?;
+        .map_err(|error| anyhow!("无法开始读取响应体: {error:?}"))?;
     let body_value = wasm_bindgen_futures::JsFuture::from(body_promise)
         .await
-        .map_err(|error| anyhow!("failed to read response body: {error:?}"))?;
+        .map_err(|error| anyhow!("读取响应体失败: {error:?}"))?;
     let array_buffer: js_sys::ArrayBuffer = body_value
         .dyn_into()
-        .map_err(|error| anyhow!("response body is not an ArrayBuffer: {error:?}"))?;
+        .map_err(|error| anyhow!("响应体不是 ArrayBuffer: {error:?}"))?;
     let response_bytes = js_sys::Uint8Array::new(&array_buffer).to_vec();
 
     builder

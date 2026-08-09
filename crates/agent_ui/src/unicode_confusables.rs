@@ -14,7 +14,7 @@ use unicode_script::UnicodeScript as _;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SuspiciousKind {
     /// A bidirectional control that can visually reorder surrounding text (for
-    /// example U+202E RIGHT-TO-LEFT OVERRIDE) — the classic "Trojan Source"
+    /// example U+202E RIGHT-TO-LEFT OVERRIDE) — the classic "特洛伊木马源"
     /// trick.
     BidiControl,
     /// A zero-width, invisible, or non-ASCII whitespace formatting character.
@@ -142,27 +142,27 @@ fn is_non_ascii_space(character: char) -> bool {
 /// attack, so the banner reads better than a bare codepoint.
 fn well_known_name(character: char) -> Option<&'static str> {
     Some(match character {
-        '\u{00A0}' => "no-break space",
-        '\u{00AD}' => "soft hyphen",
-        '\u{061C}' => "arabic letter mark",
-        '\u{180E}' => "mongolian vowel separator",
-        '\u{200B}' => "zero-width space",
-        '\u{200C}' => "zero-width non-joiner",
-        '\u{200D}' => "zero-width joiner",
-        '\u{200E}' => "left-to-right mark",
-        '\u{200F}' => "right-to-left mark",
-        '\u{202A}' => "left-to-right embedding",
-        '\u{202B}' => "right-to-left embedding",
-        '\u{202C}' => "pop directional formatting",
-        '\u{202D}' => "left-to-right override",
-        '\u{202E}' => "right-to-left override",
-        '\u{2060}' => "word joiner",
-        '\u{2066}' => "left-to-right isolate",
-        '\u{2067}' => "right-to-left isolate",
-        '\u{2068}' => "first strong isolate",
-        '\u{2069}' => "pop directional isolate",
-        '\u{3000}' => "ideographic space",
-        '\u{FEFF}' => "zero-width no-break space",
+        '\u{00A0}' => "不换行空格",
+        '\u{00AD}' => "软连字符",
+        '\u{061C}' => "阿拉伯文字母标记",
+        '\u{180E}' => "蒙古语元音分隔符",
+        '\u{200B}' => "零宽空格",
+        '\u{200C}' => "零宽不连字",
+        '\u{200D}' => "零宽连字",
+        '\u{200E}' => "从左到右标记",
+        '\u{200F}' => "从右到左标记",
+        '\u{202A}' => "从左到右嵌入",
+        '\u{202B}' => "从右到左嵌入",
+        '\u{202C}' => "弹出方向格式",
+        '\u{202D}' => "从左到右覆盖",
+        '\u{202E}' => "从右到左覆盖",
+        '\u{2060}' => "单词连接符",
+        '\u{2066}' => "从左到右隔离",
+        '\u{2067}' => "从右到左隔离",
+        '\u{2068}' => "首强隔离",
+        '\u{2069}' => "弹出方向隔离",
+        '\u{3000}' => "表意文字空格",
+        '\u{FEFF}' => "零宽不换行空格",
         _ => return None,
     })
 }
@@ -186,7 +186,7 @@ mod tests {
         assert_eq!(findings[0].character, '\u{0456}');
         assert_eq!(findings[0].kind, SuspiciousKind::Confusable);
         assert!(findings[0].description().contains("U+0456"));
-        assert!(findings[0].description().contains("Cyrillic"));
+        assert!(findings[0].description().contains("西里尔字母"));
     }
 
     #[test]

@@ -185,7 +185,7 @@ RUN chmod -R 0755 {full_dest} \
         )
         .await
         .map_err(|e| {
-            log::error!("error writing devcontainer feature environment: {e}");
+            log::error!("写入开发容器功能环境时出错: {e}");
             DevContainerError::FilesystemError
         })?;
 

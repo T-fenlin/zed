@@ -113,12 +113,12 @@ fn create_with_issued_at(
 ) -> Result<String> {
     let room_join = video_grant.room_join.unwrap_or(false);
     if room_join && identity.is_none() {
-        anyhow::bail!("identity is required for room_join grant, but it is none");
+        anyhow::bail!("加入房间授权需要身份标识,但当前未提供");
     }
 
     let expires_at = issued_at
         .checked_add(DEFAULT_TTL.as_secs())
-        .context("token expiration overflow")?;
+        .context("令牌过期时间溢出")?;
     let not_before = if room_join {
         // LiveKit Cloud applies participant revocations by comparing the
         // revocation timestamp to room-join token `nbf`.
@@ -170,8 +170,8 @@ pub fn validate_with_timestamp_source<'a>(
     let claims = token.claims;
     let timestamp = timestamp_source.unix_timestamp()?;
 
-    anyhow::ensure!(claims.nbf <= timestamp, "token is not yet valid");
-    anyhow::ensure!(claims.exp > timestamp, "token has expired");
+    anyhow::ensure!(claims.nbf <= timestamp, "令牌尚未生效");
+    anyhow::ensure!(claims.exp > timestamp, "令牌已过期");
 
     Ok(claims)
 }

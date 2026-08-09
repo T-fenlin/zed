@@ -381,7 +381,7 @@ impl HttpClient for BlockedHttpClient {
         Box::pin(async {
             Err(std::io::Error::new(
                 std::io::ErrorKind::PermissionDenied,
-                "BlockedHttpClient disallowed request",
+                "BlockedHttpClient 禁止了请求",
             )
             .into())
         })
@@ -435,7 +435,7 @@ impl FakeHttpClient {
     }
 
     pub fn with_404_response() -> Arc<HttpClientWithUrl> {
-        log::warn!("Using fake HTTP client with 404 response");
+        log::warn!("使用返回 404 响应的模拟 HTTP 客户端");
         Self::create(|_| async move {
             Ok(Response::builder()
                 .status(404)
@@ -445,7 +445,7 @@ impl FakeHttpClient {
     }
 
     pub fn with_200_response() -> Arc<HttpClientWithUrl> {
-        log::warn!("Using fake HTTP client with 200 response");
+        log::warn!("使用返回 200 响应的模拟 HTTP 客户端");
         Self::create(|_| async move {
             Ok(Response::builder()
                 .status(200)

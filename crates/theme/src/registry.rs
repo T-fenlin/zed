@@ -23,12 +23,12 @@ pub struct ThemeMeta {
 
 /// An error indicating that the theme with the given name was not found.
 #[derive(Debug, Error, Clone)]
-#[error("theme not found: {0}")]
+#[error("未找到主题:{0}")]
 pub struct ThemeNotFoundError(pub SharedString);
 
 /// An error indicating that the icon theme with the given name was not found.
 #[derive(Debug, Error, Clone)]
-#[error("icon theme not found: {0}")]
+#[error("未找到图标主题:{0}")]
 pub struct IconThemeNotFoundError(pub SharedString);
 
 /// The global [`ThemeRegistry`].

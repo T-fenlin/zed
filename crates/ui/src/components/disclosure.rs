@@ -100,7 +100,7 @@ impl RenderOnce for Disclosure {
         )
         .icon_color(Color::Muted)
         .icon_size(IconSize::Small)
-        .aria_label(if self.is_open { "Collapse" } else { "Expand" })
+        .aria_label(if self.is_open { "折叠" } else { "展开" })
         .aria_expanded(self.is_open)
         .disabled(self.disabled)
         .when_some(self.shape, |this, shape| this.shape(shape))
@@ -130,23 +130,23 @@ impl Component for Disclosure {
             .gap_6()
             .children(vec![
                 example_group_with_title(
-                    "Disclosure States",
+                    "折叠面板状态",
                     vec![
                         single_example(
-                            "Closed",
+                            "已关闭",
                             Disclosure::new("closed", false).into_any_element(),
                         ),
-                        single_example("Open", Disclosure::new("open", true).into_any_element()),
+                        single_example("打开", Disclosure::new("open", true).into_any_element()),
                     ],
                 ),
                 example_group_with_title(
-                    "Interactive Example",
+                    "交互示例",
                     vec![single_example(
-                        "Toggleable",
+                        "可切换",
                         v_flex()
                             .gap_2()
                             .child(Disclosure::new("interactive", false).into_any_element())
-                            .child(Label::new("Click to toggle"))
+                            .child(Label::new("点击切换"))
                             .into_any_element(),
                     )],
                 ),

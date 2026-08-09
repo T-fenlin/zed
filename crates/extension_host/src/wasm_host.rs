@@ -649,7 +649,7 @@ impl WasmHost {
             executor.spawn(async move {
                 let zed_api_version = parse_wasm_extension_version(&manifest_id, &wasm_bytes)?;
                 let component = Component::from_binary(&engine, &wasm_bytes)
-                    .context("failed to compile wasm component")?;
+                    .context("编译 wasm 组件失败")?;
 
                 anyhow::Ok((zed_api_version, component))
             })
@@ -686,7 +686,7 @@ impl WasmHost {
             extension
                 .call_init_extension(&mut store)
                 .await
-                .context("failed to initialize wasm extension")?;
+                .context("初始化 wasm 扩展失败")?;
 
             let (tx, mut rx) = mpsc::unbounded::<ExtensionCall>();
             let extension_task = async move {
@@ -731,7 +731,7 @@ impl WasmHost {
         self.fs
             .create_dir(&extension_work_dir)
             .await
-            .context("failed to create extension work dir")?;
+            .context("创建扩展工作目录失败")?;
 
         let file_perms = wasmtime_wasi::FilePerms::all();
         let dir_perms = wasmtime_wasi::DirPerms::all();
@@ -759,7 +759,7 @@ impl WasmHost {
             .fs
             .canonicalize(&self.work_dir)
             .await
-            .with_context(|| format!("canonicalizing work dir {:?}", self.work_dir))?;
+            .with_context(|| format!("规范化工作目录 {:?}", self.work_dir))?;
         let extension_work_dir = canonical_work_dir.join(id.as_ref());
 
         let absolute = if path.is_relative() {
@@ -769,7 +769,7 @@ impl WasmHost {
         };
 
         let normalized = util::paths::normalize_lexically(&absolute)
-            .map_err(|_| anyhow!("path {path:?} escapes its parent"))?;
+            .map_err(|_| anyhow!("路径 {path:?} 越过了其父目录"))?;
 
         // Canonicalize the nearest existing ancestor to resolve any symlinks
         // in the on-disk portion of the path. Components beyond that ancestor
@@ -786,7 +786,7 @@ impl WasmHost {
                     }
                     existing = existing
                         .parent()
-                        .context(format!("cannot resolve path {path:?}"))?;
+                        .context(format!("无法解析路径 {path:?}"))?;
                 }
             }
         };
@@ -798,7 +798,7 @@ impl WasmHost {
 
         anyhow::ensure!(
             resolved.starts_with(&extension_work_dir),
-            "cannot write to path {resolved:?}",
+            "无法写入路径 {resolved:?}",
         );
         Ok(resolved)
     }
@@ -809,13 +809,13 @@ pub fn parse_wasm_extension_version(extension_id: &str, wasm_bytes: &[u8]) -> Re
 
     for part in wasmparser::Parser::new(0).parse_all(wasm_bytes) {
         if let wasmparser::Payload::CustomSection(s) =
-            part.context("error parsing wasm extension")?
+            part.context("解析 wasm 扩展时出错")?
             && s.name() == "zed:api-version"
         {
             version = parse_wasm_extension_version_custom_section(s.data());
             if version.is_none() {
                 bail!(
-                    "extension {} has invalid zed:api-version section: {:?}",
+                    "扩展 {} 的 zed:api-version 部分无效: {:?}",
                     extension_id,
                     s.data()
                 );
@@ -828,7 +828,7 @@ pub fn parse_wasm_extension_version(extension_id: &str, wasm_bytes: &[u8]) -> Re
     //
     // By parsing the entirety of the Wasm bytes before we return, we're able to detect this problem
     // earlier as an `Err` rather than as a panic.
-    version.with_context(|| format!("extension {extension_id} has no zed:api-version section"))
+    version.with_context(|| format!("扩展 {extension_id} 没有 zed:api-version 部分"))
 }
 
 fn parse_wasm_extension_version_custom_section(data: &[u8]) -> Option<Version> {
@@ -856,17 +856,17 @@ impl WasmExtension {
             .fs
             .open_sync(&path)
             .await
-            .context(format!("opening wasm file, path: {path:?}"))?;
+            .context(format!("打开 wasm 文件,路径: {path:?}"))?;
 
         let mut wasm_bytes = Vec::new();
         wasm_file
             .read_to_end(&mut wasm_bytes)
-            .context(format!("reading wasm file, path: {path:?}"))?;
+            .context(format!("读取 wasm 文件,路径: {path:?}"))?;
 
         wasm_host
             .load_extension(wasm_bytes, manifest, cx)
             .await
-            .with_context(|| format!("loading wasm extension: {}", manifest.id))
+            .with_context(|| format!("加载 wasm 扩展: {}", manifest.id))
     }
 
     pub async fn call<T, Fn>(&self, f: Fn) -> Result<T>
@@ -887,14 +887,14 @@ impl WasmExtension {
             }))
             .map_err(|_| {
                 anyhow!(
-                    "wasm extension channel should not be closed yet, extension {} (id {})",
+                    "wasm 扩展通道不应已关闭,扩展 {} (id {})",
                     self.manifest.name,
                     self.manifest.id,
                 )
             })?;
         return_rx.await.with_context(|| {
             format!(
-                "wasm extension channel, extension {} (id {})",
+                "wasm 扩展通道,扩展 {} (id {})",
                 self.manifest.name, self.manifest.id,
             )
         })
@@ -920,7 +920,7 @@ impl WasmState {
             }))
             .unwrap_or_else(|_| {
                 panic!(
-                    "main thread message channel should not be closed yet, extension {} (id {})",
+                    "主线程消息通道不应已关闭,扩展 {} (id {})",
                     self.manifest.name, self.manifest.id,
                 )
             });
@@ -928,7 +928,7 @@ impl WasmState {
         let id = self.manifest.id.clone();
         async move {
             return_rx.await.unwrap_or_else(|_| {
-                panic!("main thread message channel, extension {name} (id {id})")
+                panic!("主线程消息通道,扩展 {name} (id {id})")
             })
         }
     }
@@ -939,7 +939,7 @@ impl WasmState {
 
     fn extension_error(&self, message: String) -> anyhow::Error {
         anyhow!(
-            "from extension \"{}\" version {}: {}",
+            "来自扩展 \"{}\" 版本 {}: {}",
             self.manifest.name,
             self.manifest.version,
             message
@@ -1057,7 +1057,7 @@ mod tests {
             .await;
         assert!(
             result.is_err(),
-            "symlink escape should be rejected, but got: {result:?}",
+            "符号链接逃逸应被拒绝,但得到: {result:?}",
         );
 
         // A path using `..` to escape the extension work dir must be rejected.
@@ -1069,7 +1069,7 @@ mod tests {
             .await;
         assert!(
             result.is_err(),
-            "parent traversal escape should be rejected, but got: {result:?}",
+            "父目录遍历逃逸应被拒绝,但得到: {result:?}",
         );
 
         // A legitimate path within the extension work dir should succeed.
@@ -1081,7 +1081,7 @@ mod tests {
             .await;
         assert!(
             result.is_ok(),
-            "legitimate path should be accepted, but got: {result:?}",
+            "合法路径应被接受,但得到: {result:?}",
         );
 
         // A relative path with non-existent intermediate directories should
@@ -1093,7 +1093,7 @@ mod tests {
             .await;
         assert!(
             result.is_ok(),
-            "relative path with non-existent parents should be accepted, but got: {result:?}",
+            "包含不存在父目录的相对路径应被接受,但得到: {result:?}",
         );
 
         // A symlink deeper than the immediate parent must still be caught.
@@ -1104,7 +1104,7 @@ mod tests {
             .await;
         assert!(
             result.is_err(),
-            "symlink escape through deep non-existent path should be rejected, but got: {result:?}",
+            "通过深层不存在路径的符号链接逃逸应被拒绝,但得到: {result:?}",
         );
     }
 }

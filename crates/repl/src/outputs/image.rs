@@ -55,7 +55,7 @@ impl ImageView {
             image::ImageFormat::Bmp => ImageFormat::Bmp,
             image::ImageFormat::Ico => ImageFormat::Ico,
             format => {
-                anyhow::bail!("unsupported image format {format:?}");
+                anyhow::bail!("不支持的图片格式 {format:?}");
             }
         };
 
@@ -151,7 +151,7 @@ mod tests {
         let mut bytes = Vec::new();
         let mut cursor = std::io::Cursor::new(&mut bytes);
         if let Err(error) = image.write_to(&mut cursor, image::ImageFormat::Png) {
-            panic!("failed to encode test image: {error}");
+            panic!("编码测试图片失败:{error}");
         }
 
         base64::engine::general_purpose::STANDARD.encode(bytes)
@@ -162,7 +162,7 @@ mod tests {
         let encoded = encode_test_image(200, 120);
         let image_view = match ImageView::from(&encoded) {
             Ok(view) => view,
-            Err(error) => panic!("failed to decode image view: {error}"),
+            Err(error) => panic!("解码图片视图失败:{error}"),
         };
 
         let line_height = Pixels::from(10.0);
@@ -180,7 +180,7 @@ mod tests {
         let encoded = encode_test_image(200, 120);
         let image_view = match ImageView::from(&encoded) {
             Ok(view) => view,
-            Err(error) => panic!("failed to decode image view: {error}"),
+            Err(error) => panic!("解码图片视图失败:{error}"),
         };
 
         let line_height = Pixels::from(10.0);

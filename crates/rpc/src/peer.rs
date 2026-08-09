@@ -158,7 +158,7 @@ impl Peer {
                 if let Some(channels) = stream_response_channels.lock().take() {
                     for channel in channels.values() {
                         let _ = channel.unbounded_send((
-                            Err(anyhow!("connection closed")),
+                            Err(anyhow!("连接已关闭")),
                             oneshot::channel().0,
                         ));
                     }
@@ -189,13 +189,13 @@ impl Peer {
                                 futures::select_biased! {
                                     result = writer.write(outgoing).fuse() => {
                                         tracing::trace!(%connection_id, "outgoing rpc message: done writing");
-                                        result.context("failed to write RPC message")?;
+                                        result.context("写入 RPC 消息失败")?;
                                         tracing::trace!(%connection_id, "keepalive interval: resetting after sending message");
                                         keepalive_timer.set(create_timer(KEEPALIVE_INTERVAL).fuse());
                                     }
                                     _ = create_timer(WRITE_TIMEOUT).fuse() => {
                                         tracing::trace!(%connection_id, "outgoing rpc message: writing timed out");
-                                        anyhow::bail!("timed out writing message");
+                                        anyhow::bail!("写入消息超时");
                                     }
                                 }
                             }
@@ -209,18 +209,18 @@ impl Peer {
                             futures::select_biased! {
                                 result = writer.write(Message::Ping).fuse() => {
                                     tracing::trace!(%connection_id, "keepalive interval: done pinging");
-                                    result.context("failed to send keepalive")?;
+                                    result.context("发送保活消息失败")?;
                                     tracing::trace!(%connection_id, "keepalive interval: resetting after pinging");
                                     keepalive_timer.set(create_timer(KEEPALIVE_INTERVAL).fuse());
                                 }
                                 _ = create_timer(WRITE_TIMEOUT).fuse() => {
                                     tracing::trace!(%connection_id, "keepalive interval: pinging timed out");
-                                    anyhow::bail!("timed out sending keepalive");
+                                    anyhow::bail!("发送保活消息超时");
                                 }
                             }
                         }
                         incoming = read_message => {
-                            let incoming = incoming.context("error reading rpc message from socket")?;
+                            let incoming = incoming.context("从套接字读取 RPC 消息时出错")?;
                             tracing::trace!(%connection_id, "incoming rpc message: received");
                             tracing::trace!(%connection_id, "receive timeout: resetting");
                             receive_timeout.set(create_timer(RECEIVE_TIMEOUT).fuse());
@@ -238,7 +238,7 @@ impl Peer {
                                     },
                                     _ = create_timer(WRITE_TIMEOUT).fuse() => {
                                         tracing::trace!(%connection_id, "incoming rpc message: processing timed out");
-                                        anyhow::bail!("timed out processing incoming message");
+                                        anyhow::bail!("处理传入消息超时");
                                     }
                                 }
                             }
@@ -246,7 +246,7 @@ impl Peer {
                         },
                         _ = receive_timeout => {
                             tracing::trace!(%connection_id, "receive timeout: delay between messages too long");
-                            anyhow::bail!("delay between messages too long");
+                            anyhow::bail!("消息间隔时间过长");
                         }
                     }
                 }
@@ -364,7 +364,7 @@ impl Peer {
                             tracing::error!(
                                 %connection_id,
                                 message_id,
-                                "unable to construct a typed envelope"
+                                "无法构造类型化信封"
                             );
                             None
                         })
@@ -444,7 +444,7 @@ impl Peer {
                 sender_id: receiver_id.into(),
                 original_sender_id: response.original_sender_id,
                 payload: T::Response::from_envelope(response)
-                    .context("received response of the wrong type")?,
+                    .context("收到错误类型的响应")?,
                 received_at,
             })
         }
@@ -468,7 +468,7 @@ impl Peer {
                 .response_channels
                 .lock()
                 .as_mut()
-                .context("connection was closed")?
+                .context("连接已关闭")?
                 // requesting to forward the response on the oneshot tx
                 // when it's envelope.id matches the one for the request we are about to send
                 .insert(envelope.id, tx);
@@ -476,12 +476,12 @@ impl Peer {
                 .outgoing_tx
                 // request that the message is send at some point in the future
                 .unbounded_send(Message::Envelope(envelope))
-                .context("connection was closed")?;
+                .context("连接已关闭")?;
             Ok(())
         });
         async move {
             send?; // wait for reception
-            let (response, received_at, _barrier) = rx.await.context("connection was closed")?;
+            let (response, received_at, _barrier) = rx.await.context("连接已关闭")?;
             if let Some(proto::envelope::Payload::Error(error)) = &response.payload {
                 return Err(RpcError::from_proto(error, type_name));
             }
@@ -502,7 +502,7 @@ impl Peer {
                 .await?
                 .map(|response| {
                     T::Response::from_envelope(response?)
-                        .context("received response of the wrong type")
+                        .context("收到错误类型的响应")
                 })
                 .boxed())
         }
@@ -522,7 +522,7 @@ impl Peer {
             stream_response_channels
                 .lock()
                 .as_mut()
-                .context("connection was closed")?
+                .context("连接已关闭")?
                 .insert(message_id, tx);
             if let Err(error) = connection
                 .outgoing_tx
@@ -531,7 +531,7 @@ impl Peer {
                 if let Some(channels) = stream_response_channels.lock().as_mut() {
                     channels.remove(&message_id);
                 }
-                return Err(error).context("connection was closed");
+                return Err(error).context("连接已关闭");
             }
             Ok((message_id, stream_response_channels))
         });
@@ -689,7 +689,7 @@ impl Peer {
     ) -> Result<()> {
         let connection = self.connection_state(sender_id)?;
         let response = ErrorCode::Internal
-            .message(format!("message {} was not handled", message_type_name))
+            .message(format!("消息 {} 未被处理", message_type_name))
             .to_proto();
         let message_id = connection
             .next_message_id
@@ -708,7 +708,7 @@ impl Peer {
         let connections = self.connections.read();
         let connection = connections
             .get(&connection_id)
-            .with_context(|| format!("no such connection: {connection_id}"))?;
+            .with_context(|| format!("不存在连接: {connection_id}"))?;
         Ok(connection.clone())
     }
 
@@ -831,7 +831,7 @@ mod tests {
                 {
                     peer.respond(envelope.receipt(), envelope.payload.clone())?
                 } else {
-                    panic!("unknown message type");
+                    panic!("未知消息类型");
                 }
             }
 
@@ -1137,12 +1137,12 @@ mod tests {
 
         assert!(
             result.is_err(),
-            "stream request should fail when the connection write task has gone away"
+            "当连接写入任务消失时,流请求应失败"
         );
         assert_eq!(
             client.pending_stream_request_count(client_to_server_conn_id),
             Some(0),
-            "failed stream request should not leave response channel bookkeeping behind"
+            "失败的流请求不应留下响应通道簿记"
         );
     }
 
@@ -1205,7 +1205,7 @@ mod tests {
         let error = stream.next().await.unwrap().unwrap_err();
         assert!(
             format!("{error}").contains("boom"),
-            "expected error to surface server message, got: {error}"
+            "预期错误会显示服务器消息,实际得到: {error}"
         );
 
         // The error alone (without an EndStream) should terminate the stream.
@@ -1305,7 +1305,7 @@ mod tests {
         assert_eq!(
             client.pending_stream_request_count(client_to_server_conn_id),
             Some(0),
-            "stream channel should be removed once the consumer has dropped the stream"
+            "一旦消费者丢弃流,流通道应被移除"
         );
 
         drop(server_task);
@@ -1368,7 +1368,7 @@ mod tests {
         drop(server_conn);
         assert_eq!(
             response.await.unwrap_err().to_string(),
-            "connection was closed"
+            "连接已关闭"
         );
     }
 }

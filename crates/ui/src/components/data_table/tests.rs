@@ -25,13 +25,13 @@ fn parse_resize_behavior(
         } else if col.starts_with('*') {
             resize_behavior.push(TableResizeBehavior::MinSize(col.len() as f32 / total_size));
         } else {
-            panic!("invalid test input: unrecognized resize behavior: {}", col);
+            panic!("无效的测试输入:无法识别的调整大小行为:{}", col);
         }
     }
 
     if resize_behavior.len() != expected_cols {
         panic!(
-            "invalid test input: expected {} columns, got {}",
+            "无效的测试输入:预期 {} 列,实际为 {} 列",
             expected_cols,
             resize_behavior.len()
         );
@@ -53,7 +53,7 @@ mod reset_column_size {
         }
 
         for w in &widths {
-            assert!(w.is_finite(), "incorrect number of columns");
+            assert!(w.is_finite(), "列数不正确");
         }
         let total = widths.iter().sum::<f32>();
         for width in &mut widths {
@@ -65,21 +65,21 @@ mod reset_column_size {
     #[track_caller]
     fn check_reset_size(initial_sizes: &str, widths: &str, expected: &str, resize_behavior: &str) {
         let (initial_sizes, total_1, None) = parse(initial_sizes) else {
-            panic!("invalid test input: initial sizes should not be marked");
+            panic!("无效的测试输入:初始大小不应被标记");
         };
         let (widths, total_2, Some(column_index)) = parse(widths) else {
-            panic!("invalid test input: widths should be marked");
+            panic!("无效的测试输入:宽度应被标记");
         };
         assert_eq!(
             total_1, total_2,
-            "invalid test input: total width not the same {total_1}, {total_2}"
+            "无效的测试输入:总宽度不一致 {total_1}, {total_2}"
         );
         let (expected, total_3, None) = parse(expected) else {
-            panic!("invalid test input: expected should not be marked: {expected:?}");
+            panic!("无效的测试输入:预期值不应被标记:{expected:?}");
         };
         assert_eq!(
             total_2, total_3,
-            "invalid test input: total width not the same"
+            "无效的测试输入:总宽度不一致"
         );
         let cols = initial_sizes.len();
         let resize_behavior_vec = parse_resize_behavior(resize_behavior, total_1, cols);
@@ -233,7 +233,7 @@ mod drag_handle {
         }
 
         for w in &widths {
-            assert!(w.is_finite(), "incorrect number of columns");
+            assert!(w.is_finite(), "列数不正确");
         }
         let total = widths.iter().sum::<f32>();
         for width in &mut widths {
@@ -245,14 +245,14 @@ mod drag_handle {
     #[track_caller]
     fn check(distance: i32, widths: &str, expected: &str, resize_behavior: &str) {
         let (widths, total_1, Some(column_index)) = parse(widths) else {
-            panic!("invalid test input: widths should be marked");
+            panic!("无效的测试输入:宽度应被标记");
         };
         let (expected, total_2, None) = parse(expected) else {
-            panic!("invalid test input: expected should not be marked: {expected:?}");
+            panic!("无效的测试输入:预期值不应被标记:{expected:?}");
         };
         assert_eq!(
             total_1, total_2,
-            "invalid test input: total width not the same"
+            "无效的测试输入:总宽度不一致"
         );
         let cols = widths.len();
         let resize_behavior_vec = parse_resize_behavior(resize_behavior, total_1, cols);
@@ -368,11 +368,11 @@ mod drag_with_hidden_columns {
         let boundary = result[0] + result[1];
         assert!(
             (boundary - 0.8).abs() < 1e-6,
-            "expected the boundary after column 1 to follow the cursor to 0.8: {result:?}",
+            "预期第 1 列之后的边界跟随光标到 0.8:{result:?}",
         );
         assert!(
             (result[0] - 1.0 / 3.0).abs() < 1e-6,
-            "column 0 must not be affected: {result:?}",
+            "第 0 列不得受影响:{result:?}",
         );
     }
 
@@ -399,7 +399,7 @@ mod drag_with_hidden_columns {
         let rendered = redistributed(result.as_slice(), &hidden);
         assert!(
             (rendered[1] - 0.7).abs() < 1e-3,
-            "expected the visible boundary to follow the cursor to 0.7, got {} (raw {:?})",
+            "预期可见边界跟随光标到 0.7,实际为 {}(原始值 {:?})",
             rendered[1],
             result.as_slice(),
         );
@@ -427,18 +427,18 @@ mod drag_with_hidden_columns {
         let result = result.as_slice();
         assert!(
             (result[1] - 1.0 / 3.0).abs() < 1e-6,
-            "hidden column width must be preserved, but it changed: {result:?}",
+            "隐藏列宽度必须保持不变,但它发生了变化:{result:?}",
         );
         // The drag moved width from visible column 2 to visible column 0, so the total is
         // unchanged and the next *visible* column absorbed the resize.
         let total: f32 = result.iter().sum();
         assert!(
             (total - 1.0).abs() < 1e-6,
-            "total must be preserved: {result:?}"
+            "总宽度必须保持不变:{result:?}"
         );
         assert!(
             result[0] > 1.0 / 3.0 && result[2] < 1.0 / 3.0,
-            "expected the resize to be absorbed by the next visible column: {result:?}",
+            "预期调整大小由下一个可见列吸收:{result:?}",
         );
     }
 }
@@ -574,7 +574,7 @@ mod column_filter {
             .iter()
             .map(|length| match length {
                 Length::Definite(DefiniteLength::Fraction(fraction)) => *fraction,
-                other => panic!("expected fraction, got {other:?}"),
+                other => panic!("预期为分数,实际为 {other:?}"),
             })
             .collect()
     }
@@ -624,7 +624,7 @@ mod column_filter {
         let visible_sum: f32 = result[0] + result[2] + result[3];
         assert!(
             (visible_sum - 1.0).abs() < 1e-6,
-            "visible sum was {visible_sum}"
+            "可见列总和为 {visible_sum}"
         );
         // Equal initial fractions stay equal after redistribution.
         assert!((result[0] - result[2]).abs() < 1e-6);
@@ -642,7 +642,7 @@ mod column_filter {
         let visible_sum: f32 = result[0] + result[2] + result[3];
         assert!(
             (visible_sum - 1.0).abs() < 1e-6,
-            "visible sum was {visible_sum}"
+            "可见列总和为 {visible_sum}"
         );
     }
 

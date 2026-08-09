@@ -106,7 +106,7 @@ impl WslRunningKernel {
             let runtime_dir = dirs::runtime_dir();
             fs.create_dir(&runtime_dir)
                 .await
-                .with_context(|| format!("Failed to create jupyter runtime dir {runtime_dir:?}"))?;
+                .with_context(|| format!("无法创建 Jupyter 运行时目录 {runtime_dir:?}"))?;
             let connection_path = runtime_dir.join(format!("kernel-zed-wsl-{entity_id}.json"));
             let content = serde_json::to_string(&connection_info)?;
             fs.atomic_write(connection_path.clone(), content).await?;
@@ -130,7 +130,7 @@ impl WslRunningKernel {
 
             let output = wslpath_cmd.output().await?;
             if !output.status.success() {
-                anyhow::bail!("Failed to convert path to WSL path: {:?}", output);
+                anyhow::bail!("无法将路径转换为 WSL 路径: {:?}", output);
             }
             let wsl_connection_path = String::from_utf8_lossy(&output.stdout).trim().to_string();
 
@@ -142,7 +142,7 @@ impl WslRunningKernel {
 
             anyhow::ensure!(
                 !kernel_specification.kernelspec.argv.is_empty(),
-                "Empty argv in kernelspec {}",
+                "kernelspec {} 中的 argv 为空",
                 kernel_specification.name
             );
 
@@ -180,7 +180,7 @@ impl WslRunningKernel {
             let mut cmd = util::command::new_command("wsl");
             cmd.arg("-d").arg(&kernel_specification.distro);
 
-            // Set CWD for the host process to a safe location to avoid "Directory name is invalid"
+            // Set CWD for the host process to a safe location to avoid "目录名称无效"
             // if the project root is a path not supported by Windows CWD (e.g. UNC path for some tools).
             cmd.current_dir(std::env::temp_dir());
 
@@ -277,7 +277,7 @@ impl WslRunningKernel {
                 .stdin(util::command::Stdio::piped())
                 .kill_on_drop(true)
                 .spawn()
-                .context("failed to start the kernel process")?;
+                .context("无法启动内核进程")?;
 
             let session_id = Uuid::new_v4().to_string();
 
@@ -328,7 +328,7 @@ impl WslRunningKernel {
                 &session_id,
             )
             .await
-            .context("Failed to create iopub connection. Is `ipykernel` installed in the WSL environment? Try running `pip install ipykernel` inside your WSL distribution.")?;
+            .context("无法创建 iopub 连接。WSL 环境中是否安装了 `ipykernel`?请在你的 WSL 发行版中运行 `pip install ipykernel`。")?;
 
             let peer_identity = runtimelib::peer_identity_for_session(&session_id)?;
             let shell_socket = runtimelib::create_client_shell_connection_with_identity(
@@ -364,7 +364,7 @@ impl WslRunningKernel {
                     let reader = BufReader::new(stderr);
                     let mut lines = reader.lines();
                     while let Some(Ok(line)) = lines.next().await {
-                        log::warn!("wsl kernel stderr: {}", line);
+                        log::warn!("WSL 内核标准错误: {}", line);
                     }
                 }
             })
@@ -389,10 +389,10 @@ impl WslRunningKernel {
                             return;
                         }
 
-                        format!("WSL kernel: kernel process exited with status: {:?}", status)
+                        format!("WSL 内核: 内核进程退出,状态: {:?}", status)
                     }
                     Err(err) => {
-                        format!("WSL kernel: kernel process exited with error: {:?}", err)
+                        format!("WSL 内核: 内核进程退出,错误: {:?}", err)
                     }
                 };
 
@@ -578,10 +578,10 @@ pub async fn wsl_kernel_specifications(
                         );
                     }
                 } else {
-                    log::error!("wsl_kernel_specifications command failed");
+                    log::error!("wsl_kernel_specifications 命令执行失败");
                 }
             } else if let Err(e) = output {
-                log::error!("wsl_kernel_specifications command execution failed: {}", e);
+                log::error!("wsl_kernel_specifications 命令执行失败: {}", e);
             }
 
             Vec::new()

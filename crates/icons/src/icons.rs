@@ -327,7 +327,7 @@ mod tests {
             let icon_path = asset_path.join(&*icon.path());
             assert!(
                 icon_path.exists(),
-                "Icon {icon:?} does not exist at {icon_path:?}",
+                "图标 {icon:?} 在 {icon_path:?} 处不存在",
             );
         }
     }
@@ -336,15 +336,15 @@ mod tests {
     fn test_no_dangling_icons() -> Result<(), ParseError> {
         let icons_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets/icons");
 
-        for entry in std::fs::read_dir(&icons_dir).expect("failed to read icons directory") {
-            let path = entry.expect("failed to read icons directory entry").path();
+        for entry in std::fs::read_dir(&icons_dir).expect("无法读取图标目录") {
+            let path = entry.expect("无法读取图标目录条目").path();
             if path.extension().is_none_or(|extension| extension != "svg") {
                 continue;
             }
             let file_stem = path
                 .file_stem()
                 .and_then(|file_stem| file_stem.to_str())
-                .expect("icon file name is not valid UTF-8");
+                .expect("图标文件名不是有效的 UTF-8 编码");
 
             file_stem.parse::<IconName>()?;
         }

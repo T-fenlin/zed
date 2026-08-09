@@ -164,19 +164,19 @@ impl Mercury {
                 .header("Connection", "keep-alive")
                 .method(Method::POST)
                 .body(body)
-                .context("Failed to create request")?;
+                .context("创建请求失败")?;
 
             let mut response = http_client
                 .send(request)
                 .await
-                .context("Failed to send request")?;
+                .context("发送请求失败")?;
 
             let mut body: Vec<u8> = Vec::new();
             response
                 .body_mut()
                 .read_to_end(&mut body)
                 .await
-                .context("Failed to read response body")?;
+                .context("读取响应内容失败")?;
 
             if !response.status().is_success() {
                 if response.status() == StatusCode::PAYMENT_REQUIRED {
@@ -186,14 +186,14 @@ impl Mercury {
                 }
 
                 anyhow::bail!(
-                    "Request failed with status: {:?}\nBody: {}",
+                    "请求失败,状态码: {:?}\n响应内容: {}",
                     response.status(),
                     String::from_utf8_lossy(&body),
                 );
             };
 
             let mut response: open_ai::Response =
-                serde_json::from_slice(&body).context("Failed to parse response")?;
+                serde_json::from_slice(&body).context("解析响应失败")?;
 
             let id = mem::take(&mut response.id);
             let response_str = text_from_response(response).unwrap_or_default();
@@ -234,7 +234,7 @@ impl Mercury {
         });
 
         cx.spawn(async move |ep_store, cx| {
-            let result = result.await.context("Mercury edit prediction failed");
+            let result = result.await.context("Mercury 编辑预测失败");
 
             let has_payment_required_error = result
                 .as_ref()
@@ -471,11 +471,11 @@ fn send_feedback(
 
         let response = http_client.send(request).await?;
         if !response.status().is_success() {
-            anyhow::bail!("Feedback API returned status: {}", response.status());
+            anyhow::bail!("反馈 API 返回状态码: {}", response.status());
         }
 
         log::debug!(
-            "Mercury feedback sent: request_id={}, action={:?}",
+            "Mercury 反馈已发送: request_id={}, action={:?}",
             body.request_id,
             body.user_action
         );

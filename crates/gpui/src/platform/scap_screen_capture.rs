@@ -131,11 +131,11 @@ fn start_default_target_screen_capture(
             capturer.start_capture();
             let first_frame = capturer
                 .get_next_frame()
-                .context("Failed to get first frame of screenshare to get the size.")?;
+                .context("无法获取屏幕共享的第一帧以确定尺寸。")?;
             let size = frame_size(&first_frame);
             let target = capturer
                 .target()
-                .context("Unable to determine the target display.")?;
+                .context("无法确定目标显示器。")?;
             let target = target.clone();
             Ok((capturer, size, target))
         });
@@ -160,7 +160,7 @@ fn start_default_target_screen_capture(
             }
             _ => {
                 sources_tx
-                    .send(Err(anyhow!("The screen capture source is not a display")))
+                    .send(Err(anyhow!("屏幕捕获源不是显示器")))
                     .ok();
             }
         }
@@ -189,7 +189,7 @@ impl ScreenCaptureSource for ScapDefaultTargetCaptureSource {
             | Err(std::sync::mpsc::TrySendError::Disconnected((tx, _))) => {
                 // Note: support could be added for being called again after end of prior stream.
                 tx.send(Err(anyhow!(
-                    "Can't call ScapDefaultTargetCaptureSource::stream multiple times."
+                    "无法多次调用 ScapDefaultTargetCaptureSource::stream。"
                 )))
                 .ok();
             }
@@ -235,7 +235,7 @@ fn run_capture(
         match capturer.get_next_frame() {
             Ok(frame) => frame_callback(ScreenCaptureFrame(frame)),
             Err(err) => {
-                log::error!("Halting screen capture due to error: {err}");
+                log::error!("因错误而停止屏幕捕获:{err}");
                 break;
             }
         }

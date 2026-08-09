@@ -51,10 +51,10 @@ pub fn register_requests(lsp_store: WeakEntity<LspStore>, language_server: &Lang
                                 [VTSLS, TS_LS].contains(&seed.name).then_some(v.id)
                             })
                         })
-                        .context("Could not find language server")?;
+                        .context("找不到语言服务器")?;
 
                     this.language_server_for_id(language_server_id)
-                        .context("language server not found")
+                        .context("未找到语言服务器")
                 }) {
                     Ok(Ok(server)) => server,
                     other => {
@@ -105,13 +105,13 @@ pub fn register_requests(lsp_store: WeakEntity<LspStore>, language_server: &Lang
                             },
                             util::ConnectionResult::Result(Err(error)) => {
                                 log::warn!(
-                                    "typescript.tsserverRequest failed: {error:?} for request {request_id}"
+                                    "typescript.tsserverRequest 请求 {request_id} 失败: {error:?}"
                                 );
                                 Value::Null
                             }
                             other => {
                                 log::warn!(
-                                    "typescript.tsserverRequest did not return a response: {other:?} for request {request_id}"
+                                    "typescript.tsserverRequest 请求 {request_id} 未返回响应: {other:?}"
                                 );
                                 Value::Null
                             }
@@ -121,7 +121,7 @@ pub fn register_requests(lsp_store: WeakEntity<LspStore>, language_server: &Lang
                             .notify::<TypescriptServerResponse>(vec![(request_id, response_body)])
                         {
                             log::warn!(
-                                "Failed to notify vue-language-server of tsserver response: {err:?}"
+                                "通知 vue-language-server tsserver 响应失败: {err:?}"
                             );
                         }
                     })

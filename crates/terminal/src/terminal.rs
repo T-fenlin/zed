@@ -892,7 +892,7 @@ impl Display for TerminalError {
 
         write!(
             f,
-            "Working directory: {} Shell command: `{}`, IOError: {}",
+            "工作目录: {} Shell 命令: `{}`, IOError: {}",
             dir_string, shell, self.source
         )
     }
@@ -1072,7 +1072,7 @@ impl TerminalBuilder {
         let no_pty = HeadlessTerminal::is_enabled(cx);
         #[cfg(not(windows))]
         let child_signal_mask = match current_child_signal_mask()
-            .context("failed to capture terminal child signal mask")
+            .context("无法捕获终端子进程信号掩码")
         {
             Ok(signal_mask) => Some(signal_mask),
             Err(error) => return Task::ready(Err(error)),
@@ -1106,7 +1106,7 @@ impl TerminalBuilder {
                     args: Option<Vec<String>>,
                     title_override: Option<String>,
                 ) -> Self {
-                    log::debug!("Using {program} as shell");
+                    log::debug!("使用 {program} 作为 Shell");
                     Self {
                         program,
                         args,
@@ -1684,7 +1684,7 @@ impl Terminal {
         match event {
             &InternalEvent::Resize(new_bounds) => {
                 let new_bounds = normalize_terminal_bounds(new_bounds);
-                trace!("Resizing: new_bounds={new_bounds:?}");
+                trace!("调整大小: new_bounds={new_bounds:?}");
 
                 let columns_changed =
                     self.last_content.terminal_bounds.num_columns() != new_bounds.num_columns();
@@ -1706,13 +1706,13 @@ impl Terminal {
                 }
             }
             InternalEvent::Clear => {
-                trace!("Clearing");
+                trace!("正在清除");
                 clear_saved_screen(term);
                 self.reset_cwd_history();
                 cx.emit(Event::Wakeup);
             }
             InternalEvent::Scroll(scroll) => {
-                trace!("Scrolling: scroll={scroll:?}");
+                trace!("滚动: scroll={scroll:?}");
                 scroll_display(term, *scroll);
                 self.refresh_hovered_word(window);
 
@@ -1730,7 +1730,7 @@ impl Terminal {
                 }
             }
             InternalEvent::SetSelection(selection) => {
-                trace!("Setting selection: selection={selection:?}");
+                trace!("设置选区: selection={selection:?}");
                 set_term_selection(term, selection.as_ref());
 
                 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
@@ -1744,7 +1744,7 @@ impl Terminal {
                 cx.emit(Event::SelectionsChanged)
             }
             InternalEvent::UpdateSelection(position) => {
-                trace!("Updating selection: position={position:?}");
+                trace!("更新选区: position={position:?}");
                 let (point, side) = grid_point_and_side(
                     *position,
                     self.last_content.terminal_bounds,
@@ -1763,7 +1763,7 @@ impl Terminal {
             }
 
             InternalEvent::Copy(keep_selection) => {
-                trace!("Copying selection: keep_selection={keep_selection:?}");
+                trace!("复制选区: keep_selection={keep_selection:?}");
                 if let Some(txt) = selection_text(term) {
                     cx.write_to_clipboard(ClipboardItem::new_string(txt));
                     if !keep_selection.unwrap_or_else(|| {
@@ -1775,26 +1775,26 @@ impl Terminal {
                 }
             }
             InternalEvent::ScrollToPoint(point) => {
-                trace!("Scrolling to point: point={point:?}");
+                trace!("滚动到点: point={point:?}");
                 scroll_to_point(term, *point);
                 self.refresh_hovered_word(window);
             }
             InternalEvent::MoveViCursorToPoint(point) => {
-                trace!("Move vi cursor to point: point={point:?}");
+                trace!("移动 vi 光标到点: point={point:?}");
                 vi_goto_point(term, *point);
                 self.refresh_hovered_word(window);
             }
             InternalEvent::ToggleViMode => {
-                trace!("Toggling vi mode");
+                trace!("切换 vi 模式");
                 self.vi_mode_enabled = !self.vi_mode_enabled;
                 toggle_term_vi_mode(term);
             }
             InternalEvent::ViMotion(motion) => {
-                trace!("Performing vi motion: motion={motion:?}");
+                trace!("执行 vi 移动: motion={motion:?}");
                 vi_motion(term, *motion);
             }
             InternalEvent::FindHyperlink(position, open) => {
-                trace!("Finding hyperlink at position: position={position:?}, open={open:?}");
+                trace!("在位置查找超链接: position={position:?}, 打开={open:?}");
 
                 let point = grid_point(
                     *position,
@@ -2076,9 +2076,9 @@ impl Terminal {
         if let TerminalType::Pty { pty_tx, .. } = &self.terminal_type {
             if log::log_enabled!(log::Level::Debug) {
                 if let Ok(str) = str::from_utf8(&input) {
-                    log::debug!("Writing to PTY: {:?}", str);
+                    log::debug!("写入 PTY: {:?}", str);
                 } else {
-                    log::debug!("Writing to PTY: {:?}", input);
+                    log::debug!("写入 PTY: {:?}", input);
                 }
             }
             pty_tx.notify(input);
@@ -2104,7 +2104,7 @@ impl Terminal {
 
         debug_assert!(
             self.init_command_startup_tx.is_none(),
-            "start_init_command_startup_handshake called while a handshake is already in flight"
+            "在握手正在进行时调用了 start_init_command_startup_handshake"
         );
 
         let (startup_tx, startup_rx) = async_channel::bounded(1);
@@ -2942,8 +2942,8 @@ impl Terminal {
                             };
                             format!("{process_file} — {process_name}")
                         })
-                        .unwrap_or_else(|| "Terminal".to_string()),
-                    TerminalType::DisplayOnly => "Terminal".to_string(),
+                        .unwrap_or_else(|| "终端".to_string()),
+                    TerminalType::DisplayOnly => "终端".to_string(),
                 }),
         }
     }
@@ -3117,14 +3117,14 @@ fn task_summary(task: &TaskState, exit_status: Option<ExitStatus>) -> (bool, Str
             let signal: Option<i32> = None;
 
             match (code, signal) {
-                (Some(0), _) => (true, task_label("finished successfully")),
+                (Some(0), _) => (true, task_label("成功完成")),
                 (Some(code), _) => (
                     false,
-                    task_label(&format!("finished with exit code: {code}")),
+                    task_label(&format!("以退出码 {code} 结束")),
                 ),
                 (None, Some(signal)) => (
                     false,
-                    task_label(&format!("terminated by signal: {signal}")),
+                    task_label(&format!("被信号 {signal} 终止")),
                 ),
                 (None, None) => (false, task_label("finished")),
             }
@@ -3221,7 +3221,7 @@ fn spawn_task_subprocess(
                         match reader.read(&mut buffer).await {
                             Ok(0) => return,
                             Err(error) => {
-                                log::warn!("failed to read subprocess output: {error}");
+                                log::warn!("读取子进程输出失败: {error}");
                                 return;
                             }
                             Ok(count) => {
@@ -3250,7 +3250,7 @@ fn spawn_task_subprocess(
                     Some(child) => match child.try_status() {
                         Ok(status) => status,
                         Err(error) => {
-                            log::warn!("failed to get subprocess exit status: {error}");
+                            log::warn!("获取子进程退出状态失败: {error}");
                             break None;
                         }
                     },
@@ -3504,7 +3504,7 @@ mod tests {
             let command = init_command_startup_marker_command(shell_kind, marker_id);
             assert!(
                 !command.contains(&marker),
-                "startup marker command for {shell_kind:?} should not contain the full marker, got {command:?}"
+                "{shell_kind:?} 的启动标记命令不应包含完整标记,实际为 {command:?}"
             );
         }
     }
@@ -3737,7 +3737,7 @@ mod tests {
 
         assert!(
             !terminal.update(cx, |term, _| term.is_pty()),
-            "no_pty terminal should not be PTY-backed"
+            "no_pty 终端不应由 PTY 支持"
         );
         assert_eq!(
             completion_rx.recv().await.unwrap(),
@@ -3893,7 +3893,7 @@ mod tests {
                     .events
                     .iter()
                     .any(|event| matches!(event, InternalEvent::UpdateSelection(_))),
-                "a sub-threshold click jitter should not start a selection"
+                "低于阈值的点击抖动不应开始选择"
             );
             assert!(terminal.selection_phase == SelectionPhase::Ended);
         });
@@ -3916,7 +3916,7 @@ mod tests {
                     .events
                     .iter()
                     .any(|event| matches!(event, InternalEvent::UpdateSelection(_))),
-                "a deliberate drag should start a selection"
+                "有意的拖拽应开始选择"
             );
             assert!(terminal.selection_phase == SelectionPhase::Selecting);
         });
@@ -3924,7 +3924,7 @@ mod tests {
 
     /// With mouse tracking active (e.g. htop), Shift is the escape hatch to
     /// select terminal text. Shift+drag must start a selection rather than being
-    /// swallowed as a "extend existing selection" no-op. Regression test for #60254.
+    /// swallowed as a "扩展现有选区" no-op. Regression test for #60254.
     #[gpui::test]
     async fn test_terminal_shift_drag_selects_while_mouse_tracking(cx: &mut TestAppContext) {
         // `?1002h` enables button-event mouse tracking, `?1006h` selects SGR encoding.
@@ -3933,7 +3933,7 @@ mod tests {
         terminal.update(cx, |terminal, cx| {
             assert!(
                 terminal.last_content.mode.intersects(Modes::MOUSE_MODE),
-                "mouse tracking should be active"
+                "鼠标跟踪应处于活动状态"
             );
 
             let shift = Modifiers {
@@ -3958,7 +3958,7 @@ mod tests {
                     .events
                     .iter()
                     .any(|event| matches!(event, InternalEvent::SetSelection(Some(_)))),
-                "shift+click with no existing selection should anchor a selection"
+                "无现有选区时,shift+点击应锚定一个选区"
             );
             terminal.events.clear();
 
@@ -3978,7 +3978,7 @@ mod tests {
                     .events
                     .iter()
                     .any(|event| matches!(event, InternalEvent::UpdateSelection(_))),
-                "shift+drag should extend the selection while mouse tracking is active"
+                "鼠标跟踪激活时,shift+拖拽应扩展选区"
             );
             assert!(terminal.selection_phase == SelectionPhase::Selecting);
         });
@@ -4018,14 +4018,14 @@ mod tests {
                     .events
                     .iter()
                     .any(|event| matches!(event, InternalEvent::UpdateSelection(_))),
-                "shift+click with an existing selection should extend it"
+                "有现有选区时,shift+点击应扩展选区"
             );
             assert!(
                 !terminal
                     .events
                     .iter()
                     .any(|event| matches!(event, InternalEvent::SetSelection(Some(_)))),
-                "shift+click should extend, not re-anchor, an existing selection"
+                "shift+点击应扩展而非重新锚定现有选区"
             );
         });
     }
@@ -4049,7 +4049,7 @@ mod tests {
         let content_after = terminal.update(cx, |term, _| term.get_content());
         assert!(
             content_after.contains("from_injection"),
-            "expected injected output to appear, got: {content_after}"
+            "预期出现注入的输出,实际为: {content_after}"
         );
     }
 
@@ -4066,7 +4066,7 @@ mod tests {
 
         assert!(
             completion_rx.recv().await.is_ok(),
-            "expected terminal completion after sleep exits"
+            "sleep 退出后预期终端完成"
         );
     }
 
@@ -4115,16 +4115,16 @@ mod tests {
             assert_eq!(
                 completion_rx.recv().await.unwrap(),
                 Some(ExitStatus::default()),
-                "EOF should result in the tty shell exiting successfully",
+                "EOF 应导致 tty Shell 成功退出",
             );
         })
         .detach();
 
-        let first_event = event_rx.recv().await.expect("No wakeup event received");
+        let first_event = event_rx.recv().await.expect("未收到唤醒事件");
 
         terminal.update(cx, |terminal, _| {
             let success = terminal.try_keystroke(&Keystroke::parse("ctrl-d").unwrap(), false);
-            assert!(success, "Should have registered ctrl-d sequence");
+            assert!(success, "应已注册 ctrl-d 序列");
         });
 
         let mut all_events = vec![first_event];
@@ -4136,7 +4136,7 @@ mod tests {
         }
         assert!(
             all_events.contains(&Event::CloseTerminal),
-            "EOF command sequence should have triggered a TTY terminal exit, but got events: {all_events:?}",
+            "EOF 命令序列应触发 TTY 终端退出,但收到事件: {all_events:?}",
         );
     }
 
@@ -4179,7 +4179,7 @@ mod tests {
         })
         .detach();
 
-        let first_event = event_rx.recv().await.expect("No wakeup event received");
+        let first_event = event_rx.recv().await.expect("未收到唤醒事件");
 
         terminal.update(cx, |terminal, _| {
             terminal.input(b"false\r".to_vec());
@@ -4198,7 +4198,7 @@ mod tests {
         }
         assert!(
             all_events.contains(&Event::CloseTerminal),
-            "Shell exiting after `false && exit` should close terminal, but got events: {all_events:?}",
+            "`false && exit` 后 Shell 退出应关闭终端,但收到事件: {all_events:?}",
         );
     }
 
@@ -4254,7 +4254,7 @@ mod tests {
             if let Some(exit_status) = exit_status {
                 assert!(
                     !exit_status.success(),
-                    "Wrong shell command should result in a failure"
+                    "错误的 Shell 命令应导致失败"
                 );
                 #[cfg(target_os = "windows")]
                 assert_eq!(exit_status.code(), Some(1));

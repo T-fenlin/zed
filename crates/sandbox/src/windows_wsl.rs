@@ -116,7 +116,7 @@ arch=$(uname -m)
 case "$arch" in
     x86_64 | amd64) arch="x86_64" ;;
     aarch64 | arm64) arch="aarch64" ;;
-    *) echo "unsupported WSL architecture for the zed sandbox helper: $arch" >&2; exit 1 ;;
+    *) echo "不支持的 WSL 架构,无法用于 zed 沙箱助手:$arch" >&2; exit 1 ;;
 esac
 url="https://cloud.zed.dev/releases/$channel/$version/download?asset=zed&arch=$arch&os=linux&source=zed-wsl-sandbox"
 
@@ -155,7 +155,7 @@ printf '%s' "$want" > "$marker"
 
 helper=$(find "$dest" -type f -path '*/libexec/zed-editor' -print 2>/dev/null | head -n 1 || true)
 if [ -z "$helper" ] || [ ! -x "$helper" ]; then
-    echo "the installed zed sandbox helper is missing or not executable under $dest" >&2
+    echo "已安装的 zed 沙箱助手在 $dest 下缺失或不可执行" >&2
     exit 1
 fi
 printf 'zed-wsl-helper: %s\n' "$helper"
@@ -325,7 +325,7 @@ pub async fn resolve_canonical_for_grant(
     if parse_native_drive_path(&path_string).is_ok() {
         let canonical = smol::fs::canonicalize(&requested).await.with_context(|| {
             format!(
-                "failed to resolve writable path `{}` on the Windows host",
+                "在 Windows 主机上解析可写路径 `{}` 失败",
                 requested.display()
             )
         })?;
@@ -363,7 +363,7 @@ pub async fn resolve_canonical_for_grant(
     let wsl_exe = wsl_exe_path();
     if !wsl_exe.is_file() {
         return Err(unavailable(format!(
-            "WSL (`wsl.exe`) was not found at `{}`",
+            "在 `{}` 未找到 WSL(`wsl.exe`)",
             wsl_exe.display()
         )));
     }
@@ -371,12 +371,12 @@ pub async fn resolve_canonical_for_grant(
     // Translate + existence-check the path inside WSL, then resolve its
     // symlink-free canonical (and classify its filesystem) via the helper. No
     // distro is pinned — a sandboxed command runs in one distro.
-    let translated = resolve_paths(&wsl_exe, None, &[(mapping, "writable path", true)])
+    let translated = resolve_paths(&wsl_exe, None, &[(mapping, "可写路径", true)])
         .await?
         .into_iter()
         .next()
-        .context("bug: missing resolved writable path")?
-        .context("bug: required writable path resolved as missing")?;
+        .context("错误:缺少已解析的可写路径")?
+        .context("错误:必需的可写路径被解析为缺失")?;
     let (channel, version) = wsl_zed_release;
     let helper = ensure_wsl_zed_helper(&wsl_exe, None, &channel, &version).await?;
     let output = run_wsl_command(
@@ -388,18 +388,18 @@ pub async fn resolve_canonical_for_grant(
             crate::WSL_SANDBOX_RESOLVE_FLAG,
             translated.as_str(),
         ],
-        "resolve a sandbox write grant",
+        "解析沙箱写入授权",
     )
     .await?;
     if !output.status.success() {
         return Err(anyhow::anyhow!(
-            "failed to resolve writable path `{}`{}",
+            "解析可写路径 `{}` 失败{}",
             requested.display(),
             command_failure_details(output.status.code(), &output.stderr)
         ));
     }
     let stdout = String::from_utf8(output.stdout)
-        .context("WSL sandbox helper returned a non-UTF-8 canonical path")?;
+        .context("WSL 沙箱助手返回了非 UTF-8 的规范路径")?;
     parse_canonical_grant_output(&stdout)
 }
 
@@ -478,7 +478,7 @@ pub async fn wrap_invocation<S: std::hash::BuildHasher>(
     let cwd_mapping =
         match &cwd {
             Some(cwd) => Some(directory_to_wsl(cwd).with_context(|| {
-                format!("failed to map terminal cwd `{}` into WSL", cwd.display())
+                format!("将终端工作目录 `{}` 映射到 WSL 失败", cwd.display())
             })?),
             None => None,
         };
@@ -488,7 +488,7 @@ pub async fn wrap_invocation<S: std::hash::BuildHasher>(
         .map(|path| {
             path_to_wsl(&path.requested).with_context(|| {
                 format!(
-                    "failed to map writable path `{}` into WSL",
+                    "将可写路径 `{}` 映射到 WSL 失败",
                     path.requested.display()
                 )
             })
@@ -499,7 +499,7 @@ pub async fn wrap_invocation<S: std::hash::BuildHasher>(
         .map(|path| {
             path_to_wsl(&path.canonical).with_context(|| {
                 format!(
-                    "failed to map canonical writable path `{}` into WSL",
+                    "将规范可写路径 `{}` 映射到 WSL 失败",
                     path.canonical.display()
                 )
             })
@@ -509,7 +509,7 @@ pub async fn wrap_invocation<S: std::hash::BuildHasher>(
         .iter()
         .map(|path| {
             path_to_wsl_allowing_missing(path).with_context(|| {
-                format!("failed to map protected path `{}` into WSL", path.display())
+                format!("将受保护路径 `{}` 映射到 WSL 失败", path.display())
             })
         })
         .collect::<Result<Vec<_>>>()?;
@@ -524,7 +524,7 @@ pub async fn wrap_invocation<S: std::hash::BuildHasher>(
     let wsl_exe = wsl_exe_path();
     if !wsl_exe.is_file() {
         return Err(unavailable(format!(
-            "WSL (`wsl.exe`) was not found at `{}`",
+            "在 `{}` 未找到 WSL(`wsl.exe`)",
             wsl_exe.display()
         )));
     }
@@ -538,17 +538,17 @@ pub async fn wrap_invocation<S: std::hash::BuildHasher>(
     let writable_path_count = writable_mappings.len();
     let mut mappings = Vec::with_capacity(writable_mappings.len() + protected_mappings.len() + 1);
     if let Some(mapping) = cwd_mapping {
-        mappings.push((mapping, "terminal cwd", true));
+        mappings.push((mapping, "终端工作目录", true));
     }
     mappings.extend(
         writable_mappings
             .into_iter()
-            .map(|mapping| (mapping, "writable path", true)),
+            .map(|mapping| (mapping, "可写路径", true)),
     );
     mappings.extend(
         protected_mappings
             .into_iter()
-            .map(|mapping| (mapping, "protected path", false)),
+            .map(|mapping| (mapping, "受保护路径", false)),
     );
     let resolved = resolve_paths(&wsl_exe, distro.as_deref(), &mappings).await?;
     let (cwd, writable_paths, protected_paths) =
@@ -613,24 +613,24 @@ fn parse_canonical_grant_output(stdout: &str) -> Result<ResolvedGrant> {
     let mut lines = stdout.lines();
     let distro = lines
         .next()
-        .context("WSL sandbox helper omitted the distro name")?;
+        .context("WSL 沙箱助手省略了发行版名称")?;
     let canonical = lines
         .next()
-        .context("WSL sandbox helper omitted the canonical path")?;
+        .context("WSL 沙箱助手省略了规范路径")?;
     let fs_class = lines
         .next()
-        .context("WSL sandbox helper omitted the filesystem class")?;
+        .context("WSL 沙箱助手省略了文件系统类别")?;
     let on_windows_fs = match fs_class {
         RESOLVE_WINDOWS_FS => true,
         RESOLVE_NATIVE_FS => false,
-        _ => bail!("WSL sandbox helper returned an invalid filesystem class: {fs_class:?}"),
+        _ => bail!("WSL 沙箱助手返回了无效的文件系统类别:{fs_class:?}"),
     };
     ensure!(
         lines.next().is_none()
             && !distro.is_empty()
             && !distro.contains(['/', '\\'])
             && canonical.starts_with('/'),
-        "WSL sandbox helper returned invalid canonical-path output: {stdout:?}"
+        "WSL 沙箱助手返回了无效的规范路径输出:{stdout:?}"
     );
     // Store the canonical as the Linux path bwrap actually binds. The distro is
     // pinned at enforcement from the *requested* path (see `wrap_invocation`),
@@ -654,8 +654,8 @@ fn split_resolved_paths(
         Some(
             resolved
                 .next()
-                .context("bug: missing resolved terminal cwd")?
-                .context("bug: required terminal cwd resolved as missing")?,
+                .context("错误:缺少已解析的终端工作目录")?
+                .context("错误:必需的终端工作目录被解析为缺失")?,
         )
     } else {
         None
@@ -666,8 +666,8 @@ fn split_resolved_paths(
         writable_paths.push(
             resolved
                 .next()
-                .context("bug: missing resolved writable path")?
-                .context("bug: required writable path resolved as missing")?,
+                .context("错误:缺少已解析的可写路径")?
+                .context("错误:必需的可写路径被解析为缺失")?,
         );
     }
 
@@ -689,7 +689,7 @@ fn select_distro<'a>(
             // single bwrap invocation can't serve.
             Some(distro) => ensure!(
                 distro == path_distro,
-                "cannot sandbox a command whose paths mix WSL distros `{}` and `{}`",
+                "无法对路径混合了 WSL 发行版 `{}` 和 `{}` 的命令进行沙箱化",
                 distro,
                 path_distro
             ),
@@ -771,12 +771,12 @@ async fn probe_environment(wsl_exe: &Path, distro: Option<&str>) -> Result<Envir
         wsl_exe,
         distro,
         ["--exec", "sh", "-lc", &script],
-        "probe the sandbox environment",
+        "探测沙箱环境",
     )
     .await?;
     if output.status.code() == Some(BWRAP_MISSING_EXIT_CODE) {
         return Err(unavailable(format!(
-            "Bubblewrap (`bwrap`) is not installed in {}",
+            "{} 中未安装 Bubblewrap(`bwrap`)",
             wsl_distro_label(distro)
         )));
     }
@@ -797,7 +797,7 @@ async fn probe_environment(wsl_exe: &Path, distro: Option<&str>) -> Result<Envir
     }
     if !output.status.success() {
         return Err(unavailable(format!(
-            "failed to start a shell in {}{}",
+            "在 {}{} 中启动 Shell 失败",
             wsl_distro_label(distro),
             command_failure_details(output.status.code(), &output.stderr)
         )));
@@ -806,7 +806,7 @@ async fn probe_environment(wsl_exe: &Path, distro: Option<&str>) -> Result<Envir
     let stdout = String::from_utf8_lossy(&output.stdout);
     let probe = parse_probe_output(&stdout).map_err(|error| {
         unavailable(format!(
-            "unexpected sandbox probe output from {}: {error:#}",
+            "来自 {} 的意外沙箱探测输出:{error:#}",
             wsl_distro_label(distro)
         ))
     })?;
@@ -825,15 +825,15 @@ fn parse_probe_output(stdout: &str) -> Result<EnvironmentProbe> {
         .lines()
         .rev()
         .find_map(|line| line.strip_prefix(PROBE_RESULT_PREFIX))
-        .with_context(|| format!("no probe result line in: {stdout:?}"))?;
+        .with_context(|| format!("在以下输出中未找到探测结果行:{stdout:?}"))?;
     let (interop, bwrap_path) = line
         .trim_start()
         .split_once(' ')
-        .with_context(|| format!("malformed probe result line: {line:?}"))?;
+        .with_context(|| format!("格式错误的探测结果行:{line:?}"))?;
     let mask_interop_dir = match interop {
         "interop" => true,
         "no-interop" => false,
-        _ => bail!("malformed probe result line: {line:?}"),
+        _ => bail!("格式错误的探测结果行:{line:?}"),
     };
     ensure!(
         bwrap_path.starts_with('/'),
@@ -865,10 +865,10 @@ async fn ensure_wsl_zed_helper(
     if let Some(helper) = std::env::var_os("ZED_WSL_SANDBOX_HELPER") {
         let helper = helper
             .into_string()
-            .map_err(|_| anyhow::anyhow!("ZED_WSL_SANDBOX_HELPER is not valid UTF-8"))?;
+            .map_err(|_| anyhow::anyhow!("ZED_WSL_SANDBOX_HELPER 不是有效的 UTF-8"))?;
         ensure!(
             helper.starts_with('/'),
-            "ZED_WSL_SANDBOX_HELPER must be an absolute path inside WSL"
+            "ZED_WSL_SANDBOX_HELPER 必须是 WSL 内的绝对路径"
         );
         return Ok(helper);
     }
@@ -905,14 +905,14 @@ async fn ensure_wsl_zed_helper(
             channel,
             version,
         ],
-        "provision the Linux `zed` sandbox helper",
+        "配置 Linux `zed` 沙箱助手",
     )
     .await?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
         return Err(unavailable(format!(
-            "failed to provision a Linux `zed` sandbox helper in {}{}",
+            "在 {}{} 中配置 Linux `zed` 沙箱助手失败",
             wsl_distro_label(distro),
             if stderr.is_empty() {
                 String::new()
@@ -930,13 +930,13 @@ async fn ensure_wsl_zed_helper(
         .map(|path| path.trim().to_string())
         .with_context(|| {
             unavailable(format!(
-                "no helper result line in sandbox-helper provisioning output from {}: {stdout:?}",
+                "在来自 {} 的沙箱助手配置输出中未找到助手结果行:{stdout:?}",
                 wsl_distro_label(distro)
             ))
         })?;
     ensure!(
         path.starts_with('/'),
-        "the WSL `zed` sandbox helper resolved to {path:?} rather than an absolute path"
+        "WSL `zed` 沙箱助手解析为 {path:?},而非绝对路径"
     );
 
     cache
@@ -1038,7 +1038,7 @@ async fn resolve_paths(
 
     let mut paths = Vec::with_capacity(resolved.len());
     for path in resolved {
-        paths.push(path.context("bug: a path mapping was left unresolved")?);
+        paths.push(path.context("错误:路径映射未解析")?);
     }
     Ok(paths)
 }
@@ -1062,10 +1062,10 @@ async fn resolve_uncached_paths(
     args.extend(path_resolution_args(
         mappings.iter().map(|mapping| &mapping.0),
     ));
-    let output = run_wsl_command(wsl_exe, distro, &args, "resolve sandbox paths").await?;
+    let output = run_wsl_command(wsl_exe, distro, &args, "解析沙箱路径").await?;
     if !output.status.success() {
         return Err(unavailable(format!(
-            "failed to resolve sandbox paths in {}{}",
+            "在 {}{} 中解析沙箱路径失败",
             wsl_distro_label(distro),
             command_failure_details(output.status.code(), &output.stderr)
         )));
@@ -1074,7 +1074,7 @@ async fn resolve_uncached_paths(
     let stdout = String::from_utf8_lossy(&output.stdout);
     let resolved = parse_path_resolution_output(&stdout, mappings.len()).map_err(|error| {
         unavailable(format!(
-            "failed to resolve sandbox paths in {}: {error:#}",
+            "在 {} 中解析沙箱路径失败:{error:#}",
             wsl_distro_label(distro)
         ))
     })?;
@@ -1101,7 +1101,7 @@ async fn resolve_uncached_paths(
                 // behavior: a missing path cannot be overlaid, so it is skipped.
                 ensure!(
                     !required,
-                    "mapped {description} `{}` does not exist in {}",
+                    "映射的{description} `{}` 在 {} 中不存在",
                     resolved.path,
                     wsl_distro_label(distro)
                 );
@@ -1139,7 +1139,7 @@ fn parse_path_resolution_output(stdout: &str, expected: usize) -> Result<Vec<Res
     let lines: Vec<&str> = stdout.lines().collect();
     ensure!(
         lines.len() == expected,
-        "expected {expected} result lines from the path resolution script, got {}: {stdout:?}",
+        "期望从路径解析脚本获得 {expected} 行结果,实际得到 {} 行:{stdout:?}",
         lines.len()
     );
     lines
@@ -1149,21 +1149,21 @@ fn parse_path_resolution_output(stdout: &str, expected: usize) -> Result<Vec<Res
             let (Some(translate), Some(exists), Some(path)) =
                 (parts.next(), parts.next(), parts.next())
             else {
-                bail!("malformed line from the path resolution script: {line:?}");
+                bail!("来自路径解析脚本的格式错误行:{line:?}");
             };
             let used_fallback = match translate {
                 "ok" => false,
                 "fallback" => true,
-                _ => bail!("malformed line from the path resolution script: {line:?}"),
+                _ => bail!("来自路径解析脚本的格式错误行:{line:?}"),
             };
             let exists = match exists {
                 "ok" => true,
                 "missing" => false,
-                _ => bail!("malformed line from the path resolution script: {line:?}"),
+                _ => bail!("来自路径解析脚本的格式错误行:{line:?}"),
             };
             ensure!(
                 path.starts_with('/'),
-                "unexpected resolved path from the path resolution script: {path:?}"
+                "来自路径解析脚本的意外解析路径:{path:?}"
             );
             Ok(ResolvedPath {
                 path: path.to_string(),
@@ -1211,7 +1211,7 @@ async fn run_wsl_command(
 
     command.output().await.map_err(|error| {
         unavailable(format!(
-            "failed to invoke WSL while trying to {description}: {error:#}"
+            "尝试{description}时调用 WSL 失败:{error:#}"
         ))
     })
 }
@@ -1220,8 +1220,8 @@ fn command_failure_details(exit_code: Option<i32>, stderr: &[u8]) -> String {
     let stderr = String::from_utf8_lossy(stderr);
     let stderr = stderr.trim();
     let exit_status = match exit_code {
-        Some(code) => format!("exit code {code}"),
-        None => "terminated by signal".to_string(),
+        Some(code) => format!("退出码 {code}"),
+        None => "被信号终止".to_string(),
     };
     if stderr.is_empty() {
         format!(" ({exit_status})")
@@ -1232,8 +1232,8 @@ fn command_failure_details(exit_code: Option<i32>, stderr: &[u8]) -> String {
 
 fn wsl_distro_label(distro: Option<&str>) -> String {
     match distro {
-        Some(distro) => format!("WSL distro `{distro}`"),
-        None => "the default WSL distro".to_string(),
+        Some(distro) => format!("WSL 发行版 `{distro}`"),
+        None => "默认 WSL 发行版".to_string(),
     }
 }
 
@@ -1330,7 +1330,7 @@ fn build_bwrap_args<S: std::hash::BuildHasher>(
 /// contain `=`. Windows process environments include such entries — most
 /// notably the per-drive current-directory pseudo-variables (`=C:`, `=D:`,
 /// ...) Windows keeps in the environment block — so they must be skipped or
-/// bwrap aborts with "setenv failed".
+/// bwrap aborts with "设置环境变量失败".
 ///
 /// Beyond that, many variables hold Windows-specific values that would be
 /// meaningless or actively break the command inside WSL, so they are dropped
@@ -1418,7 +1418,7 @@ fn push_bind(args: &mut Vec<String>, flag: &str, source: &str, destination: &str
 fn directory_to_wsl(path: &Path) -> Result<PathMapping> {
     ensure!(
         path.is_dir(),
-        "Windows sandboxing via WSL can only use an existing directory as cwd: {}",
+        "通过 WSL 进行 Windows 沙箱化时,只能使用现有目录作为工作目录:{}",
         path.display()
     );
     map_path_to_wsl(path)
@@ -1432,7 +1432,7 @@ fn path_to_wsl(path: &Path) -> Result<PathMapping> {
 
     ensure!(
         path.is_dir() || path.is_file(),
-        "Windows sandboxing via WSL can only grant existing files or directories: {}",
+        "通过 WSL 进行 Windows 沙箱化时,只能授予现有文件或目录权限:{}",
         path.display()
     );
     map_path_to_wsl(path)
@@ -1466,7 +1466,7 @@ fn parse_wsl_absolute_path(path: &str) -> Result<WslPath> {
     let path = path.replace('\\', "/");
     ensure!(
         path.starts_with('/') && !path.starts_with("//"),
-        "path is not a WSL absolute path: {path}"
+        "路径不是 WSL 绝对路径:{path}"
     );
     Ok(WslPath { distro: None, path })
 }
@@ -1478,7 +1478,7 @@ fn parse_wsl_unc_path(path: &str) -> Result<WslPath> {
         .or_else(|| path.strip_prefix("\\\\wsl$\\"))
         .or_else(|| path.strip_prefix("\\\\?\\UNC\\wsl.localhost\\"))
         .or_else(|| path.strip_prefix("\\\\?\\UNC\\wsl$\\"))
-        .with_context(|| format!("path is not a WSL UNC path: {path}"))?;
+        .with_context(|| format!("路径不是 WSL UNC 路径:{path}"))?;
 
     let (distro, rest) = remainder
         .split_once('\\')
@@ -1486,7 +1486,7 @@ fn parse_wsl_unc_path(path: &str) -> Result<WslPath> {
         .unwrap_or((remainder, None));
     ensure!(
         !distro.is_empty(),
-        "WSL UNC path is missing a distro name: {path}"
+        "WSL UNC 路径缺少发行版名称:{path}"
     );
 
     let linux_path = match rest {
@@ -1507,9 +1507,9 @@ fn parse_native_drive_path(path: &str) -> Result<WslPath> {
         .replace('\\', "/");
     let mut chars = path.chars();
     let Some(drive) = chars.next().filter(|drive| drive.is_ascii_alphabetic()) else {
-        bail!("path is not a drive-letter Windows path: {path}");
+        bail!("路径不是盘符形式的 Windows 路径:{path}");
     };
-    ensure!(chars.next() == Some(':'), "path is not absolute: {path}");
+    ensure!(chars.next() == Some(':'), "路径不是绝对路径:{path}");
     let rest = chars.as_str().trim_start_matches('/');
     let drive = drive.to_ascii_lowercase();
     let linux_path = if rest.is_empty() {
@@ -1654,7 +1654,7 @@ mod tests {
             "--unshare-cgroup-try",
             "--ro-bind / /",
         ] {
-            assert!(script.contains(flag), "probe script must contain {flag}");
+            assert!(script.contains(flag), "探测脚本必须包含 {flag}");
         }
         assert!(script.contains("exit 41"));
         assert!(script.contains("exit 42"));
@@ -1667,13 +1667,13 @@ mod tests {
             "[ -u \"$bwrap_path\" ] && [ \"$(stat -c %u \"$bwrap_path\" 2>/dev/null)\" = 0 ]";
         let smoke_test = "\"$bwrap_path\" --ro-bind / /";
         let Some(guard_index) = script.find(guard) else {
-            panic!("probe script must contain setuid-root guard: {script}");
+            panic!("探测脚本必须包含 setuid-root 保护:{script}");
         };
         let Some(smoke_test_index) = script.find(smoke_test) else {
-            panic!("probe script must contain bwrap smoke test: {script}");
+            panic!("探测脚本必须包含 bwrap 冒烟测试:{script}");
         };
 
-        assert!(script.contains("setuid-root bwrap is not supported"));
+        assert!(script.contains("不支持 setuid-root 的 bwrap"));
         assert!(script.contains(&format!("exit {BWRAP_UNUSABLE_EXIT_CODE}; fi")));
         assert!(guard_index < smoke_test_index);
     }
@@ -1682,13 +1682,13 @@ mod tests {
     fn canonical_grant_output_returns_the_linux_canonical_path() {
         let resolved =
             parse_canonical_grant_output("Ubuntu-24.04\n/home/me/real target\nnative-fs\n")
-                .expect("valid helper output");
+                .expect("有效的辅助程序输出");
         // The bare Linux path, not a `\\wsl.localhost\...` spelling.
         assert_eq!(resolved.canonical, PathBuf::from("/home/me/real target"));
         assert!(!resolved.on_windows_fs);
 
         let resolved = parse_canonical_grant_output("Ubuntu\n/mnt/c/Users/me/proj\nwindows-fs\n")
-            .expect("valid helper output");
+            .expect("有效的辅助程序输出");
         assert_eq!(resolved.canonical, PathBuf::from("/mnt/c/Users/me/proj"));
         assert!(resolved.on_windows_fs);
     }
@@ -1734,8 +1734,8 @@ mod tests {
         assert!(
             error
                 .to_string()
-                .contains("required writable path resolved as missing"),
-            "unexpected error: {error:#}"
+                .contains("必需的写入路径解析为不存在"),
+            "意外错误: {error:#}"
         );
     }
 
@@ -1803,7 +1803,7 @@ mod tests {
         let writable_index = args
             .windows(3)
             .position(|window| window == ["--bind", "/home/me/project", "/home/me/project"])
-            .expect("project should be writable");
+            .expect("项目应为可写");
         let protected_index = args
             .windows(3)
             .position(|window| {
@@ -1814,7 +1814,7 @@ mod tests {
                         "/home/me/project/.git",
                     ]
             })
-            .expect("protected path should be bound read-only");
+            .expect("受保护路径应以只读方式绑定");
         assert!(protected_index > writable_index);
     }
 
@@ -1834,7 +1834,7 @@ mod tests {
         let unrestricted_write_index = args
             .windows(3)
             .position(|window| window == ["--bind", "/", "/"])
-            .expect("root should be writable");
+            .expect("根目录应为可写");
         let protected_index = args
             .windows(3)
             .position(|window| {
@@ -1845,7 +1845,7 @@ mod tests {
                         "/home/me/project/.git",
                     ]
             })
-            .expect("protected path should be bound read-only");
+            .expect("受保护路径应以只读方式绑定");
         assert!(protected_index > unrestricted_write_index);
     }
 
@@ -2048,7 +2048,7 @@ mod tests {
         // bwrap's `--setenv` calls `setenv(3)`, which rejects empty names and
         // names containing `=`. Windows environments include the per-drive
         // current-directory pseudo-variables (`=C:`, ...); forwarding them
-        // would abort bwrap with "setenv failed".
+        // would abort bwrap with "设置环境变量失败".
         let env = HashMap::from([
             ("=C:".to_string(), r"C:\Users\me".to_string()),
             (String::new(), "value".to_string()),
@@ -2130,13 +2130,13 @@ mod tests {
     fn unavailable_errors_are_typed_and_prefixed() {
         // Environment failures are recognizable by type (so the agent doesn't
         // depend on message text) and still render with the shared prefix.
-        let error = unavailable("Bubblewrap (`bwrap`) is not installed in the default WSL distro");
+        let error = unavailable("默认 WSL 发行版中未安装 Bubblewrap(`bwrap`)");
         let typed = error
             .downcast_ref::<WslSandboxUnavailable>()
-            .expect("environment failure should downcast to WslSandboxUnavailable");
+            .expect("环境故障应向下转换为 WslSandboxUnavailable");
         assert_eq!(
             typed.message(),
-            "Bubblewrap (`bwrap`) is not installed in the default WSL distro"
+            "默认 WSL 发行版中未安装 Bubblewrap(`bwrap`)"
         );
         assert!(format!("{error:#}").starts_with(WSL_SANDBOX_UNAVAILABLE_PREFIX));
     }

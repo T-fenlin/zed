@@ -46,7 +46,7 @@ pub fn insert_task_json_into_editor(
     let mut cursor = tree_sitter::QueryCursor::new();
     let syntax_tree = parser
         .parse(&content, None)
-        .context("could not parse tasks file")?;
+        .context("无法解析任务文件")?;
     let mut matches = cursor.matches(
         &LAST_ITEM_QUERY,
         syntax_tree.root_node(),

@@ -213,7 +213,7 @@ pub trait PickerDelegate: Sized + 'static {
     }
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str>;
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
-        Some("No matches".into())
+        Some("无匹配项".into())
     }
     fn update_matches(
         &mut self,
@@ -1147,7 +1147,7 @@ impl<D: PickerDelegate> Picker<D> {
         cx: &mut Context<Self>,
     ) {
         let Head::Editor(editor) = &self.head else {
-            panic!("unexpected call");
+            panic!("意外调用");
         };
         match event {
             ErasedEditorEvent::BufferEdited => {
@@ -1169,7 +1169,7 @@ impl<D: PickerDelegate> Picker<D> {
 
     fn on_empty_head_blur(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let Head::Empty(_) = &self.head else {
-            panic!("unexpected call");
+            panic!("意外调用");
         };
         if window.is_window_active() {
             self.cancel(&menu::Cancel, window, cx);
@@ -1367,14 +1367,14 @@ impl<D: PickerDelegate> Picker<D> {
                                     &focus_handle,
                                     cx,
                                 ))
-                                .child(Label::new("Select")),
+                                .child(Label::new("选择")),
                         )
                         .child(Divider::vertical())
                         .child(
                             h_flex()
                                 .gap_1()
                                 .child(KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx))
-                                .child(Label::new("Open")),
+                                .child(Label::new("打开")),
                         )
                         .into_any_element()
                 }))
@@ -1744,7 +1744,7 @@ mod tests {
                 ui::ListItem::new(ix)
                     .inset(true)
                     .toggle_state(selected)
-                    .child(ui::Label::new(format!("Item {ix}"))),
+                    .child(ui::Label::new(format!("项目 {ix}"))),
             )
         }
     }
@@ -1778,7 +1778,7 @@ mod tests {
         });
         assert!(
             confirmed_index.get().is_none(),
-            "clicking a non-selectable item should not confirm"
+            "点击不可选项目不应确认"
         );
 
         picker.update_in(cx, |picker, window, cx| {
@@ -1787,7 +1787,7 @@ mod tests {
         assert_eq!(
             confirmed_index.get(),
             Some(0),
-            "clicking a selectable item should confirm"
+            "点击可选项目应确认"
         );
     }
 
@@ -1810,7 +1810,7 @@ mod tests {
             assert_eq!(
                 picker.delegate.selected_index(),
                 2,
-                "select_next should skip non-selectable item at index 1"
+                "select_next 应跳过索引 1 处的不可选项目"
             );
         });
 
@@ -1821,7 +1821,7 @@ mod tests {
             assert_eq!(
                 picker.delegate.selected_index(),
                 0,
-                "select_previous should skip non-selectable item at index 1"
+                "select_previous 应跳过索引 1 处的不可选项目"
             );
         });
     }
@@ -1853,11 +1853,11 @@ mod tests {
         picker.update_in(cx, |picker, window, cx| {
             picker.handle_click(2, true, window, cx);
         });
-        assert_eq!(confirmed_index.take(), None, "cmd+click must not confirm");
+        assert_eq!(confirmed_index.take(), None, "cmd+点击不得确认");
         picker.update(cx, |picker, _cx| {
             assert!(
                 picker.select_instead_of_open,
-                "cmd+click should start multi-select mode"
+                "cmd+点击应启动多选模式"
             );
             assert!(picker.delegate.is_item_selected(2));
         });
@@ -1869,7 +1869,7 @@ mod tests {
         assert_eq!(
             confirmed_index.take(),
             None,
-            "in-mode clicks must not confirm"
+            "模式内点击不得确认"
         );
         picker.update(cx, |picker, _cx| {
             assert!(picker.delegate.is_item_selected(0));
@@ -1888,7 +1888,7 @@ mod tests {
         assert_eq!(
             confirmed_index.take(),
             Some(1),
-            "the mode should be off again after confirming"
+            "确认后模式应再次关闭"
         );
     }
 
@@ -1910,13 +1910,13 @@ mod tests {
         picker.update(cx, |picker, _cx| {
             assert!(
                 picker.select_instead_of_open,
-                "selecting an item should start multi-select mode"
+                "选择项目应启动多选模式"
             );
             assert!(picker.delegate.is_item_selected(0));
             assert_eq!(
                 picker.delegate.selected_index(),
                 1,
-                "selecting should advance the cursor to the next item"
+                "选择应将光标推进到下一个项目"
             );
         });
 
@@ -1954,7 +1954,7 @@ mod tests {
             assert_eq!(
                 picker.delegate.selected_item_count(),
                 0,
-                "leaving the mode should clear the selection"
+                "离开模式应清除选择"
             );
         });
     }

@@ -136,7 +136,7 @@ impl Database {
                 .filter(extension::Column::ExternalId.eq(extension_id))
                 .one(&*tx)
                 .await?
-                .with_context(|| format!("no such extension: {extension_id}"))?;
+                .with_context(|| format!("没有此扩展:{extension_id}"))?;
 
             let extensions = [extension];
             let mut versions = self
@@ -244,7 +244,7 @@ impl Database {
                         .filter(extension::Column::ExternalId.eq(*external_id))
                         .one(&*tx)
                         .await?
-                        .context("failed to insert extension")?
+                        .context("插入扩展失败")?
                 };
 
                 extension_version::Entity::insert_many(versions.iter().map(|version| {

@@ -150,7 +150,7 @@ impl MessageQueue {
         match self.processing_state {
             ProcessingState::AbsorbingCancel => {
                 // This Stopped event came from a cancellation we initiated
-                // ourselves (e.g. "Send Now"); swallow it and resume.
+                // ourselves (e.g. "立即发送"); swallow it and resume.
                 self.processing_state = ProcessingState::AutoProcess;
                 None
             }
@@ -166,7 +166,7 @@ impl MessageQueue {
         }
     }
 
-    /// Removes an entry for an explicit "Send Now". If a generation is in
+    /// Removes an entry for an explicit "立即发送". If a generation is in
     /// flight, the dispatch will cancel it, so we must absorb that
     /// cancellation's Stopped event.
     pub fn send_now(&mut self, id: QueueEntryId, is_generating: bool) -> Option<QueueEntry> {

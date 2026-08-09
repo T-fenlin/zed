@@ -333,7 +333,7 @@ impl MarkdownPreviewView {
                         })
                         .detach();
                     } else {
-                        log::error!("Failed to listen to workspace updates");
+                        log::error!("无法监听工作区更新");
                     }
                 }
                 MarkdownPreviewMode::Default => {
@@ -1277,7 +1277,7 @@ fn open_markdown_link_in_preview(
                 project.find_or_create_worktree(abs_path, false, cx)
             })
             .await
-            .context("resolving Markdown preview link worktree")?;
+            .context("解析 Markdown 预览链接工作树")?;
         let worktree_id = worktree.read_with(cx, |worktree, _| worktree.id());
         let buffer = project
             .update(cx, |project, cx| {
@@ -1290,7 +1290,7 @@ fn open_markdown_link_in_preview(
                 )
             })
             .await
-            .context("opening Markdown preview link buffer")?;
+            .context("打开 Markdown 预览链接缓冲区")?;
 
         workspace.update_in(cx, |workspace, window, cx| {
             if let Some(source_view) = source_view.as_ref().and_then(|view| view.upgrade())
@@ -1352,7 +1352,7 @@ fn open_preview_path_with_position(
         let opened = if let Some(open_target) = open_target.await {
             open_resolved_target(&workspace, &open_target, cx)
                 .await
-                .context("opening Markdown preview link")?
+                .context("打开 Markdown 预览链接")?
         } else {
             false
         };
@@ -1452,13 +1452,13 @@ impl Item for MarkdownPreviewView {
             .map(|editor_state| {
                 let buffer = editor_state.editor.read(cx).buffer().read(cx);
                 let title = buffer.title(cx);
-                format!("Preview {}", title).into()
+                format!("预览 {}", title).into()
             })
-            .unwrap_or_else(|| SharedString::from("Markdown Preview"))
+            .unwrap_or_else(|| SharedString::from("Markdown 预览"))
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
-        Some("Markdown Preview Opened")
+        Some("Markdown 预览已打开")
     }
 
     fn added_to_workspace(
@@ -1629,7 +1629,7 @@ impl Render for MarkdownPreviewView {
                                         menu.when_some(focus, |menu, focus| menu.context(focus))
                                             .when_some(selected_text, |menu, text| {
                                                 menu.entry(
-                                                    "Copy",
+                                                    "复制",
                                                     Some(Box::new(markdown::Copy)),
                                                     move |_, cx| {
                                                         cx.write_to_clipboard(
@@ -1642,7 +1642,7 @@ impl Render for MarkdownPreviewView {
                                             })
                                             .when_some(selected_markdown, |menu, text| {
                                                 menu.entry(
-                                                    "Copy as Markdown",
+                                                    "复制为 Markdown",
                                                     Some(Box::new(markdown::CopyAsMarkdown)),
                                                     move |_, cx| {
                                                         cx.write_to_clipboard(
@@ -1654,7 +1654,7 @@ impl Render for MarkdownPreviewView {
                                                 )
                                             })
                                             .when_some(context_menu_link, |menu, url| {
-                                                menu.entry("Copy Link", None, move |_, cx| {
+                                                menu.entry("复制链接", None, move |_, cx| {
                                                     cx.write_to_clipboard(
                                                         ClipboardItem::new_string(url.to_string()),
                                                     );
@@ -1856,7 +1856,7 @@ impl SerializableItem for MarkdownPreviewView {
         window.spawn(cx, async move |cx| {
             let (abs_path, mode_value) = db
                 .get_preview(item_id, workspace_id)?
-                .context("No markdown preview entry found")?;
+                .context("未找到 Markdown 预览条目")?;
             let mode = MarkdownPreviewMode::from_db(mode_value);
 
             let (worktree, relative_path) = project
@@ -1864,7 +1864,7 @@ impl SerializableItem for MarkdownPreviewView {
                     project.find_or_create_worktree(abs_path.clone(), false, cx)
                 })
                 .await
-                .context("Path not found")?;
+                .context("未找到路径")?;
             let worktree_id = worktree.read_with(cx, |worktree, _| worktree.id());
 
             let project_path = ProjectPath {
@@ -2077,7 +2077,7 @@ mod tests {
             workspace
                 .active_item(cx)
                 .and_then(|item| item.downcast::<Editor>())
-                .expect("file should be open in an editor")
+                .expect("文件应在编辑器中打开")
         });
         editor.update_in(cx, |editor, window, cx| {
             let snapshot = editor.snapshot(window, cx);
@@ -2126,7 +2126,7 @@ mod tests {
             workspace
                 .active_item(cx)
                 .and_then(|item| item.downcast::<Editor>())
-                .expect("guide.txt should be open in an editor")
+                .expect("guide.txt 应在编辑器中打开")
         });
         guide_editor.update_in(cx, |editor, window, cx| {
             let file_path = editor
@@ -2134,7 +2134,7 @@ mod tests {
                 .read(cx)
                 .as_singleton()
                 .and_then(|buffer| buffer.read(cx).file().map(|file| file.path().clone()))
-                .expect("opened editor should have a file");
+                .expect("打开的编辑器应包含文件");
             assert_eq!(file_path.as_ref(), rel_path("docs/guide.txt"));
             let snapshot = editor.snapshot(window, cx);
             assert_eq!(
@@ -2163,7 +2163,7 @@ mod tests {
             assert_eq!(
                 editor.selections.newest::<Point>(&snapshot).head(),
                 Point::new(2, 0),
-                "broken link must not move the cursor in a suffix-matching file"
+                "损坏的链接不得在匹配后缀的文件中移动光标"
             );
         });
 
@@ -2226,12 +2226,12 @@ mod tests {
             assert_eq!(
                 workspace.items_of_type::<Editor>(cx).count(),
                 0,
-                "markdown links must not open raw editors"
+                "Markdown 链接不得打开原始编辑器"
             );
             workspace
                 .active_item(cx)
                 .and_then(|item| item.downcast::<MarkdownPreviewView>())
-                .expect("notes.md should open in a Markdown preview")
+                .expect("notes.md 应在 Markdown 预览中打开")
         });
         assert_eq!(
             preview_source_path(cx, &preview).as_ref(),
@@ -2241,7 +2241,7 @@ mod tests {
             preview.read_with(cx, |preview, _| preview.scroll_handle.offset());
         assert!(
             heading_scroll_offset.y < px(0.),
-            "preview should scroll down to the linked heading, got {heading_scroll_offset:?}"
+            "预览应滚动到链接的标题,实际滚动偏移为 {heading_scroll_offset:?}"
         );
 
         let preview_editor = preview.read_with(cx, |preview, _| {
@@ -2256,7 +2256,7 @@ mod tests {
         assert_eq!(
             preview.read_with(cx, |preview, _| preview.scroll_handle.offset()),
             heading_scroll_offset,
-            "reparsing after an edit must not replay the consumed heading scroll"
+            "编辑后重新解析不得重放已消费的标题滚动"
         );
 
         multi_workspace.update_in(cx, |_, window, cx| {
@@ -2298,7 +2298,7 @@ mod tests {
             assert_eq!(
                 workspace.items_of_type::<Editor>(cx).count(),
                 0,
-                "a position on a markdown link must not open a raw editor"
+                "Markdown 链接上的位置不得打开原始编辑器"
             );
             assert_eq!(
                 workspace.active_item(cx).map(|item| item.item_id()),
@@ -2329,7 +2329,7 @@ mod tests {
             assert_eq!(
                 workspace.items_of_type::<Editor>(cx).count(),
                 0,
-                "an `#L<row>` fragment on a markdown link must not open a raw editor"
+                "Markdown 链接上的 `#L<row>` 片段不得打开原始编辑器"
             );
             assert_eq!(
                 workspace.active_item(cx).map(|item| item.item_id()),
@@ -2364,7 +2364,7 @@ mod tests {
             workspace
                 .active_item(cx)
                 .and_then(|item| item.downcast::<MarkdownPreviewView>())
-                .expect("other.md should open in a Markdown preview")
+                .expect("other.md 应在 Markdown 预览中打开")
         });
         assert_eq!(
             preview_source_path(cx, &other_preview).as_ref(),
@@ -2375,7 +2375,7 @@ mod tests {
                 .read_with(cx, |preview, _| preview.scroll_handle.offset())
                 .y,
             px(0.),
-            "a dead anchor must open the document at the top"
+            "失效的锚点必须在顶部打开文档"
         );
 
         cx.simulate_modifiers_change(Modifiers::alt());
@@ -2397,7 +2397,7 @@ mod tests {
             workspace
                 .active_item(cx)
                 .and_then(|item| item.downcast::<Editor>())
-                .expect("alt-click should open the raw editor")
+                .expect("Alt 点击应打开原始编辑器")
         });
         raw_editor.update_in(cx, |editor, window, cx| {
             let snapshot = editor.snapshot(window, cx);
@@ -2456,12 +2456,12 @@ mod tests {
             assert_eq!(
                 workspace.items_of_type::<Editor>(cx).count(),
                 0,
-                "a position on a markdown link must not open a raw editor"
+                "Markdown 链接上的位置不得打开原始编辑器"
             );
             workspace
                 .active_item(cx)
                 .and_then(|item| item.downcast::<MarkdownPreviewView>())
-                .expect("notes.md should open in a Markdown preview")
+                .expect("notes.md 应在 Markdown 预览中打开")
         });
         assert_eq!(
             preview_source_path(cx, &preview).as_ref(),
@@ -2480,7 +2480,7 @@ mod tests {
         let scroll_offset = preview.read_with(cx, |preview, _| preview.scroll_handle.offset());
         assert!(
             scroll_offset.y < px(0.),
-            "a new preview should scroll down to the linked position, got {scroll_offset:?}"
+            "新预览应滚动到链接位置,实际滚动偏移为 {scroll_offset:?}"
         );
     }
 
@@ -2765,13 +2765,13 @@ mod tests {
                 let workspace = multi_workspace.workspace().read(cx);
                 assert!(
                     preview.read(cx).focus_handle.contains_focused(window, cx),
-                    "preview should remain focused after closing the source editor tab"
+                    "关闭源编辑器标签页后,预览应保持焦点"
                 );
                 assert!(
                     workspace
                         .items_of_type::<Editor>(cx)
                         .all(|open_editor| open_editor != editor),
-                    "source editor should no longer be open in any pane"
+                    "源编辑器不应再在任何窗格中打开"
                 );
                 assert_eq!(
                     workspace.items_of_type::<MarkdownPreviewView>(cx).count(),
@@ -3044,7 +3044,7 @@ mod tests {
         assert_eq!(
             saved_preview_path(cx, preview.entity_id().as_u64(), workspace_id),
             PathBuf::from(path!("/dir/b.md")),
-            "a Follow preview should persist the source editor it most recently followed"
+            "跟随模式预览应持久化其最近跟随的源编辑器"
         );
     }
 
@@ -3201,7 +3201,7 @@ mod tests {
             .update(cx, |_, window, cx| {
                 assert!(
                     preview.read(cx).focus_handle.contains_focused(window, cx),
-                    "preview must be focused for the keyboard action to dispatch to it"
+                    "预览必须获得焦点,键盘操作才能分发到它"
                 );
                 window.dispatch_action(Box::new(CloseAndReturnToEditor), cx);
             })
@@ -3223,7 +3223,7 @@ mod tests {
                         .read(cx)
                         .focus_handle(cx)
                         .contains_focused(window, cx),
-                    "source editor should be focused"
+                    "源编辑器应获得焦点"
                 );
             })
             .unwrap();
@@ -3324,7 +3324,7 @@ mod tests {
                     assert_eq!(
                         workspace.active_pane(),
                         &second_pane,
-                        "test precondition: focus must be in the second pane"
+                        "测试前置条件:焦点必须在第二个窗格中"
                     );
                     MarkdownPreviewView::open_preview_in_pane(
                         workspace,
@@ -3343,7 +3343,7 @@ mod tests {
                 .read(cx)
                 .active_item()
                 .and_then(|item| item.downcast::<MarkdownPreviewView>())
-                .expect("the preview must open in the pane whose button was clicked");
+                .expect("预览必须在被点击按钮所在的窗格中打开");
             let bound_editor = preview
                 .read(cx)
                 .active_editor
@@ -3353,7 +3353,7 @@ mod tests {
                 .clone();
             assert_eq!(
                 bound_editor, a_editor,
-                "the preview must be bound to the clicked pane's editor, not the focused editor"
+                "预览必须绑定到被点击窗格的编辑器,而非聚焦的编辑器"
             );
             assert_eq!(
                 second_pane
@@ -3361,7 +3361,7 @@ mod tests {
                     .active_item()
                     .and_then(|item| item.downcast::<Editor>()),
                 Some(b_editor),
-                "the focused pane's content must be unaffected"
+                "聚焦窗格的内容必须不受影响"
             );
         });
     }
@@ -3469,7 +3469,7 @@ mod tests {
             Some(ImageSource::Resource(Resource::Path(path))) => {
                 assert_eq!(path.as_ref(), expected_path);
             }
-            _ => panic!("Expected preview image to resolve to a local path"),
+            _ => panic!("预期预览图片解析为本地路径"),
         }
     }
 }

@@ -90,7 +90,7 @@ pub struct WithTimeout<T> {
 }
 
 #[derive(Debug, thiserror::Error)]
-#[error("Timed out before future resolved")]
+#[error("在 future 解析之前超时")]
 /// Error returned by with_timeout when the timeout duration elapsed before the future resolved
 pub struct Timeout;
 

@@ -115,8 +115,8 @@ impl TcpArguments {
     pub fn from_proto(proto: proto::TcpHost) -> anyhow::Result<Self> {
         let host = TcpArgumentsTemplate::from_proto(proto)?;
         Ok(TcpArguments {
-            host: host.host.context("missing host")?,
-            port: host.port.context("missing port")?,
+            host: host.host.context("缺少主机")?,
+            port: host.port.context("缺少端口")?,
             timeout: host.timeout,
         })
     }
@@ -288,28 +288,28 @@ pub async fn download_adapter_from_github(
     if !adapter_path.exists() {
         fs.create_dir(adapter_path.as_path())
             .await
-            .context("Failed creating adapter path")?;
+            .context("创建适配器路径失败")?;
     }
 
     log::debug!(
-        "Downloading adapter {} from {}",
+        "正在从 {} 下载适配器 {}",
         adapter_name,
         &github_version.url,
     );
-    delegate.output_to_console(format!("Downloading from {}...", github_version.url));
+    delegate.output_to_console(format!("正在从 {} 下载...", github_version.url));
 
     let mut response = delegate
         .http_client()
         .get(&github_version.url, Default::default(), true)
         .await
-        .context("Error downloading release")?;
+        .context("下载发布版本时出错")?;
     anyhow::ensure!(
         response.status().is_success(),
-        "download failed with status {}",
+        "下载失败,状态码 {}",
         response.status()
     );
 
-    delegate.output_to_console("Download complete".to_owned());
+    delegate.output_to_console("下载完成".to_owned());
     match file_type {
         DownloadedFileType::GzipTar => {
             let decompressed_bytes = GzipDecoder::new(BufReader::new(response.body_mut()));
@@ -324,7 +324,7 @@ pub async fn download_adapter_from_github(
             extract_zip(&version_path, file)
                 .await
                 // we cannot check the status as some adapter include files with names that trigger `Illegal byte sequence`
-                .inspect_err(|e| log::warn!("ZIP extraction error: {}. Ignoring...", e))
+                .inspect_err(|e| log::warn!("ZIP 解压错误:{}。正在忽略...", e))
                 .ok();
 
             util::fs::remove_matching(&adapter_path, |entry| {
@@ -377,7 +377,7 @@ pub trait DebugAdapter: 'static + Send + Sync {
             Some(val) if val == "launch" => Ok(StartDebuggingRequestArgumentsRequest::Launch),
             Some(val) if val == "attach" => Ok(StartDebuggingRequestArgumentsRequest::Attach),
             _ => Err(anyhow!(
-                "missing or invalid `request` field in config. Expected 'launch' or 'attach'"
+                "配置中缺少或无效的 `request` 字段。应为 'launch' 或 'attach'"
             )),
         }
     }
@@ -429,7 +429,7 @@ impl DebugAdapter for FakeAdapter {
         let request = match request {
             "launch" => dap_types::StartDebuggingRequestArgumentsRequest::Launch,
             "attach" => dap_types::StartDebuggingRequestArgumentsRequest::Attach,
-            _ => unreachable!("Wrong fake adapter input for request field"),
+            _ => unreachable!("request 字段的假适配器输入错误"),
         };
 
         Ok(request)

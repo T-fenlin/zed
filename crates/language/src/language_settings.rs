@@ -1184,7 +1184,7 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "TypeScript"),
                 servers(&["vtsls", "eslint"]),
-                "default settings should disable typescript-language-server for TypeScript"
+                "默认设置应针对 TypeScript 禁用 typescript-language-server"
             );
             assert_eq!(
                 resolved_language_servers(&store, None, "Rust"),
@@ -1197,12 +1197,12 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "TypeScript"),
                 servers(&["vtsls", "eslint"]),
-                "the per-language list should fully replace the user's global list"
+                "按语言配置的列表应完全替换用户的全局列表"
             );
             assert_eq!(
                 resolved_language_servers(&store, None, "Rust"),
                 servers(&["typescript-language-server", "eslint"]),
-                "user's global disable should apply to languages without their own list"
+                "用户的全局禁用应适用于没有自己列表的语言"
             );
 
             store
@@ -1217,12 +1217,12 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, root_location, "Rust"),
                 servers(&["typescript-language-server", "vtsls", "eslint"]),
-                "project settings enabling all servers should undo the user's global disable (#61524)"
+                "项目设置启用所有服务器应撤销用户的全局禁用 (#61524)"
             );
             assert_eq!(
                 resolved_language_servers(&store, None, "Rust"),
                 servers(&["typescript-language-server", "eslint"]),
-                "user's global disable should still apply outside of the project"
+                "用户的全局禁用应仍然适用于项目之外"
             );
 
             store
@@ -1237,12 +1237,12 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, root_location, "Rust"),
                 servers(&["typescript-language-server", "vtsls"]),
-                "project's global list should replace the user's global list"
+                "项目的全局列表应替换用户的全局列表"
             );
             assert_eq!(
                 resolved_language_servers(&store, root_location, "TypeScript"),
                 servers(&["vtsls", "eslint"]),
-                "the per-language list should fully replace the project's global list"
+                "按语言配置的列表应完全替换项目的全局列表"
             );
 
             store
@@ -1257,7 +1257,7 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, subdir_location, "Rust"),
                 servers(&["typescript-language-server", "vtsls", "eslint"]),
-                "nested project settings should replace the outer global list"
+                "嵌套的项目设置应替换外层的全局列表"
             );
             assert_eq!(
                 resolved_language_servers(&store, root_location, "Rust"),
@@ -1281,12 +1281,12 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, root_location, "TypeScript"),
                 servers(&["vtsls", "typescript-language-server", "eslint"]),
-                "project's per-language configuration should override the user's global disable"
+                "项目的按语言配置应覆盖用户的全局禁用"
             );
             assert_eq!(
                 resolved_language_servers(&store, root_location, "Rust"),
                 servers(&["typescript-language-server", "eslint"]),
-                "user's global disable should still apply to other languages"
+                "用户的全局禁用应仍然适用于其他语言"
             );
 
             store
@@ -1301,7 +1301,7 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "TypeScript"),
                 servers(&["vtsls", "typescript-language-server", "eslint"]),
-                "per-language configuration should win over a global disable from the same file"
+                "按语言配置应优先于同一文件中的全局禁用"
             );
             assert_eq!(
                 resolved_language_servers(&store, None, "Rust"),
@@ -1320,12 +1320,12 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, root_location, "TypeScript"),
                 servers(&["vtsls", "typescript-language-server", "eslint"]),
-                "user's per-language list should win over the project's global disable"
+                "用户的按语言列表应优先于项目的全局禁用"
             );
             assert_eq!(
                 resolved_language_servers(&store, root_location, "Rust"),
                 servers(&["typescript-language-server", "eslint"]),
-                "project's global disable should still apply to languages without their own list"
+                "项目的全局禁用应仍然适用于没有自己列表的语言"
             );
 
             store
@@ -1346,12 +1346,12 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, root_location, "JavaScript"),
                 servers(&["typescript-language-server", "vtsls", "eslint"]),
-                "project's per-language list should re-enable a server disabled by the user (#61524)"
+                "项目的按语言列表应重新启用被用户禁用的服务器 (#61524)"
             );
             assert_eq!(
                 resolved_language_servers(&store, None, "JavaScript"),
                 servers(&["typescript-language-server", "eslint"]),
-                "user's per-language disable should still apply outside of the project"
+                "用户的按语言禁用应仍然适用于项目之外"
             );
         });
     }
@@ -1384,17 +1384,17 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, root_location, "Rust"),
                 servers(&["typescript-language-server", "vtsls"]),
-                "global lists replace wholesale: disables from different files must not accumulate"
+                "全局列表是整体替换:不同文件中的禁用不应累积"
             );
             assert_eq!(
                 resolved_language_servers(&store, None, "Rust"),
                 servers(&["typescript-language-server", "eslint"]),
-                "user's own disable should still apply outside of the project"
+                "用户自己的禁用应仍然适用于项目之外"
             );
             assert_eq!(
                 resolved_language_servers(&store, root_location, "TypeScript"),
                 servers(&["vtsls", "eslint"]),
-                "a language with its own list should ignore global lists from every file"
+                "拥有自己列表的语言应忽略来自所有文件的全局列表"
             );
 
             store
@@ -1403,7 +1403,7 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "Rust"),
                 servers(&["typescript-language-server", "eslint"]),
-                "the position of a disabled entry relative to '...' should not matter"
+                "禁用条目相对于 '...' 的位置无关紧要"
             );
 
             store
@@ -1412,7 +1412,7 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "Rust"),
                 servers(&["eslint", "typescript-language-server", "vtsls"]),
-                "the position of '...' should determine the priority order of enabled servers"
+                "'...' 的位置应决定已启用服务器的优先级顺序"
             );
 
             store
@@ -1421,12 +1421,12 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "Rust"),
                 servers(&["eslint"]),
-                "a global list without '...' should be exhaustive for languages without their own list"
+                "没有 '...' 的全局列表对于没有自己列表的语言应是详尽的"
             );
             assert_eq!(
                 resolved_language_servers(&store, None, "TypeScript"),
                 servers(&["vtsls", "eslint"]),
-                "a global list, exhaustive or not, never applies to languages with their own list"
+                "全局列表,无论是否详尽,都不适用于拥有自己列表的语言"
             );
 
             store
@@ -1441,7 +1441,7 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "TypeScript"),
                 servers(&["vtsls", "typescript-language-server", "eslint"]),
-                "authoring a per-language list opts the language out of the global list entirely"
+                "编写按语言列表会使该语言完全脱离全局列表"
             );
             assert_eq!(
                 resolved_language_servers(&store, None, "Rust"),
@@ -1460,7 +1460,7 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "TypeScript"),
                 servers(&["eslint"]),
-                "a per-language disable should win over the shipped explicit enable"
+                "按语言禁用应优先于内置的显式启用"
             );
             store
                 .set_user_settings(
@@ -1471,7 +1471,7 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "TypeScript"),
                 servers(&["typescript-language-server", "eslint"]),
-                "a per-language list not restating the shipped exclusions should lift them"
+                "未重申内置排除项的按语言列表应解除这些排除项"
             );
 
             store
@@ -1483,7 +1483,7 @@ mod tests {
             assert_eq!(
                 resolved_language_servers(&store, None, "TypeScript"),
                 servers(&["eslint"]),
-                "an exhaustive per-language list should pin exactly the listed servers"
+                "详尽的按语言列表应精确固定所列出的服务器"
             );
         });
     }

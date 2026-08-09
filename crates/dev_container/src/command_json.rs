@@ -33,12 +33,12 @@ where
     T: for<'de> Deserialize<'de>,
 {
     let output = command.output().await.map_err(|e| {
-        log::error!("Error running command {:?}: {e}", command);
+        log::error!("运行命令 {:?} 时出错: {e}", command);
         DevContainerError::CommandFailed(command.get_program().display().to_string())
     })?;
 
     deserialize_json_output(output).map_err(|e| {
-        log::error!("Error running command {:?}: {e}", command);
+        log::error!("运行命令 {:?} 时出错: {e}", command);
         DevContainerError::CommandFailed(command.get_program().display().to_string())
     })
 }
@@ -50,12 +50,12 @@ where
     T: for<'de> Deserialize<'de>,
 {
     let output = command.output().await.map_err(|e| {
-        log::error!("Error running command {:?}: {e}", command);
+        log::error!("运行命令 {:?} 时出错: {e}", command);
         DevContainerError::CommandFailed(command.get_program().display().to_string())
     })?;
 
     deserialize_yaml_output(output).map_err(|e| {
-        log::error!("Error running command {:?}: {e}", command);
+        log::error!("运行命令 {:?} 时出错: {e}", command);
         DevContainerError::CommandFailed(command.get_program().display().to_string())
     })
 }
@@ -71,11 +71,11 @@ where
         }
         serde_yaml::from_str(&raw)
             .map(Some)
-            .map_err(|e| format!("Error deserializing from raw yaml: {e}"))
+            .map_err(|e| format!("从原始 YAML 反序列化时出错:{e}"))
     } else {
         let std_err = String::from_utf8_lossy(&output.stderr);
         Err(format!(
-            "Sent non-successful output; cannot deserialize. StdErr: {std_err}"
+            "发送了非成功输出;无法反序列化。标准错误:{std_err}"
         ))
     }
 }
@@ -90,11 +90,11 @@ where
             return Ok(None);
         }
         serde_json_lenient::from_str(&raw)
-            .map_err(|e| format!("Error deserializing from raw json: {e}"))
+            .map_err(|e| format!("从原始 JSON 反序列化时出错:{e}"))
     } else {
         let std_err = String::from_utf8_lossy(&output.stderr);
         Err(format!(
-            "Sent non-successful output; cannot deserialize. StdErr: {std_err}"
+            "发送了非成功输出;无法反序列化。标准错误:{std_err}"
         ))
     }
 }
@@ -127,7 +127,7 @@ mod tests {
         // output themselves rather than routing through this helper.
         let output = success_output("{\"id\":\"first\"}\n{\"id\":\"second\"}\n");
         let result: Result<Option<TestItem>, String> = deserialize_json_output(output);
-        assert!(result.is_err(), "expected parse error, got {result:?}");
+        assert!(result.is_err(), "预期解析错误,实际得到 {result:?}");
     }
 
     #[test]
@@ -163,8 +163,8 @@ mod tests {
         "};
         let output = success_output(yaml);
         let result: DockerComposeConfig = deserialize_yaml_output(output)
-            .expect("deserialization should succeed")
-            .expect("result should not be None");
+            .expect("反序列化应成功")
+            .expect("结果不应为 None");
 
         assert_eq!(result.name, Some("my-project".to_string()));
         assert_eq!(result.services.len(), 2);
@@ -172,7 +172,7 @@ mod tests {
         let app = result
             .services
             .get("app")
-            .expect("app service should exist");
+            .expect("app 服务应存在");
         assert_eq!(app.image, Some("node:18".to_string()));
         assert_eq!(
             app.command,

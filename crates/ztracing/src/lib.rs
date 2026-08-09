@@ -83,12 +83,12 @@ pub fn init() {
         }
     }
 
-    zlog::info!("Starting tracy subscriber, you can now connect the profiler");
+    zlog::info!("正在启动 tracy 订阅器,你现在可以连接分析器了");
     tracing::subscriber::set_global_default(
         tracing_subscriber::registry()
             .with(tracing_tracy::TracyLayer::new(TracyLayerConfig::default())),
     )
-    .expect("setup tracy layer");
+    .expect("设置 tracy 层");
 }
 
 #[cfg(not(ztracing))]

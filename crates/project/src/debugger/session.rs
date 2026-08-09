@@ -109,11 +109,11 @@ pub enum ThreadStatus {
 impl ThreadStatus {
     pub fn label(&self) -> &'static str {
         match self {
-            ThreadStatus::Running => "Running",
-            ThreadStatus::Stopped => "Stopped",
-            ThreadStatus::Stepping => "Stepping",
-            ThreadStatus::Exited => "Exited",
-            ThreadStatus::Ended => "Ended",
+            ThreadStatus::Running => "运行中",
+            ThreadStatus::Stopped => "已停止",
+            ThreadStatus::Stepping => "单步执行中",
+            ThreadStatus::Exited => "已退出",
+            ThreadStatus::Ended => "已结束",
         }
     }
 }
@@ -254,7 +254,7 @@ impl RunningMode {
                 .for_each(|res| match res {
                     Ok(_) => {}
                     Err(err) => {
-                        log::warn!("Set breakpoints request failed: {}", err);
+                        log::warn!("设置断点请求失败:{}", err);
                     }
                 });
         })
@@ -314,7 +314,7 @@ impl RunningMode {
                     })
                     .ok();
             }
-            Err(err) => log::warn!("Set breakpoints request failed for path: {}", err),
+            Err(err) => log::warn!("设置断点请求失败,路径:{}", err),
         })
     }
 
@@ -474,7 +474,7 @@ impl RunningMode {
                     };
 
                     for (path, error) in &errors_by_path {
-                        log::error!("failed to set breakpoints for {path:?}: {error}");
+                        log::error!("无法为 {path:?} 设置断点:{error}");
                     }
 
                     if let Some(failed_path) = errors_by_path.keys().next() {
@@ -483,12 +483,12 @@ impl RunningMode {
                             .unwrap_or(failed_path)
                             .display();
                         let message = format!(
-                            "Failed to set breakpoints for {failed_path}{}",
+                            "无法为 {failed_path}{} 设置断点",
                             match errors_by_path.len() {
                                 0 => unreachable!(),
                                 1 => "".into(),
-                                2 => " and 1 other path".into(),
-                                n => format!(" and {} other paths", n - 1),
+                                2 => " 以及另外 1 个路径".into(),
+                                n => format!(" 以及另外 {} 个路径", n - 1),
                             }
                         );
                         cx.emit(super::dap_store::DapStoreEvent::Notification(message));
@@ -588,7 +588,7 @@ impl SessionState {
         match self {
             SessionState::Running(debug_adapter_client) => debug_adapter_client.request(request),
             SessionState::Booting(_) => Task::ready(Err(anyhow!(
-                "no adapter running to send request: {request:?}"
+                "没有正在运行的适配器可发送请求:{request:?}"
             ))),
         }
     }
@@ -969,7 +969,7 @@ impl Session {
                     }
                     SessionState::Booting(_) => {}
                     SessionState::Running(_) => {
-                        debug_panic!("Attempting to boot a session that is already running");
+                        debug_panic!("尝试启动一个已在运行的会话");
                     }
                 };
                 this.state = SessionState::Running(mode);
@@ -990,7 +990,7 @@ impl Session {
 
                 console
                     .send(format!(
-                        "Tried to launch debugger with: {}",
+                        "尝试使用以下配置启动调试器:{}",
                         serde_json::to_string_pretty(&binary.request_args.configuration)
                             .unwrap_or_default(),
                     ))
@@ -1151,7 +1151,7 @@ impl Session {
             cx.emit(SessionStateEvent::SpawnChildSession { request });
         } else {
             log::error!(
-                "Failed to parse launch request arguments: {:?}",
+                "无法解析启动请求参数:{:?}",
                 request.arguments
             );
             success = false;
@@ -1207,7 +1207,7 @@ impl Session {
                         })?
                         .await?;
 
-                    Err(anyhow!("Failed to parse RunInTerminalRequestArguments"))
+                    Err(anyhow!("无法解析 RunInTerminalRequestArguments"))
                 });
             }
         };
@@ -1224,7 +1224,7 @@ impl Session {
         cx.spawn(async move |session, cx| {
             let result = util::maybe!(async move {
                 rx.next().await.ok_or_else(|| {
-                    anyhow!("failed to receive response from spawn terminal".to_string())
+                    anyhow!("无法从生成的终端接收响应".to_string())
                 })?
             })
             .await;
@@ -1274,7 +1274,7 @@ impl Session {
 
         let SessionState::Running(running) = &self.state else {
             return Task::ready(Err(anyhow!(
-                "Cannot send initialize request, task still building"
+                "无法发送初始化请求,任务仍在构建中"
             )));
         };
         let mut response = running.request(request.clone());
@@ -1290,7 +1290,7 @@ impl Session {
                         }) else {
                             return Err(e);
                         };
-                        log::info!("Failed to connect to debug adapter: {}, retrying...", e);
+                        log::info!("无法连接到调试适配器:{},正在重试...", e);
                         reconnect.await?;
 
                         let Ok(Some(r)) = this.update(cx, |this, _| {
@@ -1325,7 +1325,7 @@ impl Session {
                 local_mode.initialize_sequence(&self.capabilities, initialize_rx, dap_store, cx)
             }
             SessionState::Booting(_) => {
-                Task::ready(Err(anyhow!("cannot initialize, still building")))
+                Task::ready(Err(anyhow!("无法初始化,仍在构建中")))
             }
         }
     }
@@ -1398,7 +1398,7 @@ impl Session {
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
         let Some(local_session) = self.as_running() else {
-            unreachable!("Cannot respond to remote client");
+            unreachable!("无法响应远程客户端");
         };
         let client = local_session.client.clone();
 
@@ -1448,7 +1448,7 @@ impl Session {
             .selected_snapshot_index
             .is_some_and(|ix| self.snapshots.len() <= ix)
         {
-            debug_panic!("Attempted to select a debug session with an out of bounds index");
+            debug_panic!("尝试选择索引越界的调试会话");
             return;
         }
 
@@ -1522,7 +1522,7 @@ impl Session {
             Events::Initialized(_) => {
                 debug_assert!(
                     false,
-                    "Initialized event should have been handled in LocalMode"
+                    "Initialized 事件应在 LocalMode 中处理"
                 );
             }
             Events::Stopped(event) => self.handle_stopped_event(event, cx),
@@ -1559,7 +1559,7 @@ impl Session {
                         self.active_snapshot.thread_states.exit_thread(thread_id);
                     }
                     reason => {
-                        log::error!("Unhandled thread event reason {:?}", reason);
+                        log::error!("未处理的线程事件原因 {:?}", reason);
                     }
                 }
                 self.invalidate_state(&ThreadsCommand.into());
@@ -1643,13 +1643,13 @@ impl Session {
             Events::Other(event) => {
                 if event.event == "launchBrowserInCompanion" {
                     let Some(request) = serde_json::from_value(event.body).ok() else {
-                        log::error!("failed to deserialize launchBrowserInCompanion event");
+                        log::error!("无法反序列化 launchBrowserInCompanion 事件");
                         return;
                     };
                     self.launch_browser_for_remote_server(request, cx);
                 } else if event.event == "killCompanionBrowser" {
                     let Some(request) = serde_json::from_value(event.body).ok() else {
-                        log::error!("failed to deserialize killCompanionBrowser event");
+                        log::error!("无法反序列化 killCompanionBrowser 事件");
                         return;
                     };
                     self.kill_browser(request, cx);
@@ -1668,7 +1668,7 @@ impl Session {
         const {
             assert!(
                 T::CACHEABLE,
-                "Only requests marked as cacheable should invoke `fetch`"
+                "只有标记为可缓存的请求才能调用 `fetch`"
             );
         }
 
@@ -1725,11 +1725,11 @@ impl Session {
     ) -> Task<Option<T::Response>> {
         if !T::is_supported(capabilities) {
             log::warn!(
-                "Attempted to send a DAP request that isn't supported: {:?}",
+                "尝试发送不支持的 DAP 请求:{:?}",
                 request
             );
             let error = Err(anyhow::Error::msg(
-                "Couldn't complete request because it's not supported",
+                "无法完成请求,因为不支持该请求",
             ));
             return cx.spawn(async move |this, cx| {
                 this.update(cx, |this, cx| process_result(this, error, cx))
@@ -2043,7 +2043,7 @@ impl Session {
                 .send_exception_breakpoints(exception_filters, supports_exception_filters)
                 .detach_and_log_err(cx);
         } else {
-            debug_assert!(false, "Not implemented");
+            debug_assert!(false, "未实现");
         }
     }
 
@@ -2275,7 +2275,7 @@ impl Session {
             anyhow::Ok(
                 task.await
                     .map(|response| response.targets)
-                    .context("failed to fetch completions")?,
+                    .context("无法获取补全")?,
             )
         })
     }
@@ -2481,7 +2481,7 @@ impl Session {
                             });
                     debug_assert!(
                         matches!(entry, indexmap::map::Entry::Occupied(_)),
-                        "Sent request for thread_id that doesn't exist"
+                        "为不存在的 thread_id 发送了请求"
                     );
                     if let Ok(stack_frames) = stack_frames {
                         this.active_snapshot.stack_frames.extend(
@@ -2550,7 +2550,7 @@ impl Session {
 
                     debug_assert!(
                         matches!(entry, indexmap::map::Entry::Occupied(_)),
-                        "Sent scopes request for stack_frame_id that doesn't exist or hasn't been fetched"
+                        "为不存在或尚未获取的 stack_frame_id 发送了 scopes 请求"
                     );
                 },
                 cx,
@@ -2880,7 +2880,7 @@ impl Session {
         cx: &mut Context<Self>,
     ) {
         let Some(remote_client) = self.remote_client.clone() else {
-            log::error!("can't launch browser in companion for non-remote project");
+            log::error!("无法为非远程项目在 companion 中启动浏览器");
             return;
         };
         let Some(http_client) = self.http_client.clone() else {
@@ -2903,7 +2903,7 @@ impl Session {
             } else {
                 let port = TcpTransport::unused_port(IpAddr::V4(Ipv4Addr::LOCALHOST))
                     .await
-                    .context("getting port for DAP")?;
+                    .context("正在获取 DAP 端口")?;
                 request
                     .other
                     .insert("proxyUri".into(), format!("127.0.0.1:{port}").into());
@@ -2923,7 +2923,7 @@ impl Session {
                         .args(command.args)
                         .envs(command.env)
                         .spawn()
-                        .context("spawning port forwarding process")?;
+                        .context("正在生成端口转发进程")?;
                     anyhow::Ok(child)
                 })?;
                 Some(child)
@@ -2942,7 +2942,7 @@ impl Session {
                         }
                         Err(e) => {
                             console_output
-                                .send(format!("Failed to launch browser companion process: {e}"))
+                                .send(format!("无法启动浏览器 companion 进程:{e}"))
                                 .await
                                 .ok();
                             return Err(e);
@@ -2966,7 +2966,7 @@ impl Session {
                             && n > 0
                         {
                             console_output
-                                .send(format!("companion stderr: {line}"))
+                                .send(format!("companion 标准错误:{line}"))
                                 .await
                                 .ok();
                             line.clear();
@@ -2979,13 +2979,13 @@ impl Session {
                         Ok(status) => {
                             if status.success() {
                                 console_output
-                                    .send("Companion process exited normally".into())
+                                    .send("Companion 进程正常退出".into())
                                     .await
                                     .ok();
                             } else {
                                 console_output
                                     .send(format!(
-                                        "Companion process exited abnormally with {status:?}"
+                                        "Companion 进程异常退出,状态为 {status:?}"
                                     ))
                                     .await
                                     .ok();
@@ -2993,7 +2993,7 @@ impl Session {
                         }
                         Err(e) => {
                             console_output
-                                .send(format!("Failed to join companion process: {e}"))
+                                .send(format!("无法加入 companion 进程:{e}"))
                                 .await
                                 .ok();
                         }
@@ -3016,17 +3016,17 @@ impl Session {
             }
             if !companion_started {
                 console_output
-                    .send("Browser companion failed to start".into())
+                    .send("浏览器 companion 启动失败".into())
                     .await
                     .ok();
-                bail!("Browser companion failed to start");
+                bail!("浏览器 companion 启动失败");
             }
 
             let response = http_client
                 .post_json(
                     &format!("http://{companion_address}/launch-and-attach"),
                     serde_json::to_string(&request)
-                        .context("serializing request")?
+                        .context("正在序列化请求")?
                         .into(),
                 )
                 .await;
@@ -3034,15 +3034,15 @@ impl Session {
                 Ok(response) => {
                     if !response.status().is_success() {
                         console_output
-                            .send("Launch request to companion failed".into())
+                            .send("向 companion 发送启动请求失败".into())
                             .await
                             .ok();
-                        return Err(anyhow!("launch request failed"));
+                        return Err(anyhow!("启动请求失败"));
                     }
                 }
                 Err(e) => {
                     console_output
-                        .send("Failed to read response from companion".into())
+                        .send("无法从 companion 读取响应".into())
                         .await
                         .ok();
                     return Err(e);
@@ -3063,7 +3063,7 @@ impl Session {
 
     fn kill_browser(&self, request: KillCompanionBrowserParams, cx: &mut App) {
         let Some(companion_port) = self.companion_port else {
-            log::error!("received killCompanionBrowser but js-debug-companion is not running");
+            log::error!("收到 killCompanionBrowser 但 js-debug-companion 未在运行");
             return;
         };
         let Some(http_client) = self.http_client.clone() else {
@@ -3075,7 +3075,7 @@ impl Session {
                 .post_json(
                     &format!("http://127.0.0.1:{companion_port}/kill"),
                     serde_json::to_string(&request)
-                        .context("serializing request")?
+                        .context("正在序列化请求")?
                         .into(),
                 )
                 .await?;
@@ -3107,16 +3107,16 @@ async fn spawn_companion(
     let binary_path = node_runtime
         .binary_path()
         .await
-        .context("getting node path")?;
+        .context("正在获取 node 路径")?;
     let path = cx
         .spawn(async move |cx| get_or_install_companion(node_runtime, cx).await)
         .await?;
-    log::info!("will launch js-debug-companion version {path:?}");
+    log::info!("将启动 js-debug-companion 版本 {path:?}");
 
     let port = {
         let listener = TcpListener::bind("127.0.0.1:0")
             .await
-            .context("getting port for companion")?;
+            .context("正在获取 companion 端口")?;
         listener.local_addr()?.port()
     };
 
@@ -3135,7 +3135,7 @@ async fn spawn_companion(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .context("spawning companion child process")?;
+        .context("正在生成 companion 子进程")?;
 
     Ok((port, child))
 }
@@ -3144,19 +3144,19 @@ async fn get_or_install_companion(node: NodeRuntime, cx: &mut AsyncApp) -> Resul
     const PACKAGE_NAME: &str = "@zed-industries/js-debug-companion-cli";
 
     async fn install_latest_version(dir: PathBuf, node: NodeRuntime) -> Result<PathBuf> {
-        let temp_dir = tempfile::tempdir().context("creating temporary directory")?;
+        let temp_dir = tempfile::tempdir().context("正在创建临时目录")?;
         node.npm_install_latest_packages(temp_dir.path(), &[PACKAGE_NAME])
             .await
-            .context("installing latest companion package")?;
+            .context("正在安装最新的 companion 包")?;
         let version = node
             .npm_package_installed_version(temp_dir.path(), PACKAGE_NAME)
             .await
-            .context("getting installed companion version")?
-            .context("companion was not installed")?;
+            .context("正在获取已安装的 companion 版本")?
+            .context("companion 未安装")?;
         let version_folder = dir.join(version.to_string());
         smol::fs::rename(temp_dir.path(), &version_folder)
             .await
-            .context("moving companion package into place")?;
+            .context("正在将 companion 包移动到目标位置")?;
         Ok(version_folder)
     }
 
@@ -3168,14 +3168,14 @@ async fn get_or_install_companion(node: NodeRuntime, cx: &mut AsyncApp) -> Resul
             async move {
                 smol::fs::create_dir_all(&dir)
                     .await
-                    .context("creating companion installation directory")?;
+                    .context("正在创建 companion 安装目录")?;
 
                 let children = smol::fs::read_dir(&dir)
                     .await
-                    .context("reading companion installation directory")?
+                    .context("正在读取 companion 安装目录")?
                     .try_collect::<Vec<_>>()
                     .await
-                    .context("reading companion installation directory entries")?;
+                    .context("正在读取 companion 安装目录条目")?;
 
                 let latest_installed_version = children
                     .iter()

@@ -1666,7 +1666,7 @@ mod tests {
     #[test]
     fn test_extract_terminal_command_prefix_includes_env_var_prefix_and_subcommand() {
         let prefix = extract_terminal_command_prefix("PAGER=blah git log --oneline")
-            .expect("expected terminal command prefix");
+            .expect("应为终端命令前缀");
 
         assert_eq!(
             prefix,
@@ -1688,7 +1688,7 @@ mod tests {
     fn test_extract_terminal_command_prefix_preserves_required_assignment_quotes_in_display_and_normalized()
      {
         let prefix = extract_terminal_command_prefix("PAGER='less -R' git log")
-            .expect("expected terminal command prefix");
+            .expect("应为终端命令前缀");
 
         assert_eq!(
             prefix,
@@ -1709,7 +1709,7 @@ mod tests {
     #[test]
     fn test_extract_terminal_command_prefix_skips_redirects_before_subcommand() {
         let prefix = extract_terminal_command_prefix("git 2>/dev/null log --oneline")
-            .expect("expected terminal command prefix");
+            .expect("应为终端命令前缀");
 
         assert_eq!(
             prefix,

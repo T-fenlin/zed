@@ -61,13 +61,13 @@ pub fn record_created_worktree(
     let key = record_key(worktree_path, remote);
     let value = created_at
         .duration_since(UNIX_EPOCH)
-        .context("worktree creation time predates the unix epoch")
+        .context("工作树创建时间早于 Unix 纪元")
         .and_then(|duration| {
             serde_json::to_string(&CreatedWorktreeRecord {
                 created_at_seconds: duration.as_secs(),
                 created_at_subsec_nanos: duration.subsec_nanos(),
             })
-            .context("failed to serialize created worktree record")
+            .context("无法序列化已创建的工作树记录")
         });
     async move { store.scoped(NAMESPACE).write(key, value?).await }
 }
@@ -122,7 +122,7 @@ pub async fn record_created_worktree_for_repo(
         }
         Err(_) => {
             log::warn!(
-                "Worktree creation time lookup was canceled for {}",
+                "已取消对 {} 的工作树创建时间查询",
                 worktree_path.display()
             );
             return;
@@ -131,7 +131,7 @@ pub async fn record_created_worktree_for_repo(
     let record = cx.update(|cx| record_created_worktree(worktree_path, remote, created_at, cx));
     if let Err(error) = record.await {
         log::warn!(
-            "Failed to record created worktree {}: {error:#}",
+            "无法记录已创建的工作树 {}: {error:#}",
             worktree_path.display()
         );
     }

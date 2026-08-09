@@ -383,7 +383,7 @@ impl Column for DataType {
         let data_type = match value.as_str() {
             "json" => DataType::Json,
             "zstd" => DataType::Zstd,
-            _ => anyhow::bail!("Unknown data type: {}", value),
+            _ => anyhow::bail!("未知数据类型: {}", value),
         };
         Ok((data_type, next_index))
     }
@@ -450,7 +450,7 @@ impl ThreadsDatabase {
                 data BLOB NOT NULL
             )
         "})?()
-        .map_err(|e| e.context("Failed to create threads table"))?;
+        .map_err(|e| e.context("无法创建对话线程表"))?;
 
         if let Ok(mut s) = connection.exec(indoc! {"
             ALTER TABLE threads ADD COLUMN parent_id TEXT
@@ -649,7 +649,7 @@ impl ThreadsDatabase {
         match Self::deserialize_thread(data_type, data) {
             Ok(thread) => thread.sandboxed_terminal_temp_dir,
             Err(error) => {
-                log::warn!("failed to deserialize thread before deleting it: {error:#}");
+                log::warn!("删除前反序列化对话线程失败: {error:#}");
                 None
             }
         }
@@ -661,7 +661,7 @@ impl ThreadsDatabase {
             Err(error) if error.kind() == ErrorKind::NotFound => {}
             Err(error) => {
                 log::warn!(
-                    "failed to remove sandboxed terminal temp directory {}: {error}",
+                    "无法删除沙盒终端临时目录 {}: {error}",
                     temp_dir.display()
                 );
             }
@@ -775,8 +775,8 @@ mod tests {
             version: SharedThread::VERSION.to_string(),
         };
 
-        let bytes = original.to_bytes().expect("Failed to serialize");
-        let restored = SharedThread::from_bytes(&bytes).expect("Failed to deserialize");
+        let bytes = original.to_bytes().expect("序列化失败");
+        let restored = SharedThread::from_bytes(&bytes).expect("反序列化失败");
 
         assert_eq!(restored.title, original.title);
         assert_eq!(restored.version, original.version);
@@ -873,7 +873,7 @@ mod tests {
         );
         assert!(
             entries[0].created_at.is_some(),
-            "created_at should be populated"
+            "created_at 应已填充"
         );
     }
 
@@ -885,11 +885,11 @@ mod tests {
             "updated_at": "2024-01-01T00:00:00Z"
         }"#;
 
-        let db_thread: DbThread = serde_json::from_str(json).expect("Failed to deserialize");
+        let db_thread: DbThread = serde_json::from_str(json).expect("反序列化失败");
 
         assert!(
             db_thread.subagent_context.is_none(),
-            "Legacy threads without subagent_context should default to None"
+            "没有 subagent_context 的旧版对话线程应默认为 None"
         );
     }
 
@@ -901,11 +901,11 @@ mod tests {
             "updated_at": "2024-01-01T00:00:00Z"
         }"#;
 
-        let db_thread: DbThread = serde_json::from_str(json).expect("Failed to deserialize");
+        let db_thread: DbThread = serde_json::from_str(json).expect("反序列化失败");
 
         assert!(
             db_thread.draft_prompt.is_none(),
-            "Legacy threads without draft_prompt field should default to None"
+            "没有 draft_prompt 字段的旧版对话线程应默认为 None"
         );
     }
 
@@ -917,11 +917,11 @@ mod tests {
             "updated_at": "2024-01-01T00:00:00Z"
         }"#;
 
-        let db_thread: DbThread = serde_json::from_str(json).expect("Failed to deserialize");
+        let db_thread: DbThread = serde_json::from_str(json).expect("反序列化失败");
 
         assert!(
             db_thread.sandboxed_terminal_temp_dir.is_none(),
-            "Legacy threads without sandboxed_terminal_temp_dir should default to None"
+            "没有 sandboxed_terminal_temp_dir 的旧版对话线程应默认为 None"
         );
     }
 
@@ -933,12 +933,12 @@ mod tests {
             "updated_at": "2024-01-01T00:00:00Z"
         }"#;
 
-        let db_thread: DbThread = serde_json::from_str(json).expect("Failed to deserialize");
+        let db_thread: DbThread = serde_json::from_str(json).expect("反序列化失败");
 
         assert_eq!(
             db_thread.sandbox_grants,
             DbSandboxGrants::default(),
-            "Legacy threads without sandbox_grants should default to empty grants"
+            "没有 sandbox_grants 的旧版对话线程应默认为空授权"
         );
     }
 
@@ -978,7 +978,7 @@ mod tests {
             .load_thread(thread_id)
             .await
             .unwrap()
-            .expect("thread should exist");
+            .expect("对话线程应存在");
         assert_eq!(loaded.sandbox_grants, grants);
     }
 
@@ -1008,7 +1008,7 @@ mod tests {
             .load_thread(thread_id)
             .await
             .unwrap()
-            .expect("thread should exist");
+            .expect("对话线程应存在");
         assert_eq!(loaded.sandboxed_terminal_temp_dir, Some(temp_dir.clone()));
         std::fs::remove_dir_all(temp_dir).unwrap();
     }
@@ -1119,11 +1119,11 @@ mod tests {
             .load_thread(child_id)
             .await
             .unwrap()
-            .expect("thread should exist");
+            .expect("对话线程应存在");
 
         let context = loaded
             .subagent_context
-            .expect("subagent_context should be restored");
+            .expect("subagent_context 应被恢复");
         assert_eq!(context.parent_thread_id, parent_id);
         assert_eq!(context.depth, 2);
     }
@@ -1147,11 +1147,11 @@ mod tests {
             .load_thread(thread_id)
             .await
             .unwrap()
-            .expect("thread should exist");
+            .expect("对话线程应存在");
 
         assert!(
             loaded.subagent_context.is_none(),
-            "Regular threads should have no subagent_context"
+            "普通对话线程不应有 subagent_context"
         );
     }
 
@@ -1206,11 +1206,11 @@ mod tests {
             "updated_at": "2024-01-01T00:00:00Z"
         }"#;
 
-        let db_thread: DbThread = serde_json::from_str(json).expect("Failed to deserialize");
+        let db_thread: DbThread = serde_json::from_str(json).expect("反序列化失败");
 
         assert!(
             db_thread.ui_scroll_position.is_none(),
-            "Legacy threads without scroll_position field should default to None"
+            "没有 scroll_position 字段的旧版对话线程应默认为 None"
         );
     }
 
@@ -1238,11 +1238,11 @@ mod tests {
             .load_thread(thread_id)
             .await
             .unwrap()
-            .expect("thread should exist");
+            .expect("对话线程应存在");
 
         let scroll = loaded
             .ui_scroll_position
-            .expect("scroll_position should be restored");
+            .expect("scroll_position 应被恢复");
         assert_eq!(scroll.item_ix, 42);
         assert!((scroll.offset_in_item - 13.5).abs() < f32::EPSILON);
     }

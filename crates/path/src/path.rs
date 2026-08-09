@@ -114,14 +114,14 @@ impl PathStyle {
         let left = left
             .as_ref()
             .to_str()
-            .ok_or_else(|| anyhow::anyhow!("Path contains invalid UTF-8"))?;
+            .ok_or_else(|| anyhow::anyhow!("路径包含无效的 UTF-8"))?;
         let right = right.as_ref();
         let right_string = right
             .to_str()
-            .ok_or_else(|| anyhow::anyhow!("Path contains invalid UTF-8"))?;
+            .ok_or_else(|| anyhow::anyhow!("路径包含无效的 UTF-8"))?;
         let joined = self
             .join(left, right_string)
-            .ok_or_else(|| anyhow::anyhow!("Path must be relative: {right:?}"))?;
+            .ok_or_else(|| anyhow::anyhow!("路径必须是相对路径: {right:?}"))?;
         Ok(PathBuf::from(self.normalize(&joined)))
     }
 

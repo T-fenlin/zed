@@ -198,7 +198,7 @@ pub async fn run_randomized_test<T: RandomizedTest>(
     }
 
     if let Some(path) = plan_save_path() {
-        eprintln!("saved test plan to path {:?}", path);
+        eprintln!("测试计划已保存至路径 {:?}", path);
         std::fs::write(path, plan.lock().serialize()).unwrap();
     }
 }
@@ -207,7 +207,7 @@ pub fn save_randomized_test_plan() {
     if let Some(serialize_plan) = LAST_PLAN.lock().take()
         && let Some(path) = plan_save_path()
     {
-        eprintln!("saved test plan to path {:?}", path);
+        eprintln!("测试计划已保存至路径 {:?}", path);
         std::fs::write(path, serialize_plan()).unwrap();
     }
 }
@@ -257,7 +257,7 @@ impl<T: RandomizedTest> TestPlan<T> {
             let json = LOADED_PLAN_JSON
                 .lock()
                 .get_or_insert_with(|| {
-                    eprintln!("loaded test plan from path {:?}", path);
+                    eprintln!("已从路径 {:?} 加载测试计划", path);
                     std::fs::read(path).unwrap()
                 })
                 .clone();
@@ -481,7 +481,7 @@ impl<T: RandomizedTest> TestPlan<T> {
                     user.online = true;
                     username = user.username.clone();
                 };
-                log::info!("adding new connection for {}", username);
+                log::info!("正在为 {} 添加新连接", username);
 
                 let mut client_cx = cx.new_app();
 
@@ -495,13 +495,13 @@ impl<T: RandomizedTest> TestPlan<T> {
                     Self::simulate_client(plan.clone(), client, operation_rx, client_cx);
                 client_tasks.push(foreground_executor.spawn(simulate_client));
 
-                log::info!("added connection for {}", username);
+                log::info!("已为 {} 添加连接", username);
             }
 
             ServerOperation::RemoveConnection {
                 user_id: removed_user_id,
             } => {
-                log::info!("simulating full disconnection of user {}", removed_user_id);
+                log::info!("正在模拟用户 {} 的完全断开连接", removed_user_id);
                 let client_ix = clients
                     .iter()
                     .position(|(client, cx)| client.current_user_id(cx) == removed_user_id);
@@ -521,7 +521,7 @@ impl<T: RandomizedTest> TestPlan<T> {
                 server.forbid_connections();
                 server.disconnect_client(removed_peer_id);
                 deterministic.advance_clock(RECEIVE_TIMEOUT + RECONNECT_TIMEOUT);
-                log::info!("waiting for user {} to exit...", removed_user_id);
+                log::info!("正在等待用户 {} 退出...", removed_user_id);
                 client_task.await;
                 server.allow_connections();
 
@@ -529,7 +529,7 @@ impl<T: RandomizedTest> TestPlan<T> {
                     project.read_with(&client_cx, |project, cx| {
                         assert!(
                             project.is_disconnected(cx),
-                            "project {:?} should be read only",
+                            "项目 {:?} 应为只读",
                             project.remote_id()
                         )
                     });
@@ -553,7 +553,7 @@ impl<T: RandomizedTest> TestPlan<T> {
                     }
                 }
 
-                log::info!("{} removed", client.username);
+                log::info!("{} 已移除", client.username);
                 plan.lock().user(removed_user_id).online = false;
                 client_cx.update(|cx| {
                     for window in cx.windows() {
@@ -569,7 +569,7 @@ impl<T: RandomizedTest> TestPlan<T> {
             }
 
             ServerOperation::BounceConnection { user_id } => {
-                log::info!("simulating temporary disconnection of user {}", user_id);
+                log::info!("正在模拟用户 {} 的临时断开连接", user_id);
                 let user_connection_ids = server
                     .connection_pool
                     .lock()
@@ -585,7 +585,7 @@ impl<T: RandomizedTest> TestPlan<T> {
             }
 
             ServerOperation::RestartServer => {
-                log::info!("simulating server restart");
+                log::info!("正在模拟服务器重启");
                 server.reset().await;
                 deterministic.advance_clock(RECEIVE_TIMEOUT);
                 server.start().await.unwrap();
@@ -613,7 +613,7 @@ impl<T: RandomizedTest> TestPlan<T> {
                     let Some(client_ix) = client_ix else { continue };
                     applied = true;
                     if let Err(err) = operation_channels[client_ix].unbounded_send(batch_id) {
-                        log::error!("error signaling user {user_id}: {err}");
+                        log::error!("向用户 {user_id} 发送信号时出错:{err}");
                     }
                 }
 
@@ -647,15 +647,15 @@ impl<T: RandomizedTest> TestPlan<T> {
                 Ok(()) => {}
                 Err(TestError::Inapplicable) => {
                     applied.store(false, SeqCst);
-                    log::info!("skipped operation");
+                    log::info!("已跳过操作");
                 }
                 Err(TestError::Other(error)) => {
-                    log::error!("{} error: {}", client.username, error);
+                    log::error!("{} 错误:{}", client.username, error);
                 }
             }
             cx.executor().simulate_random_delay().await;
         }
-        log::info!("{}: done", client.username);
+        log::info!("{}:完成", client.username);
     }
 
     fn user(&mut self, user_id: UserId) -> &mut UserTestPlan {

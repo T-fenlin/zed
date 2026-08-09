@@ -122,18 +122,18 @@ impl UpstreamProxy {
         };
 
         let parsed = Url::parse(&normalized)
-            .with_context(|| format!("parsing upstream proxy url '{url}'"))?;
+            .with_context(|| format!("解析上游代理 URL '{url}'"))?;
 
         if parsed.scheme() != "http" {
             bail!(
-                "unsupported upstream proxy scheme '{}://' in '{url}': only http:// is supported",
+                "不支持上游代理协议 '{}://'(位于 '{url}'):仅支持 http://",
                 parsed.scheme()
             );
         }
 
         let host = parsed
             .host_str()
-            .ok_or_else(|| anyhow!("upstream proxy url '{url}' has no host"))?;
+            .ok_or_else(|| anyhow!("上游代理 URL '{url}' 缺少主机名"))?;
         // Brackets around IPv6 literals are URL syntax, not part of the
         // address; strip them so the host can be handed to
         // `ToSocketAddrs` (which rejects bracketed forms).
@@ -147,7 +147,7 @@ impl UpstreamProxy {
         // both as port 80.
         let port = parsed
             .port_or_known_default()
-            .ok_or_else(|| anyhow!("upstream proxy url '{url}' must include a port"))?;
+            .ok_or_else(|| anyhow!("上游代理 URL '{url}' 必须包含端口"))?;
 
         let auth = if parsed.username().is_empty() {
             None
@@ -275,13 +275,13 @@ mod tests {
     #[test]
     fn rejects_non_http_scheme() {
         let err = UpstreamProxy::parse(Some("https://corp.proxy:3128"), None).unwrap_err();
-        assert!(format!("{err}").contains("unsupported upstream proxy scheme"));
+        assert!(format!("{err}").contains("不支持的上游代理协议"));
     }
 
     #[test]
     fn defaults_to_port_80() {
         // `Url::port` elides scheme-default ports, so both of these must
-        // come out as 80 rather than "missing port" errors.
+        // come out as 80 rather than "缺少端口" errors.
         assert_eq!(parse("http://corp.proxy").port, 80);
         assert_eq!(parse("http://corp.proxy:80").port, 80);
     }

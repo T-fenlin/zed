@@ -45,7 +45,7 @@ impl<'de> Deserialize<'de> for FontFeaturesContent {
             type Value = FontFeaturesContent;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a map of font features")
+                formatter.write_str("字体特性映射表")
             }
 
             fn visit_map<M>(self, mut access: M) -> Result<Self::Value, M::Error>
@@ -58,7 +58,7 @@ impl<'de> Deserialize<'de> for FontFeaturesContent {
                     access.next_entry::<String, Option<FeatureValue>>()?
                 {
                     if !is_valid_feature_tag(&key) {
-                        log::error!("Incorrect font feature tag: {}", key);
+                        log::error!("字体特性标签不正确: {}", key);
                         continue;
                     }
                     if let Some(value) = value {
@@ -71,7 +71,7 @@ impl<'de> Deserialize<'de> for FontFeaturesContent {
                                     feature_map.insert(key, value.as_u64().unwrap() as u32);
                                 } else {
                                     log::error!(
-                                        "Incorrect font feature value {} for feature tag {}",
+                                        "字体特性标签 {} 的值 {} 不正确",
                                         value,
                                         key
                                     );
@@ -523,7 +523,7 @@ where
     let value = f32::deserialize(deserializer)?;
     if value < 1.0 {
         return Err(serde::de::Error::custom(
-            "buffer_line_height.custom must be at least 1.0",
+            "buffer_line_height.custom 必须至少为 1.0",
         ));
     }
 
@@ -1433,7 +1433,7 @@ impl schemars::JsonSchema for FontWeightContent {
             "minimum": Self::THIN.0,
             "maximum": Self::BLACK.0,
             "default": Self::NORMAL.0,
-            "description": "Font weight value between 100 (thin) and 900 (black)"
+            "description": "字体粗细值,介于 100(细)和 900(黑)之间"
         })
     }
 }
@@ -1470,21 +1470,21 @@ mod tests {
                 .err()
                 .unwrap()
                 .to_string()
-                .contains("buffer_line_height.custom must be at least 1.0")
+                .contains("buffer_line_height.custom 必须至少为 1.0")
         );
         assert!(
             serde_json::from_value::<BufferLineHeight>(json!({"custom": 0.0}))
                 .err()
                 .unwrap()
                 .to_string()
-                .contains("buffer_line_height.custom must be at least 1.0")
+                .contains("buffer_line_height.custom 必须至少为 1.0")
         );
         assert!(
             serde_json::from_value::<BufferLineHeight>(json!({"custom": -1.0}))
                 .err()
                 .unwrap()
                 .to_string()
-                .contains("buffer_line_height.custom must be at least 1.0")
+                .contains("buffer_line_height.custom 必须至少为 1.0")
         );
     }
 
@@ -1500,14 +1500,14 @@ mod tests {
 
         assert!(
             buffer_font_weight.get("default").is_some(),
-            "buffer_font_weight should have a default value in the schema"
+            "buffer_font_weight 在模式中应具有默认值"
         );
 
         let default_value = &buffer_font_weight["default"];
         assert_eq!(
             default_value.as_f64(),
             Some(FontWeightContent::NORMAL.0 as f64),
-            "buffer_font_weight default should be 400.0 (FontWeightContent::NORMAL)"
+            "buffer_font_weight 默认值应为 400.0 (FontWeightContent::NORMAL)"
         );
 
         let defs = &schema_value["$defs"];
@@ -1516,17 +1516,17 @@ mod tests {
         assert_eq!(
             font_weight_def["minimum"].as_f64(),
             Some(FontWeightContent::THIN.0 as f64),
-            "FontWeightContent should have minimum of 100.0"
+            "FontWeightContent 的最小值应为 100.0"
         );
         assert_eq!(
             font_weight_def["maximum"].as_f64(),
             Some(FontWeightContent::BLACK.0 as f64),
-            "FontWeightContent should have maximum of 900.0"
+            "FontWeightContent 的最大值应为 900.0"
         );
         assert_eq!(
             font_weight_def["default"].as_f64(),
             Some(FontWeightContent::NORMAL.0 as f64),
-            "FontWeightContent should have default of 400.0"
+            "FontWeightContent 的默认值应为 400.0"
         );
     }
 }

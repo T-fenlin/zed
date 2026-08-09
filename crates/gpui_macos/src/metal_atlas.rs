@@ -51,7 +51,7 @@ impl PlatformAtlas for MetalAtlas {
             };
             let tile = lock
                 .allocate(size, key.texture_kind())
-                .context("failed to allocate")?;
+                .context("分配失败")?;
             let texture = lock.texture(tile.texture_id);
             texture.upload(tile.bounds, &bytes);
             lock.tiles_by_key.insert(key.clone(), tile);

@@ -90,7 +90,7 @@ mod tests {
                             vec![save1_text, save2_text],
                         );
 
-                        anyhow::bail!("Failed second save point :(")
+                        anyhow::bail!("第二个保存点失败 :(")
                     })
                     .err()
                     .is_some()

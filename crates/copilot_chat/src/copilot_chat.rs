@@ -145,7 +145,7 @@ where
         .filter_map(|value| match serde_json::from_value::<Model>(value) {
             Ok(model) => Some(model),
             Err(err) => {
-                log::warn!("GitHub Copilot Chat model failed to deserialize: {:?}", err);
+                log::warn!("GitHub Copilot Chat 模型反序列化失败:{:?}", err);
                 None
             }
         })
@@ -664,7 +664,7 @@ impl CopilotChat {
                         cx,
                     )
                     .await
-                    .context("writing Copilot agent credentials to the keychain")?;
+                    .context("正在将 Copilot 代理凭据写入钥匙串")?;
 
                 this.update(cx, |this, cx| {
                     this.oauth_token = Some(token);
@@ -679,7 +679,7 @@ impl CopilotChat {
             .await;
 
             if let Err(error) = result {
-                log::error!("Copilot agent sign-in failed: {error:#}");
+                log::error!("Copilot 代理登录失败:{error:#}");
                 this.update(cx, |this, cx| {
                     this.status = CopilotChatStatus::Error(error.to_string().into());
                     cx.notify();
@@ -705,7 +705,7 @@ impl CopilotChat {
             credentials_provider
                 .delete_credentials(COPILOT_AGENT_CREDENTIALS_URL, cx)
                 .await
-                .context("deleting Copilot agent credentials from the keychain")?;
+                .context("正在从钥匙串删除 Copilot 代理凭据")?;
             anyhow::Ok(())
         })
     }
@@ -720,7 +720,7 @@ impl CopilotChat {
         })?;
 
         let oauth_token = oauth_token
-            .ok_or_else(|| anyhow!("OAuth token is missing while updating Copilot Chat models"))?;
+            .ok_or_else(|| anyhow!("更新 Copilot Chat 模型时缺少 OAuth 令牌"))?;
 
         let api_endpoint =
             Self::resolve_api_endpoint(&this, &oauth_token, &configuration, &client, cx).await?;
@@ -830,7 +830,7 @@ impl CopilotChat {
                 )
             });
 
-        let oauth_token = oauth_token.context("No OAuth token available")?;
+        let oauth_token = oauth_token.context("没有可用的 OAuth 令牌")?;
 
         let api_endpoint = match api_endpoint {
             Some(endpoint) => endpoint,
@@ -956,7 +956,7 @@ pub(crate) async fn discover_api_endpoint(
 
     anyhow::ensure!(
         response.status().is_success(),
-        "GraphQL endpoint discovery failed: {}",
+        "GraphQL 端点发现失败:{}",
         response.status()
     );
 
@@ -965,11 +965,11 @@ pub(crate) async fn discover_api_endpoint(
     let body_str = std::str::from_utf8(&body)?;
 
     let parsed: GraphQLResponse = serde_json::from_str(body_str)
-        .context("Failed to parse GraphQL response for Copilot endpoint discovery")?;
+        .context("解析 Copilot 端点发现的 GraphQL 响应失败")?;
 
     let data = parsed
         .data
-        .context("GraphQL response contained no data field")?;
+        .context("GraphQL 响应不包含数据字段")?;
 
     Ok(data.viewer.copilot_endpoints.api)
 }
@@ -1025,7 +1025,7 @@ async fn request_models(
 
     anyhow::ensure!(
         response.status().is_success(),
-        "Failed to request models: {}",
+        "请求模型失败:{}",
         response.status()
     );
     let mut body = Vec::new();
@@ -1078,7 +1078,7 @@ async fn stream_completion(
         response.body_mut().read_to_end(&mut body).await?;
         let body_str = std::str::from_utf8(&body)?;
         anyhow::bail!(
-            "Failed to connect to API: {} {}",
+            "无法连接到 API:{} {}",
             response.status(),
             body_str
         );
@@ -1147,7 +1147,7 @@ async fn stream_messages(
     if !response.status().is_success() {
         let mut body = String::new();
         response.body_mut().read_to_string(&mut body).await?;
-        anyhow::bail!("Failed to connect to API: {} {}", response.status(), body);
+        anyhow::bail!("无法连接到 API:{} {}", response.status(), body);
     }
 
     let reader = BufReader::new(response.into_body());
@@ -1259,7 +1259,7 @@ mod tests {
                   "object": "model",
                   "policy": {
                     "state": "enabled",
-                    "terms": "Enable access to the latest Claude 3.7 Sonnet model from Anthropic. [Learn more about how GitHub Copilot serves Claude 3.7 Sonnet](https://docs.github.com/copilot/using-github-copilot/using-claude-sonnet-in-github-copilot)."
+                    "terms": "启用对 Anthropic 最新 Claude 3.7 Sonnet 模型的访问权限。[了解 GitHub Copilot 如何提供 Claude 3.7 Sonnet](https://docs.github.com/copilot/using-github-copilot/using-claude-sonnet-in-github-copilot)。"
                   },
                   "preview": false,
                   "vendor": "Anthropic",
@@ -1397,7 +1397,7 @@ mod tests {
                   "object": "model",
                   "policy": {
                     "state": "pending",
-                    "terms": "Enable access to Claude models from Anthropic."
+                    "terms": "启用对 Anthropic Claude 模型的访问权限。"
                   },
                   "preview": false,
                   "vendor": "Anthropic",
@@ -1420,7 +1420,7 @@ mod tests {
                   "object": "model",
                   "policy": {
                     "state": "requires_consent",
-                    "terms": "Enable access to Claude models from Anthropic."
+                    "terms": "启用对 Anthropic Claude 模型的访问权限。"
                   },
                   "preview": false,
                   "vendor": "Anthropic",

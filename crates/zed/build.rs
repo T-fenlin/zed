@@ -14,7 +14,7 @@ fn main() {
             if let Some(libdir) = pkg_config::get_variable(lib, "libdir").ok() {
                 rpath_dirs.insert(libdir);
             } else {
-                eprintln!("zed build.rs: {lib} not found in pkg-config's path");
+                eprintln!("zed build.rs: 在 pkg-config 的路径中未找到 {lib}");
             }
         }
 
@@ -78,7 +78,7 @@ fn main() {
         {
             // This is currently the best way to make `cargo build ...`'s build script
             // to print something to stdout without extra verbosity.
-            println!("cargo::warning=Info: using '{git_sha}' hash for ZED_COMMIT_SHA env var");
+            println!("cargo::warning=信息: 使用 '{git_sha}' 哈希作为 ZED_COMMIT_SHA 环境变量");
         }
     }
 
@@ -95,7 +95,7 @@ fn main() {
                 .parent()
                 .and_then(|p| p.parent())
                 .and_then(|p| p.parent())
-                .expect("Failed to find target directory");
+                .expect("无法找到目标目录");
 
             let conpty_dll_target = target_dir.join("conpty.dll");
             let open_console_target = target_dir.join("OpenConsole.exe");
@@ -121,7 +121,7 @@ fn main() {
 
             match download_result {
                 Ok(output) if output.status.success() => {
-                    println!("Downloaded conpty nupkg successfully");
+                    println!("成功下载 conpty nupkg");
 
                     let extract_script = format!(
                         "$ProgressPreference = 'SilentlyContinue'; Expand-Archive -Path '{}' -DestinationPath '{}' -Force",
@@ -152,10 +152,10 @@ fn main() {
 
                             match std::fs::copy(&conpty_dll_source, &conpty_dll_target) {
                                 Ok(_) => {
-                                    println!("Copied conpty.dll to {}", conpty_dll_target.display())
+                                    println!("已将 conpty.dll 复制到 {}", conpty_dll_target.display())
                                 }
                                 Err(e) => println!(
-                                    "cargo::warning=Failed to copy conpty.dll from {}: {}",
+                                    "cargo::warning=从 {} 复制 conpty.dll 失败: {}",
                                     conpty_dll_source.display(),
                                     e
                                 ),
@@ -163,11 +163,11 @@ fn main() {
 
                             match std::fs::copy(&open_console_source, &open_console_target) {
                                 Ok(_) => println!(
-                                    "Copied OpenConsole.exe to {}",
+                                    "已将 OpenConsole.exe 复制到 {}",
                                     open_console_target.display()
                                 ),
                                 Err(e) => println!(
-                                    "cargo::warning=Failed to copy OpenConsole.exe from {}: {}",
+                                    "cargo::warning=从 {} 复制 OpenConsole.exe 失败: {}",
                                     open_console_source.display(),
                                     e
                                 ),
@@ -175,13 +175,13 @@ fn main() {
                         }
                         Ok(output) => {
                             println!(
-                                "cargo::warning=Failed to extract conpty nupkg: {}",
+                                "cargo::warning=解压 conpty nupkg 失败: {}",
                                 String::from_utf8_lossy(&output.stderr)
                             );
                         }
                         Err(e) => {
                             println!(
-                                "cargo::warning=Failed to run PowerShell for extraction: {}",
+                                "cargo::warning=运行 PowerShell 进行解压失败: {}",
                                 e
                             );
                         }
@@ -189,13 +189,13 @@ fn main() {
                 }
                 Ok(output) => {
                     println!(
-                        "cargo::warning=Failed to download conpty nupkg: {}",
+                        "cargo::warning=下载 conpty nupkg 失败: {}",
                         String::from_utf8_lossy(&output.stderr)
                     );
                 }
                 Err(e) => {
                     println!(
-                        "cargo::warning=Failed to run PowerShell for download: {}",
+                        "cargo::warning=运行 PowerShell 进行下载失败: {}",
                         e
                     );
                 }
@@ -207,7 +207,7 @@ fn main() {
 
         #[cfg(windows)]
         {
-            windows_resources::compile(false).expect("failed to compile Windows resources");
+            windows_resources::compile(false).expect("编译 Windows 资源失败");
         }
     }
 
@@ -252,7 +252,7 @@ fn prepare_app_icon_x11() {
 
     // name should match include_bytes! call in src/zed.rs
     let icon_out_path = Path::new(&out_dir).join("app_icon.png");
-    resized_image.save(&icon_out_path).expect("saving app icon");
+    resized_image.save(&icon_out_path).expect("保存应用图标");
 
     println!("cargo:rerun-if-env-changed=RELEASE_CHANNEL");
     println!("cargo:rerun-if-changed={}", icon_path().to_string_lossy());

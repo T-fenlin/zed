@@ -100,15 +100,15 @@ impl Render for ImageShowcase {
                             .items_center()
                             .gap_8()
                             .child(ImageContainer::new(
-                                "Image loaded from a local file with EXIF orientation",
+                                "从包含 EXIF 方向的本地文件加载的图片",
                                 self.local_resource.clone(),
                             ))
                             .child(ImageContainer::new(
-                                "Image loaded from a remote resource",
+                                "从远程资源加载的图片",
                                 self.remote_resource.clone(),
                             ))
                             .child(ImageContainer::new(
-                                "Image loaded from an asset",
+                                "从资源加载的图片",
                                 self.asset_resource.clone(),
                             )),
                     )
@@ -120,13 +120,13 @@ impl Render for ImageShowcase {
                             .child(
                                 div()
                                     .flex_col()
-                                    .child("Auto Width")
+                                    .child("自动宽度")
                                     .child(img("https://picsum.photos/800/400").h(px(180.))),
                             )
                             .child(
                                 div()
                                     .flex_col()
-                                    .child("Auto Height")
+                                    .child("自动高度")
                                     .child(img("https://picsum.photos/800/400").w(px(180.))),
                             ),
                     )
@@ -139,7 +139,7 @@ impl Render for ImageShowcase {
                             .w_full()
                             .border_1()
                             .border_color(rgb(0xC0C0C0))
-                            .child("image with max width 100%")
+                            .child("最大宽度为 100% 的图片")
                             .child(img("https://picsum.photos/800/400").max_w_full()),
                     ),
             )
@@ -169,14 +169,14 @@ fn run_example() {
         cx.on_action(|_: &Quit, cx| cx.quit());
         cx.bind_keys([KeyBinding::new("cmd-q", Quit, None)]);
         cx.set_menus(vec![Menu {
-            name: "Image".into(),
-            items: vec![MenuItem::action("Quit", Quit)],
+            name: "图片".into(),
+            items: vec![MenuItem::action("退出", Quit)],
             disabled: false,
         }]);
 
         let window_options = WindowOptions {
             titlebar: Some(TitlebarOptions {
-                title: Some(SharedString::from("Image Example")),
+                title: Some(SharedString::from("图片示例")),
                 appears_transparent: false,
                 ..Default::default()
             }),

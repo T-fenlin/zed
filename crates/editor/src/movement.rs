@@ -1310,7 +1310,7 @@ mod tests {
                 .buffer_snapshot()
                 .offset_to_point(MultiBufferOffset(5))
                 .to_display_point(&snapshot),
-            "Should not stop at inlays when looking for boundaries"
+            "查找边界时不应在内联提示处停止"
         );
     }
 
@@ -1606,7 +1606,7 @@ mod tests {
         // Should land past the fold, not get stuck at fold start.
         assert!(
             after_fold > before_fold,
-            "next_word_end should move past the fold: got {:?}, started at {:?}",
+            "next_word_end 应越过折叠:得到 {:?},起始于 {:?}",
             after_fold,
             before_fold
         );
@@ -1617,7 +1617,7 @@ mod tests {
         assert_eq!(
             after_hello,
             DisplayPoint::new(DisplayRow(0), 5),
-            "next_word_end from start should land at end of 'hello'"
+            "next_word_end 从开头应落在 'hello' 的末尾"
         );
 
         // Ctrl+Left from after fold should move to before the fold.
@@ -1627,7 +1627,7 @@ mod tests {
         assert_eq!(
             before_world,
             DisplayPoint::new(DisplayRow(0), 10),
-            "previous_word_start from end should land at start of 'world'"
+            "previous_word_start 从末尾应落在 'world' 的开头"
         );
 
         // Ctrl+Left from start of "world" should land before fold.
@@ -1637,7 +1637,7 @@ mod tests {
         assert_eq!(
             landed,
             DisplayPoint::new(DisplayRow(0), 6),
-            "previous_word_start from 'world' should land at fold start"
+            "previous_word_start 从 'world' 应落在折叠开始处"
         );
 
         // End key from start should go to end of line (column 15), not fold start.
@@ -1645,7 +1645,7 @@ mod tests {
         assert_eq!(
             end_pos,
             DisplayPoint::new(DisplayRow(0), 15),
-            "line_end should go to actual end of line, not fold start"
+            "line_end 应到达行的实际末尾,而非折叠开始处"
         );
     }
 

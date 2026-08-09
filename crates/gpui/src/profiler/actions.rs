@@ -28,7 +28,7 @@ impl std::fmt::Debug for ActionStatistics {
 
 impl std::fmt::Display for ActionStatistics {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("Actions that blocked the longest\n")?;
+        f.write_str("阻塞时间最长的操作\n")?;
         for action in self
             .longest_runtimes(true)
             .sorted_by_key(|action| action.runtime())

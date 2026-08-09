@@ -58,7 +58,7 @@ impl PublicKey {
             EncryptionFormat::V0 => self.0.encrypt(&mut rng, Pkcs1v15Encrypt, bytes),
             EncryptionFormat::V1 => self.0.encrypt(&mut rng, oaep_sha256_padding(), bytes),
         }
-        .context("failed to encrypt string with public key")?;
+        .context("使用公钥加密字符串失败")?;
         let encrypted_string = BASE64_URL_SAFE.encode(&encrypted_bytes);
         Ok(encrypted_string)
     }
@@ -69,7 +69,7 @@ impl PrivateKey {
     pub fn decrypt_string(&self, encrypted_string: &str) -> Result<String> {
         let encrypted_bytes = BASE64_URL_SAFE
             .decode(encrypted_string)
-            .context("failed to base64-decode encrypted string")?;
+            .context("对加密字符串进行 base64 解码失败")?;
         let bytes = self
             .0
             .decrypt(oaep_sha256_padding(), &encrypted_bytes)
@@ -78,8 +78,8 @@ impl PrivateKey {
                 // one to handle mismatches between the client and server.
                 self.0.decrypt(Pkcs1v15Encrypt, &encrypted_bytes)
             })
-            .context("failed to decrypt string with private key")?;
-        let string = String::from_utf8(bytes).context("decrypted content was not valid utf8")?;
+            .context("使用私钥解密字符串失败")?;
+        let string = String::from_utf8(bytes).context("解密内容不是有效的 UTF-8")?;
         Ok(string)
     }
 }
@@ -90,7 +90,7 @@ impl TryFrom<PublicKey> for String {
         let bytes = key
             .0
             .to_pkcs1_der()
-            .context("failed to serialize public key")?;
+            .context("序列化公钥失败")?;
         let string = BASE64_URL_SAFE.encode(&bytes);
         Ok(string)
     }
@@ -101,8 +101,8 @@ impl TryFrom<String> for PublicKey {
     fn try_from(value: String) -> Result<Self> {
         let bytes = BASE64_URL_SAFE
             .decode(&value)
-            .context("failed to base64-decode public key string")?;
-        let key = Self(RsaPublicKey::from_pkcs1_der(&bytes).context("failed to parse public key")?);
+            .context("对公钥字符串进行 base64 解码失败")?;
+        let key = Self(RsaPublicKey::from_pkcs1_der(&bytes).context("解析公钥失败")?);
         Ok(key)
     }
 }
@@ -229,12 +229,12 @@ mod tests {
         for c in token.chars() {
             assert!(
                 c.is_ascii_graphic(),
-                "token {:?} has non-printable char {}",
+                "令牌 {:?} 包含不可打印字符 {}",
                 token,
                 c
             );
-            assert_ne!(c, '/', "token {:?} is not URL-safe", token);
-            assert_ne!(c, '&', "token {:?} is not URL-safe", token);
+            assert_ne!(c, '/', "令牌 {:?} 不是 URL 安全的", token);
+            assert_ne!(c, '&', "令牌 {:?} 不是 URL 安全的", token);
         }
     }
 }

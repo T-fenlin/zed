@@ -76,7 +76,7 @@ impl LspInstaller for GoLspAdapter {
         static DID_SHOW_NOTIFICATION: AtomicBool = AtomicBool::new(false);
 
         const NOTIFICATION_MESSAGE: &str =
-            "Could not install the Go language server `gopls`, because `go` was not found.";
+            "无法安装 Go 语言服务器 `gopls`,因为未找到 `go`。";
 
         if delegate.which("go".as_ref()).await.is_none() {
             if DID_SHOW_NOTIFICATION
@@ -88,7 +88,7 @@ impl LspInstaller for GoLspAdapter {
                 });
             }
             anyhow::bail!(
-                "Could not install the Go language server `gopls`, because `go` was not found."
+                "无法安装 Go 语言服务器 `gopls`,因为未找到 `go`。"
             );
         }
 
@@ -97,7 +97,7 @@ impl LspInstaller for GoLspAdapter {
         let version: Option<String> = release.tag_name.strip_prefix("gopls/v").map(str::to_string);
         if version.is_none() {
             log::warn!(
-                "couldn't infer gopls version from GitHub release tag name '{}'",
+                "无法从 GitHub 发布标签名称 '{}' 推断 gopls 版本",
                 release.tag_name
             );
         }
@@ -132,7 +132,7 @@ impl LspInstaller for GoLspAdapter {
                 .args(["version"])
                 .output()
                 .await
-                .context("failed to get go version via `go version` command`")?;
+                .context("通过 `go version` 命令获取 go 版本失败")?;
             let go_version = parse_version_output(&go_version_output)?;
 
             if let Some(version) = version {
@@ -166,12 +166,12 @@ impl LspInstaller for GoLspAdapter {
 
             if !install_output.status.success() {
                 log::error!(
-                    "failed to install gopls via `go install`. stdout: {:?}, stderr: {:?}",
+                    "通过 `go install` 安装 gopls 失败。stdout: {:?}, stderr: {:?}",
                     String::from_utf8_lossy(&install_output.stdout),
                     String::from_utf8_lossy(&install_output.stderr)
                 );
                 anyhow::bail!(
-                    "failed to install gopls with `go install`. Is `go` installed and in the PATH? Check logs for more information."
+                    "使用 `go install` 安装 gopls 失败。`go` 是否已安装并在 PATH 中?请查看日志以获取更多信息。"
                 );
             }
 
@@ -180,7 +180,7 @@ impl LspInstaller for GoLspAdapter {
                 .arg("version")
                 .output()
                 .await
-                .context("failed to run installed gopls binary")?;
+                .context("无法运行已安装的 gopls 二进制文件")?;
             let gopls_version = parse_version_output(&version_output)?;
             let binary_path = container_dir.join(format!("gopls_{gopls_version}_go_{go_version}"));
             fs::rename(&installed_binary_path, &binary_path).await?;
@@ -536,11 +536,11 @@ fn go_test_task_template(arg: &serde_json::Value) -> Option<task::TaskTemplate> 
 
 fn parse_version_output(output: &Output) -> Result<&str> {
     let version_stdout =
-        str::from_utf8(&output.stdout).context("version command produced invalid utf8 output")?;
+        str::from_utf8(&output.stdout).context("版本命令产生了无效的 utf8 输出")?;
 
     let version = VERSION_REGEX
         .find(version_stdout)
-        .with_context(|| format!("failed to parse version output '{version_stdout}'"))?
+        .with_context(|| format!("无法解析版本输出 '{version_stdout}'"))?
         .as_str();
 
     Ok(version)
@@ -562,7 +562,7 @@ async fn get_cached_server_binary(container_dir: &Path) -> Option<LanguageServer
             }
         }
 
-        let path = last_binary_path.context("no cached binary")?;
+        let path = last_binary_path.context("没有缓存的二进制文件")?;
         anyhow::Ok(LanguageServerBinary {
             path,
             arguments: server_binary_arguments(),
@@ -1074,7 +1074,7 @@ mod tests {
 
         assert!(
             !tag_strings.contains(&"go-test".to_string()),
-            "Should NOT find go-test tag, found: {:?}",
+            "不应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
     }
@@ -1122,12 +1122,12 @@ mod tests {
 
         assert!(
             tag_strings.contains(&"go-test".to_string()),
-            "Should find go-test tag, found: {:?}",
+            "应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
         assert!(
             tag_strings.contains(&"go-testify-suite".to_string()),
-            "Should find go-testify-suite tag, found: {:?}",
+            "应找到 go-testify-suite 标签,找到: {:?}",
             tag_strings
         );
     }
@@ -1182,12 +1182,12 @@ mod tests {
 
         assert!(
             tag_strings.contains(&"go-test".to_string()),
-            "Should find go-test tag, found: {:?}",
+            "应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
         assert!(
             tag_strings.contains(&"go-subtest".to_string()),
-            "Should find go-subtest tag, found: {:?}",
+            "应找到 go-subtest 标签,找到: {:?}",
             tag_strings
         );
 
@@ -1211,12 +1211,12 @@ mod tests {
 
         assert!(
             tag_strings.contains(&"go-test".to_string()),
-            "Should find go-test tag, found: {:?}",
+            "应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
         assert!(
             tag_strings.contains(&"go-subtest".to_string()),
-            "Should find go-subtest tag, found: {:?}",
+            "应找到 go-subtest 标签,找到: {:?}",
             tag_strings
         );
     }
@@ -1226,7 +1226,7 @@ mod tests {
         let templates = cx
             .update(|cx| GoContextProvider.associated_tasks(None, cx))
             .await
-            .expect("Go context provider returns associated tasks");
+            .expect("Go 上下文提供程序返回关联的任务");
 
         // `resolve_task` returns `None` for any `ZED_` variable a template
         // references but the context omits, so supply all of them.
@@ -1261,18 +1261,18 @@ mod tests {
                 .0
                 .iter()
                 .find(|template| template.tags.iter().any(|template_tag| template_tag == tag))
-                .unwrap_or_else(|| panic!("`{tag}` task template exists"));
+                .unwrap_or_else(|| panic!("`{tag}` 任务模板存在"));
 
             let resolved = template
                 .resolve_task("go", &context)
-                .unwrap_or_else(|| panic!("`{tag}` template resolves"));
+                .unwrap_or_else(|| panic!("`{tag}` 模板解析成功"));
 
             let run_index = resolved
                 .resolved
                 .args
                 .iter()
                 .position(|arg| arg == "-run")
-                .unwrap_or_else(|| panic!("`{tag}` resolved args contain a `-run` flag"));
+                .unwrap_or_else(|| panic!("`{tag}` 解析后的参数包含 `-run` 标志"));
             let run_arg = &resolved.resolved.args[run_index + 1];
 
             assert!(
@@ -1320,7 +1320,7 @@ mod tests {
 
         assert!(
             tag_strings.contains(&"go-example".to_string()),
-            "Should find go-example tag, found: {:?}",
+            "应找到 go-example 标签,找到: {:?}",
             tag_strings
         );
     }
@@ -1391,12 +1391,12 @@ mod tests {
 
         assert!(
             tag_strings.contains(&"go-test".to_string()),
-            "Should find go-test tag, found: {:?}",
+            "应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
         assert!(
             tag_strings.contains(&"go-table-test-case".to_string()),
-            "Should find go-table-test-case tag, found: {:?}",
+            "应找到 go-table-test-case 标签,找到: {:?}",
             tag_strings
         );
 
@@ -1408,17 +1408,17 @@ mod tests {
 
         assert!(
             go_test_count == 1,
-            "Should find exactly 1 go-test, found: {}",
+            "应恰好找到 1 个 go-test,找到: {}",
             go_test_count
         );
         assert!(
             go_table_test_count == 3,
-            "Should find exactly 3 go-table-test-case, found: {}",
+            "应恰好找到 3 个 go-table-test-case,找到: {}",
             go_table_test_count
         );
 
         let Some(first_case_offset) = table_test.find("anotherStr: \"foo\"") else {
-            panic!("missing first table test case");
+            panic!("缺少第一个表测试用例");
         };
         let first_case_offset = first_case_offset + "anotherStr".len();
         let first_case_runnables: Vec<_> = buffer.update(cx, |buffer, _| {
@@ -1442,7 +1442,7 @@ mod tests {
         assert_eq!(
             table_test_case_names,
             vec!["\"test case 1\""],
-            "Should only return the table test case containing the requested range"
+            "应仅返回包含请求范围的表测试用例"
         );
     }
 
@@ -1497,12 +1497,12 @@ mod tests {
 
         assert!(
             tag_strings.contains(&"go-test".to_string()),
-            "Should find go-test tag, found: {:?}",
+            "应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
         assert!(
             tag_strings.contains(&"go-table-test-case-without-explicit-variable".to_string()),
-            "Should find go-table-test-case-without-explicit-variable tag, found: {:?}",
+            "应找到 go-table-test-case-without-explicit-variable 标签,找到: {:?}",
             tag_strings
         );
 
@@ -1514,12 +1514,12 @@ mod tests {
 
         assert!(
             go_test_count == 1,
-            "Should find exactly 1 go-test, found: {}",
+            "应恰好找到 1 个 go-test,找到: {}",
             go_test_count
         );
         assert!(
             go_table_test_count == 3,
-            "Should find exactly 3 go-table-test-case-without-explicit-variable, found: {}",
+            "应恰好找到 3 个 go-table-test-case-without-explicit-variable,找到: {}",
             go_table_test_count
         );
     }
@@ -1571,12 +1571,12 @@ mod tests {
 
         assert!(
             tag_strings.contains(&"go-test".to_string()),
-            "Should find go-test tag, found: {:?}",
+            "应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
         assert!(
             tag_strings.contains(&"go-table-test-case-without-explicit-variable".to_string()),
-            "Should find go-table-test-case-without-explicit-variable tag, found: {:?}",
+            "应找到 go-table-test-case-without-explicit-variable 标签,找到: {:?}",
             tag_strings
         );
 
@@ -1588,12 +1588,12 @@ mod tests {
 
         assert!(
             go_test_count == 1,
-            "Should find exactly 1 go-test, found: {}",
+            "应恰好找到 1 个 go-test,找到: {}",
             go_test_count
         );
         assert!(
             go_table_test_count == 2,
-            "Should find exactly 2 go-table-test-case-without-explicit-variable, found: {}",
+            "应恰好找到 2 个 go-table-test-case-without-explicit-variable,找到: {}",
             go_table_test_count
         );
     }
@@ -1638,12 +1638,12 @@ mod tests {
 
         assert!(
             !tag_strings.contains(&"go-test".to_string()),
-            "Should find go-test tag, found: {:?}",
+            "应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
         assert!(
             !tag_strings.contains(&"go-table-test-case".to_string()),
-            "Should find go-table-test-case tag, found: {:?}",
+            "应找到 go-table-test-case 标签,找到: {:?}",
             tag_strings
         );
     }
@@ -1710,12 +1710,12 @@ mod tests {
 
         assert!(
             tag_strings.contains(&"go-test".to_string()),
-            "Should find go-test tag, found: {:?}",
+            "应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
         assert!(
             tag_strings.contains(&"go-table-test-case".to_string()),
-            "Should find go-table-test-case tag, found: {:?}",
+            "应找到 go-table-test-case 标签,找到: {:?}",
             tag_strings
         );
 
@@ -1727,12 +1727,12 @@ mod tests {
 
         assert!(
             go_test_count == 1,
-            "Should find exactly 1 go-test, found: {}",
+            "应恰好找到 1 个 go-test,找到: {}",
             go_test_count
         );
         assert!(
             go_table_test_count == 2,
-            "Should find exactly 2 go-table-test-case, found: {}",
+            "应恰好找到 2 个 go-table-test-case,找到: {}",
             go_table_test_count
         );
     }
@@ -1777,12 +1777,12 @@ mod tests {
 
         assert!(
             !tag_strings.contains(&"go-test".to_string()),
-            "Should find go-test tag, found: {:?}",
+            "应找到 go-test 标签,找到: {:?}",
             tag_strings
         );
         assert!(
             !tag_strings.contains(&"go-table-test-case".to_string()),
-            "Should find go-table-test-case tag, found: {:?}",
+            "应找到 go-table-test-case 标签,找到: {:?}",
             tag_strings
         );
     }
@@ -1844,7 +1844,7 @@ mod tests {
 
         assert_eq!(
             go_table_test_count, 100,
-            "Should emit one go-table-test-case per row (got {}); tree-sitter match_limit overflow has regressed",
+            "每行应生成一个 go-table-test-case(得到 {});tree-sitter match_limit 溢出已回退",
             go_table_test_count
         );
     }
@@ -1896,7 +1896,7 @@ mod tests {
 
         assert_eq!(
             go_table_test_count, 0,
-            "Should not emit table-test runnables when t.Run uses a missing row field"
+            "当 t.Run 使用缺失的行字段时,不应生成表测试可运行项"
         );
     }
 
@@ -1904,7 +1904,7 @@ mod tests {
     fn test_go_table_test_slice_picks_correct_field_when_not_first(cx: &mut TestAppContext) {
         // The subtest-name field `name` is declared AFTER `anotherStr`, but `t.Run(tc.name, ...)`
         // still selects on `name`. The resolver must match `@_field_check` text to the right
-        // `@_field_name` regardless of source order; "first string field wins" would be a bug.
+        // `@_field_name` regardless of source order; "第一个字符串字段优先" would be a bug.
         let language = go_language();
 
         let table_test = r#"
@@ -1941,7 +1941,7 @@ mod tests {
 
         let case_offset = table_test
             .find("anotherStr: \"alpha\"")
-            .expect("source should contain the first case body");
+            .expect("源代码应包含第一个用例主体");
         let first_case_runnables: Vec<_> = buffer.update(cx, |buffer, _| {
             let snapshot = buffer.snapshot();
             snapshot.runnable_ranges(case_offset..case_offset).collect()
@@ -1962,7 +1962,7 @@ mod tests {
         assert_eq!(
             case_names,
             vec!["\"case alpha\""],
-            "Resolver should pick the field matching `tc.name`, not the first string field"
+            "解析器应选择与 `tc.name` 匹配的字段,而不是第一个字符串字段"
         );
     }
 
@@ -2014,7 +2014,7 @@ mod tests {
         assert_eq!(
             all_case_names,
             vec!["\"test failure\"", "\"test success\""],
-            "Map-based table tests should surface each row's key as `_table_test_case_name`"
+            "基于映射的表测试应将每行的键作为 `_table_test_case_name` 呈现"
         );
     }
 
@@ -2085,17 +2085,17 @@ mod tests {
         ] {
             let method_position = source
                 .find(&format!("{method_name}()"))
-                .expect("method should exist in source");
+                .expect("方法应存在于源代码中");
             let body_position = source[method_position..]
                 .find("println")
                 .map(|body_offset| method_position + body_offset)
-                .expect("method should contain a body");
+                .expect("方法应包含主体");
             let symbols = snapshot.symbols_containing(body_position, None);
             assert_eq!(
                 symbols
                     .last()
                     .map(|item| item.text.as_str())
-                    .expect("method should have an outline symbol"),
+                    .expect("方法应具有大纲符号"),
                 expected_symbol
             );
         }

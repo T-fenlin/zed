@@ -27,13 +27,13 @@ impl Render for HolyGrailExample {
                     .items_center()
             };
 
-            let header = block(gpui::white()).child(format!("Header — {}", container_size.width));
-            let table_of_contents = block(gpui::red()).child("Table of contents");
-            let content = block(gpui::green()).child("Content");
-            let ad = block(gpui::blue()).child("AD :(").text_color(gpui::white());
+            let header = block(gpui::white()).child(format!("页头 — {}", container_size.width));
+            let table_of_contents = block(gpui::red()).child("目录");
+            let content = block(gpui::green()).child("内容");
+            let ad = block(gpui::blue()).child("广告 :(").text_color(gpui::white());
             let footer = block(gpui::black())
                 .text_color(gpui::white())
-                .child("Footer");
+                .child("页脚");
 
             let container = div().gap_1().bg(rgb(0x505050)).shadow_lg().size_full();
 

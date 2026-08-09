@@ -21,7 +21,7 @@ impl AssetSource for Assets {
     fn load(&self, path: &str) -> Result<Option<std::borrow::Cow<'static, [u8]>>> {
         Self::get(path)
             .map(|f| Some(f.data))
-            .with_context(|| format!("loading asset at path {path:?}"))
+            .with_context(|| format!("加载路径为 {path:?} 的资源时出错"))
     }
 
     fn list(&self, path: &str) -> Result<Vec<SharedString>> {
@@ -47,7 +47,7 @@ impl Assets {
                 let font_bytes = cx
                     .asset_source()
                     .load(&font_path)?
-                    .expect("Assets should never return None");
+                    .expect("资源不应返回 None");
                 embedded_fonts.push(font_bytes);
             }
         }

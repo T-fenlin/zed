@@ -238,7 +238,7 @@ impl Render for MigrationBanner {
                     ),
             )
             .child(
-                Button::new("backup-and-migrate", "Backup and Update").on_click({
+                Button::new("backup-and-migrate", "备份并更新").on_click({
                     let workspace = self.workspace.clone();
                     move |_, window, cx| {
                         let fs = <dyn Fs>::global(cx);
@@ -284,18 +284,18 @@ async fn write_keymap_migration(fs: Arc<dyn Fs>) -> Result<()> {
     if fs.is_file(keymap_path).await {
         fs.atomic_write(paths::keymap_backup_file().to_path_buf(), old_text)
             .await
-            .with_context(|| "Failed to create settings backup in home directory".to_string())?;
+            .with_context(|| "无法在主目录中创建设置备份".to_string())?;
         let resolved_path = fs
             .canonicalize(keymap_path)
             .await
-            .with_context(|| format!("Failed to canonicalize keymap path {:?}", keymap_path))?;
+            .with_context(|| format!("无法规范化键位映射路径 {:?}", keymap_path))?;
         fs.atomic_write(resolved_path.clone(), new_text)
             .await
-            .with_context(|| format!("Failed to write keymap to file {:?}", resolved_path))?;
+            .with_context(|| format!("无法将键位映射写入文件 {:?}", resolved_path))?;
     } else {
         fs.atomic_write(keymap_path.to_path_buf(), new_text)
             .await
-            .with_context(|| format!("Failed to write keymap to file {:?}", keymap_path))?;
+            .with_context(|| format!("无法将键位映射写入文件 {:?}", keymap_path))?;
     }
     Ok(())
 }
@@ -309,18 +309,18 @@ async fn write_settings_migration(fs: Arc<dyn Fs>) -> Result<()> {
     if fs.is_file(settings_path).await {
         fs.atomic_write(paths::settings_backup_file().to_path_buf(), old_text)
             .await
-            .with_context(|| "Failed to create settings backup in home directory".to_string())?;
+            .with_context(|| "无法在主目录中创建设置备份".to_string())?;
         let resolved_path = fs
             .canonicalize(settings_path)
             .await
-            .with_context(|| format!("Failed to canonicalize settings path {:?}", settings_path))?;
+            .with_context(|| format!("无法规范化设置路径 {:?}", settings_path))?;
         fs.atomic_write(resolved_path.clone(), new_text)
             .await
-            .with_context(|| format!("Failed to write settings to file {:?}", resolved_path))?;
+            .with_context(|| format!("无法将设置写入文件 {:?}", resolved_path))?;
     } else {
         fs.atomic_write(settings_path.to_path_buf(), new_text)
             .await
-            .with_context(|| format!("Failed to write settings to file {:?}", settings_path))?;
+            .with_context(|| format!("无法将设置写入文件 {:?}", settings_path))?;
     }
     Ok(())
 }

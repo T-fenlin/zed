@@ -210,7 +210,7 @@ impl BufferInlayHints {
             .as_mut()?
             .get_mut(&hint_for_id.server_id)?
             .get_mut(hint_for_id.position)?;
-        debug_assert_eq!(*hint_id, id, "Invalid pointer {hint_for_id:?}");
+        debug_assert_eq!(*hint_id, id, "无效指针 {hint_for_id:?}");
         Some(hint)
     }
 
@@ -274,10 +274,10 @@ impl LspStore {
                 let response = upstream_client
                     .request(request)
                     .await
-                    .context("inlay hints proto request")?;
+                    .context("内联提示 proto 请求")?;
                 match response.hint {
                     Some(resolved_hint) => InlayHints::proto_to_project_hint(resolved_hint)
-                        .context("inlay hints proto resolve response conversion"),
+                        .context("内联提示 proto 解析响应转换"),
                     None => Ok(hint),
                 }
             })
@@ -303,7 +303,7 @@ impl LspStore {
                 let resolved_hint = resolve_task
                     .await
                     .into_response()
-                    .context("inlay hint resolve LSP request")?;
+                    .context("内联提示解析 LSP 请求")?;
                 let resolved_hint = InlayHints::lsp_to_project_hint(
                     resolved_hint,
                     &buffer,
@@ -333,7 +333,7 @@ impl LspStore {
                     server_id: server_id.to_proto(),
                     request_id: Some(super::next_wire_refresh_request_id()),
                 })
-                .context("sending refresh inlay hints downstream")
+                .context("向下游发送刷新内联提示")
                 .log_err();
         }
     }
@@ -387,9 +387,9 @@ impl LspStore {
         let proto_hint = envelope
             .payload
             .hint
-            .expect("incorrect protobuf resolve inlay hint message: missing the inlay hint");
+            .expect("protobuf 解析内联提示消息不正确:缺少内联提示");
         let hint = InlayHints::proto_to_project_hint(proto_hint)
-            .context("resolved proto inlay hint conversion")?;
+            .context("已解析的 proto 内联提示转换")?;
         let buffer = lsp_store.update(&mut cx, |lsp_store, cx| {
             let buffer_id = BufferId::new(envelope.payload.buffer_id)?;
             lsp_store.buffer_store.read(cx).get_existing(buffer_id)
@@ -404,7 +404,7 @@ impl LspStore {
                 )
             })
             .await
-            .context("inlay hints fetch")?;
+            .context("获取内联提示")?;
         Ok(proto::ResolveInlayHintResponse {
             hint: Some(InlayHints::project_to_proto_hint(response_hint)),
         })

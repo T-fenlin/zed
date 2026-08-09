@@ -251,7 +251,7 @@ impl RenderOnce for WindowControl {
                     WindowControlType::Close => window.dispatch_action(
                         self.close_action
                             .as_ref()
-                            .expect("Use WindowControl::new_close() for close control.")
+                            .expect("关闭控件请使用 WindowControl::new_close()。")
                             .boxed_clone(),
                         cx,
                     ),

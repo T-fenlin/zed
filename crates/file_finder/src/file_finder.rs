@@ -1124,7 +1124,7 @@ impl FileFinderDelegate {
             let extend_old_matches = self.latest_search_did_cancel && !path_query_changed;
 
             // The line/column suffix doesn't affect which files match, but it
-            // does change the user's intent ("go inside this file" vs. "pick a
+            // does change the user's intent ("进入此文件" vs. "pick a
             // file"). Drop the preserved selection when it appears or changes
             // so the new intent can be honored by `calculate_selected_index`.
             let position_changed = self
@@ -1345,11 +1345,11 @@ impl FileFinderDelegate {
                 } => (
                     channel_name.to_string(),
                     string_match.positions.clone(),
-                    "Channel Notes".to_string(),
+                    "频道笔记".to_string(),
                     vec![],
                 ),
                 Match::CreateNew(project_path) => (
-                    format!("Create File: {}", project_path.path.display(path_style)),
+                    format!("创建文件:{}", project_path.path.display(path_style)),
                     vec![],
                     String::from(""),
                     vec![],
@@ -1799,7 +1799,7 @@ impl PickerDelegate for FileFinderDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Search project files...".into()
+        "搜索项目文件...".into()
     }
 
     fn searchbar_trailer(
@@ -1812,9 +1812,9 @@ impl PickerDelegate for FileFinderDelegate {
         // Clicking includes ignored files unless they're already included, in
         // which case it excludes them again (see `handle_toggle_ignored`).
         let tooltip_label = if including_ignored {
-            "Exclude Ignored Files"
+            "排除忽略的文件"
         } else {
-            "Include Ignored Files"
+            "包含忽略的文件"
         };
 
         let filter_button = IconButton::new("filter-ignored", IconName::FileIgnored)
@@ -2067,7 +2067,7 @@ impl PickerDelegate for FileFinderDelegate {
                     ..Default::default()
                 };
                 let mut message = picker::HighlightedTextBuilder::default();
-                message.push_plain("Create file ");
+                message.push_plain("创建文件 ");
                 message.push_styled(project_path.path.display(path_style), path_highlight);
                 message.push_plain("?");
                 Some(picker::PreviewUpdate::message(message.build()))
@@ -2105,16 +2105,16 @@ impl PickerDelegate for FileFinderDelegate {
         _cx: &mut Context<Picker<Self>>,
     ) -> Vec<picker::PickerAction> {
         let open_label: SharedString = if self.selected_matches.len() > 1 {
-            "Open multiple".into()
+            "打开多个".into()
         } else {
-            "Open File".into()
+            "打开文件".into()
         };
         vec![
-            picker::PickerAction::header("Split…"),
-            picker::PickerAction::button("Left", pane::SplitLeft::default().boxed_clone()),
-            picker::PickerAction::button("Right", pane::SplitRight::default().boxed_clone()),
-            picker::PickerAction::button("Up", pane::SplitUp::default().boxed_clone()),
-            picker::PickerAction::button("Down", pane::SplitDown::default().boxed_clone()),
+            picker::PickerAction::header("拆分…"),
+            picker::PickerAction::button("左侧", pane::SplitLeft::default().boxed_clone()),
+            picker::PickerAction::button("右侧", pane::SplitRight::default().boxed_clone()),
+            picker::PickerAction::button("上", pane::SplitUp::default().boxed_clone()),
+            picker::PickerAction::button("下", pane::SplitDown::default().boxed_clone()),
             picker::PickerAction::separator(),
             picker::PickerAction::button(open_label, menu::Confirm.boxed_clone()),
         ]

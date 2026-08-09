@@ -75,8 +75,8 @@ impl EditorBlock {
         on_close: CloseBlockFn,
         cx: &mut Context<Session>,
     ) -> anyhow::Result<Self> {
-        let editor = editor.upgrade().context("editor is not open")?;
-        let workspace = editor.read(cx).workspace().context("workspace dropped")?;
+        let editor = editor.upgrade().context("编辑器未打开")?;
+        let workspace = editor.read(cx).workspace().context("工作区已关闭")?;
 
         let execution_view = cx.new(|cx| ExecutionView::new(status, workspace.downgrade(), cx));
 
@@ -183,7 +183,7 @@ impl EditorBlock {
                         .icon_color(Color::Muted)
                         .size(ButtonSize::Compact)
                         .shape(IconButtonShape::Square)
-                        .tooltip(Tooltip::text("Close output area"))
+                        .tooltip(Tooltip::text("关闭输出区域"))
                         .on_click(move |_, window, cx| {
                             if let BlockId::Custom(block_id) = block_id {
                                 (on_close)(block_id, window, cx)
@@ -349,7 +349,7 @@ impl Session {
                         cx,
                     )
                 } else {
-                    Task::ready(Err(anyhow::anyhow!("No project associated with editor")))
+                    Task::ready(Err(anyhow::anyhow!("编辑器未关联项目")))
                 }
             }
             KernelSpecification::WslRemote(spec) => WslRunningKernel::new(
@@ -884,7 +884,7 @@ impl Session {
 
                 cx.spawn_in(window, async move |this, cx| {
                     // Send shutdown request with restart flag
-                    log::debug!("restarting kernel");
+                    log::debug!("正在重启内核");
                     let message: JupyterMessage = ShutdownRequest { restart: true }.into();
                     request_tx.try_send(message).ok();
 
@@ -928,18 +928,18 @@ impl Render for Session {
                     .as_ref()
                     .map(|info| info.language_info.name.clone()),
                 Some(
-                    Button::new("interrupt", "Interrupt")
+                    Button::new("interrupt", "中断")
                         .style(ButtonStyle::Subtle)
                         .on_click(cx.listener(move |session, _, _, cx| {
                             session.interrupt(cx);
                         })),
                 ),
             ),
-            Kernel::StartingKernel(_) => (Some("Starting".into()), None),
-            Kernel::ErroredLaunch(err) => (Some(format!("Error: {err}")), None),
-            Kernel::ShuttingDown => (Some("Shutting Down".into()), None),
-            Kernel::Shutdown => (Some("Shutdown".into()), None),
-            Kernel::Restarting => (Some("Restarting".into()), None),
+            Kernel::StartingKernel(_) => (Some("正在启动".into()), None),
+            Kernel::ErroredLaunch(err) => (Some(format!("错误:{err}")), None),
+            Kernel::ShuttingDown => (Some("正在关闭".into()), None),
+            Kernel::Shutdown => (Some("关闭".into()), None),
+            Kernel::Restarting => (Some("正在重启".into()), None),
         };
 
         KernelListItem::new(self.kernel_specification.clone())
@@ -964,7 +964,7 @@ impl Render for Session {
             .child(Label::new(self.kernel_specification.name()))
             .children(status_text.map(|status_text| Label::new(format!("({status_text})"))))
             .button(
-                Button::new("shutdown", "Shutdown")
+                Button::new("shutdown", "关闭")
                     .style(ButtonStyle::Subtle)
                     .disabled(self.kernel.is_shutting_down())
                     .on_click(cx.listener(move |session, _, window, cx| {

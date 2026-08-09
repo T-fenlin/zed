@@ -74,7 +74,7 @@ pub fn adapt_schema_to_format(
     json: &mut Value,
     format: LanguageModelToolSchemaFormat,
 ) -> Result<()> {
-    log::trace!("Adapting schema to format {:?}: {}", format, json);
+    log::trace!("正在将架构适配为格式 {:?}: {}", format, json);
 
     if let Value::Object(obj) = json {
         obj.remove("$schema");
@@ -89,7 +89,7 @@ pub fn adapt_schema_to_format(
         LanguageModelToolSchemaFormat::JsonSchemaSubset => adapt_to_json_schema_subset(json),
     }?;
 
-    log::trace!("Adapted schema: {}", json);
+    log::trace!("已适配的架构: {}", json);
     Ok(())
 }
 
@@ -146,7 +146,7 @@ fn resolve_refs_recursive(
                     _ => None,
                 };
                 let Some(def) = defs_for_key.and_then(|defs| defs.get(name)) else {
-                    anyhow::bail!("$ref target not found in {defs_key}: {ref_str}");
+                    anyhow::bail!("在 {defs_key} 中未找到 $ref 目标: {ref_str}");
                 };
 
                 let ref_owned = ref_str.to_string();
@@ -196,7 +196,7 @@ fn parse_ref(ref_str: &str) -> Result<(&'static str, &str)> {
         return Ok(("definitions", name));
     }
     anyhow::bail!(
-        "Unsupported $ref format (only `#/$defs/<name>` and `#/definitions/<name>` are supported): {ref_str}"
+        "不支持的 $ref 格式(仅支持 `#/$defs/<name>` 和 `#/definitions/<name>`): {ref_str}"
     );
 }
 
@@ -405,7 +405,7 @@ mod tests {
     fn obj(value: Value) -> Map<String, Value> {
         match value {
             Value::Object(map) => map,
-            other => panic!("expected JSON object, got {other}"),
+            other => panic!("应为 JSON 对象,实际为 {other}"),
         }
     }
 
@@ -441,14 +441,14 @@ mod tests {
 
         // object with other properties, ["boolean", "null"]
         let mut o = obj(json!({
-            "description": "A test field",
+            "description": "测试字段",
             "type": ["boolean", "null"]
         }));
         convert_null_in_types_to_nullable(&mut o);
         assert_eq!(
             o,
             obj(json!({
-                "description": "A test field",
+                "description": "测试字段",
                 "type": "boolean",
                 "nullable": true
             }))
@@ -482,14 +482,14 @@ mod tests {
 
         // object with other properties, ["string", "number"]
         let mut o = obj(json!({
-            "description": "A test field",
+            "description": "测试字段",
             "type": ["string", "number"]
         }));
         convert_types_to_any_of_defs(&mut o);
         assert_eq!(
             o,
             obj(json!({
-                "description": "A test field",
+                "description": "测试字段",
                 "anyOf": [
                     {"type": "string"},
                     {"type": "number"}
@@ -565,7 +565,7 @@ mod tests {
     #[test]
     fn test_transform_adds_type_when_missing() {
         let mut json = json!({
-            "description": "A test field without type"
+            "description": "没有类型的测试字段"
         });
 
         adapt_to_json_schema_subset(&mut json).unwrap();
@@ -573,7 +573,7 @@ mod tests {
         assert_eq!(
             json,
             json!({
-                "description": "A test field without type",
+                "description": "没有类型的测试字段",
                 "type": "string"
             })
         );
@@ -601,7 +601,7 @@ mod tests {
     #[test]
     fn test_transform_removes_unsupported_keys() {
         let mut json = json!({
-            "description": "A test field",
+            "description": "测试字段",
             "type": "integer",
             "format": "uint32",
             "exclusiveMinimum": 0,
@@ -615,13 +615,13 @@ mod tests {
         assert_eq!(
             json,
             json!({
-                "description": "A test field",
+                "description": "测试字段",
                 "type": "integer"
             })
         );
 
         let mut json = json!({
-            "description": "A test field",
+            "description": "测试字段",
             "type": "integer",
             "format": {},
         });
@@ -631,7 +631,7 @@ mod tests {
         assert_eq!(
             json,
             json!({
-                "description": "A test field",
+                "description": "测试字段",
                 "type": "integer",
                 "format": {},
             })
@@ -751,7 +751,7 @@ mod tests {
     #[test]
     fn test_transform_one_of_to_any_of() {
         let mut json = json!({
-            "description": "A test field",
+            "description": "测试字段",
             "oneOf": [
                 { "type": "string" },
                 { "type": "integer" }
@@ -763,7 +763,7 @@ mod tests {
         assert_eq!(
             json,
             json!({
-                "description": "A test field",
+                "description": "测试字段",
                 "anyOf": [
                     { "type": "string" },
                     { "type": "integer" }
@@ -810,11 +810,11 @@ mod tests {
             "properties": {
                 "projectSlugOrId": {
                     "type": ["string", "number"],
-                    "description": "Project slug or numeric ID"
+                    "description": "项目别名或数字 ID"
                 },
                 "optionalName": {
                     "type": ["string", "null"],
-                    "description": "An optional name"
+                    "description": "可选名称"
                 }
             }
         });
@@ -831,11 +831,11 @@ mod tests {
                             {"type": "string"},
                             {"type": "number"}
                         ],
-                        "description": "Project slug or numeric ID"
+                        "description": "项目别名或数字 ID"
                     },
                     "optionalName": {
                         "type": "string",
-                        "description": "An optional name",
+                        "description": "可选名称",
                         "nullable": true
                     }
                 }
@@ -892,7 +892,7 @@ mod tests {
                 },
                 "title": {
                     "type": "string",
-                    "description": "Page title"
+                    "description": "页面标题"
                 }
             },
             "required": ["parent"],
@@ -902,7 +902,7 @@ mod tests {
                     "properties": {
                         "type": {
                             "type": "string",
-                            "description": "Parent type"
+                            "description": "父类型"
                         }
                     },
                     "required": ["type"]
@@ -920,14 +920,14 @@ mod tests {
                     "properties": {
                         "type": {
                             "type": "string",
-                            "description": "Parent type"
+                            "description": "父类型"
                         }
                     },
                     "required": ["type"]
                 },
                 "title": {
                     "type": "string",
-                    "description": "Page title"
+                    "description": "页面标题"
                 }
             },
             "required": ["parent"],
@@ -996,7 +996,7 @@ mod tests {
                 },
                 "databaseId": {
                     "type": "string",
-                    "description": "A database ID"
+                    "description": "数据库 ID"
                 }
             }
         });
@@ -1014,7 +1014,7 @@ mod tests {
                         "properties": {
                             "database_id": {
                                 "type": "string",
-                                "description": "A database ID"
+                                "description": "数据库 ID"
                             }
                         }
                     }
@@ -1080,7 +1080,7 @@ mod tests {
             "$defs": {
                 "itemDef": {
                     "type": "string",
-                    "description": "An item"
+                    "description": "一个项目"
                 }
             }
         });
@@ -1096,7 +1096,7 @@ mod tests {
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "description": "An item"
+                            "description": "一个项目"
                         }
                     }
                 }
@@ -1127,7 +1127,7 @@ mod tests {
         });
 
         adapt_schema_to_format(&mut json, LanguageModelToolSchemaFormat::JsonSchemaSubset)
-            .expect("self-referential $ref should not error");
+            .expect("自引用的 $ref 不应报错");
 
         assert_eq!(
             json,
@@ -1159,13 +1159,13 @@ mod tests {
             "properties": {
                 "child": {
                     "$ref": "#/$defs/childDef",
-                    "description": "Local description overrides def"
+                    "description": "本地描述覆盖定义"
                 }
             },
             "$defs": {
                 "childDef": {
                     "type": "string",
-                    "description": "Def description",
+                    "description": "定义描述",
                     "minLength": 1
                 }
             }
@@ -1177,7 +1177,7 @@ mod tests {
             json["properties"]["child"],
             json!({
                 "type": "string",
-                "description": "Local description overrides def",
+                "description": "本地描述覆盖定义",
                 "minLength": 1
             })
         );

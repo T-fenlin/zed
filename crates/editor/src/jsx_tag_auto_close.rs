@@ -460,7 +460,7 @@ pub(crate) fn handle_from(
 
                 if has_edits_since_start {
                     Err(anyhow!(
-                        "Auto-close Operation Failed - Buffer has edits since start"
+                        "自动关闭操作失败 - 缓冲区自开始以来有编辑"
                     ))
                     .log_err()?;
                 }
@@ -486,7 +486,7 @@ pub(crate) fn handle_from(
                 .await;
 
             let edits = edits
-                .context("Auto-close Operation Failed - Failed to compute edits")
+                .context("自动关闭操作失败 - 无法计算编辑")
                 .log_err()?;
 
             if edits.is_empty() {

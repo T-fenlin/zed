@@ -84,19 +84,19 @@ mod tests {
         ];
 
         for (input, expected_scheme, expected_host, expected_path) in valid_urls {
-            let parsed = input.parse::<RemoteUrl>().expect("failed to parse URL");
+            let parsed = input.parse::<RemoteUrl>().expect("无法解析 URL");
             let url = parsed.0;
             assert_eq!(
                 url.scheme(),
                 expected_scheme,
-                "unexpected scheme for {input:?}",
+                "{input:?} 的协议不符合预期",
             );
             assert_eq!(
                 url.host_str().unwrap_or(""),
                 expected_host,
-                "unexpected host for {input:?}",
+                "{input:?} 的主机不符合预期",
             );
-            assert_eq!(url.path(), expected_path, "unexpected path for {input:?}");
+            assert_eq!(url.path(), expected_path, "{input:?} 的路径不符合预期");
         }
     }
 
@@ -107,7 +107,7 @@ mod tests {
         for url in invalid_urls {
             assert!(
                 url.parse::<RemoteUrl>().is_err(),
-                "expected \"{url}\" to not parse as a Git remote URL",
+                "预期 \"{url}\" 无法解析为 Git 远程 URL",
             );
         }
     }

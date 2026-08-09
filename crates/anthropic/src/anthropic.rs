@@ -297,29 +297,29 @@ pub async fn list_models(
         .header("Accept", "application/json")
         .extra_headers(extra_headers)
         .body(AsyncBody::default())
-        .context("failed to build Anthropic models list request")?;
+        .context("无法构建 Anthropic 模型列表请求")?;
 
     let mut response = client
         .send(request)
         .await
-        .context("failed to send Anthropic models list request")?;
+        .context("无法发送 Anthropic 模型列表请求")?;
 
     let mut body = String::new();
     response
         .body_mut()
         .read_to_string(&mut body)
         .await
-        .context("failed to read Anthropic models list response")?;
+        .context("无法读取 Anthropic 模型列表响应")?;
 
     anyhow::ensure!(
         response.status().is_success(),
-        "failed to list Anthropic models: {} {}",
+        "无法列出 Anthropic 模型: {} {}",
         response.status(),
         body,
     );
 
     let parsed: ListModelsResponse =
-        serde_json::from_str(&body).context("failed to parse Anthropic models list response")?;
+        serde_json::from_str(&body).context("无法解析 Anthropic 模型列表响应")?;
 
     let models = parsed
         .data
@@ -516,7 +516,7 @@ pub fn parse_retry_after(headers: &HeaderMap<HeaderValue>) -> Option<Duration> {
 fn get_header<'a>(key: &str, headers: &'a HeaderMap) -> anyhow::Result<&'a str> {
     Ok(headers
         .get(key)
-        .with_context(|| format!("missing header `{key}`"))?
+        .with_context(|| format!("缺少请求头 `{key}`"))?
         .to_str()?)
 }
 
@@ -1016,7 +1016,7 @@ pub enum AnthropicError {
 }
 
 #[derive(Debug, Serialize, Deserialize, Error)]
-#[error("Anthropic API Error: {error_type}: {message}")]
+#[error("Anthropic API 错误: {error_type}: {message}")]
 pub struct ApiError {
     #[serde(rename = "type")]
     pub error_type: String,
@@ -1066,8 +1066,8 @@ impl ApiError {
 
 pub fn parse_prompt_too_long(message: &str) -> Option<u64> {
     message
-        .strip_prefix("prompt is too long: ")?
-        .split_once(" tokens")?
+        .strip_prefix("提示词过长: ")?
+        .split_once(" 个令牌")?
         .0
         .parse()
         .ok()
@@ -1245,7 +1245,7 @@ mod tests {
             assert!(model.supports_speed);
             let beta_headers = model
                 .beta_headers()
-                .expect("model should have beta headers");
+                .expect("模型应包含 beta 请求头");
             assert!(beta_headers.contains(FAST_MODE_BETA_HEADER));
             assert!(beta_headers.contains(COMPACTION_BETA_HEADER));
         }
@@ -1279,31 +1279,31 @@ mod tests {
 fn test_match_window_exceeded() {
     let error = ApiError {
         error_type: "invalid_request_error".to_string(),
-        message: "prompt is too long: 220000 tokens > 200000".to_string(),
+        message: "提示词过长: 220000 个令牌 > 200000".to_string(),
     };
     assert_eq!(error.match_window_exceeded(), Some(220_000));
 
     let error = ApiError {
         error_type: "invalid_request_error".to_string(),
-        message: "prompt is too long: 1234953 tokens".to_string(),
+        message: "提示词过长: 1234953 个令牌".to_string(),
     };
     assert_eq!(error.match_window_exceeded(), Some(1234953));
 
     let error = ApiError {
         error_type: "invalid_request_error".to_string(),
-        message: "not a prompt length error".to_string(),
+        message: "不是提示词长度错误".to_string(),
     };
     assert_eq!(error.match_window_exceeded(), None);
 
     let error = ApiError {
         error_type: "rate_limit_error".to_string(),
-        message: "prompt is too long: 12345 tokens".to_string(),
+        message: "提示词过长: 12345 个令牌".to_string(),
     };
     assert_eq!(error.match_window_exceeded(), None);
 
     let error = ApiError {
         error_type: "invalid_request_error".to_string(),
-        message: "prompt is too long: invalid tokens".to_string(),
+        message: "提示词过长: 无效的令牌".to_string(),
     };
     assert_eq!(error.match_window_exceeded(), None);
 }

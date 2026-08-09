@@ -131,7 +131,7 @@ impl ListItem {
     /// Sets the checked state reported to assistive technology, independent of
     /// the visual disclosure [`Self::toggle`]. Use this for checkable items
     /// such as a [`Role::MenuItemCheckBox`] entry so screen readers announce
-    /// "checked"/"not checked" accurately.
+    /// "checked"/"未选中" accurately.
     pub fn aria_checked(mut self, checked: bool) -> Self {
         self.aria_checked = Some(checked);
         self
@@ -488,91 +488,91 @@ impl Component for ListItem {
             .gap_6()
             .children(vec![
                 example_group_with_title(
-                    "Basic List Items",
+                    "基本列表项",
                     vec![
                         single_example(
-                            "Simple",
+                            "简单",
                             ListItem::new("simple")
-                                .child(Label::new("Simple list item"))
+                                .child(Label::new("简单列表项"))
                                 .into_any_element(),
                         ),
                         single_example(
-                            "With Icon",
+                            "带图标",
                             ListItem::new("with_icon")
                                 .start_slot(Icon::new(IconName::File))
-                                .child(Label::new("List item with icon"))
+                                .child(Label::new("带图标的列表项"))
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Selected",
+                            "已选中",
                             ListItem::new("selected")
                                 .toggle_state(true)
                                 .start_slot(Icon::new(IconName::Check))
-                                .child(Label::new("Selected item"))
+                                .child(Label::new("已选中的项目"))
                                 .into_any_element(),
                         ),
                     ],
                 ),
                 example_group_with_title(
-                    "List Item Spacing",
+                    "列表项间距",
                     vec![
                         single_example(
-                            "Dense",
+                            "紧凑",
                             ListItem::new("dense")
                                 .spacing(ListItemSpacing::Dense)
-                                .child(Label::new("Dense spacing"))
+                                .child(Label::new("紧凑间距"))
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Extra Dense",
+                            "超紧凑",
                             ListItem::new("extra_dense")
                                 .spacing(ListItemSpacing::ExtraDense)
-                                .child(Label::new("Extra dense spacing"))
+                                .child(Label::new("超紧凑间距"))
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Sparse",
+                            "稀疏",
                             ListItem::new("sparse")
                                 .spacing(ListItemSpacing::Sparse)
-                                .child(Label::new("Sparse spacing"))
+                                .child(Label::new("稀疏间距"))
                                 .into_any_element(),
                         ),
                     ],
                 ),
                 example_group_with_title(
-                    "With Slots",
+                    "带插槽",
                     vec![
                         single_example(
-                            "End Slot",
+                            "末尾插槽",
                             ListItem::new("end_slot")
-                                .child(Label::new("Item with end slot"))
+                                .child(Label::new("带末尾插槽的项目"))
                                 .end_slot(Icon::new(IconName::ChevronRight))
                                 .into_any_element(),
                         ),
                         single_example(
-                            "With Toggle",
+                            "带切换",
                             ListItem::new("with_toggle")
                                 .toggle(Some(true))
-                                .child(Label::new("Expandable item"))
+                                .child(Label::new("可展开项目"))
                                 .into_any_element(),
                         ),
                     ],
                 ),
                 example_group_with_title(
-                    "States",
+                    "状态",
                     vec![
                         single_example(
-                            "Disabled",
+                            "已禁用",
                             ListItem::new("disabled")
                                 .disabled(true)
-                                .child(Label::new("Disabled item"))
+                                .child(Label::new("已禁用的项目"))
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Non-selectable",
+                            "不可选择",
                             ListItem::new("non_selectable")
                                 .selectable(false)
-                                .child(Label::new("Non-selectable item"))
+                                .child(Label::new("不可选择的项目"))
                                 .into_any_element(),
                         ),
                     ],

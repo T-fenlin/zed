@@ -881,7 +881,7 @@ fn assert_channel_tree(actual: Vec<Channel>, expected: &[(ChannelId, &[ChannelId
         .iter()
         .map(|(id, parents)| (*id, *parents))
         .collect::<HashSet<_>>();
-    pretty_assertions::assert_eq!(actual, expected, "wrong channel ids and parent paths");
+    pretty_assertions::assert_eq!(actual, expected, "错误的频道 ID 和父路径");
 }
 
 #[track_caller]
@@ -900,7 +900,7 @@ fn assert_channel_tree_order(actual: Vec<Channel>, expected: &[(ChannelId, &[Cha
         .iter()
         .map(|(id, parents, order)| (*id, *parents, *order))
         .collect::<HashSet<_>>();
-    pretty_assertions::assert_eq!(actual, expected, "wrong channel ids and parent paths");
+    pretty_assertions::assert_eq!(actual, expected, "错误的频道 ID 和父路径");
 }
 
 test_both_dbs!(
@@ -949,7 +949,7 @@ async fn test_delete_channel_with_active_call(db: &Arc<Database>) {
         .await
         .unwrap_err()
         .to_string();
-    assert!(err.contains("call is in progress"), "{err}");
+    assert!(err.contains("通话正在进行中"), "{err}");
 
     // Delete fails - participants in nested calls
     db.leave_room(connection_2).await.unwrap();
@@ -958,7 +958,7 @@ async fn test_delete_channel_with_active_call(db: &Arc<Database>) {
         .await
         .unwrap_err()
         .to_string();
-    assert!(err.contains("call is in progress"), "{err}");
+    assert!(err.contains("通话正在进行中"), "{err}");
 
     // Delete succeeds - no participants in calls
     db.leave_room(connection_1).await.unwrap();

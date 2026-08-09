@@ -677,7 +677,7 @@ impl Vim {
 
                 // Disable the `ONE_MATCH_PER_LINE` search option when finished, as
                 // this is not properly supported outside of vim mode, and
-                // not disabling it makes the "Replace All Matches" button
+                // not disabling it makes the "替换所有匹配项" button
                 // actually replace only the first match on each line.
                 options.set(SearchOptions::ONE_MATCH_PER_LINE, false);
                 search_bar.set_search_options(options, cx);

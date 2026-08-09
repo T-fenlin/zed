@@ -228,9 +228,9 @@ impl Render for HelloWeb {
 
         // -- Go button --
         let (go_bg, go_text, go_label) = if is_running {
-            (BG_OVERLAY, TEXT_DIM, "Running…")
+            (BG_OVERLAY, TEXT_DIM, "运行中…")
         } else {
-            (ACCENT_GREEN, BG_BASE, "Count Primes")
+            (ACCENT_GREEN, BG_BASE, "统计素数")
         };
         let go_button = div()
             .id("go")
@@ -254,7 +254,7 @@ impl Render for HelloWeb {
 
             let status_text: SharedString = if let Some(total) = run.total {
                 format!(
-                    "Found {} primes below {} in {:.0} ms",
+                    "在 {} 以下找到 {} 个素数,耗时 {:.0} 毫秒",
                     format_number(total),
                     format_number(run.limit),
                     run.elapsed.unwrap_or(0.0),
@@ -262,7 +262,7 @@ impl Render for HelloWeb {
                 .into()
             } else {
                 format!(
-                    "Searching up to {} … {}/{} chunks  ({}%)",
+                    "正在搜索至 {} … {}/{} 个分块({}%)",
                     format_number(run.limit),
                     run.chunks_done,
                     NUM_CHUNKS,
@@ -309,7 +309,7 @@ impl Render for HelloWeb {
             div().flex().flex_col().w_full().child(
                 div()
                     .text_color(rgb(TEXT_DIM))
-                    .child("Select a range and press Count Primes to begin."),
+                    .child("选择一个范围并点击“统计素数”开始。"),
             )
         };
 
@@ -345,7 +345,7 @@ impl Render for HelloWeb {
                 div()
                     .text_xl()
                     .text_color(rgb(TEXT_PRIMARY))
-                    .child("Prime Sieve — GPUI Web"),
+                    .child("素数筛 — GPUI Web"),
             )
             .child(div().text_sm().text_color(rgb(TEXT_DIM)).child(format!(
                 "Background threads: {} · Chunks per run: {}",
@@ -367,7 +367,7 @@ impl Render for HelloWeb {
                         div()
                             .text_sm()
                             .text_color(rgb(ACCENT_YELLOW))
-                            .child("Count primes below:"),
+                            .child("统计以下范围内的素数:"),
                     )
                     .child(preset_row)
                     .child(go_button),
@@ -394,7 +394,7 @@ impl Render for HelloWeb {
                         .rounded_lg()
                         .bg(rgb(BG_SURFACE))
                         .gap_2()
-                        .child(div().text_sm().text_color(rgb(TEXT_DIM)).child("History"))
+                        .child(div().text_sm().text_color(rgb(TEXT_DIM)).child("历史记录"))
                         .child(history_section),
                 )
             })
@@ -437,7 +437,7 @@ fn main() {
             },
             |_, cx| cx.new(HelloWeb::new),
         )
-        .expect("failed to open window");
+        .expect("无法打开窗口");
         cx.activate(true);
     });
 }

@@ -93,7 +93,7 @@ impl Reporter {
                 .map(|task| PerfIssue::Foreground(task.location)),
         );
         if !hangs.is_empty() {
-            info!("New foreground hang detected:\n{}", DisplayTasks(&hangs));
+            info!("检测到新的前台挂起:\n{}", DisplayTasks(&hangs));
         }
 
         !hangs.is_empty()
@@ -127,8 +127,8 @@ impl Reporter {
             );
 
             info!(
-                "Background hang detected on {}:\n{}",
-                worker.thread_name.as_deref().unwrap_or_else(|| "Unknown"),
+                "在 {} 上检测到后台挂起:\n{}",
+                worker.thread_name.as_deref().unwrap_or_else(|| "未知"),
                 DisplayTasks(&hangs)
             );
             report_made = true;
@@ -145,7 +145,7 @@ impl Reporter {
 
         self.update_reported(hangs.iter().map(|action| PerfIssue::Action(action.name)));
         if !hangs.is_empty() {
-            info!("Action hang detected:\n{}", DisplayActions(hangs));
+            info!("检测到操作挂起:\n{}", DisplayActions(hangs));
         }
     }
 }
@@ -155,7 +155,7 @@ struct DisplayTasks<'a>(&'a [gpui::TaskTiming]);
 
 impl Display for DisplayActions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("Actions(s) that ran too long\n")?;
+        f.write_str("运行时间过长的操作:\n")?;
         for action in self.0.iter().sorted_by_key(|action| action.runtime()).rev() {
             f.write_fmt(format_args!(
                 "{:<20} - {}",
@@ -170,7 +170,7 @@ impl Display for DisplayActions {
 
 impl<'a> Display for DisplayTasks<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("Tasks(s) that ran too long\n")?;
+        f.write_str("运行时间过长的任务:\n")?;
         for task in self
             .0
             .iter()

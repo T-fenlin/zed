@@ -95,29 +95,29 @@ impl Display for DevContainerError {
             "{}",
             match self {
                 DevContainerError::DockerNotAvailable =>
-                    "docker CLI not found on $PATH".to_string(),
+                    "在 $PATH 中未找到 docker CLI".to_string(),
                 DevContainerError::ContainerNotValid(id) => format!(
-                    "docker image {id} did not have expected configuration for a dev container"
+                    "docker 镜像 {id} 没有预期的开发容器配置"
                 ),
                 DevContainerError::DevContainerScriptsFailed =>
-                    "lifecycle scripts could not execute for dev container".to_string(),
+                    "开发容器的生命周期脚本无法执行".to_string(),
                 DevContainerError::DevContainerUpFailed(_) => {
-                    "DevContainer creation failed".to_string()
+                    "DevContainer 创建失败".to_string()
                 }
                 DevContainerError::DevContainerTemplateApplyFailed(_) => {
-                    "DevContainer template apply failed".to_string()
+                    "DevContainer 模板应用失败".to_string()
                 }
                 DevContainerError::DevContainerNotFound =>
-                    "No valid dev container definition found in project".to_string(),
+                    "在项目中未找到有效的开发容器定义".to_string(),
                 DevContainerError::DevContainerParseFailed =>
-                    "Failed to parse file .devcontainer/devcontainer.json".to_string(),
-                DevContainerError::NotInValidProject => "Not within a valid project".to_string(),
+                    "解析文件 .devcontainer/devcontainer.json 失败".to_string(),
+                DevContainerError::NotInValidProject => "不在有效的项目中".to_string(),
                 DevContainerError::CommandFailed(program) =>
-                    format!("Failure running external program {program}"),
+                    format!("运行外部程序 {program} 失败"),
                 DevContainerError::FilesystemError =>
-                    "Error downloading resources locally".to_string(),
+                    "本地下载资源时出错".to_string(),
                 DevContainerError::ResourceFetchFailed =>
-                    "Failed to fetch resources from template or feature repository".to_string(),
+                    "从模板或功能仓库获取资源失败".to_string(),
                 DevContainerError::DevContainerValidationFailed(failure) => failure.to_string(),
                 DevContainerError::MultipleMatchingContainers(ids) => format!(
                     "Multiple containers match this project's dev container labels ({}). \
@@ -139,7 +139,7 @@ pub(crate) async fn read_default_devcontainer_configuration(
     read_devcontainer_configuration(default_config, cx, environment)
         .await
         .map_err(|e| {
-            log::error!("Default configuration not found: {:?}", e);
+            log::error!("未找到默认配置: {:?}", e);
             DevContainerError::DevContainerNotFound
         })
 }
@@ -300,7 +300,7 @@ pub async fn start_dev_container_with_config(
         }
         Err(err @ DevContainerError::MultipleMatchingContainers(_)) => Err(err),
         Err(err) => {
-            let message = format!("Failed with nested error: {:?}", err);
+            let message = format!("嵌套错误失败: {:?}", err);
             Err(DevContainerError::DevContainerUpFailed(message))
         }
     }
@@ -317,7 +317,7 @@ async fn check_for_docker(use_podman: bool) -> Result<(), DevContainerError> {
     match command.output().await {
         Ok(_) => Ok(()),
         Err(e) => {
-            log::error!("Unable to find docker in $PATH: {:?}", e);
+            log::error!("在 $PATH 中找不到 docker: {:?}", e);
             Err(DevContainerError::DockerNotAvailable)
         }
     }
@@ -337,7 +337,7 @@ pub(crate) async fn apply_devcontainer_template(
         &context.http_client,
     )
     .map_err(|e| {
-        log::error!("Failed to get OCI auth token: {e}");
+        log::error!("获取 OCI 认证令牌失败: {e}");
         DevContainerError::ResourceFetchFailed
     })
     .await?;
@@ -349,13 +349,13 @@ pub(crate) async fn apply_devcontainer_template(
         Some(&template.id),
     )
     .map_err(|e| {
-        log::error!("Failed to fetch template from OCI repository: {e}");
+        log::error!("从 OCI 仓库获取模板失败: {e}");
         DevContainerError::ResourceFetchFailed
     })
     .await?;
 
     let layer = &manifest.layers.get(0).ok_or_else(|| {
-        log::error!("Given manifest has no layers to query for blob. Aborting");
+        log::error!("给定的清单没有可查询 blob 的层。中止");
         DevContainerError::ResourceFetchFailed
     })?;
 
@@ -368,7 +368,7 @@ pub(crate) async fn apply_devcontainer_template(
         .join(format!("extracted-{timestamp}"));
 
     context.fs.create_dir(&extract_dir).await.map_err(|e| {
-        log::error!("Could not create temporary directory: {e}");
+        log::error!("无法创建临时目录: {e}");
         DevContainerError::FilesystemError
     })?;
 
@@ -384,7 +384,7 @@ pub(crate) async fn apply_devcontainer_template(
         Some(&template.id),
     )
     .map_err(|e| {
-        log::error!("Error downloading tarball: {:?}", e);
+        log::error!("下载 tarball 时出错: {:?}", e);
         DevContainerError::ResourceFetchFailed
     })
     .await?;
@@ -399,17 +399,17 @@ pub(crate) async fn apply_devcontainer_template(
             continue;
         }
         let relative_path = entry.path().strip_prefix(&extract_dir).map_err(|e| {
-            log::error!("Can't create relative path: {e}");
+            log::error!("无法创建相对路径: {e}");
             DevContainerError::FilesystemError
         })?;
         let rel_path = RelPath::from_unix_str(relative_path)
             .map_err(|e| {
-                log::error!("Can't create relative path: {e}");
+                log::error!("无法创建相对路径: {e}");
                 DevContainerError::FilesystemError
             })?
             .into_arc();
         let content = context.fs.load(entry.path()).await.map_err(|e| {
-            log::error!("Unable to read file: {e}");
+            log::error!("无法读取文件: {e}");
             DevContainerError::FilesystemError
         })?;
 
@@ -423,7 +423,7 @@ pub(crate) async fn apply_devcontainer_template(
             })
             .await
             .map_err(|e| {
-                log::error!("Unable to create entry in worktree: {e}");
+                log::error!("无法在工作树中创建条目: {e}");
                 DevContainerError::NotInValidProject
             })?;
         project_files.push(rel_path);

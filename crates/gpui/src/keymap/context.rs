@@ -250,7 +250,7 @@ impl KeyBindingContextPredicate {
         let source = skip_whitespace(source);
         let (predicate, rest) = Self::parse_expr(source, 0)?;
         if let Some(next) = rest.chars().next() {
-            anyhow::bail!("unexpected character '{next:?}'");
+            anyhow::bail!("意外的字符 '{next:?}'");
         } else {
             Ok(predicate)
         }
@@ -379,12 +379,12 @@ impl KeyBindingContextPredicate {
     }
 
     fn parse_primary(mut source: &str) -> anyhow::Result<(Self, &str)> {
-        let next = source.chars().next().context("unexpected end")?;
+        let next = source.chars().next().context("意外的结束")?;
         match next {
             '(' => {
                 source = skip_whitespace(&source[1..]);
                 let (predicate, rest) = Self::parse_expr(source, 0)?;
-                let stripped = rest.strip_prefix(')').context("expected a ')'")?;
+                let stripped = rest.strip_prefix(')').context("应为 ')'")?;
                 source = skip_whitespace(stripped);
                 Ok((predicate, source))
             }
@@ -412,7 +412,7 @@ impl KeyBindingContextPredicate {
                     source,
                 ))
             }
-            _ => anyhow::bail!("unexpected character '{next:?}'"),
+            _ => anyhow::bail!("意外的字符 '{next:?}'"),
         }
     }
 
@@ -432,7 +432,7 @@ impl KeyBindingContextPredicate {
         if let (Self::Identifier(left), Self::Identifier(right)) = (self, other) {
             Ok(Self::Equal(left, right))
         } else {
-            anyhow::bail!("operands of == must be identifiers");
+            anyhow::bail!("== 的操作数必须是标识符");
         }
     }
 
@@ -440,7 +440,7 @@ impl KeyBindingContextPredicate {
         if let (Self::Identifier(left), Self::Identifier(right)) = (self, other) {
             Ok(Self::NotEqual(left, right))
         } else {
-            anyhow::bail!("operands of != must be identifiers");
+            anyhow::bail!("!= 的操作数必须是标识符");
         }
     }
 
@@ -589,7 +589,7 @@ mod tests {
             KeyBindingContextPredicate::parse("c == !d")
                 .unwrap_err()
                 .to_string(),
-            "operands of == must be identifiers"
+            "== 的操作数必须是标识符"
         );
     }
 

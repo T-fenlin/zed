@@ -343,7 +343,7 @@ pub fn map_to_language_model_completion_events(
                     Ok(event) => {
                         let Some(choice) = event.choices.first() else {
                             return Some((
-                                vec![Err(anyhow!("Response contained no choices").into())],
+                                vec![Err(anyhow!("响应中不包含任何选项").into())],
                                 state,
                             ));
                         };
@@ -356,7 +356,7 @@ pub fn map_to_language_model_completion_events(
 
                         let Some(delta) = delta else {
                             return Some((
-                                vec![Err(anyhow!("Response contained no delta").into())],
+                                vec![Err(anyhow!("响应中不包含增量内容").into())],
                                 state,
                             ));
                         };
@@ -494,7 +494,7 @@ pub fn map_to_language_model_completion_events(
                                 )));
                             }
                             Some(stop_reason) => {
-                                log::error!("Unexpected Copilot Chat stop_reason: {stop_reason:?}");
+                                log::error!("意外的 Copilot Chat 停止原因: {stop_reason:?}");
                                 events.push(Ok(LanguageModelCompletionEvent::Stop(
                                     StopReason::EndTurn,
                                 )));
@@ -836,11 +836,11 @@ fn into_copilot_chat(
                                         }
                                     } else {
                                         debug_panic!(
-                                            "This should be caught at {} level",
+                                            "这应该在 {} 级别被捕获",
                                             tool_result.tool_name
                                         );
                                         ChatMessagePart::Text {
-                                            text: "[Tool responded with an image, but this model does not support vision]".to_string(),
+                                            text: "[工具返回了图片,但此模型不支持视觉功能]".to_string(),
                                         }
                                     }
                                 }
@@ -899,7 +899,7 @@ fn into_copilot_chat(
                 for content in &message.content {
                     if let MessageContent::ToolUse(tool_use) = content {
                         let input = tool_use.input.as_json().ok_or_else(|| {
-                            anyhow!("Copilot Chat does not support custom tool calls")
+                            anyhow!("Copilot Chat 不支持自定义工具调用")
                         })?;
                         tool_calls.push(ToolCall {
                             id: tool_use.id.to_string(),
@@ -978,7 +978,7 @@ fn into_copilot_chat(
                 })
             }
             language_model::LanguageModelRequestToolInput::Custom { .. } => Err(anyhow::anyhow!(
-                "Copilot Chat does not support custom tools"
+                "Copilot Chat 不支持自定义工具"
             )),
         })
         .collect::<Result<Vec<_>>>()?;
@@ -1090,11 +1090,11 @@ fn into_copilot_responses(
                                                 }
                                             } else {
                                                 debug_panic!(
-                                                    "This should be caught at {} level",
+                                                    "这应该在 {} 级别被捕获",
                                                     tool_result.tool_name
                                                 );
                                                 responses::ResponseInputContent::InputText {
-                                                    text: "[Tool responded with an image, but this model does not support vision]".to_string(),
+                                                    text: "[工具返回了图片,但此模型不支持视觉功能]".to_string(),
                                                 }
                                             }
                                         }
@@ -1171,7 +1171,7 @@ fn into_copilot_responses(
                         }
                         MessageContent::Image(_) => {
                             parts.push(responses::ResponseInputContent::OutputText {
-                                text: "[image omitted]".to_string(),
+                                text: "[图片已省略]".to_string(),
                             });
                         }
                         _ => {}
@@ -1220,7 +1220,7 @@ fn into_copilot_responses(
                 })
             }
             language_model::LanguageModelRequestToolInput::Custom { .. } => Err(anyhow::anyhow!(
-                "Copilot Chat does not support custom tools"
+                "Copilot Chat 不支持自定义工具"
             )),
         })
         .collect::<Result<_>>()?;
@@ -1445,7 +1445,7 @@ mod tests {
                     ]
                 })
             ),
-            other => panic!("expected reasoning details, got {other:?}"),
+            other => panic!("期望获取推理详情,实际得到 {other:?}"),
         }
     }
 
@@ -1644,8 +1644,8 @@ mod tests {
                 }
             }
         }
-        assert_eq!(stop_count, 1, "should emit exactly one Stop event");
-        assert!(saw_tool_use_stop, "Stop reason should be ToolUse");
+        assert_eq!(stop_count, 1, "应恰好发出一个停止事件");
+        assert!(saw_tool_use_stop, "停止原因应为 ToolUse");
     }
 
     #[test]
@@ -1654,7 +1654,7 @@ mod tests {
             response: responses::Response {
                 error: Some(responses::ResponseError {
                     code: "429".into(),
-                    message: "too many requests".into(),
+                    message: "请求过多".into(),
                 }),
                 ..Default::default()
             },
@@ -1675,9 +1675,9 @@ mod tests {
                 ..
             }) => {
                 assert_eq!(*status_code, http_client::StatusCode::TOO_MANY_REQUESTS);
-                assert_eq!(message, "too many requests");
+                assert_eq!(message, "请求过多");
             }
-            other => panic!("expected HttpResponseError, got {:?}", other),
+            other => panic!("期望 HttpResponseError,实际得到 {:?}", other),
         }
     }
 
@@ -1705,7 +1705,7 @@ mod tests {
                             }),
                         }],
                         reasoning_opaque: Some("encrypted_reasoning_token_xyz".to_string()),
-                        reasoning_text: Some("Let me check the directory".to_string()),
+                        reasoning_text: Some("让我检查一下目录".to_string()),
                     }),
                     message: None,
                 }],
@@ -1768,18 +1768,18 @@ mod tests {
 
         assert!(
             has_reasoning_details,
-            "Should emit ReasoningDetails event for Gemini 3 reasoning"
+            "应为 Gemini 3 推理发出 ReasoningDetails 事件"
         );
-        assert!(has_tool_use, "Should emit ToolUse event");
+        assert!(has_tool_use, "应发出 ToolUse 事件");
         assert_eq!(
             reasoning_opaque_value,
             Some("encrypted_reasoning_token_xyz".to_string()),
-            "Should capture reasoning_opaque"
+            "应捕获 reasoning_opaque"
         );
         assert_eq!(
             reasoning_text_value,
-            Some("Let me check the directory".to_string()),
-            "Should capture reasoning_text"
+            Some("让我检查一下目录".to_string()),
+            "应捕获 reasoning_text"
         );
     }
 }

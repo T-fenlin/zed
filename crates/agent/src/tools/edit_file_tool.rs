@@ -19,7 +19,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use ui::SharedString;
 
-const DEFAULT_UI_TEXT: &str = "Editing file";
+const DEFAULT_UI_TEXT: &str = "正在编辑文件";
 
 /// This is a tool for applying edits to an existing file.
 ///
@@ -141,7 +141,7 @@ impl EditFileTool {
                                         {
                                             Ok(created_session) => session = Some(created_session),
                                             Err(error) => {
-                                                log::error!("Failed to create edit session: {}", error);
+                                                log::error!("创建编辑会话失败:{}", error);
                                                 return EditSessionResult::Failed {
                                                     error,
                                                     session: None,
@@ -153,7 +153,7 @@ impl EditFileTool {
                                     if let Some(current_session) = &mut session
                                         && let Err(error) = current_session.process_edit(parsed.edits.as_deref(), event_stream, cx)
                                     {
-                                        log::error!("Failed to process edit: {}", error);
+                                        log::error!("处理编辑失败:{}", error);
                                         return EditSessionResult::Failed { error, session };
                                     }
                                 }
@@ -174,7 +174,7 @@ impl EditFileTool {
                                     {
                                         Ok(created_session) => created_session,
                                         Err(error) => {
-                                            log::error!("Failed to create edit session: {}", error);
+                                            log::error!("创建编辑会话失败:{}", error);
                                             return EditSessionResult::Failed {
                                                 error,
                                                 session: None,
@@ -186,7 +186,7 @@ impl EditFileTool {
                                 return match session.finalize_edit(full_input.edits, event_stream, cx).await {
                                     Ok(()) => EditSessionResult::Completed(session),
                                     Err(error) => {
-                                        log::error!("Failed to finalize edit: {}", error);
+                                        log::error!("完成编辑失败:{}", error);
                                         EditSessionResult::Failed {
                                             error,
                                             session: Some(session),
@@ -195,7 +195,7 @@ impl EditFileTool {
                                 };
                             }
                             ToolInputPayload::InvalidJson { error_message } => {
-                                log::error!("Received invalid JSON: {error_message}");
+                                log::error!("收到无效的 JSON:{error_message}");
                                 return EditSessionResult::Failed {
                                     error: error_message,
                                     session,
@@ -212,7 +212,7 @@ impl EditFileTool {
                 }
                 _ = event_stream.cancelled_by_user().fuse() => {
                     return EditSessionResult::Failed {
-                        error: "Edit cancelled by user".to_string(),
+                        error: "用户已取消编辑".to_string(),
                         session,
                     };
                 }
@@ -609,7 +609,7 @@ mod tests {
         else {
             panic!("expected error");
         };
-        assert_eq!(error, "Can't edit file: path not found");
+        assert_eq!(error, "无法编辑文件: 路径不存在");
         assert!(diff.is_empty());
         assert_eq!(input_path, None);
     }
@@ -654,15 +654,15 @@ mod tests {
         let auth = event_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("agent skills"),
-            "Authorization title should mention agent skills, got: {title}",
+            title.contains("代理技能"),
+            "授权标题应提及代理技能,实际为: {title}",
         );
         auth.response
             .send(acp_thread::SelectedPermissionOutcome::new(
                 acp::PermissionOptionId::new("allow"),
                 acp::PermissionOptionKind::AllowOnce,
             ))
-            .expect("authorization response should send");
+            .expect("授权响应应发送");
 
         let EditFileToolOutput::Success { new_text, .. } = task.await.unwrap() else {
             panic!("expected success");
@@ -695,8 +695,8 @@ mod tests {
             panic!("expected error");
         };
         assert!(
-            error.contains("Could not find matching text"),
-            "Expected error containing 'Could not find matching text' but got: {error}"
+            error.contains("找不到匹配的文本"),
+            "预期错误包含“找不到匹配的文本”,但实际为:{error}"
         );
     }
 
@@ -723,7 +723,7 @@ mod tests {
         let EditFileToolOutput::Error { error, diff, .. } = result.unwrap_err() else {
             panic!("expected error");
         };
-        assert!(error.contains("matched multiple locations"));
+        assert!(error.contains("匹配到多个位置"));
         assert!(diff.is_empty());
     }
 
@@ -779,14 +779,14 @@ mod tests {
         };
         assert!(
             diff.is_empty(),
-            "sanity check: no edits should have been applied",
+            "健全性检查:不应应用任何编辑",
         );
 
         let content_text = find_first_text_content_in_events(&mut receiver).await;
         assert_eq!(
             content_text.as_deref(),
             Some(error.as_str()),
-            "expected the failure message to be surfaced as tool call content",
+            "预期失败消息会作为工具调用内容显示",
         );
     }
 
@@ -853,7 +853,7 @@ mod tests {
         };
         assert!(
             error.contains("cancelled"),
-            "Expected cancellation error but got: {error}"
+            "预期取消错误,但实际为:{error}"
         );
     }
 
@@ -978,7 +978,7 @@ mod tests {
         assert_eq!(
             buffer_text.as_deref(),
             Some("line 1\nline 2\nline 3\nline 4\nline 5\n"),
-            "Buffer should not be modified while first edit is still in progress"
+            "第一次编辑仍在进行时,缓冲区不应被修改"
         );
 
         // Second edit appears — this proves the first edit is complete, so it
@@ -1004,7 +1004,7 @@ mod tests {
         assert_eq!(
             buffer_text.as_deref(),
             Some("MODIFIED 1\nline 2\nline 3\nline 4\nline 5\n"),
-            "First edit should be applied during streaming when second edit appears"
+            "当第二次编辑出现时,第一次编辑应在流式传输期间应用"
         );
 
         // Send final complete input
@@ -1026,7 +1026,7 @@ mod tests {
         assert_eq!(new_text, "MODIFIED 1\nline 2\nline 3\nline 4\nMODIFIED 5\n");
         assert_eq!(
             *old_text, "line 1\nline 2\nline 3\nline 4\nline 5\n",
-            "old_text should reflect the original file content before any edits"
+            "old_text 应反映任何编辑之前的原始文件内容"
         );
     }
 
@@ -1174,7 +1174,7 @@ mod tests {
         let buffer_text = buffer.read_with(cx, |buffer, _cx| buffer.text());
         assert_eq!(
             buffer_text, "MODIFIED\nline 2\nline 3\n",
-            "First edit should be applied even though second edit will fail"
+            "即使第二次编辑会失败,第一次编辑也应应用"
         );
 
         // Edit 3 appears — this makes edit 2 "complete", triggering its
@@ -1204,8 +1204,8 @@ mod tests {
         };
 
         assert!(
-            error.contains("Could not find matching text for edit at index 1"),
-            "Expected error about edit 1 failing, got: {error}"
+            error.contains("找不到索引 1 处编辑的匹配文本"),
+            "预期编辑 1 失败的错误,实际为:{error}"
         );
         // Ensure that first edit was applied successfully and that we saved the buffer
         assert_eq!(input_path, Some(PathBuf::from("root/file.txt")));
@@ -1254,7 +1254,7 @@ mod tests {
         assert_eq!(
             buffer_text.as_deref(),
             Some("goodbye worldhello world\n"),
-            "In-progress streaming diff: new text inserted, old text not yet removed"
+            "进行中的流式差异:已插入新文本,旧文本尚未移除"
         );
 
         // Send final — the edit is applied during finalization
@@ -1325,7 +1325,7 @@ mod tests {
         let result = task.await;
         assert!(
             result.is_err(),
-            "Tool should error when sender is dropped without sending final input"
+            "当发送者在未发送最终输入的情况下被丢弃时,工具应报错"
         );
     }
 
@@ -1342,12 +1342,12 @@ mod tests {
         assert_resolved_path_eq(result.await, rel_path(path_without_root));
 
         let result = test_resolve_path(&mode, "root/nonexistent.txt", cx);
-        assert_eq!(result.await.unwrap_err(), "Can't edit file: path not found");
+        assert_eq!(result.await.unwrap_err(), "无法编辑文件: 路径不存在");
 
         let result = test_resolve_path(&mode, "root/dir", cx);
         assert_eq!(
             result.await.unwrap_err(),
-            "Can't edit file: path is a directory"
+            "无法编辑文件:路径是目录"
         );
     }
 
@@ -1377,7 +1377,7 @@ mod tests {
 
     #[track_caller]
     fn assert_resolved_path_eq(path: Result<ProjectPath, String>, expected: &RelPath) {
-        let actual = path.expect("Should return valid path").path;
+        let actual = path.expect("应返回有效路径").path;
         assert_eq!(actual.as_ref(), expected);
     }
 
@@ -1393,7 +1393,7 @@ mod tests {
         let event = stream_rx.expect_authorization().await;
         assert_eq!(
             event.tool_call.fields.title,
-            Some("Edit `.zed/settings.json` (local settings)".into())
+            Some("编辑 `.zed/settings.json`(本地设置)".into())
         );
 
         // Test 2: Path outside project should require confirmation
@@ -1404,7 +1404,7 @@ mod tests {
         let event = stream_rx.expect_authorization().await;
         assert_eq!(
             event.tool_call.fields.title,
-            Some("Edit `/etc/hosts`".into())
+            Some("编辑 `/etc/hosts`".into())
         );
 
         // Test 3: Relative path without .zed should not require confirmation
@@ -1422,7 +1422,7 @@ mod tests {
         let event = stream_rx.expect_authorization().await;
         assert_eq!(
             event.tool_call.fields.title,
-            Some("Edit `root/.zed/tasks.json` (local settings)".into())
+            Some("编辑 `root/.zed/tasks.json`(本地设置)".into())
         );
 
         // Test 5: When global default is allow, sensitive and outside-project
@@ -1440,7 +1440,7 @@ mod tests {
         let event = stream_rx.expect_authorization().await;
         assert_eq!(
             event.tool_call.fields.title,
-            Some("Edit `.zed/settings.json` (local settings)".into())
+            Some("编辑 `.zed/settings.json`(本地设置)".into())
         );
 
         // 5.2: /etc/hosts is outside the project, but Allow auto-approves
@@ -1471,13 +1471,13 @@ mod tests {
         let event = stream_rx.expect_authorization().await;
         assert_eq!(
             event.tool_call.fields.title,
-            Some("Edit `/etc/hosts`".into())
+            Some("编辑 `/etc/hosts`".into())
         );
 
         // 5.5: .agents/skills is a sensitive path — still prompts. The
         // sensitive-path classifier runs regardless of the default mode, so
         // it doesn't matter that we're now in Confirm mode — we're checking
-        // that the path is recognized and gets the "(agent skills)" tag.
+        // that the path is recognized and gets the "(代理技能)" tag.
         let (stream_tx, mut stream_rx) = ToolCallEventStream::test();
         let _auth = cx.update(|cx| {
             edit_tool.authorize(
@@ -1489,20 +1489,20 @@ mod tests {
         let event = stream_rx.expect_authorization().await;
         assert_eq!(
             event.tool_call.fields.title,
-            Some("Edit `root/.agents/skills/my-skill/SKILL.md` (agent skills)".into())
+            Some("编辑 `root/.agents/skills/my-skill/SKILL.md`(代理技能)".into())
         );
-        // Skills always prompt, so no "Always allow" option is offered.
+        // Skills always prompt, so no "始终允许" option is offered.
         assert!(
             event
                 .options
                 .first_option_of_kind(acp::PermissionOptionKind::AllowAlways)
                 .is_none(),
-            "agent skills prompt must not offer an \"Always allow\" option: {:?}",
+            "代理技能提示不得提供“始终允许”选项:{:?}",
             event.options,
         );
         assert!(
             matches!(event.options, acp_thread::PermissionOptions::Flat(_)),
-            "agent skills prompt should use flat allow/deny options: {:?}",
+            "代理技能提示应使用平铺的允许/拒绝选项:{:?}",
             event.options,
         );
 
@@ -1519,7 +1519,7 @@ mod tests {
                 .fields
                 .title
                 .as_deref()
-                .is_some_and(|title| title.ends_with("(agent skills)"))
+                .is_some_and(|title| title.ends_with("(代理技能)"))
         );
     }
 
@@ -1560,8 +1560,8 @@ mod tests {
                 .fields
                 .title
                 .as_deref()
-                .is_some_and(|title| title.ends_with("(agent skills)")),
-            "`..` traversal into .agents/skills must still prompt: {:?}",
+                .is_some_and(|title| title.ends_with("(代理技能)")),
+            "`..` 遍历进入 .agents/skills 仍必须提示:{:?}",
             event.tool_call.fields.title,
         );
     }
@@ -1599,8 +1599,8 @@ mod tests {
                 .fields
                 .title
                 .as_deref()
-                .is_some_and(|title| title.ends_with("(local settings)")),
-            "`..` traversal into .zed must still prompt: {:?}",
+                .is_some_and(|title| title.ends_with("(本地设置)")),
+            "`..` 遍历进入 .zed 仍必须提示:{:?}",
             event.tool_call.fields.title,
         );
     }
@@ -1642,8 +1642,8 @@ mod tests {
                 .fields
                 .title
                 .as_deref()
-                .is_some_and(|title| title.ends_with("(local settings)")),
-            "Intra-project symlink to .zed must still prompt: {:?}",
+                .is_some_and(|title| title.ends_with("(本地设置)")),
+            "项目内指向 .zed 的符号链接仍必须提示:{:?}",
             event.tool_call.fields.title,
         );
     }
@@ -1685,8 +1685,8 @@ mod tests {
                 .fields
                 .title
                 .as_deref()
-                .is_some_and(|title| title.ends_with("(agent skills)")),
-            "Intra-project symlink to .agents/skills must still prompt: {:?}",
+                .is_some_and(|title| title.ends_with("(代理技能)")),
+            "项目内指向 .agents/skills 的符号链接仍必须提示:{:?}",
             event.tool_call.fields.title,
         );
     }
@@ -1720,8 +1720,8 @@ mod tests {
                 .fields
                 .title
                 .as_deref()
-                .is_some_and(|title| title.contains("points outside the project")),
-            "Expected symlink escape authorization for create under external symlink"
+                .is_some_and(|title| title.contains("指向项目外部")),
+            "预期在外部符号链接下创建时需要符号链接逃逸授权"
         );
 
         event
@@ -1776,8 +1776,8 @@ mod tests {
         let auth = stream_rx.expect_authorization().await;
         let title = auth.tool_call.fields.title.as_deref().unwrap_or("");
         assert!(
-            title.contains("points outside the project"),
-            "title should mention symlink escape, got: {title}"
+            title.contains("指向项目外部"),
+            "标题应提及符号链接逃逸,实际为:{title}"
         );
     }
 
@@ -1822,7 +1822,7 @@ mod tests {
         drop(auth); // deny by dropping
 
         let result = authorize_task.await;
-        assert!(result.is_err(), "should fail when denied");
+        assert!(result.is_err(), "拒绝时应失败");
     }
 
     #[gpui::test]
@@ -1875,13 +1875,13 @@ mod tests {
             })
             .await;
 
-        assert!(result.is_err(), "Tool should fail when policy denies");
+        assert!(result.is_err(), "策略拒绝时工具应失败");
         assert!(
             !matches!(
                 stream_rx.try_recv(),
                 Ok(Ok(crate::ThreadEvent::ToolCallAuthorization(_)))
             ),
-            "Deny policy should not emit symlink authorization prompt",
+            "拒绝策略不应发出符号链接授权提示",
         );
     }
 
@@ -1897,17 +1897,17 @@ mod tests {
             (
                 "/etc/hosts",
                 true,
-                "System file should require confirmation",
+                "系统文件应需要确认",
             ),
             (
                 "/usr/local/bin/script",
                 true,
-                "System bin file should require confirmation",
+                "系统 bin 文件应需要确认",
             ),
             (
                 "project/normal_file.rs",
                 false,
-                "Normal project file should not require confirmation",
+                "普通项目文件不应需要确认",
             ),
         ];
 
@@ -1921,7 +1921,7 @@ mod tests {
                 auth.await.unwrap();
                 assert!(
                     stream_rx.try_recv().is_err(),
-                    "Failed for case: {} - path: {} - expected no confirmation but got one",
+                    "案例 {} 失败 - 路径:{} - 预期无需确认但收到了确认",
                     description,
                     path
                 );
@@ -1972,18 +1972,18 @@ mod tests {
         .await;
 
         let test_cases = vec![
-            ("frontend/src/main.js", false, "File in first worktree"),
-            ("backend/src/main.rs", false, "File in second worktree"),
+            ("frontend/src/main.js", false, "第一个工作树中的文件"),
+            ("backend/src/main.rs", false, "第二个工作树中的文件"),
             (
                 "shared/.zed/settings.json",
                 true,
-                ".zed file in third worktree",
+                "第三个工作树中的 .zed 文件",
             ),
-            ("/etc/hosts", true, "Absolute path outside all worktrees"),
+            ("/etc/hosts", true, "所有工作树之外的绝对路径"),
             (
                 "../outside/file.txt",
                 true,
-                "Relative path outside worktrees",
+                "工作树之外的相对路径",
             ),
         ];
 
@@ -1997,7 +1997,7 @@ mod tests {
                 auth.await.unwrap();
                 assert!(
                     stream_rx.try_recv().is_err(),
-                    "Failed for case: {} - path: {} - expected no confirmation but got one",
+                    "案例 {} 失败 - 路径:{} - 预期无需确认但收到了确认",
                     description,
                     path
                 );
@@ -2027,22 +2027,22 @@ mod tests {
             setup_test_with_fs(cx, fs, &[path!("/project").as_ref()]).await;
 
         let test_cases = vec![
-            ("", false, "Empty path is treated as project root"),
-            ("/", true, "Root directory should be outside project"),
+            ("", false, "空路径被视为项目根目录"),
+            ("/", true, "根目录应在项目之外"),
             (
                 "project/../other",
                 true,
-                "Path with .. that goes outside of root directory",
+                "包含 .. 且超出根目录的路径",
             ),
             (
                 "project/./src/file.rs",
                 false,
-                "Path with . should work normally",
+                "包含 . 的路径应正常工作",
             ),
             #[cfg(target_os = "windows")]
-            ("C:\\Windows\\System32\\hosts", true, "Windows system path"),
+            ("C:\\Windows\\System32\\hosts", true, "Windows 系统路径"),
             #[cfg(target_os = "windows")]
-            ("project\\src\\main.rs", false, "Windows-style project path"),
+            ("project\\src\\main.rs", false, "Windows 风格的项目路径"),
         ];
 
         for (path, should_confirm, description) in test_cases {
@@ -2056,7 +2056,7 @@ mod tests {
             } else {
                 assert!(
                     stream_rx.try_recv().is_err(),
-                    "Failed for case: {} - path: {} - expected no confirmation but got one",
+                    "案例 {} 失败 - 路径:{} - 预期无需确认但收到了确认",
                     description,
                     path
                 );
@@ -2149,7 +2149,7 @@ mod tests {
     #[gpui::test]
     async fn test_streaming_consecutive_edits_work(cx: &mut TestAppContext) {
         let (edit_tool, project, action_log, _fs, _thread) =
-            setup_test(cx, json!({"test.txt": "original content"})).await;
+            setup_test(cx, json!({"test.txt": "原始内容"})).await;
         let read_tool = Arc::new(crate::ReadFileTool::new(
             project.clone(),
             action_log.clone(),
@@ -2178,8 +2178,8 @@ mod tests {
                     ToolInput::resolved(EditFileToolInput {
                         path: "root/test.txt".into(),
                         edits: vec![Edit {
-                            old_text: "original content".into(),
-                            new_text: "modified content".into(),
+                            old_text: "原始内容".into(),
+                            new_text: "修改后的内容".into(),
                         }],
                     }),
                     ToolCallEventStream::test().0,
@@ -2189,7 +2189,7 @@ mod tests {
             .await;
         assert!(
             edit_result.is_ok(),
-            "First edit should succeed, got error: {:?}",
+            "第一次编辑应成功,但出现错误:{:?}",
             edit_result.as_ref().err()
         );
 
@@ -2200,8 +2200,8 @@ mod tests {
                     ToolInput::resolved(EditFileToolInput {
                         path: "root/test.txt".into(),
                         edits: vec![Edit {
-                            old_text: "modified content".into(),
-                            new_text: "further modified content".into(),
+                            old_text: "修改后的内容".into(),
+                            new_text: "进一步修改的内容".into(),
                         }],
                     }),
                     ToolCallEventStream::test().0,
@@ -2211,7 +2211,7 @@ mod tests {
             .await;
         assert!(
             edit_result.is_ok(),
-            "Second consecutive edit should succeed, got error: {:?}",
+            "第二次连续编辑应成功,但出现错误:{:?}",
             edit_result.as_ref().err()
         );
     }
@@ -2219,7 +2219,7 @@ mod tests {
     #[gpui::test]
     async fn test_streaming_external_modification_matching_edit_succeeds(cx: &mut TestAppContext) {
         let (edit_tool, project, action_log, fs, _thread) =
-            setup_test(cx, json!({"test.txt": "original content"})).await;
+            setup_test(cx, json!({"test.txt": "原始内容"})).await;
         let read_tool = Arc::new(crate::ReadFileTool::new(
             project.clone(),
             action_log.clone(),
@@ -2246,7 +2246,7 @@ mod tests {
             .advance_clock(std::time::Duration::from_secs(2));
         fs.save(
             path!("/root/test.txt").as_ref(),
-            &"externally modified content".into(),
+            &"外部修改的内容".into(),
             language::LineEnding::Unix,
         )
         .await
@@ -2257,7 +2257,7 @@ mod tests {
             .read_with(cx, |project, cx| {
                 project.find_project_path("root/test.txt", cx)
             })
-            .expect("Should find project path");
+            .expect("应找到项目路径");
         let buffer = project
             .update(cx, |project, cx| project.open_buffer(project_path, cx))
             .await
@@ -2275,7 +2275,7 @@ mod tests {
                     ToolInput::resolved(EditFileToolInput {
                         path: "root/test.txt".into(),
                         edits: vec![Edit {
-                            old_text: "externally modified content".into(),
+                            old_text: "外部修改的内容".into(),
                             new_text: "new content".into(),
                         }],
                     }),
@@ -2304,7 +2304,7 @@ mod tests {
         cx: &mut TestAppContext,
     ) {
         let (edit_tool, project, action_log, fs, _thread) =
-            setup_test(cx, json!({"test.txt": "original content"})).await;
+            setup_test(cx, json!({"test.txt": "原始内容"})).await;
         let read_tool = Arc::new(crate::ReadFileTool::new(
             project.clone(),
             action_log.clone(),
@@ -2329,7 +2329,7 @@ mod tests {
             .advance_clock(std::time::Duration::from_secs(2));
         fs.save(
             path!("/root/test.txt").as_ref(),
-            &"externally modified content".into(),
+            &"外部修改的内容".into(),
             language::LineEnding::Unix,
         )
         .await
@@ -2339,7 +2339,7 @@ mod tests {
             .read_with(cx, |project, cx| {
                 project.find_project_path("root/test.txt", cx)
             })
-            .expect("Should find project path");
+            .expect("应找到项目路径");
         let buffer = project
             .update(cx, |project, cx| project.open_buffer(project_path, cx))
             .await
@@ -2357,7 +2357,7 @@ mod tests {
                     ToolInput::resolved(EditFileToolInput {
                         path: "root/test.txt".into(),
                         edits: vec![Edit {
-                            old_text: "original content".into(),
+                            old_text: "原始内容".into(),
                             new_text: "new content".into(),
                         }],
                     }),
@@ -2377,24 +2377,24 @@ mod tests {
         };
 
         assert!(
-            error.contains("Could not find matching text for edit at index 0"),
-            "Error should mention failed match, got: {error}"
+            error.contains("无法找到索引 0 处编辑的匹配文本"),
+            "错误应提及匹配失败,但得到:{error}"
         );
         assert!(
-            error.contains("has changed on disk since you last read it"),
-            "Error should mention possible disk change, got: {error}"
+            error.contains("自上次读取以来已在磁盘上更改"),
+            "错误应提及可能的磁盘更改,但得到:{error}"
         );
         assert!(diff.is_empty());
         assert_eq!(input_path, Some(PathBuf::from("root/test.txt")));
     }
 
-    /// When the buffer has unsaved changes and the user picks "Save", the
+    /// When the buffer has unsaved changes and the user picks "保存", the
     /// pending edits are flushed to disk and the agent's edit then proceeds
     /// against the just-saved content.
     #[gpui::test]
     async fn test_streaming_dirty_buffer_save(cx: &mut TestAppContext) {
         let (edit_tool, project, action_log, fs, _thread) =
-            setup_test(cx, json!({"test.txt": "original content"})).await;
+            setup_test(cx, json!({"test.txt": "原始内容"})).await;
         let read_tool = Arc::new(crate::ReadFileTool::new(
             project.clone(),
             action_log.clone(),
@@ -2419,7 +2419,7 @@ mod tests {
             .read_with(cx, |project, cx| {
                 project.find_project_path("root/test.txt", cx)
             })
-            .expect("Should find project path");
+            .expect("应找到项目路径");
         let buffer = project
             .update(cx, |project, cx| project.open_buffer(project_path, cx))
             .await
@@ -2427,7 +2427,7 @@ mod tests {
 
         buffer.update(cx, |buffer, cx| {
             let end_point = buffer.max_point();
-            buffer.edit([(end_point..end_point, " plus user edit")], None, cx);
+            buffer.edit([(end_point..end_point, " 加上用户编辑")], None, cx);
         });
         assert!(buffer.read_with(cx, |buffer, _| buffer.is_dirty()));
 
@@ -2437,8 +2437,8 @@ mod tests {
                 ToolInput::resolved(EditFileToolInput {
                     path: "root/test.txt".into(),
                     edits: vec![Edit {
-                        old_text: "original content plus user edit".into(),
-                        new_text: "replaced content".into(),
+                        old_text: "原始内容加上用户编辑".into(),
+                        new_text: "替换后的内容".into(),
                     }],
                 }),
                 stream_tx,
@@ -2449,18 +2449,18 @@ mod tests {
         let _update = stream_rx.expect_update_fields().await;
         let auth = stream_rx.expect_authorization().await;
         let content = auth.tool_call.fields.content.as_deref().unwrap_or(&[]);
-        let acp::ToolCallContent::Content(text) = content.first().expect("expected message body")
+        let acp::ToolCallContent::Content(text) = content.first().expect("预期的消息正文")
         else {
-            panic!("expected text body, got: {:?}", content.first());
+            panic!("预期的文本正文,但得到:{:?}", content.first());
         };
         let acp::ContentBlock::Text(text) = &text.content else {
-            panic!("expected text body, got: {:?}", text.content);
+            panic!("预期的文本正文,但得到:{:?}", text.content);
         };
         assert!(
-            text.text.contains("unsaved changes")
+            text.text.contains("未保存的更改")
                 && text.text.contains("save")
                 && text.text.contains("discard"),
-            "unexpected message body: {:?}",
+            "意外的消息正文:{:?}",
             text.text,
         );
         auth.response
@@ -2473,19 +2473,19 @@ mod tests {
         let EditFileToolOutput::Success { new_text, .. } = task.await.unwrap() else {
             panic!("expected success");
         };
-        assert_eq!(new_text, "replaced content");
+        assert_eq!(new_text, "替换后的内容");
         assert!(!buffer.read_with(cx, |buffer, _| buffer.is_dirty()));
         let on_disk = fs.load(path!("/root/test.txt").as_ref()).await.unwrap();
-        assert_eq!(on_disk, "replaced content");
+        assert_eq!(on_disk, "替换后的内容");
     }
 
-    /// When the buffer has unsaved changes and the user picks "Discard", the
+    /// When the buffer has unsaved changes and the user picks "放弃", the
     /// pending edits are reverted to match disk and the agent's edit then
     /// proceeds against the on-disk content.
     #[gpui::test]
     async fn test_streaming_dirty_buffer_discard(cx: &mut TestAppContext) {
         let (edit_tool, project, action_log, fs, _thread) =
-            setup_test(cx, json!({"test.txt": "original content"})).await;
+            setup_test(cx, json!({"test.txt": "原始内容"})).await;
         let read_tool = Arc::new(crate::ReadFileTool::new(
             project.clone(),
             action_log.clone(),
@@ -2510,7 +2510,7 @@ mod tests {
             .read_with(cx, |project, cx| {
                 project.find_project_path("root/test.txt", cx)
             })
-            .expect("Should find project path");
+            .expect("应找到项目路径");
         let buffer = project
             .update(cx, |project, cx| project.open_buffer(project_path, cx))
             .await
@@ -2518,7 +2518,7 @@ mod tests {
 
         buffer.update(cx, |buffer, cx| {
             let end_point = buffer.max_point();
-            buffer.edit([(end_point..end_point, " plus user edit")], None, cx);
+            buffer.edit([(end_point..end_point, " 加上用户编辑")], None, cx);
         });
         assert!(buffer.read_with(cx, |buffer, _| buffer.is_dirty()));
 
@@ -2529,8 +2529,8 @@ mod tests {
                     path: "root/test.txt".into(),
                     // Match the on-disk content, not the dirty in-memory content.
                     edits: vec![Edit {
-                        old_text: "original content".into(),
-                        new_text: "replaced content".into(),
+                        old_text: "原始内容".into(),
+                        new_text: "替换后的内容".into(),
                     }],
                 }),
                 stream_tx,
@@ -2550,10 +2550,10 @@ mod tests {
         let EditFileToolOutput::Success { new_text, .. } = task.await.unwrap() else {
             panic!("expected success");
         };
-        assert_eq!(new_text, "replaced content");
+        assert_eq!(new_text, "替换后的内容");
         assert!(!buffer.read_with(cx, |buffer, _| buffer.is_dirty()));
         let on_disk = fs.load(path!("/root/test.txt").as_ref()).await.unwrap();
-        assert_eq!(on_disk, "replaced content");
+        assert_eq!(on_disk, "替换后的内容");
     }
 
     /// When the buffer is dirty and the user resolves it manually — e.g.
@@ -2563,7 +2563,7 @@ mod tests {
     #[gpui::test]
     async fn test_streaming_dirty_buffer_resolved_externally(cx: &mut TestAppContext) {
         let (edit_tool, project, action_log, fs, _thread) =
-            setup_test(cx, json!({"test.txt": "original content"})).await;
+            setup_test(cx, json!({"test.txt": "原始内容"})).await;
         let read_tool = Arc::new(crate::ReadFileTool::new(
             project.clone(),
             action_log.clone(),
@@ -2588,7 +2588,7 @@ mod tests {
             .read_with(cx, |project, cx| {
                 project.find_project_path("root/test.txt", cx)
             })
-            .expect("Should find project path");
+            .expect("应找到项目路径");
         let buffer = project
             .update(cx, |project, cx| project.open_buffer(project_path, cx))
             .await
@@ -2596,7 +2596,7 @@ mod tests {
 
         buffer.update(cx, |buffer, cx| {
             let end_point = buffer.max_point();
-            buffer.edit([(end_point..end_point, " plus user edit")], None, cx);
+            buffer.edit([(end_point..end_point, " 加上用户编辑")], None, cx);
         });
         assert!(buffer.read_with(cx, |buffer, _| buffer.is_dirty()));
 
@@ -2606,8 +2606,8 @@ mod tests {
                 ToolInput::resolved(EditFileToolInput {
                     path: "root/test.txt".into(),
                     edits: vec![Edit {
-                        old_text: "original content plus user edit".into(),
-                        new_text: "replaced content".into(),
+                        old_text: "原始内容加上用户编辑".into(),
+                        new_text: "替换后的内容".into(),
                     }],
                 }),
                 stream_tx,
@@ -2636,10 +2636,10 @@ mod tests {
         let EditFileToolOutput::Success { new_text, .. } = task.await.unwrap() else {
             panic!("expected success");
         };
-        assert_eq!(new_text, "replaced content");
+        assert_eq!(new_text, "替换后的内容");
         assert!(!buffer.read_with(cx, |buffer, _| buffer.is_dirty()));
         let on_disk = fs.load(path!("/root/test.txt").as_ref()).await.unwrap();
-        assert_eq!(on_disk, "replaced content");
+        assert_eq!(on_disk, "替换后的内容");
     }
 
     #[gpui::test]
@@ -2789,7 +2789,7 @@ mod tests {
         });
 
         let result = task.await;
-        assert!(result.is_ok(), "edit should succeed: {:?}", result.err());
+        assert!(result.is_ok(), "编辑应成功:{:?}", result.err());
 
         cx.run_until_parked();
 
@@ -2983,7 +2983,7 @@ mod tests {
         pretty_assertions::assert_eq!(
             final_text,
             expected,
-            "Edit should only remove blank lines before render_search"
+            "编辑应仅删除 render_search 之前的空行"
         );
     }
 
@@ -3020,7 +3020,7 @@ mod tests {
         pretty_assertions::assert_eq!(
             final_text,
             expected,
-            "Edit should preserve a single blank line before test_after"
+            "编辑应在 test_after 之前保留一个空行"
         );
     }
 
@@ -3030,7 +3030,7 @@ mod tests {
             "path": "root/file.txt",
             "edits": "[{\"old_text\": \"hello\\nworld\", \"new_text\": \"HELLO\\nWORLD\"}]"
         }))
-        .expect("input should deserialize");
+        .expect("输入应能反序列化");
 
         assert_eq!(input.edits.len(), 1);
         assert_eq!(input.edits[0].old_text, "hello\nworld");
@@ -3040,9 +3040,9 @@ mod tests {
             "path": "root/file.txt",
             "edits": "[{\"old_text\": \"hello\\nworld\", \"new_text\": \"HELLO\\nWORLD\"}]"
         }))
-        .expect("input should deserialize");
+        .expect("输入应能反序列化");
 
-        let edits = input.edits.expect("edits should deserialize");
+        let edits = input.edits.expect("编辑应能反序列化");
         assert_eq!(edits.len(), 1);
         assert_eq!(edits[0].old_text.as_deref(), Some("hello\nworld"));
         assert_eq!(edits[0].new_text.as_deref(), Some("HELLO\nWORLD"));
@@ -3050,14 +3050,14 @@ mod tests {
         let input = serde_json::from_value::<EditFileToolPartialInput>(json!({
             "path": "root/file.txt"
         }))
-        .expect("input should deserialize");
+        .expect("输入应能反序列化");
         assert!(input.edits.is_none());
 
         let input = serde_json::from_value::<EditFileToolPartialInput>(json!({
             "path": "root/file.txt",
             "edits": null
         }))
-        .expect("input should deserialize");
+        .expect("输入应能反序列化");
         assert!(input.edits.is_none());
     }
 
@@ -3071,7 +3071,7 @@ mod tests {
 
         // When the model uses incorrect field names, the error should
         // tell it what to fix.
-        assert_eq!(err.to_string(), "missing field `old_text`");
+        assert_eq!(err.to_string(), "缺少字段 `old_text`");
     }
 
     async fn setup_test_with_fs(

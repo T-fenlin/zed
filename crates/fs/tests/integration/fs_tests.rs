@@ -650,7 +650,7 @@ async fn test_fake_fs_trash(executor: BackgroundExecutor) {
     let path = path!("/root/file_a.txt").as_ref();
     fs.trash(path, Default::default())
         .await
-        .expect("should be able to trash {path:?}");
+        .expect("应能够将 {path:?} 移至废纸篓");
 
     assert_eq!(
         fs.files(),
@@ -671,7 +671,7 @@ async fn test_fake_fs_trash(executor: BackgroundExecutor) {
         },
     )
     .await
-    .expect("should be able to trash {path:?}");
+    .expect("应能够将 {path:?} 移至废纸篓");
 
     assert_eq!(fs.files(), vec![PathBuf::from(path!("/root/file_b.txt"))]);
 }
@@ -808,7 +808,7 @@ fn make_dir_symlink(target: &Path, link: &Path) -> std::io::Result<()> {
         let _ = (target, link);
         Err(std::io::Error::new(
             std::io::ErrorKind::Unsupported,
-            "symlinks are not supported on this platform",
+            "此平台不支持符号链接",
         ))
     }
 }
@@ -872,15 +872,15 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
     cx.executor().allow_parking();
 
     let fs = RealFs::new(None, executor.clone());
-    let temp_dir = TempDir::new().expect("create temp dir");
+    let temp_dir = TempDir::new().expect("创建临时目录");
     let root = temp_dir.path().to_path_buf();
     let latency = Duration::from_millis(10);
 
     // Probe the real filesystem for case sensitivity rather than guessing from
     // the platform.
-    std::fs::create_dir_all(root.join("CaseProbe")).expect("create case probe dir");
+    std::fs::create_dir_all(root.join("CaseProbe")).expect("创建大小写探测目录");
     let case_insensitive = root.join("caseprobe").exists();
-    eprintln!("filesystem is case-insensitive: {case_insensitive}");
+    eprintln!("文件系统不区分大小写: {case_insensitive}");
 
     struct Scenario {
         name: &'static str,
@@ -897,7 +897,7 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
     {
         let real = root.join("ancestor_real");
         let inner = real.join("inner");
-        std::fs::create_dir_all(&inner).expect("create symlinked-ancestor target");
+        std::fs::create_dir_all(&inner).expect("创建符号链接祖先目标");
         let link = root.join("ancestor_link");
         match make_dir_symlink(&real, &link) {
             Ok(()) => {
@@ -911,11 +911,11 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
                         path.ends_with(Path::new("inner/symlink_ancestor.txt"))
                     }),
                     action: Some(Box::new(move || {
-                        std::fs::write(&file, b"x").expect("write symlink-ancestor file");
+                        std::fs::write(&file, b"x").expect("写入符号链接祖先文件");
                     })),
                 });
             }
-            Err(error) => skipped.push(format!("symlink_ancestor (cannot symlink: {error})")),
+            Err(error) => skipped.push(format!("symlink_ancestor (无法创建符号链接: {error})")),
         }
     }
 
@@ -923,7 +923,7 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
     //     the root symlink and also watches the target). ---
     {
         let real = root.join("root_real");
-        std::fs::create_dir_all(&real).expect("create symlinked-root target");
+        std::fs::create_dir_all(&real).expect("创建符号链接根目标");
         let link = root.join("root_link");
         match make_dir_symlink(&real, &link) {
             Ok(()) => {
@@ -935,11 +935,11 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
                     _watcher: watcher,
                     path_matches: Box::new(|path| path.ends_with(Path::new("symlink_root.txt"))),
                     action: Some(Box::new(move || {
-                        std::fs::write(&file, b"x").expect("write symlink-root file");
+                        std::fs::write(&file, b"x").expect("写入符号链接根文件");
                     })),
                 });
             }
-            Err(error) => skipped.push(format!("symlink_root (cannot symlink: {error})")),
+            Err(error) => skipped.push(format!("symlink_root (无法创建符号链接: {error})")),
         }
     }
 
@@ -947,7 +947,7 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
     //     real-casing fix already addresses). ---
     if case_insensitive {
         let real = root.join("CaseAlpha");
-        std::fs::create_dir_all(&real).expect("create wrong-case root");
+        std::fs::create_dir_all(&real).expect("创建错误大小写根目录");
         let lower = PathBuf::from(real.to_string_lossy().to_lowercase());
         let (events, watcher) = fs.watch(&lower, latency).await;
         let file = real.join("alpha.txt");
@@ -957,17 +957,17 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
             _watcher: watcher,
             path_matches: Box::new(|path| path.ends_with(Path::new("alpha.txt"))),
             action: Some(Box::new(move || {
-                std::fs::write(&file, b"x").expect("write wrong-case-root file");
+                std::fs::write(&file, b"x").expect("写入错误大小写根文件");
             })),
         });
     } else {
-        skipped.push("wrong_case_root (case-sensitive fs)".to_owned());
+        skipped.push("wrong_case_root (区分大小写的文件系统)".to_owned());
     }
 
     // --- Control: wrong-case nested watch path. ---
     if case_insensitive {
         let real = root.join("CaseBravo").join("Inner");
-        std::fs::create_dir_all(&real).expect("create wrong-case nested dir");
+        std::fs::create_dir_all(&real).expect("创建错误大小写嵌套目录");
         let lower = PathBuf::from(real.to_string_lossy().to_lowercase());
         let (events, watcher) = fs.watch(&lower, latency).await;
         let file = real.join("bravo.txt");
@@ -977,11 +977,11 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
             _watcher: watcher,
             path_matches: Box::new(|path| path.ends_with(Path::new("bravo.txt"))),
             action: Some(Box::new(move || {
-                std::fs::write(&file, b"x").expect("write nested-wrong-case file");
+                std::fs::write(&file, b"x").expect("写入错误大小写嵌套文件");
             })),
         });
     } else {
-        skipped.push("nested_wrong_case (case-sensitive fs)".to_owned());
+        skipped.push("nested_wrong_case (区分大小写的文件系统)".to_owned());
     }
 
     // --- Residual bug: the watched root is renamed to a different casing after
@@ -989,7 +989,7 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
     //     registered (old-case) root no longer matches. ---
     if case_insensitive {
         let real = root.join("CaseEcho");
-        std::fs::create_dir_all(&real).expect("create case-rename dir");
+        std::fs::create_dir_all(&real).expect("创建大小写重命名目录");
         let (events, watcher) = fs.watch(&real, latency).await;
         let renamed = root.join("CASEECHO");
         let file = renamed.join("echo.txt");
@@ -999,12 +999,12 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
             _watcher: watcher,
             path_matches: Box::new(|path| path.ends_with(Path::new("echo.txt"))),
             action: Some(Box::new(move || {
-                std::fs::rename(&real, &renamed).expect("case-only rename of watched root");
-                std::fs::write(&file, b"x").expect("write case-rename file");
+                std::fs::rename(&real, &renamed).expect("仅大小写不同的受监视根目录重命名");
+                std::fs::write(&file, b"x").expect("写入大小写重命名文件");
             })),
         });
     } else {
-        skipped.push("case_rename_root (case-sensitive fs)".to_owned());
+        skipped.push("case_rename_root (区分大小写的文件系统)".to_owned());
     }
 
     // Let every watch settle before mutating, then perform all mutations.
@@ -1024,24 +1024,24 @@ async fn test_realfs_watch_aliased_watch_paths_deliver_events(
             scenario.path_matches.as_ref(),
         )
         .await;
-        eprintln!("scenario {}: delivered={delivered}", scenario.name);
+        eprintln!("场景 {}: 已传递={delivered}", scenario.name);
         if !delivered {
             failures.push(scenario.name);
         }
     }
 
     for name in &skipped {
-        eprintln!("scenario skipped: {name}");
+        eprintln!("场景已跳过: {name}");
     }
 
     assert!(
         failures.is_empty(),
-        "watchers failed to deliver events for {failures:?} (skipped: {skipped:?})"
+        "监视器未能传递事件: {failures:?} (已跳过: {skipped:?})"
     );
 }
 
 #[gpui::test]
-#[ignore = "stress test; run explicitly when needed"]
+#[ignore = "压力测试;需要时显式运行"]
 async fn test_realfs_watch_stress_reports_missed_paths(
     executor: BackgroundExecutor,
     cx: &mut TestAppContext,
@@ -1050,7 +1050,7 @@ async fn test_realfs_watch_stress_reports_missed_paths(
     cx.executor().allow_parking();
 
     let fs = RealFs::new(None, executor.clone());
-    let temp_dir = TempDir::new().expect("create temp dir");
+    let temp_dir = TempDir::new().expect("创建临时目录");
     let root = temp_dir.path();
 
     let mut file_paths = Vec::with_capacity(FILE_COUNT);
@@ -1059,10 +1059,10 @@ async fn test_realfs_watch_stress_reports_missed_paths(
     for index in 0..FILE_COUNT {
         let dir_path = root.join(format!("dir-{index:04}"));
         let file_path = dir_path.join("file.txt");
-        fs.create_dir(&dir_path).await.expect("create watched dir");
+        fs.create_dir(&dir_path).await.expect("创建受监视目录");
         fs.write(&file_path, b"before")
             .await
-            .expect("create initial file");
+            .expect("创建初始文件");
         expected_paths.insert(file_path.clone());
         file_paths.push(file_path);
     }
@@ -1072,15 +1072,15 @@ async fn test_realfs_watch_stress_reports_missed_paths(
 
     for file_path in &expected_paths {
         _watcher
-            .add(file_path.parent().expect("file has parent"))
-            .expect("add explicit directory watch");
+            .add(file_path.parent().expect("文件有父目录"))
+            .expect("添加显式目录监视");
     }
 
     for (index, file_path) in file_paths.iter().enumerate() {
         let content = format!("after-{index}");
         fs.write(file_path, content.as_bytes())
             .await
-            .expect("modify watched file");
+            .expect("修改受监视文件");
     }
 
     let mut changed_paths = BTreeSet::new();
@@ -1113,7 +1113,7 @@ async fn test_realfs_watch_stress_reports_missed_paths(
     let missed_paths: BTreeSet<_> = expected_paths.difference(&changed_paths).cloned().collect();
 
     eprintln!(
-        "realfs watch stress: expected={}, observed={}, missed={}, rescan={}",
+        "realfs 监视压力测试: 预期={}, 观察到={}, 错过={}, 重新扫描={}",
         expected_paths.len(),
         changed_paths.len(),
         missed_paths.len(),
@@ -1122,7 +1122,7 @@ async fn test_realfs_watch_stress_reports_missed_paths(
 
     assert!(
         missed_paths.is_empty() || rescan_count > 0,
-        "missed {} paths without rescan being reported",
+        "错过了 {} 个路径,但未报告重新扫描",
         missed_paths.len()
     );
 }

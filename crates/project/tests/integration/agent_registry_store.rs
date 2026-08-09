@@ -29,8 +29,8 @@ async fn registry_refresh_times_out_when_fetch_never_completes(cx: &mut TestAppC
         assert!(
             store
                 .fetch_error()
-                .is_some_and(|error| error.contains("timed out after 30s")),
-            "expected registry fetch timeout error, got {:?}",
+                .is_some_and(|error| error.contains("30 秒后超时")),
+            "预期注册表获取超时错误,实际为 {:?}",
             store.fetch_error()
         );
     });
@@ -154,7 +154,7 @@ async fn registry_refresh_preserves_optional_binary_checksums(cx: &mut TestAppCo
 
     registry_store.read_with(cx, |store, _| {
         let Some(RegistryAgent::Binary(agent)) = store.agents().first() else {
-            panic!("expected a binary registry agent");
+            panic!("预期一个二进制注册表代理");
         };
 
         assert_eq!(

@@ -106,7 +106,7 @@ pub fn assert_text_with_selections(
     cx: &mut Context<Editor>,
 ) {
     let (unmarked_text, _text_ranges) = marked_text_ranges(marked_text, true);
-    assert_eq!(editor.text(cx), unmarked_text, "text doesn't match");
+    assert_eq!(editor.text(cx), unmarked_text, "文本不匹配");
     let actual = generate_marked_text(
         &editor.text(cx),
         &editor
@@ -117,7 +117,7 @@ pub fn assert_text_with_selections(
             .collect::<Vec<_>>(),
         marked_text.contains("«"),
     );
-    assert_eq!(actual, marked_text, "Selections don't match");
+    assert_eq!(actual, marked_text, "选区不匹配");
 }
 
 #[cfg(any(test, feature = "test-support"))]
@@ -205,7 +205,7 @@ pub fn editor_content_with_blocks_and_size(
         match block {
             Block::Custom(custom_block) => {
                 let content = block_content_for_tests(editor, custom_block.id, cx)
-                    .expect("block content not found");
+                    .expect("未找到块内容");
                 // 2: "related info 1 for diagnostic 0"
                 if let Some(height) = custom_block.height {
                     if height == 0 {
@@ -240,7 +240,7 @@ pub fn editor_content_with_blocks_and_size(
                             .buffer(snapshot.buffer_snapshot())
                             .file()
                             .map(|file| file.file_name(cx))
-                            .unwrap_or("<no file>")
+                            .unwrap_or("<无文件>")
                     )
                 }));
                 for row in row.0 + 1..row.0 + height {
@@ -269,7 +269,7 @@ pub fn editor_content_with_blocks_and_size(
                             .buffer(snapshot.buffer_snapshot())
                             .file()
                             .map(|file| file.file_name(cx))
-                            .unwrap_or("<no file>")
+                            .unwrap_or("<无文件>")
                     )
                 }));
                 for row in row.0 + 1..row.0 + height {

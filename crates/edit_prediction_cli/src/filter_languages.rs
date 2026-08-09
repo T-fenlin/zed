@@ -213,7 +213,7 @@ fn read_lines_streaming(
     let reader: Box<dyn BufRead> = match input {
         Some(path) => {
             let file =
-                File::open(path).with_context(|| format!("failed to open '{}'", path.display()))?;
+                File::open(path).with_context(|| format!("无法打开 '{}'", path.display()))?;
             Box::new(BufReader::new(file))
         }
         None => Box::new(BufReader::new(io::stdin())),
@@ -238,7 +238,7 @@ pub fn run_filter_languages(
 
     if args.list {
         let languages = get_all_languages(&extension_map);
-        println!("Available languages ({}):", languages.len());
+        println!("可用语言 ({}):", languages.len());
         println!();
         for (lang, extensions) in languages {
             println!("  {}: {}", lang, extensions.join(", "));
@@ -254,13 +254,13 @@ pub fn run_filter_languages(
 
     if args.stats {
         let stats_input =
-            input_path.with_context(|| "input file is required for --stats (cannot use stdin)")?;
+            input_path.with_context(|| "--stats 需要输入文件(不能使用标准输入)")?;
         return run_stats(stats_input, &extension_map);
     }
 
     if args.languages.is_none() && args.extensions.is_none() {
         bail!(
-            "--languages and/or --extensions is required (use --list to see available languages, or --stats to see input distribution)"
+            "需要 --languages 和/或 --extensions(使用 --list 查看可用语言,或使用 --stats 查看输入分布)"
         );
     }
 
@@ -289,7 +289,7 @@ pub fn run_filter_languages(
         for lang in &allowed_languages {
             if !language_name_lower_map.contains_key(lang) {
                 eprintln!(
-                    "Warning: '{}' is not a recognized language name. Use --list to see available languages.",
+                    "警告:'{}' 不是可识别的语言名称。使用 --list 查看可用语言。",
                     lang
                 );
             }
@@ -303,12 +303,12 @@ pub fn run_filter_languages(
             if let Some(parent) = path.parent() {
                 if !parent.as_os_str().is_empty() {
                     std::fs::create_dir_all(parent).with_context(|| {
-                        format!("failed to create directory '{}'", parent.display())
+                        format!("无法创建目录 '{}'", parent.display())
                     })?;
                 }
             }
             let file = File::create(path)
-                .with_context(|| format!("failed to create '{}'", path.display()))?;
+                .with_context(|| format!("无法创建 '{}'", path.display()))?;
             Box::new(BufWriter::new(file))
         }
         None => Box::new(BufWriter::new(io::stdout())),
@@ -320,7 +320,7 @@ pub fn run_filter_languages(
     let mut excluded_extensions: HashMap<String, usize> = HashMap::default();
 
     for line_result in lines {
-        let line = line_result.context("failed to read line")?;
+        let line = line_result.context("无法读取行")?;
         if line.trim().is_empty() {
             continue;
         }
@@ -373,7 +373,7 @@ pub fn run_filter_languages(
     writer.flush()?;
 
     eprintln!(
-        "Filtered {} examples to {} ({} unknown language)",
+        "已将 {} 个示例过滤为 {} 个({} 个未知语言)",
         total_count, included_count, unknown_count
     );
 
@@ -399,7 +399,7 @@ fn run_stats(input: &Path, extension_map: &HashMap<String, String>) -> Result<()
     let mut total_count = 0usize;
 
     for line_result in lines {
-        let line = line_result.context("failed to read line")?;
+        let line = line_result.context("无法读取行")?;
         if line.trim().is_empty() {
             continue;
         }
@@ -441,7 +441,7 @@ fn run_stats(input: &Path, extension_map: &HashMap<String, String>) -> Result<()
     let mut sorted_counts: Vec<_> = language_counts.into_iter().collect();
     sorted_counts.sort_by_key(|res| std::cmp::Reverse(res.1));
 
-    println!("Language distribution ({} total examples):", total_count);
+    println!("语言分布(共 {} 个示例):", total_count);
     println!();
     for (lang, count) in &sorted_counts {
         let pct = (*count as f64 / total_count as f64) * 100.0;
@@ -450,14 +450,14 @@ fn run_stats(input: &Path, extension_map: &HashMap<String, String>) -> Result<()
 
     if !unknown_extensions.is_empty() {
         println!();
-        println!("Unknown extensions:");
+        println!("未知扩展名:");
         let mut sorted_unknown: Vec<_> = unknown_extensions.into_iter().collect();
         sorted_unknown.sort_by_key(|res| std::cmp::Reverse(res.1));
         for (ext, count) in sorted_unknown.iter().take(30) {
             println!("  {:>6}  .{}", count, ext);
         }
         if sorted_unknown.len() > 30 {
-            println!("  ... and {} more", sorted_unknown.len() - 30);
+            println!("  ... 以及另外 {} 个", sorted_unknown.len() - 30);
         }
     }
 

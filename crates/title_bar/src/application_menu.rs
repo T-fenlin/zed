@@ -52,7 +52,7 @@ pub struct ApplicationMenu {
 impl ApplicationMenu {
     pub fn new(_: &mut Window, cx: &mut Context<Self>) -> Self {
         let menus = cx.get_menus().unwrap_or_default();
-        // Re-render when settings change so toggling "accessible mode" expands or
+        // Re-render when settings change so toggling "无障碍模式" expands or
         // collapses the menu bar (see `all_menus_shown`).
         let settings_subscription = cx.observe_global::<SettingsStore>(|_, cx| cx.notify());
         Self {
@@ -175,8 +175,8 @@ impl ApplicationMenu {
                         .style(ButtonStyle::Subtle)
                         .icon_size(IconSize::Small)
                         .tab_index(0isize)
-                        .aria_label("Application menu"),
-                        Tooltip::text("Open Application Menu"),
+                        .aria_label("应用程序菜单"),
+                        Tooltip::text("打开应用程序菜单"),
                     )
                     .with_handle(handle),
             )

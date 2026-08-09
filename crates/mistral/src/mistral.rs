@@ -29,7 +29,7 @@ impl TryFrom<String> for Role {
             "assistant" => Ok(Self::Assistant),
             "system" => Ok(Self::System),
             "tool" => Ok(Self::Tool),
-            _ => anyhow::bail!("invalid role '{value}'"),
+            _ => anyhow::bail!("无效角色 '{value}'"),
         }
     }
 }
@@ -94,7 +94,7 @@ impl Model {
             "ministral-3b-latest" => Ok(Self::Ministral3bLatest),
             "ministral-8b-latest" => Ok(Self::Ministral8bLatest),
             "ministral-14b-latest" => Ok(Self::Ministral14bLatest),
-            invalid_id => anyhow::bail!("invalid model id '{invalid_id}'"),
+            invalid_id => anyhow::bail!("无效模型 ID '{invalid_id}'"),
         }
     }
 
@@ -456,7 +456,7 @@ pub async fn stream_completion(
         let mut body = String::new();
         response.body_mut().read_to_string(&mut body).await?;
         anyhow::bail!(
-            "Failed to connect to Mistral API: {} {}",
+            "无法连接到 Mistral API: {} {}",
             response.status(),
             body,
         );

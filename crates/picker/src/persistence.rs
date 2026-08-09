@@ -22,7 +22,7 @@ pub(crate) fn store_shape_for_this_layout(
         kvp.scoped(PICKERS_NAMESPACE)
             .write(
                 shape_key(picker_delegate, preview_layout),
-                serde_json::to_string(&shape).context("Could not serialize size of picker")?,
+                serde_json::to_string(&shape).context("无法序列化选择器的大小")?,
             )
             .await?;
         // Must be written after the shape or loading can break
@@ -64,13 +64,13 @@ pub(crate) fn try_load_shape(
     let Some(shape) = KeyValueStore::global(cx)
         .scoped(PICKERS_NAMESPACE)
         .read(&shape_key(picker_delegate, preview_layout.into()))
-        .context("Could not read picker shape from KeyValueStore")?
+        .context("无法从 KeyValueStore 读取选择器形状")?
     else {
         return Ok(None);
     };
 
     let shape = serde_json::from_str::<PickerConfig>(&shape)
-        .context("Could not deserialize loaded picker shape from persistence")?
+        .context("无法从持久化数据反序列化选择器形状")?
         .into_centered();
     Ok(Some(Shape::HorizontallyCentered(shape)))
 }
@@ -82,7 +82,7 @@ pub(crate) fn load_last_preview_layout(
     let Some(last_layout) = KeyValueStore::global(cx)
         .scoped(PICKERS_NAMESPACE)
         .read(&last_layout_key(picker_delegate))
-        .context("Could not read last picker layout from KeyValueStore")?
+        .context("无法从 KeyValueStore 读取上次的选择器布局")?
     else {
         return Ok(None);
     };
@@ -113,7 +113,7 @@ fn parse_layout(s: &str) -> anyhow::Result<Option<preview::Layout>> {
         "below" => preview::Layout::Below,
         "right" => preview::Layout::Right,
         "none" => return Ok(None),
-        _ => return Err(anyhow!("Unknown layout: `{}`", s)),
+        _ => return Err(anyhow!("未知布局:`{}`", s)),
     }))
 }
 

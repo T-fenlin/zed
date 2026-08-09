@@ -62,8 +62,8 @@ struct WriteEvalOutput {
 
 impl Display for WriteEvalOutput {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "Tool Input:\n{:#?}", self.tool_input)?;
-        writeln!(f, "Text After:\n{}", self.text_after)?;
+        writeln!(f, "工具输入:\n{:#?}", self.tool_input)?;
+        writeln!(f, "后续文本:\n{}", self.text_after)?;
         Ok(())
     }
 }
@@ -151,7 +151,7 @@ impl WriteToolTest {
             let registry = LanguageModelRegistry::read_global(cx);
             let provider = registry
                 .provider(&selected_model.provider)
-                .expect("Provider not found");
+                .expect("未找到提供商");
             provider.authenticate(cx)
         })
         .await?;
@@ -163,14 +163,14 @@ impl WriteToolTest {
                     model.provider_id() == selected_model.provider
                         && model.id() == selected_model.model
                 })
-                .unwrap_or_else(|| panic!("Model {} not found", selected_model.model.0))
+                .unwrap_or_else(|| panic!("未找到模型 {}", selected_model.model.0))
         }))
     }
 
     async fn eval(&self, mut eval: EvalInput, cx: &mut TestAppContext) -> Result<WriteEvalOutput> {
         eval.conversation
             .last_mut()
-            .context("Conversation must not be empty")?
+            .context("对话不能为空")?
             .cache = true;
 
         if let Some(input_content) = eval.input_content.as_deref() {
@@ -268,16 +268,16 @@ impl WriteToolTest {
 
         let output = match result {
             Ok(output) => output,
-            Err(output) => anyhow::bail!("Tool returned error: {}", output),
+            Err(output) => anyhow::bail!("工具返回错误:{}", output),
         };
 
         let crate::EditFileToolOutput::Success { new_text, .. } = &output else {
-            anyhow::bail!("Tool returned error output: {}", output);
+            anyhow::bail!("工具返回错误输出:{}", output);
         };
 
         if tool_input.path != eval.input_file_path {
             anyhow::bail!(
-                "Tool path mismatch. Expected {:?}, got {:?}",
+                "工具路径不匹配。预期 {:?},实际 {:?}",
                 eval.input_file_path,
                 tool_input.path,
             );
@@ -285,7 +285,7 @@ impl WriteToolTest {
 
         if new_text != &eval.expected_output_content {
             anyhow::bail!(
-                "Output content mismatch. Expected {:?}, got {:?}",
+                "输出内容不匹配。预期 {:?},实际 {:?}",
                 eval.expected_output_content,
                 new_text,
             );
@@ -310,7 +310,7 @@ impl WriteToolTest {
                     .spawn(async move { model.stream_completion(request, &async_cx).await })
             })
             .await
-            .map_err(|err| anyhow::anyhow!("completion error: {}", err))?;
+            .map_err(|err| anyhow::anyhow!("补全错误: {}", err))?;
 
         let mut streamed_text = String::new();
         let mut stop_reason = None;
@@ -326,7 +326,7 @@ impl WriteToolTest {
                     let input: WriteFileToolInput = tool_use
                         .input
                         .parse()
-                        .context("Failed to parse tool input as WriteFileToolInput")?;
+                        .context("无法将工具输入解析为 WriteFileToolInput")?;
                     return Ok(input);
                 }
                 Ok(LanguageModelCompletionEvent::Text(text)) => {
@@ -343,9 +343,9 @@ impl WriteToolTest {
                     json_parse_error,
                     ..
                 }) if tool_name.as_ref() == WriteFileTool::NAME => {
-                    parse_errors.push(format!("{json_parse_error}\nRaw input:\n{raw_input:?}"));
+                    parse_errors.push(format!("{json_parse_error}\n原始输入:\n{raw_input:?}"));
                 }
-                Err(err) => return Err(anyhow::anyhow!("completion error: {}", err)),
+                Err(err) => return Err(anyhow::anyhow!("补全错误: {}", err)),
                 _ => {}
             }
         }
@@ -354,19 +354,19 @@ impl WriteToolTest {
         let streamed_text_suffix = if streamed_text.is_empty() {
             String::new()
         } else {
-            format!("\nStreamed text:\n{streamed_text}")
+            format!("\n流式文本:\n{streamed_text}")
         };
         let stop_reason_suffix = stop_reason
-            .map(|reason| format!("\nStop reason: {reason:?}"))
+            .map(|reason| format!("\n停止原因: {reason:?}"))
             .unwrap_or_default();
         let parse_errors_suffix = if parse_errors.is_empty() {
             String::new()
         } else {
-            format!("\nTool parse errors:\n{}", parse_errors.join("\n"))
+            format!("\n工具解析错误:\n{}", parse_errors.join("\n"))
         };
 
         anyhow::bail!(
-            "Stream ended without a write_file tool use{stop_reason_suffix}{parse_errors_suffix}{streamed_text_suffix}"
+            "流结束但未使用 write_file 工具{stop_reason_suffix}{parse_errors_suffix}{streamed_text_suffix}"
         )
     }
 }
@@ -483,7 +483,7 @@ async fn retry_on_rate_limit<R>(mut request: impl AsyncFnMut() -> Result<R>) -> 
 
         if let Some(retry_after) = retry_delay {
             let jitter = retry_after.mul_f64(rand::rng().random_range(0.0..1.0));
-            eprintln!("Attempt #{attempt}: Retry after {retry_after:?} + jitter of {jitter:?}");
+            eprintln!("尝试 #{attempt}: 在 {retry_after:?} 后重试,抖动为 {jitter:?}");
             #[allow(clippy::disallowed_methods)]
             async_io::Timer::after(retry_after + jitter).await;
         } else {
@@ -503,7 +503,7 @@ fn eval_create_file() {
             vec![
                 message(
                     User,
-                    [text("Create a third todo file. Write 'todo' inside it.")],
+                    [text("创建第三个待办文件。在其中写入 'todo'。")],
                 ),
                 message(
                     Assistant,

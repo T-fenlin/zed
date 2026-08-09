@@ -139,7 +139,7 @@ impl Replayer {
         let action = if lock.ix < 10000 {
             lock.actions.get(lock.ix).cloned()
         } else {
-            log::error!("Aborting replay after 10000 actions");
+            log::error!("在 10000 次操作后中止重放");
             None
         };
         lock.ix += 1;
@@ -1031,7 +1031,7 @@ mod test {
         // `dot_replaying` value should be set back to `false`.
         assert!(
             !cx.update(|_, cx| cx.global::<VimGlobals>().dot_replaying),
-            "dot_replaying should be false after repeat completes"
+            "重复完成后 dot_replaying 应为 false"
         );
     }
 

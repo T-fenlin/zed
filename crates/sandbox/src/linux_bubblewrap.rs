@@ -103,9 +103,9 @@ impl LauncherStatus {
     /// A human-readable explanation suitable for diagnostics.
     pub fn describe(self) -> &'static str {
         match self {
-            LauncherStatus::BwrapNotFound => "no usable `bwrap` binary was found on PATH",
+            LauncherStatus::BwrapNotFound => "在 PATH 中未找到可用的 `bwrap` 二进制文件",
             LauncherStatus::SetuidRejected => {
-                "the only available `bwrap` is setuid-root, which Zed refuses to run"
+                "唯一可用的 `bwrap` 是 setuid-root,Zed 拒绝运行"
             }
             LauncherStatus::SandboxProbeFailed => {
                 "`bwrap` is present but failed to create a sandbox (unprivileged user \
@@ -179,8 +179,8 @@ fn is_setuid_root(path: &Path) -> bool {
 )]
 fn probe_bwrap(bwrap: &Path, bwrap_args: &[String]) -> bool {
     // Capture stderr (rather than discarding it) so a failed probe can report
-    // *why* bwrap refused — the difference between "user namespaces disabled",
-    // "chdir target missing", "no permission", etc. — instead of a bare
+    // *why* bwrap refused — the difference between "用户命名空间被禁用",
+    // "chdir 目标缺失", "没有权限", etc. — instead of a bare
     // `SandboxProbeFailed`.
     let output = Command::new(bwrap)
         .args(bwrap_args)
@@ -205,7 +205,7 @@ fn probe_bwrap(bwrap: &Path, bwrap_args: &[String]) -> bool {
         }
         Err(error) => {
             log::warn!(
-                "[sandbox] bwrap probe could not be spawned: {error}. command: {} {}",
+                "[sandbox] 无法启动 bwrap 探测: {error}. 命令: {} {}",
                 bwrap.display(),
                 bwrap_args.join(" ")
             );
@@ -438,7 +438,7 @@ impl ValidationFdSender {
 
         if fds.len() > MAX_VALIDATED_BINDS {
             return Err(std::io::Error::other(format!(
-                "too many writable binds to validate ({} > {MAX_VALIDATED_BINDS})",
+                "要验证的可写绑定过多 ({} > {MAX_VALIDATED_BINDS})",
                 fds.len()
             )));
         }
@@ -470,13 +470,13 @@ impl ValidationFdSender {
                         Ok((stream, _)) => {
                             if !shutdown.load(Ordering::SeqCst) {
                                 if let Err(error) = send_fds(&stream, &raw_fds) {
-                                    log::warn!("[sandbox] failed to send validation fds: {error}");
+                                    log::warn!("[sandbox] 发送验证文件描述符失败: {error}");
                                 }
                             }
                         }
                         Err(error) => {
                             if !shutdown.load(Ordering::SeqCst) {
-                                log::warn!("[sandbox] sandbox validation accept failed: {error}");
+                                log::warn!("[sandbox] 沙箱验证接受失败: {error}");
                             }
                         }
                     }
@@ -540,7 +540,7 @@ fn prepare_sandbox(
     let bwrap = match resolve_bwrap() {
         Ok(bwrap) => bwrap,
         Err(status) => {
-            log::warn!("[sandbox] cannot create sandbox: {}", status.describe());
+            log::warn!("[sandbox] 无法创建沙箱: {}", status.describe());
             return Err(status);
         }
     };
@@ -600,11 +600,11 @@ pub fn wrap_invocation(
 ) -> Result<(String, Vec<String>)> {
     if matches!(permissions.network, NetworkAccess::LocalhostPort(_)) && proxy_socket_path.is_none()
     {
-        bail!("restricted Linux network access requires a proxy Unix socket path");
+        bail!("受限的 Linux 网络访问需要代理 Unix 套接字路径");
     }
     if writable_dirs.len() > MAX_VALIDATED_BINDS {
         bail!(
-            "too many writable binds to validate ({} > {MAX_VALIDATED_BINDS})",
+            "要验证的可写绑定过多 ({} > {MAX_VALIDATED_BINDS})",
             writable_dirs.len()
         );
     }
@@ -623,7 +623,7 @@ pub fn wrap_invocation(
         for directory in writable_dirs {
             if !directory.exists() {
                 bail!(
-                    "failed to provide writable sandbox path {}: it no longer exists",
+                    "无法提供可写的沙箱路径 {}: 它已不存在",
                     directory.display()
                 );
             }
@@ -651,7 +651,7 @@ pub fn wrap_invocation(
         NetworkAccess::LocalhostPort(port) => {
             let proxy_socket_sandbox_path = proxy_socket_sandbox_path
                 .as_ref()
-                .context("missing in-sandbox proxy socket path")?;
+                .context("缺少沙箱内代理套接字路径")?;
             Some((proxy_socket_sandbox_path.clone(), port))
         }
         NetworkAccess::None | NetworkAccess::All => None,
@@ -698,7 +698,7 @@ pub fn wrap_invocation(
 
     let bwrap = bwrap
         .to_str()
-        .with_context(|| format!("bwrap path contains invalid UTF-8: {}", bwrap.display()))?;
+        .with_context(|| format!("bwrap 路径包含无效的 UTF-8: {}", bwrap.display()))?;
     Ok((bwrap.to_string(), bwrap_args))
 }
 
@@ -711,7 +711,7 @@ pub fn run_launcher_if_invoked() {
     let invocation = match invocation {
         Ok(invocation) => invocation,
         Err(error) => {
-            eprintln!("zed: malformed sandbox launcher invocation: {error:#}");
+            eprintln!("zed: 格式错误的沙箱启动器调用: {error:#}");
             std::process::exit(127);
         }
     };
@@ -756,46 +756,46 @@ fn optional_field(value: OsString) -> Option<OsString> {
 
 fn decode_launcher_args(mut args: impl Iterator<Item = OsString>) -> Result<LauncherInvocation> {
     let validation_socket =
-        optional_field(args.next().context("missing validation socket field")?).map(PathBuf::from);
+        optional_field(args.next().context("缺少验证套接字字段")?).map(PathBuf::from);
     let bridge_socket =
-        optional_field(args.next().context("missing bridge socket field")?).map(PathBuf::from);
-    let bridge_port = optional_field(args.next().context("missing bridge port field")?)
+        optional_field(args.next().context("缺少桥接套接字字段")?).map(PathBuf::from);
+    let bridge_port = optional_field(args.next().context("缺少桥接端口字段")?)
         .map(|value| {
             value
                 .to_str()
-                .context("bridge port is not valid UTF-8")?
+                .context("桥接端口不是有效的 UTF-8")?
                 .parse::<u16>()
-                .context("invalid bridge port")
+                .context("无效的桥接端口")
         })
         .transpose()?;
     let bridge = match (bridge_socket, bridge_port) {
         (Some(socket), Some(port)) => Some((socket, port)),
         (None, None) => None,
-        _ => bail!("bridge socket and port must be set together"),
+        _ => bail!("桥接套接字和端口必须同时设置"),
     };
 
     let path_count = args
         .next()
-        .context("missing validation path count")?
+        .context("缺少验证路径计数")?
         .to_str()
-        .context("validation path count is not valid UTF-8")?
+        .context("验证路径计数不是有效的 UTF-8")?
         .parse::<usize>()
-        .context("invalid validation path count")?;
+        .context("无效的验证路径计数")?;
     if path_count > MAX_VALIDATED_BINDS {
-        bail!("validation path count {path_count} exceeds {MAX_VALIDATED_BINDS}");
+        bail!("验证路径计数 {path_count} 超过 {MAX_VALIDATED_BINDS}");
     }
     let mut validation_paths = Vec::with_capacity(path_count);
     for _ in 0..path_count {
         validation_paths.push(PathBuf::from(
-            args.next().context("missing validation path")?,
+            args.next().context("缺少验证路径")?,
         ));
     }
 
-    let separator = args.next().context("missing launcher argument separator")?;
+    let separator = args.next().context("缺少启动器参数分隔符")?;
     if separator != "--" {
-        bail!("missing launcher argument separator");
+        bail!("缺少启动器参数分隔符");
     }
-    let program = args.next().context("missing program to run")?;
+    let program = args.next().context("缺少要运行的程序")?;
     let args = args.collect();
     Ok(LauncherInvocation {
         validation_socket,
@@ -814,7 +814,7 @@ fn run_launcher(invocation: LauncherInvocation) -> ! {
         if let Err(error) = validate_binds(socket, &invocation.validation_paths) {
             // Fail closed: a redirected (or unverifiable) writable bind means the
             // command must not run at all.
-            eprintln!("zed: sandbox bind validation failed: {error:#}");
+            eprintln!("zed: 沙箱绑定验证失败: {error:#}");
             std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
         }
     }
@@ -838,23 +838,23 @@ fn run_launcher(invocation: LauncherInvocation) -> ! {
 /// is an error (the caller fails closed).
 fn validate_binds(socket_path: &Path, paths: &[PathBuf]) -> Result<()> {
     let stream = UnixStream::connect(socket_path)
-        .with_context(|| format!("connecting to validation socket {}", socket_path.display()))?;
-    let fds = recv_fds(&stream).context("receiving validation descriptors")?;
+        .with_context(|| format!("正在连接到验证套接字 {}", socket_path.display()))?;
+    let fds = recv_fds(&stream).context("正在接收验证描述符")?;
     if fds.len() != paths.len() {
         bail!(
-            "expected {} validation descriptor(s), received {}",
+            "预期 {} 个验证描述符,实际收到 {}",
             paths.len(),
             fds.len()
         );
     }
     for (fd, path) in fds.iter().zip(paths) {
         let expected = fd_dev_ino(fd.as_raw_fd())
-            .with_context(|| format!("fstat of captured descriptor for {}", path.display()))?;
+            .with_context(|| format!("对 {} 的捕获描述符执行 fstat", path.display()))?;
         let mounted = lstat_dev_ino(path)
-            .with_context(|| format!("lstat of mounted bind {}", path.display()))?;
+            .with_context(|| format!("对挂载的绑定 {} 执行 lstat", path.display()))?;
         if expected != mounted {
             bail!(
-                "writable bind {} was redirected (captured inode {:?}, mounted inode {:?})",
+                "可写绑定 {} 被重定向 (捕获的 inode {:?}, 挂载的 inode {:?})",
                 path.display(),
                 expected,
                 mounted
@@ -951,9 +951,9 @@ fn build_command_seccomp_program() -> Result<Option<seccompiler::BpfProgram>> {
         SeccompAction::Errno(libc::EPERM as u32),
         target_arch,
     )
-    .context("building sandbox command seccomp filter")?;
+    .context("正在构建沙箱命令 seccomp 过滤器")?;
     let program =
-        BpfProgram::try_from(filter).context("compiling sandbox command seccomp filter")?;
+        BpfProgram::try_from(filter).context("正在编译沙箱命令 seccomp 过滤器")?;
     Ok(Some(program))
 }
 
@@ -965,7 +965,7 @@ fn build_command_seccomp_program() -> Result<Option<seccompiler::BpfProgram>> {
 fn install_command_seccomp_filter() -> Result<()> {
     match build_command_seccomp_program()? {
         Some(program) => seccompiler::apply_filter(&program)
-            .context("installing sandbox command seccomp filter")?,
+            .context("正在安装沙箱命令 seccomp 过滤器")?,
         None => log::warn!(
             "[sandbox] seccomp is unavailable on {}; the unix-socket syscall guard \
              was not installed",
@@ -981,11 +981,11 @@ fn exec_command(program: &OsStr, args: &[OsString]) -> ! {
     // Lock down socket/io_uring/ptrace syscalls right before handing control to
     // the untrusted command; the filter survives `exec`.
     if let Err(error) = install_command_seccomp_filter() {
-        eprintln!("zed: failed to install sandbox seccomp filter: {error:#}");
+        eprintln!("zed: 安装沙箱 seccomp 过滤器失败: {error:#}");
         std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
     }
     let error = Command::new(program).args(args).exec();
-    eprintln!("zed: failed to exec sandboxed command: {error}");
+    eprintln!("zed: 执行沙箱命令失败: {error}");
     std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
 }
 
@@ -997,7 +997,7 @@ fn run_bridge(socket_path: PathBuf, port: u16, program: &OsStr, program_args: &[
     let listener = match TcpListener::bind((Ipv4Addr::LOCALHOST, port)) {
         Ok(listener) => listener,
         Err(error) => {
-            eprintln!("zed: failed to bind sandbox proxy bridge: {error}");
+            eprintln!("zed: 绑定沙箱代理桥接失败: {error}");
             std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
         }
     };
@@ -1007,7 +1007,7 @@ fn run_bridge(socket_path: PathBuf, port: u16, program: &OsStr, program_args: &[
         .stack_size(128 * 1024)
         .spawn(move || run_bridge_listener(listener, socket_path))
     {
-        eprintln!("zed: failed to spawn sandbox proxy bridge: {error}");
+        eprintln!("zed: 启动沙箱代理桥接失败: {error}");
         std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
     }
 
@@ -1018,7 +1018,7 @@ fn run_bridge(socket_path: PathBuf, port: u16, program: &OsStr, program_args: &[
     let seccomp_program = match build_command_seccomp_program() {
         Ok(program) => program,
         Err(error) => {
-            eprintln!("zed: failed to build sandbox seccomp filter: {error:#}");
+            eprintln!("zed: 构建沙箱 seccomp 过滤器失败: {error:#}");
             std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
         }
     };
@@ -1039,7 +1039,7 @@ fn run_bridge(socket_path: PathBuf, port: u16, program: &OsStr, program_args: &[
     let mut child = match command.spawn() {
         Ok(child) => child,
         Err(error) => {
-            eprintln!("zed: failed to spawn sandboxed command: {error}");
+            eprintln!("zed: 启动沙箱命令失败: {error}");
             std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
         }
     };
@@ -1053,7 +1053,7 @@ fn run_bridge(socket_path: PathBuf, port: u16, program: &OsStr, program_args: &[
             std::process::exit(128 + signal);
         }
         Err(error) => {
-            eprintln!("zed: failed to wait for sandboxed command: {error}");
+            eprintln!("zed: 等待沙箱命令失败: {error}");
             std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
         }
     }
@@ -1096,7 +1096,7 @@ fn recv_fds(stream: &UnixStream) -> std::io::Result<Vec<OwnedFd>> {
     .map_err(std::io::Error::from)?;
     if message.flags.contains(MsgFlags::MSG_CTRUNC) {
         return Err(std::io::Error::other(
-            "validation descriptors were truncated in transit",
+            "验证描述符在传输过程中被截断",
         ));
     }
 
@@ -1157,21 +1157,21 @@ pub fn run_wsl_helper_if_invoked() {
     let args: Vec<OsString> = std::env::args_os().collect();
     if args.get(1).and_then(|arg| arg.to_str()) == Some(WSL_RESOLVE_FLAG) {
         let Some(path) = args.get(2) else {
-            eprintln!("zed: malformed WSL canonical-path resolver invocation");
+            eprintln!("zed: 格式错误的 WSL 规范路径解析器调用");
             std::process::exit(127);
         };
         if args.len() != 3 {
-            eprintln!("zed: malformed WSL canonical-path resolver invocation");
+            eprintln!("zed: 格式错误的 WSL 规范路径解析器调用");
             std::process::exit(127);
         }
         match crate::util::CanonicalPathBuf::resolve(PathBuf::from(path.as_os_str())) {
             Ok(canonical) => {
                 let Some(canonical) = canonical.path().to_str() else {
-                    eprintln!("zed: canonical WSL sandbox grant is not valid UTF-8");
+                    eprintln!("zed: 规范的 WSL 沙箱授权不是有效的 UTF-8");
                     std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
                 };
                 let Ok(distro) = std::env::var("WSL_DISTRO_NAME") else {
-                    eprintln!("zed: WSL_DISTRO_NAME is unavailable while resolving sandbox grant");
+                    eprintln!("zed: 解析沙箱授权时 WSL_DISTRO_NAME 不可用");
                     std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
                 };
                 // Classify the backing filesystem of the *canonical* target (the
@@ -1189,7 +1189,7 @@ pub fn run_wsl_helper_if_invoked() {
                 std::process::exit(0);
             }
             Err(error) => {
-                eprintln!("zed: could not resolve WSL sandbox grant: {error}");
+                eprintln!("zed: 无法解析 WSL 沙箱授权: {error}");
                 std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
             }
         }
@@ -1201,7 +1201,7 @@ pub fn run_wsl_helper_if_invoked() {
     let invocation = match invocation {
         Ok(invocation) => invocation,
         Err(error) => {
-            eprintln!("zed: malformed WSL sandbox helper invocation: {error:#}");
+            eprintln!("zed: 格式错误的 WSL 沙箱助手调用: {error:#}");
             std::process::exit(127);
         }
     };
@@ -1243,31 +1243,31 @@ fn parse_wsl_helper_args(
 }
 
 fn decode_wsl_helper_args(mut args: impl Iterator<Item = OsString>) -> Result<WslHelperInvocation> {
-    let bwrap_path = PathBuf::from(args.next().context("missing bwrap path")?);
+    let bwrap_path = PathBuf::from(args.next().context("缺少 bwrap 路径")?);
     let base_count = parse_count(
-        args.next().context("missing base-arg count")?,
-        "base-arg count",
+        args.next().context("缺少基础参数计数")?,
+        "基础参数计数",
     )?;
     let mut base_args = Vec::with_capacity(base_count);
     for _ in 0..base_count {
-        base_args.push(args.next().context("missing base arg")?);
+        base_args.push(args.next().context("缺少基础参数")?);
     }
     let writable_count = parse_count(
-        args.next().context("missing writable count")?,
-        "writable count",
+        args.next().context("缺少可写计数")?,
+        "可写计数",
     )?;
     if writable_count > MAX_VALIDATED_BINDS {
-        bail!("writable count {writable_count} exceeds {MAX_VALIDATED_BINDS}");
+        bail!("可写计数 {writable_count} 超过 {MAX_VALIDATED_BINDS}");
     }
     let mut writable_paths = Vec::with_capacity(writable_count);
     for _ in 0..writable_count {
-        writable_paths.push(PathBuf::from(args.next().context("missing writable path")?));
+        writable_paths.push(PathBuf::from(args.next().context("缺少可写路径")?));
     }
-    let separator = args.next().context("missing argument separator")?;
+    let separator = args.next().context("缺少参数分隔符")?;
     if separator != "--" {
-        bail!("missing argument separator");
+        bail!("缺少参数分隔符");
     }
-    let program = args.next().context("missing program to run")?;
+    let program = args.next().context("缺少要运行的程序")?;
     let args = args.collect();
     Ok(WslHelperInvocation {
         bwrap_path,
@@ -1281,9 +1281,9 @@ fn decode_wsl_helper_args(mut args: impl Iterator<Item = OsString>) -> Result<Ws
 fn parse_count(value: OsString, what: &str) -> Result<usize> {
     value
         .to_str()
-        .with_context(|| format!("{what} is not valid UTF-8"))?
+        .with_context(|| format!("{what} 不是有效的 UTF-8"))?
         .parse::<usize>()
-        .with_context(|| format!("invalid {what}"))
+        .with_context(|| format!("无效的 {what}"))
 }
 
 /// The WSL-side helper entry point. Mirrors the native-Linux host side: capture
@@ -1303,7 +1303,7 @@ fn run_wsl_helper(invocation: WslHelperInvocation) -> ! {
             Ok(fd) => fds.push(fd),
             Err(error) => {
                 eprintln!(
-                    "zed: WSL sandbox helper could not verify canonical writable bind {}: {error}",
+                    "zed: WSL 沙箱助手无法验证规范的可写绑定 {}: {error}",
                     path.display()
                 );
                 std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
@@ -1317,7 +1317,7 @@ fn run_wsl_helper(invocation: WslHelperInvocation) -> ! {
         match ValidationFdSender::spawn(fds) {
             Ok(sender) => Some(sender),
             Err(error) => {
-                eprintln!("zed: WSL sandbox helper could not start the bind validator: {error}");
+                eprintln!("zed: WSL 沙箱助手无法启动绑定验证器: {error}");
                 std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
             }
         }
@@ -1326,7 +1326,7 @@ fn run_wsl_helper(invocation: WslHelperInvocation) -> ! {
     let current_exe = match std::env::current_exe() {
         Ok(path) => path,
         Err(error) => {
-            eprintln!("zed: WSL sandbox helper could not resolve its own path: {error}");
+            eprintln!("zed: WSL 沙箱助手无法解析自身路径: {error}");
             std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
         }
     };
@@ -1374,7 +1374,7 @@ fn run_wsl_helper(invocation: WslHelperInvocation) -> ! {
     let mut child = match Command::new(&invocation.bwrap_path).args(&args).spawn() {
         Ok(child) => child,
         Err(error) => {
-            eprintln!("zed: WSL sandbox helper could not spawn bwrap: {error}");
+            eprintln!("zed: WSL 沙箱助手无法启动 bwrap: {error}");
             std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
         }
     };
@@ -1392,7 +1392,7 @@ fn run_wsl_helper(invocation: WslHelperInvocation) -> ! {
             std::process::exit(128 + signal);
         }
         Err(error) => {
-            eprintln!("zed: WSL sandbox helper failed waiting for bwrap: {error}");
+            eprintln!("zed: WSL 沙箱助手等待 bwrap 失败: {error}");
             std::process::exit(SANDBOX_SETUP_FAILED_EXIT_CODE);
         }
     }
@@ -1408,10 +1408,10 @@ fn run_bridge_listener(listener: TcpListener, socket_path: PathBuf) {
                     .stack_size(128 * 1024)
                     .spawn(move || forward_bridge_connection(stream, socket_path))
                 {
-                    eprintln!("zed: failed to spawn sandbox bridge connection thread: {error}");
+                    eprintln!("zed: 启动沙箱桥接连接线程失败: {error}");
                 }
             }
-            Err(error) => eprintln!("zed: sandbox bridge accept failed: {error}"),
+            Err(error) => eprintln!("zed: 沙箱桥接接受失败: {error}"),
         }
     }
 }
@@ -1421,7 +1421,7 @@ fn forward_bridge_connection(tcp_stream: TcpStream, socket_path: PathBuf) {
         Ok(stream) => stream,
         Err(error) => {
             eprintln!(
-                "zed: sandbox bridge failed to connect to proxy socket {}: {error}",
+                "zed: 沙箱桥接无法连接到代理套接字 {}: {error}",
                 socket_path.display()
             );
             return;
@@ -1434,14 +1434,14 @@ fn copy_bidirectional(tcp_stream: TcpStream, unix_stream: UnixStream) {
     let tcp_read = match tcp_stream.try_clone() {
         Ok(stream) => stream,
         Err(error) => {
-            eprintln!("zed: sandbox bridge failed to clone TCP stream: {error}");
+            eprintln!("zed: 沙箱桥接克隆 TCP 流失败: {error}");
             return;
         }
     };
     let unix_read = match unix_stream.try_clone() {
         Ok(stream) => stream,
         Err(error) => {
-            eprintln!("zed: sandbox bridge failed to clone Unix stream: {error}");
+            eprintln!("zed: 沙箱桥接克隆 Unix 流失败: {error}");
             return;
         }
     };
@@ -1455,13 +1455,13 @@ fn copy_bidirectional(tcp_stream: TcpStream, unix_stream: UnixStream) {
     {
         Ok(handle) => handle,
         Err(error) => {
-            eprintln!("zed: failed to spawn sandbox bridge pump thread: {error}");
+            eprintln!("zed: 启动沙箱桥接泵线程失败: {error}");
             return;
         }
     };
     copy_one_way(unix_read, tcp_write);
     if to_proxy.join().is_err() {
-        eprintln!("zed: sandbox bridge pump thread panicked");
+        eprintln!("zed: 沙箱桥接泵线程发生恐慌");
     }
 }
 
@@ -1527,12 +1527,12 @@ mod tests {
         let existing_str = existing.to_string_lossy().into_owned();
         assert!(
             !windows_contains(&args, &["--bind", &existing_str, &existing_str]),
-            "a missing writable path must not widen the bind to an existing ancestor: {args:?}"
+            "缺失的可写路径不得将绑定扩大到现有的祖先路径: {args:?}"
         );
         let missing_str = missing.to_string_lossy().into_owned();
         assert!(
             !windows_contains(&args, &["--bind", &missing_str, &missing_str]),
-            "a missing writable path must not be bound: {args:?}"
+            "缺失的可写路径不得被绑定: {args:?}"
         );
     }
 
@@ -1590,7 +1590,7 @@ mod tests {
         );
         assert!(restricted.iter().any(|arg| arg == "--unshare-net"));
         let sandbox_destination = proxy_socket_bind_destination(&restricted)
-            .expect("restricted run should bind the proxy socket into the sandbox");
+            .expect("受限运行应将代理套接字绑定到沙箱中");
         assert!(sandbox_destination.starts_with(PROXY_SOCKET_SANDBOX_PATH_PREFIX));
     }
 
@@ -1630,8 +1630,8 @@ mod tests {
         );
 
         let decoded = parse_launcher_args(argv)
-            .expect("should be recognized as launcher invocation")
-            .expect("should decode successfully");
+            .expect("应被识别为启动器调用")
+            .expect("应成功解码");
 
         assert_eq!(
             decoded.validation_socket,
@@ -1675,8 +1675,8 @@ mod tests {
         );
 
         let decoded = parse_wsl_helper_args(argv)
-            .expect("should be recognized as a WSL helper invocation")
-            .expect("should decode successfully");
+            .expect("应被识别为 WSL 助手调用")
+            .expect("应成功解码");
 
         assert_eq!(decoded.bwrap_path, PathBuf::from("/usr/bin/bwrap"));
         assert_eq!(
@@ -1713,8 +1713,8 @@ mod tests {
         );
 
         let decoded = parse_launcher_args(argv)
-            .expect("should be recognized as launcher invocation")
-            .expect("should decode successfully");
+            .expect("应被识别为启动器调用")
+            .expect("应成功解码");
 
         assert_eq!(
             decoded.validation_socket,
@@ -1745,7 +1745,7 @@ mod tests {
         // launcher's bridge fields must be the same unique path. With no writable
         // binds, the validation field is the `-` sentinel and the path count is 0.
         let sandbox_destination = proxy_socket_bind_destination(&args)
-            .expect("restricted run should bind the proxy socket into the sandbox");
+            .expect("受限运行应将代理套接字绑定到沙箱中");
         assert!(sandbox_destination.starts_with(PROXY_SOCKET_SANDBOX_PATH_PREFIX));
         assert!(windows_contains(
             &args,
@@ -1788,7 +1788,7 @@ mod tests {
         bwrap_args.push("--".to_string());
         if let NetworkAccess::LocalhostPort(port) = permissions.network {
             let proxy_socket_sandbox_path =
-                proxy_socket_sandbox_path.expect("restricted network needs a sandbox socket path");
+                proxy_socket_sandbox_path.expect("受限网络需要沙箱套接字路径");
             bwrap_args.push(bridge_program.to_string());
             bwrap_args.push(LAUNCHER_FLAG.to_string());
             bwrap_args.push(LAUNCHER_NONE.to_string());
@@ -1846,19 +1846,19 @@ mod tests {
 
         // The mounted path is the captured inode -> validation passes.
         let sender = ValidationFdSender::spawn(vec![open_o_path(captured.path())])
-            .expect("spawn validation fd sender");
+            .expect("启动验证文件描述符发送器");
         validate_binds(sender.host_socket_path(), &[captured.path().to_path_buf()])
-            .expect("matching bind must validate");
+            .expect("匹配的绑定必须通过验证");
         drop(sender);
 
         // The mounted path is a *different* inode (a redirected bind) -> rejected.
         let sender = ValidationFdSender::spawn(vec![open_o_path(captured.path())])
-            .expect("spawn validation fd sender");
+            .expect("启动验证文件描述符发送器");
         let error = validate_binds(sender.host_socket_path(), &[other.path().to_path_buf()])
-            .expect_err("a redirected bind must be rejected");
+            .expect_err("重定向的绑定必须被拒绝");
         assert!(
             error.to_string().contains("redirected"),
-            "unexpected error: {error:#}"
+            "意外错误: {error:#}"
         );
     }
 
@@ -1867,12 +1867,12 @@ mod tests {
     #[test]
     fn test_validate_binds_rejects_missing_descriptors() {
         let captured = tempfile::tempdir().unwrap();
-        let sender = ValidationFdSender::spawn(Vec::new()).expect("spawn validation fd sender");
+        let sender = ValidationFdSender::spawn(Vec::new()).expect("启动验证文件描述符发送器");
         let error = validate_binds(sender.host_socket_path(), &[captured.path().to_path_buf()])
-            .expect_err("missing descriptors must be rejected");
+            .expect_err("缺失的描述符必须被拒绝");
         assert!(
             error.to_string().contains("descriptor"),
-            "unexpected error: {error:#}"
+            "意外错误: {error:#}"
         );
     }
 
@@ -1881,9 +1881,9 @@ mod tests {
     // acceptable — no filter is installed there.
     #[test]
     fn test_command_seccomp_program_builds() {
-        let program = build_command_seccomp_program().expect("build seccomp program");
+        let program = build_command_seccomp_program().expect("构建 seccomp 程序");
         if let Some(program) = program {
-            assert!(!program.is_empty(), "seccomp program must not be empty");
+            assert!(!program.is_empty(), "seccomp 程序不能为空");
         }
     }
 
@@ -1895,7 +1895,7 @@ mod tests {
     fn test_command_seccomp_filter_blocks_unix_but_allows_ip() {
         // Build in the parent (this allocates); the child only applies the
         // prebuilt program and makes raw syscalls.
-        let Some(program) = build_command_seccomp_program().expect("build seccomp program") else {
+        let Some(program) = build_command_seccomp_program().expect("构建 seccomp 程序") else {
             return; // unsupported arch: nothing to enforce
         };
 
@@ -1903,7 +1903,7 @@ mod tests {
         // libc/`prctl` (via `apply_filter` on a program built before the fork)
         // and `_exit`; it never returns to Rust or allocates.
         let pid = unsafe { libc::fork() };
-        assert!(pid >= 0, "fork failed");
+        assert!(pid >= 0, "fork 失败");
         if pid == 0 {
             if seccompiler::apply_filter(&program).is_err() {
                 unsafe { libc::_exit(10) };
@@ -1929,10 +1929,10 @@ mod tests {
 
         let mut status = 0i32;
         let waited = unsafe { libc::waitpid(pid, &mut status, 0) };
-        assert_eq!(waited, pid, "waitpid failed");
+        assert_eq!(waited, pid, "waitpid 失败");
         assert!(
             libc::WIFEXITED(status),
-            "child did not exit normally: {status:#x}"
+            "子进程未正常退出: {status:#x}"
         );
         let code = libc::WEXITSTATUS(status);
         assert_eq!(
@@ -1965,14 +1965,14 @@ mod tests {
             None,
             None,
         );
-        let error = result.expect_err("must fail closed when a writable path can't be provided");
+        let error = result.expect_err("当无法提供可写路径时必须安全失败");
         assert!(
-            error.to_string().contains("writable sandbox path"),
-            "unexpected error: {error:#}"
+            error.to_string().contains("可写沙箱路径"),
+            "意外错误: {error:#}"
         );
         assert!(
             !unbindable.exists(),
-            "wrap_invocation must never create a missing writable path"
+            "wrap_invocation 绝不能创建缺失的可写路径"
         );
     }
 }

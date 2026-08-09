@@ -364,7 +364,7 @@ pub fn into_mistral(
     max_output_tokens: Option<u64>,
 ) -> Result<(mistral::Request, Option<String>)> {
     if request.contains_custom_tool_input() {
-        anyhow::bail!("Mistral does not support custom tools");
+        anyhow::bail!("Mistral 不支持自定义工具");
     }
 
     let stream = true;
@@ -409,7 +409,7 @@ pub fn into_mistral(
                                         text_parts.push(text.to_string());
                                     }
                                     LanguageModelToolResultContent::Image(_) => {
-                                        text_parts.push("[Tool responded with an image, but Zed doesn't support these in Mistral models yet]".to_string());
+                                        text_parts.push("[工具返回了图片,但 Zed 尚不支持 Mistral 模型中的图片]".to_string());
                                     }
                                 }
                             }
@@ -460,7 +460,7 @@ pub fn into_mistral(
                         MessageContent::Compaction(_) => {}
                         MessageContent::ToolUse(tool_use) => {
                             let input = tool_use.input.as_json().ok_or_else(|| {
-                                anyhow!("Mistral does not support custom tool calls")
+                                anyhow!("Mistral 不支持自定义工具调用")
                             })?;
                             let tool_call = mistral::ToolCall {
                                 id: tool_use.id.to_string(),
@@ -566,7 +566,7 @@ pub fn into_mistral(
                             ..
                         } => input_schema,
                         language_model::LanguageModelRequestToolInput::Custom { .. } => {
-                            return Err(anyhow::anyhow!("Mistral does not support custom tools"));
+                            return Err(anyhow::anyhow!("Mistral 不支持自定义工具"));
                         }
                     };
                     Ok(mistral::ToolDefinition::Function {
@@ -618,7 +618,7 @@ impl MistralEventMapper {
     ) -> Vec<Result<LanguageModelCompletionEvent, LanguageModelCompletionError>> {
         let Some(choice) = event.choices.first() else {
             return vec![Err(LanguageModelCompletionError::from(anyhow!(
-                "Response contained no choices"
+                "响应中不包含任何选项"
             )))];
         };
 
@@ -718,7 +718,7 @@ impl MistralEventMapper {
                     events.push(Ok(LanguageModelCompletionEvent::Stop(StopReason::ToolUse)));
                 }
                 unexpected => {
-                    log::error!("Unexpected Mistral stop_reason: {unexpected:?}");
+                    log::error!("意外的 Mistral 停止原因: {unexpected:?}");
                     events.push(Ok(LanguageModelCompletionEvent::Stop(StopReason::EndTurn)));
                 }
             }
@@ -735,7 +735,7 @@ impl MistralEventMapper {
         for (_, tool_call) in self.tool_calls_by_index.drain() {
             if tool_call.id.is_empty() || tool_call.name.is_empty() {
                 results.push(Err(LanguageModelCompletionError::from(anyhow!(
-                    "Received incomplete tool call: missing id or name"
+                    "收到不完整的工具调用:缺少 id 或名称"
                 ))));
                 continue;
             }
@@ -833,7 +833,7 @@ mod tests {
         let events = mapper.map_event(tool_call_chunk(None, None, None, Some("tool_calls")));
 
         let Ok(LanguageModelCompletionEvent::ToolUse(tool_use)) = &events[0] else {
-            panic!("Expected first event to be ToolUse, got: {:?}", events[0]);
+            panic!("预期第一个事件为 ToolUse,实际为: {:?}", events[0]);
         };
 
         assert_eq!(tool_use.id.to_string(), "real_id_123");
@@ -850,13 +850,13 @@ mod tests {
             messages: vec![
                 LanguageModelRequestMessage {
                     role: Role::System,
-                    content: vec![MessageContent::Text("System prompt".into())],
+                    content: vec![MessageContent::Text("系统提示词".into())],
                     cache: false,
                     reasoning_details: None,
                 },
                 LanguageModelRequestMessage {
                     role: Role::User,
-                    content: vec![MessageContent::Text("Hello".into())],
+                    content: vec![MessageContent::Text("你好".into())],
                     cache: false,
                     reasoning_details: None,
                 },
@@ -896,7 +896,7 @@ mod tests {
         let request = |thinking_allowed| LanguageModelRequest {
             messages: vec![LanguageModelRequestMessage {
                 role: Role::User,
-                content: vec![MessageContent::Text("Hello".into())],
+                content: vec![MessageContent::Text("你好".into())],
                 cache: false,
                 reasoning_details: None,
             }],
@@ -935,7 +935,7 @@ mod tests {
             messages: vec![LanguageModelRequestMessage {
                 role: Role::User,
                 content: vec![
-                    MessageContent::Text("What's in this image?".into()),
+                    MessageContent::Text("这张图片里有什么?".into()),
                     MessageContent::Image(LanguageModelImage {
                         source: "base64data".into(),
                     }),
@@ -974,7 +974,7 @@ mod tests {
             assert_eq!(content.len(), 2);
             assert!(matches!(
                 &content[0],
-                mistral::MessagePart::Text { text } if text == "What's in this image?"
+                mistral::MessagePart::Text { text } if text == "这张图片里有什么?"
             ));
             assert!(matches!(
                 &content[1],

@@ -821,7 +821,7 @@ async fn test_collaborating_with_code_actions(
 
             Ok(Some(vec![lsp::CodeActionOrCommand::CodeAction(
                 lsp::CodeAction {
-                    title: "Inline into all callers".to_string(),
+                    title: "内联到所有调用点".to_string(),
                     edit: Some(lsp::WorkspaceEdit {
                         changes: Some(
                             [
@@ -893,7 +893,7 @@ async fn test_collaborating_with_code_actions(
     fake_language_server.set_request_handler::<lsp::request::CodeActionResolveRequest, _, _>(
         |_, _| async move {
             Ok(lsp::CodeAction {
-                title: "Inline into all callers".to_string(),
+                title: "内联到所有调用点".to_string(),
                 edit: Some(lsp::WorkspaceEdit {
                     changes: Some(
                         [
@@ -1053,7 +1053,7 @@ async fn test_collaborating_with_renames(cx_a: &mut TestAppContext, cx_b: &mut T
             assert_eq!(
                 rename_selection.range(),
                 MultiBufferOffset(0)..MultiBufferOffset(3),
-                "Rename that was triggered from zero selection caret, should propose the whole word."
+                "从零选择光标触发的重命名,应建议整个单词。"
             );
             rename_editor.buffer().update(cx, |rename_buffer, cx| {
                 rename_buffer.edit([(MultiBufferOffset(0)..MultiBufferOffset(3), "THREE")], None, cx);
@@ -1100,7 +1100,7 @@ async fn test_collaborating_with_renames(cx_a: &mut TestAppContext, cx_b: &mut T
             assert_eq!(
                 rename_selection.range(),
                 MultiBufferOffset(1)..MultiBufferOffset(2),
-                "Rename that was triggered from a selection, should have the same selection range in the rename proposal"
+                "从选择触发的重命名,重命名建议中应包含相同的选择范围"
             );
             rename_editor.buffer().update(cx, |rename_buffer, cx| {
                 rename_buffer.edit([(MultiBufferOffset(0)..MultiBufferOffset(lsp_rename_end - lsp_rename_start), "THREE")], None, cx);
@@ -1320,17 +1320,17 @@ async fn test_slow_lsp_server(cx_a: &mut TestAppContext, cx_b: &mut TestAppConte
     assert_eq!(
         requests_started.load(atomic::Ordering::Acquire),
         1,
-        "Selection change should have initiated the first request"
+        "选择更改应已发起第一个请求"
     );
     assert_eq!(
         requests_completed.load(atomic::Ordering::Acquire),
         0,
-        "Slow requests should be running still"
+        "慢请求应仍在运行"
     );
     let _first_task = lsp_store_b.update(cx_b, |lsp_store, cx| {
         lsp_store
             .forget_code_lens_task(buffer_b.read(cx).remote_id())
-            .expect("Should have the fetch task started")
+            .expect("应已启动获取任务")
     });
 
     editor_b.update_in(cx_b, |editor, window, cx| {
@@ -1342,17 +1342,17 @@ async fn test_slow_lsp_server(cx_a: &mut TestAppContext, cx_b: &mut TestAppConte
     assert_eq!(
         requests_started.load(atomic::Ordering::Acquire),
         2,
-        "Selection change should have initiated the second request"
+        "选择更改应已发起第二个请求"
     );
     assert_eq!(
         requests_completed.load(atomic::Ordering::Acquire),
         0,
-        "Slow requests should be running still"
+        "慢请求应仍在运行"
     );
     let _second_task = lsp_store_b.update(cx_b, |lsp_store, cx| {
         lsp_store
             .forget_code_lens_task(buffer_b.read(cx).remote_id())
-            .expect("Should have the fetch task started for the 2nd time")
+            .expect("应已第二次启动获取任务")
     });
 
     editor_b.update_in(cx_b, |editor, window, cx| {
@@ -1364,12 +1364,12 @@ async fn test_slow_lsp_server(cx_a: &mut TestAppContext, cx_b: &mut TestAppConte
     assert_eq!(
         requests_started.load(atomic::Ordering::Acquire),
         3,
-        "Selection change should have initiated the third request"
+        "选择更改应已发起第三个请求"
     );
     assert_eq!(
         requests_completed.load(atomic::Ordering::Acquire),
         0,
-        "Slow requests should be running still"
+        "慢请求应仍在运行"
     );
 
     _first_task.await.unwrap();
@@ -1378,12 +1378,12 @@ async fn test_slow_lsp_server(cx_a: &mut TestAppContext, cx_b: &mut TestAppConte
     assert_eq!(
         requests_started.load(atomic::Ordering::Acquire),
         3,
-        "No selection changes should trigger no more code lens requests"
+        "没有选择更改不应再触发代码镜头请求"
     );
     assert_eq!(
         requests_completed.load(atomic::Ordering::Acquire),
         1,
-        "After enough time, a single, deduplicated, LSP request should have been served by the language server"
+        "经过足够时间后,语言服务器应已处理一个去重后的 LSP 请求"
     );
     let resulting_lens_actions = editor_b
         .update(cx_b, |editor, cx| {
@@ -1398,7 +1398,7 @@ async fn test_slow_lsp_server(cx_a: &mut TestAppContext, cx_b: &mut TestAppConte
     assert_eq!(
         resulting_lens_actions.len(),
         1,
-        "Should have fetched one code lens action, but got: {resulting_lens_actions:?}"
+        "应已获取一个代码镜头操作,但实际得到:{resulting_lens_actions:?}"
     );
     assert_eq!(
         resulting_lens_actions
@@ -1408,7 +1408,7 @@ async fn test_slow_lsp_server(cx_a: &mut TestAppContext, cx_b: &mut TestAppConte
             .lsp_action
             .title(),
         "LSP Command 1",
-        "Only the final code lens action should be in the data"
+        "数据中应仅包含最终的代码镜头操作"
     )
 }
 
@@ -1461,7 +1461,7 @@ async fn test_collaborating_with_code_lens_resolve(
                     |lens, _| async move {
                         Ok(lsp::CodeLens {
                             command: Some(lsp::Command {
-                                title: "1 reference".to_string(),
+                                title: "1 个引用".to_string(),
                                 command: "noop".to_string(),
                                 arguments: None,
                             }),
@@ -1538,13 +1538,13 @@ async fn test_collaborating_with_code_lens_resolve(
         let menu = editor.context_menu().borrow();
         let actions_menu = match menu.as_ref() {
             Some(CodeContextMenu::CodeActions(m)) => m,
-            _ => panic!("Expected code actions menu to be visible"),
+            _ => panic!("预期代码操作菜单可见"),
         };
         let item = actions_menu
             .actions
             .get(0)
-            .expect("Expected at least one item in menu");
-        assert_eq!(item.label(), "1 reference");
+            .expect("预期菜单中至少有一个项目");
+        assert_eq!(item.label(), "1 个引用");
     });
 }
 
@@ -1822,7 +1822,7 @@ async fn test_local_registration_for_existing_available_server_from_remote(
         rust_adapters
             .iter()
             .any(|a| a.name().0 == "the-language-server"),
-        "Adapter should have been registered upon joining"
+        "加入时应已注册适配器"
     );
 
     project_b.read_with(cx_b, |project, cx| {
@@ -2423,7 +2423,7 @@ async fn test_mutual_editor_inlay_hint_cache_update(
         assert_eq!(
             vec![initial_edit.to_string()],
             extract_hint_labels(editor, cx),
-            "Host should get its first hints when opens an editor"
+            "主机打开编辑器时应获得其第一个提示"
         );
     });
     let (workspace_b, cx_b) = client_b.build_workspace(&project_b, cx_b);
@@ -2442,7 +2442,7 @@ async fn test_mutual_editor_inlay_hint_cache_update(
         assert_eq!(
             vec![initial_edit.to_string()],
             extract_hint_labels(editor, cx),
-            "Client should get its first hints when opens an editor"
+            "客户端打开编辑器时应获得其第一个提示"
         );
     });
 
@@ -2475,7 +2475,7 @@ async fn test_mutual_editor_inlay_hint_cache_update(
         editor.change_selections(SelectionEffects::no_scroll(), window, cx, |s| {
             s.select_ranges([MultiBufferOffset(13)..MultiBufferOffset(13)])
         });
-        editor.handle_input("a change to increment both buffers' versions", window, cx);
+        editor.handle_input("一个用于递增两个缓冲区版本的更改", window, cx);
     });
     cx_a.focus(&editor_a);
 
@@ -2499,7 +2499,7 @@ async fn test_mutual_editor_inlay_hint_cache_update(
         .request::<lsp::request::InlayHintRefreshRequest>((), DEFAULT_LSP_REQUEST_TIMEOUT)
         .await
         .into_response()
-        .expect("inlay refresh request failed");
+        .expect("内联提示刷新请求失败");
 
     executor.advance_clock(Duration::from_secs(1));
     executor.run_until_parked();
@@ -2507,14 +2507,14 @@ async fn test_mutual_editor_inlay_hint_cache_update(
         assert_eq!(
             vec![after_special_edit_for_refresh.to_string()],
             extract_hint_labels(editor, cx),
-            "Host should react to /refresh LSP request"
+            "主机应对 /refresh LSP 请求做出反应"
         );
     });
     editor_b.update(cx_b, |editor, cx| {
         assert_eq!(
             vec![after_special_edit_for_refresh.to_string()],
             extract_hint_labels(editor, cx),
-            "Guest should get a /refresh LSP request propagated by host"
+            "访客应收到主机传播的 /refresh LSP 请求"
         );
     });
 }
@@ -2656,9 +2656,9 @@ async fn test_inlay_hint_refresh_is_forwarded(
                 let other_hints = task_other_hints.load(atomic::Ordering::Acquire);
                 let character = if other_hints { 0 } else { 2 };
                 let label = if other_hints {
-                    "other hint"
+                    "其他提示"
                 } else {
-                    "initial hint"
+                    "初始提示"
                 };
                 Ok(Some(vec![
                     lsp::InlayHint {
@@ -2673,7 +2673,7 @@ async fn test_inlay_hint_refresh_is_forwarded(
                     },
                     lsp::InlayHint {
                         position: lsp::Position::new(1090, 1090),
-                        label: lsp::InlayHintLabel::String("out-of-bounds hint".to_string()),
+                        label: lsp::InlayHintLabel::String("越界提示".to_string()),
                         kind: None,
                         text_edits: None,
                         tooltip: None,
@@ -2692,16 +2692,16 @@ async fn test_inlay_hint_refresh_is_forwarded(
     editor_a.update(cx_a, |editor, cx| {
         assert!(
             extract_hint_labels(editor, cx).is_empty(),
-            "Host should get no hints due to them turned off"
+            "由于提示已关闭,主机不应获得任何提示"
         );
     });
 
     executor.run_until_parked();
     editor_b.update(cx_b, |editor, cx| {
         assert_eq!(
-            vec!["initial hint".to_string()],
+            vec!["初始提示".to_string()],
             extract_hint_labels(editor, cx),
-            "Client should get its first hints when opens an editor"
+            "客户端打开编辑器时应获得其第一个提示"
         );
     });
 
@@ -2710,21 +2710,21 @@ async fn test_inlay_hint_refresh_is_forwarded(
         .request::<lsp::request::InlayHintRefreshRequest>((), DEFAULT_LSP_REQUEST_TIMEOUT)
         .await
         .into_response()
-        .expect("inlay refresh request failed");
+        .expect("内联提示刷新请求失败");
     executor.run_until_parked();
     editor_a.update(cx_a, |editor, cx| {
         assert!(
             extract_hint_labels(editor, cx).is_empty(),
-            "Host should get no hints due to them turned off, even after the /refresh"
+            "即使经过 /refresh,由于提示已关闭,主机也不应获得任何提示"
         );
     });
 
     executor.run_until_parked();
     editor_b.update(cx_b, |editor, cx| {
         assert_eq!(
-            vec!["other hint".to_string()],
+            vec!["其他提示".to_string()],
             extract_hint_labels(editor, cx),
-            "Guest should get a /refresh LSP request propagated by host despite host hints are off"
+            "即使主机提示已关闭,访客也应收到主机传播的 /refresh LSP 请求"
         );
     });
 }
@@ -2871,13 +2871,13 @@ async fn test_lsp_document_color(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
     assert_eq!(
         0,
         requests_made.load(atomic::Ordering::Acquire),
-        "Host did not enable document colors, hence should query for none"
+        "主机未启用文档颜色,因此不应查询任何颜色"
     );
     editor_a.update(cx_a, |editor, cx| {
         assert_eq!(
             Vec::<Rgba>::new(),
             extract_color_inlays(editor, cx),
-            "No query colors should result in no hints"
+            "不查询颜色应导致没有提示"
         );
     });
 
@@ -2898,13 +2898,13 @@ async fn test_lsp_document_color(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
     assert_eq!(
         1,
         requests_made.load(atomic::Ordering::Acquire),
-        "The client opened the file and got its first colors back"
+        "客户端打开了文件并获得了其第一批颜色"
     );
     editor_b.update(cx_b, |editor, cx| {
         assert_eq!(
             vec![expected_color],
             extract_color_inlays(editor, cx),
-            "With document colors as inlays, color inlays should be pushed"
+            "将文档颜色作为内联提示时,应推送颜色内联提示"
         );
     });
 
@@ -2919,13 +2919,13 @@ async fn test_lsp_document_color(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
     assert_eq!(
         2,
         requests_made.load(atomic::Ordering::Acquire),
-        "After the host edits his file, the client should request the colors again"
+        "主机编辑其文件后,客户端应再次请求颜色"
     );
     editor_a.update(cx_a, |editor, cx| {
         assert_eq!(
             Vec::<Rgba>::new(),
             extract_color_inlays(editor, cx),
-            "Host has no colors still"
+            "主机仍然没有颜色"
         );
     });
     editor_b.update(cx_b, |editor, cx| {
@@ -2943,20 +2943,20 @@ async fn test_lsp_document_color(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
     assert_eq!(
         2,
         requests_made.load(atomic::Ordering::Acquire),
-        "After the client have changed the colors settings, no extra queries should happen"
+        "客户端更改颜色设置后,不应发生额外的查询"
     );
     editor_a.update(cx_a, |editor, cx| {
         assert_eq!(
             Vec::<Rgba>::new(),
             extract_color_inlays(editor, cx),
-            "Host is unaffected by the client's settings changes"
+            "主机不受客户端设置更改的影响"
         );
     });
     editor_b.update(cx_b, |editor, cx| {
         assert_eq!(
             Vec::<Rgba>::new(),
             extract_color_inlays(editor, cx),
-            "Client should have no colors hints, as in the settings"
+            "客户端不应有颜色提示,如设置中所示"
         );
     });
 
@@ -2971,20 +2971,20 @@ async fn test_lsp_document_color(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
     assert_eq!(
         2,
         requests_made.load(atomic::Ordering::Acquire),
-        "After falling back to colors as inlays, no extra LSP queries are made"
+        "回退到将颜色作为内联提示后,不会进行额外的 LSP 查询"
     );
     editor_a.update(cx_a, |editor, cx| {
         assert_eq!(
             Vec::<Rgba>::new(),
             extract_color_inlays(editor, cx),
-            "Host is unaffected by the client's settings changes, again"
+            "主机再次不受客户端设置更改的影响"
         );
     });
     editor_b.update(cx_b, |editor, cx| {
         assert_eq!(
             vec![expected_color],
             extract_color_inlays(editor, cx),
-            "Client should have its color hints back"
+            "客户端应恢复其颜色提示"
         );
     });
 
@@ -3000,20 +3000,20 @@ async fn test_lsp_document_color(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
     assert_eq!(
         3,
         requests_made.load(atomic::Ordering::Acquire),
-        "After the host enables document colors, another LSP query should be made"
+        "主机启用文档颜色后,应进行另一次 LSP 查询"
     );
     editor_a.update(cx_a, |editor, cx| {
         assert_eq!(
             Vec::<Rgba>::new(),
             extract_color_inlays(editor, cx),
-            "Host did not configure document colors as hints hence gets nothing"
+            "主机未将文档颜色配置为提示,因此不会获得任何内容"
         );
     });
     editor_b.update(cx_b, |editor, cx| {
         assert_eq!(
             vec![expected_color],
             extract_color_inlays(editor, cx),
-            "Client should be unaffected by the host's settings changes"
+            "客户端不应受主机设置更改的影响"
         );
     });
 }
@@ -3128,7 +3128,7 @@ async fn test_lsp_document_links(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
     let other_uri_with_fragment =
         lsp::Uri::from_str(&format!("{}#3,5", other_uri.as_str())).unwrap();
     let other_target = other_uri_with_fragment.to_string();
-    let tooltip = "Open other.rs";
+    let tooltip = "打开 other.rs";
     let resolve_marker = serde_json::json!({"id": 42});
 
     let document_link_requests = Arc::new(AtomicUsize::new(0));
@@ -3182,12 +3182,12 @@ async fn test_lsp_document_links(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
     assert_eq!(
         1,
         document_link_requests.load(atomic::Ordering::Acquire),
-        "Host opening the file should issue exactly one documentLink request"
+        "主机打开文件应恰好发出一个 documentLink 请求"
     );
     assert_eq!(
         0,
         resolve_requests.load(atomic::Ordering::Acquire),
-        "No resolve happens until a hover triggers it"
+        "在悬停触发之前不会进行解析"
     );
 
     let (workspace_b, cx_b) = client_b.build_workspace(&project_b, cx_b);
@@ -3225,29 +3225,29 @@ async fn test_lsp_document_links(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
         .into_values()
         .flat_map(|per_server| per_server.into_values())
         .next()
-        .expect("guest should mirror the fetched document link");
+        .expect("访客应镜像获取到的文档链接");
     assert!(
         !unresolved.resolved,
-        "freshly fetched links must come back unresolved"
+        "新获取的链接必须保持未解析状态"
     );
 
     let resolve_task = editor_b
         .update(cx_b, |editor, cx| {
             editor.document_links_at(guest_buffer.clone(), unresolved.range.start, cx)
         })
-        .expect("editor should have a cached link covering the position");
+        .expect("编辑器应有一个覆盖该位置的缓存链接");
     let resolved_links = resolve_task.await;
     assert_eq!(
         1,
         resolved_links.len(),
-        "`document_links_at` should yield the single matching link"
+        "`document_links_at` 应产生唯一匹配的链接"
     );
     executor.run_until_parked();
 
     assert_eq!(
         1,
         resolve_requests.load(atomic::Ordering::Acquire),
-        "Guest's resolve should reach the host's LSP exactly once"
+        "访客的解析请求应恰好到达主机的 LSP 一次"
     );
 
     let guest_links = project_b.read_with(cx_b, |project, cx| {
@@ -3260,17 +3260,17 @@ async fn test_lsp_document_links(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
     assert_eq!(
         1,
         guest_links.values().map(|m| m.len()).sum::<usize>(),
-        "Guest should mirror exactly one document link from the host"
+        "访客应恰好从主机镜像一个文档链接"
     );
     let link = guest_links
         .values()
         .flat_map(|per_server| per_server.values())
         .next()
-        .expect("guest cache should contain the mirrored link");
+        .expect("访客缓存应包含镜像的链接");
     assert_eq!(
         link.target.as_deref(),
         Some(other_target.as_str()),
-        "Guest should see the resolved file:// target from the host"
+        "访客应看到来自主机的已解析 file:// 目标"
     );
     assert_eq!(link.tooltip.as_deref(), Some(tooltip));
 
@@ -3279,16 +3279,16 @@ async fn test_lsp_document_links(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
         .update(cx_b, |editor, cx| {
             editor.document_links_at(guest_buffer.clone(), click_anchor, cx)
         })
-        .expect("cached document link should cover the click anchor")
+        .expect("缓存的文档链接应覆盖点击锚点")
         .await;
     let (click_server_id, click_link) = resolved_at_click
         .into_iter()
         .next()
-        .expect("resolved links should not be empty");
+        .expect("已解析的链接不应为空");
     let click_target = click_link
         .target
         .as_deref()
-        .expect("link should be resolved")
+        .expect("链接应已解析")
         .to_owned();
     let navigated = editor_b
         .update_in(cx_b, |editor, window, cx| {
@@ -3299,11 +3299,11 @@ async fn test_lsp_document_links(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
             editor.navigate_to_hover_links(None, vec![hover_link], None, false, window, cx)
         })
         .await
-        .expect("navigation task should complete");
+        .expect("导航任务应完成");
     assert_eq!(
         navigated,
         editor::Navigated::Yes,
-        "Clicking a resolved file:// document link should navigate",
+        "点击已解析的 file:// 文档链接应进行导航",
     );
     executor.run_until_parked();
 
@@ -3315,7 +3315,7 @@ async fn test_lsp_document_links(cx_a: &mut TestAppContext, cx_b: &mut TestAppCo
         assert_eq!(
             buffer.read(cx).text(),
             other_contents,
-            "Following the resolved link should open other.rs from the same worktree",
+            "跟随已解析的链接应打开同一工作树中的 other.rs",
         );
         let head = editor
             .selections
@@ -3645,13 +3645,13 @@ async fn test_lsp_pull_diagnostics(
     assert_eq!(
         1,
         workspace_diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Workspace diagnostics should be pulled initially on a server startup"
+        "服务器启动时应初始拉取工作区诊断"
     );
     pull_diagnostics_handle.next().await.unwrap();
     assert_eq!(
         1,
         diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Host should query pull diagnostics when the editor is opened"
+        "打开编辑器时,主机应查询拉取诊断"
     );
     executor.run_until_parked();
     editor_a_main.update(cx_a, |editor, cx| {
@@ -3662,7 +3662,7 @@ async fn test_lsp_pull_diagnostics(
         assert_eq!(
             all_diagnostics.len(),
             1,
-            "Expected single diagnostic, but got: {all_diagnostics:?}"
+            "预期单个诊断,但实际为:{all_diagnostics:?}"
         );
         let diagnostic = &all_diagnostics[0];
         let mut expected_messages = vec![expected_pull_diagnostic_main_message];
@@ -3671,7 +3671,7 @@ async fn test_lsp_pull_diagnostics(
         }
         assert!(
             expected_messages.contains(&diagnostic.diagnostic.message.as_str()),
-            "Expected {expected_messages:?} on the host, but got: {}",
+            "主机上预期消息为 {expected_messages:?},但实际为:{}",
             diagnostic.diagnostic.message
         );
     });
@@ -3791,7 +3791,7 @@ async fn test_lsp_pull_diagnostics(
         assert_eq!(
             all_diagnostics.len(),
             2,
-            "Expected pull and push diagnostics, but got: {all_diagnostics:?}"
+            "预期拉取和推送诊断,但实际为:{all_diagnostics:?}"
         );
         let expected_messages = [
             expected_workspace_pull_diagnostics_main_message,
@@ -3801,7 +3801,7 @@ async fn test_lsp_pull_diagnostics(
         for diagnostic in all_diagnostics {
             assert!(
                 expected_messages.contains(&diagnostic.diagnostic.message.as_str()),
-                "Expected push and pull messages on the host: {expected_messages:?}, but got: {}",
+                "主机上预期推送和拉取消息为 {expected_messages:?},但实际为:{}",
                 diagnostic.diagnostic.message
             );
         }
@@ -3822,13 +3822,13 @@ async fn test_lsp_pull_diagnostics(
     assert_eq!(
         2,
         diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Client should query pull diagnostics when its editor is opened"
+        "打开编辑器时,客户端应查询拉取诊断"
     );
     executor.run_until_parked();
     assert_eq!(
         workspace_diagnostic_start_count,
         workspace_diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Workspace diagnostics should not be changed as the remote client does not initialize the workspace diagnostics pull"
+        "由于远程客户端未初始化工作区诊断拉取,工作区诊断不应改变"
     );
     editor_b_main.update(cx_b, |editor, cx| {
         let snapshot = editor.buffer().read(cx).snapshot(cx);
@@ -3838,7 +3838,7 @@ async fn test_lsp_pull_diagnostics(
         assert_eq!(
             all_diagnostics.len(),
             2,
-            "Expected pull and push diagnostics, but got: {all_diagnostics:?}"
+            "预期拉取和推送诊断,但实际为:{all_diagnostics:?}"
         );
 
         // Despite the workspace diagnostics not re-initialized for the remote client, we can still expect its message synced from the host.
@@ -3850,7 +3850,7 @@ async fn test_lsp_pull_diagnostics(
         for diagnostic in all_diagnostics {
             assert!(
                 expected_messages.contains(&diagnostic.diagnostic.message.as_str()),
-                "The client should get both push and pull messages: {expected_messages:?}, but got: {}",
+                "客户端应同时收到推送和拉取消息:{expected_messages:?},但实际为:{}",
                 diagnostic.diagnostic.message
             );
         }
@@ -3869,13 +3869,13 @@ async fn test_lsp_pull_diagnostics(
     assert_eq!(
         3,
         diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Client should query pull diagnostics when its another editor is opened"
+        "打开另一个编辑器时,客户端应查询拉取诊断"
     );
     executor.run_until_parked();
     assert_eq!(
         workspace_diagnostic_start_count,
         workspace_diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "The remote client still did not anything to trigger the workspace diagnostics pull"
+        "远程客户端仍未执行任何操作来触发工作区诊断拉取"
     );
     editor_b_lib.update(cx_b, |editor, cx| {
         let snapshot = editor.buffer().read(cx).snapshot(cx);
@@ -3889,12 +3889,12 @@ async fn test_lsp_pull_diagnostics(
         assert_eq!(
             all_diagnostics.len(),
             2,
-            "Expected pull and push diagnostics, but got: {all_diagnostics:?}"
+            "预期拉取和推送诊断,但实际为:{all_diagnostics:?}"
         );
         for diagnostic in all_diagnostics {
             assert!(
                 expected_messages.contains(&diagnostic.diagnostic.message.as_str()),
-                "The client should get both push and pull messages: {expected_messages:?}, but got: {}",
+                "客户端应同时收到推送和拉取消息:{expected_messages:?},但实际为:{}",
                 diagnostic.diagnostic.message
             );
         }
@@ -3957,12 +3957,12 @@ async fn test_lsp_pull_diagnostics(
             assert_eq!(
                 all_diagnostics.len(),
                 2,
-                "Expected pull and push diagnostics, but got: {all_diagnostics:?}"
+                "预期拉取和推送诊断,但实际为:{all_diagnostics:?}"
             );
             for diagnostic in all_diagnostics {
                 assert!(
                     expected_messages.contains(&diagnostic.diagnostic.message.as_str()),
-                    "The client should get both push and pull messages: {expected_messages:?}, but got: {}",
+                    "客户端应同时收到推送和拉取消息:{expected_messages:?},但实际为:{}",
                     diagnostic.diagnostic.message
                 );
             }
@@ -3972,7 +3972,7 @@ async fn test_lsp_pull_diagnostics(
     {
         assert!(
             !diagnostics_pulls_result_ids.lock().await.is_empty(),
-            "Initial diagnostics pulls should report None at least"
+            "初始诊断拉取至少应报告 None"
         );
         assert_eq!(
             0,
@@ -3981,7 +3981,7 @@ async fn test_lsp_pull_diagnostics(
                 .await
                 .deref()
                 .len(),
-            "After the initial workspace request, opening files should not reuse any result ids"
+            "初始工作区请求后,打开文件不应重用任何结果 ID"
         );
     }
 
@@ -3994,13 +3994,13 @@ async fn test_lsp_pull_diagnostics(
     assert_eq!(
         4,
         diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Client lib.rs edits should trigger another diagnostics pull for open buffers"
+        "客户端对 lib.rs 的编辑应触发对打开缓冲区的另一次诊断拉取"
     );
     workspace_diagnostics_pulls_handle.next().await.unwrap();
     assert_eq!(
         workspace_diagnostic_start_count + 1,
         workspace_diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "After client lib.rs edits, the workspace diagnostics request should follow"
+        "客户端编辑 lib.rs 后,应跟随工作区诊断请求"
     );
     executor.run_until_parked();
 
@@ -4014,13 +4014,13 @@ async fn test_lsp_pull_diagnostics(
     assert_eq!(
         7,
         diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Client main.rs edits should trigger diagnostics pull by both client and host and an extra pull for the client's lib.rs"
+        "客户端对 main.rs 的编辑应触发客户端和主机的诊断拉取,并为客户端的 lib.rs 额外拉取一次"
     );
     workspace_diagnostics_pulls_handle.next().await.unwrap();
     assert_eq!(
         workspace_diagnostic_start_count + 2,
         workspace_diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "After client main.rs edits, the workspace diagnostics pull should follow"
+        "客户端编辑 main.rs 后,应跟随工作区诊断拉取"
     );
     executor.run_until_parked();
 
@@ -4034,13 +4034,13 @@ async fn test_lsp_pull_diagnostics(
     assert_eq!(
         10,
         diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Host main.rs edits should trigger another diagnostics pull by both client and host and another pull for the client's lib.rs"
+        "主机对 main.rs 的编辑应触发客户端和主机的另一次诊断拉取,并为客户端的 lib.rs 再拉取一次"
     );
     workspace_diagnostics_pulls_handle.next().await.unwrap();
     assert_eq!(
         workspace_diagnostic_start_count + 3,
         workspace_diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "After host main.rs edits, the workspace diagnostics pull should follow"
+        "主机编辑 main.rs 后,应跟随工作区诊断拉取"
     );
     executor.run_until_parked();
     let diagnostic_pulls_result_ids = diagnostics_pulls_result_ids.lock().await.len();
@@ -4048,11 +4048,11 @@ async fn test_lsp_pull_diagnostics(
     {
         assert!(
             diagnostic_pulls_result_ids > 1,
-            "Should have sent result ids when pulling diagnostics"
+            "拉取诊断时应已发送结果 ID"
         );
         assert!(
             workspace_pulls_result_ids > 1,
-            "Should have sent result ids when pulling workspace diagnostics"
+            "拉取工作区诊断时应已发送结果 ID"
         );
     }
 
@@ -4060,29 +4060,29 @@ async fn test_lsp_pull_diagnostics(
         .request::<lsp::request::WorkspaceDiagnosticRefresh>((), DEFAULT_LSP_REQUEST_TIMEOUT)
         .await
         .into_response()
-        .expect("workspace diagnostics refresh request failed");
+        .expect("工作区诊断刷新请求失败");
     // Workspace refresh now also triggers document diagnostic pulls for all open buffers
     pull_diagnostics_handle.next().await.unwrap();
     pull_diagnostics_handle.next().await.unwrap();
     assert_eq!(
         12,
         diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Workspace refresh should trigger document pulls for all open buffers (main.rs and lib.rs)"
+        "工作区刷新应触发对所有打开缓冲区(main.rs 和 lib.rs)的文档拉取"
     );
     workspace_diagnostics_pulls_handle.next().await.unwrap();
     assert_eq!(
         workspace_diagnostic_start_count + 4,
         workspace_diagnostics_pulls_made.load(atomic::Ordering::Acquire),
-        "Another workspace diagnostics pull should happen after the diagnostics refresh server request"
+        "诊断刷新服务器请求后,应再次进行工作区诊断拉取"
     );
     {
         assert!(
             diagnostics_pulls_result_ids.lock().await.len() > diagnostic_pulls_result_ids,
-            "Document diagnostic pulls should happen after workspace refresh"
+            "工作区刷新后,应进行文档诊断拉取"
         );
         assert!(
             workspace_diagnostics_pulls_result_ids.lock().await.len() > workspace_pulls_result_ids,
-            "More workspace diagnostics should be pulled"
+            "应拉取更多工作区诊断"
         );
     }
     editor_b_lib.update(cx_b, |editor, cx| {
@@ -4099,7 +4099,7 @@ async fn test_lsp_pull_diagnostics(
         for diagnostic in &all_diagnostics {
             assert!(
                 expected_messages.contains(&diagnostic.diagnostic.message.as_str()),
-                "Unexpected diagnostics: {all_diagnostics:?}"
+                "意外的诊断:{all_diagnostics:?}"
             );
         }
     });
@@ -4118,7 +4118,7 @@ async fn test_lsp_pull_diagnostics(
         for diagnostic in &all_diagnostics {
             assert!(
                 expected_messages.contains(&diagnostic.diagnostic.message.as_str()),
-                "Unexpected diagnostics: {all_diagnostics:?}"
+                "意外的诊断:{all_diagnostics:?}"
             );
         }
     });
@@ -4136,7 +4136,7 @@ async fn test_lsp_pull_diagnostics(
         for diagnostic in &all_diagnostics {
             assert!(
                 expected_messages.contains(&diagnostic.diagnostic.message.as_str()),
-                "Unexpected diagnostics: {all_diagnostics:?}"
+                "意外的诊断:{all_diagnostics:?}"
             );
         }
     });
@@ -4269,7 +4269,7 @@ async fn test_git_blame_is_forwarded(cx_a: &mut TestAppContext, cx_b: &mut TestA
     cx_b.executor().run_until_parked();
 
     editor_b.update(cx_b, |editor_b, cx| {
-        let blame = editor_b.blame().expect("editor_b should have blame now");
+        let blame = editor_b.blame().expect("editor_b 现在应有追溯信息");
         let entries = blame.update(cx, |blame, cx| {
             blame
                 .blame_for_rows(
@@ -4313,7 +4313,7 @@ async fn test_git_blame_is_forwarded(cx_a: &mut TestAppContext, cx_b: &mut TestA
     cx_b.executor().run_until_parked();
 
     editor_b.update(cx_b, |editor_b, cx| {
-        let blame = editor_b.blame().expect("editor_b should have blame now");
+        let blame = editor_b.blame().expect("editor_b 现在应有追溯信息");
         let entries = blame.update(cx, |blame, cx| {
             blame
                 .blame_for_rows(
@@ -4349,7 +4349,7 @@ async fn test_git_blame_is_forwarded(cx_a: &mut TestAppContext, cx_b: &mut TestA
     cx_b.executor().run_until_parked();
 
     editor_b.update(cx_b, |editor_b, cx| {
-        let blame = editor_b.blame().expect("editor_b should have blame now");
+        let blame = editor_b.blame().expect("editor_b 现在应有追溯信息");
         let entries = blame.update(cx, |blame, cx| {
             blame
                 .blame_for_rows(
@@ -5007,7 +5007,7 @@ async fn test_client_can_query_lsp_ext(cx_a: &mut TestAppContext, cx_b: &mut Tes
             assert_eq!(params.position, lsp::Position::new(0, 0));
             Ok(Some(ExpandedMacro {
                 name: "test_macro_name".to_string(),
-                expansion: "test_macro_expansion on the host".to_string(),
+                expansion: "主机上的 test_macro_expansion".to_string(),
             }))
         },
     );
@@ -5023,11 +5023,11 @@ async fn test_client_can_query_lsp_ext(cx_a: &mut TestAppContext, cx_b: &mut Tes
             assert_eq!(
                 pane.items_len(),
                 2,
-                "Should have added a macro expansion to the host's pane"
+                "应已向主机的窗格添加宏展开"
             );
             let new_editor = pane.active_item().unwrap().downcast::<Editor>().unwrap();
             new_editor.update(cx, |editor, cx| {
-                assert_eq!(editor.text(cx), "test_macro_expansion on the host");
+                assert_eq!(editor.text(cx), "主机上的 test_macro_expansion");
             });
         })
     });
@@ -5042,11 +5042,11 @@ async fn test_client_can_query_lsp_ext(cx_a: &mut TestAppContext, cx_b: &mut Tes
             assert_eq!(
                 params.position,
                 lsp::Position::new(0, 12),
-                "editor_b has selected the entire text and should query for a different position"
+                "editor_b 已选中全部文本,应查询不同位置"
             );
             Ok(Some(ExpandedMacro {
                 name: "test_macro_name".to_string(),
-                expansion: "test_macro_expansion on the client".to_string(),
+                expansion: "客户端上的 test_macro_expansion".to_string(),
             }))
         },
     );
@@ -5063,11 +5063,11 @@ async fn test_client_can_query_lsp_ext(cx_a: &mut TestAppContext, cx_b: &mut Tes
             assert_eq!(
                 pane.items_len(),
                 2,
-                "Should have added a macro expansion to the client's pane"
+                "应已向客户端的窗格添加宏展开"
             );
             let new_editor = pane.active_item().unwrap().downcast::<Editor>().unwrap();
             new_editor.update(cx, |editor, cx| {
-                assert_eq!(editor.text(cx), "test_macro_expansion on the client");
+                assert_eq!(editor.text(cx), "客户端上的 test_macro_expansion");
             });
         })
     });
@@ -5469,7 +5469,7 @@ fn extract_hint_labels(editor: &Editor, cx: &mut App) -> Vec<String> {
 
     assert!(
         all_fetched_hints.is_empty(),
-        "Did not expect background hints fetch tasks, but got {} of them",
+        "不应有后台提示获取任务,但实际有 {} 个",
         all_fetched_hints.len()
     );
 
@@ -5635,7 +5635,7 @@ async fn test_mutual_editor_semantic_token_cache_update(
         assert_eq!(
             ranges,
             vec![MultiBufferOffset(3)..MultiBufferOffset(3 + initial_edit + 4)],
-            "Host should get its first semantic tokens when opening an editor"
+            "打开编辑器时,主机应获取其首个语义令牌"
         );
     });
 
@@ -5656,7 +5656,7 @@ async fn test_mutual_editor_semantic_token_cache_update(
         assert_eq!(
             ranges,
             vec![MultiBufferOffset(3)..MultiBufferOffset(3 + initial_edit + 4)],
-            "Client should get its first semantic tokens when opening an editor"
+            "打开编辑器时,客户端应获取其首个语义令牌"
         );
     });
 
@@ -5861,7 +5861,7 @@ async fn test_semantic_token_refresh_is_forwarded(
     editor_a.update(cx_a, |editor, cx| {
         assert!(
             extract_semantic_token_ranges(editor, cx).is_empty(),
-            "Host should get no semantic tokens due to them turned off"
+            "由于语义令牌已关闭,主机不应获取任何语义令牌"
         );
     });
 
@@ -5870,7 +5870,7 @@ async fn test_semantic_token_refresh_is_forwarded(
         assert_eq!(
             vec![MultiBufferOffset(3)..MultiBufferOffset(7)],
             extract_semantic_token_ranges(editor, cx),
-            "Client should get its first semantic tokens when opening an editor"
+            "打开编辑器时,客户端应获取其首个语义令牌"
         );
     });
 
@@ -5879,14 +5879,14 @@ async fn test_semantic_token_refresh_is_forwarded(
         .request::<lsp::request::SemanticTokensRefresh>((), DEFAULT_LSP_REQUEST_TIMEOUT)
         .await
         .into_response()
-        .expect("semantic tokens refresh request failed");
+        .expect("语义令牌刷新请求失败");
     // wait out the debounce timeout
     executor.advance_clock(LSP_REQUEST_DEBOUNCE_TIMEOUT);
     executor.run_until_parked();
     editor_a.update(cx_a, |editor, cx| {
         assert!(
             extract_semantic_token_ranges(editor, cx).is_empty(),
-            "Host should get no semantic tokens due to them turned off, even after the /refresh"
+            "即使执行 /refresh 后,由于语义令牌已关闭,主机也不应获取任何语义令牌"
         );
     });
 
@@ -5895,7 +5895,7 @@ async fn test_semantic_token_refresh_is_forwarded(
         assert_eq!(
             vec![MultiBufferOffset(0)..MultiBufferOffset(2)],
             extract_semantic_token_ranges(editor, cx),
-            "Guest should get a /refresh LSP request propagated by host despite host tokens are off"
+            "即使主机令牌已关闭,访客也应收到主机传播的 /refresh LSP 请求"
         );
     });
 }
@@ -6003,12 +6003,12 @@ async fn test_document_folding_ranges(cx_a: &mut TestAppContext, cx_b: &mut Test
     assert_eq!(
         0,
         folding_request_count.load(atomic::Ordering::Acquire),
-        "LSP folding ranges are off by default, no request should have been made"
+        "LSP 折叠范围默认关闭,不应发出任何请求"
     );
     editor_a.update(cx_a, |editor, cx| {
         assert!(
             !editor.document_folding_ranges_enabled(cx),
-            "Host should not have LSP folding ranges enabled"
+            "主机不应启用 LSP 折叠范围"
         );
     });
 
@@ -6026,7 +6026,7 @@ async fn test_document_folding_ranges(cx_a: &mut TestAppContext, cx_b: &mut Test
     editor_b.update(cx_b, |editor, cx| {
         assert!(
             !editor.document_folding_ranges_enabled(cx),
-            "Client should not have LSP folding ranges enabled by default"
+            "客户端默认不应启用 LSP 折叠范围"
         );
     });
 
@@ -6047,18 +6047,18 @@ async fn test_document_folding_ranges(cx_a: &mut TestAppContext, cx_b: &mut Test
 
     assert!(
         folding_request_count.load(atomic::Ordering::Acquire) > 0,
-        "After the client enables LSP folding ranges, a request should be made"
+        "客户端启用 LSP 折叠范围后,应发出请求"
     );
     editor_b.update(cx_b, |editor, cx| {
         assert!(
             editor.document_folding_ranges_enabled(cx),
-            "Client should have LSP folding ranges enabled after toggling the setting on"
+            "切换设置后,客户端应已启用 LSP 折叠范围"
         );
     });
     editor_a.update(cx_a, |editor, cx| {
         assert!(
             !editor.document_folding_ranges_enabled(cx),
-            "Host should remain unaffected by the client's setting change"
+            "主机应不受客户端设置更改的影响"
         );
     });
 
@@ -6066,7 +6066,7 @@ async fn test_document_folding_ranges(cx_a: &mut TestAppContext, cx_b: &mut Test
         let snapshot = editor.display_snapshot(cx);
         assert!(
             !snapshot.is_line_folded(MultiBufferRow(0)),
-            "Line 0 should not be folded before fold_at"
+            "第 0 行在 fold_at 之前不应被折叠"
         );
         editor.fold_at(MultiBufferRow(0), window, cx);
     });
@@ -6076,7 +6076,7 @@ async fn test_document_folding_ranges(cx_a: &mut TestAppContext, cx_b: &mut Test
         let snapshot = editor.display_snapshot(cx);
         assert!(
             snapshot.is_line_folded(MultiBufferRow(0)),
-            "Line 0 should be folded after fold_at using LSP folding range"
+            "第 0 行在 fold_at 之后应使用 LSP 折叠范围进行折叠"
         );
     });
 }
@@ -6166,11 +6166,11 @@ async fn test_remote_project_worktree_trust(cx_a: &mut TestAppContext, cx_b: &mu
 
     assert!(
         has_restricted_worktrees(&project_a, cx_a),
-        "local client should have restricted worktrees after opening it"
+        "打开后,本地客户端应具有受限工作树"
     );
     assert!(
         !has_restricted_worktrees(&project_b, cx_b),
-        "remote client joined a project should have no restricted worktrees"
+        "加入项目的远程客户端不应有受限工作树"
     );
 
     cx_a.update(|_, cx| {
@@ -6186,11 +6186,11 @@ async fn test_remote_project_worktree_trust(cx_a: &mut TestAppContext, cx_b: &mu
     });
     assert!(
         !has_restricted_worktrees(&project_a, cx_a),
-        "local client should have no worktrees after trusting those"
+        "信任这些工作树后,本地客户端不应再有工作树"
     );
     assert!(
         !has_restricted_worktrees(&project_b, cx_b),
-        "remote client should still be trusted"
+        "远程客户端应仍受信任"
     );
 }
 
@@ -6325,12 +6325,12 @@ async fn test_document_symbols(cx_a: &mut TestAppContext, cx_b: &mut TestAppCont
     editor_a.update(cx_a, |editor, cx| {
         let (breadcrumbs, _) = editor
             .breadcrumbs(cx)
-            .expect("Host should have breadcrumbs");
+            .expect("主机应有面包屑导航");
         let texts: Vec<_> = breadcrumbs.iter().map(|b| b.text.as_str()).collect();
         assert_eq!(
             texts,
             vec!["main.rs", "struct Foo"],
-            "Host should see file path and LSP symbol 'Foo' in breadcrumbs"
+            "主机应在面包屑导航中看到文件路径和 LSP 符号 'Foo'"
         );
     });
 
@@ -6358,13 +6358,13 @@ async fn test_document_symbols(cx_a: &mut TestAppContext, cx_b: &mut TestAppCont
         assert_eq!(
             editor
                 .breadcrumbs(cx)
-                .expect("Client B should have breadcrumbs")
+                .expect("客户端 B 应有面包屑导航")
                 .0
                 .iter()
                 .map(|b| b.text.as_str())
                 .collect::<Vec<_>>(),
             vec!["main.rs", "struct Foo"],
-            "Client B should see file path and LSP symbol 'Foo' via remote project"
+            "客户端 B 应通过远程项目看到文件路径和 LSP 符号 'Foo'"
         );
     });
 }

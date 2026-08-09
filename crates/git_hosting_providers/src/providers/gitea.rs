@@ -46,18 +46,18 @@ impl Gitea {
     pub fn from_remote_url(remote_url: &str) -> Result<Self> {
         let host = get_host_from_git_remote_url(remote_url)?;
         if host == "gitea.com" {
-            bail!("the Gitea instance is not self-hosted");
+            bail!("该 Gitea 实例并非自托管");
         }
 
         // TODO: detecting self hosted instances by checking whether "gitea" is in the url or not
         // is not very reliable. See https://github.com/zed-industries/zed/issues/26393 for more
         // information.
         if !host.contains("gitea") {
-            bail!("not a Gitea URL");
+            bail!("不是 Gitea URL");
         }
 
         Ok(Self::new(
-            "Gitea Self-Hosted",
+            "Gitea 自托管",
             Url::parse(&format!("https://{}", host))?,
         ))
     }
@@ -70,7 +70,7 @@ impl Gitea {
         client: &Arc<dyn HttpClient>,
     ) -> Result<Option<User>> {
         let Some(host) = self.base_url.host_str() else {
-            bail!("failed to get host from gitea base url");
+            bail!("无法从 Gitea 基础 URL 获取主机名");
         };
         let url = format!(
             "https://{host}/api/v1/repos/{repo_owner}/{repo}/git/commits/{commit}?stat=false&verification=false&files=false"
@@ -83,7 +83,7 @@ impl Gitea {
         let mut response = client
             .send(request.body(AsyncBody::default())?)
             .await
-            .with_context(|| format!("error fetching Gitea commit details at {:?}", url))?;
+            .with_context(|| format!("获取 Gitea 提交详情时出错:{:?}", url))?;
 
         let mut body = Vec::new();
         response.body_mut().read_to_end(&mut body).await?;
@@ -91,7 +91,7 @@ impl Gitea {
         if response.status().is_client_error() {
             let text = String::from_utf8_lossy(body.as_slice());
             bail!(
-                "status error {}, response: {text:?}",
+                "状态错误 {}, 响应: {text:?}",
                 response.status().as_u16()
             );
         }
@@ -100,7 +100,7 @@ impl Gitea {
 
         serde_json::from_str::<CommitDetails>(body_str)
             .map(|commit| commit.author)
-            .context("failed to deserialize Gitea commit details")
+            .context("无法反序列化 Gitea 提交详情")
     }
 }
 

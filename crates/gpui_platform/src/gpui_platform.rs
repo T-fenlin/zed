@@ -64,7 +64,7 @@ pub fn current_platform(headless: bool) -> Rc<dyn Platform> {
     {
         Rc::new(
             gpui_windows::WindowsPlatform::new(headless)
-                .expect("failed to initialize Windows platform"),
+                .expect("无法初始化 Windows 平台"),
         )
     }
 
@@ -179,7 +179,7 @@ mod tests {
 
         let window = cx
             .open_offscreen_window_default(|_, cx| cx.new(|_| Empty))
-            .expect("Failed to open window");
+            .expect("无法打开窗口");
 
         // Spawn a task via window.spawn - this is the critical test case
         // for tooltip behavior, as tooltips use window.spawn for delayed show

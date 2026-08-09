@@ -179,7 +179,7 @@ impl Room {
     ) -> Task<Result<Entity<Self>>> {
         cx.spawn(async move |cx| {
             let response = client.request(proto::CreateRoom {}).await?;
-            let room_proto = response.room.context("invalid room")?;
+            let room_proto = response.room.context("无效房间")?;
             let room = cx.new(|cx| {
                 let mut room = Self::new(
                     room_proto.id,
@@ -214,7 +214,7 @@ impl Room {
                 .await;
             match did_join {
                 Ok(()) => Ok(room),
-                Err(error) => Err(error.context("room creation failed")),
+                Err(error) => Err(error.context("创建房间失败")),
             }
         })
     }
@@ -284,7 +284,7 @@ impl Room {
         user_store: Entity<UserStore>,
         mut cx: AsyncApp,
     ) -> Result<Entity<Self>> {
-        let room_proto = response.room.context("invalid room")?;
+        let room_proto = response.room.context("无效房间")?;
         let room = cx.new(|cx| {
             Self::new(
                 room_proto.id,
@@ -319,10 +319,10 @@ impl Room {
 
     fn leave_internal(&mut self, cx: &mut App) -> Task<Result<()>> {
         if self.status.is_offline() {
-            return Task::ready(Err(anyhow!("room is offline")));
+            return Task::ready(Err(anyhow!("房间已离线")));
         }
 
-        log::info!("leaving room");
+        log::info!("正在离开房间");
         Audio::play_sound(Sound::Leave, cx);
 
         self.clear_state(cx);
@@ -381,10 +381,10 @@ impl Room {
             let is_connected = client_status.borrow().is_connected();
             // Even if we're initially connected, any future change of the status means we momentarily disconnected.
             if !is_connected || client_status.next().await.is_some() {
-                log::info!("detected client disconnection");
+                log::info!("检测到客户端断开连接");
 
                 this.upgrade()
-                    .context("room was dropped")?
+                    .context("房间已被释放")?
                     .update(cx, |this, cx| {
                         this.status = RoomStatus::Rejoining;
                         cx.notify();
@@ -396,7 +396,7 @@ impl Room {
                     let mut remaining_attempts = 3;
                     while remaining_attempts > 0 {
                         if client_status.borrow().is_connected() {
-                            log::info!("client reconnected, attempting to rejoin room");
+                            log::info!("客户端已重新连接,正在尝试重新加入房间");
 
                             let Some(this) = this.upgrade() else { break };
                             let task = this.update(cx, |this, cx| this.rejoin(cx));
@@ -410,7 +410,7 @@ impl Room {
                         }
 
                         log::info!(
-                            "waiting for client status change, remaining attempts {}",
+                            "等待客户端状态变化,剩余尝试次数 {}",
                             remaining_attempts
                         );
                         client_status.next().await;
@@ -423,14 +423,14 @@ impl Room {
                     .await
                 {
                     Ok(true) => {
-                        log::info!("successfully reconnected to room");
+                        log::info!("已成功重新连接到房间");
                         // If we successfully joined the room, go back around the loop
                         // waiting for future connection status changes.
                         continue;
                     }
                     Ok(false) => break,
                     Err(Timeout) => {
-                        log::info!("room reconnection timeout expired");
+                        log::info!("房间重连超时");
                         break;
                     }
                 }
@@ -441,10 +441,10 @@ impl Room {
         // or an error occurred while trying to re-join the room. Either way
         // we leave the room and return an error.
         if let Some(this) = this.upgrade() {
-            log::info!("reconnection failed, leaving room");
+            log::info!("重连失败,正在离开房间");
             this.update(cx, |this, cx| this.leave(cx)).await?;
         }
-        anyhow::bail!("can't reconnect to room: client failed to re-establish connection");
+        anyhow::bail!("无法重新连接到房间:客户端未能重新建立连接");
     }
 
     fn rejoin(&mut self, cx: &mut Context<Self>) -> Task<Result<()>> {
@@ -508,7 +508,7 @@ impl Room {
             let response = response.await?;
             let message_id = response.message_id;
             let response = response.payload;
-            let room_proto = response.room.context("invalid room")?;
+            let room_proto = response.room.context("无效房间")?;
             this.update(cx, |this, cx| {
                 this.status = RoomStatus::Online;
                 this.apply_room_update(room_proto, cx)?;
@@ -705,7 +705,7 @@ impl Room {
         envelope: TypedEnvelope<proto::RoomUpdated>,
         mut cx: AsyncApp,
     ) -> Result<()> {
-        let room = envelope.payload.room.context("invalid room")?;
+        let room = envelope.payload.room.context("无效房间")?;
         this.update(&mut cx, |this, cx| this.apply_room_update(room, cx))
     }
 
@@ -960,7 +960,7 @@ impl Room {
                         (Some(leader), Some(follower)) => (leader, follower),
 
                         _ => {
-                            log::error!("Follower message {follower:?} missing some state");
+                            log::error!("跟随者消息 {follower:?} 缺少某些状态");
                             continue;
                         }
                     };
@@ -976,7 +976,7 @@ impl Room {
 
                 this.pending_room_update.take();
                 if this.should_leave() {
-                    log::info!("room is empty, leaving");
+                    log::info!("房间为空,正在离开");
                     this.leave(cx).detach();
                 }
 
@@ -1017,7 +1017,7 @@ impl Room {
                         .get_mut(&user_id)
                         .with_context(|| {
                             format!(
-                                "{:?} subscribed to track by unknown participant {user_id}",
+                                "{:?} 订阅了未知参与者 {user_id} 的轨道",
                                 self.client.user_id()
                             )
                         })?;
@@ -1053,7 +1053,7 @@ impl Room {
                         .get_mut(&user_id)
                         .with_context(|| {
                             format!(
-                                "{:?}, unsubscribed from track by unknown participant {user_id}",
+                                "{:?} 取消订阅了未知参与者 {user_id} 的轨道",
                                 self.client.user_id()
                             )
                         })?;
@@ -1116,7 +1116,7 @@ impl Room {
             }
 
             RoomEvent::LocalTrackUnpublished { publication, .. } => {
-                log::info!("unpublished track {}", publication.sid());
+                log::info!("已取消发布轨道 {}", publication.sid());
                 if let Some(room) = &mut self.live_kit {
                     if let LocalTrack::Published {
                         track_publication, ..
@@ -1136,11 +1136,11 @@ impl Room {
             }
 
             RoomEvent::LocalTrackPublished { publication, .. } => {
-                log::info!("published track {:?}", publication.sid());
+                log::info!("已发布轨道 {:?}", publication.sid());
             }
 
             RoomEvent::Disconnected { reason } => {
-                log::info!("disconnected from room: {reason:?}");
+                log::info!("已断开与房间的连接:{reason:?}");
                 self.leave(cx).detach_and_log_err(cx);
             }
             _ => {}
@@ -1180,7 +1180,7 @@ impl Room {
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
         if self.status.is_offline() {
-            return Task::ready(Err(anyhow!("room is offline")));
+            return Task::ready(Err(anyhow!("房间已离线")));
         }
 
         cx.notify();
@@ -1300,7 +1300,7 @@ impl Room {
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
         if self.status.is_offline() {
-            return Task::ready(Err(anyhow!("room is offline")));
+            return Task::ready(Err(anyhow!("房间已离线")));
         }
 
         let client = self.client.clone();
@@ -1400,7 +1400,7 @@ impl Room {
     #[track_caller]
     pub fn share_microphone(&mut self, cx: &mut Context<Self>) -> Task<Result<()>> {
         if self.status.is_offline() {
-            return Task::ready(Err(anyhow!("room is offline")));
+            return Task::ready(Err(anyhow!("房间已离线")));
         }
 
         let (room, publish_id) = if let Some(live_kit) = self.live_kit.as_mut() {
@@ -1409,7 +1409,7 @@ impl Room {
             cx.notify();
             (live_kit.room.clone(), publish_id)
         } else {
-            return Task::ready(Err(anyhow!("live-kit was not initialized")));
+            return Task::ready(Err(anyhow!("live-kit 未初始化")));
         };
 
         let is_staff = cx.is_staff();
@@ -1428,7 +1428,7 @@ impl Room {
                 let live_kit = this
                     .live_kit
                     .as_mut()
-                    .context("live-kit was not initialized")?;
+                    .context("live-kit 未初始化")?;
 
                 let canceled = if let LocalTrack::Pending {
                     publish_id: cur_publish_id,
@@ -1479,10 +1479,10 @@ impl Room {
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
         if self.status.is_offline() {
-            return Task::ready(Err(anyhow!("room is offline")));
+            return Task::ready(Err(anyhow!("房间已离线")));
         }
         if self.is_sharing_screen() {
-            return Task::ready(Err(anyhow!("screen was already shared")));
+            return Task::ready(Err(anyhow!("屏幕已在共享中")));
         }
 
         let (participant, publish_id) = if let Some(live_kit) = self.live_kit.as_mut() {
@@ -1491,7 +1491,7 @@ impl Room {
             cx.notify();
             (live_kit.room.local_participant(), publish_id)
         } else {
-            return Task::ready(Err(anyhow!("live-kit was not initialized")));
+            return Task::ready(Err(anyhow!("live-kit 未初始化")));
         };
 
         cx.spawn(async move |this, cx| {
@@ -1501,7 +1501,7 @@ impl Room {
                 let live_kit = this
                     .live_kit
                     .as_mut()
-                    .context("live-kit was not initialized")?;
+                    .context("live-kit 未初始化")?;
 
                 let canceled = if let LocalTrack::Pending {
                     publish_id: cur_publish_id,
@@ -1547,12 +1547,12 @@ impl Room {
 
     #[cfg(target_os = "linux")]
     pub fn share_screen_wayland(&mut self, cx: &mut Context<Self>) -> Task<Result<()>> {
-        log::info!("will screenshare on wayland");
+        log::info!("将在 Wayland 上共享屏幕");
         if self.status.is_offline() {
-            return Task::ready(Err(anyhow!("room is offline")));
+            return Task::ready(Err(anyhow!("房间已离线")));
         }
         if self.is_sharing_screen() {
-            return Task::ready(Err(anyhow!("screen was already shared")));
+            return Task::ready(Err(anyhow!("屏幕已在共享中")));
         }
 
         let (participant, publish_id) = if let Some(live_kit) = self.live_kit.as_mut() {
@@ -1561,7 +1561,7 @@ impl Room {
             cx.notify();
             (live_kit.room.local_participant(), publish_id)
         } else {
-            return Task::ready(Err(anyhow!("live-kit was not initialized")));
+            return Task::ready(Err(anyhow!("live-kit 未初始化")));
         };
 
         cx.spawn(async move |this, cx| {
@@ -1571,7 +1571,7 @@ impl Room {
                 let live_kit = this
                     .live_kit
                     .as_mut()
-                    .context("live-kit was not initialized")?;
+                    .context("live-kit 未初始化")?;
 
                 let canceled = if let LocalTrack::Pending {
                     publish_id: cur_publish_id,
@@ -1592,7 +1592,7 @@ impl Room {
                         } else {
                             cx.spawn(async move |this, cx| {
                                 if failure_rx.await.is_ok() {
-                                    log::warn!("Wayland capture died, auto-unsharing screen");
+                                    log::warn!("Wayland 捕获已终止,正在自动取消屏幕共享");
                                     let _ =
                                         this.update(cx, |this, cx| this.unshare_screen(false, cx));
                                 }
@@ -1666,14 +1666,14 @@ impl Room {
     }
 
     pub fn unshare_screen(&mut self, play_sound: bool, cx: &mut Context<Self>) -> Result<()> {
-        anyhow::ensure!(!self.status.is_offline(), "room is offline");
+        anyhow::ensure!(!self.status.is_offline(), "房间已离线");
 
         let live_kit = self
             .live_kit
             .as_mut()
-            .context("live-kit was not initialized")?;
+            .context("live-kit 未初始化")?;
         match mem::take(&mut live_kit.screen_track) {
-            LocalTrack::None => anyhow::bail!("screen was not shared"),
+            LocalTrack::None => anyhow::bail!("屏幕未共享"),
             LocalTrack::Pending { .. } => {
                 cx.notify();
                 Ok(())

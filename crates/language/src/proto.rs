@@ -274,8 +274,8 @@ pub fn serialize_anchor_range(range: Range<Anchor>) -> proto::AnchorRange {
 /// Deserializes an [`Range<Anchor>`] from the RPC representation.
 pub fn deserialize_anchor_range(range: proto::AnchorRange) -> Result<Range<Anchor>> {
     Ok(
-        deserialize_anchor(range.start.context("invalid anchor")?).context("invalid anchor")?
-            ..deserialize_anchor(range.end.context("invalid anchor")?).context("invalid anchor")?,
+        deserialize_anchor(range.start.context("无效锚点")?).context("无效锚点")?
+            ..deserialize_anchor(range.end.context("无效锚点")?).context("无效锚点")?,
     )
 }
 
@@ -283,7 +283,7 @@ pub fn deserialize_anchor_range(range: proto::AnchorRange) -> Result<Range<Ancho
 /// Deserializes an [`crate::Operation`] from the RPC representation.
 pub fn deserialize_operation(message: proto::Operation) -> Result<crate::Operation> {
     Ok(
-        match message.variant.context("missing operation variant")? {
+        match message.variant.context("缺少操作变体")? {
             proto::operation::Variant::Edit(edit) => {
                 crate::Operation::Buffer(text::Operation::Edit(deserialize_edit_operation(edit)))
             }
@@ -333,7 +333,7 @@ pub fn deserialize_operation(message: proto::Operation) -> Result<crate::Operati
                     line_mode: message.line_mode,
                     cursor_shape: deserialize_cursor_shape(
                         proto::CursorShape::from_i32(message.cursor_shape)
-                            .context("Missing cursor shape")?,
+                            .context("缺少光标形状")?,
                     ),
                 }
             }
@@ -365,7 +365,7 @@ pub fn deserialize_operation(message: proto::Operation) -> Result<crate::Operati
                     },
                     line_ending: deserialize_line_ending(
                         proto::LineEnding::from_i32(message.line_ending)
-                            .context("missing line_ending")?,
+                            .context("缺少行尾符")?,
                     ),
                 }
             }
@@ -556,7 +556,7 @@ pub fn serialize_transaction(transaction: &Transaction) -> proto::Transaction {
 /// Deserializes a [`Transaction`] from the RPC representation.
 pub fn deserialize_transaction(transaction: proto::Transaction) -> Result<Transaction> {
     Ok(Transaction {
-        id: deserialize_timestamp(transaction.id.context("missing transaction id")?),
+        id: deserialize_timestamp(transaction.id.context("缺少事务 ID")?),
         edit_ids: transaction
             .edit_ids
             .into_iter()

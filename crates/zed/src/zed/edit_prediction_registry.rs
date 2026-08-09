@@ -91,7 +91,7 @@ pub fn init(client: Arc<Client>, user_store: Entity<UserStore>, cx: &mut App) {
 
             if new_provider_config != previous_config {
                 telemetry::event!(
-                    "Edit Prediction Provider Changed",
+                    "编辑预测提供程序已更改",
                     from = previous_config.map(|config| config.name()),
                     to = new_provider_config.map(|config| config.name())
                 );

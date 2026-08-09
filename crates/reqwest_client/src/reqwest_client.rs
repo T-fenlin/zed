@@ -52,7 +52,7 @@ impl ReqwestClient {
     pub fn new() -> Self {
         Self::builder(None)
             .build()
-            .expect("Failed to initialize HTTP client")
+            .expect("初始化 HTTP 客户端失败")
             .into()
     }
 
@@ -96,7 +96,7 @@ impl ReqwestClient {
             reqwest::Proxy::all(proxy_url.clone())
                 .inspect_err(|e| {
                     log::error!(
-                        "Failed to parse proxy URL '{}': {}",
+                        "解析代理 URL '{}' 失败: {}",
                         proxy_url,
                         e.source().unwrap_or(&e as &_)
                     )
@@ -127,7 +127,7 @@ pub fn runtime() -> &'static tokio::runtime::Runtime {
             .worker_threads(1)
             .enable_all()
             .build()
-            .expect("Failed to initialize HTTP client")
+            .expect("初始化 HTTP 客户端失败")
     })
 }
 
@@ -344,13 +344,13 @@ mod tests {
             let mut buffer = [0u8; 8192];
             loop {
                 let read = stream.read(&mut buffer).unwrap();
-                assert_ne!(read, 0, "client closed the connection mid-request");
+                assert_ne!(read, 0, "客户端在请求中途关闭了连接");
                 request.extend_from_slice(&buffer[..read]);
                 if let Some(position) = request.windows(4).position(|w| w == b"\r\n\r\n") {
                     let body_start = position + 4;
                     while request.len() - body_start < expected_payload.len() {
                         let read = stream.read(&mut buffer).unwrap();
-                        assert_ne!(read, 0, "client closed the connection mid-body");
+                        assert_ne!(read, 0, "客户端在请求体传输中途关闭了连接");
                         request.extend_from_slice(&buffer[..read]);
                     }
                     assert_eq!(&request[body_start..], &expected_payload);
@@ -439,7 +439,7 @@ mod tests {
         let client = ReqwestClient::proxy_and_user_agent(Some(proxy), "test").unwrap();
         assert!(
             client.proxy.is_none(),
-            "An invalid proxy URL should add no proxy to the client!"
+            "无效的代理 URL 不应为客户端添加任何代理!"
         )
     }
 }

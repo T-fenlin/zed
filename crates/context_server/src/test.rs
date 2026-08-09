@@ -73,7 +73,7 @@ impl FakeTransport {
                     .cloned()
                     .unwrap_or(serde_json::Value::Null);
                 let params: T::Params =
-                    serde_json::from_value(params).expect("Invalid parameters received");
+                    serde_json::from_value(params).expect("收到的参数无效");
                 let response = handler(params);
                 async move { serde_json::to_value(response.await).unwrap() }.boxed()
             }),
@@ -89,7 +89,7 @@ impl Transport for FakeTransport {
             let id = msg.get("id").and_then(|id| id.as_u64()).unwrap_or(0);
 
             if let Some(method) = msg.get("method") {
-                let method = method.as_str().expect("Invalid method received");
+                let method = method.as_str().expect("收到的方法无效");
                 if let Some(handler) = self.request_handlers.get(method) {
                     let payload = handler(msg).await;
                     let response = serde_json::json!({
@@ -99,9 +99,9 @@ impl Transport for FakeTransport {
                     });
                     self.tx
                         .unbounded_send(response.to_string())
-                        .context("sending a message")?;
+                        .context("发送消息时出错")?;
                 } else {
-                    log::debug!("No handler registered for MCP request '{method}'");
+                    log::debug!("未为 MCP 请求 '{method}' 注册处理器");
                 }
             }
         }

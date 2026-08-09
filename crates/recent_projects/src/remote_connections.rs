@@ -316,18 +316,18 @@ pub async fn open_remote_project(
                         window.prompt(
                             PromptLevel::Critical,
                             match connection_options {
-                                RemoteConnectionOptions::Ssh(_) => "Failed to connect over SSH",
-                                RemoteConnectionOptions::Wsl(_) => "Failed to connect to WSL",
+                                RemoteConnectionOptions::Ssh(_) => "无法通过 SSH 连接",
+                                RemoteConnectionOptions::Wsl(_) => "无法连接到 WSL",
                                 RemoteConnectionOptions::Docker(_) => {
-                                    "Failed to connect to Dev Container"
+                                    "无法连接到开发容器"
                                 }
                                 #[cfg(any(test, feature = "test-support"))]
                                 RemoteConnectionOptions::Mock(_) => {
-                                    "Failed to connect to mock server"
+                                    "无法连接到模拟服务器"
                                 }
                             },
                             Some(&format!("{e:#}")),
-                            &["Retry", "Cancel"],
+                            &["重试", "取消"],
                             cx,
                         )
                     })?
@@ -371,24 +371,24 @@ pub async fn open_remote_project(
 
         match opened {
             Err(e) => {
-                log::error!("Failed to open project: {e:#}");
+                log::error!("无法打开项目:{e:#}");
                 let response = window
                     .update(cx, |_, window, cx| {
                         window.prompt(
                             PromptLevel::Critical,
                             match connection_options {
-                                RemoteConnectionOptions::Ssh(_) => "Failed to connect over SSH",
-                                RemoteConnectionOptions::Wsl(_) => "Failed to connect to WSL",
+                                RemoteConnectionOptions::Ssh(_) => "无法通过 SSH 连接",
+                                RemoteConnectionOptions::Wsl(_) => "无法连接到 WSL",
                                 RemoteConnectionOptions::Docker(_) => {
-                                    "Failed to connect to Dev Container"
+                                    "无法连接到开发容器"
                                 }
                                 #[cfg(any(test, feature = "test-support"))]
                                 RemoteConnectionOptions::Mock(_) => {
-                                    "Failed to connect to mock server"
+                                    "无法连接到模拟服务器"
                                 }
                             },
                             Some(&format!("{e:#}")),
-                            &["Retry", "Cancel"],
+                            &["重试", "取消"],
                             cx,
                         )
                     })?
@@ -938,7 +938,7 @@ mod tests {
 
         drop(connect_guard_2);
 
-        // Simulate clicking "Reconnect": calls open_remote_project with
+        // Simulate clicking "重新连接": calls open_remote_project with
         // replace_window pointing to the existing window.
         let result = open_remote_project(
             opts,

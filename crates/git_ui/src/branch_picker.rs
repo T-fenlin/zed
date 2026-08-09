@@ -612,9 +612,9 @@ impl BranchFilter {
 
     fn label(self) -> &'static str {
         match self {
-            Self::All => "All Branches",
-            Self::Local => "Local Branches",
-            Self::Remote => "Remote Branches",
+            Self::All => "所有分支",
+            Self::Local => "本地分支",
+            Self::Remote => "远程分支",
         }
     }
 }
@@ -821,7 +821,7 @@ const BRANCH_DELETE_FORCE_DELETE_PROMPTS: &[BranchDeleteForceDeletePrompt] =
     }];
 
 fn unmerged_branch_force_delete_prompt(branch_name: &str) -> String {
-    format!("Branch \"{branch_name}\" is not fully merged. Force delete it?")
+    format!("分支 \"{branch_name}\" 尚未完全合并。是否强制删除?")
 }
 
 // Git only reports these cases via localized stderr, so this best-effort check
@@ -873,7 +873,7 @@ impl Render for DeleteBranchTooltip {
             .unwrap_or(false);
         if force_delete {
             Tooltip::for_action_in(
-                "Force Delete Branch",
+                "强制删除分支",
                 &branch_picker::ForceDeleteBranch,
                 &self.focus_handle,
                 cx,
@@ -881,9 +881,9 @@ impl Render for DeleteBranchTooltip {
             .into_any_element()
         } else {
             Tooltip::with_meta_in(
-                "Delete Branch",
+                "删除分支",
                 Some(&branch_picker::DeleteBranch),
-                "Hold alt to force delete",
+                "按住 alt 强制删除",
                 &self.focus_handle,
                 cx,
             )
@@ -1034,7 +1034,7 @@ impl BranchListDelegate {
         let focus_handle = self.focus_handle.clone();
         move |_, cx| {
             Tooltip::for_action_in(
-                "Filter Branches",
+                "筛选分支",
                 &branch_picker::ToggleFilterMenu,
                 &focus_handle,
                 cx,
@@ -1066,7 +1066,7 @@ impl BranchListDelegate {
 
             Ok(())
         })
-        .detach_and_prompt_err("Failed to create branch", window, cx, |e, _, _| {
+        .detach_and_prompt_err("创建分支失败", window, cx, |e, _, _| {
             Some(e.to_string())
         });
         cx.emit(DismissEvent);
@@ -1086,7 +1086,7 @@ impl BranchListDelegate {
         let receiver = repo.update(cx, |repo, _| repo.create_remote(remote_name, remote_url));
 
         cx.background_spawn(async move { receiver.await? })
-            .detach_and_prompt_err("Failed to create remote", window, cx, |e, _, _cx| {
+            .detach_and_prompt_err("创建远程仓库失败", window, cx, |e, _, _cx| {
                 Some(e.to_string())
             });
         cx.emit(DismissEvent);
@@ -1130,9 +1130,9 @@ impl BranchListDelegate {
                 Ok(()) => (Ok(()), force),
                 Err(error) => {
                     if is_remote {
-                        log::error!("Failed to delete remote branch: {error}");
+                        log::error!("删除远程分支失败:{error}");
                     } else {
-                        log::error!("Failed to delete branch: {error}");
+                        log::error!("删除分支失败:{error}");
                     }
 
                     let force_delete_prompt = (!force)
@@ -1145,7 +1145,7 @@ impl BranchListDelegate {
                                 PromptLevel::Warning,
                                 &prompt_message,
                                 None,
-                                &["Force Delete", "Cancel"],
+                                &["强制删除", "取消"],
                                 cx,
                             )
                         })?;
@@ -1161,7 +1161,7 @@ impl BranchListDelegate {
                             .await?;
 
                         if let Err(error) = &retry {
-                            log::error!("Failed to force delete branch: {error}");
+                            log::error!("强制删除分支失败:{error}");
                         }
                         (retry, true)
                     } else {
@@ -1242,9 +1242,9 @@ impl PickerDelegate for BranchListDelegate {
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
         match self.state {
             PickerState::List | PickerState::NewRemote | PickerState::NewBranch => {
-                "Switch or type to create a branch…"
+                "切换或输入以创建分支…"
             }
-            PickerState::CreateRemote(_) => "Enter a name for this remote…",
+            PickerState::CreateRemote(_) => "为此远程仓库输入名称…",
         }
         .into()
     }
@@ -1252,7 +1252,7 @@ impl PickerDelegate for BranchListDelegate {
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
         match self.state {
             PickerState::CreateRemote(_) => {
-                Some(SharedString::new_static("Remote name can't be empty"))
+                Some(SharedString::new_static("远程仓库名称不能为空"))
             }
             _ => None,
         }
@@ -1270,7 +1270,7 @@ impl PickerDelegate for BranchListDelegate {
 
         let warning_banner = || {
             self.branch_list_error.as_deref().map(|error| {
-                let message = format!("Some branches could not be loaded: {error}");
+                let message = format!("部分分支无法加载:{error}");
                 div().p_1p5().child(
                     Banner::new()
                         .severity(Severity::Warning)
@@ -1573,7 +1573,7 @@ impl PickerDelegate for BranchListDelegate {
                     anyhow::Ok(())
                 })
                 .detach_and_prompt_err(
-                    "Failed to change branch",
+                    "切换分支失败",
                     window,
                     cx,
                     |_, _, _| None,
@@ -1687,15 +1687,15 @@ impl PickerDelegate for BranchListDelegate {
         };
 
         let entry_title = match entry {
-            Entry::NewUrl { .. } => Label::new("Create Remote Repository")
+            Entry::NewUrl { .. } => Label::new("创建远程仓库")
                 .single_line()
                 .truncate()
                 .into_any_element(),
-            Entry::NewBranch { name } => Label::new(format!("Create Branch: \"{name}\"…"))
+            Entry::NewBranch { name } => Label::new(format!("创建分支:\"{name}\"…"))
                 .single_line()
                 .truncate()
                 .into_any_element(),
-            Entry::NewRemoteName { name, .. } => Label::new(format!("Create Remote: \"{name}\""))
+            Entry::NewRemoteName { name, .. } => Label::new(format!("创建远程仓库:\"{name}\""))
                 .single_line()
                 .truncate()
                 .into_any_element(),
@@ -1756,7 +1756,7 @@ impl PickerDelegate for BranchListDelegate {
         };
 
         let create_from_default_button = self.default_branch.as_ref().map(|default_branch| {
-            let tooltip_label: SharedString = format!("Create New From: {default_branch}").into();
+            let tooltip_label: SharedString = format!("从 {default_branch} 创建新分支").into();
             let focus_handle = self.focus_handle.clone();
 
             IconButton::new("create_from_default", IconName::GitBranchPlus)
@@ -1802,9 +1802,9 @@ impl PickerDelegate for BranchListDelegate {
                             .child(entry_title)
                             .child({
                                 let message = match entry {
-                                    Entry::NewUrl { url } => format!("Based off {url}"),
+                                    Entry::NewUrl { url } => format!("基于 {url}"),
                                     Entry::NewRemoteName { url, .. } => {
-                                        format!("Based off {url}")
+                                        format!("基于 {url}")
                                     }
                                     Entry::NewBranch { .. } => {
                                         if let Some(current_branch) =
@@ -1812,9 +1812,9 @@ impl PickerDelegate for BranchListDelegate {
                                                 repo.read(cx).branch.as_ref().map(|b| b.name())
                                             })
                                         {
-                                            format!("Based off {}", current_branch)
+                                            format!("基于 {}", current_branch)
                                         } else {
-                                            "Based off the current branch".to_string()
+                                            "基于当前分支".to_string()
                                         }
                                     }
                                     Entry::Branch { .. } => String::new(),
@@ -1866,7 +1866,7 @@ impl PickerDelegate for BranchListDelegate {
                                         })
                                         .when(!has_commit, |this| {
                                             this.child(
-                                                Label::new("No commits found")
+                                                Label::new("未找到提交")
                                                     .color(Color::Muted)
                                                     .size(LabelSize::Small),
                                             )
@@ -1893,14 +1893,14 @@ impl PickerDelegate for BranchListDelegate {
                                                 .child(Label::new(branch_name.clone()))
                                                 .when(is_select_only && is_checked, |this| {
                                                     this.child(
-                                                        Label::new("Selected Branch")
+                                                        Label::new("选中的分支")
                                                             .size(LabelSize::Small)
                                                             .color(Color::Muted),
                                                     )
                                                 })
                                                 .when(is_head, |this| {
                                                     this.child(
-                                                        Label::new("Current Branch")
+                                                        Label::new("当前分支")
                                                             .size(LabelSize::Small)
                                                             .color(Color::Muted),
                                                     )
@@ -1950,9 +1950,9 @@ impl PickerDelegate for BranchListDelegate {
                         });
                 starts_section.then(|| {
                     if branch.is_remote() {
-                        ("Remote Branches", ix != 0)
+                        ("远程分支", ix != 0)
                     } else {
-                        ("Local Branches", false)
+                        ("本地分支", false)
                     }
                 })
             });
@@ -2000,7 +2000,7 @@ impl PickerDelegate for BranchListDelegate {
                     .as_ref()
                     .filter(|_| matches!(selected_entry, Some(Entry::NewBranch { .. })))
                     .map(|default_branch| {
-                        let button_label = format!("Create New From: {default_branch}");
+                        let button_label = format!("从 {default_branch} 创建新分支");
 
                         Button::new("branch-from-default", button_label)
                             .key_binding(
@@ -2024,7 +2024,7 @@ impl PickerDelegate for BranchListDelegate {
                             .is_some_and(|branch| branch.is_head),
                         |this| {
                             this.child(
-                                Button::new("delete-branch", "Delete")
+                                Button::new("delete-branch", "删除")
                                     .key_binding(
                                         KeyBinding::for_action_in(
                                             &branch_picker::DeleteBranch,
@@ -2043,7 +2043,7 @@ impl PickerDelegate for BranchListDelegate {
                         },
                     )
                     .child(
-                        Button::new("switch_branch", "Switch")
+                        Button::new("switch_branch", "切换")
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -2058,7 +2058,7 @@ impl PickerDelegate for BranchListDelegate {
                         .justify_end()
                         .map(|this| match branch_from_default_button {
                             Some(button) => this.child(button).child(
-                                Button::new("create", "Create")
+                                Button::new("create", "创建")
                                     .key_binding(
                                         KeyBinding::for_action_in(
                                             &menu::Confirm,
@@ -2079,7 +2079,7 @@ impl PickerDelegate for BranchListDelegate {
             PickerState::NewBranch => {
                 let branch_from_default_button =
                     self.default_branch.as_ref().map(|default_branch| {
-                        let button_label = format!("Create New From: {default_branch}");
+                        let button_label = format!("从 {default_branch} 创建新分支");
 
                         Button::new("branch-from-default", button_label)
                             .key_binding(
@@ -2103,7 +2103,7 @@ impl PickerDelegate for BranchListDelegate {
                             this.child(button)
                         })
                         .child(
-                            Button::new("create-new-branch", "Create")
+                            Button::new("create-new-branch", "创建")
                                 .key_binding(
                                     KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                         .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -2119,7 +2119,7 @@ impl PickerDelegate for BranchListDelegate {
                 footer_container()
                     .justify_end()
                     .child(
-                        Button::new("confirm-create-remote", "Confirm")
+                        Button::new("confirm-create-remote", "确认")
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -2631,7 +2631,7 @@ mod tests {
         cx.run_until_parked();
         assert!(cx.has_pending_prompt());
 
-        cx.simulate_prompt_answer("Force Delete");
+        cx.simulate_prompt_answer("强制删除");
         cx.run_until_parked();
 
         let repo_branches = branch_list
@@ -2710,7 +2710,7 @@ mod tests {
         cx.run_until_parked();
         assert!(cx.has_pending_prompt());
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
         cx.run_until_parked();
         assert!(!cx.has_pending_prompt());
 

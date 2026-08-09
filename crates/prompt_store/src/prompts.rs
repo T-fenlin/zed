@@ -259,7 +259,7 @@ impl PromptBuilder {
                 let dir_status = params.fs.is_dir(&templates_dir).await;
                 let symlink_status = params.fs.read_link(&templates_dir).await.ok();
                 if dir_status {
-                    let mut log_message = format!("Prompt template overrides directory found at {}", templates_dir.display());
+                    let mut log_message = format!("在 {} 找到提示词模板覆盖目录", templates_dir.display());
                     if let Some(target) = symlink_status {
                         log_message.push_str(" -> ");
                         log_message.push_str(&target.display().to_string());
@@ -267,9 +267,9 @@ impl PromptBuilder {
                     log::trace!("{}.", log_message);
                 } else {
                     if !found_dir_once {
-                        log::trace!("No prompt template overrides directory found at {}. Using built-in prompts.", templates_dir.display());
+                        log::trace!("在 {} 未找到提示词模板覆盖目录,正在使用内置提示词。", templates_dir.display());
                         if let Some(target) = symlink_status {
-                            log::trace!("Symlink found pointing to {}, but target is invalid.", target.display());
+                            log::trace!("发现指向 {} 的符号链接,但目标无效。", target.display());
                         }
                     }
 
@@ -277,7 +277,7 @@ impl PromptBuilder {
                         let (mut changes, _watcher) = params.fs.watch(parent_dir, Duration::from_secs(1)).await;
                         while let Some(changed_paths) = changes.next().await {
                             if changed_paths.iter().any(|p| &p.path == &templates_dir) {
-                                let mut log_message = format!("Prompt template overrides directory detected at {}", templates_dir.display());
+                                let mut log_message = format!("在 {} 检测到提示词模板覆盖目录", templates_dir.display());
                                 if let Ok(target) = params.fs.read_link(&templates_dir).await {
                                     log_message.push_str(" -> ");
                                     log_message.push_str(&target.display().to_string());
@@ -299,7 +299,7 @@ impl PromptBuilder {
                         if file_path.to_string_lossy().ends_with(".hbs")
                             && let Ok(content) = params.fs.load(&file_path).await {
                                 let file_name = file_path.file_stem().unwrap().to_string_lossy();
-                                log::debug!("Registering prompt template override: {}", file_name);
+                                log::debug!("正在注册提示词模板覆盖:{}", file_name);
                                 handlebars.lock().register_template_string(&file_name, content).log_err();
                             }
                     }
@@ -316,13 +316,13 @@ impl PromptBuilder {
                 while let Some(changed_paths) = combined_changes.next().await {
                     if changed_paths.iter().any(|p| &p.path == &templates_dir)
                         && !params.fs.is_dir(&templates_dir).await {
-                            log::info!("Prompt template overrides directory removed. Restoring built-in prompt templates.");
+                            log::info!("提示词模板覆盖目录已移除,正在恢复内置提示词模板。");
                             Self::register_built_in_templates(&mut handlebars.lock()).log_err();
                             break;
                         }
                     for event in changed_paths {
                         if event.path.starts_with(&templates_dir) && event.path.extension().is_some_and(|ext| ext == "hbs") {
-                            log::info!("Reloading prompt template override: {}", event.path.display());
+                            log::info!("正在重新加载提示词模板覆盖:{}", event.path.display());
                             if let Some(content) = params.fs.load(&event.path).await.log_err() {
                                 let file_name = event.path.file_stem().unwrap().to_string_lossy();
                                 handlebars.lock().register_template_string(&file_name, content).log_err();
@@ -346,7 +346,7 @@ impl PromptBuilder {
                 .and_then(|s| s.strip_suffix(".hbs"))
                 && let Some(prompt) = Assets.load(path.as_ref()).log_err().flatten()
             {
-                log::debug!("Registering built-in prompt template: {}", id);
+                log::debug!("正在注册内置提示词模板:{}", id);
                 let prompt = String::from_utf8_lossy(prompt.as_ref());
                 handlebars.register_template_string(id, LineEnding::normalize_cow(prompt))?
             }

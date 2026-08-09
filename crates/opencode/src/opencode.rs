@@ -883,7 +883,7 @@ pub async fn stream_generate_content(
                             match serde_json::from_str(line) {
                                 Ok(response) => Some(Ok(response)),
                                 Err(error) => {
-                                    Some(Err(anyhow!("Error parsing JSON: {error:?}\n{line:?}")))
+                                    Some(Err(anyhow!("解析 JSON 时出错: {error:?}\n{line:?}")))
                                 }
                             }
                         } else {
@@ -898,7 +898,7 @@ pub async fn stream_generate_content(
         let mut text = String::new();
         response.body_mut().read_to_string(&mut text).await?;
         Err(anyhow!(
-            "error during streamGenerateContent via OpenCode, status code: {:?}, body: {}",
+            "通过 OpenCode 进行 streamGenerateContent 时出错,状态码: {:?},响应体: {}",
             response.status(),
             text
         ))

@@ -1591,32 +1591,32 @@ fn render_completion_kind_letter(
 
 fn completion_kind_name(kind: CompletionItemKind) -> &'static str {
     match kind {
-        CompletionItemKind::TEXT => "Text",
-        CompletionItemKind::METHOD => "Method",
-        CompletionItemKind::FUNCTION => "Function",
-        CompletionItemKind::CONSTRUCTOR => "Constructor",
-        CompletionItemKind::FIELD => "Field",
-        CompletionItemKind::VARIABLE => "Variable",
-        CompletionItemKind::CLASS => "Class",
-        CompletionItemKind::INTERFACE => "Interface",
-        CompletionItemKind::MODULE => "Module",
-        CompletionItemKind::PROPERTY => "Property",
-        CompletionItemKind::UNIT => "Unit",
-        CompletionItemKind::VALUE => "Value",
-        CompletionItemKind::ENUM => "Enum",
-        CompletionItemKind::KEYWORD => "Keyword",
-        CompletionItemKind::SNIPPET => "Snippet",
-        CompletionItemKind::COLOR => "Color",
-        CompletionItemKind::FILE => "File",
-        CompletionItemKind::REFERENCE => "Reference",
-        CompletionItemKind::FOLDER => "Folder",
-        CompletionItemKind::ENUM_MEMBER => "Enum Member",
-        CompletionItemKind::CONSTANT => "Constant",
-        CompletionItemKind::STRUCT => "Struct",
-        CompletionItemKind::EVENT => "Event",
-        CompletionItemKind::OPERATOR => "Operator",
-        CompletionItemKind::TYPE_PARAMETER => "Type Parameter",
-        _ => "Unknown",
+        CompletionItemKind::TEXT => "文本",
+        CompletionItemKind::METHOD => "方法",
+        CompletionItemKind::FUNCTION => "函数",
+        CompletionItemKind::CONSTRUCTOR => "构造函数",
+        CompletionItemKind::FIELD => "字段",
+        CompletionItemKind::VARIABLE => "变量",
+        CompletionItemKind::CLASS => "类",
+        CompletionItemKind::INTERFACE => "接口",
+        CompletionItemKind::MODULE => "模块",
+        CompletionItemKind::PROPERTY => "属性",
+        CompletionItemKind::UNIT => "单元",
+        CompletionItemKind::VALUE => "值",
+        CompletionItemKind::ENUM => "枚举",
+        CompletionItemKind::KEYWORD => "关键字",
+        CompletionItemKind::SNIPPET => "代码片段",
+        CompletionItemKind::COLOR => "颜色",
+        CompletionItemKind::FILE => "文件",
+        CompletionItemKind::REFERENCE => "引用",
+        CompletionItemKind::FOLDER => "文件夹",
+        CompletionItemKind::ENUM_MEMBER => "枚举成员",
+        CompletionItemKind::CONSTANT => "常量",
+        CompletionItemKind::STRUCT => "结构体",
+        CompletionItemKind::EVENT => "事件",
+        CompletionItemKind::OPERATOR => "运算符",
+        CompletionItemKind::TYPE_PARAMETER => "类型参数",
+        _ => "未知",
     }
 }
 
@@ -1849,7 +1849,7 @@ impl CodeActionsItem {
         match self {
             Self::CodeAction { action, .. } => action.lsp_action.title().replace("\n", ""),
             Self::Task(_, task) => task.resolved_label.replace("\n", ""),
-            Self::DebugScenario(scenario) => format!("debug: {}", scenario.label),
+            Self::DebugScenario(scenario) => format!("调试: {}", scenario.label),
         }
     }
 }
@@ -2005,7 +2005,7 @@ impl CodeActionsMenu {
                         action.lsp_action.title().chars().count()
                     }
                     CodeActionsItem::DebugScenario(scenario) => {
-                        format!("debug: {}", scenario.label).chars().count()
+                        format!("调试: {}", scenario.label).chars().count()
                     }
                 })
                 .map(|(ix, _)| ix),

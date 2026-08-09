@@ -104,9 +104,9 @@ impl Render for ProjectDiagnosticsEditor {
         let child =
             if warning_count + self.summary.error_count == 0 && self.editor.read(cx).is_empty(cx) {
                 let label = if self.summary.warning_count == 0 {
-                    SharedString::new_static("No problems in workspace")
+                    SharedString::new_static("工作区中无问题")
                 } else {
-                    SharedString::new_static("No errors in workspace")
+                    SharedString::new_static("工作区中无错误")
                 };
                 v_flex()
                     .key_context("EmptyPane")
@@ -124,7 +124,7 @@ impl Render for ProjectDiagnosticsEditor {
                             ""
                         };
                         let label = format!(
-                            "Show {} warning{}",
+                            "显示 {} 个警告{}",
                             self.summary.warning_count, plural_suffix
                         );
                         this.child(
@@ -141,7 +141,7 @@ impl Render for ProjectDiagnosticsEditor {
             };
 
         div()
-            .key_context("Diagnostics")
+            .key_context("诊断")
             .track_focus(&self.focus_handle(cx))
             .size_full()
             .on_action(cx.listener(Self::toggle_warnings))
@@ -749,11 +749,11 @@ impl Item for ProjectDiagnosticsEditor {
     }
 
     fn tab_tooltip_text(&self, _: &App) -> Option<SharedString> {
-        Some("Project Diagnostics".into())
+        Some("项目诊断".into())
     }
 
     fn tab_content_text(&self, _detail: usize, _: &App) -> SharedString {
-        "Diagnostics".into()
+        "诊断".into()
     }
 
     fn tab_content(&self, params: TabContentParams, _window: &Window, _: &App) -> AnyElement {
@@ -766,7 +766,7 @@ impl Item for ProjectDiagnosticsEditor {
                         h_flex()
                             .gap_1()
                             .child(Icon::new(IconName::Check).color(Color::Success))
-                            .child(Label::new("No problems").color(params.text_color())),
+                            .child(Label::new("无问题").color(params.text_color())),
                     )
                 },
             )
@@ -1134,7 +1134,7 @@ async fn heuristic_syntactic_expand(
         // TODO: doing this instead of walking a cursor as that doesn't work - why?
         let Some(parent) = node.parent() else {
             log::info!(
-                "Expanding to ancestor reached the top node, so using default context line count.",
+                "展开到祖先节点时已达顶层节点,因此使用默认上下文行数。",
             );
             return None;
         };

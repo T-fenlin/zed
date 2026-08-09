@@ -270,7 +270,7 @@ impl ChannelBuffer {
     }
 
     pub(crate) fn disconnect(&mut self, cx: &mut Context<Self>) {
-        log::info!("channel buffer {} disconnected", self.channel_id);
+        log::info!("频道缓冲区 {} 已断开", self.channel_id);
         if self.connected {
             self.connected = false;
             self.rejoining = false;

@@ -327,7 +327,7 @@ mod conflict_set_tests {
 
         cx.run_until_parked();
         events_rx.try_recv().expect_err(
-            "no conflicts should be registered as long as the file's status is unchanged",
+            "只要文件状态未改变,就不应注册冲突",
         );
 
         fs.with_git_state(path!("/project/.git").as_ref(), true, |state| {
@@ -346,7 +346,7 @@ mod conflict_set_tests {
         cx.run_until_parked();
         let update = events_rx
             .try_recv()
-            .expect("status change should trigger conflict parsing");
+            .expect("状态变更应触发冲突解析");
         assert_eq!(update.old_range, 0..0);
         assert_eq!(update.new_range, 0..1);
 
@@ -360,7 +360,7 @@ mod conflict_set_tests {
         cx.run_until_parked();
         let update = events_rx
             .try_recv()
-            .expect("conflicts should be removed after resolution");
+            .expect("冲突应在解决后被移除");
         assert_eq!(update.old_range, 0..1);
         assert_eq!(update.new_range, 0..0);
     }
@@ -538,7 +538,7 @@ mod conflict_set_tests {
         cx.run_until_parked();
         events_rx
             .try_recv()
-            .expect_err("conflict set should start empty");
+            .expect_err("冲突集应初始为空");
 
         fs.with_git_state(path!("/project/.git").as_ref(), true, |state| {
             state.refs.insert("MERGE_HEAD".into(), "123".into())
@@ -548,7 +548,7 @@ mod conflict_set_tests {
         cx.run_until_parked();
         events_rx
             .try_recv()
-            .expect_err("merge head without conflicted paths should not publish conflicts");
+            .expect_err("没有冲突路径的合并头不应发布冲突");
         conflict_set.update(cx, |conflict_set, _| {
             assert!(!conflict_set.has_conflict);
             assert_eq!(conflict_set.snapshot.conflicts.len(), 0);
@@ -571,7 +571,7 @@ mod conflict_set_tests {
         cx.run_until_parked();
         let update = events_rx
             .try_recv()
-            .expect("conflicts should appear once conflicted paths are visible");
+            .expect("一旦冲突路径可见,冲突应出现");
         assert_eq!(update.old_range, 0..0);
         assert_eq!(update.new_range, 0..1);
         conflict_set.update(cx, |conflict_set, cx| {
@@ -589,7 +589,7 @@ mod conflict_set_tests {
         cx.run_until_parked();
         let update = events_rx
             .try_recv()
-            .expect("resolved buffer text should clear visible conflict markers");
+            .expect("已解决的缓冲区文本应清除可见的冲突标记");
         assert_eq!(update.old_range, 0..1);
         assert_eq!(update.new_range, 0..0);
         conflict_set.update(cx, |conflict_set, _| {
@@ -604,7 +604,7 @@ mod conflict_set_tests {
 
         cx.run_until_parked();
         events_rx.try_recv().expect_err(
-            "merge-head change without unmerged-path changes should not emit marker updates",
+            "没有未合并路径变更的合并头变更不应发出标记更新",
         );
         conflict_set.update(cx, |conflict_set, _| {
             assert!(conflict_set.has_conflict);
@@ -619,7 +619,7 @@ mod conflict_set_tests {
 
         cx.run_until_parked();
         let update = events_rx.try_recv().expect(
-            "status catch-up should emit a no-op update when clearing stale conflict state",
+            "状态追赶在清除过期冲突状态时应发出无操作更新",
         );
         assert_eq!(update.old_range, 0..0);
         assert_eq!(update.new_range, 0..0);
@@ -1178,7 +1178,7 @@ mod git_traversal {
             .map(|&(path, _)| {
                 let git_entry = traversal
                     .find(|git_entry| git_entry.path.as_ref() == rel_path(path))
-                    .unwrap_or_else(|| panic!("Traversal has no entry for {path:?}"));
+                    .unwrap_or_else(|| panic!("遍历没有 {path:?} 的条目"));
                 (path, git_entry.git_summary)
             })
             .collect::<Vec<_>>();
@@ -1219,30 +1219,30 @@ mod git_worktrees {
 
         // Invalid: just ".." would resolve back to the working directory itself
         let err = worktrees_directory_for_repo(work_dir, "..", PathStyle::Unix).unwrap_err();
-        assert!(err.to_string().contains("must not be \"..\""));
+        assert!(err.to_string().contains("不能为 \"..\""));
 
         // Invalid: ".." with trailing separators
         let err = worktrees_directory_for_repo(work_dir, "..\\", PathStyle::Unix).unwrap_err();
-        assert!(err.to_string().contains("must not be \"..\""));
+        assert!(err.to_string().contains("不能为 \"..\""));
         let err = worktrees_directory_for_repo(work_dir, "../", PathStyle::Unix).unwrap_err();
-        assert!(err.to_string().contains("must not be \"..\""));
+        assert!(err.to_string().contains("不能为 \"..\""));
 
         // Invalid: empty string would resolve to the working directory itself
         let err = worktrees_directory_for_repo(work_dir, "", PathStyle::Unix).unwrap_err();
-        assert!(err.to_string().contains("must not be empty"));
+        assert!(err.to_string().contains("不能为空"));
 
         // Invalid: absolute path
         let err =
             worktrees_directory_for_repo(work_dir, "/tmp/worktrees", PathStyle::Unix).unwrap_err();
-        assert!(err.to_string().contains("relative path"));
+        assert!(err.to_string().contains("相对路径"));
 
         // Invalid: "/" is absolute on Unix
         let err = worktrees_directory_for_repo(work_dir, "/", PathStyle::Unix).unwrap_err();
-        assert!(err.to_string().contains("relative path"));
+        assert!(err.to_string().contains("相对路径"));
 
         // Invalid: "///" is absolute
         let err = worktrees_directory_for_repo(work_dir, "///", PathStyle::Unix).unwrap_err();
-        assert!(err.to_string().contains("relative path"));
+        assert!(err.to_string().contains("相对路径"));
 
         // Invalid: escapes too far up
         let err = worktrees_directory_for_repo(work_dir, "../../other-project/wt", PathStyle::Unix)
@@ -1353,13 +1353,13 @@ mod git_worktrees {
         let worktree_1 = worktrees
             .iter()
             .find(|worktree| worktree.ref_name == Some("refs/heads/feature-branch".into()))
-            .expect("should find feature-branch worktree");
+            .expect("应找到 feature-分支 工作树");
         assert_eq!(worktree_1.path, worktree_1_directory);
 
         let worktree_2 = worktrees
             .iter()
             .find(|worktree| worktree.ref_name == Some("refs/heads/bugfix-branch".into()))
-            .expect("should find bugfix-branch worktree");
+            .expect("应找到 bugfix-分支 工作树");
         assert_eq!(worktree_2.path, worktree_2_directory);
         assert_eq!(worktree_2.sha.as_ref(), "fake-sha");
     }
@@ -1474,7 +1474,7 @@ mod trust_tests {
         repository.read_with(cx, |repo, _| {
             assert!(
                 !repo.is_trusted(),
-                "repository should default to untrusted when no trust system is initialized"
+                "未初始化信任系统时,仓库应默认为不受信任"
             );
         });
     }
@@ -1516,18 +1516,18 @@ mod trust_tests {
                 .cloned()
                 .collect::<Vec<_>>()
         });
-        assert_eq!(repos.len(), 2, "should have two repositories");
+        assert_eq!(repos.len(), 2, "应有两个仓库");
         for repo in &repos {
             repo.read_with(cx, |repo, _| {
                 assert!(
                     !repo.is_trusted(),
-                    "all repos should be untrusted initially"
+                    "所有仓库初始应不受信任"
                 );
             });
         }
 
         let trusted_worktrees = cx
-            .update(|cx| TrustedWorktrees::try_get_global(cx).expect("trust global should be set"));
+            .update(|cx| TrustedWorktrees::try_get_global(cx).expect("应设置全局信任"));
         trusted_worktrees.update(cx, |store, cx| {
             store.trust(
                 &worktree_store,
@@ -1541,7 +1541,7 @@ mod trust_tests {
             repo.read_with(cx, |repo, _| {
                 assert!(
                     repo.is_trusted(),
-                    "all repos should be trusted after worktree is trusted"
+                    "工作树被信任后,所有仓库应受信任"
                 );
             });
         }
@@ -1578,11 +1578,11 @@ mod trust_tests {
         });
 
         repository.read_with(cx, |repo, _| {
-            assert!(!repo.is_trusted(), "repository should start untrusted");
+            assert!(!repo.is_trusted(), "仓库应初始为不受信任");
         });
 
         let trusted_worktrees = cx
-            .update(|cx| TrustedWorktrees::try_get_global(cx).expect("trust global should be set"));
+            .update(|cx| TrustedWorktrees::try_get_global(cx).expect("应设置全局信任"));
 
         trusted_worktrees.update(cx, |store, cx| {
             store.trust(
@@ -1596,7 +1596,7 @@ mod trust_tests {
         repository.read_with(cx, |repo, _| {
             assert!(
                 repo.is_trusted(),
-                "repository should be trusted after worktree is trusted"
+                "工作树被信任后,仓库应受信任"
             );
         });
 
@@ -1612,7 +1612,7 @@ mod trust_tests {
         repository.read_with(cx, |repo, _| {
             assert!(
                 !repo.is_trusted(),
-                "repository should be untrusted after worktree is restricted"
+                "工作树被限制后,仓库应不受信任"
             );
         });
 
@@ -1628,7 +1628,7 @@ mod trust_tests {
         repository.read_with(cx, |repo, _| {
             assert!(
                 repo.is_trusted(),
-                "repository should be trusted again after second trust"
+                "第二次信任后,仓库应再次受信任"
             );
         });
     }
@@ -1763,7 +1763,7 @@ mod resolve_worktree_tests {
             assert_eq!(
                 repo_identity_path(Path::new(common_dir)),
                 Path::new(expected),
-                "identity path for common_dir {common_dir:?} should be {expected:?}"
+                "common_dir {common_dir:?} 的标识路径应为 {expected:?}"
             );
         }
     }
@@ -1791,7 +1791,7 @@ mod resolve_worktree_tests {
             );
             assert_eq!(
                 short_name, expected,
-                "short name for {linked_worktree_path:?}, linked worktree of {main_worktree_path:?}, should be {expected:?}"
+                "{linked_worktree_path:?}({main_worktree_path:?} 的链接工作树)的短名称应为 {expected:?}"
             );
         }
     }

@@ -249,7 +249,7 @@ impl<'de> Deserialize<'de> for InlineCompletionTriggerKind {
         match value {
             1 => Ok(InlineCompletionTriggerKind::Invoked),
             2 => Ok(InlineCompletionTriggerKind::Automatic),
-            _ => Err(serde::de::Error::custom("invalid trigger kind")),
+            _ => Err(serde::de::Error::custom("无效的触发类型")),
         }
     }
 }

@@ -33,7 +33,7 @@ pub fn home_dir() -> &'static PathBuf {
                 PathBuf::from("/home/zed")
             }
         } else {
-            dirs::home_dir().expect("failed to determine home directory")
+            dirs::home_dir().expect("无法确定主目录")
         }
     })
 }
@@ -79,7 +79,7 @@ pub trait PathExt {
                         OsStr::from_encoded_bytes_unchecked(bytes)
                     }))
                 })
-                .with_context(|| format!("Invalid WTF-8 sequence: {bytes:?}"))
+                .with_context(|| format!("无效的 WTF-8 序列: {bytes:?}"))
         }
     }
 
@@ -184,12 +184,12 @@ impl<T: AsRef<Path>> PathExt for T {
         let path_str = self
             .as_ref()
             .to_str()
-            .with_context(|| "Path contains invalid UTF-8")?;
+            .with_context(|| "路径包含无效的 UTF-8")?;
         shell_kind
             .try_quote(path_str)
             .as_deref()
             .map(ToOwned::to_owned)
-            .context("Failed to quote path")
+            .context("无法为路径添加引号")
     }
 }
 
@@ -402,7 +402,7 @@ impl Error for NormalizeError {}
 
 impl std::fmt::Display for NormalizeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("parent reference `..` points outside of base directory")
+        f.write_str("父引用 `..` 指向了基础目录之外")
     }
 }
 
@@ -667,7 +667,7 @@ impl PathWithPosition {
             None => {
                 // The `ROW_COL_CAPTURE_REGEX` deals with separated digits only,
                 // but in reality there could be `foo/bar.py:22:in` inputs which we want to match too.
-                // The regex mentioned is not very extendable with "digit or random string" checks, so do this here instead.
+                // The regex mentioned is not very extendable with "数字或随机字符串" checks, so do this here instead.
                 let delimiter = ':';
                 let mut path_parts = s
                     .rsplitn(3, delimiter)
@@ -675,7 +675,7 @@ impl PathWithPosition {
                     .into_iter()
                     .rev()
                     .fuse();
-                let mut path_string = path_parts.next().expect("rsplitn should have the rest of the string as its last parameter that we reversed").to_owned();
+                let mut path_string = path_parts.next().expect("rsplitn 应该将字符串的其余部分作为其最后一个参数,而我们将其反转了").to_owned();
                 let mut row = None;
                 let mut column = None;
                 if let Some(maybe_row) = path_parts.next() {
@@ -1005,7 +1005,7 @@ fn stem_and_extension(filename: &str) -> (Option<&str>, Option<&str>) {
         Some((before, after)) => {
             // This is the crucial check for dotfiles like ".bashrc".
             // If `before` is empty, the dot was the first character.
-            // In that case, we revert to the "whole name is the stem" logic.
+            // In that case, we revert to the "整个名称是词干" logic.
             if before.is_empty() {
                 (Some(filename), None)
             } else {
@@ -1296,8 +1296,8 @@ impl WslPath {
             for c in components {
                 use Component::*;
                 match c {
-                    Prefix(p) => unreachable!("got {p:?}, but already stripped prefix"),
-                    RootDir => unreachable!("got root dir, but already stripped root"),
+                    Prefix(p) => unreachable!("已获取 {p:?},但已去除前缀"),
+                    RootDir => unreachable!("已获取根目录,但已去除根"),
                     CurDir => continue,
                     ParentDir => result.push("/.."),
                     Normal(s) => {
@@ -1386,7 +1386,7 @@ impl UrlExt for url::Url {
             let path = String::from_utf8(bytes).map_err(|_| ())?;
             debug_assert!(
                 PathStyle::Unix.is_absolute(&path),
-                "to_file_path() failed to produce an absolute Path"
+                "to_file_path() 未能生成绝对路径"
             );
 
             Ok(PathBuf::from(path))
@@ -1450,14 +1450,14 @@ impl UrlExt for url::Url {
             if cfg!(test) {
                 debug_assert!(
                     string.len() <= estimated_capacity,
-                    "len: {}, capacity: {}",
+                    "长度: {}, 容量: {}",
                     string.len(),
                     estimated_capacity
                 );
             }
             debug_assert!(
                 PathStyle::Windows.is_absolute(&string),
-                "to_file_path() failed to produce an absolute Path"
+                "to_file_path() 未能生成绝对路径"
             );
             let path = PathBuf::from(string);
             Ok(path)
@@ -2673,7 +2673,7 @@ mod tests {
     //         PathMatcher::new(&["**/node_modules/**".to_owned()], PathStyle::Unix).unwrap();
     //     assert!(
     //         path_matcher.is_match(path),
-    //         "Path matcher should match {path:?}"
+    //         "路径匹配器应匹配 {path:?}"
     //     );
     // }
 
@@ -2683,12 +2683,12 @@ mod tests {
     //     let path_matcher = PathMatcher::new(&["**/.env".to_owned()], PathStyle::Unix).unwrap();
     //     assert!(
     //         path_matcher.is_match(path),
-    //         "Path matcher should match {path:?}"
+    //         "路径匹配器应匹配 {path:?}"
     //     );
     //     let path = Path::new("/work/package.json");
     //     assert!(
     //         !path_matcher.is_match(path),
-    //         "Path matcher should not match {path:?}"
+    //         "路径匹配器不应匹配 {path:?}"
     //     );
     // }
 
@@ -2699,7 +2699,7 @@ mod tests {
     //         PathMatcher::new(&["**/node_modules/**".to_owned()], PathStyle::Unix).unwrap();
     //     assert!(
     //         path_matcher.is_match(path),
-    //         "Path matcher should match {path:?}"
+    //         "路径匹配器应匹配 {path:?}"
     //     );
     // }
     #[perf]
@@ -2732,11 +2732,11 @@ mod tests {
             // Verify iterators advanced correctly
             assert!(
                 !a_iter.next().is_some_and(|c| c.is_ascii_digit()),
-                "Iterator a should have consumed all digits"
+                "迭代器 a 应已消耗所有数字"
             );
             assert!(
                 !b_iter.next().is_some_and(|c| c.is_ascii_digit()),
-                "Iterator b should have consumed all digits"
+                "迭代器 b 应已消耗所有数字"
             );
 
             result

@@ -515,7 +515,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     Err(TestError::Inapplicable)?;
                 }
 
-                log::info!("{}: accepting incoming call", client.username);
+                log::info!("{}: 接受来电", client.username);
                 active_call
                     .update(cx, |call, cx| call.accept_incoming(cx))
                     .await?;
@@ -527,7 +527,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     Err(TestError::Inapplicable)?;
                 }
 
-                log::info!("{}: declining incoming call", client.username);
+                log::info!("{}: 拒绝来电", client.username);
                 active_call.update(cx, |call, cx| call.decline_incoming(cx))?;
             }
 
@@ -537,14 +537,14 @@ impl RandomizedTest for ProjectCollaborationTest {
                     Err(TestError::Inapplicable)?;
                 }
 
-                log::info!("{}: hanging up", client.username);
+                log::info!("{}: 挂断电话", client.username);
                 active_call.update(cx, |call, cx| call.hang_up(cx)).await?;
             }
 
             ClientOperation::InviteContactToCall { user_id } => {
                 let active_call = cx.read(ActiveCall::global);
 
-                log::info!("{}: inviting {}", client.username, user_id,);
+                log::info!("{}: 邀请 {}", client.username, user_id,);
                 active_call
                     .update(cx, |call, cx| call.invite(user_id.to_proto(), None, cx))
                     .await
@@ -553,7 +553,7 @@ impl RandomizedTest for ProjectCollaborationTest {
 
             ClientOperation::OpenLocalProject { first_root_name } => {
                 log::info!(
-                    "{}: opening local project at {:?}",
+                    "{}: 正在打开本地项目 {:?}",
                     client.username,
                     first_root_name
                 );
@@ -578,7 +578,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     .ok_or(TestError::Inapplicable)?;
 
                 log::info!(
-                    "{}: finding/creating local worktree at {:?} to project with root path {}",
+                    "{}: 正在查找/创建位于 {:?} 的本地工作树,并添加到根路径为 {} 的项目中",
                     client.username,
                     new_root_path,
                     project_root_name
@@ -601,7 +601,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     .ok_or(TestError::Inapplicable)?;
 
                 log::info!(
-                    "{}: closing remote project with root path {}",
+                    "{}: 正在关闭根路径为 {} 的远程项目",
                     client.username,
                     project_root_name,
                 );
@@ -647,7 +647,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     .ok_or(TestError::Inapplicable)?;
 
                 log::info!(
-                    "{}: joining remote project of user {}, root name {}",
+                    "{}: 正在加入用户 {} 的远程项目,根目录名为 {}",
                     client.username,
                     host_id,
                     first_root_name,
@@ -793,7 +793,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                 let save =
                     project.update(cx, |project, cx| project.save_buffer(buffer.clone(), cx));
                 let save = cx.spawn(|cx| async move {
-                    save.await.context("save request failed")?;
+                    save.await.context("保存请求失败")?;
                     assert!(
                         buffer
                             .read_with(&cx, |buffer, _| { buffer.saved_version().to_owned() })
@@ -874,7 +874,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     .ok_or(TestError::Inapplicable)?;
 
                 log::info!(
-                    "{}: search {} project {} for {:?}, {}",
+                    "{}: 正在 {} 项目 {} 中搜索 {:?},{}",
                     client.username,
                     if is_local { "local" } else { "remote" },
                     project_root_name,
@@ -925,7 +925,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                 }
 
                 if is_dir {
-                    log::info!("{}: creating dir at {:?}", client.username, path);
+                    log::info!("{}: 正在 {:?} 创建目录", client.username, path);
                     client.fs().create_dir(&path).await.unwrap();
                 } else {
                     let exists = client.fs().metadata(&path).await?.is_some();
@@ -960,7 +960,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     }
 
                     log::info!(
-                        "{}: writing git index for repo {:?}: {:?}",
+                        "{}: 正在为仓库 {:?} 写入 git 索引: {:?}",
                         client.username,
                         repo_path,
                         contents
@@ -985,7 +985,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     }
 
                     log::info!(
-                        "{}: writing git branch for repo {:?}: {:?}",
+                        "{}: 正在为仓库 {:?} 写入 git 分支: {:?}",
                         client.username,
                         repo_path,
                         new_branch
@@ -1017,7 +1017,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     }
 
                     log::info!(
-                        "{}: writing git statuses for repo {:?}: {:?}",
+                        "{}: 正在为仓库 {:?} 写入 git 状态: {:?}",
                         client.username,
                         repo_path,
                         statuses
@@ -1116,7 +1116,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                                     .map(|_| files.choose(&mut rng).unwrap().clone())
                                     .collect::<Vec<_>>();
                                 async move {
-                                    log::info!("LSP: Returning definitions in files {:?}", &files);
+                                    log::info!("LSP: 正在返回文件 {:?} 中的定义", &files);
                                     Ok(Some(lsp::GotoDefinitionResponse::Array(
                                         files
                                             .into_iter()
@@ -1210,14 +1210,14 @@ impl RandomizedTest for ProjectCollaborationTest {
                                 assert_eq!(
                                     guest_worktree_snapshots.values().map(|w| w.abs_path()).collect::<Vec<_>>(),
                                     host_worktree_snapshots.values().map(|w| w.abs_path()).collect::<Vec<_>>(),
-                                    "{} has different worktrees than the host for project {:?}",
+                                    "{} 与主机在项目 {:?} 上的工作树不同",
                                     client.username, guest_project.remote_id(),
                                 );
 
                                 assert_eq!(
                                     guest_repository_snapshots.values().collect::<Vec<_>>(),
                                     host_repository_snapshots.values().collect::<Vec<_>>(),
-                                    "{} has different repositories than the host for project {:?}",
+                                    "{} 与主机在项目 {:?} 上的仓库不同",
                                     client.username, guest_project.remote_id(),
                                 );
 
@@ -1226,7 +1226,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                                     assert_eq!(
                                         guest_snapshot.root_name(),
                                         host_snapshot.root_name(),
-                                        "{} has different root name than the host for worktree {}, project {:?}",
+                                        "{} 与主机在工作树 {}、项目 {:?} 上的根目录名不同",
                                         client.username,
                                         id,
                                         guest_project.remote_id(),
@@ -1234,7 +1234,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                                     assert_eq!(
                                         guest_snapshot.abs_path(),
                                         host_snapshot.abs_path(),
-                                        "{} has different abs path than the host for worktree {}, project: {:?}",
+                                        "{} 与主机在工作树 {}、项目 {:?} 上的绝对路径不同",
                                         client.username,
                                         id,
                                         guest_project.remote_id(),
@@ -1242,14 +1242,14 @@ impl RandomizedTest for ProjectCollaborationTest {
                                     assert_eq!(
                                         guest_snapshot.entries(false, 0).map(null_out_entry_size).collect::<Vec<_>>(),
                                         host_snapshot.entries(false, 0).map(null_out_entry_size).collect::<Vec<_>>(),
-                                        "{} has different snapshot than the host for worktree {:?} ({:?}) and project {:?}",
+                                        "{} 与主机在工作树 {:?} ({:?}) 和项目 {:?} 上的快照不同",
                                         client.username,
                                         host_snapshot.abs_path(),
                                         id,
                                         guest_project.remote_id(),
                                     );
                                     assert_eq!(guest_snapshot.scan_id(), host_snapshot.scan_id(),
-                                        "{} has different scan id than the host for worktree {:?} and project {:?}",
+                                        "{} 与主机在工作树 {:?} 和项目 {:?} 上的扫描 ID 不同",
                                         client.username,
                                         host_snapshot.abs_path(),
                                         guest_project.remote_id(),
@@ -1262,7 +1262,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                             assert_eq!(
                                 buffer.deferred_ops_len(),
                                 0,
-                                "{} has deferred operations for buffer {:?} in project {:?}",
+                                "{} 在项目 {:?} 中对缓冲区 {:?} 有延迟操作",
                                 client.username,
                                 buffer.file().unwrap().full_path(cx),
                                 guest_project.remote_id(),
@@ -1322,7 +1322,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     let host_buffer = host_project.read_with(host_cx, |project, cx| {
                         project.buffer_for_id(buffer_id, cx).unwrap_or_else(|| {
                             panic!(
-                                "host does not have buffer for guest:{}, peer:{:?}, id:{}",
+                                "主机没有访客:{}, 对端:{:?}, id:{} 的缓冲区",
                                 client.username,
                                 client.peer_id(),
                                 buffer_id
@@ -1335,7 +1335,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     assert_eq!(
                         guest_buffer.read_with(client_cx, |buffer, _| buffer.deferred_ops_len()),
                         0,
-                        "{}, buffer {}, path {:?} has deferred operations",
+                        "{}, 缓冲区 {}, 路径 {:?} 有延迟操作",
                         client.username,
                         buffer_id,
                         path,
@@ -1343,7 +1343,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     assert_eq!(
                         guest_buffer.read_with(client_cx, |buffer, _| buffer.text()),
                         host_buffer.read_with(host_cx, |buffer, _| buffer.text()),
-                        "{}, buffer {}, path {:?}, differs from the host's buffer",
+                        "{}, 缓冲区 {}, 路径 {:?} 与主机的缓冲区不同",
                         client.username,
                         buffer_id,
                         path
@@ -1365,8 +1365,8 @@ impl RandomizedTest for ProjectCollaborationTest {
                             );
                         }
                         (None, None) => {}
-                        (None, _) => panic!("host's file is None, guest's isn't"),
-                        (_, None) => panic!("guest's file is None, hosts's isn't"),
+                        (None, _) => panic!("主机的文件为 None,访客的不是"),
+                        (_, None) => panic!("访客的文件为 None,主机的不是"),
                     }
 
                     let host_diff_base = host_project.read_with(host_cx, |project, cx| {
@@ -1389,7 +1389,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     });
                     assert_eq!(
                         guest_diff_base, host_diff_base,
-                        "guest {} diff base does not match host's for path {path:?} in project {project_id}",
+                        "访客 {} 的差异基准与主机在项目 {project_id} 中的路径 {path:?} 不匹配",
                         client.username
                     );
 
@@ -1399,7 +1399,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                         guest_buffer.read_with(client_cx, |b, _| b.saved_version().clone());
                     assert_eq!(
                         guest_saved_version, host_saved_version,
-                        "guest {} saved version does not match host's for path {path:?} in project {project_id}",
+                        "访客 {} 的已保存版本与主机在项目 {project_id} 中的路径 {path:?} 不匹配",
                         client.username
                     );
 
@@ -1407,7 +1407,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     let guest_is_dirty = guest_buffer.read_with(client_cx, |b, _| b.is_dirty());
                     assert_eq!(
                         guest_is_dirty, host_is_dirty,
-                        "guest {} dirty state does not match host's for path {path:?} in project {project_id}",
+                        "访客 {} 的脏状态与主机在项目 {project_id} 中的路径 {path:?} 不匹配",
                         client.username
                     );
 
@@ -1416,7 +1416,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                         guest_buffer.read_with(client_cx, |b, _| b.saved_mtime());
                     assert_eq!(
                         guest_saved_mtime, host_saved_mtime,
-                        "guest {} saved mtime does not match host's for path {path:?} in project {project_id}",
+                        "访客 {} 的已保存修改时间与主机在项目 {project_id} 中的路径 {path:?} 不匹配",
                         client.username
                     );
 
@@ -1424,7 +1424,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                     let guest_is_dirty = guest_buffer.read_with(client_cx, |b, _| b.is_dirty());
                     assert_eq!(
                         guest_is_dirty, host_is_dirty,
-                        "guest {} dirty status does not match host's for path {path:?} in project {project_id}",
+                        "访客 {} 的脏状态与主机在项目 {project_id} 中的路径 {path:?} 不匹配",
                         client.username
                     );
 
@@ -1433,7 +1433,7 @@ impl RandomizedTest for ProjectCollaborationTest {
                         guest_buffer.read_with(client_cx, |b, _| b.has_conflict());
                     assert_eq!(
                         guest_has_conflict, host_has_conflict,
-                        "guest {} conflict status does not match host's for path {path:?} in project {project_id}",
+                        "访客 {} 的冲突状态与主机在项目 {project_id} 中的路径 {path:?} 不匹配",
                         client.username
                     );
                 }
@@ -1608,7 +1608,7 @@ async fn ensure_project_shared(
         {
             Ok(project_id) => {
                 log::info!(
-                    "{}: shared project {} with id {}",
+                    "{}: 已共享项目 {},ID 为 {}",
                     client.username,
                     first_root_name,
                     project_id
@@ -1616,7 +1616,7 @@ async fn ensure_project_shared(
             }
             Err(error) => {
                 log::error!(
-                    "{}: error sharing project {}: {:?}",
+                    "{}: 共享项目 {} 时出错: {:?}",
                     client.username,
                     first_root_name,
                     error

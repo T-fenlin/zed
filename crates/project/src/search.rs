@@ -481,7 +481,7 @@ impl SearchQuery {
                         r"\\" => "\\",
                         r"\n" => "\n",
                         r"\t" => "\t",
-                        x => unreachable!("Unexpected escape sequence: {}", x),
+                        x => unreachable!("意外的转义序列: {}", x),
                     },
                 );
                 Some(regex.replace(text, replacement))

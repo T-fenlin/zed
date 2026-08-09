@@ -670,7 +670,7 @@ impl Column for WorkspaceId {
     fn column(statement: &mut Statement, start_index: i32) -> Result<(Self, i32)> {
         i64::column(statement, start_index)
             .map(|(i, next_index)| (Self(i), next_index))
-            .with_context(|| format!("Failed to read WorkspaceId at index {start_index}"))
+            .with_context(|| format!("无法读取索引 {start_index} 处的工作区 ID"))
     }
 }
 impl From<WorkspaceId> for i64 {
@@ -867,7 +867,7 @@ impl ProjectItemRegistry {
                 Some(window.spawn(cx, async move |cx| {
                     match project_item.await.with_context(|| {
                         format!(
-                            "opening project path {:?}",
+                            "正在打开项目路径 {:?}",
                             entry_abs_path.as_deref().unwrap_or(&project_path.path.as_std_path())
                         )
                     }) {
@@ -891,7 +891,7 @@ impl ProjectItemRegistry {
                             Ok((project_entry_id, build_workspace_item))
                         }
                         Err(e) => {
-                            log::warn!("Failed to open a project item: {e:#}");
+                            log::warn!("无法打开项目项:{e:#}");
                             if e.error_code() == ErrorCode::Internal {
                                 if let Some(abs_path) =
                                     entry_abs_path.as_deref().filter(|_| is_file)
@@ -933,7 +933,7 @@ impl ProjectItemRegistry {
             .rev()
             .find_map(|open_project_item| open_project_item(project, path, window, cx))
         else {
-            return Task::ready(Err(anyhow!("cannot open file {:?}", path.path)));
+            return Task::ready(Err(anyhow!("无法打开文件 {:?}", path.path)));
         };
         open_project_item
     }
@@ -1056,7 +1056,7 @@ impl SerializableItemRegistry {
     ) -> Task<Result<Box<dyn ItemHandle>>> {
         let Some(descriptor) = Self::descriptor(item_kind, cx) else {
             return Task::ready(Err(anyhow!(
-                "cannot deserialize {}, descriptor not found",
+                "无法反序列化 {},未找到描述符",
                 item_kind
             )));
         };
@@ -1073,7 +1073,7 @@ impl SerializableItemRegistry {
     ) -> Task<Result<()>> {
         let Some(descriptor) = Self::descriptor(item_kind, cx) else {
             return Task::ready(Err(anyhow!(
-                "cannot cleanup {}, descriptor not found",
+                "无法清理 {},未找到描述符",
                 item_kind
             )));
         };
@@ -1367,7 +1367,7 @@ struct DispatchingKeystrokes {
 /// In some way, is a counterpart of a window, as the [`WindowHandle`] could be downcast into `Workspace`.
 ///
 /// A `Workspace` usually consists of 1 or more projects, a central pane group, 3 docks and a status bar.
-/// The `Workspace` owns everybody's state and serves as a default, "global context",
+/// The `Workspace` owns everybody's state and serves as a default, "全局上下文",
 /// that can be used to register a global action to be triggered from any place in the window.
 pub struct Workspace {
     weak_self: WeakEntity<Self>,
@@ -2865,7 +2865,7 @@ impl Workspace {
                 let open_by_project_path = open_by_project_path.await;
                 let mut navigated = false;
                 match open_by_project_path
-                    .with_context(|| format!("Navigating to {project_path:?}"))
+                    .with_context(|| format!("正在导航到 {project_path:?}"))
                 {
                     Ok((project_entry_id, build_item)) => {
                         let prev_active_item_id = pane.update(cx, |pane, _| {
@@ -2904,7 +2904,7 @@ impl Workspace {
                             })?;
                             match open_by_abs_path
                                 .await
-                                .with_context(|| format!("Navigating to {abs_path:?}"))
+                                .with_context(|| format!("正在导航到 {abs_path:?}"))
                             {
                                 Ok(item) => {
                                     pane.update_in(cx, |pane, window, cx| {
@@ -2916,7 +2916,7 @@ impl Workspace {
                                     })?;
                                 }
                                 Err(open_by_abs_path_e) => {
-                                    log::error!("Failed to navigate history: {open_by_project_path_e:#} and {open_by_abs_path_e:#}");
+                                    log::error!("导航历史失败:{open_by_project_path_e:#} 和 {open_by_abs_path_e:#}");
                                 }
                             }
                         }
@@ -3329,9 +3329,9 @@ impl Workspace {
                     let answer = cx.update(|window, cx| {
                         window.prompt(
                             PromptLevel::Warning,
-                            "Do you want to leave the current call?",
+                            "是否要离开当前通话?",
                             None,
-                            &["Close window and hang up", "Cancel"],
+                            &["关闭窗口并挂断", "取消"],
                             cx,
                         )
                     })?;
@@ -3491,7 +3491,7 @@ impl Workspace {
                         }
 
                         *keystrokes.borrow_mut() = Default::default();
-                        log::error!("over 100 keystrokes passed to send_keystrokes");
+                        log::error!("传递给 send_keystrokes 的按键超过 100 次");
                     })
                     .shared(),
             );
@@ -3577,9 +3577,9 @@ impl Workspace {
                         );
                         window.prompt(
                             PromptLevel::Warning,
-                            "Do you want to save all changes in the following files?",
+                            "是否要保存以下文件中的所有更改?",
                             Some(&detail),
-                            &["Save all", "Discard all", "Cancel"],
+                            &["全部保存", "全部丢弃", "取消"],
                             cx,
                         )
                     })?;
@@ -3881,7 +3881,7 @@ impl Workspace {
     ) {
         let project = self.project.read(cx);
         if project.is_via_collab() {
-            self.show_error("You cannot add folders to someone else's project", cx);
+            self.show_error("您无法向他人的项目添加文件夹", cx);
             return;
         }
         let paths = self.prompt_for_open_path(
@@ -4173,7 +4173,7 @@ impl Workspace {
 
         if let Some(panel) = self.dock_at_position(dock_side).read(cx).active_panel() {
             telemetry::event!(
-                "Panel Button Clicked",
+                "面板按钮已点击",
                 name = panel.persistent_name(),
                 toggle_state = !was_visible
             );
@@ -4346,7 +4346,7 @@ impl Workspace {
         }
 
         telemetry::event!(
-            "Panel Button Clicked",
+            "面板按钮已点击",
             name = T::persistent_name(),
             toggle_state = did_focus_panel
         );
@@ -4358,7 +4358,7 @@ impl Workspace {
         if let Some(item) = self.active_item(cx) {
             item.item_focus_handle(cx).focus(window, cx);
         } else {
-            log::error!("Could not find a focus target when switching focus to the center panes",);
+            log::error!("切换焦点到中央窗格时找不到焦点目标",);
         }
     }
 
@@ -4623,21 +4623,21 @@ impl Workspace {
                 .update_in(cx, |workspace, window, cx| {
                     workspace.open_paths(vec![abs_path.clone()], options, None, window, cx)
                 })
-                .with_context(|| format!("open abs path {abs_path:?} task spawn"))?
+                .with_context(|| format!("打开绝对路径 {abs_path:?} 任务生成"))?
                 .await;
             anyhow::ensure!(
                 open_paths_task_result.len() == 1,
-                "open abs path {abs_path:?} task returned incorrect number of results"
+                "打开绝对路径 {abs_path:?} 任务返回的结果数量不正确"
             );
             match open_paths_task_result
                 .into_iter()
                 .next()
-                .expect("ensured single task result")
+                .expect("确保单个任务结果")
             {
                 Some(open_result) => {
-                    open_result.with_context(|| format!("open abs path {abs_path:?} task join"))
+                    open_result.with_context(|| format!("打开绝对路径 {abs_path:?} 任务加入"))
                 }
-                None => anyhow::bail!("open abs path {abs_path:?} task returned None"),
+                None => anyhow::bail!("打开绝对路径 {abs_path:?} 任务返回 None"),
             }
         })
     }
@@ -4683,7 +4683,7 @@ impl Workspace {
             self.last_active_center_pane.clone().unwrap_or_else(|| {
                 self.panes
                     .first()
-                    .expect("There must be an active pane")
+                    .expect("必须有一个活动窗格")
                     .downgrade()
             })
         });
@@ -4839,7 +4839,7 @@ impl Workspace {
         let pane = self.last_active_center_pane.clone().unwrap_or_else(|| {
             self.panes
                 .first()
-                .expect("There must be an active pane")
+                .expect("必须有一个活动窗格")
                 .downgrade()
         });
 
@@ -4875,7 +4875,7 @@ impl Workspace {
                     ))
                 })
             })
-            .map(|option| option.context("pane was dropped"))?
+            .map(|option| option.context("窗格已被丢弃"))?
         })
     }
 
@@ -5251,7 +5251,7 @@ impl Workspace {
                 .unwrap_or_else(|| {
                     self.panes
                         .first()
-                        .expect("There must be an active pane")
+                        .expect("必须有一个活动窗格")
                         .downgrade()
                 })
                 .upgrade()?;
@@ -5386,7 +5386,7 @@ impl Workspace {
                     item.item_focus_handle(cx).focus(window, cx);
                 } else {
                     log::error!(
-                        "Could not find a focus target when in switching focus in {direction} direction for a pane",
+                        "在 {direction} 方向切换窗格焦点时找不到焦点目标",
                     );
                 }
             }
@@ -5397,7 +5397,7 @@ impl Workspace {
                     if let Some(panel) = dock.active_panel() {
                         panel.activation_focus_handle(cx).focus(window, cx);
                     } else {
-                        log::error!("Could not find a focus target when in switching focus in {direction} direction for a {:?} dock", dock.position());
+                        log::error!("在 {direction} 方向切换 {:?} 停靠面板焦点时找不到焦点目标", dock.position());
                     }
                 })
             }
@@ -5978,7 +5978,7 @@ impl Workspace {
                         let state = this
                             .follower_states
                             .get_mut(&leader_id)
-                            .context("following interrupted")?;
+                            .context("跟随已中断")?;
                         state.active_view_id = response
                             .active_view
                             .as_ref()
@@ -6091,7 +6091,7 @@ impl Workspace {
                     cx,
                 )
                 .detach_and_prompt_err(
-                    "Failed to join project",
+                    "无法加入项目",
                     window,
                     cx,
                     |error, _, _| Some(format!("{error:#}")),
@@ -6206,7 +6206,7 @@ impl Workspace {
         }
 
         if title.is_empty() {
-            title = "empty project".to_string();
+            title = "空项目".to_string();
         }
 
         let active_project_path = self.active_item(cx).and_then(|item| item.project_path(cx));
@@ -6425,9 +6425,9 @@ impl Workspace {
         update: proto::UpdateFollowers,
         cx: &mut AsyncWindowContext,
     ) -> Result<()> {
-        match update.variant.context("invalid update")? {
+        match update.variant.context("无效更新")? {
             proto::update_followers::Variant::CreateView(view) => {
-                let view_id = ViewId::from_proto(view.id.clone().context("invalid view id")?)?;
+                let view_id = ViewId::from_proto(view.id.clone().context("无效视图 ID")?)?;
                 let should_add_view = this.update(cx, |this, _| {
                     if let Some(state) = this.follower_states.get_mut(&leader_id.into()) {
                         anyhow::Ok(!state.items_by_leader_view_id.contains_key(&view_id))
@@ -6465,8 +6465,8 @@ impl Workspace {
                 }
             }
             proto::update_followers::Variant::UpdateView(update_view) => {
-                let variant = update_view.variant.context("missing update view variant")?;
-                let id = update_view.id.context("missing update view id")?;
+                let variant = update_view.variant.context("缺少更新视图变体")?;
+                let id = update_view.id.context("缺少更新视图 ID")?;
                 let mut tasks = Vec::new();
                 this.update_in(cx, |this, window, cx| {
                     let project = this.project.clone();
@@ -6498,10 +6498,10 @@ impl Workspace {
         view: &proto::View,
         cx: &mut AsyncWindowContext,
     ) -> Result<()> {
-        let this = this.upgrade().context("workspace dropped")?;
+        let this = this.upgrade().context("工作区已关闭")?;
 
         let Some(id) = view.id.clone() else {
-            anyhow::bail!("no id for view");
+            anyhow::bail!("视图无 ID");
         };
         let id = ViewId::from_proto(id)?;
         let panel_id = view.panel_id.and_then(proto::PanelId::from_i32);
@@ -6510,7 +6510,7 @@ impl Workspace {
             let state = this
                 .follower_states
                 .get(&leader_id.into())
-                .context("stopped following")?;
+                .context("已停止跟随")?;
             anyhow::Ok(state.pane().clone())
         })?;
         let existing_item = pane.update_in(cx, |pane, window, cx| {
@@ -6528,7 +6528,7 @@ impl Workspace {
             existing_item
         } else {
             let variant = view.variant.clone();
-            anyhow::ensure!(variant.is_some(), "missing view variant");
+            anyhow::ensure!(variant.is_some(), "缺少视图变体");
 
             let task = cx.update(|window, cx| {
                 FollowableViewRegistry::from_state_proto(this.clone(), id, variant, window, cx)
@@ -6536,7 +6536,7 @@ impl Workspace {
 
             let Some(task) = task else {
                 anyhow::bail!(
-                    "failed to construct view from leader (maybe from a different version of zed?)"
+                    "无法从领导者构建视图(可能来自不同版本的 zed?)"
                 );
             };
 
@@ -6582,7 +6582,7 @@ impl Workspace {
 
             Some(())
         })
-        .context("no follower state")?;
+        .context("无跟随者状态")?;
 
         Ok(())
     }
@@ -7298,7 +7298,7 @@ impl Workspace {
     ) -> Result<()> {
         self.serializable_items_tx
             .unbounded_send(item)
-            .map_err(|err| anyhow!("failed to send serializable item over channel: {err}"))
+            .map_err(|err| anyhow!("通过通道发送可序列化项失败:{err}"))
     }
 
     pub(crate) fn load_workspace(
@@ -7445,7 +7445,7 @@ impl Workspace {
 
     pub fn key_context(&self, cx: &App) -> KeyContext {
         let mut context = KeyContext::new_with_defaults();
-        context.add("Workspace");
+        context.add("工作区");
         context.set("keyboard_layout", cx.keyboard_layout().name().to_string());
         if let Some(status) = self
             .debugger_provider
@@ -7459,7 +7459,7 @@ impl Workspace {
                 ThreadStatus::Stopped => context.add("debugger_stopped"),
                 ThreadStatus::Exited | ThreadStatus::Ended => {}
             }
-            // A coarse "there is a live debug session" flag (running, stepping,
+            // A coarse "存在活动的调试会话" flag (running, stepping,
             // or stopped at a breakpoint) used to gate debugger controls like
             // step/pause/stop. Distinct from `debugger_running`, which is only
             // true while the program is actually executing.
@@ -7522,22 +7522,22 @@ impl Workspace {
             .on_action(cx.listener(|workspace, action: &Save, window, cx| {
                 workspace
                     .save_active_item(action.save_intent.unwrap_or(SaveIntent::Save), window, cx)
-                    .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                    .detach_and_prompt_err("保存失败", window, cx, |_, _, _| None);
             }))
             .on_action(cx.listener(|workspace, _: &FormatAndSave, window, cx| {
                 workspace
                     .save_active_item(SaveIntent::FormatAndSave, window, cx)
-                    .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                    .detach_and_prompt_err("保存失败", window, cx, |_, _, _| None);
             }))
             .on_action(cx.listener(|workspace, _: &SaveWithoutFormat, window, cx| {
                 workspace
                     .save_active_item(SaveIntent::SaveWithoutFormat, window, cx)
-                    .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                    .detach_and_prompt_err("保存失败", window, cx, |_, _, _| None);
             }))
             .on_action(cx.listener(|workspace, _: &SaveAs, window, cx| {
                 workspace
                     .save_active_item(SaveIntent::SaveAs, window, cx)
-                    .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                    .detach_and_prompt_err("保存失败", window, cx, |_, _, _| None);
             }))
             .on_action(
                 cx.listener(|workspace, _: &ActivatePreviousPane, window, cx| {
@@ -8102,9 +8102,9 @@ impl Workspace {
         // window. We only make it focusable in that case so it never adds a
         // hitbox or intercepts mouse focus for other users.
         let (dock_element_id, dock_label) = match position {
-            DockPosition::Left => ("left-dock", "Left dock"),
-            DockPosition::Right => ("right-dock", "Right dock"),
-            DockPosition::Bottom => ("bottom-dock", "Bottom dock"),
+            DockPosition::Left => ("left-dock", "左侧停靠面板"),
+            DockPosition::Right => ("right-dock", "右侧停靠面板"),
+            DockPosition::Bottom => ("bottom-dock", "底部停靠面板"),
         };
         let dock_is_open = dock.read(cx).is_open();
         let a11y_active = window.is_a11y_active();
@@ -8311,7 +8311,7 @@ impl Workspace {
     /// technology recognizes the editor as the main region and can navigate to
     /// it. While a screen reader is active the wrapper is also the focus target
     /// for region navigation (it carries the landmark role and label), so
-    /// focusing it announces "Editor" instead of falling back to the whole
+    /// focusing it announces "编辑器" instead of falling back to the whole
     /// window. We only make it focusable in that case so it never adds a hitbox
     /// or intercepts mouse focus for other users.
     fn render_center(
@@ -8323,7 +8323,7 @@ impl Workspace {
         div()
             .id("editor-region")
             .role(gpui::Role::Main)
-            .aria_label("Editor")
+            .aria_label("编辑器")
             .when(window.is_a11y_active(), |this| {
                 this.track_focus(&self.region_focus_handles.editor)
             })
@@ -8621,7 +8621,7 @@ impl ParticipantLocation {
     pub fn from_proto(location: Option<proto::ParticipantLocation>) -> Result<Self> {
         match location
             .and_then(|l| l.variant)
-            .context("participant location was not provided")?
+            .context("未提供参与者位置")?
         {
             proto::participant_location::Variant::SharedProject(project) => {
                 Ok(Self::SharedProject {
@@ -8868,7 +8868,7 @@ impl FocusablePart {
 /// Focus handles for the landmark region wrappers (the docks and the editor).
 /// Region navigation ([`FocusNextPart`]/[`FocusPreviousPart`]) focuses these so
 /// it lands on the wrapper that actually carries the landmark role and label
-/// (e.g. `Main`/"Editor", `Complementary`/"Left dock"). Without them, region
+/// (e.g. `Main`/"编辑器", `Complementary`/"左侧停靠面板"). Without them, region
 /// navigation would focus an inner element that has no accessibility node, and
 /// assistive technology would fall back to announcing the whole window.
 struct RegionFocusHandles {
@@ -8910,8 +8910,8 @@ fn notify_if_database_failed(window: WindowHandle<MultiWorkspace>, cx: &mut Asyn
                         cx,
                         |cx| {
                             cx.new(|cx| {
-                                MessageNotification::new("Failed to load the database file.", cx)
-                                    .primary_message("File an Issue")
+                                MessageNotification::new("无法加载数据库文件。", cx)
+                                    .primary_message("提交问题")
                                     .primary_icon(IconName::Plus)
                                     .primary_on_click(|window, cx| {
                                         window.dispatch_action(Box::new(FileBugReport), cx)
@@ -8998,7 +8998,7 @@ impl Render for Workspace {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         static FIRST_PAINT: AtomicBool = AtomicBool::new(true);
         if FIRST_PAINT.swap(false, std::sync::atomic::Ordering::Relaxed) {
-            log::info!("Rendered first frame");
+            log::info!("已渲染第一帧");
         }
 
         let centered_layout = self.centered_layout
@@ -9070,7 +9070,7 @@ impl Render for Workspace {
                         .track_focus(&self.titlebar_focus_handle)
                         .tab_group()
                         .role(gpui::Role::Toolbar)
-                        .aria_label("Title bar")
+                        .aria_label("标题栏")
                         .on_key_down(cx.listener(
                             |workspace, event: &gpui::KeyDownEvent, window, cx| {
                                 if event.keystroke.modifiers.modified() {
@@ -9584,7 +9584,7 @@ impl ViewId {
             creator: message
                 .creator
                 .map(CollaboratorId::PeerId)
-                .context("creator is missing")?,
+                .context("缺少创建者")?,
             id: message.id,
         })
     }
@@ -9682,7 +9682,7 @@ pub async fn restore_multiworkspace(
     let window_handle = match workspace_result {
         Ok(handle) => handle,
         Err(err) => {
-            log::error!("Failed to restore active workspace: {err:#}");
+            log::error!("无法恢复活动工作区:{err:#}");
 
             let mut fallback_handle = None;
             for key in &state.project_groups {
@@ -9707,7 +9707,7 @@ pub async fn restore_multiworkspace(
                         break;
                     }
                     Err(fallback_err) => {
-                        log::error!("Fallback project group also failed: {fallback_err:#}");
+                        log::error!("回退项目组也失败:{fallback_err:#}");
                     }
                 }
             }
@@ -9807,7 +9807,7 @@ actions!(
         /// channel in the collab panel.
         ///
         /// If you want to open a specific channel, use `zed::OpenZedUrl` with a channel notes URL -
-        /// can be copied via "Copy link to section" in the context menu of the channel notes
+        /// can be copied via "复制节链接" in the context menu of the channel notes
         /// buffer. These URLs look like `https://zed.dev/channel/channel-name-CHANNEL_ID/notes`.
         OpenChannelNotes,
         /// Mutes your microphone.
@@ -9883,9 +9883,9 @@ async fn join_channel_internal(
                 .update(cx, |_, window, cx| {
                     window.prompt(
                         PromptLevel::Warning,
-                        "Do you want to switch channels?",
-                        Some("Leaving this call will unshare your current project."),
-                        &["Yes, Join Channel", "Cancel"],
+                        "是否要切换频道?",
+                        Some("离开此通话将取消共享您当前的项目。"),
+                        &["是,加入频道", "取消"],
                         cx,
                     )
                 })?
@@ -9906,7 +9906,7 @@ async fn join_channel_internal(
     // this loop will terminate within client::CONNECTION_TIMEOUT seconds.
     'outer: loop {
         let Some(status) = client_status.recv().await else {
-            anyhow::bail!("error connecting");
+            anyhow::bail!("连接错误");
         };
 
         match status {
@@ -10045,37 +10045,37 @@ pub fn join_channel(
         }
 
         if let Err(err) = result {
-            log::error!("failed to join channel: {}", err);
+            log::error!("加入频道失败:{}", err);
             if let Some(active_window) = active_window {
                 active_window
                     .update(cx, |_, window, cx| {
                         let detail: SharedString = match err.error_code() {
-                            ErrorCode::SignedOut => "Please sign in to continue.".into(),
+                            ErrorCode::SignedOut => "请登录以继续。".into(),
                             ErrorCode::UpgradeRequired => concat!(
-                                "Your are running an unsupported version of Zed. ",
-                                "Please update to continue."
+                                "您正在运行不受支持的 Zed 版本。",
+                                "请更新以继续。"
                             )
                             .into(),
                             ErrorCode::NoSuchChannel => concat!(
-                                "No matching channel was found. ",
-                                "Please check the link and try again."
+                                "未找到匹配的频道。",
+                                "请检查链接并重试。"
                             )
                             .into(),
                             ErrorCode::Forbidden => concat!(
-                                "This channel is private, and you do not have access. ",
-                                "Please ask someone to add you and try again."
+                                "此频道是私密的,您没有访问权限。",
+                                "请让某人添加您,然后重试。"
                             )
                             .into(),
                             ErrorCode::Disconnected => {
-                                "Please check your internet connection and try again.".into()
+                                "请检查您的互联网连接并重试。".into()
                             }
-                            _ => format!("{}\n\nPlease try again.", err).into(),
+                            _ => format!("{}\n\n请重试。", err).into(),
                         };
                         window.prompt(
                             PromptLevel::Critical,
-                            "Failed to join channel",
+                            "无法加入频道",
                             Some(&detail),
-                            &["OK"],
+                            &["确定"],
                             cx,
                         )
                     })?
@@ -10109,7 +10109,7 @@ pub async fn get_any_active_multi_workspace(
         })
         .await?;
     }
-    activate_any_workspace_window(&mut cx).context("could not open zed")
+    activate_any_workspace_window(&mut cx).context("无法打开 zed")
 }
 
 pub fn activate_any_workspace_window(cx: &mut AsyncApp) -> Option<WindowHandle<MultiWorkspace>> {
@@ -10366,7 +10366,7 @@ pub fn open_workspace_by_id(
     cx.spawn(async move |cx| {
         let serialized_workspace = db
             .workspace_for_id(workspace_id)
-            .with_context(|| format!("Workspace {workspace_id:?} not found"))?;
+            .with_context(|| format!("未找到工作区 {workspace_id:?}"))?;
 
         let centered_layout = serialized_workspace.centered_layout;
 
@@ -10580,7 +10580,7 @@ pub fn open_paths(
                 workspace.update(cx, |workspace, cx| {
                     for item in open_task.iter().flatten() {
                         if let Err(e) = item {
-                            workspace.show_error(format!("Error: {e}"), cx);
+                            workspace.show_error(format!("错误:{e}"), cx);
                         }
                     }
                 });
@@ -10631,10 +10631,10 @@ pub fn open_paths(
                     workspace.update(cx, |workspace, cx| {
                         workspace.show_notification(NotificationId::unique::<OpenInWsl>(), cx, move |cx| {
                             let display_path = util::markdown::MarkdownInlineCode(&path.to_string_lossy());
-                            let msg = format!("{display_path} is inside a WSL filesystem, some features may not work unless you open it with WSL remote");
+                            let msg = format!("{display_path} 位于 WSL 文件系统中,除非使用 WSL 远程打开,否则某些功能可能无法正常工作");
                             cx.new(move |cx| {
                                 MessageNotification::new(msg, cx)
-                                    .primary_message("Open in WSL")
+                                    .primary_message("在 WSL 中打开")
                                     .primary_icon(IconName::FolderOpen)
                                     .primary_on_click(move |window, cx| {
                                         window.dispatch_action(Box::new(remote::OpenWslPath {
@@ -10722,7 +10722,7 @@ pub fn create_and_open_local_file(
                             })?
                             .await;
                         let item = items.pop().flatten();
-                        item.with_context(|| format!("path {path:?} is not a file"))?
+                        item.with_context(|| format!("路径 {path:?} 不是文件"))?
                     })
                 })
             })?
@@ -10850,7 +10850,7 @@ async fn open_remote_project_inner(
     }
 
     if project_paths_to_open.is_empty() {
-        return Err(project_path_errors.pop().context("no paths given")?);
+        return Err(project_path_errors.pop().context("未提供路径")?);
     }
 
     let workspace = window.update(cx, |multi_workspace, window, cx| {
@@ -10920,7 +10920,7 @@ async fn open_remote_project_inner(
         for error in project_path_errors {
             if error.error_code() == proto::ErrorCode::DevServerProjectPathDoesNotExist {
                 if let Some(path) = error.error_tag("path") {
-                    workspace.show_error(format!("'{path}' does not exist"), cx)
+                    workspace.show_error(format!("'{path}' 不存在"), cx)
                 }
             } else {
                 workspace.show_error(format!("{error}"), cx)
@@ -11071,9 +11071,9 @@ pub fn reload(cx: &mut App) {
             .update(cx, |_, window, cx| {
                 window.prompt(
                     PromptLevel::Info,
-                    "Are you sure you want to restart?",
+                    "确定要重启吗?",
                     None,
-                    &["Restart", "Cancel"],
+                    &["重启", "取消"],
                     cx,
                 )
             })
@@ -11520,7 +11520,7 @@ pub fn remote_workspace_position_from_db(
         let remote_connection_id = db
             .get_or_create_remote_connection(connection_options)
             .await
-            .context("fetching serialized ssh project")?;
+            .context("正在获取序列化的 SSH 项目")?;
         let serialized_workspace = db.remote_workspace_for_roots(&paths, remote_connection_id);
 
         let (window_bounds, display) = if let Some(bounds) = window_bounds_env_override() {
@@ -11606,17 +11606,17 @@ fn load_legacy_panel_size(
         .or_else(|| workspace.session_id())?;
 
     let legacy_key = match panel_key {
-        "ProjectPanel" => {
-            format!("{}-{:?}", "ProjectPanel", workspace_id)
+        "项目面板" => {
+            format!("{}-{:?}", "项目面板", workspace_id)
         }
-        "OutlinePanel" => {
-            format!("{}-{:?}", "OutlinePanel", workspace_id)
+        "大纲面板" => {
+            format!("{}-{:?}", "大纲面板", workspace_id)
         }
-        "GitPanel" => {
-            format!("{}-{:?}", "GitPanel", workspace_id)
+        "Git 面板" => {
+            format!("{}-{:?}", "Git 面板", workspace_id)
         }
-        "TerminalPanel" => {
-            format!("{:?}-{:?}", "TerminalPanel", workspace_id)
+        "终端面板" => {
+            format!("{:?}-{:?}", "终端面板", workspace_id)
         }
         _ => return None,
     };
@@ -11918,7 +11918,7 @@ mod tests {
             w.prepare_to_close(CloseIntent::CloseWindow, window, cx)
         });
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Cancel"); // cancel save all
+        cx.simulate_prompt_answer("取消"); // cancel save all
         cx.executor().run_until_parked();
         assert!(!cx.has_pending_prompt());
         assert!(!task.await.unwrap());
@@ -11995,19 +11995,19 @@ mod tests {
                 assert_eq!(
                     mw.workspace(),
                     &workspace_b,
-                    "workspace B should be activated when it prompts"
+                    "工作区 B 在提示时应被激活"
                 );
             })
             .unwrap();
 
         // User cancels the save prompt from workspace B
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
         cx.run_until_parked();
 
         // Window should still exist because workspace B's close was cancelled
         assert!(
             multi_workspace_handle.update(cx, |_, _, _| ()).is_ok(),
-            "window should still exist after cancelling one workspace's close"
+            "取消一个工作区的关闭后,窗口应仍然存在"
         );
     }
 
@@ -12072,25 +12072,25 @@ mod tests {
                 assert_eq!(
                     mw.workspace(),
                     &workspace_b,
-                    "workspace B should be active while prompting"
+                    "提示时工作区 B 应处于活动状态"
                 );
             })
             .unwrap();
 
         // Cancel the prompt — user stays on workspace B.
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
         cx.run_until_parked();
         let removed = remove_task.await.unwrap();
-        assert!(!removed, "removal should have been cancelled");
+        assert!(!removed, "移除应已被取消");
 
         multi_workspace_handle
             .read_with(cx, |mw, _cx| {
                 assert_eq!(
                     mw.workspace(),
                     &workspace_b,
-                    "user should stay on workspace B after cancelling"
+                    "取消后用户应停留在工作区 B"
                 );
-                assert_eq!(mw.workspaces().count(), 2, "both workspaces should remain");
+                assert_eq!(mw.workspaces().count(), 2, "两个工作区都应保留");
             })
             .unwrap();
 
@@ -12110,10 +12110,10 @@ mod tests {
         cx.run_until_parked();
 
         // Accept the save prompt.
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         cx.run_until_parked();
         let removed = remove_task.await.unwrap();
-        assert!(removed, "removal should have succeeded");
+        assert!(removed, "移除应已成功");
 
         // Should be back on workspace A, and B should be gone.
         multi_workspace_handle
@@ -12121,9 +12121,9 @@ mod tests {
                 assert_eq!(
                     mw.workspace(),
                     &workspace_a,
-                    "should be back on workspace A after removing B"
+                    "移除 B 后应回到工作区 A"
                 );
-                assert_eq!(mw.workspaces().count(), 1, "only workspace A should remain");
+                assert_eq!(mw.workspaces().count(), 1, "只应保留工作区 A");
             })
             .unwrap();
     }
@@ -12204,7 +12204,7 @@ mod tests {
             "closing a no-folder workspace with a dirty serializable item should prompt, \
              since the workspace will not be reachable after close"
         );
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         cx.executor().run_until_parked();
 
         assert!(task.await.unwrap());
@@ -12278,7 +12278,7 @@ mod tests {
             "replacing a workspace with a dirty serializable item should prompt, \
              since the workspace will be detached afterwards"
         );
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         cx.executor().run_until_parked();
 
         assert!(task.await.unwrap());
@@ -12337,7 +12337,7 @@ mod tests {
         let item = cx.new(|cx| {
             TestItem::new(cx).with_dirty(true).with_serialize(|| {
                 Some(Task::ready(Err(anyhow::anyhow!(
-                    "FOREIGN KEY constraint failed"
+                    "外键约束失败"
                 ))))
             })
         });
@@ -12357,7 +12357,7 @@ mod tests {
             "a save/discard prompt should be shown for the dirty scratch item \
              when its serialization fails"
         );
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         cx.executor().run_until_parked();
 
         // Preparing to close succeeds, even though serialization failed.
@@ -12419,7 +12419,7 @@ mod tests {
         cx.executor().run_until_parked();
 
         assert!(cx.has_pending_prompt());
-        cx.simulate_prompt_answer("Save all");
+        cx.simulate_prompt_answer("全部保存");
 
         cx.executor().run_until_parked();
 
@@ -12434,7 +12434,7 @@ mod tests {
         assert!(cx.has_pending_prompt());
 
         // Cancel saving item 3.
-        cx.simulate_prompt_answer("Discard Edits");
+        cx.simulate_prompt_answer("丢弃编辑");
         cx.executor().run_until_parked();
 
         // Item 3 is reloaded. There's a prompt to save item 4.
@@ -12576,7 +12576,7 @@ mod tests {
 
         // With best-effort close, cancelling item 1 keeps it open but items 4
         // and (3,4) still close since their entries exist in left pane.
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
         close.await;
 
         right_pane.read_with(cx, |pane, _| {
@@ -12610,7 +12610,7 @@ mod tests {
         // But we can only save whole items, so saving (2,3) for entry 3 includes 2.
         // assert!(!details.contains("2.txt"));
 
-        cx.simulate_prompt_answer("Save all");
+        cx.simulate_prompt_answer("全部保存");
         cx.executor().run_until_parked();
         close.await;
 
@@ -12820,7 +12820,7 @@ mod tests {
         item.read_with(cx, |item, _| {
             assert_eq!(
                 item.save_count, 0,
-                "Switching focus between children within the same item should not autosave"
+                "在同一项的子项之间切换焦点不应触发自动保存"
             );
         });
 
@@ -12837,7 +12837,7 @@ mod tests {
         item.read_with(cx, |item, _| {
             assert_eq!(
                 item.save_count, 1,
-                "Window deactivation should trigger autosave when focus was on a child of the item"
+                "当焦点在项的子项上时,窗口停用应触发自动保存"
             );
         });
         cx.update(|window, _| window.activate_window());
@@ -12855,7 +12855,7 @@ mod tests {
         item.read_with(cx, |item, _| {
             assert_eq!(
                 item.save_count, 2,
-                "Deactivating window should trigger autosave when focus was on a child"
+                "当焦点在子项上时,停用窗口应触发自动保存"
             );
         });
     }
@@ -12897,7 +12897,7 @@ mod tests {
         item.read_with(cx, |item, _| {
             assert_eq!(
                 item.save_count, 0,
-                "Opening a modal should NOT immediately trigger autosave"
+                "打开模态框不应立即触发自动保存"
             );
         });
 
@@ -12912,7 +12912,7 @@ mod tests {
         item.read_with(cx, |item, _| {
             assert_eq!(
                 item.save_count, 0,
-                "Returning focus to the same item should skip deferred save"
+                "将焦点返回到同一项应跳过延迟保存"
             );
         });
 
@@ -12926,7 +12926,7 @@ mod tests {
         });
         cx.executor().run_until_parked();
         item.read_with(cx, |item, _| {
-            assert_eq!(item.save_count, 0, "Modal open should not trigger save");
+            assert_eq!(item.save_count, 0, "打开模态框不应触发保存");
         });
 
         // Window deactivation should flush deferred saves.
@@ -12935,7 +12935,7 @@ mod tests {
         item.read_with(cx, |item, _| {
             assert_eq!(
                 item.save_count, 1,
-                "Window deactivation should flush deferred saves"
+                "窗口停用应刷新延迟保存"
             );
         });
     }
@@ -12990,7 +12990,7 @@ mod tests {
         item1.read_with(cx, |item, _| {
             assert_eq!(
                 item.save_count, 1,
-                "Switching to another item should trigger deferred save of the previous item"
+                "切换到另一项应触发前一项的延迟保存"
             );
         });
     }
@@ -13133,7 +13133,7 @@ mod tests {
         });
         assert!(
             backward_count <= 4,
-            "Should have at most 4 entries, got {}",
+            "最多应有 4 个条目,实际有 {}",
             backward_count
         );
 
@@ -13150,7 +13150,7 @@ mod tests {
         assert_eq!(
             active_item,
             item_b.entity_id(),
-            "After first go_back, should be at item B"
+            "第一次后退后,应位于项 B"
         );
 
         workspace
@@ -13166,11 +13166,11 @@ mod tests {
         assert_eq!(
             active_item,
             item_a.entity_id(),
-            "After second go_back, should be at item A"
+            "第二次后退后,应位于项 A"
         );
 
         pane.read_with(cx, |pane, _| {
-            assert!(pane.can_navigate_forward(), "Should be able to go forward");
+            assert!(pane.can_navigate_forward(), "应能够前进");
         });
     }
 
@@ -13206,8 +13206,8 @@ mod tests {
             let panes = workspace.center.panes();
             assert!(panes.len() >= 2);
             (
-                panes.first().expect("at least one pane").entity_id(),
-                panes.last().expect("at least one pane").entity_id(),
+                panes.first().expect("至少一个窗格").entity_id(),
+                panes.last().expect("至少一个窗格").entity_id(),
             )
         });
 
@@ -13264,7 +13264,7 @@ mod tests {
 
         let nested_axis = |workspace: &Workspace| {
             let Member::Axis(top) = &workspace.center.root else {
-                panic!("expected the center to be a split axis");
+                panic!("预期中央为分割轴");
             };
             let nested = top
                 .members
@@ -13273,7 +13273,7 @@ mod tests {
                     Member::Axis(axis) => Some(axis.clone()),
                     Member::Pane(_) => None,
                 })
-                .expect("expected a nested split axis");
+                .expect("预期嵌套分割轴");
             (top.clone(), nested)
         };
 
@@ -13474,7 +13474,7 @@ mod tests {
                 .read(cx)
                 .activation_focus_handle
                 .clone()
-                .expect("test panel should have an activation child");
+                .expect("测试面板应有一个激活子项");
             assert!(activation_focus_handle.is_focused(window));
             assert!(panel.read(cx).focus_handle(cx).contains_focused(window, cx));
             activation_focus_handle
@@ -13526,11 +13526,11 @@ mod tests {
         workspace.update_in(cx, |workspace, window, cx| {
             assert!(
                 workspace.right_dock().read(cx).is_open(),
-                "Dock should be open after toggling from center"
+                "从中央切换后,停靠面板应打开"
             );
             assert!(
                 panel.read(cx).focus_handle(cx).contains_focused(window, cx),
-                "Panel should be focused after toggling from center"
+                "从中央切换后,面板应获得焦点"
             );
         });
 
@@ -13543,11 +13543,11 @@ mod tests {
         workspace.update_in(cx, |workspace, window, cx| {
             assert!(
                 !workspace.right_dock().read(cx).is_open(),
-                "Dock should be closed after toggling from focused panel"
+                "从聚焦面板切换后,停靠面板应关闭"
             );
             assert!(
                 !panel.read(cx).focus_handle(cx).contains_focused(window, cx),
-                "Panel should not be focused after toggling from focused panel"
+                "从聚焦面板切换后,面板不应获得焦点"
             );
         });
 
@@ -13569,11 +13569,11 @@ mod tests {
         workspace.update_in(cx, |workspace, window, cx| {
             assert!(
                 workspace.right_dock().read(cx).is_open(),
-                "Dock should remain open when toggling focuses an open-but-unfocused panel"
+                "当切换聚焦到打开但未聚焦的面板时,停靠面板应保持打开"
             );
             assert!(
                 panel.read(cx).focus_handle(cx).contains_focused(window, cx),
-                "Panel should be focused after toggling an open-but-unfocused panel"
+                "切换打开但未聚焦的面板后,面板应获得焦点"
             );
         });
 
@@ -13592,11 +13592,11 @@ mod tests {
         workspace.update_in(cx, |workspace, window, cx| {
             assert!(
                 workspace.right_dock().read(cx).is_open(),
-                "Dock should remain open when setting is disabled"
+                "禁用设置时,停靠面板应保持打开"
             );
             assert!(
                 !panel.read(cx).focus_handle(cx).contains_focused(window, cx),
-                "Panel should not be focused after toggling with setting disabled"
+                "禁用设置后切换,面板不应获得焦点"
             );
         });
     }
@@ -13622,12 +13622,12 @@ mod tests {
 
         // Initially not zoomed
         workspace.update_in(cx, |workspace, _window, cx| {
-            assert!(!pane.read(cx).is_zoomed(), "Pane starts unzoomed");
+            assert!(!pane.read(cx).is_zoomed(), "窗格以未缩放状态开始");
             assert!(
                 workspace.zoomed.is_none(),
-                "Workspace should track no zoomed pane"
+                "工作区不应跟踪任何缩放窗格"
             );
-            assert!(pane.read(cx).items_len() > 0, "Pane should have items");
+            assert!(pane.read(cx).items_len() > 0, "窗格应有项");
         });
 
         // Zoom In
@@ -13638,15 +13638,15 @@ mod tests {
         workspace.update_in(cx, |workspace, window, cx| {
             assert!(
                 pane.read(cx).is_zoomed(),
-                "Pane should be zoomed after ZoomIn"
+                "放大后窗格应处于缩放状态"
             );
             assert!(
                 workspace.zoomed.is_some(),
-                "Workspace should track the zoomed pane"
+                "工作区应跟踪放大的窗格"
             );
             assert!(
                 pane.read(cx).focus_handle(cx).contains_focused(window, cx),
-                "ZoomIn should focus the pane"
+                "放大应聚焦窗格"
             );
         });
 
@@ -13656,14 +13656,14 @@ mod tests {
         });
 
         workspace.update_in(cx, |workspace, window, cx| {
-            assert!(pane.read(cx).is_zoomed(), "Second ZoomIn keeps pane zoomed");
+            assert!(pane.read(cx).is_zoomed(), "第二次放大保持窗格放大");
             assert!(
                 workspace.zoomed.is_some(),
-                "Workspace still tracks zoomed pane"
+                "工作区仍跟踪放大的窗格"
             );
             assert!(
                 pane.read(cx).focus_handle(cx).contains_focused(window, cx),
-                "Pane remains focused after repeated ZoomIn"
+                "重复放大后窗格保持聚焦"
             );
         });
 
@@ -13675,11 +13675,11 @@ mod tests {
         workspace.update_in(cx, |workspace, _window, cx| {
             assert!(
                 !pane.read(cx).is_zoomed(),
-                "Pane should unzoom after ZoomOut"
+                "缩小后窗格应取消放大"
             );
             assert!(
                 workspace.zoomed.is_none(),
-                "Workspace clears zoom tracking after ZoomOut"
+                "缩小后工作区清除放大跟踪"
             );
         });
 
@@ -13691,11 +13691,11 @@ mod tests {
         workspace.update_in(cx, |workspace, _window, cx| {
             assert!(
                 !pane.read(cx).is_zoomed(),
-                "Second ZoomOut keeps pane unzoomed"
+                "第二次缩小保持窗格未放大"
             );
             assert!(
                 workspace.zoomed.is_none(),
-                "Workspace remains without zoomed pane"
+                "工作区保持无放大窗格"
             );
         });
     }
@@ -13875,7 +13875,7 @@ mod tests {
             // Verify initial state
             assert!(
                 workspace.left_dock().read(cx).is_open(),
-                "Left dock should be open"
+                "左侧停靠区应打开"
             );
             assert_eq!(
                 workspace
@@ -13885,11 +13885,11 @@ mod tests {
                     .unwrap()
                     .panel_id(),
                 left_panel.panel_id(),
-                "Left panel should be visible in left dock"
+                "左侧面板应在左侧停靠区可见"
             );
             assert!(
                 workspace.right_dock().read(cx).is_open(),
-                "Right dock should be open"
+                "右侧停靠区应打开"
             );
             assert_eq!(
                 workspace
@@ -13899,11 +13899,11 @@ mod tests {
                     .unwrap()
                     .panel_id(),
                 right_panel.panel_id(),
-                "Right panel should be visible in right dock"
+                "右侧面板应在右侧停靠区可见"
             );
             assert!(
                 !workspace.bottom_dock().read(cx).is_open(),
-                "Bottom dock should be closed"
+                "底部停靠区应关闭"
             );
 
             (left_panel, right_panel)
@@ -13914,7 +13914,7 @@ mod tests {
             workspace.toggle_panel_focus::<TestPanel>(window, cx); // Focus left panel
             assert!(
                 left_panel.read(cx).focus_handle(cx).is_focused(window),
-                "Left panel should be focused"
+                "左侧面板应聚焦"
             );
         });
 
@@ -13924,16 +13924,16 @@ mod tests {
         workspace.update(cx, |workspace, cx| {
             assert!(
                 !workspace.left_dock().read(cx).is_open(),
-                "Left dock should be closed"
+                "左侧停靠区应关闭"
             );
             assert!(
                 workspace.bottom_dock().read(cx).is_open(),
-                "Bottom dock should now be open"
+                "底部停靠区现在应打开"
             );
             assert_eq!(
                 left_panel.read(cx).position,
                 DockPosition::Bottom,
-                "Left panel should now be in the bottom dock"
+                "左侧面板现在应在底部停靠区"
             );
             assert_eq!(
                 workspace
@@ -13943,7 +13943,7 @@ mod tests {
                     .unwrap()
                     .panel_id(),
                 left_panel.panel_id(),
-                "Left panel should be the visible panel in the bottom dock"
+                "左侧面板应是底部停靠区中可见的面板"
             );
         });
 
@@ -13952,15 +13952,15 @@ mod tests {
             workspace.toggle_all_docks(&ToggleAllDocks, window, cx);
             assert!(
                 !workspace.left_dock().read(cx).is_open(),
-                "Left dock should be closed"
+                "左侧停靠区应关闭"
             );
             assert!(
                 !workspace.right_dock().read(cx).is_open(),
-                "Right dock should be closed"
+                "右侧停靠区应关闭"
             );
             assert!(
                 !workspace.bottom_dock().read(cx).is_open(),
-                "Bottom dock should be closed"
+                "底部停靠区应关闭"
             );
         });
 
@@ -13969,25 +13969,25 @@ mod tests {
             workspace.toggle_all_docks(&ToggleAllDocks, window, cx);
             assert!(
                 !workspace.left_dock().read(cx).is_open(),
-                "Left dock should remain closed"
+                "左侧停靠区应保持关闭"
             );
             assert!(
                 workspace.right_dock().read(cx).is_open(),
-                "Right dock should remain open"
+                "右侧停靠区应保持打开"
             );
             assert!(
                 workspace.bottom_dock().read(cx).is_open(),
-                "Bottom dock should remain open"
+                "底部停靠区应保持打开"
             );
             assert_eq!(
                 left_panel.read(cx).position,
                 DockPosition::Bottom,
-                "Left panel should remain in the bottom dock"
+                "左侧面板应保持在底部停靠区"
             );
             assert_eq!(
                 right_panel.read(cx).position,
                 DockPosition::Right,
-                "Right panel should remain in the right dock"
+                "右侧面板应保持在右侧停靠区"
             );
             assert_eq!(
                 workspace
@@ -13997,7 +13997,7 @@ mod tests {
                     .unwrap()
                     .panel_id(),
                 left_panel.panel_id(),
-                "Left panel should be the visible panel in the right dock"
+                "左侧面板应是右侧停靠区中可见的面板"
             );
         });
     }
@@ -14256,7 +14256,7 @@ mod tests {
             assert_eq!(
                 result.decorated_pane_ix,
                 Some(1),
-                "the active pane should be decorated while it has focus"
+                "活动窗格在聚焦时应带有装饰"
             );
         });
 
@@ -14274,7 +14274,7 @@ mod tests {
             assert!(result.contains_active_pane);
             assert_eq!(
                 result.decorated_pane_ix, None,
-                "an unfocused group should not decorate its active pane"
+                "未聚焦的组不应装饰其活动窗格"
             );
         });
 
@@ -14314,7 +14314,7 @@ mod tests {
                 .active_pane()
                 .read(cx)
                 .active_item()
-                .expect("item is in focus");
+                .expect("项目处于聚焦状态");
 
             assert_eq!(num_panes, 4);
             assert_eq!(num_items_in_current_pane, 1);
@@ -14332,7 +14332,7 @@ mod tests {
                 .active_pane()
                 .read(cx)
                 .active_item()
-                .expect("item is in focus");
+                .expect("项目处于聚焦状态");
 
             assert_eq!(num_panes, 1);
             assert_eq!(num_items_in_current_pane, 3);
@@ -14382,7 +14382,7 @@ mod tests {
             let dock = workspace.right_dock().read(cx);
             let initial_width = workspace
                 .dock_size(&dock, window, cx)
-                .expect("flexible dock should have an initial width");
+                .expect("弹性停靠区应有初始宽度");
 
             assert_eq!(initial_width, px(960.));
         });
@@ -14478,7 +14478,7 @@ mod tests {
             assert_eq!(
                 persisted.and_then(|s| s.size),
                 Some(px(350.)),
-                "fixed-width panel size should be persisted to KVP"
+                "固定宽度面板大小应持久化到 KVP"
             );
 
             // Remove the panel and re-add a fresh instance with the same key.
@@ -14498,7 +14498,7 @@ mod tests {
                 assert_eq!(
                     size_state.and_then(|s| s.size),
                     Some(px(350.)),
-                    "re-added fixed-width panel should restore persisted size from KVP"
+                    "重新添加的固定宽度面板应从 KVP 恢复持久化的大小"
                 );
             });
         }
@@ -14537,12 +14537,12 @@ mod tests {
                 .read_with(cx, |workspace, cx| {
                     workspace.persisted_panel_size_state(TestPanel::panel_key(), cx)
                 })
-                .expect("flexible panel state should be persisted to KVP");
+                .expect("弹性面板状态应持久化到 KVP");
             assert_eq!(
                 persisted.size, None,
-                "flexible panel should not persist a redundant pixel size"
+                "弹性面板不应持久化冗余的像素大小"
             );
-            let original_ratio = persisted.flex.expect("panel's flex should be persisted");
+            let original_ratio = persisted.flex.expect("面板的弹性值应持久化");
 
             // Remove the panel and re-add: both size and ratio should be restored.
             workspace.update_in(cx, |workspace, window, cx| {
@@ -14557,15 +14557,15 @@ mod tests {
                 let size_state = right_dock
                     .panel::<TestPanel>()
                     .and_then(|p| right_dock.stored_panel_size_state(&p))
-                    .expect("re-added flexible panel should have restored size state from KVP");
+                    .expect("重新添加的弹性面板应从 KVP 恢复大小状态");
                 assert_eq!(
                     size_state.size, None,
-                    "re-added flexible panel should not have a persisted pixel size"
+                    "重新添加的弹性面板不应有持久化的像素大小"
                 );
                 assert_eq!(
                     size_state.flex,
                     Some(original_ratio),
-                    "re-added flexible panel should restore persisted flex"
+                    "重新添加的弹性面板应恢复持久化的弹性值"
                 );
             });
         }
@@ -14636,7 +14636,7 @@ mod tests {
         });
         assert_eq!(
             dock_size, None,
-            "saved size should be cleared after default_size changes"
+            "default_size 更改后应清除保存的大小"
         );
     }
 
@@ -14670,12 +14670,12 @@ mod tests {
             let left_dock = workspace.left_dock().read(cx);
             let left_width = workspace
                 .dock_size(&left_dock, window, cx)
-                .expect("left dock should have an active panel");
+                .expect("左侧停靠区应有活动面板");
 
             assert_eq!(
                 left_width,
                 workspace.bounds.size.width / 2.,
-                "flexible left panel should split evenly with the center pane"
+                "弹性左侧面板应与中央窗格均匀分割"
             );
         });
 
@@ -14693,12 +14693,12 @@ mod tests {
             let left_dock = workspace.left_dock().read(cx);
             let left_width = workspace
                 .dock_size(&left_dock, window, cx)
-                .expect("left dock should still have an active panel after horizontal split");
+                .expect("水平分割后左侧停靠区仍应有活动面板");
 
             assert_eq!(
                 left_width,
                 workspace.bounds.size.width / 3.,
-                "flexible left panel width should match the average center column width"
+                "弹性左侧面板宽度应与平均中央列宽匹配"
             );
         });
 
@@ -14715,12 +14715,12 @@ mod tests {
             let left_dock = workspace.left_dock().read(cx);
             let left_width = workspace
                 .dock_size(&left_dock, window, cx)
-                .expect("left dock should still have an active panel after vertical split");
+                .expect("垂直分割后左侧停靠区仍应有活动面板");
 
             assert_eq!(
                 left_width,
                 workspace.bounds.size.width / 3.,
-                "flexible left panel width should still match the average center column width"
+                "弹性左侧面板宽度仍应与平均中央列宽匹配"
             );
         });
 
@@ -14735,18 +14735,18 @@ mod tests {
             let right_dock = workspace.right_dock().read(cx);
             let right_width = workspace
                 .dock_size(&right_dock, window, cx)
-                .expect("right dock should have an active panel");
+                .expect("右侧停靠区应有活动面板");
 
             let left_dock = workspace.left_dock().read(cx);
             let left_width = workspace
                 .dock_size(&left_dock, window, cx)
-                .expect("left dock should still have an active panel");
+                .expect("左侧停靠区仍应有活动面板");
 
             let available_width = workspace.bounds.size.width - right_width;
             assert_eq!(
                 left_width,
                 available_width / 3.,
-                "flexible left panel should keep matching one average center column"
+                "弹性左侧面板应保持匹配一个平均中央列"
             );
         });
 
@@ -14758,7 +14758,7 @@ mod tests {
             let right_panel = right_dock
                 .read(cx)
                 .visible_panel()
-                .expect("right dock should have a visible panel")
+                .expect("右侧停靠区应有可见面板")
                 .clone();
             workspace.toggle_dock_panel_flexible_size(
                 &right_dock,
@@ -14770,30 +14770,30 @@ mod tests {
             let right_dock = right_dock.read(cx);
             let right_panel = right_dock
                 .visible_panel()
-                .expect("right dock should still have a visible panel");
+                .expect("右侧停靠区仍应有可见面板");
             assert!(
                 right_panel.has_flexible_size(window, cx),
-                "right panel should now be flexible"
+                "右侧面板现在应为弹性"
             );
 
             let right_size_state = right_dock
                 .stored_panel_size_state(right_panel.as_ref())
-                .expect("right panel should have a stored size state after toggling");
+                .expect("切换后右侧面板应有存储的大小状态");
             let right_flex = right_size_state
                 .flex
-                .expect("right panel should have a flex value after toggling");
+                .expect("切换后右侧面板应有弹性值");
 
             let left_dock = workspace.left_dock().read(cx);
             let left_width = workspace
                 .dock_size(&left_dock, window, cx)
-                .expect("left dock should still have an active panel");
+                .expect("左侧停靠区仍应有活动面板");
             let right_width = workspace
                 .dock_size(&right_dock, window, cx)
-                .expect("right dock should still have an active panel");
+                .expect("右侧停靠区仍应有活动面板");
 
             let left_flex = workspace
                 .default_dock_flex(DockPosition::Left)
-                .expect("left dock should have a default flex");
+                .expect("左侧停靠区应有默认弹性值");
             let center_column_count = workspace.center.full_height_column_count() as f32;
 
             let total_flex = left_flex + center_column_count + right_flex;
@@ -14801,11 +14801,11 @@ mod tests {
             let expected_right = right_flex / total_flex * workspace.bounds.size.width;
             assert_eq!(
                 left_width, expected_left,
-                "flexible left panel should share workspace width via flex ratios"
+                "弹性左侧面板应通过弹性比率共享工作区宽度"
             );
             assert_eq!(
                 right_width, expected_right,
-                "flexible right panel should share workspace width via flex ratios"
+                "弹性右侧面板应通过弹性比率共享工作区宽度"
             );
         });
     }
@@ -14892,7 +14892,7 @@ mod tests {
                 modal_layer.hide_modal(window, cx);
                 modal_layer.reveal_stashed_modal(window, cx)
             });
-            assert!(!revealed, "a non-reopenable modal should not be revealable");
+            assert!(!revealed, "不可重新打开的模态框不应可显示");
         });
 
         // A reopenable modal is stashed on dismissal and revealed as the *same*
@@ -14920,7 +14920,7 @@ mod tests {
             let revealed = workspace.modal_layer.update(cx, |modal_layer, cx| {
                 modal_layer.reveal_stashed_modal(window, cx)
             });
-            assert!(revealed, "a reopenable modal should be revealable");
+            assert!(revealed, "可重新打开的模态框应可显示");
         });
         cx.executor().run_until_parked();
         let revealed_id = workspace.read_with(cx, |workspace, cx| {
@@ -14931,14 +14931,14 @@ mod tests {
         });
         assert_eq!(
             original_id, revealed_id,
-            "reveal should restore the same modal entity rather than building a new one"
+            "显示应恢复相同的模态框实体,而不是构建新的"
         );
 
         workspace.update_in(cx, |workspace, window, cx| {
             let revealed = workspace.modal_layer.update(cx, |modal_layer, cx| {
                 modal_layer.reveal_stashed_modal(window, cx)
             });
-            assert!(!revealed, "reveal should be a no-op while a modal is open");
+            assert!(!revealed, "模态框打开时显示应为空操作");
         });
 
         // A non-reopenable modal must not discard the stash, which is what lets the
@@ -14957,7 +14957,7 @@ mod tests {
             });
             assert!(
                 revealed,
-                "a non-reopenable modal must not discard the stash"
+                "不可重新打开的模态框不得丢弃暂存内容"
             );
         });
         cx.executor().run_until_parked();
@@ -14983,7 +14983,7 @@ mod tests {
             workspace.read_with(cx, |workspace, cx| workspace
                 .active_modal::<ReopenableTestModal>(cx)
                 .is_some()),
-            "reopen triggered from within a dismissing modal should reveal the stash"
+            "从正在关闭的模态框内触发的重新打开应显示暂存内容"
         );
     }
 
@@ -15027,7 +15027,7 @@ mod tests {
             workspace.read_with(cx, |workspace, cx| workspace
                 .active_modal::<ReopenableTestModal>(cx)
                 .is_some()),
-            "reopen with an active modal that dismisses after the action should reveal the stash"
+            "带有在操作后关闭的活动模态框的重新打开应显示暂存内容"
         );
     }
 
@@ -15296,7 +15296,7 @@ mod tests {
             TestItem::new(cx)
                 .with_dirty(true)
                 .with_buffer_kind(ItemBufferKind::Multibuffer)
-                .with_label("Fake Project Search")
+                .with_label("模拟项目搜索")
                 .with_project_items(&[
                     dirty_regular_buffer.read(cx).project_items[0].clone(),
                     dirty_regular_buffer_2.read(cx).project_items[0].clone(),
@@ -15338,7 +15338,7 @@ mod tests {
             assert_eq!(
                 pane.active_item().unwrap().item_id(),
                 multi_buffer_with_both_files_id,
-                "Should select the multi buffer in the pane"
+                "应在窗格中选择多缓冲区"
             );
         });
         let close_all_but_multi_buffer_task = pane.update_in(cx, |pane, window, cx| {
@@ -15356,7 +15356,7 @@ mod tests {
         assert!(!cx.has_pending_prompt());
         close_all_but_multi_buffer_task
             .await
-            .expect("Closing all buffers but the multi buffer failed");
+            .expect("关闭除多缓冲区外的所有缓冲区失败");
         pane.update(cx, |pane, cx| {
             assert_eq!(dirty_regular_buffer.read(cx).save_count, 1);
             assert_eq!(dirty_multi_buffer_with_both.read(cx).save_count, 0);
@@ -15365,11 +15365,11 @@ mod tests {
             assert_eq!(
                 pane.active_item().unwrap().item_id(),
                 multi_buffer_with_both_files_id,
-                "Should have only the multi buffer left in the pane"
+                "窗格中应只剩余多缓冲区"
             );
             assert!(
                 dirty_multi_buffer_with_both.read(cx).is_dirty,
-                "The multi buffer containing the unsaved buffer should still be dirty"
+                "包含未保存缓冲区的多缓冲区仍应为脏状态"
             );
         });
 
@@ -15390,24 +15390,24 @@ mod tests {
         cx.background_executor.run_until_parked();
         assert!(
             cx.has_pending_prompt(),
-            "Dirty multi buffer should prompt a save dialog"
+            "脏多缓冲区应提示保存对话框"
         );
-        cx.simulate_prompt_answer("Save");
+        cx.simulate_prompt_answer("保存");
         cx.background_executor.run_until_parked();
         close_multi_buffer_task
             .await
-            .expect("Closing the multi buffer failed");
+            .expect("关闭多缓冲区失败");
         pane.update(cx, |pane, cx| {
             assert_eq!(
                 dirty_multi_buffer_with_both.read(cx).save_count,
                 1,
-                "Multi buffer item should get be saved"
+                "多缓冲区项目应被保存"
             );
             // Test impl does not save inner items, so we do not assert them
             assert_eq!(
                 pane.items_len(),
                 0,
-                "No more items should be left in the pane"
+                "窗格中不应再剩余项目"
             );
             assert!(pane.active_item().is_none());
         });
@@ -15447,7 +15447,7 @@ mod tests {
             TestItem::new(cx)
                 .with_dirty(true)
                 .with_buffer_kind(ItemBufferKind::Multibuffer)
-                .with_label("Fake Project Search")
+                .with_label("模拟项目搜索")
                 .with_project_items(&[
                     dirty_regular_buffer.read(cx).project_items[0].clone(),
                     dirty_regular_buffer_2.read(cx).project_items[0].clone(),
@@ -15481,7 +15481,7 @@ mod tests {
             assert_eq!(
                 pane.active_item().unwrap().item_id(),
                 multi_buffer_with_both_files_id,
-                "Should select the multi buffer in the pane"
+                "应在窗格中选择多缓冲区"
             );
         });
         let _close_multi_buffer_task = pane.update_in(cx, |pane, window, cx| {
@@ -15497,7 +15497,7 @@ mod tests {
         cx.background_executor.run_until_parked();
         assert!(
             cx.has_pending_prompt(),
-            "With one dirty item from the multi buffer not being in the pane, a save prompt should be shown"
+            "当多缓冲区中的一个脏项目不在窗格中时,应显示保存提示"
         );
     }
 
@@ -15564,7 +15564,7 @@ mod tests {
             assert_eq!(
                 pane.items().count(),
                 0,
-                "Item should be automatically closed when file is deleted"
+                "文件被删除时项目应自动关闭"
             );
         });
     }
@@ -15632,7 +15632,7 @@ mod tests {
             assert_eq!(
                 pane.items().count(),
                 1,
-                "Item should remain open when close_on_disk_deletion is disabled"
+                "禁用 close_on_disk_deletion 时项目应保持打开"
             );
         });
 
@@ -15640,7 +15640,7 @@ mod tests {
         item.read_with(cx, |item, _| {
             assert!(
                 item.has_deleted_file,
-                "Item should be marked as having deleted file"
+                "项目应标记为文件已删除"
             );
         });
     }
@@ -15705,7 +15705,7 @@ mod tests {
             assert_eq!(
                 pane.items().count(),
                 1,
-                "Dirty items should not be automatically closed even when file is deleted"
+                "即使文件被删除,脏项目也不应自动关闭"
             );
         });
 
@@ -15713,9 +15713,9 @@ mod tests {
         item.read_with(cx, |item, _| {
             assert!(
                 item.has_deleted_file,
-                "Item should be marked as having deleted file"
+                "项目应标记为文件已删除"
             );
-            assert!(item.is_dirty, "Item should still be dirty");
+            assert!(item.is_dirty, "项目仍应为脏状态");
         });
     }
 
@@ -15806,7 +15806,7 @@ mod tests {
             assert_eq!(
                 pane.items().count(),
                 1,
-                "Should have 1 item remaining after auto-close"
+                "自动关闭后应剩余 1 个项目"
             );
         });
 
@@ -15823,7 +15823,7 @@ mod tests {
 
         assert!(
             !has_item,
-            "Navigation history should not contain closed item entries"
+            "导航历史不应包含已关闭项目的条目"
         );
     }
 
@@ -15939,7 +15939,7 @@ mod tests {
             TestItem::new(cx)
                 .with_dirty(true)
                 .with_buffer_kind(ItemBufferKind::Multibuffer)
-                .with_label("Fake Project Search")
+                .with_label("模拟项目搜索")
                 .with_project_items(&[
                     dirty_regular_buffer.read(cx).project_items[0].clone(),
                     dirty_regular_buffer_2.read(cx).project_items[0].clone(),
@@ -15981,7 +15981,7 @@ mod tests {
             assert_eq!(
                 pane.active_item().unwrap().item_id(),
                 dirty_multi_buffer.item_id(),
-                "Should select the multi buffer in the pane"
+                "应在窗格中选择多缓冲区"
             );
         });
         let close_multi_buffer_task = pane.update_in(cx, |pane, window, cx| {
@@ -15997,11 +15997,11 @@ mod tests {
         cx.background_executor.run_until_parked();
         assert!(
             !cx.has_pending_prompt(),
-            "All dirty items from the multi buffer are in the pane still, no save prompts should be shown"
+            "多缓冲区中的所有脏项目仍在窗格中,不应显示保存提示"
         );
         close_multi_buffer_task
             .await
-            .expect("Closing multi buffer failed");
+            .expect("关闭多缓冲区失败");
         pane.update(cx, |pane, cx| {
             assert_eq!(dirty_regular_buffer.read(cx).save_count, 0);
             assert_eq!(dirty_multi_buffer.read(cx).save_count, 0);
@@ -16015,7 +16015,7 @@ mod tests {
                     dirty_regular_buffer.item_id(),
                     dirty_regular_buffer_2.item_id(),
                 ],
-                "Should have no multi buffer left in the pane"
+                "窗格中不应再有多缓冲区"
             );
             assert!(dirty_regular_buffer.read(cx).is_dirty);
             assert!(dirty_regular_buffer_2.read(cx).is_dirty);
@@ -16122,7 +16122,7 @@ mod tests {
                     .panes()
                     .iter()
                     .any(|pane| pane == workspace.active_pane()),
-                "active pane should be one of the remaining workspace panes"
+                "活动窗格应是剩余工作区窗格之一"
             );
         });
     }
@@ -16160,11 +16160,11 @@ mod tests {
                 cx,
             );
 
-            assert_eq!(workspace.panes.len(), 1, "No new panes were created");
+            assert_eq!(workspace.panes.len(), 1, "未创建新窗格");
             assert_eq!(
                 pane_items_paths(&workspace.active_pane, cx),
                 vec!["first.txt".to_string()],
-                "Single item was not moved anywhere"
+                "单个项目未移动到任何位置"
             );
         });
 
@@ -16187,16 +16187,16 @@ mod tests {
                 cx,
             );
 
-            assert_eq!(workspace.panes.len(), 2, "A new pane should be created");
+            assert_eq!(workspace.panes.len(), 2, "应创建新窗格");
             assert_eq!(
                 pane_items_paths(&workspace.panes[0], cx),
                 vec!["first.txt".to_string()],
-                "After moving, one item should be left in the original pane"
+                "移动后,原始窗格中应剩余一个项目"
             );
             assert_eq!(
                 pane_items_paths(&workspace.panes[1], cx),
                 vec!["second.txt".to_string()],
-                "New item should have been moved to the new pane"
+                "新项目应已移动到新窗格"
             );
         });
 
@@ -16207,11 +16207,11 @@ mod tests {
             let original_pane = workspace.panes[0].clone();
             workspace.set_active_pane(&original_pane, window, cx);
             workspace.add_item_to_active_pane(Box::new(item_3), None, true, window, cx);
-            assert_eq!(workspace.panes.len(), 2, "No new panes were created");
+            assert_eq!(workspace.panes.len(), 2, "未创建新窗格");
             assert_eq!(
                 pane_items_paths(&workspace.active_pane, cx),
                 vec!["first.txt".to_string(), "third.txt".to_string()],
-                "New pane should be ready to move one item out"
+                "新窗格应准备好移出一个项目"
             );
 
             workspace.move_item_to_pane_at_index(
@@ -16223,21 +16223,21 @@ mod tests {
                 window,
                 cx,
             );
-            assert_eq!(workspace.panes.len(), 3, "A new pane should be created");
+            assert_eq!(workspace.panes.len(), 3, "应创建新窗格");
             assert_eq!(
                 pane_items_paths(&workspace.active_pane, cx),
                 vec!["first.txt".to_string()],
-                "After moving, one item should be left in the original pane"
+                "移动后,原始窗格中应剩余一个项目"
             );
             assert_eq!(
                 pane_items_paths(&workspace.panes[1], cx),
                 vec!["second.txt".to_string()],
-                "Previously created pane should be unchanged"
+                "先前创建的窗格应保持不变"
             );
             assert_eq!(
                 pane_items_paths(&workspace.panes[2], cx),
                 vec!["third.txt".to_string()],
-                "New item should have been moved to the new pane"
+                "新项目应已移动到新窗格"
             );
         });
     }
@@ -16281,12 +16281,12 @@ mod tests {
         cx.run_until_parked();
 
         workspace.update(cx, |workspace, cx| {
-            assert_eq!(workspace.panes.len(), 3, "Two new panes were created");
+            assert_eq!(workspace.panes.len(), 3, "创建了两个新窗格");
             for pane in workspace.panes() {
                 assert_eq!(
                     pane_items_paths(pane, cx),
                     vec!["first.txt".to_string()],
-                    "Single item exists in all panes"
+                    "所有窗格中都存在单个项目"
                 );
             }
         });
@@ -16297,7 +16297,7 @@ mod tests {
             assert_eq!(
                 workspace.active_pane(),
                 &workspace.panes[2],
-                "The third pane should be the active one: {:?}",
+                "第三个窗格应为活动窗格:{:?}",
                 workspace.panes
             );
         })
@@ -16355,8 +16355,8 @@ mod tests {
 
         let item_count_a = pane_a.read_with(cx, |pane, _| pane.items_len());
         let item_count_b = pane_b.read_with(cx, |pane, _| pane.items_len());
-        assert_eq!(item_count_a, 0, "Unpinned item in pane A should be closed");
-        assert_eq!(item_count_b, 1, "Pinned item in pane B should remain");
+        assert_eq!(item_count_a, 0, "窗格 A 中未固定的项目应关闭");
+        assert_eq!(item_count_b, 1, "窗格 B 中固定的项目应保留");
 
         // Split again, seeing as closing the previous item also closed its
         // pane, so only pane remains, which does not allow us to properly test
@@ -16379,7 +16379,7 @@ mod tests {
         // close_pinned: true should close the pinned copy too
         workspace.update_in(cx, |workspace, window, cx| {
             let panes_count = workspace.panes().len();
-            assert_eq!(panes_count, 2, "Workspace should have two panes (B and C)");
+            assert_eq!(panes_count, 2, "工作区应有两个窗格(B 和 C)");
 
             workspace.close_item_in_all_panes(
                 &CloseItemInAllPanes {
@@ -16394,8 +16394,8 @@ mod tests {
 
         let item_count_b = pane_b.read_with(cx, |pane, _| pane.items_len());
         let item_count_c = pane_c.read_with(cx, |pane, _| pane.items_len());
-        assert_eq!(item_count_b, 0, "Pinned item in pane B should be closed");
-        assert_eq!(item_count_c, 0, "Unpinned item in pane C should be closed");
+        assert_eq!(item_count_b, 0, "窗格 B 中固定的项目应关闭");
+        assert_eq!(item_count_c, 0, "窗格 C 中未固定的项目应关闭");
     }
 
     mod register_project_item_tests {
@@ -16619,7 +16619,7 @@ mod tests {
                 json!({
                     "one.png": "BINARYDATAHERE",
                     "two.ipynb": "{ totally a notebook }",
-                    "three.txt": "editing text, sure why not?"
+                    "three.txt": "编辑文本,当然可以?"
                 }),
             )
             .await;
@@ -16699,7 +16699,7 @@ mod tests {
                         .active_item(cx)
                         .and_then(|item| item.downcast::<TestPngItemView>())
                 })
-                .expect("resolved remote project item should be opened");
+                .expect("解析的远程项目项应被打开");
             let project_path = opened_item.read_with(cx, |item, _| item.project_path.clone());
             assert_eq!(project_path.worktree_id, worktree_id);
             assert_eq!(project_path.path.as_ref(), rel_path("docs/sibling.png"));
@@ -16720,7 +16720,7 @@ mod tests {
                 json!({
                     "one.png": "BINARYDATAHERE",
                     "two.ipynb": "{ totally a notebook }",
-                    "three.txt": "editing text, sure why not?"
+                    "three.txt": "编辑文本,当然可以?"
                 }),
             )
             .await;
@@ -16767,7 +16767,7 @@ mod tests {
         // Test with status bar shown (default)
         workspace.read_with(cx, |workspace, cx| {
             let visible = workspace.status_bar_visible(cx);
-            assert!(visible, "Status bar should be visible by default");
+            assert!(visible, "状态栏默认应可见");
         });
 
         // Test with status bar hidden
@@ -16779,7 +16779,7 @@ mod tests {
 
         workspace.read_with(cx, |workspace, cx| {
             let visible = workspace.status_bar_visible(cx);
-            assert!(!visible, "Status bar should be hidden when show is false");
+            assert!(!visible, "show 为 false 时状态栏应隐藏");
         });
 
         // Test with status bar shown explicitly
@@ -16791,7 +16791,7 @@ mod tests {
 
         workspace.read_with(cx, |workspace, cx| {
             let visible = workspace.status_bar_visible(cx);
-            assert!(visible, "Status bar should be visible when show is true");
+            assert!(visible, "show 为 true 时状态栏应可见");
         });
     }
 
@@ -16970,15 +16970,15 @@ mod tests {
         workspace_a.update_in(cx, |workspace, window, cx| {
             assert!(
                 workspace.right_dock().read(cx).is_open(),
-                "dock should be open before switch"
+                "切换前停靠区应打开"
             );
             assert!(
                 panel.is_zoomed(window, cx),
-                "panel should be zoomed before switch"
+                "切换前面板应放大"
             );
             assert!(
                 panel.read(cx).focus_handle(cx).contains_focused(window, cx),
-                "panel should be focused before switch"
+                "切换前面板应聚焦"
             );
         });
 
@@ -17004,11 +17004,11 @@ mod tests {
         workspace_a.update_in(cx, |workspace, window, cx| {
             assert!(
                 workspace.right_dock().read(cx).is_open(),
-                "dock should still be open after switching back"
+                "切换回来后停靠区仍应打开"
             );
             assert!(
                 panel.is_zoomed(window, cx),
-                "panel should still be zoomed after switching back"
+                "切换回来后面板仍应放大"
             );
         });
     }
@@ -17268,7 +17268,7 @@ mod tests {
         workspace.update_in(cx, |workspace, window, cx| {
             assert!(
                 workspace.right_dock().read(cx).is_open(),
-                "Dock should stay open when its zoomed panel (without pane()) still has focus"
+                "当放大的面板(无窗格())仍具有焦点时,停靠区应保持打开"
             );
             assert!(panel.is_zoomed(window, cx));
         });
@@ -17332,12 +17332,12 @@ mod tests {
         workspace.update_in(cx, |workspace, _, cx| {
             assert!(
                 workspace.right_dock().read(cx).is_open(),
-                "Right dock should still be open after a settings change"
+                "设置更改后右侧停靠区仍应打开"
             );
             assert_eq!(
                 workspace.right_dock().read(cx).panels_len(),
                 2,
-                "Both panels should still be in the right dock"
+                "两个面板仍应在右侧停靠区"
             );
         });
     }

@@ -357,7 +357,7 @@ pub struct AgentSettingsContent {
     pub tool_permissions: Option<ToolPermissionsContent>,
 
     /// Persistent sandbox permission grants for agent-run terminal commands.
-    /// These are populated when choosing "Allow always" from a sandbox
+    /// These are populated when choosing "始终允许" from a sandbox
     /// escalation prompt.
     pub sandbox_permissions: Option<SandboxPermissionsContent>,
 }
@@ -925,11 +925,11 @@ pub struct SandboxPermissionsContent {
     pub allow_fs_write_all: Option<bool>,
 
     /// Whether to persistently run agent terminal commands outside the OS
-    /// sandbox. This is the model-facing "off switch": when true, the sandboxed
+    /// sandbox. This is the model-facing "关闭开关": when true, the sandboxed
     /// terminal tool is not exposed and the system prompt omits the sandbox
     /// section, so the model uses the plain `terminal` tool. On Windows, WSL
     /// sandbox setup is skipped. Distinct from the model-requested
-    /// `unsandboxed: true` escape approved "once" or "for this thread".
+    /// `unsandboxed: true` escape approved "once" or "仅此对话线程".
     /// Default: false
     pub allow_unsandboxed: Option<bool>,
 
@@ -1041,9 +1041,9 @@ pub enum ToolPermissionMode {
 impl std::fmt::Display for ToolPermissionMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ToolPermissionMode::Allow => write!(f, "Allow"),
-            ToolPermissionMode::Deny => write!(f, "Deny"),
-            ToolPermissionMode::Confirm => write!(f, "Confirm"),
+            ToolPermissionMode::Allow => write!(f, "允许"),
+            ToolPermissionMode::Deny => write!(f, "拒绝"),
+            ToolPermissionMode::Confirm => write!(f, "确认"),
         }
     }
 }
@@ -1173,7 +1173,7 @@ mod tests {
         assert_eq!(
             always_allow.0.len(),
             1,
-            "Duplicate patterns should not be added"
+            "不应添加重复的模式"
         );
     }
 
@@ -1242,7 +1242,7 @@ mod tests {
         assert_eq!(
             always_deny.0.len(),
             1,
-            "Duplicate patterns should not be added"
+            "不应添加重复的模式"
         );
     }
 

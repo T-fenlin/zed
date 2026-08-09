@@ -118,7 +118,7 @@ pub trait AgentConnection {
         _title: Option<SharedString>,
         _cx: &mut App,
     ) -> Task<Result<Entity<AcpThread>>> {
-        Task::ready(Err(anyhow::Error::msg("Loading sessions is not supported")))
+        Task::ready(Err(anyhow::Error::msg("不支持加载会话")))
     }
 
     /// Whether this agent supports closing existing sessions.
@@ -132,7 +132,7 @@ pub trait AgentConnection {
         _session_id: &acp::SessionId,
         _cx: &mut App,
     ) -> Task<Result<()>> {
-        Task::ready(Err(anyhow::Error::msg("Closing sessions is not supported")))
+        Task::ready(Err(anyhow::Error::msg("不支持关闭会话")))
     }
 
     /// Whether this agent supports resuming existing sessions without loading history.
@@ -150,7 +150,7 @@ pub trait AgentConnection {
         _cx: &mut App,
     ) -> Task<Result<Entity<AcpThread>>> {
         Task::ready(Err(anyhow::Error::msg(
-            "Resuming sessions is not supported",
+            "不支持恢复会话",
         )))
     }
 
@@ -181,7 +181,7 @@ pub trait AgentConnection {
     }
 
     fn logout(&self, _cx: &mut App) -> Task<Result<()>> {
-        Task::ready(Err(anyhow::Error::msg("Logout is not supported")))
+        Task::ready(Err(anyhow::Error::msg("不支持注销")))
     }
 
     /// Returns a capability for agents that accept client-generated user message IDs.
@@ -437,7 +437,7 @@ impl AuthRequired {
 impl Error for AuthRequired {}
 impl fmt::Display for AuthRequired {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Authentication required")
+        write!(f, "需要身份验证")
     }
 }
 
@@ -671,7 +671,7 @@ impl PermissionOptions {
             return None;
         }
 
-        // Use the first choice (the "Always" choice) as the base for the outcome.
+        // Use the first choice (the "始终" choice) as the base for the outcome.
         let always_choice = choices.first()?;
         let option = if is_allow {
             &always_choice.allow
@@ -725,7 +725,7 @@ mod test_support {
             }
             encoder
                 .write_image(&pixels, width, height, image::ExtendedColorType::Rgba8)
-                .expect("Failed to encode PNG");
+                .expect("PNG 编码失败");
         }
 
         use image::EncodableLayout as _;
@@ -888,7 +888,7 @@ mod test_support {
                 .unwrap()
                 .response_tx
                 .take()
-                .expect("No pending turn")
+                .expect("没有待处理的回合")
                 .send(stop_reason)
                 .unwrap();
         }
@@ -942,7 +942,7 @@ mod test_support {
             cx: &mut App,
         ) -> Task<Result<Entity<AcpThread>>> {
             if !self.supports_load_session {
-                return Task::ready(Err(anyhow::Error::msg("Loading sessions is not supported")));
+                return Task::ready(Err(anyhow::Error::msg("不支持加载会话")));
             }
 
             let thread = self.create_session(session_id, project, work_dirs, title, cx);
@@ -1099,8 +1099,8 @@ mod test_support {
             Self {
                 selected_model: Arc::new(Mutex::new(AgentModelInfo {
                     id: AgentModelId::new("visual-test-model"),
-                    name: "Visual Test Model".into(),
-                    description: Some("A stub model for visual testing".into()),
+                    name: "视觉测试模型".into(),
+                    description: Some("用于视觉测试的桩模型".into()),
                     icon: Some(AgentModelIcon::Named(ui::IconName::ZedAssistant)),
                     is_latest: false,
                     cost: None,

@@ -220,7 +220,7 @@ fn test_syntax_map_languages_match_layers_for_range(cx: &mut App) {
         all_language_names
             .iter()
             .any(|language_name| language_name == "Markdown-Inline"),
-        "expected hidden languages to be included when include_hidden is true"
+        "当 include_hidden 为 true 时,应包含隐藏语言"
     );
     assert!(
         all_language_names
@@ -247,7 +247,7 @@ fn test_syntax_map_languages_match_layers_for_range(cx: &mut App) {
         !visible_language_names
             .iter()
             .any(|language_name| language_name == "Markdown-Inline"),
-        "expected hidden languages to be excluded when include_hidden is false"
+        "当 include_hidden 为 false 时,应排除隐藏语言"
     );
     assert!(
         visible_language_names
@@ -956,7 +956,7 @@ fn test_comment_triggered_injection_toggle(cx: &mut App) {
     // Should have no unknown injections (#sq doesn't match the injection pattern)
     assert!(
         !syntax_map.contains_unknown_injections(),
-        "Expected no unknown injections with incomplete #sq comment"
+        "不完整的 #sq 注释不应产生未知注入"
     );
 
     // Complete the comment by adding 'l' to make #sql
@@ -968,7 +968,7 @@ fn test_comment_triggered_injection_toggle(cx: &mut App) {
     // Should now have unknown injections (SQL injection triggered but SQL not registered)
     assert!(
         syntax_map.contains_unknown_injections(),
-        "Expected unknown injections after completing #sql comment"
+        "完成 #sql 注释后应产生未知注入"
     );
 
     // Remove the 'l' to go back to #sq
@@ -980,7 +980,7 @@ fn test_comment_triggered_injection_toggle(cx: &mut App) {
     // Should have no unknown injections again - SQL injection should be invalidated
     assert!(
         !syntax_map.contains_unknown_injections(),
-        "Expected no unknown injections after removing 'l' from #sql comment"
+        "从 #sql 注释中移除 'l' 后不应产生未知注入"
     );
 }
 
@@ -1163,7 +1163,7 @@ fn test_random_edits(
     mut rng: StdRng,
 ) {
     let operations = env::var("OPERATIONS")
-        .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+        .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
         .unwrap_or(10);
 
     let mut buffer = Buffer::new(ReplicaId::LOCAL, BufferId::new(1).unwrap(), text);
@@ -1175,14 +1175,14 @@ fn test_random_edits(
     let mut reference_syntax_map = SyntaxMap::new(&buffer);
     reference_syntax_map.set_language_registry(registry);
 
-    log::info!("initial text:\n{}", buffer.text());
+    log::info!("初始文本:\n{}", buffer.text());
 
     for _ in 0..operations {
         let prev_buffer = buffer.snapshot().clone();
         let prev_syntax_map = syntax_map.snapshot();
 
         buffer.randomly_edit(&mut rng, 3);
-        log::info!("text:\n{}", buffer.text());
+        log::info!("文本:\n{}", buffer.text());
 
         syntax_map.interpolate(&buffer);
         check_interpolation(&prev_syntax_map, &syntax_map, &prev_buffer, &buffer);
@@ -1196,8 +1196,8 @@ fn test_random_edits(
     for i in 0..operations {
         let i = operations - i - 1;
         buffer.undo();
-        log::info!("undoing operation {}", i);
-        log::info!("text:\n{}", buffer.text());
+        log::info!("正在撤销操作 {}", i);
+        log::info!("文本:\n{}", buffer.text());
 
         syntax_map.interpolate(&buffer);
         syntax_map.reparse(language.clone(), &buffer);
@@ -1207,7 +1207,7 @@ fn test_random_edits(
         assert_eq!(
             syntax_map.layers(&buffer).len(),
             reference_syntax_map.layers(&buffer).len(),
-            "wrong number of layers after undoing edit {i}"
+            "撤销编辑 {i} 后层数错误"
         );
     }
 
@@ -1282,9 +1282,9 @@ fn check_interpolation(
             assert!(
                 new_node.has_changes(),
                 concat!(
-                    "failed to mark node as edited.\n",
-                    "layer depth: {}, old layer range: {:?}, new layer range: {:?},\n",
-                    "node kind: {}, old node range: {:?}, new node range: {:?}",
+                    "无法将节点标记为已编辑。\n",
+                    "层深度:{},旧层范围:{:?},新层范围:{:?},\n",
+                    "节点类型:{},旧节点范围:{:?},新节点范围:{:?}",
                 ),
                 depth,
                 range.to_offset(old_buffer),
@@ -1304,9 +1304,9 @@ fn check_interpolation(
                     .text_for_range(new_range.clone())
                     .collect::<String>(),
                 concat!(
-                    "mismatched text for node\n",
-                    "layer depth: {}, old layer range: {:?}, new layer range: {:?},\n",
-                    "node kind: {}, old node range:{:?}, new node range:{:?}",
+                    "节点文本不匹配\n",
+                    "层深度:{},旧层范围:{:?},新层范围:{:?},\n",
+                    "节点类型:{},旧节点范围:{:?},新节点范围:{:?}",
                 ),
                 depth,
                 range.to_offset(old_buffer),
@@ -1355,7 +1355,7 @@ fn test_edit_sequence(language_name: &str, steps: &[&str], cx: &mut App) -> (Buf
 
     for (i, marked_string) in steps.iter().enumerate() {
         let marked_string = marked_string.unindent();
-        log::info!("incremental parse {i}: {marked_string:?}");
+        log::info!("增量解析 {i}:{marked_string:?}");
         buffer.edit_via_marked_text(&marked_string);
 
         // Reparse the syntax map
@@ -1363,7 +1363,7 @@ fn test_edit_sequence(language_name: &str, steps: &[&str], cx: &mut App) -> (Buf
         mutated_syntax_map.reparse(language.clone(), &buffer);
 
         // Create a second syntax map from scratch
-        log::info!("fresh parse {i}: {marked_string:?}");
+        log::info!("全新解析 {i}:{marked_string:?}");
         let mut reference_syntax_map = SyntaxMap::new(&buffer);
         reference_syntax_map.set_language_registry(registry.clone());
         reference_syntax_map.reparse(language.clone(), &buffer);
@@ -1374,18 +1374,18 @@ fn test_edit_sequence(language_name: &str, steps: &[&str], cx: &mut App) -> (Buf
         assert_eq!(
             mutated_layers.len(),
             reference_layers.len(),
-            "wrong number of layers at step {i}"
+            "步骤 {i} 处层数错误"
         );
         for (edited_layer, reference_layer) in mutated_layers.into_iter().zip(reference_layers) {
             assert_eq!(
                 edited_layer.node().to_sexp(),
                 reference_layer.node().to_sexp(),
-                "different layer at step {i}"
+                "步骤 {i} 处层不同"
             );
             assert_eq!(
                 edited_layer.node().range(),
                 reference_layer.node().range(),
-                "different layer at step {i}"
+                "步骤 {i} 处层不同"
             );
         }
     }
@@ -1550,7 +1550,7 @@ fn python_lang() -> Language {
         ))),
         ..Default::default()
     })
-    .expect("Could not parse Python queries")
+    .expect("无法解析 Python 查询")
 }
 
 fn comment_lang() -> Language {
@@ -1583,7 +1583,7 @@ fn assert_layers_for_range(
     assert_eq!(
         layers.len(),
         expected_layers.len(),
-        "wrong number of layers"
+        "层数错误"
     );
     for (i, (layer, expected_s_exp)) in layers.iter().zip(expected_layers.iter()).enumerate() {
         let actual_s_exp = layer.node().to_sexp();
@@ -1592,7 +1592,7 @@ fn assert_layers_for_range(
                 &actual_s_exp,
                 &expected_s_exp.split("...").collect::<Vec<_>>()
             ),
-            "layer {i}:\n\nexpected: {expected_s_exp}\nactual:   {actual_s_exp}",
+            "层 {i}:\n\n预期: {expected_s_exp}\n实际:   {actual_s_exp}",
         );
     }
 }

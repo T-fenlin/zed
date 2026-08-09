@@ -153,7 +153,7 @@ impl Manager {
             let is_connected = client_status.borrow().is_connected();
             // Even if we're initially connected, any future change of the status means we momentarily disconnected.
             if !is_connected || client_status.next().await.is_some() {
-                log::info!("detected client disconnection");
+                log::info!("检测到客户端断开连接");
 
                 // Wait for client to re-establish a connection to the server.
                 {
@@ -163,7 +163,7 @@ impl Manager {
                         let mut remaining_attempts = 3;
                         while remaining_attempts > 0 {
                             if client_status.borrow().is_connected() {
-                                log::info!("client reconnected, attempting to rejoin projects");
+                                log::info!("客户端已重新连接,正在尝试重新加入项目");
 
                                 let Some(this) = this.upgrade() else { break };
                                 let task = this.update(cx, |this, cx| this.reconnected(cx));
@@ -177,7 +177,7 @@ impl Manager {
                             }
 
                             log::info!(
-                                "waiting for client status change, remaining attempts {}",
+                                "等待客户端状态变化,剩余尝试次数 {}",
                                 remaining_attempts
                             );
                             client_status.next().await;
@@ -190,14 +190,14 @@ impl Manager {
                     futures::select_biased! {
                         reconnected = client_reconnection => {
                             if reconnected {
-                                log::info!("successfully reconnected");
+                                log::info!("已成功重新连接");
                                 // If we successfully joined the room, go back around the loop
                                 // waiting for future connection status changes.
                                 continue;
                             }
                         }
                         _ = reconnection_timeout => {
-                            log::info!("rejoin project reconnection timeout expired");
+                            log::info!("重新加入项目的重连超时已过期");
                         }
                     }
                 }
@@ -210,7 +210,7 @@ impl Manager {
         // or an error occurred while trying to re-join the room. Either way
         // we leave the room and return an error.
         if let Some(this) = this.upgrade() {
-            log::info!("reconnection failed, disconnecting projects");
+            log::info!("重连失败,正在断开项目连接");
             this.update(cx, |this, cx| this.connection_lost(cx));
         }
 

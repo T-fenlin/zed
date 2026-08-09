@@ -118,7 +118,7 @@ impl TestContext {
                     m.relative_path()
                         .is_some_and(|path| path.file_name() == Some(file_name))
                 })
-                .unwrap_or_else(|| panic!("{file_name} is not in the match list"))
+                .unwrap_or_else(|| panic!("{file_name} 不在匹配列表中"))
         })
     }
 
@@ -144,7 +144,7 @@ impl TestContext {
                 .filter_map(|selected| Some(selected.0.relative_path()?.file_name()?.to_owned()))
                 .collect()
         });
-        assert_eq!(selected, expected, "wrong files selected");
+        assert_eq!(selected, expected, "选中的文件有误");
     }
 
     #[track_caller]
@@ -152,7 +152,7 @@ impl TestContext {
         let finder_open = self.workspace.update(&mut self.cx, |workspace, cx| {
             workspace.active_modal::<FileFinder>(cx).is_some()
         });
-        assert!(!finder_open, "the finder should have been dismissed");
+        assert!(!finder_open, "查找器应已关闭");
     }
 
     #[track_caller]
@@ -165,7 +165,7 @@ impl TestContext {
         let mut expected: Vec<String> = expected.iter().map(|name| name.to_string()).collect();
         items.sort();
         expected.sort();
-        assert_eq!(items, expected, "wrong items in the active pane");
+        assert_eq!(items, expected, "活动窗格中的项目有误");
     }
 
     fn pane_item_names(&mut self, pane: &Entity<pane::Pane>) -> Vec<String> {
@@ -244,7 +244,7 @@ async fn deselecting_survives_queries(cx: &mut TestAppContext) {
 async fn create_new_file_row_is_not_selectable(cx: &mut TestAppContext) {
     let mut cx = TestContext::new(cx).await;
 
-    // A query matching nothing produces only the "create new" row.
+    // A query matching nothing produces only the "新建" row.
     cx.search("zzz");
     cx.picker.update_in(&mut cx.cx, |picker, window, cx| {
         picker.delegate.set_selected_index(0, window, cx);
@@ -289,6 +289,6 @@ async fn secondary_confirm_opens_one_split_per_file(cx: &mut TestAppContext) {
     assert_eq!(
         cx.pane_count(),
         3,
-        "each selected file opens in its own split"
+        "每个选中的文件都在其自己的分栏中打开"
     );
 }

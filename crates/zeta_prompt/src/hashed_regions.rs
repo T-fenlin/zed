@@ -192,7 +192,7 @@ pub fn extract_marker_span(text: &str) -> Result<(String, String, String)> {
     let (start_id, end_id, content) = extract_marker_span_allow_same(text)?;
     if start_id == end_id {
         return Err(anyhow!(
-            "start and end markers are the same (marker {start_id})"
+            "起始和结束标记相同(标记 {start_id})"
         ));
     }
     Ok((start_id, end_id, content))
@@ -201,26 +201,26 @@ pub fn extract_marker_span(text: &str) -> Result<(String, String, String)> {
 pub fn extract_marker_span_allow_same(text: &str) -> Result<(String, String, String)> {
     let first_tag_start = text
         .find(MARKER_TAG_PREFIX)
-        .context("no start marker found in output")?;
+        .context("输出中未找到起始标记")?;
     let first_id_start = first_tag_start + MARKER_TAG_PREFIX.len();
     let first_id_end = text[first_id_start..]
         .find(MARKER_TAG_SUFFIX)
         .map(|i| i + first_id_start)
-        .context("malformed start marker tag")?;
+        .context("起始标记格式错误")?;
     let start_id = &text[first_id_start..first_id_end];
     let first_tag_end = first_id_end + MARKER_TAG_SUFFIX.len();
 
     let last_tag_start = text
         .rfind(MARKER_TAG_PREFIX)
-        .context("no end marker found in output")?;
+        .context("输出中未找到结束标记")?;
     if last_tag_start == first_tag_start {
-        return Err(anyhow!("output span must be bounded by two marker tags"));
+        return Err(anyhow!("输出跨度必须由两个标记标签界定"));
     }
     let last_id_start = last_tag_start + MARKER_TAG_PREFIX.len();
     let last_id_end = text[last_id_start..]
         .find(MARKER_TAG_SUFFIX)
         .map(|i| i + last_id_start)
-        .context("malformed end marker tag")?;
+        .context("结束标记格式错误")?;
     let end_id = &text[last_id_start..last_id_end];
 
     let mut content_start = first_tag_end;
@@ -397,16 +397,16 @@ fn merge_contiguous_snippets(
     let related_files = input
         .related_files
         .as_deref()
-        .context("prompt inputs are missing related files")?;
+        .context("提示输入缺少相关文件")?;
     let mut snippets: Vec<ParseSnippet> = Vec::new();
     for snippet in marker_table {
         let file = related_files
             .get(snippet.file_ix)
-            .context("related file index out of range")?;
+            .context("相关文件索引超出范围")?;
         let excerpt = file
             .excerpts
             .get(snippet.excerpt_ix)
-            .context("related excerpt index out of range")?;
+            .context("相关摘录索引超出范围")?;
         if let Some(last) = snippets.last_mut()
             && last.file_ix == snippet.file_ix
             && last.last_excerpt_ix + 1 == snippet.excerpt_ix
@@ -447,14 +447,14 @@ fn snippet_path_and_start_row(
     let related_files = input
         .related_files
         .as_deref()
-        .context("prompt inputs are missing related files")?;
+        .context("提示输入缺少相关文件")?;
     let file = related_files
         .get(snippet.file_ix)
-        .context("related file index out of range")?;
+        .context("相关文件索引超出范围")?;
     let excerpt = file
         .excerpts
         .get(snippet.first_excerpt_ix)
-        .context("related excerpt index out of range")?;
+        .context("相关摘录索引超出范围")?;
     Ok((
         related_file_patch_path(&input.cursor_path, &file.path),
         excerpt.row_range.start,
@@ -524,11 +524,11 @@ pub fn encode_from_old_and_new(
     let old_start = markers
         .get(start_marker_ix)
         .map(|(_, offset)| *offset)
-        .context("start marker out of range")?;
+        .context("起始标记超出范围")?;
     let old_end = markers
         .get(end_marker_ix)
         .map(|(_, offset)| *offset)
-        .context("end marker out of range")?;
+        .context("结束标记超出范围")?;
     let new_start = old_start;
     let new_end = new_text
         .len()
@@ -606,7 +606,7 @@ struct ParsedSpanEdit {
 fn pair_marker_spans(output: &str) -> Result<Vec<(String, String, String)>> {
     let tags = find_all_marker_tags(output);
     if tags.len() < 2 {
-        return Err(anyhow!("output does not contain a marker-bounded span"));
+        return Err(anyhow!("输出不包含标记界定的跨度"));
     }
     let mut spans = Vec::new();
     let mut i = 0;
@@ -668,10 +668,10 @@ pub fn build_patch_from_spans(
     for (start_id, end_id, raw_new_span) in spans {
         let &(start_snippet, start_byte) = marker_index
             .get(start_id.as_str())
-            .with_context(|| format!("unknown start marker `{start_id}`"))?;
+            .with_context(|| format!("未知的起始标记 `{start_id}`"))?;
         let &(end_snippet, end_byte) = marker_index
             .get(end_id.as_str())
-            .with_context(|| format!("unknown end marker `{end_id}`"))?;
+            .with_context(|| format!("未知的结束标记 `{end_id}`"))?;
 
         if start_snippet != end_snippet {
             return Err(anyhow!(
@@ -681,7 +681,7 @@ pub fn build_patch_from_spans(
         }
         if start_byte > end_byte {
             return Err(anyhow!(
-                "start marker `{start_id}` must come before end marker `{end_id}`"
+                "起始标记 `{start_id}` 必须位于结束标记 `{end_id}` 之前"
             ));
         }
 
@@ -901,7 +901,7 @@ pub fn encode_patch_as_output(
     let mut parser = udiff::DiffParser::new(patch);
     let mut blocks: Vec<String> = Vec::new();
 
-    while let Some(event) = parser.next().context("failed to parse expected patch")? {
+    while let Some(event) = parser.next().context("无法解析预期的补丁")? {
         let udiff::DiffEvent::Hunk {
             path,
             mut hunk,
@@ -1031,7 +1031,7 @@ mod tests {
         assert!(ensure_cursor_file_excerpt(&mut input));
 
         let cursor =
-            locate_cursor_in_related_files(&input).expect("cursor covered after synthesis");
+            locate_cursor_in_related_files(&input).expect("合成后光标已覆盖");
         let file = &input.related_files.as_ref().unwrap()[cursor.file_ix];
         // The fragment was replaced by the synthesized full window, so the file
         // content isn't duplicated with overlapping markers.
@@ -1061,8 +1061,8 @@ mod tests {
     #[test]
     fn test_tag_ids_are_unique_even_for_identical_blocks() {
         let mut used = HashSet::new();
-        let id_a = unique_tag_id("same content", &mut used);
-        let id_b = unique_tag_id("same content", &mut used);
+        let id_a = unique_tag_id("相同内容", &mut used);
+        let id_b = unique_tag_id("相同内容", &mut used);
         assert_ne!(id_a, id_b);
         assert_eq!(id_a.len(), TAG_ID_LEN);
         assert_eq!(id_b.len(), TAG_ID_LEN);
@@ -1098,7 +1098,7 @@ mod tests {
             assert!(snippet.markers.len() >= 2);
             assert_eq!(snippet.markers.first().map(|(_, offset)| *offset), Some(0));
             for (id, _) in &snippet.markers {
-                assert!(all_ids.insert(id.clone()), "duplicate tag id {id}");
+                assert!(all_ids.insert(id.clone()), "重复的标记 ID {id}");
             }
         }
     }
@@ -1166,20 +1166,20 @@ mod tests {
         let output =
             encode_patch_as_output(&input, TWO_HUNK_PATCH, None, "<|user_cursor|>").unwrap();
 
-        assert!(output.ends_with(V0615_END_MARKER), "output: {output}");
+        assert!(output.ends_with(V0615_END_MARKER), "输出:{output}");
         // Two blocks => four marker tags, exactly one end marker.
         assert_eq!(
             output.matches(MARKER_TAG_PREFIX).count(),
             4,
-            "output: {output}"
+            "输出:{output}"
         );
         assert_eq!(
             output.matches(V0615_END_MARKER).count(),
             1,
-            "output: {output}"
+            "输出:{output}"
         );
-        assert!(output.contains("uno();"), "output: {output}");
-        assert!(output.contains("tres();"), "output: {output}");
+        assert!(output.contains("uno();"), "输出:{output}");
+        assert!(output.contains("tres();"), "输出:{output}");
     }
 
     #[test]
@@ -1189,10 +1189,10 @@ mod tests {
             encode_patch_as_output(&input, TWO_HUNK_PATCH, None, "<|user_cursor|>").unwrap();
         let patch = parse_output_as_patch(&input, &output, "<|user_cursor|>").unwrap();
 
-        assert!(patch.contains("-    one();"), "patch: {patch}");
-        assert!(patch.contains("+    uno();"), "patch: {patch}");
-        assert!(patch.contains("-    three();"), "patch: {patch}");
-        assert!(patch.contains("+    tres();"), "patch: {patch}");
+        assert!(patch.contains("-    one();"), "补丁:{patch}");
+        assert!(patch.contains("+    uno();"), "补丁:{patch}");
+        assert!(patch.contains("-    three();"), "补丁:{patch}");
+        assert!(patch.contains("+    tres();"), "补丁:{patch}");
     }
 
     #[test]
@@ -1206,9 +1206,9 @@ mod tests {
         let output = encode_patch_as_output(&input, &patch, None, "<|user_cursor|>").unwrap();
 
         assert_ne!(output.trim_end_matches(V0615_END_MARKER), NO_EDITS);
-        assert!(output.contains("uno();"), "output: {output}");
-        assert!(output.contains("tres();"), "output: {output}");
-        assert!(!output.contains("kept();"), "output: {output}");
+        assert!(output.contains("uno();"), "输出:{output}");
+        assert!(output.contains("tres();"), "输出:{output}");
+        assert!(!output.contains("kept();"), "输出:{output}");
     }
 
     #[test]
@@ -1226,7 +1226,7 @@ mod tests {
         // delimited by pairing tags two at a time.
         let input = make_input(MULTI_FN_EXCERPT, &[("src/main.rs", &[MULTI_FN_EXCERPT])]);
         let markers = build_marker_table(&input)[0].markers.clone();
-        assert!(markers.len() >= 3, "expected internal markers: {markers:?}");
+        assert!(markers.len() >= 3, "预期的内部标记:{markers:?}");
 
         let tag = |ix: usize| marker_tag(&markers[ix].0);
         let old_first = &MULTI_FN_EXCERPT[markers[0].1..markers[1].1];
@@ -1246,12 +1246,12 @@ mod tests {
         );
 
         let patch = parse_output_as_patch(&input, &output, "<|user_cursor|>").unwrap();
-        assert!(patch.contains("+    uno();"), "patch: {patch}");
-        assert!(patch.contains("+    tres();"), "patch: {patch}");
+        assert!(patch.contains("+    uno();"), "补丁:{patch}");
+        assert!(patch.contains("+    tres();"), "补丁:{patch}");
         assert_eq!(
             patch.matches("--- a/src/main.rs").count(),
             1,
-            "patch: {patch}"
+            "补丁:{patch}"
         );
     }
 }

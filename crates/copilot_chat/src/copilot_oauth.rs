@@ -72,14 +72,14 @@ pub async fn request_device_code(
     let mut response = client.send(request).await?;
     anyhow::ensure!(
         response.status().is_success(),
-        "GitHub device-code request failed: {}",
+        "GitHub 设备码请求失败:{}",
         response.status()
     );
 
     let mut body = Vec::new();
     response.body_mut().read_to_end(&mut body).await?;
     let parsed: DeviceCodeResponse =
-        serde_json::from_slice(&body).context("Failed to parse GitHub device-code response")?;
+        serde_json::from_slice(&body).context("无法解析 GitHub 设备码响应")?;
 
     Ok(DeviceFlow {
         user_code: parsed.user_code,
@@ -119,7 +119,7 @@ pub async fn poll_for_access_token(
         response.body_mut().read_to_end(&mut response_body).await?;
 
         let parsed: AccessTokenResponse = serde_json::from_slice(&response_body)
-            .context("Failed to parse GitHub access-token response")?;
+            .context("无法解析 GitHub 访问令牌响应")?;
 
         if let Some(token) = parsed.access_token {
             return Ok(token);
@@ -129,10 +129,10 @@ pub async fn poll_for_access_token(
             Some("authorization_pending") => continue,
             // GitHub asks us to back off; increase the interval and keep polling.
             Some("slow_down") => interval += 5,
-            Some("expired_token") => bail!("The Copilot sign-in code expired. Please try again."),
-            Some("access_denied") => bail!("Copilot sign-in was cancelled."),
-            Some(other) => bail!("Copilot sign-in failed: {other}"),
-            None => bail!("Copilot sign-in failed: unexpected response from GitHub"),
+            Some("expired_token") => bail!("Copilot 登录码已过期,请重试。"),
+            Some("access_denied") => bail!("Copilot 登录已取消。"),
+            Some(other) => bail!("Copilot 登录失败:{other}"),
+            None => bail!("Copilot 登录失败:GitHub 返回意外响应"),
         }
     }
 }

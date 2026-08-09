@@ -84,7 +84,7 @@ pub struct LanguageNotFound;
 
 impl std::fmt::Display for LanguageNotFound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "language not found")
+        write!(f, "未找到语言")
     }
 }
 
@@ -221,7 +221,7 @@ impl LanguageRegistry {
             && !existing_adapter.adapter.is_extension()
         {
             log::warn!(
-                "not registering extension-provided language server {name:?}, since a builtin language server exists with that name",
+                "未注册扩展提供的语言服务器 {name:?},因为已存在同名的内置语言服务器",
             );
             return;
         }
@@ -268,7 +268,7 @@ impl LanguageRegistry {
             && !existing_adapter.adapter.is_extension()
         {
             log::warn!(
-                "not registering extension-provided language server {:?} for language {language_name:?}, since a builtin language server exists with that name",
+                "未注册扩展提供的语言服务器 {:?}(用于语言 {language_name:?}),因为已存在同名的内置语言服务器",
                 adapter.name(),
             );
             return;
@@ -459,7 +459,7 @@ impl LanguageRegistry {
             matcher: language.config.matcher.clone(),
             hidden: language.config.hidden,
             manifest_name: None,
-            load: Arc::new(|| Err(anyhow!("already loaded"))),
+            load: Arc::new(|| Err(anyhow!("已加载"))),
             loaded: true,
         });
         state.add(language);
@@ -672,14 +672,14 @@ impl LanguageRegistry {
                                 }
                             }
                             Err(e) => {
-                                log::error!("failed to load language {language_name}:\n{e:?}");
+                                log::error!("加载语言 {language_name} 失败:\n{e:?}");
                                 let mut state = this.state.write();
                                 state.mark_language_loaded(language_id);
                                 if let Some(mut txs) = state.loading_languages.remove(&language_id)
                                 {
                                     for tx in txs.drain(..) {
                                         let _ = tx.send(Err(anyhow!(
-                                            "failed to load language {language_name}: {e}",
+                                            "加载语言 {language_name} 失败:{e}",
                                         )));
                                     }
                                 }
@@ -731,7 +731,7 @@ impl LanguageRegistry {
                     txs.push(tx);
                 }
                 AvailableGrammar::Unloaded(wasm_path) => {
-                    log::trace!("start loading grammar {name:?}");
+                    log::trace!("开始加载语法 {name:?}");
                     let this = self.clone();
                     let wasm_path = wasm_path.clone();
                     *grammar = AvailableGrammar::Loading(wasm_path.clone(), vec![tx]);
@@ -742,7 +742,7 @@ impl LanguageRegistry {
                                 let grammar_name = wasm_path
                                     .file_stem()
                                     .and_then(OsStr::to_str)
-                                    .context("invalid grammar filename")?;
+                                    .context("无效的语法文件名")?;
                                 anyhow::Ok(with_parser(|parser| {
                                     let mut store = parser.take_wasm_store().unwrap();
                                     let grammar = store.load_language(grammar_name, &wasm_bytes);
@@ -757,7 +757,7 @@ impl LanguageRegistry {
                                 Err(error) => AvailableGrammar::LoadFailed(error.clone()),
                             };
 
-                            log::trace!("finish loading grammar {name:?}");
+                            log::trace!("完成加载语法 {name:?}");
                             let old_value = this.state.write().grammars.insert(name, value);
                             if let Some(AvailableGrammar::Loading(_, txs)) = old_value {
                                 for tx in txs {
@@ -769,7 +769,7 @@ impl LanguageRegistry {
                 }
             }
         } else {
-            tx.send(Err(Arc::new(anyhow!("no such grammar {name}"))))
+            tx.send(Err(Arc::new(anyhow!("不存在语法 {name}"))))
                 .ok();
         }
 

@@ -115,12 +115,12 @@ impl DebugAdapterClient {
             .insert(sequence_id, callback_tx)?;
 
         log::debug!(
-            "Client {} send `{}` request with sequence_id: {}",
+            "客户端 {} 发送 `{}` 请求,序列号: {}",
             self.id.0,
             R::COMMAND,
             sequence_id
         );
-        log::debug!("  request: {request:?}");
+        log::debug!("  请求: {request:?}");
 
         self.send_message(Message::Request(request)).await?;
 
@@ -128,12 +128,12 @@ impl DebugAdapterClient {
 
         let response = callback_rx.await??;
         log::debug!(
-            "Client {} received response for: `{}` sequence_id: {}",
+            "客户端 {} 收到 `{}` 的响应,序列号: {}",
             self.id.0,
             command,
             sequence_id
         );
-        log::debug!("  response: {response:?}");
+        log::debug!("  响应: {response:?}");
 
         match response.success {
             true => {
@@ -149,7 +149,7 @@ impl DebugAdapterClient {
                     Ok(serde_json::from_value(Default::default())?)
                 }
             }
-            false => anyhow::bail!("Request failed: {}", response.message.unwrap_or_default()),
+            false => anyhow::bail!("请求失败: {}", response.message.unwrap_or_default()),
         }
     }
 
@@ -171,7 +171,7 @@ impl DebugAdapterClient {
     }
 
     pub fn kill(&self) {
-        log::debug!("Killing DAP process");
+        log::debug!("正在终止 DAP 进程");
         self.transport_delegate.transport.lock().kill();
         self.transport_delegate.pending_requests.lock().shutdown();
     }
@@ -396,7 +396,7 @@ mod tests {
 
         assert!(
             called_event_handler.load(std::sync::atomic::Ordering::SeqCst),
-            "Event handler was not called"
+            "事件处理器未被调用"
         );
     }
 
@@ -459,7 +459,7 @@ mod tests {
 
         assert!(
             called_event_handler.load(std::sync::atomic::Ordering::SeqCst),
-            "Event handler was not called"
+            "事件处理器未被调用"
         );
     }
 }

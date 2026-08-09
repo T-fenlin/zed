@@ -73,13 +73,13 @@ impl CloudUserService {
                 format!("Bearer {}", &self.internal_api_key),
             )
             .build()
-            .context("failed to build request")?;
+            .context("构建请求失败")?;
 
         let response = self
             .http_client
             .execute(request)
             .await
-            .context("failed to send request to Cloud")?;
+            .context("向 Cloud 发送请求失败")?;
 
         let status = response.status();
         match response.error_for_status() {
@@ -87,11 +87,11 @@ impl CloudUserService {
                 let response_body: T = response
                     .json()
                     .await
-                    .context("failed to parse response body")?;
+                    .context("无法解析响应体")?;
 
                 Ok(response_body)
             }
-            Err(_err) => Err(anyhow!("request to Cloud failed with status {status}",))?,
+            Err(_err) => Err(anyhow!("向 Cloud 发出的请求失败,状态码为 {status}",))?,
         }
     }
 }

@@ -29,7 +29,7 @@ fn init_trust_global(
     cx.update(|cx| {
         init(DbTrustedPaths::default(), cx);
         track_worktree_trust(worktree_store, None, None, None, cx);
-        TrustedWorktrees::try_get_global(cx).expect("global should be set")
+        TrustedWorktrees::try_get_global(cx).expect("全局状态应已设置")
     })
 }
 
@@ -70,7 +70,7 @@ async fn test_single_worktree_trust(cx: &mut TestAppContext) {
     let can_trust = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_id, cx)
     });
-    assert!(!can_trust, "worktree should be restricted by default");
+    assert!(!can_trust, "工作树默认应处于受限状态");
 
     {
         let events = events.borrow();
@@ -80,14 +80,14 @@ async fn test_single_worktree_trust(cx: &mut TestAppContext) {
                 assert_eq!(event_worktree_store, &worktree_store.downgrade());
                 assert!(paths.contains(&PathTrust::Worktree(worktree_id)));
             }
-            _ => panic!("expected Restricted event"),
+            _ => panic!("预期收到 Restricted 事件"),
         }
     }
 
     let has_restricted = trusted_worktrees.read_with(cx, |store, cx| {
         store.has_restricted_worktrees(&worktree_store, cx)
     });
-    assert!(has_restricted, "should have restricted worktrees");
+    assert!(has_restricted, "应存在受限工作树");
 
     let restricted = trusted_worktrees.read_with(cx, |trusted_worktrees, cx| {
         trusted_worktrees.restricted_worktrees(&worktree_store, cx)
@@ -99,10 +99,10 @@ async fn test_single_worktree_trust(cx: &mut TestAppContext) {
     let can_trust_again = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_id, cx)
     });
-    assert!(!can_trust_again, "worktree should still be restricted");
+    assert!(!can_trust_again, "工作树仍应处于受限状态");
     assert!(
         events.borrow().is_empty(),
-        "no duplicate Restricted event on repeated can_trust"
+        "重复调用 can_trust 不应产生重复的 Restricted 事件"
     );
 
     trusted_worktrees.update(cx, |store, cx| {
@@ -121,21 +121,21 @@ async fn test_single_worktree_trust(cx: &mut TestAppContext) {
                 assert_eq!(event_worktree_store, &worktree_store.downgrade());
                 assert!(paths.contains(&PathTrust::Worktree(worktree_id)));
             }
-            _ => panic!("expected Trusted event"),
+            _ => panic!("预期收到 Trusted 事件"),
         }
     }
 
     let can_trust_after = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_id, cx)
     });
-    assert!(can_trust_after, "worktree should be trusted after trust()");
+    assert!(can_trust_after, "工作树应在 trust() 后被信任");
 
     let has_restricted_after = trusted_worktrees.read_with(cx, |store, cx| {
         store.has_restricted_worktrees(&worktree_store, cx)
     });
     assert!(
         !has_restricted_after,
-        "should have no restricted worktrees after trust"
+        "调用 trust() 后不应存在受限工作树"
     );
 
     let restricted_after = trusted_worktrees.read_with(cx, |trusted_worktrees, cx| {
@@ -143,7 +143,7 @@ async fn test_single_worktree_trust(cx: &mut TestAppContext) {
     });
     assert!(
         restricted_after.is_empty(),
-        "restricted set should be empty"
+        "受限集合应为空"
     );
 }
 
@@ -160,7 +160,7 @@ async fn test_single_file_worktree_trust(cx: &mut TestAppContext) {
     let worktree_id = worktree_store.read_with(cx, |store, cx| {
         let worktree = store.worktrees().next().unwrap();
         let worktree = worktree.read(cx);
-        assert!(worktree.is_single_file(), "expected single-file worktree");
+        assert!(worktree.is_single_file(), "预期为单文件工作树");
         worktree.id()
     });
 
@@ -189,7 +189,7 @@ async fn test_single_file_worktree_trust(cx: &mut TestAppContext) {
     });
     assert!(
         !can_trust,
-        "single-file worktree should be restricted by default"
+        "单文件工作树默认应处于受限状态"
     );
 
     {
@@ -200,7 +200,7 @@ async fn test_single_file_worktree_trust(cx: &mut TestAppContext) {
                 assert_eq!(event_worktree_store, &worktree_store.downgrade());
                 assert!(paths.contains(&PathTrust::Worktree(worktree_id)));
             }
-            _ => panic!("expected Restricted event"),
+            _ => panic!("预期收到 Restricted 事件"),
         }
     }
 
@@ -222,7 +222,7 @@ async fn test_single_file_worktree_trust(cx: &mut TestAppContext) {
                 assert_eq!(event_worktree_store, &worktree_store.downgrade());
                 assert!(paths.contains(&PathTrust::Worktree(worktree_id)));
             }
-            _ => panic!("expected Trusted event"),
+            _ => panic!("预期收到 Trusted 事件"),
         }
     }
 
@@ -231,7 +231,7 @@ async fn test_single_file_worktree_trust(cx: &mut TestAppContext) {
     });
     assert!(
         can_trust_after,
-        "single-file worktree should be trusted after trust()"
+        "调用 trust() 后单文件工作树应被信任"
     );
 }
 
@@ -281,7 +281,7 @@ async fn test_multiple_single_file_worktrees_trust_one(cx: &mut TestAppContext) 
         });
         assert!(
             !can_trust,
-            "worktree {worktree_id:?} should be restricted initially"
+            "工作树 {worktree_id:?} 初始应处于受限状态"
         );
     }
 
@@ -303,9 +303,9 @@ async fn test_multiple_single_file_worktrees_trust_one(cx: &mut TestAppContext) 
         store.can_trust(&worktree_store, worktree_ids[2], cx)
     });
 
-    assert!(!can_trust_0, "worktree 0 should still be restricted");
-    assert!(can_trust_1, "worktree 1 should be trusted");
-    assert!(!can_trust_2, "worktree 2 should still be restricted");
+    assert!(!can_trust_0, "工作树 0 仍应处于受限状态");
+    assert!(can_trust_1, "工作树 1 应被信任");
+    assert!(!can_trust_2, "工作树 2 仍应处于受限状态");
 }
 
 #[gpui::test]
@@ -353,7 +353,7 @@ async fn test_two_directory_worktrees_separate_trust(cx: &mut TestAppContext) {
         store.can_trust(&worktree_store, worktree_ids[1], cx)
     });
     assert!(!can_trust_a, "project_a should be restricted initially");
-    assert!(!can_trust_b, "project_b should be restricted initially");
+    assert!(!can_trust_b, "project_b 初始应处于受限状态");
 
     trusted_worktrees.update(cx, |store, cx| {
         store.trust(
@@ -369,8 +369,8 @@ async fn test_two_directory_worktrees_separate_trust(cx: &mut TestAppContext) {
     let can_trust_b = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_ids[1], cx)
     });
-    assert!(can_trust_a, "project_a should be trusted after trust()");
-    assert!(!can_trust_b, "project_b should still be restricted");
+    assert!(can_trust_a, "调用 trust() 后 project_a 应被信任");
+    assert!(!can_trust_b, "project_b 仍应处于受限状态");
 
     trusted_worktrees.update(cx, |store, cx| {
         store.trust(
@@ -386,8 +386,8 @@ async fn test_two_directory_worktrees_separate_trust(cx: &mut TestAppContext) {
     let can_trust_b = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_ids[1], cx)
     });
-    assert!(can_trust_a, "project_a should remain trusted");
-    assert!(can_trust_b, "project_b should now be trusted");
+    assert!(can_trust_a, "project_a 应保持受信任状态");
+    assert!(can_trust_b, "project_b 现在应被信任");
 }
 
 #[gpui::test]
@@ -431,7 +431,7 @@ async fn test_directory_worktree_trust_enables_single_file(cx: &mut TestAppConte
     });
     assert!(
         !can_trust_file,
-        "single-file worktree should be restricted initially"
+        "单文件工作树初始应处于受限状态"
     );
 
     let can_trust_directory = trusted_worktrees.update(cx, |store, cx| {
@@ -439,7 +439,7 @@ async fn test_directory_worktree_trust_enables_single_file(cx: &mut TestAppConte
     });
     assert!(
         !can_trust_directory,
-        "directory worktree should be restricted initially"
+        "目录工作树初始应处于受限状态"
     );
 
     trusted_worktrees.update(cx, |store, cx| {
@@ -456,10 +456,10 @@ async fn test_directory_worktree_trust_enables_single_file(cx: &mut TestAppConte
     let can_trust_file_after = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, file_worktree_id, cx)
     });
-    assert!(can_trust_dir, "directory worktree should be trusted");
+    assert!(can_trust_dir, "目录工作树应被信任");
     assert!(
         can_trust_file_after,
-        "single-file worktree should be trusted after directory worktree trust"
+        "信任目录工作树后,单文件工作树应被信任"
     );
 }
 
@@ -504,7 +504,7 @@ async fn test_parent_path_trust_enables_single_file(cx: &mut TestAppContext) {
     });
     assert!(
         !can_trust_file,
-        "single-file worktree should be restricted initially"
+        "单文件工作树初始应处于受限状态"
     );
 
     let can_trust_directory = trusted_worktrees.update(cx, |store, cx| {
@@ -512,7 +512,7 @@ async fn test_parent_path_trust_enables_single_file(cx: &mut TestAppContext) {
     });
     assert!(
         !can_trust_directory,
-        "directory worktree should be restricted initially"
+        "目录工作树初始应处于受限状态"
     );
 
     trusted_worktrees.update(cx, |store, cx| {
@@ -531,11 +531,11 @@ async fn test_parent_path_trust_enables_single_file(cx: &mut TestAppContext) {
     });
     assert!(
         can_trust_dir,
-        "directory worktree should be trusted after its parent is trusted"
+        "其父路径被信任后,目录工作树应被信任"
     );
     assert!(
         can_trust_file_after,
-        "single-file worktree should be trusted after directory worktree trust via its parent directory trust"
+        "通过信任父目录使目录工作树被信任后,单文件工作树应被信任"
     );
 }
 
@@ -594,7 +594,7 @@ async fn test_abs_path_trust_covers_multiple_worktrees(cx: &mut TestAppContext) 
         });
         assert!(
             can_trust,
-            "worktree should be trusted after parent path trust"
+            "父路径被信任后,工作树应被信任"
         );
     }
 }
@@ -657,13 +657,13 @@ async fn test_auto_trust_all(cx: &mut TestAppContext) {
         let can_trust = trusted_worktrees.update(cx, |store, cx| {
             store.can_trust(&worktree_store, worktree_id, cx)
         });
-        assert!(!can_trust, "worktree should be restricted initially");
+        assert!(!can_trust, "工作树最初应受限");
     }
 
     let has_restricted = trusted_worktrees.read_with(cx, |store, cx| {
         store.has_restricted_worktrees(&worktree_store, cx)
     });
-    assert!(has_restricted, "should have restricted worktrees");
+    assert!(has_restricted, "应存在受限工作树");
 
     events.borrow_mut().clear();
 
@@ -677,7 +677,7 @@ async fn test_auto_trust_all(cx: &mut TestAppContext) {
         });
         assert!(
             can_trust,
-            "worktree {worktree_id:?} should be trusted after auto_trust_all"
+            "调用 auto_trust_all 后,工作树 {worktree_id:?} 应被信任"
         );
     }
 
@@ -686,7 +686,7 @@ async fn test_auto_trust_all(cx: &mut TestAppContext) {
     });
     assert!(
         !has_restricted_after,
-        "should have no restricted worktrees after auto_trust_all"
+        "调用 auto_trust_all 后不应存在受限工作树"
     );
 
     let trusted_event_count = events
@@ -696,7 +696,7 @@ async fn test_auto_trust_all(cx: &mut TestAppContext) {
         .count();
     assert!(
         trusted_event_count > 0,
-        "should have emitted Trusted events"
+        "应已发出 Trusted 事件"
     );
 }
 
@@ -737,7 +737,7 @@ async fn test_trust_restrict_trust_cycle(cx: &mut TestAppContext) {
     let can_trust = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_id, cx)
     });
-    assert!(!can_trust, "should be restricted initially");
+    assert!(!can_trust, "初始应处于受限状态");
     assert_eq!(events.borrow().len(), 1);
     events.borrow_mut().clear();
 
@@ -751,7 +751,7 @@ async fn test_trust_restrict_trust_cycle(cx: &mut TestAppContext) {
     let can_trust = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_id, cx)
     });
-    assert!(can_trust, "should be trusted after trust()");
+    assert!(can_trust, "调用 trust() 后应被信任");
     assert_eq!(events.borrow().len(), 1);
     assert!(matches!(
         &events.borrow()[0],
@@ -769,7 +769,7 @@ async fn test_trust_restrict_trust_cycle(cx: &mut TestAppContext) {
     let can_trust = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_id, cx)
     });
-    assert!(!can_trust, "should be restricted after restrict()");
+    assert!(!can_trust, "调用 restrict() 后应处于受限状态");
     assert_eq!(events.borrow().len(), 1);
     assert!(matches!(
         &events.borrow()[0],
@@ -792,7 +792,7 @@ async fn test_trust_restrict_trust_cycle(cx: &mut TestAppContext) {
     let can_trust = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, worktree_id, cx)
     });
-    assert!(can_trust, "should be trusted again after second trust()");
+    assert!(can_trust, "再次调用 trust() 后应重新被信任");
     assert_eq!(events.borrow().len(), 1);
     assert!(matches!(
         &events.borrow()[0],
@@ -844,7 +844,7 @@ async fn test_multi_host_trust_isolation(cx: &mut TestAppContext) {
     let can_trust_local = trusted_worktrees.update(cx, |store, cx| {
         store.can_trust(&worktree_store, local_worktree, cx)
     });
-    assert!(!can_trust_local, "local worktree restricted on host_a");
+    assert!(!can_trust_local, "本地工作树在 host_a 上处于受限状态");
 
     trusted_worktrees.update(cx, |store, cx| {
         store.trust(
@@ -859,7 +859,7 @@ async fn test_multi_host_trust_isolation(cx: &mut TestAppContext) {
     });
     assert!(
         can_trust_local_after,
-        "local worktree should be trusted on local host"
+        "本地工作树在本地主机上应被信任"
     );
 }
 
@@ -912,14 +912,14 @@ async fn test_invisible_worktree_stores_do_not_affect_trust(cx: &mut TestAppCont
         !trusted_worktrees.update(cx, |store, cx| {
             store.can_trust(&worktree_store, visible_worktree_id, cx)
         }),
-        "visible worktree should be restricted initially"
+        "可见工作树初始应处于受限状态"
     );
     assert_eq!(
         HashSet::from_iter([(visible_worktree_id)]),
         trusted_worktrees.read_with(cx, |store, _| {
             store.restricted_worktrees_for_store(&worktree_store)
         }),
-        "only visible worktree should be restricted",
+        "只有可见工作树应处于受限状态",
     );
 
     let (new_visible_worktree, new_invisible_worktree) =
@@ -939,19 +939,19 @@ async fn test_invisible_worktree_stores_do_not_affect_trust(cx: &mut TestAppCont
         !trusted_worktrees.update(cx, |store, cx| {
             store.can_trust(&worktree_store, new_visible_worktree_id, cx)
         }),
-        "new visible worktree should be restricted initially",
+        "新的可见工作树初始应处于受限状态",
     );
     assert!(
         trusted_worktrees.update(cx, |store, cx| {
             store.can_trust(&worktree_store, new_invisible_worktree.read(cx).id(), cx)
         }),
-        "invisible worktree should be skipped",
+        "应跳过不可见工作树",
     );
     assert_eq!(
         HashSet::from_iter([visible_worktree_id, new_visible_worktree_id]),
         trusted_worktrees.read_with(cx, |store, _| {
             store.restricted_worktrees_for_store(&worktree_store)
         }),
-        "only visible worktrees should be restricted"
+        "只有可见工作树应处于受限状态"
     );
 }

@@ -499,32 +499,32 @@ impl PrimitiveBatch {
     #[expect(missing_docs)]
     pub fn label(&self) -> String {
         match self {
-            Self::Shadows(range) => format!("shadows ({})", range.len()),
-            Self::Quads(range) => format!("quads ({})", range.len()),
-            Self::Paths(range) => format!("paths ({})", range.len()),
-            Self::Underlines(range) => format!("underlines ({})", range.len()),
+            Self::Shadows(range) => format!("阴影 ({})", range.len()),
+            Self::Quads(range) => format!("四边形 ({})", range.len()),
+            Self::Paths(range) => format!("路径 ({})", range.len()),
+            Self::Underlines(range) => format!("下划线 ({})", range.len()),
             Self::MonochromeSprites { texture_id, range } => {
                 format!(
-                    "monochrome sprites ({}) on atlas {}",
+                    "单色精灵 ({}),位于图集 {}",
                     range.len(),
                     texture_id.index
                 )
             }
             Self::SubpixelSprites { texture_id, range } => {
                 format!(
-                    "subpixel sprites ({}) on atlas {}",
+                    "亚像素精灵 ({}),位于图集 {}",
                     range.len(),
                     texture_id.index
                 )
             }
             Self::PolychromeSprites { texture_id, range } => {
                 format!(
-                    "polychrome sprites ({}) on atlas {}",
+                    "多色精灵 ({}),位于图集 {}",
                     range.len(),
                     texture_id.index
                 )
             }
-            Self::Surfaces(range) => format!("surfaces ({})", range.len()),
+            Self::Surfaces(range) => format!("表面 ({})", range.len()),
         }
     }
 }

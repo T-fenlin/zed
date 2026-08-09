@@ -81,7 +81,7 @@ impl BuiltInPrompt {
 impl std::fmt::Display for BuiltInPrompt {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::CommitMessage => write!(f, "Commit message"),
+            Self::CommitMessage => write!(f, "提交信息"),
         }
     }
 }
@@ -177,7 +177,7 @@ impl MetadataCache {
             // rather than failing the entire prompt store initialization.
             let Ok((prompt_id, metadata)) = result else {
                 log::warn!(
-                    "Skipping unreadable prompt record in database: {:?}",
+                    "跳过数据库中无法读取的提示词记录:{:?}",
                     result.err()
                 );
                 continue;
@@ -314,7 +314,7 @@ impl PromptStore {
                     if let Some(built_in) = id.as_built_in() {
                         built_in.default_content().into()
                     } else {
-                        anyhow::bail!("prompt not found")
+                        anyhow::bail!("未找到提示词")
                     }
                 }
             };

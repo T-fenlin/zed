@@ -196,7 +196,7 @@ impl Component for CircularProgress {
         let container = || v_flex().items_center().gap_1();
 
         example_group(vec![single_example(
-            "Examples",
+            "示例",
             h_flex()
                 .gap_6()
                 .child(

@@ -58,7 +58,7 @@ impl Chromium {
         let mut response = client
             .send(request.body(AsyncBody::default())?)
             .await
-            .with_context(|| format!("error fetching Gerrit commit details at {:?}", url))?;
+            .with_context(|| format!("获取 {:?} 的 Gerrit 提交详情时出错", url))?;
 
         let mut body = Vec::new();
         response.body_mut().read_to_end(&mut body).await?;
@@ -66,7 +66,7 @@ impl Chromium {
         if response.status().is_client_error() {
             let text = String::from_utf8_lossy(body.as_slice());
             bail!(
-                "status error {}, response: {text:?}",
+                "状态错误 {}, 响应: {text:?}",
                 response.status().as_u16()
             );
         }
@@ -76,7 +76,7 @@ impl Chromium {
 
         serde_json::from_str::<ChangeInfo>(body_str)
             .map(|change| Some(change.owner))
-            .context("failed to deserialize Gerrit change info")
+            .context("无法反序列化 Gerrit 变更信息")
     }
 }
 
@@ -274,7 +274,7 @@ mod tests {
             repo: "chromium/src".into(),
         };
 
-        let message = "This does not contain a pull request";
+        let message = "此内容不包含拉取请求";
         assert!(Chromium.extract_pull_request(&remote, message).is_none());
 
         // Pull request number at end of "Reviewed-on:" line

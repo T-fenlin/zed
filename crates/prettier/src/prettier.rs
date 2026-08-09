@@ -87,15 +87,15 @@ impl Prettier {
             .collect::<PathBuf>();
         if path_to_check != locate_from {
             log::debug!(
-                "Skipping prettier location for path {path_to_check:?} that is inside node_modules"
+                "跳过位于 node_modules 内的路径 {path_to_check:?} 的 prettier 位置查找"
             );
             return Ok(ControlFlow::Break(()));
         }
         let path_to_check_metadata = fs
             .metadata(&path_to_check)
             .await
-            .with_context(|| format!("failed to get metadata for initial path {path_to_check:?}"))?
-            .with_context(|| format!("empty metadata for initial path {path_to_check:?}"))?;
+            .with_context(|| format!("获取初始路径 {path_to_check:?} 的元数据失败"))?
+            .with_context(|| format!("初始路径 {path_to_check:?} 的元数据为空"))?;
         if !path_to_check_metadata.is_dir {
             path_to_check.pop();
         }
@@ -103,13 +103,13 @@ impl Prettier {
         let mut closest_package_json_path = None;
         loop {
             if installed_prettiers.contains(&path_to_check) {
-                log::debug!("Found prettier path {path_to_check:?} in installed prettiers");
+                log::debug!("在已安装的 prettier 中找到路径 {path_to_check:?}");
                 return Ok(ControlFlow::Continue(Some(path_to_check)));
             } else if let Some(package_json_contents) =
                 read_package_json(fs, &path_to_check).await?
             {
                 if has_prettier_in_node_modules(fs, &path_to_check).await? {
-                    log::debug!("Found prettier path {path_to_check:?} in the node_modules");
+                    log::debug!("在 node_modules 中找到 prettier 路径 {path_to_check:?}");
                     return Ok(ControlFlow::Continue(Some(path_to_check)));
                 } else {
                     match &closest_package_json_path {
@@ -117,12 +117,12 @@ impl Prettier {
                         Some(closest_package_json_path) => {
                             match package_json_contents.get("workspaces") {
                                 Some(serde_json::Value::Array(workspaces)) => {
-                                    let subproject_path = closest_package_json_path.strip_prefix(&path_to_check).expect("traversing path parents, should be able to strip prefix");
+                                    let subproject_path = closest_package_json_path.strip_prefix(&path_to_check).expect("遍历路径父级时,应能去除前缀");
                                     if workspaces.iter().filter_map(|value| {
                                         if let serde_json::Value::String(s) = value {
                                             Some(s.clone())
                                         } else {
-                                            log::warn!("Skipping non-string 'workspaces' value: {value:?}");
+                                            log::warn!("跳过非字符串的 'workspaces' 值: {value:?}");
                                             None
                                         }
                                     }).any(|workspace_definition| {
@@ -160,7 +160,7 @@ impl Prettier {
             }
 
             if !path_to_check.pop() {
-                log::debug!("Found no prettier in ancestors of {locate_from:?}");
+                log::debug!("在 {locate_from:?} 的祖先目录中未找到 prettier");
                 return Ok(ControlFlow::Continue(None));
             }
         }
@@ -177,7 +177,7 @@ impl Prettier {
             .collect::<PathBuf>();
         if path_to_check != locate_from {
             log::debug!(
-                "Skipping prettier ignore location for path {path_to_check:?} that is inside node_modules"
+                "跳过位于 node_modules 内的路径 {path_to_check:?} 的 prettier ignore 位置查找"
             );
             return Ok(ControlFlow::Break(()));
         }
@@ -185,8 +185,8 @@ impl Prettier {
         let path_to_check_metadata = fs
             .metadata(&path_to_check)
             .await
-            .with_context(|| format!("failed to get metadata for initial path {path_to_check:?}"))?
-            .with_context(|| format!("empty metadata for initial path {path_to_check:?}"))?;
+            .with_context(|| format!("获取初始路径 {path_to_check:?} 的元数据失败"))?
+            .with_context(|| format!("初始路径 {path_to_check:?} 的元数据为空"))?;
         if !path_to_check_metadata.is_dir {
             path_to_check.pop();
         }
@@ -194,7 +194,7 @@ impl Prettier {
         let mut closest_package_json_path = None;
         loop {
             if prettier_ignores.contains(&path_to_check) {
-                log::debug!("Found prettier ignore at {path_to_check:?}");
+                log::debug!("在 {path_to_check:?} 找到 prettier ignore");
                 return Ok(ControlFlow::Continue(Some(path_to_check)));
             } else if let Some(package_json_contents) =
                 read_package_json(fs, &path_to_check).await?
@@ -203,11 +203,11 @@ impl Prettier {
                 if let Some(metadata) = fs
                     .metadata(&ignore_path)
                     .await
-                    .with_context(|| format!("fetching metadata for {ignore_path:?}"))?
+                    .with_context(|| format!("获取 {ignore_path:?} 的元数据"))?
                     && !metadata.is_dir
                     && !metadata.is_symlink
                 {
-                    log::info!("Found prettier ignore at {ignore_path:?}");
+                    log::info!("在 {ignore_path:?} 找到 prettier ignore");
                     return Ok(ControlFlow::Continue(Some(path_to_check)));
                 }
                 match &closest_package_json_path {
@@ -218,7 +218,7 @@ impl Prettier {
                         {
                             let subproject_path = closest_package_json_path
                                 .strip_prefix(&path_to_check)
-                                .expect("traversing path parents, should be able to strip prefix");
+                                .expect("遍历路径父级时,应能去除前缀");
 
                             if workspaces
                                 .iter()
@@ -227,7 +227,7 @@ impl Prettier {
                                         Some(s.clone())
                                     } else {
                                         log::warn!(
-                                            "Skipping non-string 'workspaces' value: {value:?}"
+                                            "跳过非字符串的 'workspaces' 值: {value:?}"
                                         );
                                         None
                                     }
@@ -254,7 +254,7 @@ impl Prettier {
                                     && !metadata.is_dir
                                 {
                                     log::info!(
-                                        "Found prettier ignore at workspace root {workspace_ignore:?}"
+                                        "在工作区根目录 {workspace_ignore:?} 找到 prettier ignore"
                                     );
                                     return Ok(ControlFlow::Continue(Some(path_to_check)));
                                 }
@@ -265,7 +265,7 @@ impl Prettier {
             }
 
             if !path_to_check.pop() {
-                log::debug!("Found no prettier ignore in ancestors of {locate_from:?}");
+                log::debug!("在 {locate_from:?} 的祖先目录中未找到 prettier ignore");
                 return Ok(ControlFlow::Continue(None));
             }
         }
@@ -298,12 +298,12 @@ impl Prettier {
         let executor = cx.background_executor().clone();
         anyhow::ensure!(
             prettier_dir.is_dir(),
-            "Prettier dir {prettier_dir:?} is not a directory"
+            "Prettier 目录 {prettier_dir:?} 不是有效的目录"
         );
         let prettier_server = default_prettier_dir().join(PRETTIER_SERVER_FILE);
         anyhow::ensure!(
             prettier_server.is_file(),
-            "no prettier server package found at {prettier_server:?}"
+            "在 {prettier_server:?} 未找到 prettier 服务器包"
         );
 
         let node_path = executor
@@ -326,7 +326,7 @@ impl Prettier {
             Default::default(),
             &mut cx,
         )
-        .context("prettier server creation")?;
+        .context("创建 prettier 服务器")?;
 
         let server = cx
             .update(|cx| {
@@ -337,7 +337,7 @@ impl Prettier {
                 executor.spawn(server.initialize(params, configuration.into(), request_timeout, cx))
             })
             .await
-            .context("prettier server initialization")?;
+            .context("初始化 prettier 服务器")?;
         Ok(Self::Real(RealPrettier {
             server,
             default: prettier_dir == default_prettier_dir().as_path(),
@@ -363,12 +363,12 @@ impl Prettier {
                         let prettier_settings = &language_settings.prettier;
                         anyhow::ensure!(
                             prettier_settings.allowed,
-                            "Cannot format: prettier is not allowed for language {buffer_language:?}"
+                            "无法格式化: 语言 {buffer_language:?} 不允许使用 prettier"
                         );
                         let prettier_node_modules = self.prettier_dir().join("node_modules");
                         anyhow::ensure!(
                             prettier_node_modules.is_dir(),
-                            "Prettier node_modules dir does not exist: {prettier_node_modules:?}"
+                            "Prettier node_modules 目录不存在: {prettier_node_modules:?}"
                         );
                         let plugin_name_into_path = |plugin_name: &str| {
                             let prettier_plugin_dir = prettier_node_modules.join(plugin_name);
@@ -451,14 +451,14 @@ impl Prettier {
                                 match located_plugin_path {
                                     Some(path) => Some(path),
                                     None => {
-                                        log::error!("Have not found plugin path for {plugin_name:?} inside {prettier_node_modules:?}");
+                                        log::error!("在 {prettier_node_modules:?} 中未找到插件 {plugin_name:?} 的路径");
                                         None
                                     }
                                 }
                             })
                             .collect();
 
-                        let parser = prettier_parser_name(buffer_path.as_deref(), buffer_language, prettier_settings).context("getting prettier parser")?;
+                        let parser = prettier_parser_name(buffer_path.as_deref(), buffer_language, prettier_settings).context("获取 prettier 解析器")?;
 
                         let ignore_path = ignore_dir.and_then(|dir| {
                             let ignore_file = dir.join(".prettierignore");
@@ -466,7 +466,7 @@ impl Prettier {
                         });
 
                         log::debug!(
-                            "Formatting file {:?} with prettier, plugins :{:?}, options: {:?}, ignore_path: {:?}",
+                            "使用 prettier 格式化文件 {:?},插件: {:?},选项: {:?},ignore 路径: {:?}",
                             buffer.file().map(|f| f.full_path(cx)),
                             plugins,
                             prettier_options,
@@ -486,7 +486,7 @@ impl Prettier {
                             },
                         })
                 })
-                .context("building prettier request")?;
+                .context("构建 prettier 请求")?;
 
                 let response = local
                     .server
@@ -504,7 +504,7 @@ impl Prettier {
                         .map(|language| language.lsp_id())
                         .as_deref()
                     {
-                        Some("rust") => anyhow::bail!("prettier does not support Rust"),
+                        Some("rust") => anyhow::bail!("prettier 不支持 Rust"),
                         Some(_other) => {
                             let buffer_language =
                                 buffer.language().map(|language| language.as_ref());
@@ -542,7 +542,7 @@ impl Prettier {
 
                             Ok(buffer.diff(formatted_text, cx))
                         }
-                        None => panic!("Should not format buffer without a language with prettier"),
+                        None => panic!("不应使用 prettier 格式化没有语言关联的缓冲区"),
                     }
                 })?
                 .await),
@@ -556,7 +556,7 @@ impl Prettier {
                 .request::<ClearCache>((), request_timeout)
                 .await
                 .into_response()
-                .context("prettier clear cache"),
+                .context("prettier 清除缓存"),
             #[cfg(any(test, feature = "test-support"))]
             Self::Test(_) => Ok(()),
         }
@@ -599,9 +599,9 @@ fn prettier_parser_name(
             .or_else(|| buffer_language.and_then(|language| language.prettier_parser_name()));
         if parser.is_none() {
             log::error!(
-                "Formatting unsaved file with prettier failed. No prettier parser configured for language {buffer_language:?}"
+                "使用 prettier 格式化未保存文件失败。语言 {buffer_language:?} 未配置 prettier 解析器"
             );
-            anyhow::bail!("Cannot determine prettier parser for unsaved file");
+            anyhow::bail!("无法为未保存的文件确定 prettier 解析器");
         }
         parser
     } else if let (Some(buffer_language), Some(buffer_path)) = (buffer_language, buffer_path)
@@ -626,7 +626,7 @@ async fn has_prettier_in_node_modules(fs: &dyn Fs, path: &Path) -> anyhow::Resul
     if let Some(node_modules_location_metadata) = fs
         .metadata(&possible_node_modules_location)
         .await
-        .with_context(|| format!("fetching metadata for {possible_node_modules_location:?}"))?
+        .with_context(|| format!("获取 {possible_node_modules_location:?} 的元数据"))?
     {
         return Ok(node_modules_location_metadata.is_dir);
     }
@@ -641,17 +641,17 @@ async fn read_package_json(
     if let Some(package_json_metadata) = fs
         .metadata(&possible_package_json)
         .await
-        .with_context(|| format!("fetching metadata for package json {possible_package_json:?}"))?
+        .with_context(|| format!("获取 package.json {possible_package_json:?} 的元数据"))?
         && !package_json_metadata.is_dir
         && !package_json_metadata.is_symlink
     {
         let package_json_contents = fs
             .load(&possible_package_json)
             .await
-            .with_context(|| format!("reading {possible_package_json:?} file contents"))?;
+            .with_context(|| format!("读取 {possible_package_json:?} 文件内容"))?;
         return serde_json::from_str::<HashMap<String, serde_json::Value>>(&package_json_contents)
             .map(Some)
-            .with_context(|| format!("parsing {possible_package_json:?} file contents"));
+            .with_context(|| format!("解析 {possible_package_json:?} 文件内容"));
     }
     Ok(None)
 }
@@ -754,7 +754,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Continue(None),
-            "Should find no prettier for path hierarchy without it"
+            "对于没有 prettier 的路径层级,应找不到 prettier"
         );
         assert_eq!(
             Prettier::locate_prettier_installation(
@@ -765,7 +765,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Continue(Some(PathBuf::from("/root/work/project"))),
-            "Should successfully find a prettier for path hierarchy that has node_modules with prettier, but no package.json mentions of it"
+            "对于 node_modules 中有 prettier 但 package.json 未提及的路径层级,应成功找到 prettier"
         );
         assert_eq!(
             Prettier::locate_prettier_installation(
@@ -776,7 +776,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Break(()),
-            "Should not format files inside node_modules/"
+            "不应格式化 node_modules/ 内的文件"
         );
     }
 
@@ -830,7 +830,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Continue(Some(PathBuf::from("/root/web_blog"))),
-            "Should find a preinstalled prettier in the project root"
+            "应在项目根目录找到预装的 prettier"
         );
         assert_eq!(
             Prettier::locate_prettier_installation(
@@ -841,7 +841,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Break(()),
-            "Should not allow formatting node_modules/ contents"
+            "不应允许格式化 node_modules/ 的内容"
         );
     }
 
@@ -894,7 +894,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Continue(None),
-            "Should find no prettier when node_modules don't have it"
+            "当 node_modules 中没有 prettier 时,应找不到 prettier"
         );
 
         assert_eq!(
@@ -908,7 +908,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Continue(Some(PathBuf::from("/root/work"))),
-            "Should return closest cached value found without path checks"
+            "应返回无需路径检查即可找到的最近缓存值"
         );
 
         assert_eq!(
@@ -920,7 +920,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Break(()),
-            "Should not allow formatting files inside node_modules/"
+            "不应允许格式化 node_modules/ 内的文件"
         );
         assert_eq!(
             Prettier::locate_prettier_installation(
@@ -933,7 +933,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Break(()),
-            "Should ignore cache lookup for files inside node_modules/"
+            "应忽略对 node_modules/ 内文件的缓存查找"
         );
     }
 
@@ -989,7 +989,7 @@ mod tests {
                 Path::new("/root/work/full-stack-foundations/exercises/03.loading/01.problem.loader/app/routes/users+/$username_+/notes.tsx"),
             ).await.unwrap(),
             ControlFlow::Continue(Some(PathBuf::from("/root/work/full-stack-foundations"))),
-            "Should ascend to the multi-workspace root and find the prettier there",
+            "应向上查找到多工作区根目录并在那里找到 prettier",
         );
 
         assert_eq!(
@@ -1001,7 +1001,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Break(()),
-            "Should not allow formatting files inside root node_modules/"
+            "不应允许格式化根 node_modules/ 内的文件"
         );
         assert_eq!(
             Prettier::locate_prettier_installation(
@@ -1012,7 +1012,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Break(()),
-            "Should not allow formatting files inside submodule's node_modules/"
+            "不应允许格式化子模块 node_modules/ 内的文件"
         );
     }
 
@@ -1062,11 +1062,11 @@ mod tests {
             Path::new("/root/work/full-stack-foundations/exercises/03.loading/01.problem.loader/app/routes/users+/$username_+/notes.tsx")
         )
         .await {
-            Ok(path) => panic!("Expected to fail for prettier in package.json but not in node_modules found, but got path {path:?}"),
+            Ok(path) => panic!("预期在 package.json 中声明但 node_modules 中未找到 prettier 时失败,但实际得到了路径 {path:?}"),
             Err(e) => {
                 let message = e.to_string().replace("\\\\", "/");
-                assert!(message.contains("/root/work/full-stack-foundations/exercises/03.loading/01.problem.loader"), "Error message should mention which project had prettier defined");
-                assert!(message.contains("/root/work/full-stack-foundations"), "Error message should mention potential candidates without prettier node_modules contents");
+                assert!(message.contains("/root/work/full-stack-foundations/exercises/03.loading/01.problem.loader"), "错误消息应提及哪个项目定义了 prettier");
+                assert!(message.contains("/root/work/full-stack-foundations"), "错误消息应提及没有 prettier node_modules 内容的潜在候选项目");
             },
         };
     }
@@ -1100,7 +1100,7 @@ mod tests {
             .await
             .unwrap(),
             ControlFlow::Continue(Some(PathBuf::from("/root/project"))),
-            "Should find prettierignore in project root"
+            "应在项目根目录找到 prettierignore"
         );
     }
 

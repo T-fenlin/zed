@@ -71,16 +71,16 @@ async fn with_cancellation<T>(f: impl Future<Output = T>, s: &ToolCallEventStrea
     futures::select! {
         result = f.fuse() => Ok(result),
         _ = s.cancelled_by_user().fuse() => {
-            Err("Diagnostics cancelled by user".to_string())
+            Err("诊断已被用户取消".to_string())
         }
     }
 }
 
 fn freshness_message(refreshed: bool) -> &'static str {
     if refreshed {
-        "Diagnostics successfully refreshed."
+        "诊断已成功刷新。"
     } else {
-        "Failed to refresh diagnostics. Diagnostics may be stale."
+        "刷新诊断失败。诊断可能已过期。"
     }
 }
 
@@ -99,7 +99,7 @@ async fn pull_diagnostics(
         Some(path) => {
             let open_buffer_task = project.update(cx, |project, cx| {
                 let Some(project_path) = project.find_project_path(path, cx) else {
-                    return Err(format!("Could not find path {} in project", path.display()));
+                    return Err(format!("在项目中找不到路径 {}", path.display()));
                 };
                 Ok(project.open_buffer(project_path, cx))
             })?;
@@ -114,7 +114,7 @@ async fn pull_diagnostics(
             });
             let pull_result = with_cancellation(pull_task, event_stream).await?;
             if let Err(error) = &pull_result {
-                log::warn!("Failed to pull diagnostics, using cached: {error:#}");
+                log::warn!("拉取诊断失败,使用缓存:{error:#}");
             }
             Ok(pull_result.is_ok())
         }
@@ -125,7 +125,7 @@ async fn pull_diagnostics(
             });
             let succeeded = with_cancellation(pull_task, event_stream).await?;
             if !succeeded {
-                log::warn!("Failed to pull workspace diagnostics, using cached");
+                log::warn!("拉取工作区诊断失败,使用缓存");
             }
             Ok(succeeded)
         }
@@ -151,9 +151,9 @@ impl AgentTool for DiagnosticsTool {
             Some(path) if !path.is_empty() => Some(path),
             _ => None,
         }) {
-            format!("Check diagnostics for {}", MarkdownInlineCode(&path)).into()
+            format!("检查 {} 的诊断", MarkdownInlineCode(&path)).into()
         } else {
-            "Check project diagnostics".into()
+            "检查项目诊断".into()
         }
     }
 
@@ -175,7 +175,7 @@ impl AgentTool for DiagnosticsTool {
 
                     let open_buffer_task = project.update(cx, |project, cx| {
                         let Some(project_path) = project.find_project_path(path, cx) else {
-                            return Err(format!("Could not find path {path} in project"));
+                            return Err(format!("在项目中找不到路径 {path}"));
                         };
                         Ok(project.open_buffer(project_path, cx))
                     })?;
@@ -198,7 +198,7 @@ impl AgentTool for DiagnosticsTool {
 
                         writeln!(
                             output,
-                            "{} at line {}: {}",
+                            "第 {} 行出现{}:{}",
                             severity,
                             range.start.row + 1,
                             entry.diagnostic.message
@@ -209,7 +209,7 @@ impl AgentTool for DiagnosticsTool {
                     let freshness = freshness_message(refreshed);
                     if output.is_empty() {
                         Ok(format!(
-                            "{freshness}\n\nFile doesn't have errors or warnings!"
+                            "{freshness}\n\n文件没有错误或警告!"
                         ))
                     } else {
                         Ok(format!("{freshness}\n\n{output}"))
@@ -232,7 +232,7 @@ impl AgentTool for DiagnosticsTool {
 
                                 has_diagnostics = true;
                                 output.push_str(&format!(
-                                    "{}: {} error(s), {} warning(s)\n",
+                                    "{}:{} 个错误,{} 个警告\n",
                                     worktree.read(cx).absolutize(&project_path.path).display(),
                                     summary.error_count,
                                     summary.warning_count
@@ -248,7 +248,7 @@ impl AgentTool for DiagnosticsTool {
                         Ok(format!("{freshness}\n\n{output}"))
                     } else {
                         Ok(format!(
-                            "{freshness}\n\nNo errors or warnings found in the project."
+                            "{freshness}\n\n在项目中未发现错误或警告。"
                         ))
                     }
                 }

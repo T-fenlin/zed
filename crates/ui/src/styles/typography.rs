@@ -251,7 +251,7 @@ impl Component for Headline {
     }
 
     fn description() -> &'static str {
-        "A headline element used to emphasize text and create visual hierarchy in the UI."
+        "用于在界面中强调文本并创建视觉层级的标题元素。"
     }
 
     fn preview(_window: &mut Window, _cx: &mut App) -> AnyElement {

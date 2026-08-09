@@ -446,10 +446,10 @@ impl SettingsStore {
     pub fn get<T: Settings>(&self, path: Option<SettingsLocation>) -> &T {
         self.setting_values
             .get(&TypeId::of::<T>())
-            .unwrap_or_else(|| panic!("unregistered setting type {}", type_name::<T>()))
+            .unwrap_or_else(|| panic!("未注册的设置类型 {}", type_name::<T>()))
             .value_for_path(path)
             .downcast_ref::<T>()
-            .expect("no default value for setting type")
+            .expect("设置类型没有默认值")
     }
 
     /// Get the value of a setting.
@@ -466,7 +466,7 @@ impl SettingsStore {
     pub fn get_all_locals<T: Settings>(&self) -> Vec<(WorktreeId, Arc<RelPath>, &T)> {
         self.setting_values
             .get(&TypeId::of::<T>())
-            .unwrap_or_else(|| panic!("unregistered setting type {}", type_name::<T>()))
+            .unwrap_or_else(|| panic!("未注册的设置类型 {}", type_name::<T>()))
             .all_local_values()
             .into_iter()
             .map(|(id, path, any)| {
@@ -474,7 +474,7 @@ impl SettingsStore {
                     id,
                     path,
                     any.downcast_ref::<T>()
-                        .expect("wrong value type for setting"),
+                        .expect("设置的值类型错误"),
                 )
             })
             .collect()
@@ -486,7 +486,7 @@ impl SettingsStore {
     pub fn override_global<T: Settings>(&mut self, value: T) {
         self.setting_values
             .get_mut(&TypeId::of::<T>())
-            .unwrap_or_else(|| panic!("unregistered setting type {}", type_name::<T>()))
+            .unwrap_or_else(|| panic!("未注册的设置类型 {}", type_name::<T>()))
             .set_global_value(Box::new(value))
     }
 
@@ -574,7 +574,7 @@ impl SettingsStore {
                             let resolved_path =
                                 fs.canonicalize(settings_path).await.with_context(|| {
                                     format!(
-                                        "Failed to canonicalize settings path {:?}",
+                                        "无法规范化设置路径 {:?}",
                                         settings_path
                                     )
                                 })?;
@@ -582,13 +582,13 @@ impl SettingsStore {
                             fs.atomic_write(resolved_path.clone(), new_text.clone())
                                 .await
                                 .with_context(|| {
-                                    format!("Failed to write settings to file {:?}", resolved_path)
+                                    format!("无法将设置写入文件 {:?}", resolved_path)
                                 })?;
                         } else {
                             fs.atomic_write(settings_path.to_path_buf(), new_text.clone())
                                 .await
                                 .with_context(|| {
-                                    format!("Failed to write settings to file {:?}", settings_path)
+                                    format!("无法将设置写入文件 {:?}", settings_path)
                                 })?;
                         }
 
@@ -608,7 +608,7 @@ impl SettingsStore {
                 }
                 .boxed_local()
             }))
-            .map_err(|err| anyhow::format_err!("Failed to update settings file: {}", err))
+            .map_err(|err| anyhow::format_err!("无法更新设置文件: {}", err))
             .log_with_level(log::Level::Warn);
         return rx;
     }
@@ -859,10 +859,10 @@ impl SettingsStore {
         } else {
             let (old_content, parse_status) = UserSettingsContent::parse_json(text);
             if let ParseStatus::Failed { error } = &parse_status {
-                log::error!("Failed to parse settings for update: {error}");
+                log::error!("解析设置以进行更新失败: {error}");
             }
             old_content
-                .context("Settings file could not be parsed. Fix syntax errors before updating.")?
+                .context("无法解析设置文件。更新前请修复语法错误。")?
         };
         let mut new_content = old_content.clone();
         update(&mut new_content.content);
@@ -1046,7 +1046,7 @@ impl SettingsStore {
         match (path.clone(), kind, content) {
             (LocalSettingsPath::InWorktree(directory_path), LocalSettingsKind::Tasks, _) => {
                 return Err(InvalidSettingsError::Tasks {
-                    message: "Attempted to submit tasks into the settings store".to_string(),
+                    message: "尝试将任务提交到设置存储中".to_string(),
                     path: directory_path
                         .join(RelPath::from_unix_str(task_file_name()).unwrap())
                         .as_std_path()
@@ -1055,7 +1055,7 @@ impl SettingsStore {
             }
             (LocalSettingsPath::InWorktree(directory_path), LocalSettingsKind::Debug, _) => {
                 return Err(InvalidSettingsError::Debug {
-                    message: "Attempted to submit debugger config into the settings store"
+                    message: "尝试将调试器配置提交到设置存储中"
                         .to_string(),
                     path: directory_path
                         .join(RelPath::from_unix_str(task_file_name()).unwrap())
@@ -1119,7 +1119,7 @@ impl SettingsStore {
             }
             (LocalSettingsPath::OutsideWorktree(path), kind, _) => {
                 log::error!(
-                    "OutsideWorktree path {:?} with kind {:?} is only supported by editorconfig",
+                    "工作树外路径 {:?} 及类型 {:?} 仅受 editorconfig 支持",
                     path,
                     kind
                 );
@@ -1197,7 +1197,7 @@ impl SettingsStore {
             replace_subschema::<LanguageToSettingsMap>(generator, || {
                 json_schema!({
                     "type": "object",
-                    "errorMessage": "No language with this name is installed.",
+                    "errorMessage": "未安装具有此名称的语言。",
                     "properties": params.language_names.iter().map(|name| (name.clone(), language_settings_content_ref.clone())).collect::<serde_json::Map<_, _>>()
                 })
             });
@@ -1207,7 +1207,7 @@ impl SettingsStore {
             replace_subschema::<FileTypeMap>(generator, || {
                 json_schema!({
                     "type": "object",
-                    "errorMessage": "No language with this name is installed.",
+                    "errorMessage": "未安装具有此名称的语言。",
                     "properties": params.language_names.iter().map(|name| (name.clone(), file_type_patterns_ref.clone())).collect::<serde_json::Map<_, _>>(),
                     "additionalProperties": file_type_patterns_ref.clone()
                 })
@@ -1219,7 +1219,7 @@ impl SettingsStore {
         let lsp_settings_definition = generator
             .definitions()
             .get("LspSettings")
-            .expect("LspSettings should be defined")
+            .expect("LspSettings 应已定义")
             .clone();
 
         if !params.lsp_adapter_names.is_empty() {
@@ -1229,7 +1229,7 @@ impl SettingsStore {
                 for adapter_name in params.lsp_adapter_names {
                     let mut base_lsp_settings = lsp_settings_definition
                         .as_object()
-                        .expect("LspSettings should be an object")
+                        .expect("LspSettings 应为一个对象")
                         .clone();
 
                     if let Some(properties) = base_lsp_settings.get_mut("properties") {
@@ -1498,14 +1498,14 @@ impl SettingsParseResult {
             MigrationStatus::NotNeeded => Ok(false),
             MigrationStatus::Succeeded => Ok(true),
             MigrationStatus::Failed { error } => {
-                Err(anyhow::format_err!(error)).context("Failed to migrate settings")
+                Err(anyhow::format_err!(error)).context("无法迁移设置")
             }
         };
 
         let parse_result = match self.parse_status {
             ParseStatus::Success | ParseStatus::Unchanged => Ok(()),
             ParseStatus::Failed { error } => {
-                Err(anyhow::format_err!(error)).context("Failed to parse settings")
+                Err(anyhow::format_err!(error)).context("无法解析设置")
             }
         };
 
@@ -1626,7 +1626,7 @@ impl<T: Settings> AnySettingValue for SettingValue<T> {
 
         self.global_value
             .as_ref()
-            .unwrap_or_else(|| panic!("no default value for setting {}", self.setting_type_name()))
+            .unwrap_or_else(|| panic!("设置 {} 没有默认值", self.setting_type_name()))
     }
 
     fn set_global_value(&mut self, value: Box<dyn Any>) {
@@ -1820,7 +1820,7 @@ mod tests {
             crate::parse_json_with_comments(&default_settings()).unwrap();
         let root = defaults
             .as_object_mut()
-            .expect("default settings must be a JSON object");
+            .expect("默认设置必须是 JSON 对象");
         root.insert("dev".into(), serde_json::json!({ "auto_update": false }));
         root.insert("stable".into(), serde_json::json!({ "auto_update": true }));
         let defaults_with_overrides = serde_json::to_string(&defaults).unwrap();
@@ -1831,7 +1831,7 @@ mod tests {
         assert_eq!(
             store.get::<AutoUpdateSetting>(None),
             &AutoUpdateSetting { auto_update: false },
-            "dev override from default settings should apply",
+            "来自默认设置的开发覆盖应生效",
         );
     }
 
@@ -3114,7 +3114,7 @@ mod tests {
 
         let properties = schema
             .pointer("/$defs/LspSettingsMap/properties")
-            .expect("LspSettingsMap should have properties")
+            .expect("LspSettingsMap 应具有属性")
             .as_object()
             .unwrap();
 
@@ -3125,7 +3125,7 @@ mod tests {
             .get("rust-analyzer")
             .unwrap()
             .pointer("/properties/initialization_options/$ref")
-            .expect("initialization_options should have a $ref")
+            .expect("initialization_options 应具有 $ref")
             .as_str()
             .unwrap();
 
@@ -3138,7 +3138,7 @@ mod tests {
             .get("rust-analyzer")
             .unwrap()
             .pointer("/properties/settings/$ref")
-            .expect("settings should have a $ref")
+            .expect("设置 应具有 $ref")
             .as_str()
             .unwrap();
 
@@ -3169,7 +3169,7 @@ mod tests {
 
         let properties = schema
             .pointer("/$defs/LspSettingsMap/properties")
-            .expect("LspSettingsMap should have properties")
+            .expect("LspSettingsMap 应具有属性")
             .as_object()
             .unwrap();
 
@@ -3180,7 +3180,7 @@ mod tests {
             .get("rust-analyzer")
             .unwrap()
             .pointer("/properties/initialization_options/$ref")
-            .expect("initialization_options should have a $ref")
+            .expect("initialization_options 应具有 $ref")
             .as_str()
             .unwrap();
 
@@ -3193,7 +3193,7 @@ mod tests {
             .get("rust-analyzer")
             .unwrap()
             .pointer("/properties/settings/$ref")
-            .expect("settings should have a $ref")
+            .expect("设置 应具有 $ref")
             .as_str()
             .unwrap();
 
@@ -3221,12 +3221,12 @@ mod tests {
 
         let file_type_map = schema
             .pointer("/$defs/FileTypeMap")
-            .expect("schema should have a FileTypeMap definition");
+            .expect("schema 应具有 FileTypeMap 定义");
         let properties = file_type_map
             .pointer("/properties")
-            .expect("FileTypeMap should have properties")
+            .expect("FileTypeMap 应具有属性")
             .as_object()
-            .expect("FileTypeMap properties should be an object");
+            .expect("FileTypeMap 属性应为一个对象");
 
         let mut language_names = properties.keys().collect::<Vec<_>>();
         language_names.sort();
@@ -3234,7 +3234,7 @@ mod tests {
 
         let patterns_schema = file_type_map
             .pointer("/additionalProperties")
-            .expect("FileTypeMap should validate values of unknown language names");
+            .expect("FileTypeMap 应验证未知语言名称的值");
         assert_eq!(properties.get("Rust"), Some(patterns_schema));
         assert_eq!(properties.get("TypeScript"), Some(patterns_schema));
     }

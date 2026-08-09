@@ -202,7 +202,7 @@ impl AnyActiveCall for ActiveCallEntity {
         cx: &mut App,
     ) -> Task<Result<Entity<Project>>> {
         let Some(room) = self.0.read(cx).room().cloned() else {
-            return Task::ready(Err(anyhow::anyhow!("not in a call")));
+            return Task::ready(Err(anyhow::anyhow!("不在通话中")));
         };
         room.update(cx, |room, cx| {
             room.join_project(project_id, language_registry, fs, cx)
@@ -321,7 +321,7 @@ impl AnyActiveCall for ActiveCallEntity {
                 let view = view
                     .clone()
                     .downcast::<RemoteVideoTrackView>()
-                    .expect("SharedScreen view must be a RemoteVideoTrackView");
+                    .expect("共享屏幕视图必须是远程视频轨道视图");
                 let cloned = view.update(cx, |view, cx| view.clone(window, cx));
                 AnyView::from(cloned)
             }
@@ -490,7 +490,7 @@ impl ActiveCall {
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
         if !self.pending_invites.insert(called_user_id) {
-            return Task::ready(Err(anyhow!("user was already invited")));
+            return Task::ready(Err(anyhow!("用户已被邀请")));
         }
         cx.notify();
 
@@ -564,11 +564,11 @@ impl ActiveCall {
             let result = invite.await;
             if result.is_ok() {
                 this.update(cx, |this, cx| {
-                    this.report_call_event("Participant Invited", cx)
+                    this.report_call_event("参与者已受邀", cx)
                 })?;
             } else {
                 //TODO: report collaboration error
-                log::error!("invite failed: {:?}", result);
+                log::error!("邀请失败:{:?}", result);
             }
 
             this.update(cx, |this, cx| {
@@ -587,7 +587,7 @@ impl ActiveCall {
         let room_id = if let Some(room) = self.room() {
             room.read(cx).id()
         } else {
-            return Task::ready(Err(anyhow!("no active call")));
+            return Task::ready(Err(anyhow!("没有正在进行的通话")));
         };
 
         let client = self.client.clone();
@@ -608,13 +608,13 @@ impl ActiveCall {
 
     pub fn accept_incoming(&mut self, cx: &mut Context<Self>) -> Task<Result<()>> {
         if self.room.is_some() {
-            return Task::ready(Err(anyhow!("cannot join while on another call")));
+            return Task::ready(Err(anyhow!("无法在另一个通话中加入")));
         }
 
         let call = if let Some(call) = self.incoming_call.0.borrow_mut().take() {
             call
         } else {
-            return Task::ready(Err(anyhow!("no incoming call")));
+            return Task::ready(Err(anyhow!("没有来电")));
         };
 
         if self.pending_room_creation.is_some() {
@@ -633,7 +633,7 @@ impl ActiveCall {
             this.update(cx, |this, cx| this.set_room(room.clone(), cx))?
                 .await?;
             this.update(cx, |this, cx| {
-                this.report_call_event("Incoming Call Accepted", cx)
+                this.report_call_event("已接听来电", cx)
             })?;
             Ok(())
         })
@@ -645,8 +645,8 @@ impl ActiveCall {
             .0
             .borrow_mut()
             .take()
-            .context("no incoming call")?;
-        telemetry::event!("Incoming Call Declined", room_id = call.room_id);
+            .context("没有来电")?;
+        telemetry::event!("已拒绝来电", room_id = call.room_id);
         self.client.send(proto::DeclineCall {
             room_id: call.room_id,
         })?;
@@ -680,14 +680,14 @@ impl ActiveCall {
             let room = join.await?;
             this.update(cx, |this, cx| this.set_room(room.clone(), cx))?
                 .await?;
-            this.update(cx, |this, cx| this.report_call_event("Channel Joined", cx))?;
+            this.update(cx, |this, cx| this.report_call_event("已加入频道", cx))?;
             Ok(room)
         })
     }
 
     pub fn hang_up(&mut self, cx: &mut Context<Self>) -> Task<Result<()>> {
         cx.notify();
-        self.report_call_event("Call Ended", cx);
+        self.report_call_event("通话已结束", cx);
 
         Audio::end_call(cx);
 
@@ -707,10 +707,10 @@ impl ActiveCall {
         cx: &mut Context<Self>,
     ) -> Task<Result<u64>> {
         if let Some((room, _)) = self.room.as_ref() {
-            self.report_call_event("Project Shared", cx);
+            self.report_call_event("项目已共享", cx);
             room.update(cx, |room, cx| room.share_project(project, cx))
         } else {
-            Task::ready(Err(anyhow!("no active call")))
+            Task::ready(Err(anyhow!("没有正在进行的通话")))
         }
     }
 
@@ -719,8 +719,8 @@ impl ActiveCall {
         project: Entity<Project>,
         cx: &mut Context<Self>,
     ) -> Result<()> {
-        let (room, _) = self.room.as_ref().context("no active call")?;
-        self.report_call_event("Project Unshared", cx);
+        let (room, _) = self.room.as_ref().context("没有正在进行的通话")?;
+        self.report_call_event("项目已取消共享", cx);
         room.update(cx, |room, cx| room.unshare_project(project, cx))
     }
 

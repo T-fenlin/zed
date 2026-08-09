@@ -251,7 +251,7 @@ impl DapStore {
         match &self.mode {
             DapStoreMode::Local(_) => {
                 let Some(adapter) = DapRegistry::global(cx).adapter(&definition.adapter) else {
-                    return Task::ready(Err(anyhow!("Failed to find a debug adapter")));
+                    return Task::ready(Err(anyhow!("找不到调试适配器")));
                 };
 
                 let settings_location = SettingsLocation {
@@ -364,7 +364,7 @@ impl DapStore {
                 })
             }
             DapStoreMode::Collab => {
-                Task::ready(Err(anyhow!("Debugging is not yet supported via collab")))
+                Task::ready(Err(anyhow!("协作模式暂不支持调试")))
             }
         }
     }
@@ -412,13 +412,13 @@ impl DapStore {
                         }
 
                         anyhow::bail!(
-                            "None of the locators for task `{}` completed successfully",
+                            "任务 `{}` 的所有定位器均未成功完成",
                             build_command.label
                         )
                     })
                 } else {
                     Task::ready(Err(anyhow!(
-                        "Couldn't find any locator for task `{}`. Specify the `attach` or `launch` arguments in your debug scenario definition",
+                        "找不到任务 `{}` 的任何定位器。请在调试场景定义中指定 `attach` 或 `launch` 参数",
                         build_command.label
                     )))
                 }
@@ -435,7 +435,7 @@ impl DapStore {
                 })
             }
             DapStoreMode::Collab => {
-                Task::ready(Err(anyhow!("Debugging is not yet supported via collab")))
+                Task::ready(Err(anyhow!("协作模式暂不支持调试")))
             }
         }
     }
@@ -600,7 +600,7 @@ impl DapStore {
         cx: &mut App,
     ) -> Arc<dyn DapDelegate> {
         let Some(local_store) = self.as_local() else {
-            unimplemented!("Starting session on remote side");
+            unimplemented!("在远端启动会话");
         };
 
         Arc::new(DapAdapterDelegate::new(
@@ -740,7 +740,7 @@ impl DapStore {
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
         let Some(session) = self.sessions.remove(&session_id) else {
-            return Task::ready(Err(anyhow!("Could not find session: {:?}", session_id)));
+            return Task::ready(Err(anyhow!("找不到会话: {:?}", session_id)));
         };
 
         let shutdown_children = session
@@ -812,7 +812,7 @@ impl DapStore {
         let task = envelope
             .payload
             .build_command
-            .context("missing definition")?;
+            .context("缺少定义")?;
         let build_task = SpawnInTerminal::from_proto(task);
         let locator = envelope.payload.locator;
         let request = this
@@ -830,7 +830,7 @@ impl DapStore {
         mut cx: AsyncApp,
     ) -> Result<proto::DebugAdapterBinary> {
         let definition = DebugTaskDefinition::from_proto(
-            envelope.payload.definition.context("missing definition")?,
+            envelope.payload.definition.context("缺少定义")?,
         )?;
         let (tx, mut rx) = mpsc::unbounded();
         let session_id = envelope.payload.session_id;
@@ -860,7 +860,7 @@ impl DapStore {
                     .read(cx)
                     .worktree_for_id(WorktreeId::from_proto(envelope.payload.worktree_id), cx)
             })
-            .context("Failed to find worktree with a given ID")?;
+            .context("找不到指定 ID 的工作树")?;
         let binary = this
             .update(&mut cx, |this, cx| {
                 this.get_debug_adapter_binary(
@@ -1025,7 +1025,7 @@ impl dap::adapters::DapDelegate for DapAdapterDelegate {
         let entry = self
             .worktree
             .entry_for_path(path)
-            .with_context(|| format!("no worktree entry for path {path:?}"))?;
+            .with_context(|| format!("路径 {path:?} 没有对应的工作树条目"))?;
         let abs_path = self.worktree.absolutize(&entry.path);
 
         self.fs.load(&abs_path).await

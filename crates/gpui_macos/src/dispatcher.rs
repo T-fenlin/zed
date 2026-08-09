@@ -39,7 +39,7 @@ impl PlatformDispatcher for MacDispatcher {
 
         let queue_priority = match priority {
             Priority::RealtimeAudio => {
-                panic!("RealtimeAudio priority should use spawn_realtime, not dispatch")
+                panic!("RealtimeAudio 优先级应使用 spawn_realtime,而非 dispatch")
             }
             Priority::High => DispatchQueueGlobalPriority::High,
             Priority::Medium => DispatchQueueGlobalPriority::Default,
@@ -102,7 +102,7 @@ fn set_audio_thread_priority() -> anyhow::Result<()> {
     };
 
     if result != KERN_SUCCESS {
-        anyhow::bail!("failed to set thread extended policy");
+        anyhow::bail!("设置线程扩展策略失败");
     }
 
     // relatively high priority
@@ -120,7 +120,7 @@ fn set_audio_thread_priority() -> anyhow::Result<()> {
     };
 
     if result != KERN_SUCCESS {
-        anyhow::bail!("failed to set thread precedence policy");
+        anyhow::bail!("设置线程优先级策略失败");
     }
 
     const GUARANTEED_AUDIO_DUTY_CYCLE: f32 = 0.75;
@@ -157,7 +157,7 @@ fn set_audio_thread_priority() -> anyhow::Result<()> {
     };
 
     if result != KERN_SUCCESS {
-        anyhow::bail!("failed to set thread time constraint policy");
+        anyhow::bail!("设置线程时间约束策略失败");
     }
 
     Ok(())

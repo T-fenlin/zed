@@ -434,7 +434,7 @@ mod tests {
         cx.update_global::<SettingsStore, _>(|store, cx| {
             store
                 .set_user_settings(&content, cx)
-                .expect("failed to parse test settings");
+                .expect("无法解析测试设置");
         });
         CompatibleProviders::from_settings(cx)
     }
@@ -470,7 +470,7 @@ mod tests {
         assert_eq!(
             registry.read_with(cx, |registry, _| provider_icons(registry, "acme")),
             vec![IconOrSvg::Icon(IconName::AiOpenAiCompat)],
-            "the OpenAI-compatible provider should win the name collision"
+            "OpenAI 兼容的提供商应赢得名称冲突"
         );
 
         // The user removes the `anthropic_compatible` entry; the remaining
@@ -489,7 +489,7 @@ mod tests {
         assert_eq!(
             registry.read_with(cx, |registry, _| provider_icons(registry, "acme")),
             vec![IconOrSvg::Icon(IconName::AiOpenAiCompat)],
-            "the provider registered for `acme` should be the OpenAI-compatible one"
+            "为 `acme` 注册的提供商应为 OpenAI 兼容的提供商"
         );
     }
 
@@ -526,7 +526,7 @@ mod tests {
         assert_eq!(
             registry.read_with(cx, |registry, _| provider_icons(registry, "acme")),
             vec![IconOrSvg::Icon(IconName::AiAnthropicCompat)],
-            "after removing the openai_compatible entry, the anthropic_compatible provider should be registered"
+            "移除 openai_compatible 条目后,应注册 anthropic_compatible 提供商"
         );
 
         // Removing the last entry unregisters the provider entirely.
@@ -544,7 +544,7 @@ mod tests {
         assert_eq!(
             registry.read_with(cx, |registry, _| provider_icons(registry, "acme")),
             Vec::new(),
-            "removing all entries should unregister the provider"
+            "移除所有条目后应注销该提供商"
         );
     }
 }

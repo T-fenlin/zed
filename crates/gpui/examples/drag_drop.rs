@@ -118,7 +118,7 @@ impl Render for DragDrop {
                     .on_drop(cx.listener(|this, info: &DragInfo, _, _| {
                         this.drop_on = Some(*info);
                     }))
-                    .child("Drop items here"),
+                    .child("将项目拖放到此处"),
             )
     }
 }

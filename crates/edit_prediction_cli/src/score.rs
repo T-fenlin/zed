@@ -37,14 +37,14 @@ pub async fn run_scoring(
 
     let progress = example_progress.start(Step::Score);
 
-    progress.set_substatus("computing metrics");
+    progress.set_substatus("正在计算指标");
     let example_for_scoring = example.clone();
     example.score = cx
         .background_spawn(async move {
             let prompt_inputs = example_for_scoring
                 .prompt_inputs
                 .as_ref()
-                .context("prompt_inputs is required for scoring - run prediction first or ensure JSON includes prompt_inputs")?;
+                .context("评分需要 prompt_inputs - 请先运行预测或确保 JSON 中包含 prompt_inputs")?;
             let original_text: &str = prompt_inputs.cursor_excerpt.as_ref();
             let expected_patches_with_cursors = example_for_scoring
                 .spec
@@ -91,7 +91,7 @@ pub async fn run_scoring(
                 Err(error) => {
                     return Err(error).with_context(|| {
                         format!(
-                            "Expected patch did not apply for {}",
+                            "预期补丁未应用于 {}",
                             example_for_scoring.spec.name
                         )
                     });
@@ -168,11 +168,11 @@ pub fn run_context_coverage_scoring(
 ) -> anyhow::Result<()> {
     let progress = example_progress.start(Step::Score);
 
-    progress.set_substatus("computing context coverage");
+    progress.set_substatus("正在计算上下文覆盖率");
     let prompt_inputs = example
         .prompt_inputs
         .as_ref()
-        .context("prompt_inputs is required for context coverage scoring")?;
+        .context("上下文覆盖率评分需要 prompt_inputs")?;
     let context = context_excerpts(
         example,
         prompt_inputs,
@@ -324,7 +324,7 @@ pub fn print_report(
     println!("{}", separator);
     println!(
         "{:<40} {:>8} {:>5} {:>7} {:>7} {:>7} {:>7} {:>6} {:>5}",
-        "Example", "DeltaChrF", "Brace", "F1", "Revert", "QaRev", "QaConf", "Cursor", "WrgER"
+        "示例", "DeltaChrF", "Brace", "F1", "回退", "QaRev", "QaConf", "光标", "WrgER"
     );
     println!("{}", separator);
 
@@ -400,8 +400,8 @@ pub fn print_report(
 
     if skipped_lines > 0 {
         println!(
-            "{:<40} (use --verbose to see all {} examples)",
-            format!("... and {} more", skipped_lines),
+            "{:<40} (使用 --verbose 查看全部 {} 个示例)",
+            format!("... 以及另外 {} 个", skipped_lines),
             printed_lines + skipped_lines
         );
     }
@@ -429,7 +429,7 @@ pub fn print_report(
 
         println!(
             "{:<40} {:>8.2} {:>5.1} {:>6.1}% {:>6.1}% {:>7} {:>7} {:>6} {:>5}",
-            "TOTAL / AVERAGE",
+            "总计 / 平均",
             summary.avg_delta_chr_f,
             summary.avg_braces_disbalance,
             summary.exact_lines_f1 * 100.0,
@@ -452,7 +452,7 @@ pub fn print_report(
 
         if let Some(avg_distance) = summary.cursor_avg_distance {
             println!(
-                "Cursor: {}/{} exact matches ({:.0}%), avg distance: {:.1} bytes",
+                "光标: {}/{} 精确匹配 ({:.0}%), 平均距离: {:.1} 字节",
                 summary.cursor_exact_matches.unwrap_or(0),
                 summary.cursor_total_evaluated.unwrap_or(0),
                 summary.cursor_exact_match_rate.unwrap_or(0.0) * 100.0,
@@ -465,7 +465,7 @@ pub fn print_report(
             summary.isolated_whitespace_rate,
         ) {
             println!(
-                "Isolated whitespace changes: {}/{} ({:.1}%)",
+                "孤立空白字符更改: {}/{} ({:.1}%)",
                 count,
                 total_scores,
                 rate * 100.0
@@ -476,7 +476,7 @@ pub fn print_report(
             (summary.avg_kept_rate, summary.kept_rate_examples)
         {
             println!(
-                "Kept rate: {:.1}% avg ({} evaluated, kept chars: {}, correctly deleted chars: {}, discarded chars: {})",
+                "保留率: 平均 {:.1}% (评估 {} 个, 保留字符: {}, 正确删除字符: {}, 丢弃字符: {})",
                 avg_kept_rate * 100.0,
                 evaluated,
                 summary.total_kept_chars.unwrap_or(0),
@@ -488,7 +488,7 @@ pub fn print_report(
             (summary.avg_recall_rate, summary.recall_rate_examples)
         {
             println!(
-                "Recall rate: {:.1}% avg ({} evaluated)",
+                "召回率: 平均 {:.1}% (评估 {} 个)",
                 avg_recall_rate * 100.0,
                 evaluated
             );
@@ -498,13 +498,13 @@ pub fn print_report(
             summary.retrieved_context_examples,
         ) {
             println!(
-                "Retrieved context size: {:.0} bytes avg ({} examples)",
+                "检索上下文大小: 平均 {:.0} 字节 ({} 个示例)",
                 avg_bytes, example_count
             );
         }
 
         print_prf_line(
-            "Editable context lines",
+            "可编辑上下文行",
             summary.editable_context_examples,
             summary.avg_editable_context_lines_precision,
             summary.avg_editable_context_lines_recall,
@@ -514,7 +514,7 @@ pub fn print_report(
             summary.editable_context_lines_fn,
         );
         print_prf_line(
-            "Editable context files",
+            "可编辑上下文文件",
             summary.editable_context_examples,
             summary.avg_editable_context_files_precision,
             summary.avg_editable_context_files_recall,
@@ -524,7 +524,7 @@ pub fn print_report(
             summary.editable_context_files_fn,
         );
         print_prf_line(
-            "Jump location lines",
+            "跳转位置行",
             summary.jump_location_examples,
             summary.avg_jump_location_lines_precision,
             summary.avg_jump_location_lines_recall,
@@ -534,7 +534,7 @@ pub fn print_report(
             summary.jump_location_lines_fn,
         );
         print_prf_line(
-            "Jump location files",
+            "跳转位置文件",
             summary.jump_location_examples,
             summary.avg_jump_location_files_precision,
             summary.avg_jump_location_files_recall,
@@ -558,7 +558,7 @@ pub fn print_report(
             let patch_rate = predictions_with_patch as f32 / total_scores as f32 * 100.0;
             println!();
             println!(
-                "Token changes ({}/{} predictions produced a patch, {:.1}% — table includes only those)",
+                "令牌更改 ({} / {} 个预测生成了补丁, {:.1}% — 表格仅包含这些)",
                 predictions_with_patch, total_scores, patch_rate
             );
             println!(
@@ -568,7 +568,7 @@ pub fn print_report(
             println!("{}", "─".repeat(LINE_WIDTH));
             println!(
                 "{:<20} {:>8} {:>8} {:>8} {:>8} {:>8}",
-                "Inserted tokens",
+                "插入的令牌",
                 percentile(&patch_inserted_tokens, 25),
                 percentile(&patch_inserted_tokens, 50),
                 percentile(&patch_inserted_tokens, 75),
@@ -577,7 +577,7 @@ pub fn print_report(
             );
             println!(
                 "{:<20} {:>8} {:>8} {:>8} {:>8} {:>8}",
-                "Deleted tokens",
+                "删除的令牌",
                 percentile(&patch_deleted_tokens, 25),
                 percentile(&patch_deleted_tokens, 50),
                 percentile(&patch_deleted_tokens, 75),
@@ -586,7 +586,7 @@ pub fn print_report(
             );
             println!(
                 "{:<20} {:>8} {:>8} {:>8} {:>8} {:>8}",
-                "Total tokens",
+                "令牌总数",
                 percentile(&patch_total_tokens, 25),
                 percentile(&patch_total_tokens, 50),
                 percentile(&patch_total_tokens, 75),
@@ -612,7 +612,7 @@ fn print_context_coverage_report(
     println!("{}", separator);
     println!(
         "{:<40} {:>6} {:>6} {:>6} {:>5} {:>5} {:>5} {:>6} {:>6} {:>6} {:>5} {:>5} {:>5}",
-        "Example",
+        "示例",
         "LineP",
         "LineR",
         "LineF1",
@@ -663,8 +663,8 @@ fn print_context_coverage_report(
 
     if skipped_lines > 0 {
         println!(
-            "{:<40} (use --verbose to see all {} examples)",
-            format!("... and {} more", skipped_lines),
+            "{:<40} (使用 --verbose 查看全部 {} 个示例)",
+            format!("... 以及另外 {} 个", skipped_lines),
             printed_lines + skipped_lines
         );
     }
@@ -680,7 +680,7 @@ fn print_context_coverage_report(
     if let Some(total_scores) = summary.editable_context_examples {
         println!(
             "{:<40} {:>5.1}% {:>5.1}% {:>5.1}% {:>5} {:>5} {:>5} {:>5.1}% {:>5.1}% {:>5.1}% {:>5} {:>5} {:>5}",
-            "TOTAL / AVERAGE",
+            "总计 / 平均",
             summary.avg_editable_context_lines_precision.unwrap_or(0.0) * 100.0,
             summary.avg_editable_context_lines_recall.unwrap_or(0.0) * 100.0,
             summary.avg_editable_context_lines_f1.unwrap_or(0.0) * 100.0,
@@ -696,7 +696,7 @@ fn print_context_coverage_report(
         );
         println!("{}", separator);
         println!(
-            "Evaluated editable context coverage for {} examples",
+            "已评估 {} 个示例的可编辑上下文覆盖率",
             total_scores
         );
         if let (Some(avg_bytes), Some(example_count)) = (
@@ -704,7 +704,7 @@ fn print_context_coverage_report(
             summary.retrieved_context_examples,
         ) {
             println!(
-                "Retrieved context size: {:.0} bytes avg ({} examples)",
+                "检索上下文大小: 平均 {:.0} 字节 ({} 个示例)",
                 avg_bytes, example_count
             );
         }
@@ -713,7 +713,7 @@ fn print_context_coverage_report(
     println!("\n");
 }
 
-/// Print one "P/R/F1 avg + pooled TP/FP/FN" summary line, or nothing when
+/// Print one "P/R/F1 平均值 + 合并 TP/FP/FN" summary line, or nothing when
 /// the metric was never evaluated.
 fn print_prf_line(
     label: &str,
@@ -746,7 +746,7 @@ fn print_prf_line(
         return;
     };
     println!(
-        "{}: P={:.1}%, R={:.1}%, F1={:.1}% avg ({} evaluated, TP={}, FP={}, FN={})",
+        "{}: P={:.1}%, R={:.1}%, F1={:.1}% 平均 (评估 {} 个, TP={}, FP={}, FN={})",
         label,
         precision * 100.0,
         recall * 100.0,
@@ -822,11 +822,11 @@ pub fn write_summary_json(
         context_source_filter,
     );
     let file = File::create(path)
-        .with_context(|| format!("Failed to create summary JSON file: {}", path.display()))?;
+        .with_context(|| format!("创建摘要 JSON 文件失败: {}", path.display()))?;
     let writer = BufWriter::new(file);
     serde_json::to_writer_pretty(writer, &summary)
-        .with_context(|| format!("Failed to write summary JSON to: {}", path.display()))?;
-    eprintln!("Wrote summary JSON to: {}", path.display());
+        .with_context(|| format!("写入摘要 JSON 到 {} 失败", path.display()))?;
+    eprintln!("摘要 JSON 已写入: {}", path.display());
     Ok(())
 }
 
@@ -847,7 +847,7 @@ mod tests {
                     max_row: 10,
                     excerpts: vec![
                         related_excerpt("abcd", 0..1, 0, ContextSource::CurrentFile),
-                        related_excerpt("ignored by source filter", 1..2, 1, ContextSource::Lsp),
+                        related_excerpt("被源过滤器忽略", 1..2, 1, ContextSource::Lsp),
                         related_excerpt("efghij", 2..3, 2, ContextSource::CurrentFile),
                     ],
                     in_open_source_repo: false,

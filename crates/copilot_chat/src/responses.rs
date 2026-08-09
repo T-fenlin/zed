@@ -316,7 +316,7 @@ pub async fn stream_response(
     if !response.status().is_success() {
         let mut body = String::new();
         response.body_mut().read_to_string(&mut body).await?;
-        anyhow::bail!("Failed to connect to API: {} {}", response.status(), body);
+        anyhow::bail!("无法连接到 API:{} {}", response.status(), body);
     }
 
     if is_streaming {

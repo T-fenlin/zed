@@ -20,10 +20,10 @@ pub struct AbsPath(Path);
 impl AbsPath {
     pub fn new(path: &Path) -> anyhow::Result<&Self> {
         if !path.is_absolute() {
-            return Err(anyhow::anyhow!("Path is not absolute: {:?}", path));
+            return Err(anyhow::anyhow!("路径不是绝对路径: {:?}", path));
         }
         if path.to_str().is_none() {
-            return Err(anyhow::anyhow!("Path is not valid utf-8: {:?}", path));
+            return Err(anyhow::anyhow!("路径不是有效的 UTF-8: {:?}", path));
         }
         Ok(Self::new_unchecked(path))
     }
@@ -80,7 +80,7 @@ impl AbsPath {
     pub fn as_str(&self) -> &str {
         self.0
             .to_str()
-            .expect("valid UTF-8 enforced in constructor")
+            .expect("构造函数中强制要求有效的 UTF-8")
     }
 
     pub fn ancestors(&self) -> impl Iterator<Item = &AbsPath> {
@@ -143,7 +143,7 @@ impl AbsPathBuf {
     }
 
     pub fn home_dir() -> anyhow::Result<Self> {
-        let home = std::env::home_dir().context("no home dir available")?;
+        let home = std::env::home_dir().context("没有可用的主目录")?;
         Self::new(home)
     }
 
@@ -251,7 +251,7 @@ mod tests {
         assert_eq!(canonical.as_std_path(), dir);
         assert!(
             !canonical.as_str().starts_with(r"\\?\"),
-            "canonical paths must not use Windows extended-length syntax: {canonical}"
+            "规范路径不得使用 Windows 扩展长度语法: {canonical}"
         );
 
         // A differently-cased spelling addresses the same directory only on a
@@ -262,7 +262,7 @@ mod tests {
             assert_eq!(
                 AbsPathBuf::canonicalize(&lowercased).unwrap().as_std_path(),
                 dir,
-                "canonicalization should restore the on-disk casing"
+                "规范化应恢复磁盘上的大小写"
             );
         }
     }

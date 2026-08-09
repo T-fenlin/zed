@@ -89,18 +89,18 @@ impl Forgejo {
     pub fn from_remote_url(remote_url: &str) -> Result<Self> {
         let host = get_host_from_git_remote_url(remote_url)?;
         if host == "codeberg.org" {
-            bail!("the Forgejo instance is not self-hosted");
+            bail!("该 Forgejo 实例并非自托管");
         }
 
         // TODO: detecting self hosted instances by checking whether "forgejo" is in the url or not
         // is not very reliable. See https://github.com/zed-industries/zed/issues/26393 for more
         // information.
         if !host.contains("forgejo") {
-            bail!("not a Forgejo URL");
+            bail!("不是 Forgejo URL");
         }
 
         Ok(Self::new(
-            "Forgejo Self-Hosted",
+            "Forgejo 自托管",
             Url::parse(&format!("https://{}", host))?,
         ))
     }
@@ -113,7 +113,7 @@ impl Forgejo {
         client: &Arc<dyn HttpClient>,
     ) -> Result<Option<User>> {
         let Some(host) = self.base_url.host_str() else {
-            bail!("failed to get host from forgejo base url");
+            bail!("无法从 Forgejo 基础 URL 获取主机名");
         };
         let url = format!(
             "https://{host}/api/v1/repos/{repo_owner}/{repo}/git/commits/{commit}?stat=false&verification=false&files=false"
@@ -134,7 +134,7 @@ impl Forgejo {
         let mut response = client
             .send(request.body(AsyncBody::default())?)
             .await
-            .with_context(|| format!("error fetching Forgejo commit details at {:?}", url))?;
+            .with_context(|| format!("获取 Forgejo 提交详情时出错,位置:{:?}", url))?;
 
         let mut body = Vec::new();
         response.body_mut().read_to_end(&mut body).await?;
@@ -142,7 +142,7 @@ impl Forgejo {
         if response.status().is_client_error() {
             let text = String::from_utf8_lossy(body.as_slice());
             bail!(
-                "status error {}, response: {text:?}",
+                "状态错误 {}, 响应: {text:?}",
                 response.status().as_u16()
             );
         }
@@ -151,7 +151,7 @@ impl Forgejo {
 
         serde_json::from_str::<CommitDetails>(body_str)
             .map(|commit| commit.author)
-            .context("failed to deserialize Forgejo commit details")
+            .context("反序列化 Forgejo 提交详情失败")
     }
 }
 

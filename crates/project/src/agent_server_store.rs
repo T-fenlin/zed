@@ -275,7 +275,7 @@ impl AgentServerStore {
         } = &mut self.state
         else {
             debug_panic!(
-                "should not be subscribed to agent server settings changes in non-local project"
+                "非本地项目不应订阅代理服务器设置更改"
             );
             return;
         };
@@ -302,7 +302,7 @@ impl AgentServerStore {
             ..
         } = &mut self.state
         else {
-            debug_panic!("Non-local projects should never attempt to reregister. This is a bug!");
+            debug_panic!("非本地项目不应尝试重新注册。这是一个错误!");
 
             return;
         };
@@ -376,7 +376,7 @@ impl AgentServerStore {
                 CustomAgentServerSettings::Registry { env, .. } => {
                     let Some(agent) = registry_agents_by_id.get(name) else {
                         if registry_store.is_some() {
-                            log::debug!("Registry agent '{}' not found in ACP registry", name);
+                            log::debug!("在 ACP 注册表中未找到注册表代理 '{}'", name);
                         }
                         continue;
                     };
@@ -386,7 +386,7 @@ impl AgentServerStore {
                         RegistryAgent::Binary(agent) => {
                             if !agent.supports_current_platform {
                                 log::warn!(
-                                    "Registry agent '{}' has no compatible binary for this platform",
+                                    "注册表代理 '{}' 没有适用于此平台的兼容二进制文件",
                                     name
                                 );
                                 continue;
@@ -573,11 +573,11 @@ impl AgentServerStore {
             }
             AgentServerStoreState::Remote { .. } => {
                 debug_panic!(
-                    "external agents over collab not implemented, remote project should not be shared"
+                    "未实现通过协作使用外部代理,远程项目不应共享"
                 );
             }
             AgentServerStoreState::Collab => {
-                debug_panic!("external agents over collab not implemented, should not be shared");
+                debug_panic!("未实现通过协作使用外部代理,不应共享");
             }
         }
     }
@@ -621,15 +621,15 @@ impl AgentServerStore {
                     downstream_client, ..
                 } = &this.state
                 else {
-                    debug_panic!("should not receive GetAgentServerCommand in a non-local project");
-                    bail!("unexpected GetAgentServerCommand request in a non-local project");
+                    debug_panic!("非本地项目不应接收 GetAgentServerCommand");
+                    bail!("非本地项目中出现意外的 GetAgentServerCommand 请求");
                 };
                 let no_browser = this.no_browser();
                 let agent = this
                     .external_agents
                     .get_mut(&*envelope.payload.name)
                     .map(|entry| entry.server.as_mut())
-                    .with_context(|| format!("agent `{}` not found", envelope.payload.name))?;
+                    .with_context(|| format!("未找到代理 `{}`", envelope.payload.name))?;
                 let new_version_available_tx =
                     downstream_client
                         .clone()
@@ -720,9 +720,9 @@ impl AgentServerStore {
             } = &this.state
             else {
                 debug_panic!(
-                    "handle_external_agents_updated should not be called for a non-remote project"
+                    "非远程项目不应调用 handle_external_agents_updated"
                 );
-                bail!("unexpected ExternalAgentsUpdated message")
+                bail!("意外的 ExternalAgentsUpdated 消息")
             };
 
             let mut previous_entries = std::mem::take(&mut this.external_agents);
@@ -940,10 +940,10 @@ fn registry_archive_kind_for_url(archive_url: &str) -> Result<RegistryArchiveKin
         .iter()
         .find(|suffix| lowercase_path.ends_with(*suffix))
     {
-        bail!("unsupported archive type {suffix} in URL: {archive_url}");
+        bail!("URL 中不支持的归档类型 {suffix}: {archive_url}");
     } else {
         let file_name = raw_binary_file_name(&archive_path)
-            .with_context(|| format!("determining binary file name from URL: {archive_url}"))?;
+            .with_context(|| format!("从 URL 确定二进制文件名: {archive_url}"))?;
         Ok(RegistryArchiveKind::RawBinary { file_name })
     }
 }
@@ -953,10 +953,10 @@ fn raw_binary_file_name(archive_path: &str) -> Result<String> {
         .rsplit('/')
         .next()
         .filter(|segment| !segment.is_empty())
-        .context("URL has no file name")?;
+        .context("URL 没有文件名")?;
     let file_name = percent_decode_str(last_segment)
         .decode_utf8()
-        .context("file name is not valid UTF-8")?
+        .context("文件名不是有效的 UTF-8")?
         .into_owned();
     anyhow::ensure!(
         !file_name.is_empty()
@@ -964,7 +964,7 @@ fn raw_binary_file_name(archive_path: &str) -> Result<String> {
             && file_name != ".."
             && !file_name.contains(['/', '\\'])
             && !file_name.contains('\0'),
-        "invalid binary file name: {file_name}"
+        "无效的二进制文件名: {file_name}"
     );
     Ok(file_name)
 }
@@ -1064,17 +1064,17 @@ async fn remove_stale_versioned_archive_cache_dirs(
     let current_mtime = fs
         .metadata(current_version_dir)
         .await
-        .with_context(|| format!("reading metadata for {current_version_dir:?}"))?
-        .with_context(|| format!("missing metadata for {current_version_dir:?}"))?
+        .with_context(|| format!("读取 {current_version_dir:?} 的元数据"))?
+        .with_context(|| format!("缺少 {current_version_dir:?} 的元数据"))?
         .mtime;
 
     let mut entries = fs
         .read_dir(base_dir)
         .await
-        .with_context(|| format!("reading archive cache directory {base_dir:?}"))?;
+        .with_context(|| format!("读取归档缓存目录 {base_dir:?}"))?;
 
     while let Some(entry) = entries.next().await {
-        let entry = entry.with_context(|| format!("reading entry in {base_dir:?}"))?;
+        let entry = entry.with_context(|| format!("读取 {base_dir:?} 中的条目"))?;
         let Some(entry_name) = entry.file_name() else {
             continue;
         };
@@ -1108,7 +1108,7 @@ async fn remove_stale_versioned_archive_cache_dirs(
             },
         )
         .await
-        .with_context(|| format!("removing stale archive cache directory {entry:?}"))?;
+        .with_context(|| format!("移除过期的归档缓存目录 {entry:?}"))?;
     }
 
     Ok(())
@@ -1182,7 +1182,7 @@ impl ExternalAgentServer for LocalRegistryArchiveAgent {
             } else if cfg!(target_os = "windows") {
                 "windows"
             } else {
-                anyhow::bail!("unsupported OS");
+                anyhow::bail!("不支持的操作系统");
             };
 
             let arch = if cfg!(target_arch = "aarch64") {
@@ -1190,13 +1190,13 @@ impl ExternalAgentServer for LocalRegistryArchiveAgent {
             } else if cfg!(target_arch = "x86_64") {
                 "x86_64"
             } else {
-                anyhow::bail!("unsupported architecture");
+                anyhow::bail!("不支持的架构");
             };
 
             let platform_key = format!("{}-{}", os, arch);
             let target_config = targets.get(&platform_key).with_context(|| {
                 format!(
-                    "no target specified for platform '{}'. Available platforms: {}",
+                    "未为平台 '{}' 指定目标。可用平台: {}",
                     platform_key,
                     targets
                         .keys()
@@ -1221,7 +1221,7 @@ impl ExternalAgentServer for LocalRegistryArchiveAgent {
             if !fs.is_dir(&version_dir).await {
                 let mut loading_status_tx = loading_status_tx;
                 if let Some(tx) = loading_status_tx.as_mut() {
-                    tx.send(Some(format!("Installing {}…", version.as_ref())))
+                    tx.send(Some(format!("正在安装 {}…", version.as_ref())))
                         .ok();
                 }
 
@@ -1285,19 +1285,19 @@ impl ExternalAgentServer for LocalRegistryArchiveAgent {
                 node_runtime.binary_path().await?
             } else {
                 if cmd.contains("..") {
-                    anyhow::bail!("command path cannot contain '..': {}", cmd);
+                    anyhow::bail!("命令路径不能包含 '..': {}", cmd);
                 }
 
                 if cmd.starts_with("./") || cmd.starts_with(".\\") {
                     let cmd_path = version_dir.join(&cmd[2..]);
                     anyhow::ensure!(
                         fs.is_file(&cmd_path).await,
-                        "Missing command {} after extraction",
+                        "解压后缺少命令 {}",
                         cmd_path.to_string_lossy()
                     );
                     cmd_path
                 } else {
-                    anyhow::bail!("command must be relative (start with './'): {}", cmd);
+                    anyhow::bail!("命令必须是相对路径(以 './' 开头): {}", cmd);
                 }
             };
 
@@ -1961,7 +1961,7 @@ mod tests {
         assert_eq!(
             error,
             Some(
-                "unsupported archive type .tar.xz in URL: https://example.com/agent.tar.xz"
+                "URL 中不支持的归档类型 .tar.xz: https://example.com/agent.tar.xz"
                     .to_string()
             ),
         );
@@ -1976,7 +1976,7 @@ mod tests {
         ] {
             assert!(
                 registry_archive_kind_for_url(installer_url).is_err(),
-                "expected {installer_url} to be rejected"
+                "预期 {installer_url} 被拒绝"
             );
         }
     }
@@ -1998,7 +1998,7 @@ mod tests {
         let file_name = slash_version_dir
             .file_name()
             .and_then(|name| name.to_str())
-            .expect("cache directory should have a file name");
+            .expect("缓存目录应具有文件名");
 
         assert!(file_name.starts_with("v_release-2.3.5_"));
         assert_ne!(slash_version_dir, colon_version_dir);
@@ -2054,8 +2054,8 @@ mod tests {
 
         let error = get_command.await.unwrap_err();
         assert!(
-            error.to_string().contains("SHA-256 mismatch"),
-            "unexpected error: {error:#}"
+            error.to_string().contains("SHA-256 不匹配"),
+            "意外错误: {error:#}"
         );
         assert!(old_version_dir.exists());
         assert!(
@@ -2147,7 +2147,7 @@ mod tests {
             .await;
         let current_version_dir = base_dir.join("v_current");
         fs.create_dir(&current_version_dir).await.unwrap();
-        // Sibling that "finished extracting" after the current dir was cached.
+        // Sibling that "解压完成" after the current dir was cached.
         fs.create_dir(&base_dir.join("v_newer")).await.unwrap();
 
         remove_stale_versioned_archive_cache_dirs(
@@ -2165,7 +2165,7 @@ mod tests {
             .filter_map(|entry| async move { entry.ok() })
             .map(|path| {
                 path.file_name()
-                    .expect("entry has a name")
+                    .expect("条目具有名称")
                     .to_string_lossy()
                     .into_owned()
             })
@@ -2196,7 +2196,7 @@ mod tests {
             let entry = store
                 .external_agents
                 .get(&AgentId::new("test-agent"))
-                .expect("agent should be registered");
+                .expect("代理应已注册");
             assert_eq!(
                 entry.server.version().map(|v| v.to_string()),
                 Some("1.0.0".to_string())
@@ -2209,7 +2209,7 @@ mod tests {
             let entry = store
                 .external_agents
                 .get_mut(&AgentId::new("test-agent"))
-                .expect("agent should be registered");
+                .expect("代理应已注册");
             entry.server.set_new_version_available_tx(tx);
         });
 
@@ -2235,11 +2235,11 @@ mod tests {
             let entry = store
                 .external_agents
                 .get_mut(&AgentId::new("test-agent"))
-                .expect("agent should be registered");
+                .expect("代理应已注册");
             entry.server.set_new_version_available_tx(tx);
         });
 
-        // "Refresh" the registry with the same version.
+        // "刷新" the registry with the same version.
         registry.update(cx, |store, cx| {
             store.set_agents(vec![make_npx_agent("test-agent", "1.0.0")], cx);
         });
@@ -2253,10 +2253,10 @@ mod tests {
             let entry = store
                 .external_agents
                 .get_mut(&AgentId::new("test-agent"))
-                .expect("agent should be registered");
+                .expect("代理应已注册");
             assert!(
                 entry.server.take_new_version_available_tx().is_some(),
-                "tx should have been transferred to the rebuilt agent"
+                "tx 应已转移到重建的代理"
             );
         });
     }
@@ -2294,7 +2294,7 @@ mod tests {
             store
                 .external_agents
                 .get_mut(&AgentId::new("agent-a"))
-                .expect("agent-a should be registered")
+                .expect("agent-a 应已注册")
                 .server
                 .set_new_version_available_tx(tx_a);
             store
@@ -2333,7 +2333,7 @@ mod tests {
                     .server
                     .take_new_version_available_tx()
                     .is_some(),
-                "agent-b tx should have been transferred"
+                "agent-b 的 tx 应已转移"
             );
         });
     }

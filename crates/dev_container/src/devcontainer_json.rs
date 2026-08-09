@@ -247,7 +247,7 @@ pub(crate) fn deserialize_devcontainer_json_to_value(
     json: &str,
 ) -> Result<serde_json_lenient::Value, DevContainerError> {
     serde_json_lenient::from_str(json).map_err(|e| {
-        log::error!("Unable to deserialize json values: {e}");
+        log::error!("无法反序列化 JSON 值: {e}");
         DevContainerError::DevContainerParseFailed
     })
 }
@@ -256,7 +256,7 @@ pub(crate) fn deserialize_devcontainer_json_from_value(
     json: serde_json_lenient::Value,
 ) -> Result<DevContainer, DevContainerError> {
     serde_json_lenient::from_value(json).map_err(|e| {
-        log::error!("Unable to deserialize devcontainer from json values: {e}");
+        log::error!("无法从 JSON 值反序列化 devcontainer: {e}");
         DevContainerError::DevContainerParseFailed
     })
 }
@@ -293,7 +293,7 @@ impl DevContainer {
                     || (self.workspace_folder.is_none() && self.workspace_mount.is_some())
                 {
                     return Err(DevContainerError::DevContainerValidationFailed(
-                        "workspaceMount and workspaceFolder must both be defined, or neither defined"
+                        "workspaceMount 和 workspaceFolder 必须同时定义,或都不定义"
                             .to_string(),
                     ));
                 }
@@ -302,7 +302,7 @@ impl DevContainer {
             DevContainerBuildType::DockerCompose => {
                 if self.service.is_none() {
                     return Err(DevContainerError::DevContainerValidationFailed(
-                        "must specify a connecting service for docker-compose".to_string(),
+                        "必须为 docker-compose 指定连接服务".to_string(),
                     ));
                 }
                 Ok(())
@@ -360,7 +360,7 @@ impl LifecycleScript {
                     Some((k.clone(), command))
                 } else {
                     log::warn!(
-                        "Lifecycle script command {k}, value {:?} has no program to run. Skipping",
+                        "生命周期脚本命令 {k},值 {:?} 没有可运行的程序。正在跳过",
                         v
                     );
                     None
@@ -375,7 +375,7 @@ impl LifecycleScript {
         working_directory: &Path,
     ) -> Result<(), DevContainerError> {
         for (command_name, mut command) in self.script_commands() {
-            log::debug!("Running script {command_name}");
+            log::debug!("正在运行脚本 {command_name}");
 
             command.current_dir(working_directory);
 
@@ -383,17 +383,17 @@ impl LifecycleScript {
                 .run_command(&mut command)
                 .await
                 .map_err(|e| {
-                    log::error!("Error running command {command_name}: {e}");
+                    log::error!("运行命令 {command_name} 时出错: {e}");
                     DevContainerError::CommandFailed(command_name.clone())
                 })?;
             if !output.status.success() {
                 let std_err = String::from_utf8_lossy(&output.stderr);
                 log::error!(
-                    "Command {command_name} produced a non-successful output. StdErr: {std_err}"
+                    "命令 {command_name} 产生了非成功的输出。StdErr: {std_err}"
                 );
             }
             let std_out = String::from_utf8_lossy(&output.stdout);
-            log::debug!("Command {command_name} output:\n {std_out}");
+            log::debug!("命令 {command_name} 输出:\n {std_out}");
         }
         Ok(())
     }
@@ -413,7 +413,7 @@ impl<'de> Deserialize<'de> for LifecycleScript {
             type Value = LifecycleScript;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a string, an array of strings, or a map of arrays")
+                formatter.write_str("一个字符串、字符串数组或数组映射")
             }
 
             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
@@ -500,7 +500,7 @@ where
             }
 
             let target = target
-                .ok_or_else(|| D::Error::custom(format!("mount string missing 'target': {}", s)))?;
+                .ok_or_else(|| D::Error::custom(format!("挂载字符串缺少 'target': {}", s)))?;
 
             MountDefinition {
                 source,
@@ -553,7 +553,7 @@ where
                 }
 
                 let target = target.ok_or_else(|| {
-                    D::Error::custom(format!("mount string missing 'target': {}", s))
+                    D::Error::custom(format!("挂载字符串缺少 'target': {}", s))
                 })?;
 
                 mounts.push(MountDefinition {
@@ -642,24 +642,24 @@ mod test {
 
     #[test]
     fn override_command_defaults_depend_on_build_type() {
-        let image = deserialize_devcontainer_json(r#"{"image":"ubuntu"}"#).expect("image config");
+        let image = deserialize_devcontainer_json(r#"{"image":"ubuntu"}"#).expect("镜像配置");
         assert!(image.override_command());
 
         let dockerfile = deserialize_devcontainer_json(r#"{"build":{"dockerfile":"Dockerfile"}}"#)
-            .expect("Dockerfile config");
+            .expect("Dockerfile 配置");
         assert!(dockerfile.override_command());
 
         let compose = deserialize_devcontainer_json(
             r#"{"dockerComposeFile":"compose.yaml","service":"app"}"#,
         )
-        .expect("Compose config");
+        .expect("Compose 配置");
         assert!(!compose.override_command());
     }
 
     #[test]
     fn explicit_override_command_takes_precedence_over_build_type_default() {
         let image = deserialize_devcontainer_json(r#"{"image":"ubuntu","overrideCommand":false}"#)
-            .expect("image config");
+            .expect("镜像配置");
         assert!(!image.override_command());
 
         let compose = deserialize_devcontainer_json(
@@ -669,7 +669,7 @@ mod test {
                 "overrideCommand":true
             }"#,
         )
-        .expect("Compose config");
+        .expect("Compose 配置");
         assert!(compose.override_command());
     }
 
@@ -706,7 +706,7 @@ mod test {
 
         assert!(
             result.is_ok(),
-            "Should ignore unknown customization keys, but got: {:?}",
+            "应忽略未知的自定义键,但得到了: {:?}",
             result.err()
         );
         let devcontainer = result.expect("ok");
@@ -737,7 +737,7 @@ mod test {
 
         assert!(
             result.is_ok(),
-            "Should handle missing zed key in customizations, but got: {:?}",
+            "应处理自定义中缺少 zed 键的情况,但得到了: {:?}",
             result.err()
         );
         let devcontainer = result.expect("ok");
@@ -774,14 +774,14 @@ mod test {
                 ],
                 "portsAttributes": {
                     "3000": {
-                        "label": "This Port",
+                        "label": "此端口",
                         "onAutoForward": "notify",
                         "elevateIfNeeded": false,
                         "requireLocalPort": true,
                         "protocol": "https"
                     },
                     "db:5432": {
-                        "label": "This Port too",
+                        "label": "此端口也是",
                         "onAutoForward": "silent",
                         "elevateIfNeeded": true,
                         "requireLocalPort": false,
@@ -789,7 +789,7 @@ mod test {
                     }
                 },
                 "otherPortsAttributes": {
-                    "label": "Other Ports",
+                    "label": "其他端口",
                     "onAutoForward": "openBrowser",
                     "elevateIfNeeded": true,
                     "requireLocalPort": true,
@@ -881,7 +881,7 @@ mod test {
                     (
                         "3000".to_string(),
                         PortAttributes {
-                            label: Some("This Port".to_string()),
+                            label: Some("此端口".to_string()),
                             on_auto_forward: OnAutoForward::Notify,
                             elevate_if_needed: false,
                             require_local_port: true,
@@ -891,7 +891,7 @@ mod test {
                     (
                         "db:5432".to_string(),
                         PortAttributes {
-                            label: Some("This Port too".to_string()),
+                            label: Some("此端口也是".to_string()),
                             on_auto_forward: OnAutoForward::Silent,
                             elevate_if_needed: true,
                             require_local_port: false,
@@ -900,7 +900,7 @@ mod test {
                     )
                 ])),
                 other_ports_attributes: Some(PortAttributes {
-                    label: Some("Other Ports".to_string()),
+                    label: Some("其他端口".to_string()),
                     on_auto_forward: OnAutoForward::OpenBrowser,
                     elevate_if_needed: true,
                     require_local_port: true,
@@ -1026,14 +1026,14 @@ mod test {
                 ],
                 "portsAttributes": {
                     "3000": {
-                        "label": "This Port",
+                        "label": "此端口",
                         "onAutoForward": "notify",
                         "elevateIfNeeded": false,
                         "requireLocalPort": true,
                         "protocol": "https"
                     },
                     "db:5432": {
-                        "label": "This Port too",
+                        "label": "此端口也是",
                         "onAutoForward": "silent",
                         "elevateIfNeeded": true,
                         "requireLocalPort": false,
@@ -1041,7 +1041,7 @@ mod test {
                     }
                 },
                 "otherPortsAttributes": {
-                    "label": "Other Ports",
+                    "label": "其他端口",
                     "onAutoForward": "openBrowser",
                     "elevateIfNeeded": true,
                     "requireLocalPort": true,
@@ -1109,7 +1109,7 @@ mod test {
                     (
                         "3000".to_string(),
                         PortAttributes {
-                            label: Some("This Port".to_string()),
+                            label: Some("此端口".to_string()),
                             on_auto_forward: OnAutoForward::Notify,
                             elevate_if_needed: false,
                             require_local_port: true,
@@ -1119,7 +1119,7 @@ mod test {
                     (
                         "db:5432".to_string(),
                         PortAttributes {
-                            label: Some("This Port too".to_string()),
+                            label: Some("此端口也是".to_string()),
                             on_auto_forward: OnAutoForward::Silent,
                             elevate_if_needed: true,
                             require_local_port: false,
@@ -1128,7 +1128,7 @@ mod test {
                     )
                 ])),
                 other_ports_attributes: Some(PortAttributes {
-                    label: Some("Other Ports".to_string()),
+                    label: Some("其他端口".to_string()),
                     on_auto_forward: OnAutoForward::OpenBrowser,
                     elevate_if_needed: true,
                     require_local_port: true,
@@ -1236,14 +1236,14 @@ mod test {
                 ],
                 "portsAttributes": {
                     "3000": {
-                        "label": "This Port",
+                        "label": "此端口",
                         "onAutoForward": "notify",
                         "elevateIfNeeded": false,
                         "requireLocalPort": true,
                         "protocol": "https"
                     },
                     "db:5432": {
-                        "label": "This Port too",
+                        "label": "此端口也是",
                         "onAutoForward": "silent",
                         "elevateIfNeeded": true,
                         "requireLocalPort": false,
@@ -1251,7 +1251,7 @@ mod test {
                     }
                 },
                 "otherPortsAttributes": {
-                    "label": "Other Ports",
+                    "label": "其他端口",
                     "onAutoForward": "openBrowser",
                     "elevateIfNeeded": true,
                     "requireLocalPort": true,
@@ -1346,7 +1346,7 @@ mod test {
                     (
                         "3000".to_string(),
                         PortAttributes {
-                            label: Some("This Port".to_string()),
+                            label: Some("此端口".to_string()),
                             on_auto_forward: OnAutoForward::Notify,
                             elevate_if_needed: false,
                             require_local_port: true,
@@ -1356,7 +1356,7 @@ mod test {
                     (
                         "db:5432".to_string(),
                         PortAttributes {
-                            label: Some("This Port too".to_string()),
+                            label: Some("此端口也是".to_string()),
                             on_auto_forward: OnAutoForward::Silent,
                             elevate_if_needed: true,
                             require_local_port: false,
@@ -1365,7 +1365,7 @@ mod test {
                     )
                 ])),
                 other_ports_attributes: Some(PortAttributes {
-                    label: Some("Other Ports".to_string()),
+                    label: Some("其他端口".to_string()),
                     on_auto_forward: OnAutoForward::OpenBrowser,
                     elevate_if_needed: true,
                     require_local_port: true,
@@ -1539,7 +1539,7 @@ mod test {
 
         assert!(
             rendered.starts_with("type=bind,"),
-            "Expected mount type 'bind' for Unix absolute path, but got: {rendered}"
+            "对于 Unix 绝对路径,预期挂载类型为 'bind',但得到: {rendered}"
         );
     }
 
@@ -1555,7 +1555,7 @@ mod test {
 
         assert!(
             rendered.starts_with("type=bind,"),
-            "Expected mount type 'bind' for Windows UNC path, but got: {rendered}"
+            "对于 Windows UNC 路径,预期挂载类型为 'bind',但得到: {rendered}"
         );
     }
 
@@ -1571,7 +1571,7 @@ mod test {
 
         assert!(
             rendered.starts_with("type=bind,"),
-            "Expected mount type 'bind' for Windows absolute path, but got: {rendered}"
+            "对于 Windows 绝对路径,预期挂载类型为 'bind',但得到: {rendered}"
         );
     }
 
@@ -1605,7 +1605,7 @@ mod test {
         let result = deserialize_devcontainer_json(json);
         assert!(
             result.is_ok(),
-            "Expected deserialization to succeed with partial portsAttributes, got: {:?}",
+            "预期使用部分 portsAttributes 反序列化成功,但得到: {:?}",
             result.err()
         );
 
@@ -1630,7 +1630,7 @@ mod test {
         let result = deserialize_devcontainer_json(json);
         assert!(
             result.is_ok(),
-            "Expected deserialization to succeed with empty portsAttributes, got: {:?}",
+            "预期使用空的 portsAttributes 反序列化成功,但得到: {:?}",
             result.err()
         );
 
@@ -1674,7 +1674,7 @@ mod test {
         assert_eq!(
             devcontainer.validate_devcontainer_contents(),
             Err(DevContainerError::DevContainerValidationFailed(
-                "workspaceMount and workspaceFolder must both be defined, or neither defined"
+                "workspaceMount 和 workspaceFolder 必须同时定义,或都不定义"
                     .to_string()
             ))
         );
@@ -1712,7 +1712,7 @@ mod test {
         assert_eq!(
             devcontainer.validate_devcontainer_contents(),
             Err(DevContainerError::DevContainerValidationFailed(
-                "workspaceMount and workspaceFolder must both be defined, or neither defined"
+                "workspaceMount 和 workspaceFolder 必须同时定义,或都不定义"
                     .to_string()
             ))
         );
@@ -1765,7 +1765,7 @@ mod test {
         let result = deserialize_devcontainer_json(json);
         assert!(
             result.is_ok(),
-            "Deserialization should succeed: {:?}",
+            "反序列化应该成功: {:?}",
             result.err()
         );
 
@@ -1774,12 +1774,12 @@ mod test {
             let cmds = script.script_commands();
             let cmd = cmds
                 .get("default")
-                .expect("String command should have a 'default' key");
+                .expect("字符串命令应具有 'default' 键");
             let args: Vec<std::ffi::OsString> = cmd.get_args().map(|a| a.to_os_string()).collect();
             assert_eq!(
                 cmd.get_program(),
                 std::ffi::OsStr::new("/bin/sh"),
-                "String-form lifecycle command program must be /bin/sh"
+                "字符串形式的生命周期命令程序必须是 /bin/sh"
             );
             assert_eq!(
                 args,
@@ -1787,10 +1787,10 @@ mod test {
                     std::ffi::OsString::from("-c"),
                     std::ffi::OsString::from("echo $HOME"),
                 ],
-                "String-form lifecycle command args must be -c <script> so the shell expands $HOME"
+                "字符串形式的生命周期命令参数必须是 -c <script>,以便 Shell 展开 $HOME"
             );
         } else {
-            panic!("Expected post_create_command to be Some");
+            panic!("预期 post_create_command 为 Some");
         }
     }
 
@@ -1808,7 +1808,7 @@ mod test {
         let result = deserialize_devcontainer_json(json);
         assert!(
             result.is_ok(),
-            "Deserialization should succeed: {:?}",
+            "反序列化应该成功: {:?}",
             result.err()
         );
 
@@ -1817,12 +1817,12 @@ mod test {
             let cmds = script.script_commands();
             let cmd = cmds
                 .get("default")
-                .expect("Array command should have a 'default' key");
+                .expect("数组命令应具有 'default' 键");
             let args: Vec<std::ffi::OsString> = cmd.get_args().map(|a| a.to_os_string()).collect();
             assert_eq!(
                 cmd.get_program(),
                 std::ffi::OsStr::new("/usr/bin/env"),
-                "Array-form lifecycle command must exec the first element directly"
+                "数组形式的生命周期命令必须直接执行第一个元素"
             );
             assert_eq!(
                 args,
@@ -1830,10 +1830,10 @@ mod test {
                     std::ffi::OsString::from("echo"),
                     std::ffi::OsString::from("hello"),
                 ],
-                "Array-form lifecycle command must pass remaining elements as args without a shell wrapper"
+                "数组形式的生命周期命令必须将剩余元素作为参数传递,而不使用 Shell 包装"
             );
         } else {
-            panic!("Expected post_create_command to be Some");
+            panic!("预期 post_create_command 为 Some");
         }
     }
 }

@@ -67,7 +67,7 @@ pub fn lsp_formatting_options(settings: &LanguageSettings) -> lsp::FormattingOpt
 pub fn file_path_to_lsp_url(path: &Path) -> Result<lsp::Uri> {
     match lsp::Uri::from_file_path(path) {
         Ok(url) => Ok(url),
-        Err(()) => anyhow::bail!("Invalid file path provided to LSP request: {path:?}"),
+        Err(()) => anyhow::bail!("提供给 LSP 请求的文件路径无效: {path:?}"),
     }
 }
 
@@ -351,7 +351,7 @@ impl LspCommand for PrepareRename {
     type ProtoRequest = proto::PrepareRename;
 
     fn display_name(&self) -> &str {
-        "Prepare rename"
+        "准备重命名"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -391,7 +391,7 @@ impl LspCommand for PrepareRename {
             Some(lsp::OneOf::Left(true)) => Ok(LspParamsOrResponse::Response(
                 PrepareRenameResponse::OnlyUnpreparedRenameSupported,
             )),
-            _ => anyhow::bail!("Rename not supported"),
+            _ => anyhow::bail!("不支持重命名"),
         }
     }
 
@@ -457,7 +457,7 @@ impl LspCommand for PrepareRename {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -521,7 +521,7 @@ impl LspCommand for PrepareRename {
                 Ok(PrepareRenameResponse::Success(start..end))
             } else {
                 anyhow::bail!(
-                    "Missing start or end position in remote project PrepareRenameResponse"
+                    "远程项目 PrepareRenameResponse 中缺少起始或结束位置"
                 );
             }
         } else if message.only_unprepared_rename_supported {
@@ -543,7 +543,7 @@ impl LspCommand for PerformRename {
     type ProtoRequest = proto::PerformRename;
 
     fn display_name(&self) -> &str {
-        "Rename"
+        "重命名"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -615,7 +615,7 @@ impl LspCommand for PerformRename {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -650,7 +650,7 @@ impl LspCommand for PerformRename {
         _: Entity<Buffer>,
         mut cx: AsyncApp,
     ) -> Result<ProjectTransaction> {
-        let message = message.transaction.context("missing transaction")?;
+        let message = message.transaction.context("缺少事务")?;
         lsp_store
             .update(&mut cx, |lsp_store, cx| {
                 lsp_store.buffer_store().update(cx, |buffer_store, cx| {
@@ -672,7 +672,7 @@ impl LspCommand for GetDefinitions {
     type ProtoRequest = proto::GetDefinition;
 
     fn display_name(&self) -> &str {
-        "Get definition"
+        "获取定义"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -730,7 +730,7 @@ impl LspCommand for GetDefinitions {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -774,7 +774,7 @@ impl LspCommand for GetEditPredictionDefinitions {
     type ProtoRequest = proto::GetEditPredictionDefinition;
 
     fn display_name(&self) -> &str {
-        "Get edit prediction definition"
+        "获取编辑预测定义"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -874,7 +874,7 @@ impl LspCommand for GetDeclarations {
     type ProtoRequest = proto::GetDeclaration;
 
     fn display_name(&self) -> &str {
-        "Get declaration"
+        "获取声明"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -933,7 +933,7 @@ impl LspCommand for GetDeclarations {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -977,7 +977,7 @@ impl LspCommand for GetImplementations {
     type ProtoRequest = proto::GetImplementation;
 
     fn display_name(&self) -> &str {
-        "Get implementation"
+        "获取实现"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -1035,7 +1035,7 @@ impl LspCommand for GetImplementations {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -1079,7 +1079,7 @@ impl LspCommand for GetTypeDefinitions {
     type ProtoRequest = proto::GetTypeDefinition;
 
     fn display_name(&self) -> &str {
-        "Get type definition"
+        "获取类型定义"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -1134,7 +1134,7 @@ impl LspCommand for GetTypeDefinitions {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -1178,7 +1178,7 @@ impl LspCommand for GetEditPredictionTypeDefinitions {
     type ProtoRequest = proto::GetEditPredictionTypeDefinition;
 
     fn display_name(&self) -> &str {
-        "Get edit prediction type definition"
+        "获取编辑预测类型定义"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -1282,7 +1282,7 @@ fn language_server_for_buffer(
                     .map(|(adapter, server)| (adapter.clone(), server.clone()))
             })
         })
-        .context("no language server found for buffer")
+        .context("未找到缓冲区的语言服务器")
 }
 
 pub async fn location_links_from_proto(
@@ -1316,11 +1316,11 @@ pub fn location_link_from_proto(
                 let start = origin
                     .start
                     .and_then(deserialize_anchor)
-                    .context("missing origin start")?;
+                    .context("缺少原始起始位置")?;
                 let end = origin
                     .end
                     .and_then(deserialize_anchor)
-                    .context("missing origin end")?;
+                    .context("缺少原始结束位置")?;
                 buffer
                     .update(cx, |buffer, _| buffer.wait_for_anchors([start, end]))
                     .await?;
@@ -1332,7 +1332,7 @@ pub fn location_link_from_proto(
             None => None,
         };
 
-        let target = link.target.context("missing target")?;
+        let target = link.target.context("缺少目标")?;
         let buffer_id = BufferId::new(target.buffer_id)?;
         let buffer = lsp_store
             .update(cx, |lsp_store, cx| {
@@ -1342,11 +1342,11 @@ pub fn location_link_from_proto(
         let start = target
             .start
             .and_then(deserialize_anchor)
-            .context("missing target start")?;
+            .context("缺少目标起始位置")?;
         let end = target
             .end
             .and_then(deserialize_anchor)
-            .context("missing target end")?;
+            .context("缺少目标结束位置")?;
         buffer
             .update(cx, |buffer, _| buffer.wait_for_anchors([start, end]))
             .await?;
@@ -1489,7 +1489,7 @@ async fn edit_prediction_position_from_proto(
 ) -> Result<PointUtf16> {
     let position = position
         .and_then(deserialize_anchor)
-        .context("invalid position")?;
+        .context("无效位置")?;
     buffer
         .update(cx, |buffer, _| {
             buffer.wait_for_version(deserialize_version(&version))
@@ -1631,13 +1631,13 @@ fn edit_prediction_definitions_from_proto(
     definitions
         .into_iter()
         .map(|definition| {
-            let start = definition.start.context("missing definition start")?;
-            let end = definition.end.context("missing definition end")?;
+            let start = definition.start.context("缺少定义起始位置")?;
+            let end = definition.end.context("缺少定义结束位置")?;
             Ok(EditPredictionDefinition {
                 path: ProjectPath {
                     worktree_id: worktree::WorktreeId::from_proto(definition.worktree_id),
                     path: RelPath::from_unix_str(&definition.path)
-                        .context("invalid path")?
+                        .context("无效路径")?
                         .into(),
                 },
                 range: Unclipped(PointUtf16::new(start.row, start.column))
@@ -1654,11 +1654,11 @@ impl LspCommand for GetReferences {
     type ProtoRequest = proto::GetReferences;
 
     fn display_name(&self) -> &str {
-        "Find all references"
+        "查找所有引用"
     }
 
     fn status(&self) -> Option<String> {
-        Some("Finding references...".to_owned())
+        Some("正在查找引用...".to_owned())
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -1749,7 +1749,7 @@ impl LspCommand for GetReferences {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -1805,11 +1805,11 @@ impl LspCommand for GetReferences {
             let start = location
                 .start
                 .and_then(deserialize_anchor)
-                .context("missing target start")?;
+                .context("缺少目标起始位置")?;
             let end = location
                 .end
                 .and_then(deserialize_anchor)
-                .context("missing target end")?;
+                .context("缺少目标结束位置")?;
             target_buffer
                 .update(&mut cx, |buffer, _| buffer.wait_for_anchors([start, end]))
                 .await?;
@@ -1833,7 +1833,7 @@ impl LspCommand for GetDocumentHighlights {
     type ProtoRequest = proto::GetDocumentHighlights;
 
     fn display_name(&self) -> &str {
-        "Get document highlights"
+        "获取文档高亮"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -1909,7 +1909,7 @@ impl LspCommand for GetDocumentHighlights {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -1955,11 +1955,11 @@ impl LspCommand for GetDocumentHighlights {
             let start = highlight
                 .start
                 .and_then(deserialize_anchor)
-                .context("missing target start")?;
+                .context("缺少目标起始位置")?;
             let end = highlight
                 .end
                 .and_then(deserialize_anchor)
-                .context("missing target end")?;
+                .context("缺少目标结束位置")?;
             buffer
                 .update(&mut cx, |buffer, _| buffer.wait_for_anchors([start, end]))
                 .await?;
@@ -1989,7 +1989,7 @@ impl LspCommand for GetDocumentSymbols {
     type ProtoRequest = proto::GetDocumentSymbols;
 
     fn display_name(&self) -> &str {
-        "Get document symbols"
+        "获取文档符号"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -2140,15 +2140,15 @@ impl LspCommand for GetDocumentSymbols {
             ) -> Result<DocumentSymbol> {
                 let kind = language::SymbolKind::from_proto(serialized_symbol.kind);
 
-                let start = serialized_symbol.start.context("invalid start")?;
-                let end = serialized_symbol.end.context("invalid end")?;
+                let start = serialized_symbol.start.context("无效起始位置")?;
+                let end = serialized_symbol.end.context("无效结束位置")?;
 
                 let selection_start = serialized_symbol
                     .selection_start
-                    .context("invalid selection start")?;
+                    .context("无效选区起始位置")?;
                 let selection_end = serialized_symbol
                     .selection_end
-                    .context("invalid selection end")?;
+                    .context("无效选区结束位置")?;
 
                 Ok(DocumentSymbol {
                     name: serialized_symbol.name,
@@ -2186,7 +2186,7 @@ impl LspCommand for GetSignatureHelp {
     type ProtoRequest = proto::GetSignatureHelp;
 
     fn display_name(&self) -> &str {
-        "Get signature help"
+        "获取签名帮助"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -2252,13 +2252,13 @@ impl LspCommand for GetSignatureHelp {
                 buffer.wait_for_version(deserialize_version(&payload.version))
             })
             .await
-            .with_context(|| format!("waiting for version for buffer {}", buffer.entity_id()))?;
+            .with_context(|| format!("正在等待缓冲区 {} 的版本", buffer.entity_id()))?;
         let buffer_snapshot = buffer.read_with(&cx, |buffer, _| buffer.snapshot());
         Ok(Self {
             position: payload
                 .position
                 .and_then(deserialize_anchor)
-                .context("invalid position")?
+                .context("无效位置")?
                 .to_point_utf16(&buffer_snapshot),
         })
     }
@@ -2310,7 +2310,7 @@ impl LspCommand for GetHover {
     type ProtoRequest = proto::GetHover;
 
     fn display_name(&self) -> &str {
-        "Get hover"
+        "获取悬停提示"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -2425,7 +2425,7 @@ impl LspCommand for GetHover {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -2550,7 +2550,7 @@ impl LspCommand for GetCompletions {
     type ProtoRequest = proto::GetCompletions;
 
     fn display_name(&self) -> &str {
-        "Get completion"
+        "获取补全"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -2604,7 +2604,7 @@ impl LspCommand for GetCompletions {
             .read_with(&cx, |lsp_store, _| {
                 lsp_store.language_server_adapter_for_id(server_id)
             })
-            .with_context(|| format!("no language server with id {server_id}"))?;
+            .with_context(|| format!("未找到 ID 为 {server_id} 的语言服务器"))?;
 
         let lsp_defaults = response_list
             .as_ref()
@@ -2658,7 +2658,7 @@ impl LspCommand for GetCompletions {
                     // the range based on the syntax tree.
                     None => {
                         if self.position != clipped_position {
-                            log::info!("completion out of expected range ");
+                            log::info!("补全超出预期范围 ");
                             return false;
                         }
 
@@ -2677,7 +2677,7 @@ impl LspCommand for GetCompletions {
                             let start = snapshot.clip_point_utf16(range.start, Bias::Left);
                             let end = snapshot.clip_point_utf16(range.end, Bias::Left);
                             if start != range.start.0 || end != range.end.0 {
-                                log::info!("completion out of expected range");
+                                log::info!("补全超出预期范围");
                                 return false;
                             }
 
@@ -2795,7 +2795,7 @@ impl LspCommand for GetCompletions {
                     buffer.clip_point_utf16(Unclipped(p.to_point_utf16(buffer)), Bias::Left)
                 })
             })
-            .context("invalid position")?;
+            .context("无效位置")?;
         Ok(Self {
             position,
             context: CompletionContext {
@@ -2879,7 +2879,7 @@ pub(crate) fn parse_completion_text_edit(
         let end = snapshot.clip_point_utf16(range.end, Bias::Left);
         if start != range.start.0 || end != range.end.0 {
             log::info!(
-                "completion out of expected range, start: {start:?}, end: {end:?}, range: {range:?}"
+                "补全超出预期范围,起始: {start:?},结束: {end:?},范围: {range:?}"
             );
             return None;
         }
@@ -2893,7 +2893,7 @@ pub(crate) fn parse_completion_text_edit(
             let start = snapshot.clip_point_utf16(range.start, Bias::Left);
             let end = snapshot.clip_point_utf16(range.end, Bias::Left);
             if start != range.start.0 || end != range.end.0 {
-                log::info!("completion (insert) out of expected range");
+                log::info!("补全(插入)超出预期范围");
                 return None;
             }
             Some(snapshot.anchor_before(start)..snapshot.anchor_after(end))
@@ -2914,7 +2914,7 @@ impl LspCommand for GetCodeActions {
     type ProtoRequest = proto::GetCodeActions;
 
     fn display_name(&self) -> &str {
-        "Get code actions"
+        "获取代码操作"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -3006,7 +3006,7 @@ impl LspCommand for GetCodeActions {
                 .read(cx)
                 .language_server_for_id(server_id)
                 .with_context(|| {
-                    format!("Missing the language server that just returned a response {server_id}")
+                    format!("缺少刚刚返回响应的语言服务器 {server_id}")
                 })
         })?;
 
@@ -3075,11 +3075,11 @@ impl LspCommand for GetCodeActions {
         let start = message
             .start
             .and_then(language::proto::deserialize_anchor)
-            .context("invalid start")?;
+            .context("无效起始位置")?;
         let end = message
             .end
             .and_then(language::proto::deserialize_anchor)
-            .context("invalid end")?;
+            .context("无效结束位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -3181,7 +3181,7 @@ impl LspCommand for OnTypeFormatting {
     type ProtoRequest = proto::OnTypeFormatting;
 
     fn display_name(&self) -> &str {
-        "Formatting on typing"
+        "输入时格式化"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -3249,7 +3249,7 @@ impl LspCommand for OnTypeFormatting {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -3324,7 +3324,7 @@ impl InlayHints {
         });
         let label = Self::lsp_inlay_label_to_project(lsp_hint.label, server_id)
             .await
-            .context("lsp to project inlay hint conversion")?;
+            .context("LSP 到项目内联提示转换")?;
         let padding_left = if force_no_type_left_padding && kind == Some(InlayHintKind::Type) {
             false
         } else {
@@ -3397,7 +3397,7 @@ impl InlayHints {
                     server_id: server_id.0 as u64,
                     value: resolve_data.map(|json_data| {
                         serde_json::to_string(&json_data)
-                            .expect("failed to serialize resolve json data")
+                            .expect("序列化解析 JSON 数据失败")
                     }),
                 }),
             ),
@@ -3462,14 +3462,14 @@ impl InlayHints {
 
     pub fn proto_to_project_hint(message_hint: proto::InlayHint) -> anyhow::Result<InlayHint> {
         let resolve_state = message_hint.resolve_state.as_ref().unwrap_or_else(|| {
-            panic!("incorrect proto inlay hint message: no resolve state in hint {message_hint:?}",)
+            panic!("错误的 proto 内联提示消息: 提示 {message_hint:?} 中没有解析状态",)
         });
         let resolve_state_data = resolve_state
             .lsp_resolve_state.as_ref()
             .map(|lsp_resolve_state| {
                 let value = lsp_resolve_state.value.as_deref().map(|value| {
                     serde_json::from_str::<Option<lsp::LSPAny>>(value)
-                        .with_context(|| format!("incorrect proto inlay hint message: non-json resolve state {lsp_resolve_state:?}"))
+                        .with_context(|| format!("错误的 proto 内联提示消息: 非 JSON 解析状态 {lsp_resolve_state:?}"))
                 }).transpose()?.flatten();
                 anyhow::Ok((LanguageServerId(lsp_resolve_state.server_id as usize), value))
             })
@@ -3479,25 +3479,25 @@ impl InlayHints {
             1 => {
                 let (server_id, lsp_resolve_state) = resolve_state_data.with_context(|| {
                     format!(
-                        "No lsp resolve data for the hint that can be resolved: {message_hint:?}"
+                        "没有可解析提示 {message_hint:?} 的 LSP 解析数据"
                     )
                 })?;
                 ResolveState::CanResolve(server_id, lsp_resolve_state)
             }
             2 => ResolveState::Resolving,
             invalid => {
-                anyhow::bail!("Unexpected resolve state {invalid} for hint {message_hint:?}")
+                anyhow::bail!("提示 {message_hint:?} 的解析状态 {invalid} 意外")
             }
         };
         Ok(InlayHint {
             position: message_hint
                 .position
                 .and_then(language::proto::deserialize_anchor)
-                .context("invalid position")?,
+                .context("无效位置")?,
             label: match message_hint
                 .label
                 .and_then(|label| label.label)
-                .context("missing label")?
+                .context("缺少标签")?
             {
                 proto::inlay_hint_label::Label::Value(s) => InlayHintLabel::String(s),
                 proto::inlay_hint_label::Label::LabelParts(parts) => {
@@ -3537,7 +3537,7 @@ impl InlayHints {
                                         LanguageServerId(server_id as usize),
                                         lsp::Location {
                                             uri: lsp::Uri::from_str(&uri).with_context(|| {
-                                                format!("invalid uri in hint part {uri:?}")
+                                                format!("提示部分 {uri:?} 中的 URI 无效")
                                             })?,
                                             range: lsp::Range::new(
                                                 point_to_lsp(PointUtf16::new(
@@ -3687,7 +3687,7 @@ impl LspCommand for InlayHints {
     type ProtoRequest = proto::InlayHints;
 
     fn display_name(&self) -> &str {
-        "Inlay hints"
+        "内联提示"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -3754,7 +3754,7 @@ impl LspCommand for InlayHints {
             .await
             .into_iter()
             .collect::<anyhow::Result<_>>()
-            .context("lsp to project inlay hints conversion")
+            .context("LSP 到项目内联提示转换")
     }
 
     fn to_proto(&self, project_id: u64, buffer: &Buffer) -> proto::InlayHints {
@@ -3776,11 +3776,11 @@ impl LspCommand for InlayHints {
         let start = message
             .start
             .and_then(language::proto::deserialize_anchor)
-            .context("invalid start")?;
+            .context("无效起始位置")?;
         let end = message
             .end
             .and_then(language::proto::deserialize_anchor)
-            .context("invalid end")?;
+            .context("无效结束位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
@@ -3839,7 +3839,7 @@ impl LspCommand for SemanticTokensFull {
     type ProtoRequest = proto::SemanticTokens;
 
     fn display_name(&self) -> &str {
-        "Semantic tokens full"
+        "完整语义标记"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -3894,7 +3894,7 @@ impl LspCommand for SemanticTokensFull {
             }),
             Some(lsp::SemanticTokensResult::Partial(_)) => {
                 anyhow::bail!(
-                    "Unexpected semantic tokens response with partial result for inlay hints"
+                    "内联提示的语义标记响应意外包含部分结果"
                 )
             }
             None => Ok(Default::default()),
@@ -3990,7 +3990,7 @@ impl LspCommand for SemanticTokensDelta {
     type ProtoRequest = proto::SemanticTokens;
 
     fn display_name(&self) -> &str {
-        "Semantic tokens delta"
+        "语义标记增量"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -4062,7 +4062,7 @@ impl LspCommand for SemanticTokensDelta {
             }
             Some(lsp::SemanticTokensFullDeltaResult::PartialTokensDelta { .. }) => {
                 anyhow::bail!(
-                    "Unexpected semantic tokens response with partial result for inlay hints"
+                    "内联提示的语义标记响应意外包含部分结果"
                 )
             }
             None => Ok(Default::default()),
@@ -4070,7 +4070,7 @@ impl LspCommand for SemanticTokensDelta {
     }
 
     fn to_proto(&self, _: u64, _: &Buffer) -> proto::SemanticTokens {
-        unimplemented!("Delta requests are never initialted on the remote client side")
+        unimplemented!("远程客户端永远不会发起增量请求")
     }
 
     async fn from_proto(
@@ -4079,7 +4079,7 @@ impl LspCommand for SemanticTokensDelta {
         _: Entity<Buffer>,
         _: AsyncApp,
     ) -> Result<Self> {
-        unimplemented!("Delta requests are never initialted on the remote client side")
+        unimplemented!("远程客户端永远不会发起增量请求")
     }
 
     fn response_to_proto(
@@ -4143,7 +4143,7 @@ impl LspCommand for GetCodeLens {
     type ProtoRequest = proto::GetCodeLens;
 
     fn display_name(&self) -> &str {
-        "Code Lens"
+        "代码透镜"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -4253,7 +4253,7 @@ impl LspCommand for GetCodeLens {
             .into_iter()
             .map(LspStore::deserialize_code_action)
             .collect::<Result<Vec<_>>>()
-            .context("deserializing proto code lens response")
+            .context("反序列化 proto 代码透镜响应")
     }
 
     fn buffer_id_from_proto(message: &proto::GetCodeLens) -> Result<BufferId> {
@@ -4280,7 +4280,7 @@ impl LspCommand for LinkedEditingRange {
     type ProtoRequest = proto::LinkedEditingRange;
 
     fn display_name(&self) -> &str {
-        "Linked editing range"
+        "关联编辑范围"
     }
 
     fn check_capabilities(&self, capabilities: AdapterServerCapabilities) -> bool {
@@ -4343,13 +4343,13 @@ impl LspCommand for LinkedEditingRange {
         buffer: Entity<Buffer>,
         mut cx: AsyncApp,
     ) -> Result<Self> {
-        let position = message.position.context("invalid position")?;
+        let position = message.position.context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| {
                 buffer.wait_for_version(deserialize_version(&message.version))
             })
             .await?;
-        let position = deserialize_anchor(position).context("invalid position")?;
+        let position = deserialize_anchor(position).context("无效位置")?;
         buffer
             .update(&mut cx, |buffer, _| buffer.wait_for_anchors([position]))
             .await?;
@@ -4435,7 +4435,7 @@ impl GetDocumentDiagnostics {
                                 .into_iter()
                                 .filter_map(|diagnostic| {
                                     GetDocumentDiagnostics::deserialize_lsp_diagnostic(diagnostic)
-                                        .context("deserializing diagnostics")
+                                        .context("反序列化诊断")
                                         .log_err()
                                 })
                                 .collect(),
@@ -4447,8 +4447,8 @@ impl GetDocumentDiagnostics {
     }
 
     pub fn deserialize_lsp_diagnostic(diagnostic: proto::LspDiagnostic) -> Result<lsp::Diagnostic> {
-        let start = diagnostic.start.context("invalid start range")?;
-        let end = diagnostic.end.context("invalid end range")?;
+        let start = diagnostic.start.context("无效起始范围")?;
+        let end = diagnostic.end.context("无效结束范围")?;
 
         let range = Range::<PointUtf16> {
             start: PointUtf16 {
@@ -4711,7 +4711,7 @@ impl LspCommand for GetDocumentDiagnostics {
     type ProtoRequest = proto::GetDocumentDiagnostics;
 
     fn display_name(&self) -> &str {
-        "Get diagnostics"
+        "获取诊断"
     }
 
     fn check_capabilities(&self, _: AdapterServerCapabilities) -> bool {
@@ -4753,7 +4753,7 @@ impl LspCommand for GetDocumentDiagnostics {
                     file_path_to_lsp_url(&abs_path)
                 })
                 .transpose()?
-                .with_context(|| format!("missing url on buffer {}", buffer.remote_id()))
+                .with_context(|| format!("缓冲区 {} 缺少 URL", buffer.remote_id()))
         })?;
 
         let mut pulled_diagnostics = HashMap::default();
@@ -4824,7 +4824,7 @@ impl LspCommand for GetDocumentDiagnostics {
         _: AsyncApp,
     ) -> Result<Self> {
         anyhow::bail!(
-            "proto::GetDocumentDiagnostics is not expected to be converted from proto directly, as it needs `previous_result_id` fetched first"
+            "proto::GetDocumentDiagnostics 不应直接从 proto 转换,因为它需要先获取 `previous_result_id`"
         )
     }
 
@@ -4865,7 +4865,7 @@ impl LspCommand for GetDocumentDiagnostics {
                             .into_iter()
                             .filter_map(|diagnostic| {
                                 GetDocumentDiagnostics::serialize_lsp_diagnostic(diagnostic)
-                                    .context("serializing diagnostics")
+                                    .context("序列化诊断")
                                     .log_err()
                             })
                             .collect(),
@@ -4900,7 +4900,7 @@ impl LspCommand for GetDocumentColor {
     type ProtoRequest = proto::GetDocumentColor;
 
     fn display_name(&self) -> &str {
-        "Document color"
+        "文档颜色"
     }
 
     fn check_capabilities(&self, server_capabilities: AdapterServerCapabilities) -> bool {
@@ -5043,7 +5043,7 @@ impl LspCommand for GetFoldingRanges {
     type ProtoRequest = proto::GetFoldingRanges;
 
     fn display_name(&self) -> &str {
-        "Folding ranges"
+        "折叠范围"
     }
 
     fn check_capabilities(&self, server_capabilities: AdapterServerCapabilities) -> bool {
@@ -5199,7 +5199,7 @@ impl LspCommand for GetDocumentLinks {
     type ProtoRequest = proto::GetDocumentLinks;
 
     fn display_name(&self) -> &str {
-        "Document links"
+        "文档链接"
     }
 
     fn check_capabilities(&self, server_capabilities: AdapterServerCapabilities) -> bool {
@@ -5318,7 +5318,7 @@ impl LspCommand for GetDocumentLinks {
             .into_iter()
             .map(|link| {
                 Ok(LspDocumentLink {
-                    range: deserialize_anchor_range(link.range.context("missing range")?)?,
+                    range: deserialize_anchor_range(link.range.context("缺少范围")?)?,
                     target: link.target.map(SharedString::from),
                     tooltip: link.tooltip.map(SharedString::from),
                     data: link.data.and_then(|d| serde_json::from_str(&d).ok()),
@@ -5387,7 +5387,7 @@ fn process_unchanged_diagnostics_report(
             } => {
                 if server_id != *existing_server_id || &uri != existing_uri {
                     debug_panic!(
-                        "Unexpected state: file {uri} has two different sets of diagnostics reported"
+                        "意外状态: 文件 {uri} 报告了两组不同的诊断"
                     );
                 }
                 match existing_diagnostics {
@@ -5438,7 +5438,7 @@ fn process_full_diagnostics_report(
             } => {
                 if server_id != *existing_server_id || &uri != existing_uri {
                     debug_panic!(
-                        "Unexpected state: file {uri} has two different sets of diagnostics reported"
+                        "意外状态: 文件 {uri} 报告了两组不同的诊断"
                     );
                 }
                 match existing_diagnostics {

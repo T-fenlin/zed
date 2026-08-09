@@ -14,7 +14,7 @@ pub async fn run_database_migrations(
 ) -> Result<Vec<(Migration, Duration)>> {
     let migrations = MigrationSource::resolve(migrations_path.as_ref())
         .await
-        .map_err(|err| anyhow!("failed to load migrations: {err:?}"))?;
+        .map_err(|err| anyhow!("无法加载迁移:{err:?}"))?;
 
     let mut connection = sqlx::AnyConnection::connect(database_options.get_url()).await?;
 
@@ -32,7 +32,7 @@ pub async fn run_database_migrations(
             Some(applied_migration) => {
                 anyhow::ensure!(
                     migration.checksum == applied_migration.checksum,
-                    "checksum mismatch for applied migration {}",
+                    "已应用的迁移 {} 校验和不匹配",
                     migration.description
                 );
             }

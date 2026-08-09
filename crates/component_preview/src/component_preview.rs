@@ -48,7 +48,7 @@ pub fn init(app_state: Arc<AppState>, cx: &mut App) {
                         window,
                         cx,
                     )
-                    .expect("Failed to create component preview")
+                    .expect("创建组件预览失败")
                 });
 
                 workspace.add_item_to_active_pane(
@@ -125,7 +125,7 @@ impl ComponentPreview {
         let sorted_components = component_registry.sorted_components();
         let selected_index = selected_index.into().unwrap_or(0);
         let active_page = active_page.unwrap_or(PreviewPage::AllComponents);
-        let filter_editor = cx.new(|cx| InputField::new(window, cx, "Find components or usages…"));
+        let filter_editor = cx.new(|cx| InputField::new(window, cx, "查找组件或用法…"));
 
         let component_list = ListState::new(
             sorted_components.len(),
@@ -310,7 +310,7 @@ impl ComponentPreview {
             && !components.is_empty()
         {
             entries.push(PreviewEntry::Separator);
-            entries.push(PreviewEntry::SectionHeader("Uncategorized".into()));
+            entries.push(PreviewEntry::SectionHeader("未分类".into()));
             let mut sorted_components = components.clone();
             sorted_components.sort_by_key(|(c, _)| c.sort_name());
 
@@ -403,7 +403,7 @@ impl ComponentPreview {
                 let selected = self.active_page == PreviewPage::AllComponents;
 
                 ListItem::new(ix)
-                    .child(Label::new("All Components"))
+                    .child(Label::new("所有组件"))
                     .selectable(true)
                     .toggle_state(selected)
                     .inset(true)
@@ -494,7 +494,7 @@ impl ComponentPreview {
                         .items_center()
                         .justify_center()
                         .text_color(cx.theme().colors().text_muted)
-                        .child(format!("No components matching '{}'.", self.filter_text))
+                        .child(format!("没有与 '{}' 匹配的组件。", self.filter_text))
                         .into_any_element()
                 } else {
                     list(
@@ -546,7 +546,7 @@ impl ComponentPreview {
                 .size_full()
                 .items_center()
                 .justify_center()
-                .child("Component not found")
+                .child("未找到组件")
                 .into_any_element()
         }
     }
@@ -555,13 +555,13 @@ impl ComponentPreview {
         if let Some(workspace) = self.workspace.upgrade() {
             workspace.update(cx, |workspace, cx| {
                 let status_toast =
-                    StatusToast::new("`zed/new-notification-system` created!", cx, |this, _cx| {
+                    StatusToast::new("`zed/new-notification-system` 已创建!", cx, |this, _cx| {
                         this.icon(
                             Icon::new(IconName::GitBranch)
                                 .size(IconSize::Small)
                                 .color(Color::Muted),
                         )
-                        .action("Open Pull Request", |_, cx| {
+                        .action("打开拉取请求", |_, cx| {
                             cx.open_url("https://github.com/")
                         })
                     });
@@ -625,7 +625,7 @@ impl Render for ComponentPreview {
                                 )
                                 .track_scroll(&self.nav_scroll_handle)
                                 .p_2p5()
-                                .w(px(231.)) // Matches perfectly with the size of the "Component Preview" tab, if that's the first one in the pane
+                                .w(px(231.)) // Matches perfectly with the size of the "组件预览" tab, if that's the first one in the pane
                                 .h_full()
                                 .flex_1(),
                             )
@@ -644,7 +644,7 @@ impl Render for ComponentPreview {
                             .border_t_1()
                             .border_color(cx.theme().colors().border)
                             .child(
-                                Button::new("toast-test", "Launch Toast")
+                                Button::new("toast-test", "启动提示")
                                     .full_width()
                                     .on_click(cx.listener({
                                         move |this, _, _window, cx| {
@@ -710,7 +710,7 @@ impl Item for ComponentPreview {
     type Event = ItemEvent;
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Component Preview".into()
+        "组件预览".into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -755,7 +755,7 @@ impl Item for ComponentPreview {
         Task::ready(match self_result {
             Ok(preview) => Some(cx.new(|_cx| preview)),
             Err(e) => {
-                log::error!("Failed to clone component preview: {}", e);
+                log::error!("克隆组件预览失败:{}", e);
                 None
             }
         })
@@ -837,7 +837,7 @@ impl SerializableItem for ComponentPreview {
                         window,
                         cx,
                     )
-                    .expect("Failed to create component preview")
+                    .expect("创建组件预览失败")
                 }))
             })?
         })

@@ -381,7 +381,7 @@ impl StackFrameList {
             .find(|stack_frame| stack_frame.id == stack_frame_id)
             .cloned()
         else {
-            return Task::ready(Err(anyhow!("No stack frame for ID")));
+            return Task::ready(Err(anyhow!("没有该 ID 对应的堆栈帧")));
         };
         self.go_to_stack_frame_inner(stack_frame, window, cx)
     }
@@ -396,7 +396,7 @@ impl StackFrameList {
         self.opened_stack_frame_id = Some(stack_frame_id);
         let Some(abs_path) = Self::abs_path_from_stack_frame(&stack_frame) else {
             return Task::ready(Err(anyhow!(
-                "no absolute source path in stack frame {stack_frame_id}, source: {:?}",
+                "堆栈帧 {stack_frame_id} 中没有绝对源路径,来源: {:?}",
                 stack_frame.source
             )));
         };
@@ -439,7 +439,7 @@ impl StackFrameList {
                         let project_path = buffer
                             .read(cx)
                             .project_path(cx)
-                            .context("Could not select a stack frame for unnamed buffer")?;
+                            .context("无法为未命名缓冲区选择栈帧")?;
 
                         let open_preview = true;
 
@@ -481,7 +481,7 @@ impl StackFrameList {
 
             this.update(cx, |this, cx| {
                 let thread_id = this.state.read_with(cx, |state, _| {
-                    state.thread_id.context("No selected thread ID found")
+                    state.thread_id.context("未找到选定的线程 ID")
                 })??;
 
                 this.workspace.update(cx, |workspace, cx| {
@@ -658,7 +658,7 @@ impl StackFrameList {
                                     }
                                 }))
                                 .tooltip(move |window, cx| {
-                                    Tooltip::text("Restart Stack Frame")(window, cx)
+                                    Tooltip::text("重启堆栈帧")(window, cx)
                                 }),
                             ),
                     )
@@ -723,7 +723,7 @@ impl StackFrameList {
                     .truncate()
                     .text_color(cx.theme().colors().text_muted)
                     .child(format!(
-                        "Show {} more{}",
+                        "显示其余 {} 个{}",
                         stack_frames.len(),
                         first_stack_frame
                             .source
@@ -906,8 +906,8 @@ impl StackFrameList {
 
     pub(crate) fn render_control_strip(&self) -> AnyElement {
         let tooltip_title = match self.list_filter {
-            StackFrameFilter::All => "Show stack frames from your project",
-            StackFrameFilter::OnlyUserFrames => "Show all stack frames",
+            StackFrameFilter::All => "显示来自你项目的堆栈帧",
+            StackFrameFilter::OnlyUserFrames => "显示所有堆栈帧",
         };
 
         h_flex()

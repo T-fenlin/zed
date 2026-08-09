@@ -120,7 +120,7 @@ impl PlatformAtlas for WgpuAtlas {
             };
             let tile = lock
                 .allocate(size, key.texture_kind())
-                .context("failed to allocate")?;
+                .context("分配失败")?;
             lock.upload_texture(tile.texture_id, tile.bounds, &bytes);
             lock.tiles_by_key.insert(key.clone(), tile);
             Ok(Some(tile))
@@ -236,14 +236,14 @@ impl WgpuAtlasState {
                 .textures
                 .get_mut(ix)
                 .and_then(|t| t.as_mut())
-                .expect("texture must exist")
+                .expect("纹理必须存在")
         } else {
             texture_list.textures.push(Some(atlas_texture));
             texture_list
                 .textures
                 .last_mut()
                 .and_then(|t| t.as_mut())
-                .expect("texture must exist")
+                .expect("纹理必须存在")
         }
     }
 
@@ -339,7 +339,7 @@ impl ops::Index<AtlasTextureId> for WgpuAtlasStorage {
         };
         textures[id.index as usize]
             .as_ref()
-            .expect("texture must exist")
+            .expect("纹理必须存在")
     }
 }
 
@@ -421,7 +421,7 @@ mod tests {
                     force_fallback_adapter: false,
                 })
                 .await
-                .map_err(|error| anyhow::anyhow!("failed to request adapter: {error}"))?;
+                .map_err(|error| anyhow::anyhow!("请求适配器失败: {error}"))?;
             let (device, queue) = adapter
                 .request_device(&wgpu::DeviceDescriptor {
                     label: Some("wgpu_atlas_test_device"),
@@ -434,7 +434,7 @@ mod tests {
                     experimental_features: wgpu::ExperimentalFeatures::disabled(),
                 })
                 .await
-                .map_err(|error| anyhow::anyhow!("failed to request device: {error}"))?;
+                .map_err(|error| anyhow::anyhow!("请求设备失败: {error}"))?;
             Ok((Arc::new(device), Arc::new(queue)))
         })
     }
@@ -457,7 +457,7 @@ mod tests {
         // Regression test: before the fix, this panicked in flush_uploads
         atlas
             .get_or_insert_with(&key, &mut build)?
-            .expect("tile should be created");
+            .expect("应创建图块");
         atlas.remove(&key);
         atlas.before_frame();
         Ok(())
@@ -489,8 +489,8 @@ mod tests {
                 .get_or_insert_with(key, &mut || {
                     Ok(Some((size, Cow::Owned(vec![0u8; byte_count]))))
                 })
-                .expect("allocation should succeed")
-                .expect("callback returns Some")
+                .expect("分配应成功")
+                .expect("回调返回 Some")
         };
 
         let keeper_key = make_key(1);

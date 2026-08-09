@@ -130,5 +130,5 @@ bitflags! {
 /// an existing window. A caller that wants a popup on every platform should treat this error as
 /// a cue to fall back to that in-window rendering.
 #[derive(Debug, Error)]
-#[error("popups are not supported on this platform")]
+#[error("此平台不支持弹出窗口")]
 pub struct PopupNotSupportedError;

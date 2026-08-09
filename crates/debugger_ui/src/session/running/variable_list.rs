@@ -458,7 +458,7 @@ impl VariableList {
 
     pub(crate) fn toggle_entry(&mut self, var_path: &EntryPath, cx: &mut Context<Self>) {
         let Some(entry) = self.entry_states.get_mut(var_path) else {
-            log::error!("Could not find variable list entry state to toggle");
+            log::error!("找不到要切换的变量列表条目状态");
             return;
         };
 
@@ -573,7 +573,7 @@ impl VariableList {
     ) {
         if let Some(ref selected_entry) = self.selection {
             let Some(entry_state) = self.entry_states.get_mut(selected_entry) else {
-                debug_panic!("Trying to toggle variable in variable list that has an no state");
+                debug_panic!("尝试切换变量列表中没有状态的变量");
                 return;
             };
 
@@ -594,7 +594,7 @@ impl VariableList {
     ) {
         if let Some(selected_entry) = &self.selection {
             let Some(entry_state) = self.entry_states.get_mut(selected_entry) else {
-                debug_panic!("Trying to toggle variable in variable list that has an no state");
+                debug_panic!("尝试切换变量列表中没有状态的变量");
                 return;
             };
 
@@ -707,27 +707,27 @@ impl VariableList {
             cx.update(|window, cx| {
                 let context_menu = ContextMenu::build(window, cx, |menu, _, _| {
                     menu.when_some(entry.as_variable(), |menu, _| {
-                        menu.action("Copy Name", CopyVariableName.boxed_clone())
-                            .action("Copy Value", CopyVariableValue.boxed_clone())
+                        menu.action("复制名称", CopyVariableName.boxed_clone())
+                            .action("复制值", CopyVariableValue.boxed_clone())
                             .when(supports_set_variable, |menu| {
-                                menu.action("Edit Value", EditVariable.boxed_clone())
+                                menu.action("编辑值", EditVariable.boxed_clone())
                             })
                             .when(supports_go_to_memory, |menu| {
-                                menu.action("Go To Memory", GoToMemory.boxed_clone())
+                                menu.action("转到内存", GoToMemory.boxed_clone())
                             })
-                            .action("Watch Variable", AddWatch.boxed_clone())
+                            .action("监视变量", AddWatch.boxed_clone())
                             .when_some(can_toggle_data_breakpoint, |mut menu, data_info| {
                                 menu = menu.separator();
                                 if let Some(access_types) = data_info.access_types {
                                     for access in access_types {
                                         menu = menu.action(
                                             format!(
-                                                "Toggle {} Data Breakpoint",
+                                                "切换{}数据断点",
                                                 match access {
-                                                    dap::DataBreakpointAccessType::Read => "Read",
-                                                    dap::DataBreakpointAccessType::Write => "Write",
+                                                    dap::DataBreakpointAccessType::Read => "读取",
+                                                    dap::DataBreakpointAccessType::Write => "写入",
                                                     dap::DataBreakpointAccessType::ReadWrite =>
-                                                        "Read/Write",
+                                                        "读取/写入",
                                                 }
                                             ),
                                             crate::ToggleDataBreakpoint {
@@ -740,7 +740,7 @@ impl VariableList {
                                     menu
                                 } else {
                                     menu.action(
-                                        "Toggle Data Breakpoint",
+                                        "切换数据断点",
                                         crate::ToggleDataBreakpoint { access_type: None }
                                             .boxed_clone(),
                                     )
@@ -748,12 +748,12 @@ impl VariableList {
                             })
                     })
                     .when(entry.as_watcher().is_some(), |menu| {
-                        menu.action("Copy Name", CopyVariableName.boxed_clone())
-                            .action("Copy Value", CopyVariableValue.boxed_clone())
+                        menu.action("复制名称", CopyVariableName.boxed_clone())
+                            .action("复制值", CopyVariableValue.boxed_clone())
                             .when(supports_set_variable, |menu| {
-                                menu.action("Edit Value", EditVariable.boxed_clone())
+                                menu.action("编辑值", EditVariable.boxed_clone())
                             })
-                            .action("Remove Watch", RemoveWatch.boxed_clone())
+                            .action("移除监视", RemoveWatch.boxed_clone())
                     })
                     .context(focus_handle.clone())
                 });
@@ -985,7 +985,7 @@ impl VariableList {
             let state = self
                 .entry_states
                 .get(&entry.path)
-                .expect("If there's a variable entry there has to be a state that goes with it");
+                .expect("如果存在变量条目,则必须有与之对应的状态");
 
             visual_entries.push(format!(
                 "{}{} {}{}",
@@ -1225,7 +1225,7 @@ impl VariableList {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let Some(watcher) = &entry.as_watcher() else {
-            debug_panic!("Called render watcher on non watcher variable list entry variant");
+            debug_panic!("在非监视变量列表条目变体上调用渲染监视器");
             return div().into_any_element();
         };
 
@@ -1346,7 +1346,7 @@ impl VariableList {
                         }
                     })
                     .tooltip(move |_window, cx| {
-                        Tooltip::for_action_in("Remove Watch", &RemoveWatch, &focus_handle, cx)
+                        Tooltip::for_action_in("移除监视", &RemoveWatch, &focus_handle, cx)
                     })
                     .icon_size(ui::IconSize::Indicator),
                 ),
@@ -1361,7 +1361,7 @@ impl VariableList {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let Some(scope) = entry.as_scope() else {
-            debug_panic!("Called render scope on non scope variable list entry variant");
+            debug_panic!("在非作用域变量列表条目变体上调用渲染作用域");
             return div().into_any_element();
         };
 
@@ -1435,7 +1435,7 @@ impl VariableList {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let Some(dap) = &variable.as_variable() else {
-            debug_panic!("Called render variable on non variable variable list entry variant");
+            debug_panic!("在非变量变量列表条目变体上调用渲染变量");
             return div().into_any_element();
         };
 

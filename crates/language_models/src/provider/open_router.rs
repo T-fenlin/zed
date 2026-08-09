@@ -420,7 +420,7 @@ pub fn into_open_router(
     max_output_tokens: Option<u64>,
 ) -> Result<open_router::Request> {
     if request.contains_custom_tool_input() {
-        anyhow::bail!("OpenRouter does not support custom tools");
+        anyhow::bail!("OpenRouter 不支持自定义工具");
     }
 
     // Anthropic models via OpenRouter don't accept reasoning_details being echoed back
@@ -481,7 +481,7 @@ pub fn into_open_router(
                 }
                 MessageContent::ToolUse(tool_use) => {
                     let input = tool_use.input.as_json().ok_or_else(|| {
-                        anyhow::anyhow!("OpenRouter does not support custom tool calls")
+                        anyhow::anyhow!("OpenRouter 不支持自定义工具调用")
                     })?;
                     let tool_call = open_router::ToolCall {
                         id: tool_use.id.to_string(),
@@ -597,7 +597,7 @@ pub fn into_open_router(
                         ..
                     } => input_schema,
                     language_model::LanguageModelRequestToolInput::Custom { .. } => {
-                        return Err(anyhow::anyhow!("OpenRouter does not support custom tools"));
+                        return Err(anyhow::anyhow!("OpenRouter 不支持自定义工具"));
                     }
                 };
                 Ok(open_router::ToolDefinition::Function {
@@ -871,7 +871,7 @@ impl OpenRouterEventMapper {
                 events.push(Ok(LanguageModelCompletionEvent::Stop(StopReason::ToolUse)));
             }
             Some(stop_reason) => {
-                log::error!("Unexpected OpenRouter stop_reason: {stop_reason:?}",);
+                log::error!("意外的 OpenRouter 停止原因: {stop_reason:?}",);
                 // Don't emit reasoning_details here - already emitted immediately when captured
                 events.push(Ok(LanguageModelCompletionEvent::Stop(StopReason::EndTurn)));
             }
@@ -1037,17 +1037,17 @@ mod tests {
         }
 
         // Assertions
-        assert!(has_tool_use, "Should have emitted ToolUse event");
+        assert!(has_tool_use, "应该已发出 ToolUse 事件");
         assert!(
             !reasoning_details_events.is_empty(),
-            "Should have emitted ReasoningDetails events"
+            "应该已发出 ReasoningDetails 事件"
         );
 
         // We should have received multiple reasoning_details events (text, encrypted, empty)
         // The agent layer is responsible for keeping only the first non-empty one
         assert!(
             reasoning_details_events.len() >= 2,
-            "Should have multiple reasoning_details events from streaming"
+            "流式传输应产生多个 reasoning_details 事件"
         );
 
         // Verify at least one contains the encrypted data
@@ -1065,13 +1065,13 @@ mod tests {
         });
         assert!(
             has_encrypted,
-            "Should have at least one reasoning_details with encrypted data"
+            "至少应有一个包含加密数据的 reasoning_details"
         );
 
         // Verify thought_signature was captured
         assert!(
             thought_signature_value.is_some(),
-            "Tool use should have thought_signature"
+            "工具使用应包含 thought_signature"
         );
         assert_eq!(
             thought_signature_value.unwrap(),
@@ -1108,7 +1108,7 @@ mod tests {
                 assert_eq!(usage.cache_read_input_tokens, 5);
                 assert_eq!(usage.total_tokens(), 19);
             }
-            other => panic!("Expected usage update event, got: {other:?}"),
+            other => panic!("预期收到用量更新事件,实际收到: {other:?}"),
         }
     }
 
@@ -1177,11 +1177,11 @@ mod tests {
         if let serde_json::Value::Array(arr) = &final_details {
             assert!(
                 !arr.is_empty(),
-                "Agent should have kept the non-empty reasoning_details"
+                "Agent 应保留非空的 reasoning_details"
             );
             assert_eq!(arr[0]["data"], "real_data_here");
         } else {
-            panic!("Expected array");
+            panic!("预期为数组");
         }
     }
 
@@ -1264,7 +1264,7 @@ mod tests {
                     ttl: Some(open_router::CacheTtl::OneHour),
                 })
             ),
-            "System message should have 1h cache_control, got: {system_cache:?}"
+            "系统消息应具有 1 小时 cache_control,实际为: {system_cache:?}"
         );
 
         let tail_cache = result.messages.last().and_then(|last_message| {
@@ -1292,7 +1292,7 @@ mod tests {
                     ttl: None,
                 })
             ),
-            "Last cache:true message should have 5min cache_control, got: {tail_cache:?}"
+            "最后一条 cache:true 消息应具有 5 分钟 cache_control,实际为: {tail_cache:?}"
         );
 
         for (i, message) in result.messages.iter().enumerate() {
@@ -1328,7 +1328,7 @@ mod tests {
                     if let open_router::MessagePart::Text { cache_control, .. } = part {
                         assert!(
                             cache_control.is_none(),
-                            "Message {i} should not have cache_control"
+                            "消息 {i} 不应具有 cache_control"
                         );
                     }
                 }
@@ -1390,7 +1390,7 @@ mod tests {
                         if let open_router::MessagePart::Text { cache_control, .. } = part {
                             assert!(
                                 cache_control.is_none(),
-                                "No message should have cache_control when no cache:true flags"
+                                "没有 cache:true 标志时,任何消息都不应具有 cache_control"
                             );
                         }
                     }
@@ -1453,7 +1453,7 @@ mod tests {
                         if let open_router::MessagePart::Text { cache_control, .. } = part {
                             assert!(
                                 cache_control.is_none(),
-                                "Non-Anthropic model should never have cache_control"
+                                "非 Anthropic 模型不应具有 cache_control"
                             );
                         }
                     }

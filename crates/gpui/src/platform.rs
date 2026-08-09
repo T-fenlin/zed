@@ -152,7 +152,7 @@ pub trait Platform: 'static {
         let (sources_tx, sources_rx) = oneshot::channel();
         sources_tx
             .send(Err(anyhow::anyhow!(
-                "gpui was compiled without the screen-capture feature"
+                "gpui 在编译时未启用屏幕捕获功能"
             )))
             .ok();
         sources_rx
@@ -653,7 +653,7 @@ impl WindowButtonLayout {
             && layout.right.iter().all(Option::is_none)
         {
             bail!(
-                "button layout string {:?} contains no valid buttons (unrecognized: {})",
+                "按钮布局字符串 {:?} 不包含有效按钮(无法识别: {})",
                 layout_string,
                 unrecognized.join(", ")
             );
@@ -968,7 +968,7 @@ pub trait PlatformWindow: HasWindowHandle + HasDisplayHandle {
     /// to capture what would be rendered without displaying it or requiring the window to be visible.
     #[cfg(any(test, feature = "test-support"))]
     fn render_to_image(&self, _scene: &Scene) -> Result<RgbaImage> {
-        anyhow::bail!("render_to_image not implemented for this platform")
+        anyhow::bail!("此平台未实现 render_to_image")
     }
 }
 
@@ -2496,7 +2496,7 @@ pub(crate) fn decode_static_image(
 ) -> Result<SmallVec<[Frame; 1]>> {
     let decoder = image::ImageReader::with_format(Cursor::new(bytes), format)
         .into_decoder()
-        .context("creating image decoder")?;
+        .context("正在创建图像解码器")?;
     decode_static_image_from_decoder(decoder)
 }
 
@@ -2505,8 +2505,8 @@ pub(crate) fn decode_static_image_from_decoder(
 ) -> Result<SmallVec<[Frame; 1]>> {
     let orientation = decoder
         .orientation()
-        .context("reading decoder's orientation")?;
-    let mut image = DynamicImage::from_decoder(decoder).context("decoding image")?;
+        .context("正在读取解码器的方向信息")?;
+    let mut image = DynamicImage::from_decoder(decoder).context("正在解码图像")?;
     image.apply_orientation(orientation);
 
     let mut data = image.into_rgba8();
@@ -2594,13 +2594,13 @@ impl Image {
                             frames.push(frame);
                         }
                         Err(err) => {
-                            log::debug!("Skipping GIF frame due to decode error: {err}");
+                            log::debug!("由于解码错误,跳过 GIF 帧: {err}");
                         }
                     }
                 }
 
                 if frames.is_empty() {
-                    anyhow::bail!("GIF could not be decoded: all frames failed");
+                    anyhow::bail!("GIF 无法解码:所有帧均失败");
                 }
 
                 frames
@@ -2891,7 +2891,7 @@ mod tests {
 
         for case in cases {
             let layout = WindowButtonLayout::parse(case).unwrap();
-            assert_eq!(layout.format(), case, "Round-trip failed for: {}", case);
+            assert_eq!(layout.format(), case, "往返转换失败: {}", case);
         }
     }
 

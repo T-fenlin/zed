@@ -55,7 +55,7 @@ fn extract_command_prefix(command: &str) -> Option<CommandPrefix> {
 /// Extracts a regex pattern and display name from a terminal command.
 ///
 /// Returns `None` for commands starting with `./`, `/`, or other path-like prefixes.
-/// This is a deliberate security decision: we only allow pattern-based "always allow"
+/// This is a deliberate security decision: we only allow pattern-based "始终允许"
 /// rules for well-known command names (like `cargo`, `npm`, `git`), not for arbitrary
 /// scripts or absolute paths which could be manipulated by an attacker.
 pub fn extract_terminal_permission_pattern(command: &str) -> Option<PermissionPattern> {
@@ -297,8 +297,8 @@ mod tests {
     #[test]
     fn test_terminal_pattern_regex_normalizes_whitespace() {
         let pattern = extract_terminal_pattern("PAGER=blah   git   log --oneline")
-            .expect("expected terminal pattern");
-        let regex = regex::Regex::new(&pattern).expect("expected valid regex");
+            .expect("预期的终端模式");
+        let regex = regex::Regex::new(&pattern).expect("预期的有效正则表达式");
 
         assert!(regex.is_match("PAGER=blah git log"));
         assert!(regex.is_match("PAGER=blah    git    log --stat"));

@@ -58,7 +58,7 @@ impl AgentTool for ListAgentsAndModelsTool {
         _input: Result<Self::Input, serde_json::Value>,
         _cx: &mut App,
     ) -> SharedString {
-        "List agents and models".into()
+        "列出代理和模型".into()
     }
 
     fn run(

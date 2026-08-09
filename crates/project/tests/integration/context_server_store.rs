@@ -613,7 +613,7 @@ async fn test_context_server_respects_disable_ai(cx: &mut TestAppContext) {
         assert_eq!(
             store.read(cx).status_for_server(&server_1_id),
             None,
-            "Server should not start when disable_ai is true"
+            "当 disable_ai 为 true 时,服务器不应启动"
         );
     });
 
@@ -659,7 +659,7 @@ async fn test_context_server_respects_disable_ai(cx: &mut TestAppContext) {
         assert_eq!(
             store.read(cx).status_for_server(&server_1_id),
             Some(ContextServerStatus::Stopped),
-            "Server should be stopped when disable_ai is true"
+            "当 disable_ai 为 true 时,服务器应停止"
         );
     });
 }
@@ -709,7 +709,7 @@ async fn test_context_server_loaded_when_first_worktree_added(cx: &mut TestAppCo
             project.find_or_create_worktree(path!("/test"), true, cx)
         })
         .await
-        .expect("failed to add worktree");
+        .expect("添加工作树失败");
     cx.run_until_parked();
 
     cx.update(|cx| {
@@ -803,7 +803,7 @@ async fn test_stdio_server_restarts_when_project_root_becomes_available(cx: &mut
                 project.find_or_create_worktree(path!("/project"), true, cx)
             })
             .await
-            .expect("Failed to add worktree");
+            .expect("无法添加工作树");
         cx.run_until_parked();
     }
 
@@ -811,7 +811,7 @@ async fn test_stdio_server_restarts_when_project_root_becomes_available(cx: &mut
         assert_eq!(
             store.read(cx).status_for_server(&server_id),
             Some(ContextServerStatus::Running),
-            "Server should be running again after restarting with the project root"
+            "使用项目根目录重启后,服务器应再次运行"
         );
     });
 }
@@ -877,11 +877,11 @@ async fn test_server_ids_includes_disabled_servers(cx: &mut TestAppContext) {
         let server_ids = store.read(cx).server_ids().to_vec();
         assert!(
             server_ids.contains(&enabled_server_id),
-            "server_ids should include enabled server"
+            "server_ids 应包含已启用的服务器"
         );
         assert!(
             server_ids.contains(&disabled_server_id),
-            "server_ids should include disabled server"
+            "server_ids 应包含已禁用的服务器"
         );
     });
 
@@ -890,14 +890,14 @@ async fn test_server_ids_includes_disabled_servers(cx: &mut TestAppContext) {
         assert_eq!(
             store.read(cx).status_for_server(&enabled_server_id),
             Some(ContextServerStatus::Running),
-            "enabled server should be running"
+            "已启用的服务器应处于运行状态"
         );
         // Disabled server should not be in the servers map (status returns None)
         // but should still be in server_ids
         assert_eq!(
             store.read(cx).status_for_server(&disabled_server_id),
             None,
-            "disabled server should not have a status (not in servers map)"
+            "已禁用的服务器不应有状态(不在服务器映射中)"
         );
     });
 }
@@ -1020,9 +1020,9 @@ async fn test_http_server_authenticates_on_post_init_401(cx: &mut TestAppContext
     let client = store.read_with(cx, |store, _| {
         store
             .get_running_server(&server_id)
-            .expect("server should be running")
+            .expect("服务器应处于运行状态")
             .client()
-            .expect("running server should have a client")
+            .expect("运行中的服务器应有一个客户端")
     });
 
     {
@@ -1040,13 +1040,13 @@ async fn test_http_server_authenticates_on_post_init_401(cx: &mut TestAppContext
         let error = client
             .request::<context_server::types::requests::ListTools>(())
             .await
-            .expect_err("request challenged with a 401 should fail");
+            .expect_err("收到 401 质询的请求应失败");
         assert!(
             matches!(
                 error.downcast_ref::<TransportError>(),
                 Some(TransportError::AuthRequired { .. })
             ),
-            "expected an AuthRequired error, got: {error}"
+            "预期收到 AuthRequired 错误,实际得到:{error}"
         );
 
         cx.run_until_parked();
@@ -1056,7 +1056,7 @@ async fn test_http_server_authenticates_on_post_init_401(cx: &mut TestAppContext
         assert_eq!(
             store.read(cx).status_for_server(&server_id),
             Some(ContextServerStatus::AuthRequired),
-            "server should require authentication after a post-initialize 401"
+            "初始化后收到 401,服务器应要求身份验证"
         );
     });
 }
@@ -1101,7 +1101,7 @@ async fn test_http_server_authenticates_on_notification_401(cx: &mut TestAppCont
         assert_eq!(
             store.read(cx).status_for_server(&server_id),
             Some(ContextServerStatus::AuthRequired),
-            "server should require authentication after a 401 on a notification"
+            "通知收到 401 后,服务器应要求身份验证"
         );
     });
 }
@@ -1120,7 +1120,7 @@ async fn test_http_server_ignores_non_auth_transport_failure(cx: &mut TestAppCon
         } else if message.contains("notifications/initialized") {
             Ok(notification_accepted_response())
         } else {
-            Err(anyhow::anyhow!("connection reset"))
+            Err(anyhow::anyhow!("连接重置"))
         }
     });
 
@@ -1143,15 +1143,15 @@ async fn test_http_server_ignores_non_auth_transport_failure(cx: &mut TestAppCon
         let client = store.read_with(cx, |store, _| {
             store
                 .get_running_server(&server_id)
-                .expect("server should be running")
+                .expect("服务器应处于运行状态")
                 .client()
-                .expect("running server should have a client")
+                .expect("运行中的服务器应有一个客户端")
         });
 
         client
             .request::<context_server::types::requests::ListTools>(())
             .await
-            .expect_err("request should fail when the transport errors");
+            .expect_err("传输出错时请求应失败");
 
         cx.run_until_parked();
         // Dropping the events guard asserts no further status change happened.
@@ -1161,7 +1161,7 @@ async fn test_http_server_ignores_non_auth_transport_failure(cx: &mut TestAppCon
         assert_eq!(
             store.read(cx).status_for_server(&server_id),
             Some(ContextServerStatus::Running),
-            "a non-auth transport failure should not change the server state"
+            "非身份验证的传输故障不应改变服务器状态"
         );
     });
 }
@@ -1198,7 +1198,7 @@ async fn test_http_server_authenticates_on_initialize_401(cx: &mut TestAppContex
         assert_eq!(
             store.read(cx).status_for_server(&server_id),
             Some(ContextServerStatus::AuthRequired),
-            "server should require authentication after a 401 on initialize"
+            "初始化时收到 401,服务器应要求身份验证"
         );
     });
 }
@@ -1223,7 +1223,7 @@ async fn test_http_server_restart_clears_stale_auth_challenge(cx: &mut TestAppCo
             } else if message.contains("notifications/initialized") {
                 Ok(notification_accepted_response())
             } else if restarted.load(Ordering::SeqCst) {
-                Err(anyhow::anyhow!("connection reset"))
+                Err(anyhow::anyhow!("连接重置"))
             } else {
                 Ok(unauthorized_response())
             }
@@ -1241,14 +1241,14 @@ async fn test_http_server_restart_clears_stale_auth_challenge(cx: &mut TestAppCo
     let client = store.read_with(cx, |store, _| {
         store
             .get_running_server(&server_id)
-            .expect("server should be running")
+            .expect("服务器应处于运行状态")
             .client()
-            .expect("running server should have a client")
+            .expect("运行中的服务器应有一个客户端")
     });
     client
         .request::<context_server::types::requests::ListTools>(())
         .await
-        .expect_err("request challenged with a 401 should fail");
+        .expect_err("收到 401 质询的请求应失败");
     // Drop our handle so the dead client fully goes away, as it does in
     // production once the store has stopped it: a lingering client would
     // compete with its successor for the reused transport's response channel.
@@ -1265,7 +1265,7 @@ async fn test_http_server_restart_clears_stale_auth_challenge(cx: &mut TestAppCo
     // and the server no longer challenges.
     restarted.store(true, Ordering::SeqCst);
     store.update(cx, |store, cx| {
-        let server = store.get_server(&server_id).expect("server should exist");
+        let server = store.get_server(&server_id).expect("服务器应存在");
         store.start_server(server, cx);
     });
     cx.run_until_parked();
@@ -1279,21 +1279,21 @@ async fn test_http_server_restart_clears_stale_auth_challenge(cx: &mut TestAppCo
     let client = store.read_with(cx, |store, _| {
         store
             .get_running_server(&server_id)
-            .expect("server should be running")
+            .expect("服务器应处于运行状态")
             .client()
-            .expect("running server should have a client")
+            .expect("运行中的服务器应有一个客户端")
     });
     client
         .request::<context_server::types::requests::ListTools>(())
         .await
-        .expect_err("request should fail when the transport errors");
+        .expect_err("传输出错时请求应失败");
     cx.run_until_parked();
 
     cx.update(|cx| {
         assert_eq!(
             store.read(cx).status_for_server(&server_id),
             Some(ContextServerStatus::Running),
-            "a stale challenge from a previous client generation must not trigger auth"
+            "来自先前客户端代的过期质询不得触发身份验证"
         );
     });
 }
@@ -1420,7 +1420,7 @@ async fn test_context_server_global_timeout(cx: &mut TestAppContext) {
         SettingsStore::update_global(cx, |store, cx| {
             store
                 .set_user_settings(r#"{"context_server_timeout": 90}"#, cx)
-                .expect("Failed to set test user settings");
+                .expect("设置测试用户设置失败");
         });
     });
 
@@ -1441,7 +1441,7 @@ async fn test_context_server_global_timeout(cx: &mut TestAppContext) {
         store.downgrade(),
         ContextServerId("test-server".into()),
         Arc::new(ContextServerConfiguration::Http {
-            url: url::Url::parse("http://localhost:8080").expect("Failed to parse test URL"),
+            url: url::Url::parse("http://localhost:8080").expect("解析测试 URL 失败"),
             headers: Default::default(),
             timeout: None,
             oauth: None,
@@ -1452,7 +1452,7 @@ async fn test_context_server_global_timeout(cx: &mut TestAppContext) {
 
     assert!(
         result.is_ok(),
-        "Server should be created successfully with global timeout"
+        "应使用全局超时成功创建服务器"
     );
 }
 
@@ -1466,7 +1466,7 @@ async fn test_context_server_per_server_timeout_override(cx: &mut TestAppContext
         SettingsStore::update_global(cx, |store, cx| {
             store
                 .set_user_settings(r#"{"context_server_timeout": 60}"#, cx)
-                .expect("Failed to set test user settings");
+                .expect("设置测试用户设置失败");
         });
     });
 
@@ -1501,7 +1501,7 @@ async fn test_context_server_per_server_timeout_override(cx: &mut TestAppContext
         store.downgrade(),
         ContextServerId("test-server".into()),
         Arc::new(ContextServerConfiguration::Http {
-            url: url::Url::parse("http://localhost:8080").expect("Failed to parse test URL"),
+            url: url::Url::parse("http://localhost:8080").expect("解析测试 URL 失败"),
             headers: Default::default(),
             timeout: Some(120),
             oauth: None,
@@ -1512,7 +1512,7 @@ async fn test_context_server_per_server_timeout_override(cx: &mut TestAppContext
 
     assert!(
         result.is_ok(),
-        "Server should be created successfully with per-server timeout override"
+        "应使用每服务器超时覆盖成功创建服务器"
     );
 }
 
@@ -1549,7 +1549,7 @@ async fn test_context_server_stdio_timeout(cx: &mut TestAppContext) {
 
     assert!(
         result.is_ok(),
-        "Stdio server should be created successfully with timeout"
+        "应使用超时成功创建 Stdio 服务器"
     );
 }
 
@@ -1623,11 +1623,11 @@ async fn test_multi_worktree_context_server_settings(cx: &mut TestAppContext) {
         let configured = store.read(cx).configured_server_ids();
         assert!(
             configured.contains(&server_a_id),
-            "server-a should be configured from project_a"
+            "server-a 应从 project_a 配置"
         );
         assert!(
             !configured.contains(&server_b_id),
-            "server-b should not be configured yet"
+            "server-b 尚不应配置"
         );
     });
 
@@ -1646,11 +1646,11 @@ async fn test_multi_worktree_context_server_settings(cx: &mut TestAppContext) {
         let configured = store.read(cx).configured_server_ids();
         assert!(
             configured.contains(&server_a_id),
-            "server-a should still be configured from project_a"
+            "server-a 仍应从 project_a 配置"
         );
         assert!(
             configured.contains(&server_b_id),
-            "server-b should now be configured from project_b"
+            "server-b 现在应从 project_b 配置"
         );
     });
 }
@@ -1829,12 +1829,12 @@ fn assert_server_events(
 
                 assert_eq!(
                     actual_server_id, expected_server_id,
-                    "Expected different server id at index {}",
+                    "索引 {} 处应有不同的服务器 ID",
                     ix
                 );
                 assert_eq!(
                     actual_status, expected_status,
-                    "Expected different status at index {}",
+                    "索引 {} 处应有不同的状态",
                     ix
                 );
                 ix += 1;

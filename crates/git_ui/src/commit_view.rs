@@ -141,7 +141,7 @@ impl Addon for CommitDiffAddon {
         menu.when_some(file_to_open, |menu, file| {
             let commit_view = self.commit_view.clone();
             menu.entry(
-                "Open File in Project",
+                "在项目中打开文件",
                 Some(Box::new(OpenFileAtHead)),
                 move |window, cx| {
                     commit_view
@@ -312,7 +312,7 @@ impl CommitView {
                         .is_some_and(|text| is_binary_content(text.as_bytes()));
 
                 let new_text = if is_binary {
-                    "(binary file not shown)".to_string()
+                    "(不显示二进制文件)".to_string()
                 } else {
                     raw_new_text
                 };
@@ -324,7 +324,7 @@ impl CommitView {
                             .map(|path| path.worktree_id)
                             .or(first_worktree_id)
                     })
-                    .context("project has no worktrees")?;
+                    .context("项目没有工作树")?;
                 let short_sha = commit_sha
                     .get(0..git::SHORT_SHA_LENGTH)
                     .unwrap_or(&commit_sha);
@@ -601,9 +601,9 @@ impl CommitView {
         let has_more = self.commit.message.trim().contains('\n');
         let is_expanded = self.message_expanded;
         let expand_tooltip = if is_expanded {
-            "Fold Commit Description"
+            "折叠提交描述"
         } else {
-            "Expand Commit Description"
+            "展开提交描述"
         };
 
         v_flex()
@@ -676,7 +676,7 @@ impl CommitView {
                     )
                     .when(self.stash.is_none(), |this| {
                         this.child(
-                            Button::new("sha", "Commit SHA")
+                            Button::new("sha", "提交 SHA")
                                 .start_icon(
                                     Icon::new(copy_icon)
                                         .size(IconSize::Small)
@@ -686,7 +686,7 @@ impl CommitView {
                                     let commit_sha = commit_sha.clone();
                                     move |_, cx| {
                                         Tooltip::with_meta(
-                                            "Copy Commit SHA",
+                                            "复制提交 SHA",
                                             None,
                                             commit_sha.clone(),
                                             cx,
@@ -756,13 +756,13 @@ impl CommitView {
     fn apply_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
         Self::stash_action(
             workspace,
-            "Apply",
+            "应用",
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {
                 let result = repository.update(cx, |repo, cx| {
                     if !stash_matches_index(&sha, stash, repo) {
-                        return Err(anyhow::anyhow!("Stash has changed, not applying"));
+                        return Err(anyhow::anyhow!("暂存内容已更改,无法应用"));
                     }
                     Ok(repo.stash_apply(Some(stash), cx))
                 });
@@ -783,13 +783,13 @@ impl CommitView {
     fn pop_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
         Self::stash_action(
             workspace,
-            "Pop",
+            "弹出",
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {
                 let result = repository.update(cx, |repo, cx| {
                     if !stash_matches_index(&sha, stash, repo) {
-                        return Err(anyhow::anyhow!("Stash has changed, pop aborted"));
+                        return Err(anyhow::anyhow!("暂存内容已更改,弹出已中止"));
                     }
                     Ok(repo.stash_pop(Some(stash), cx))
                 });
@@ -810,13 +810,13 @@ impl CommitView {
     fn remove_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
         Self::stash_action(
             workspace,
-            "Drop",
+            "丢弃",
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {
                 let result = repository.update(cx, |repo, cx| {
                     if !stash_matches_index(&sha, stash, repo) {
-                        return Err(anyhow::anyhow!("Stash has changed, drop aborted"));
+                        return Err(anyhow::anyhow!("暂存内容已更改,丢弃已中止"));
                     }
                     Ok(repo.stash_drop(Some(stash), cx))
                 });
@@ -860,9 +860,9 @@ impl CommitView {
         let sha = commit_view.read(cx).commit.sha.clone();
         let answer = window.prompt(
             PromptLevel::Info,
-            &format!("{} stash@{{{}}}?", str_action, stash),
+            &format!("{} 暂存@{{{}}}?", str_action, stash),
             None,
-            &[str_action, "Cancel"],
+            &[str_action, "取消"],
             cx,
         );
 
@@ -1083,7 +1083,7 @@ impl Item for CommitView {
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
-        Some("Commit View Opened")
+        Some("提交视图已打开")
     }
 
     fn deactivated(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -1317,7 +1317,7 @@ impl Render for CommitViewToolbar {
                     .icon_size(IconSize::Small)
                     .tooltip(move |_, cx| {
                         Tooltip::for_action(
-                            "Buffer Search",
+                            "缓冲区搜索",
                             &zed_actions::buffer_search::Deploy::find(),
                             cx,
                         )
@@ -1333,7 +1333,7 @@ impl Render for CommitViewToolbar {
                 this.child(
                     IconButton::new("show-in-git-graph", IconName::GitGraph)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text("Show in Git Graph"))
+                        .tooltip(Tooltip::text("在 Git 图中显示"))
                         .on_click(move |_, window, cx| {
                             window.dispatch_action(
                                 Box::new(crate::git_graph::OpenAtCommit {
@@ -1348,7 +1348,7 @@ impl Render for CommitViewToolbar {
 
                     IconButton::new("view_on_provider", icon)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text(format!("View on {}", provider_name)))
+                        .tooltip(Tooltip::text(format!("在 {} 上查看", provider_name)))
                         .on_click(move |_, _, cx| cx.open_url(&url))
                 }))
             })

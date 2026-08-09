@@ -98,7 +98,7 @@ impl SystemNotificationState {
             return;
         };
         if let Err(error) = notifier.Hide(&toast) {
-            log::warn!("failed to dismiss system notification: {error}");
+            log::warn!("关闭系统通知失败:{error}");
         }
     }
 
@@ -193,6 +193,6 @@ fn register_app_user_model_id(app_identifier: &str, app_name: &str) {
         .create(format!(r"Software\Classes\AppUserModelId\{app_identifier}"))
         .and_then(|key| key.set_string("DisplayName", app_name));
     if let Err(error) = result {
-        log::warn!("failed to register AppUserModelID; notifications may not display: {error}");
+        log::warn!("注册 AppUserModelID 失败;通知可能无法显示:{error}");
     }
 }

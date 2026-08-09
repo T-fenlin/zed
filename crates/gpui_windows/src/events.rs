@@ -260,7 +260,7 @@ impl WindowsWindowInner {
         if should_resize_renderer
             && let Err(e) = self.state.renderer.borrow_mut().resize(device_size)
         {
-            log::error!("Failed to resize renderer, invalidating devices: {}", e);
+            log::error!("调整渲染器大小失败,正在使设备失效:{}", e);
             self.state
                 .invalidate_devices
                 .store(true, std::sync::atomic::Ordering::Release);
@@ -281,7 +281,7 @@ impl WindowsWindowInner {
             );
             if ret == 0 {
                 log::error!(
-                    "unable to create timer: {}",
+                    "无法创建计时器:{}",
                     std::io::Error::last_os_error()
                 );
             }
@@ -893,7 +893,7 @@ impl WindowsWindowInner {
                         height,
                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED,
                     )
-                    .context("unable to set maximized window position after dpi has changed")
+                    .context("DPI 更改后无法设置最大化窗口位置")
                     .log_err();
                 }
 
@@ -920,7 +920,7 @@ impl WindowsWindowInner {
                     height,
                     SWP_NOZORDER | SWP_NOACTIVATE,
                 )
-                .context("unable to set window position after dpi has changed")
+                .context("DPI 更改后无法设置窗口位置")
                 .log_err();
             }
         }
@@ -931,7 +931,7 @@ impl WindowsWindowInner {
     fn handle_display_change_msg(&self, handle: HWND) -> Option<isize> {
         let new_monitor = unsafe { MonitorFromWindow(handle, MONITOR_DEFAULTTONULL) };
         if new_monitor.is_invalid() {
-            log::error!("No monitor detected!");
+            log::error!("未检测到显示器!");
             return None;
         }
         let new_display = WindowsDisplay::new(WindowsDisplay::display_id_for_monitor(new_monitor))?;
@@ -1212,10 +1212,10 @@ impl WindowsWindowInner {
         if unsafe { !parameter.is_null() && !parameter.is_empty() }
             && let Some(parameter_string) = unsafe { parameter.to_string() }.log_err()
         {
-            log::info!("System settings changed: {}", parameter_string);
+            log::info!("系统设置已更改:{}", parameter_string);
             if parameter_string.as_str() == "ImmersiveColorSet" {
                 let new_appearance = system_appearance()
-                    .context("unable to get system appearance when handling ImmersiveColorSet")
+                    .context("处理 ImmersiveColorSet 时无法获取系统外观")
                     .log_err()?;
 
                 if new_appearance != self.state.appearance.get() {
@@ -1260,7 +1260,7 @@ impl WindowsWindowInner {
             .borrow_mut()
             .handle_device_lost(&devices)
         {
-            panic!("Device lost: {err}");
+            panic!("设备丢失: {err}");
         }
         // Make sure the first `draw_window` after recovery (whether it comes
         // from the forced WM_GPUI_FORCE_UPDATE_WINDOW or a stray WM_PAINT in
@@ -1278,7 +1278,7 @@ impl WindowsWindowInner {
     #[inline]
     fn draw_window(&self, handle: HWND, force_render: bool) -> Option<isize> {
         let Some(_guard) = self.state.draw_coordinator.try_begin_draw() else {
-            log::debug!("deferring re-entrant draw of window {handle:?}");
+            log::debug!("延迟窗口 {handle:?} 的重入绘制");
             if force_render {
                 self.state.force_render_pending.set(true);
             }
@@ -1341,7 +1341,7 @@ impl WindowsWindowInner {
                 } else {
                     // Invalid low surrogate without a preceding high surrogate
                     log::warn!(
-                        "Received low surrogate without a preceding high surrogate: {code_point:x}"
+                        "收到没有前导高位代理项的代理项:{code_point:x}"
                     );
                     None
                 }

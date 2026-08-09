@@ -21,8 +21,8 @@ use std::{
 };
 use util::{ResultExt, maybe, merge_json_value_into};
 
-const ACTION_ALWAYS: &str = "Always";
-const ACTION_NEVER: &str = "Never";
+const ACTION_ALWAYS: &str = "始终";
+const ACTION_NEVER: &str = "从不";
 const UPDATE_IMPORTS_MESSAGE_PATTERN: &str = "Update imports for";
 const VTSLS_SERVER_NAME: &str = "vtsls";
 
@@ -379,7 +379,7 @@ async fn get_cached_ts_server_binary(
         let server_path = container_dir.join(VtslsLspAdapter::SERVER_PATH);
         anyhow::ensure!(
             server_path.exists(),
-            "missing executable in directory {container_dir:?}"
+            "目录 {container_dir:?} 中缺少可执行文件"
         );
         Ok(LanguageServerBinary {
             path: node.binary_path().await?,

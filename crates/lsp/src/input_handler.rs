@@ -44,7 +44,7 @@ where
         }
 
         if reader.read_until(b'\n', buffer).await? == 0 {
-            anyhow::bail!("cannot read LSP message headers");
+            anyhow::bail!("无法读取 LSP 消息头");
         }
     }
 }
@@ -91,7 +91,7 @@ impl LspStdoutHandler {
                 .split('\n')
                 .find(|line| line.starts_with(CONTENT_LEN_HEADER))
                 .and_then(|line| line.strip_prefix(CONTENT_LEN_HEADER))
-                .with_context(|| format!("invalid LSP message header {headers:?}"))?
+                .with_context(|| format!("无效的 LSP 消息头 {headers:?}"))?
                 .trim_end()
                 .parse()?;
 
@@ -99,7 +99,7 @@ impl LspStdoutHandler {
             stdout.read_exact(&mut buffer).await?;
 
             if let Ok(message) = str::from_utf8(&buffer) {
-                log::trace!("incoming message: {message}");
+                log::trace!("传入消息: {message}");
                 for handler in io_handlers.lock().values_mut() {
                     handler(IoKind::StdOut, message);
                 }
@@ -128,7 +128,7 @@ impl LspStdoutHandler {
                 }
             } else {
                 warn!(
-                    "failed to deserialize LSP message:\n{}",
+                    "无法反序列化 LSP 消息:\n{}",
                     std::str::from_utf8(&buffer)?
                 );
             }
@@ -170,18 +170,18 @@ mod tests {
         }
         assert!(
             received < total_messages,
-            "the reader buffered all {total_messages} messages while the consumer was wedged"
+            "消费者阻塞时,读取器缓冲了全部 {total_messages} 条消息"
         );
         assert!(
             received <= INCOMING_MESSAGE_QUEUE_CAPACITY + 2,
-            "expected at most {} buffered messages, got {received}",
+            "预期最多 {} 条缓冲消息,实际收到 {received} 条",
             INCOMING_MESSAGE_QUEUE_CAPACITY + 2
         );
 
         while received < total_messages {
             assert!(
                 handler.incoming_messages.next().await.is_some(),
-                "the message stream ended after {received} of {total_messages} messages"
+                "消息流在 {received}/{total_messages} 条消息后结束"
             );
             received += 1;
         }

@@ -257,7 +257,7 @@ pub fn model_to_proto(this: &Database, row: notification::Model) -> Result<proto
     let kind = this
         .notification_kinds_by_id
         .get(&row.kind)
-        .context("Unknown notification kind")?;
+        .context("未知通知类型")?;
     Ok(proto::Notification {
         id: row.id.to_proto(),
         kind: (*kind).to_owned(),
@@ -277,5 +277,5 @@ fn notification_kind_from_proto(
         .notification_kinds_by_name
         .get(&proto.kind)
         .copied()
-        .with_context(|| format!("invalid notification kind {:?}", proto.kind))?)
+        .with_context(|| format!("无效的通知类型 {:?}", proto.kind))?)
 }

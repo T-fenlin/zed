@@ -93,7 +93,7 @@ pub enum SaveIntent {
     SaveAll,
     /// always prompt for a new path
     SaveAs,
-    /// prompt "you have unsaved changes" before writing
+    /// prompt "您有未保存的更改" before writing
     Close,
     /// write all dirty files, don't prompt on conflict
     Overwrite,
@@ -237,12 +237,12 @@ macro_rules! split_structs {
 }
 
 split_structs!(
-    SplitLeft => "Splits the pane to the left.",
-    SplitRight => "Splits the pane to the right.",
-    SplitUp => "Splits the pane upward.",
-    SplitDown => "Splits the pane downward.",
-    SplitHorizontal => "Splits the pane horizontally.",
-    SplitVertical => "Splits the pane vertically."
+    SplitLeft => "向左拆分窗格。",
+    SplitRight => "向右拆分窗格。",
+    SplitUp => "向上拆分窗格。",
+    SplitDown => "向下拆分窗格。",
+    SplitHorizontal => "水平拆分窗格。",
+    SplitVertical => "垂直拆分窗格。"
 );
 
 /// Activates the previous item in the pane.
@@ -1997,9 +1997,9 @@ impl Pane {
                     let detail = Self::file_names_for_prompt(&mut dirty_items.iter(), cx);
                     window.prompt(
                         PromptLevel::Warning,
-                        "Do you want to save changes to the following files?",
+                        "是否要保存对以下文件的更改?",
                         Some(&detail),
-                        &["Save all", "Discard all", "Cancel"],
+                        &["全部保存", "全部丢弃", "取消"],
                         cx,
                     )
                 })?;
@@ -2048,9 +2048,9 @@ impl Pane {
                                 );
                                 window.prompt(
                                     PromptLevel::Warning,
-                                    &format!("Unable to save file: {}", &err),
+                                    &format!("无法保存文件:{}", &err),
                                     Some(&detail),
-                                    &["Close Without Saving", "Cancel"],
+                                    &["不保存关闭", "取消"],
                                     cx,
                                 )
                             })?;
@@ -2249,9 +2249,9 @@ impl Pane {
         save_intent: SaveIntent,
         cx: &mut AsyncWindowContext,
     ) -> Result<bool> {
-        const CONFLICT_MESSAGE: &str = "This file has changed on disk since you started editing it. Do you want to overwrite it?";
+        const CONFLICT_MESSAGE: &str = "自您开始编辑以来,此文件已在磁盘上更改。是否要覆盖它?";
 
-        const DELETED_MESSAGE: &str = "This file has been deleted on disk since you started editing it. Do you want to recreate it?";
+        const DELETED_MESSAGE: &str = "自您开始编辑以来,此文件已在磁盘上删除。是否要重新创建它?";
 
         let path_style = project.read_with(cx, |project, cx| project.path_style(cx));
         if save_intent == SaveIntent::Skip {
@@ -2316,7 +2316,7 @@ impl Pane {
                         PromptLevel::Warning,
                         DELETED_MESSAGE,
                         None,
-                        &["Save", "Close", "Cancel"],
+                        &["保存", "关闭", "取消"],
                         cx,
                     )
                 })?;
@@ -2351,7 +2351,7 @@ impl Pane {
                         PromptLevel::Warning,
                         CONFLICT_MESSAGE,
                         None,
-                        &["Overwrite", "Discard Edits", "Cancel"],
+                        &["覆盖", "丢弃编辑", "取消"],
                         cx,
                     )
                 })?;
@@ -2394,7 +2394,7 @@ impl Pane {
                                 PromptLevel::Warning,
                                 &prompt,
                                 None,
-                                &["Save", "Don't Save", "Cancel"],
+                                &["保存", "不保存", "取消"],
                                 cx,
                             ))
                         } else {
@@ -2877,13 +2877,13 @@ impl Pane {
                 .tooltip(move |_, cx| {
                     if toggleable {
                         Tooltip::with_meta(
-                            "Unlock Tab",
+                            "解锁标签页",
                             None,
-                            "This will make this tab editable",
+                            "这将使此标签页可编辑",
                             cx,
                         )
                     } else {
-                        Tooltip::with_meta("Locked Tab", None, "This tab is read-only", cx)
+                        Tooltip::with_meta("已锁定标签页", None, "此标签页为只读", cx)
                     }
                 })
                 .on_click(cx.listener(move |pane, _, window, cx| {
@@ -2917,7 +2917,7 @@ impl Pane {
                         let extra_actions = item_handle.tab_extra_context_menu_actions(window, cx);
                         if let Some((_, action)) = extra_actions
                             .into_iter()
-                            .find(|(label, _)| label.as_ref() == "Rename")
+                            .find(|(label, _)| label.as_ref() == "重命名")
                         {
                             // Dispatch action directly through the focus handle to avoid
                             // relay_action's intermediate focus step which can interfere
@@ -2993,7 +2993,7 @@ impl Pane {
                 let end_slot_tooltip_text: &'static str;
                 let end_slot = if is_pinned {
                     end_slot_action = &TogglePinTab;
-                    end_slot_tooltip_text = "Unpin Tab";
+                    end_slot_tooltip_text = "取消固定标签页";
                     IconButton::new("unpin tab", IconName::Pin)
                         .shape(IconButtonShape::Square)
                         .icon_color(Color::Muted)
@@ -3060,7 +3060,7 @@ impl Pane {
                             } else {
                                 this.tooltip(move |_, cx| {
                                     let text = text.clone();
-                                    Tooltip::with_meta(text, None, "Read-Only Tab", cx)
+                                    Tooltip::with_meta(text, None, "只读标签页", cx)
                                 })
                             }
                         }
@@ -3135,7 +3135,7 @@ impl Pane {
                                 }),
                             )
                             .item(ContextMenuItem::Entry(
-                                ContextMenuEntry::new("Close Others")
+                                ContextMenuEntry::new("关闭其他")
                                     .action(Box::new(close_inactive_items_action.clone()))
                                     .disabled(total_items == 1)
                                     .handler(window.handler_for(&pane, move |pane, window, cx| {
@@ -3151,7 +3151,7 @@ impl Pane {
                             // We make this optional, instead of using disabled as to not overwhelm the context menu unnecessarily
                             .extend(has_multibuffer_items.then(|| {
                                 ContextMenuItem::Entry(
-                                    ContextMenuEntry::new("Close Multibuffers")
+                                    ContextMenuEntry::new("关闭多缓冲区")
                                         .action(Box::new(close_multibuffers_action.clone()))
                                         .handler(window.handler_for(
                                             &pane,
@@ -3168,7 +3168,7 @@ impl Pane {
                             }))
                             .separator()
                             .item(ContextMenuItem::Entry(
-                                ContextMenuEntry::new("Close Left")
+                                ContextMenuEntry::new("关闭左侧")
                                     .action(Box::new(close_items_to_the_left_action.clone()))
                                     .disabled(!has_items_to_left)
                                     .handler(window.handler_for(&pane, move |pane, window, cx| {
@@ -3182,7 +3182,7 @@ impl Pane {
                                     })),
                             ))
                             .item(ContextMenuItem::Entry(
-                                ContextMenuEntry::new("Close Right")
+                                ContextMenuEntry::new("关闭右侧")
                                     .action(Box::new(close_items_to_the_right_action.clone()))
                                     .disabled(!has_items_to_right)
                                     .handler(window.handler_for(&pane, move |pane, window, cx| {
@@ -3197,7 +3197,7 @@ impl Pane {
                             ))
                             .separator()
                             .item(ContextMenuItem::Entry(
-                                ContextMenuEntry::new("Close Clean")
+                                ContextMenuEntry::new("关闭未修改")
                                     .action(Box::new(close_clean_items_action.clone()))
                                     .disabled(!has_clean_items)
                                     .handler(window.handler_for(&pane, move |pane, window, cx| {
@@ -3210,7 +3210,7 @@ impl Pane {
                                     })),
                             ))
                             .entry(
-                                "Close All",
+                                "全部关闭",
                                 Some(Box::new(close_all_items_action.clone())),
                                 window.handler_for(&pane, move |pane, window, cx| {
                                     pane.close_all_items(&close_all_items_action, window, cx)
@@ -3222,7 +3222,7 @@ impl Pane {
                             menu.separator().map(|this| {
                                 if is_pinned {
                                     this.entry(
-                                        "Unpin Tab",
+                                        "取消固定标签页",
                                         Some(TogglePinTab.boxed_clone()),
                                         window.handler_for(&pane, move |pane, window, cx| {
                                             pane.unpin_tab_at(ix, window, cx);
@@ -3230,7 +3230,7 @@ impl Pane {
                                     )
                                 } else {
                                     this.entry(
-                                        "Pin Tab",
+                                        "固定标签页",
                                         Some(TogglePinTab.boxed_clone()),
                                         window.handler_for(&pane, move |pane, window, cx| {
                                             pane.pin_tab_at(ix, window, cx);
@@ -3242,9 +3242,9 @@ impl Pane {
 
                         if capability != Capability::ReadOnly {
                             let read_only_label = if capability.editable() {
-                                "Make Tab Read-Only"
+                                "设为只读标签页"
                             } else {
-                                "Make Tab Editable"
+                                "设为可编辑标签页"
                             };
                             menu = menu.separator().entry(
                                 read_only_label,
@@ -3303,7 +3303,7 @@ impl Pane {
                                 .separator()
                                 .when_some(entry_abs_path, |menu, abs_path| {
                                     menu.entry(
-                                        "Copy Path",
+                                        "复制路径",
                                         Some(Box::new(zed_actions::workspace::CopyPath)),
                                         window.handler_for(&pane, move |_, _, cx| {
                                             cx.write_to_clipboard(ClipboardItem::new_string(
@@ -3314,7 +3314,7 @@ impl Pane {
                                 })
                                 .when_some(relative_path, |menu, relative_path| {
                                     menu.entry(
-                                        "Copy Relative Path",
+                                        "复制相对路径",
                                         Some(Box::new(zed_actions::workspace::CopyRelativePath)),
                                         window.handler_for(&pane, move |this, _, cx| {
                                             let Some(project) = this.project.upgrade() else {
@@ -3350,7 +3350,7 @@ impl Pane {
                                 .map(pin_tab_entries)
                                 .when(visible_in_project_panel, |menu| {
                                     menu.entry(
-                                        "Reveal In Project Panel",
+                                        "在项目面板中显示",
                                         Some(Box::new(RevealInProjectPanel::default())),
                                         window.handler_for(&pane, move |pane, _, cx| {
                                             pane.project
@@ -3365,7 +3365,7 @@ impl Pane {
                                 })
                                 .when_some(parent_abs_path, |menu, parent_abs_path| {
                                     menu.entry(
-                                        "Open in Terminal",
+                                        "在终端中打开",
                                         Some(Box::new(OpenInTerminal)),
                                         window.handler_for(&pane, move |_, window, cx| {
                                             window.dispatch_action(
@@ -3419,7 +3419,7 @@ impl Pane {
                 let focus_handle = focus_handle.clone();
                 move |window, cx| {
                     Tooltip::for_action_in(
-                        "Go Back",
+                        "返回",
                         &GoBack,
                         &window.focused(cx).unwrap_or_else(|| focus_handle.clone()),
                         cx,
@@ -3442,7 +3442,7 @@ impl Pane {
                 let focus_handle = focus_handle.clone();
                 move |window, cx| {
                     Tooltip::for_action_in(
-                        "Go Forward",
+                        "前进",
                         &GoForward,
                         &window.focused(cx).unwrap_or_else(|| focus_handle.clone()),
                         cx,
@@ -3616,7 +3616,7 @@ impl Pane {
         cx: &mut Context<Pane>,
     ) -> impl IntoElement {
         h_flex()
-            .id("unpinned tabs")
+            .id("未固定标签页")
             .overflow_x_scroll()
             .w_full()
             .track_scroll(&self.tab_bar_scroll_handle)
@@ -4064,13 +4064,13 @@ impl Pane {
                 let project = workspace.project().read(cx);
 
                 if project.is_via_collab() {
-                    workspace.show_error("Cannot drop files on a remote project", cx);
+                    workspace.show_error("无法在远程项目上放置文件", cx);
                     return (true, false);
                 }
                 if project.is_via_remote_server() {
                     if !project.is_via_wsl(cx) {
                         workspace.show_error(
-                            "Cannot drop local files on a remote SSH/Docker project",
+                            "无法在远程 SSH/Docker 项目上放置本地文件",
                             cx,
                         );
                         return (true, false);
@@ -4109,17 +4109,17 @@ impl Pane {
                     let paths = if needs_wsl_translation {
                         let mut translated = Vec::with_capacity(paths.len());
                         for path in &paths {
-                            log::debug!("dropped Windows path {}", path.display());
+                            log::debug!("已放置的 Windows 路径 {}", path.display());
                             let fut = project.read_with(cx, |project, cx| {
                                 project.try_windows_path_to_wsl(path, cx)
                             });
                             match fut.await {
                                 Ok(wsl_path) => {
-                                    log::debug!("translated to WSL path {}", wsl_path.display());
+                                    log::debug!("已转换为 WSL 路径 {}", wsl_path.display());
                                     translated.push(wsl_path);
                                 }
                                 Err(e) => log::warn!(
-                                    "wslpath failed for {}: {e:#}, dropping this path",
+                                    "wslpath 对 {} 失败:{e:#},正在放置此路径",
                                     path.display()
                                 ),
                             }
@@ -4128,7 +4128,7 @@ impl Pane {
                             workspace
                                 .update_in(cx, |workspace, _, cx| {
                                     workspace.show_error(
-                                        "Could not translate the dropped paths into WSL paths",
+                                        "无法将放置的路径转换为 WSL 路径",
                                         cx,
                                     );
                                 })
@@ -4165,7 +4165,7 @@ impl Pane {
                         _ = workspace.update_in(cx, |workspace, window, cx| {
                             for item in opened_items.into_iter().flatten() {
                                 if let Err(e) = item {
-                                    workspace.show_error(format!("Error: {e}"), cx);
+                                    workspace.show_error(format!("错误:{e}"), cx);
                                 }
                             }
                             if to_pane.read(cx).items_len() == 0 {
@@ -4263,21 +4263,21 @@ fn default_render_tab_bar_buttons(
             PopoverMenu::new("pane-tab-bar-popover-menu")
                 .trigger_with_tooltip(
                     IconButton::new("plus", IconName::Plus).icon_size(IconSize::Small),
-                    Tooltip::text("New…"),
+                    Tooltip::text("新建…"),
                 )
                 .anchor(Anchor::TopRight)
                 .with_handle(pane.new_item_context_menu_handle.clone())
                 .menu(move |window, cx| {
                     Some(ContextMenu::build(window, cx, |menu, _, _| {
-                        menu.action("New File", NewFile.boxed_clone())
-                            .action("Open File", ToggleFileFinder::default().boxed_clone())
+                        menu.action("新建文件", NewFile.boxed_clone())
+                            .action("打开文件", ToggleFileFinder::default().boxed_clone())
                             .separator()
-                            .action("Search Project", DeploySearch::default().boxed_clone())
-                            .action("Search Symbols", ToggleProjectSymbols.boxed_clone())
+                            .action("搜索项目", DeploySearch::default().boxed_clone())
+                            .action("搜索符号", ToggleProjectSymbols.boxed_clone())
                             .separator()
-                            .action("New Terminal", NewTerminal::default().boxed_clone())
+                            .action("新建终端", NewTerminal::default().boxed_clone())
                             .action(
-                                "New Center Terminal",
+                                "新建居中终端",
                                 NewCenterTerminal::default().boxed_clone(),
                             )
                     }))
@@ -4289,7 +4289,7 @@ fn default_render_tab_bar_buttons(
                     IconButton::new("split", IconName::Split)
                         .icon_size(IconSize::Small)
                         .disabled(!can_clone && !can_split_move),
-                    Tooltip::text("Split Pane"),
+                    Tooltip::text("拆分窗格"),
                 )
                 .anchor(Anchor::TopRight)
                 .with_handle(pane.split_item_context_menu_handle.clone())
@@ -4297,15 +4297,15 @@ fn default_render_tab_bar_buttons(
                     ContextMenu::build(window, cx, |menu, _, _| {
                         let mode = SplitMode::MovePane;
                         if can_split_move {
-                            menu.action("Split Right", SplitRight { mode }.boxed_clone())
-                                .action("Split Left", SplitLeft { mode }.boxed_clone())
-                                .action("Split Up", SplitUp { mode }.boxed_clone())
-                                .action("Split Down", SplitDown { mode }.boxed_clone())
+                            menu.action("向右拆分", SplitRight { mode }.boxed_clone())
+                                .action("向左拆分", SplitLeft { mode }.boxed_clone())
+                                .action("向上拆分", SplitUp { mode }.boxed_clone())
+                                .action("向下拆分", SplitDown { mode }.boxed_clone())
                         } else {
-                            menu.action("Split Right", SplitRight::default().boxed_clone())
-                                .action("Split Left", SplitLeft::default().boxed_clone())
-                                .action("Split Up", SplitUp::default().boxed_clone())
-                                .action("Split Down", SplitDown::default().boxed_clone())
+                            menu.action("向右拆分", SplitRight::default().boxed_clone())
+                                .action("向左拆分", SplitLeft::default().boxed_clone())
+                                .action("向上拆分", SplitUp::default().boxed_clone())
+                                .action("向下拆分", SplitDown::default().boxed_clone())
                         }
                     })
                     .into()
@@ -4322,7 +4322,7 @@ fn default_render_tab_bar_buttons(
                 }))
                 .tooltip(move |_window, cx| {
                     Tooltip::for_action(
-                        if zoomed { "Zoom Out" } else { "Zoom In" },
+                        if zoomed { "缩小" } else { "放大" },
                         &ToggleZoom,
                         cx,
                     )
@@ -4342,9 +4342,9 @@ impl Focusable for Pane {
 impl Render for Pane {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let mut key_context = KeyContext::new_with_defaults();
-        key_context.add("Pane");
+        key_context.add("窗格");
         if self.active_item().is_none() {
-            key_context.add("EmptyPane");
+            key_context.add("空窗格");
         }
 
         self.toolbar
@@ -4954,11 +4954,11 @@ fn dirty_message_for(buffer_path: Option<ProjectPath>, path_style: PathStyle) ->
         Some(path) => {
             let path = truncate_and_remove_front(&path, 80);
             format!(
-                "{} contains unsaved edits. Do you want to save it?",
+                "{} 包含未保存的编辑。是否要保存?",
                 MarkdownInlineCode(path.as_str())
             )
         }
-        None => "This buffer contains unsaved edits. Do you want to save it?".to_string(),
+        None => "此缓冲区包含未保存的编辑。是否要保存?".to_string(),
     }
 }
 
@@ -5150,14 +5150,14 @@ mod tests {
         let item_c = add_labeled_item(&pane, "C", false, cx);
         let item_d = add_labeled_item(&pane, "D", false, cx);
         add_labeled_item(&pane, "E", false, cx);
-        add_labeled_item(&pane, "Settings", false, cx);
-        assert_item_labels(&pane, ["A", "B", "C", "D", "E", "Settings*"], cx);
+        add_labeled_item(&pane, "设置", false, cx);
+        assert_item_labels(&pane, ["A", "B", "C", "D", "E", "设置*"], cx);
 
         set_max_tabs(cx, Some(5));
-        assert_item_labels(&pane, ["B", "C", "D", "E", "Settings*"], cx);
+        assert_item_labels(&pane, ["B", "C", "D", "E", "设置*"], cx);
 
         set_max_tabs(cx, Some(4));
-        assert_item_labels(&pane, ["C", "D", "E", "Settings*"], cx);
+        assert_item_labels(&pane, ["C", "D", "E", "设置*"], cx);
 
         pane.update_in(cx, |pane, window, cx| {
             let ix = pane.index_for_item_id(item_c.item_id()).unwrap();
@@ -5166,10 +5166,10 @@ mod tests {
             let ix = pane.index_for_item_id(item_d.item_id()).unwrap();
             pane.pin_tab_at(ix, window, cx);
         });
-        assert_item_labels(&pane, ["C!", "D!", "E", "Settings*"], cx);
+        assert_item_labels(&pane, ["C!", "D!", "E", "设置*"], cx);
 
         set_max_tabs(cx, Some(2));
-        assert_item_labels(&pane, ["C!", "D!", "Settings*"], cx);
+        assert_item_labels(&pane, ["C!", "D!", "设置*"], cx);
     }
 
     #[gpui::test]
@@ -5577,14 +5577,14 @@ mod tests {
         });
         assert!(
             !is_separate_row_enabled,
-            "Separate pinned row should be disabled by default"
+            "默认应禁用单独的固定行"
         );
 
         // Verify pinned_tabs_row element does NOT exist (single row layout)
         let pinned_row_bounds = cx.debug_bounds("pinned_tabs_row");
         assert!(
             pinned_row_bounds.is_none(),
-            "pinned_tabs_row should not exist when setting is disabled"
+            "禁用设置时,pinned_tabs_row 不应存在"
         );
     }
 
@@ -5616,7 +5616,7 @@ mod tests {
         let pinned_row_bounds = cx.debug_bounds("pinned_tabs_row");
         assert!(
             pinned_row_bounds.is_some(),
-            "pinned_tabs_row should exist when setting is enabled and both tab types exist"
+            "启用设置且两种标签页类型都存在时,pinned_tabs_row 应存在"
         );
     }
 
@@ -5649,7 +5649,7 @@ mod tests {
         let pinned_row_bounds = cx.debug_bounds("pinned_tabs_row");
         assert!(
             pinned_row_bounds.is_none(),
-            "pinned_tabs_row should not exist when only pinned tabs exist (uses single row)"
+            "仅存在固定标签页时,pinned_tabs_row 不应存在(使用单行)"
         );
     }
 
@@ -5676,7 +5676,7 @@ mod tests {
         let pinned_row_bounds = cx.debug_bounds("pinned_tabs_row");
         assert!(
             pinned_row_bounds.is_none(),
-            "pinned_tabs_row should not exist when only unpinned tabs exist (uses single row)"
+            "仅存在未固定标签页时,pinned_tabs_row 不应存在(使用单行)"
         );
     }
 
@@ -5703,7 +5703,7 @@ mod tests {
         let pinned_row_bounds = cx.debug_bounds("pinned_tabs_row");
         assert!(
             pinned_row_bounds.is_none(),
-            "Should be single row when disabled"
+            "禁用时应为单行"
         );
 
         // Enable - two rows
@@ -5712,7 +5712,7 @@ mod tests {
         let pinned_row_bounds = cx.debug_bounds("pinned_tabs_row");
         assert!(
             pinned_row_bounds.is_some(),
-            "Should be two rows when enabled"
+            "启用时应为两行"
         );
 
         // Disable again - back to single row
@@ -5721,7 +5721,7 @@ mod tests {
         let pinned_row_bounds = cx.debug_bounds("pinned_tabs_row");
         assert!(
             pinned_row_bounds.is_none(),
-            "Should be single row when disabled again"
+            "再次禁用时应为单行"
         );
     }
 
@@ -5754,14 +5754,14 @@ mod tests {
         let pinned_row_bounds = cx.debug_bounds("pinned_tabs_row");
         assert!(
             pinned_row_bounds.is_some(),
-            "Two-row layout should be active when both pinned and unpinned tabs exist"
+            "当固定和未固定标签页都存在时,应激活两行布局"
         );
 
         // Verify pinned_tabs_border element exists (the right border after pinned tabs)
         let border_bounds = cx.debug_bounds("pinned_tabs_border");
         assert!(
             border_bounds.is_some(),
-            "pinned_tabs_border should exist in two-row layout to show right border"
+            "在两行布局中,pinned_tabs_border 应存在以显示右边框"
         );
     }
 
@@ -6762,10 +6762,10 @@ mod tests {
 
         let tab_a_bounds = cx
             .debug_bounds("TAB-0")
-            .expect("Tab A (index 0) should have debug bounds");
+            .expect("标签页 A(索引 0)应具有调试边界");
         let tab_c_bounds = cx
             .debug_bounds("TAB-2")
-            .expect("Tab C (index 2) should have debug bounds");
+            .expect("标签页 C(索引 2)应具有调试边界");
 
         cx.simulate_event(MouseDownEvent {
             position: tab_a_bounds.center(),
@@ -6837,10 +6837,10 @@ mod tests {
 
         let tab_a_bounds = cx
             .debug_bounds("TAB-0")
-            .expect("Tab A (index 0) should have debug bounds");
+            .expect("标签页 A(索引 0)应具有调试边界");
         let tab_c_bounds = cx
             .debug_bounds("TAB-2")
-            .expect("Tab C (index 2) should have debug bounds");
+            .expect("标签页 C(索引 2)应具有调试边界");
 
         cx.simulate_event(MouseDownEvent {
             position: tab_a_bounds.center(),
@@ -6889,10 +6889,10 @@ mod tests {
 
         let tab_a_bounds = cx
             .debug_bounds("TAB-0")
-            .expect("Tab A (index 0) should have debug bounds");
+            .expect("标签页 A(索引 0)应具有调试边界");
         let tab_c_bounds = cx
             .debug_bounds("TAB-2")
-            .expect("Tab C (index 2) should have debug bounds");
+            .expect("标签页 C(索引 2)应具有调试边界");
 
         cx.simulate_event(MouseDownEvent {
             position: tab_a_bounds.center(),
@@ -6956,10 +6956,10 @@ mod tests {
 
         let tab_c_bounds = cx
             .debug_bounds("TAB-2")
-            .expect("Tab C (index 2) should have debug bounds");
+            .expect("标签页 C(索引 2)应具有调试边界");
         let tab_e_bounds = cx
             .debug_bounds("TAB-4")
-            .expect("Tab E (index 4) should have debug bounds");
+            .expect("标签页 E(索引 4)应具有调试边界");
 
         cx.simulate_event(MouseDownEvent {
             position: tab_c_bounds.center(),
@@ -7011,10 +7011,10 @@ mod tests {
 
         let tab_a_bounds = cx
             .debug_bounds("TAB-0")
-            .expect("Tab A (index 1) should have debug bounds");
+            .expect("标签页 A(索引 1)应具有调试边界");
         let tab_b_bounds = cx
             .debug_bounds("TAB-1")
-            .expect("Tab B (index 2) should have debug bounds");
+            .expect("标签页 B(索引 2)应具有调试边界");
 
         cx.simulate_event(MouseDownEvent {
             position: tab_a_bounds.center(),
@@ -7088,7 +7088,7 @@ mod tests {
         pane.update_in(cx, |pane, window, cx| {
             let ix = pane
                 .index_for_item_id(item_a.item_id())
-                .expect("item A should exist");
+                .expect("项目 A 应存在");
             pane.pin_tab_at(ix, window, cx);
         });
         assert_item_labels(&pane, ["A!", "B*"], cx);
@@ -7096,7 +7096,7 @@ mod tests {
 
         let pinned_drop_target_bounds = cx
             .debug_bounds("pinned_tabs_border")
-            .expect("pinned_tabs_border should have debug bounds");
+            .expect("pinned_tabs_border 应具有调试边界");
 
         cx.simulate_event(MouseDownEvent {
             position: pinned_drop_target_bounds.center(),
@@ -7121,7 +7121,7 @@ mod tests {
         // with an assert_item_labels check that verifies a new tab is actually created.
         assert!(
             new_file_dispatched.get(),
-            "Double-clicking pinned tab bar empty space should dispatch the new file action"
+            "双击固定标签栏空白区域应触发新建文件操作"
         );
     }
 
@@ -7300,7 +7300,7 @@ mod tests {
                 Box::new(cx.new(|cx| {
                     TestItem::new(cx)
                         .with_buffer_kind(ItemBufferKind::Singleton)
-                        .with_label("buffer 1")
+                        .with_label("缓冲区 1")
                         .with_project_items(&[TestProjectItem::new(1, "one.txt", cx)])
                 })),
                 false,
@@ -7310,7 +7310,7 @@ mod tests {
                 cx,
             );
         });
-        assert_item_labels(&pane, ["buffer 1*"], cx);
+        assert_item_labels(&pane, ["缓冲区 1*"], cx);
 
         // new singleton view with the same project entry
         pane.update_in(cx, |pane, window, cx| {
@@ -7318,7 +7318,7 @@ mod tests {
                 Box::new(cx.new(|cx| {
                     TestItem::new(cx)
                         .with_buffer_kind(ItemBufferKind::Singleton)
-                        .with_label("buffer 1")
+                        .with_label("缓冲区 1")
                         .with_project_items(&[TestProjectItem::new(1, "1.txt", cx)])
                 })),
                 false,
@@ -7328,7 +7328,7 @@ mod tests {
                 cx,
             );
         });
-        assert_item_labels(&pane, ["buffer 1*"], cx);
+        assert_item_labels(&pane, ["缓冲区 1*"], cx);
 
         // new singleton view with different project entry
         pane.update_in(cx, |pane, window, cx| {
@@ -7336,7 +7336,7 @@ mod tests {
                 Box::new(cx.new(|cx| {
                     TestItem::new(cx)
                         .with_buffer_kind(ItemBufferKind::Singleton)
-                        .with_label("buffer 2")
+                        .with_label("缓冲区 2")
                         .with_project_items(&[TestProjectItem::new(2, "2.txt", cx)])
                 })),
                 false,
@@ -7346,7 +7346,7 @@ mod tests {
                 cx,
             );
         });
-        assert_item_labels(&pane, ["buffer 1", "buffer 2*"], cx);
+        assert_item_labels(&pane, ["缓冲区 1", "缓冲区 2*"], cx);
 
         // new multibuffer view with the same project entry
         pane.update_in(cx, |pane, window, cx| {
@@ -7354,7 +7354,7 @@ mod tests {
                 Box::new(cx.new(|cx| {
                     TestItem::new(cx)
                         .with_buffer_kind(ItemBufferKind::Multibuffer)
-                        .with_label("multibuffer 1")
+                        .with_label("多缓冲区 1")
                         .with_project_items(&[TestProjectItem::new(1, "1.txt", cx)])
                 })),
                 false,
@@ -7364,7 +7364,7 @@ mod tests {
                 cx,
             );
         });
-        assert_item_labels(&pane, ["buffer 1", "buffer 2", "multibuffer 1*"], cx);
+        assert_item_labels(&pane, ["缓冲区 1", "缓冲区 2", "多缓冲区 1*"], cx);
 
         // another multibuffer view with the same project entry
         pane.update_in(cx, |pane, window, cx| {
@@ -7372,7 +7372,7 @@ mod tests {
                 Box::new(cx.new(|cx| {
                     TestItem::new(cx)
                         .with_buffer_kind(ItemBufferKind::Multibuffer)
-                        .with_label("multibuffer 1b")
+                        .with_label("多缓冲区 1b")
                         .with_project_items(&[TestProjectItem::new(1, "1.txt", cx)])
                 })),
                 false,
@@ -7384,7 +7384,7 @@ mod tests {
         });
         assert_item_labels(
             &pane,
-            ["buffer 1", "buffer 2", "multibuffer 1", "multibuffer 1b*"],
+            ["缓冲区 1", "缓冲区 2", "多缓冲区 1", "多缓冲区 1b*"],
             cx,
         );
     }
@@ -7939,7 +7939,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Save all");
+        cx.simulate_prompt_answer("全部保存");
         save.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
@@ -7959,7 +7959,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer("全部丢弃");
         save.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
@@ -7989,17 +7989,17 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer("全部丢弃");
         close_task.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
-        add_labeled_item(&pane, "Clean1", false, cx);
-        add_labeled_item(&pane, "Dirty", true, cx).update(cx, |item, cx| {
+        add_labeled_item(&pane, "未修改1", false, cx);
+        add_labeled_item(&pane, "已修改", true, cx).update(cx, |item, cx| {
             item.project_items
-                .push(TestProjectItem::new_dirty(1, "Dirty.txt", cx))
+                .push(TestProjectItem::new_dirty(1, "已修改.txt", cx))
         });
-        add_labeled_item(&pane, "Clean2", false, cx);
-        assert_item_labels(&pane, ["Clean1", "Dirty^", "Clean2*"], cx);
+        add_labeled_item(&pane, "未修改2", false, cx);
+        assert_item_labels(&pane, ["未修改1", "已修改^", "未修改2*"], cx);
 
         let close_task = pane.update_in(cx, |pane, window, cx| {
             pane.close_all_items(
@@ -8013,9 +8013,9 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
         close_task.await.unwrap();
-        assert_item_labels(&pane, ["Dirty*^"], cx);
+        assert_item_labels(&pane, ["已修改*^"], cx);
     }
 
     #[gpui::test]
@@ -8052,22 +8052,22 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer("全部丢弃");
         close_task.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
         item_a.read_with(cx, |item, _| {
-            assert_eq!(item.reload_count, 1, "item A should have been reloaded");
+            assert_eq!(item.reload_count, 1, "项目 A 应已重新加载");
             assert!(
                 !item.is_dirty,
-                "item A should no longer be dirty after reload"
+                "重新加载后,项目 A 不应再处于已修改状态"
             );
         });
         item_b.read_with(cx, |item, _| {
-            assert_eq!(item.reload_count, 1, "item B should have been reloaded");
+            assert_eq!(item.reload_count, 1, "项目 B 应已重新加载");
             assert!(
                 !item.is_dirty,
-                "item B should no longer be dirty after reload"
+                "重新加载后,项目 B 不应再处于已修改状态"
             );
         });
     }
@@ -8082,27 +8082,27 @@ mod tests {
             cx.add_window_view(|window, cx| Workspace::test_new(project.clone(), window, cx));
         let pane = workspace.read_with(cx, |workspace, _| workspace.active_pane().clone());
 
-        let item = add_labeled_item(&pane, "Dirty", true, cx);
+        let item = add_labeled_item(&pane, "已修改", true, cx);
         item.update(cx, |item, cx| {
             item.project_items
-                .push(TestProjectItem::new_dirty(1, "Dirty.txt", cx))
+                .push(TestProjectItem::new_dirty(1, "已修改.txt", cx))
         });
-        assert_item_labels(&pane, ["Dirty*^"], cx);
+        assert_item_labels(&pane, ["已修改*^"], cx);
 
         let close_task = pane.update_in(cx, |pane, window, cx| {
             pane.close_item_by_id(item.item_id(), SaveIntent::Close, window, cx)
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer("不保存");
         close_task.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
         item.read_with(cx, |item, _| {
-            assert_eq!(item.reload_count, 1, "item should have been reloaded");
+            assert_eq!(item.reload_count, 1, "项目应已重新加载");
             assert!(
                 !item.is_dirty,
-                "item should no longer be dirty after reload"
+                "重新加载后,项目不应再处于已修改状态"
             );
         });
     }
@@ -8121,7 +8121,7 @@ mod tests {
         item.update(cx, |item, cx| {
             item.project_items.push(TestProjectItem::new_untitled(cx));
         });
-        assert_item_labels(&pane, ["untitled*^"], cx);
+        assert_item_labels(&pane, ["未命名*^"], cx);
 
         let close_task = pane.update_in(cx, |pane, window, cx| {
             pane.close_item_by_id(item.item_id(), SaveIntent::Save, window, cx)
@@ -8135,7 +8135,7 @@ mod tests {
             assert_eq!(item.save_as_count, 1);
             assert_eq!(
                 item.save_count, 1,
-                "formatter should run after the file is given a path on first save"
+                "首次保存时,文件获得路径后应运行格式化程序"
             );
         });
     }
@@ -8156,7 +8156,7 @@ mod tests {
         item.update(cx, |item, cx| {
             item.project_items.push(TestProjectItem::new_untitled(cx));
         });
-        assert_item_labels(&pane, ["untitled*^"], cx);
+        assert_item_labels(&pane, ["未命名*^"], cx);
 
         let close_task = pane.update_in(cx, |pane, window, cx| {
             pane.close_item_by_id(item.item_id(), SaveIntent::SaveWithoutFormat, window, cx)
@@ -8170,7 +8170,7 @@ mod tests {
             assert_eq!(item.save_as_count, 1);
             assert_eq!(
                 item.save_count, 0,
-                "formatter should not run when SaveWithoutFormat is used"
+                "使用 SaveWithoutFormat 时,不应运行格式化程序"
             );
         });
     }
@@ -8188,7 +8188,7 @@ mod tests {
         let singleton_item = pane.update_in(cx, |pane, window, cx| {
             let item = Box::new(cx.new(|cx| {
                 TestItem::new(cx)
-                    .with_label("Singleton")
+                    .with_label("单例")
                     .with_dirty(true)
                     .with_buffer_kind(ItemBufferKind::Singleton)
             }));
@@ -8203,7 +8203,7 @@ mod tests {
         let multi_item = pane.update_in(cx, |pane, window, cx| {
             let item = Box::new(cx.new(|cx| {
                 TestItem::new(cx)
-                    .with_label("Multi")
+                    .with_label("多")
                     .with_dirty(true)
                     .with_buffer_kind(ItemBufferKind::Multibuffer)
             }));
@@ -8227,21 +8227,21 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer("全部丢弃");
         close_task.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
         singleton_item.read_with(cx, |item, _| {
-            assert_eq!(item.reload_count, 1, "singleton should have been reloaded");
+            assert_eq!(item.reload_count, 1, "单例应已重新加载");
             assert!(
                 !item.is_dirty,
-                "singleton should no longer be dirty after reload"
+                "重新加载后,单例不应再处于已修改状态"
             );
         });
         multi_item.read_with(cx, |item, _| {
             assert_eq!(
                 item.reload_count, 0,
-                "multibuffer should not have been reloaded"
+                "多缓冲区不应被重新加载"
             );
         });
     }
@@ -8343,7 +8343,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Save all");
+        cx.simulate_prompt_answer("全部保存");
         save.await.unwrap();
         assert_item_labels(&pane, ["C", "A*^"], cx);
 
@@ -8374,7 +8374,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer("全部丢弃");
         save.await.unwrap();
         assert_item_labels(&pane, ["C", "A*^"], cx);
     }
@@ -8455,7 +8455,7 @@ mod tests {
         assert!(tab_bounds.right() <= scroll_bounds.right());
         assert!(
             !tab_bounds.intersects(&new_tab_button_bounds),
-            "Tab should not overlap with the new tab button, if this is failing check if there's been a redesign!"
+            "标签页不应与新建标签页按钮重叠,如果此测试失败,请检查是否进行了重新设计!"
         );
     }
 
@@ -8498,7 +8498,7 @@ mod tests {
             pane.update_in(cx, |pane, _window, _cx| pane.tab_bar_scroll_handle.clone());
         assert!(
             scroll_handle.max_offset().x > px(0.),
-            "Test requires tab overflow to verify scrolling. Increase tab count or reduce window width."
+            "测试需要标签页溢出以验证滚动。请增加标签页数量或减小窗口宽度。"
         );
 
         // Activate a different tab first, then activate K
@@ -8520,7 +8520,7 @@ mod tests {
 
         assert!(
             k_tab_bounds.left() >= scroll_bounds.left(),
-            "Active tab K should be scrolled into view"
+            "活动标签页 K 应滚动到视图中"
         );
     }
 
@@ -8889,7 +8889,7 @@ mod tests {
         });
         assert!(
             has_closed_items,
-            "closed item should be in closed_stack and reopenable"
+            "已关闭的项目应位于 closed_stack 中且可重新打开"
         );
     }
 
@@ -9041,7 +9041,7 @@ mod tests {
         });
         assert_eq!(
             actual_states, expected_states,
-            "pane items do not match expectation"
+            "窗格项目与预期不符"
         );
     }
 
@@ -9080,7 +9080,7 @@ mod tests {
         });
         assert_eq!(
             actual_states, expected_states,
-            "pane items do not match expectation"
+            "窗格项目与预期不符"
         );
     }
 
@@ -9103,11 +9103,11 @@ mod tests {
                             false
                         }
                     }),
-                    "pane ids do not match expectation: {expected_ids:?} != {actual_ids:?}",
+                    "窗格 ID 与预期不符:{expected_ids:?} != {actual_ids:?}",
                     actual_ids = axis.members
                 );
             }
-            Member::Pane(_) => panic!("expected axis"),
+            Member::Pane(_) => panic!("预期轴"),
         });
     }
 
@@ -9212,11 +9212,11 @@ mod tests {
         };
         assert_eq!(
             dirty_message_for(Some(project_path), PathStyle::Unix),
-            "`dir/__init__.py` contains unsaved edits. Do you want to save it?"
+            "`dir/__init__.py` 包含未保存的编辑。是否要保存?"
         );
         assert_eq!(
             dirty_message_for(None, PathStyle::Unix),
-            "This buffer contains unsaved edits. Do you want to save it?"
+            "此缓冲区包含未保存的编辑。是否要保存?"
         );
     }
 
@@ -9504,32 +9504,32 @@ mod tests {
                     assert_eq!(
                         unique_paths.len(),
                         open_paths.len(),
-                        "pane should not contain duplicate open paths"
+                        "窗格不应包含重复的打开路径"
                     );
 
                     assert_eq!(
                         active_path.is_none(),
                         open_paths.is_empty(),
-                        "pane should have an active item iff it has open paths"
+                        "窗格应仅在具有打开路径时具有活动项目"
                     );
                     assert!(
                         active_path
                             .as_ref()
                             .is_none_or(|path| open_paths.contains(path)),
-                        "active path should be open"
+                        "活动路径应处于打开状态"
                     );
                     assert!(
                         preview_path
                             .as_ref()
                             .is_none_or(|path| open_paths.contains(path)),
-                        "preview path should be open"
+                        "预览路径应处于打开状态"
                     );
 
                     if let Some(expected_active_path) = expected_path {
                         assert_eq!(
                             &active_path.as_ref().unwrap().path,
                             expected_active_path,
-                            "active path should match the oracle"
+                            "活动路径应与预期结果匹配"
                         );
                     }
                 });

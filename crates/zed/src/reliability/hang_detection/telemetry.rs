@@ -144,7 +144,7 @@ impl<T: Hang> Hangs<T> {
         const MICROSECONDS_MINUTE: u64 = 60 * 1000 * 1000;
 
         if self.hangs.len() > 1000 {
-            log::warn!("Too many hanging tasks to track, can not add new");
+            log::warn!("挂起任务过多,无法跟踪,无法添加新任务");
             return;
         }
 
@@ -246,7 +246,7 @@ impl Reporter {
             actions: self.actions.report_and_reset(),
         };
 
-        telemetry::event!("Hang Report", report);
+        telemetry::event!("挂起报告", report);
     }
 
     fn process_foreground(&mut self, task_stats: &[gpui::ThreadTaskStatistics]) {

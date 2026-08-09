@@ -44,12 +44,12 @@ impl<'a> Statement<'a> {
             connection,
             phantom: PhantomData,
         };
-        let sql = CString::new(query.as_ref()).context("Error creating cstr")?;
+        let sql = CString::new(query.as_ref()).context("创建 C 字符串时出错")?;
         let mut remaining_sql = sql.as_c_str();
         while {
             let remaining_sql_str = remaining_sql
                 .to_str()
-                .context("Parsing remaining sql")?
+                .context("解析剩余 SQL 时出错")?
                 .trim();
             remaining_sql_str != ";" && !remaining_sql_str.is_empty()
         } {
@@ -67,7 +67,7 @@ impl<'a> Statement<'a> {
 
             connection
                 .last_error()
-                .with_context(|| format!("Prepare call failed for query:\n{}", query.as_ref()))?;
+                .with_context(|| format!("查询的 Prepare 调用失败:\n{}", query.as_ref()))?;
 
             remaining_sql = unsafe { CStr::from_ptr(remaining_sql_ptr) };
             statement.raw_statements.push(raw_statement);
@@ -76,7 +76,7 @@ impl<'a> Statement<'a> {
                 let sql = unsafe { CStr::from_ptr(sqlite3_sql(raw_statement)) };
 
                 bail!(
-                    "Write statement prepared with connection that is not write capable. SQL:\n{} ",
+                    "使用不具备写入能力的连接准备了写入语句。SQL:\n{} ",
                     sql.to_str()?
                 )
             }
@@ -116,7 +116,7 @@ impl<'a> Statement<'a> {
                     bind(raw_statement);
                     self.connection
                         .last_error()
-                        .with_context(|| format!("Failed to bind value at index {index}"))?;
+                        .with_context(|| format!("无法绑定索引 {index} 处的值"))?;
                     any_succeed = true;
                 } else {
                     continue;
@@ -126,7 +126,7 @@ impl<'a> Statement<'a> {
         if any_succeed {
             Ok(())
         } else {
-            anyhow::bail!("Failed to bind parameters")
+            anyhow::bail!("无法绑定参数")
         }
     }
 
@@ -146,7 +146,7 @@ impl<'a> Statement<'a> {
 
         self.connection
             .last_error()
-            .with_context(|| format!("Failed to read blob at index {index}"))?;
+            .with_context(|| format!("无法读取索引 {index} 处的 blob"))?;
         if pointer.is_null() {
             return Ok(&[]);
         }
@@ -171,7 +171,7 @@ impl<'a> Statement<'a> {
         let result = unsafe { sqlite3_column_double(self.current_statement(), index) };
         self.connection
             .last_error()
-            .with_context(|| format!("Failed to read double at index {index}"))?;
+            .with_context(|| format!("无法读取索引 {index} 处的 double"))?;
         Ok(result)
     }
 
@@ -187,7 +187,7 @@ impl<'a> Statement<'a> {
         let result = unsafe { sqlite3_column_int(self.current_statement(), index) };
         self.connection
             .last_error()
-            .with_context(|| format!("Failed to read int at index {index}"))?;
+            .with_context(|| format!("无法读取索引 {index} 处的 int"))?;
         Ok(result)
     }
 
@@ -203,7 +203,7 @@ impl<'a> Statement<'a> {
         let result = unsafe { sqlite3_column_int64(self.current_statement(), index) };
         self.connection
             .last_error()
-            .with_context(|| format!("Failed to read i64 at index {index}"))?;
+            .with_context(|| format!("无法读取索引 {index} 处的 i64"))?;
         Ok(result)
     }
 
@@ -230,14 +230,14 @@ impl<'a> Statement<'a> {
 
         self.connection
             .last_error()
-            .with_context(|| format!("Failed to read text from column {index}"))?;
+            .with_context(|| format!("无法读取列 {index} 中的文本"))?;
         if pointer.is_null() {
             return Ok("");
         }
         let len = unsafe { sqlite3_column_bytes(self.current_statement(), index) as usize };
         self.connection
             .last_error()
-            .with_context(|| format!("Failed to read text length at {index}"))?;
+            .with_context(|| format!("无法读取索引 {index} 处的文本长度"))?;
 
         let slice = unsafe { slice::from_raw_parts(pointer, len) };
         Ok(str::from_utf8(slice)?)
@@ -261,7 +261,7 @@ impl<'a> Statement<'a> {
             SQLITE_TEXT => Ok(SqlType::Text),
             SQLITE_BLOB => Ok(SqlType::Blob),
             SQLITE_NULL => Ok(SqlType::Null),
-            _ => anyhow::bail!("Column type returned was incorrect"),
+            _ => anyhow::bail!("返回的列类型不正确"),
         }
     }
 
@@ -281,10 +281,10 @@ impl<'a> Statement<'a> {
                     self.step()
                 }
             }
-            SQLITE_MISUSE => anyhow::bail!("Statement step returned SQLITE_MISUSE"),
+            SQLITE_MISUSE => anyhow::bail!("语句 step 返回了 SQLITE_MISUSE"),
             _other_error => {
                 self.connection.last_error()?;
-                unreachable!("Step returned error code and last error failed to catch it");
+                unreachable!("Step 返回了错误代码,但 last error 未能捕获它");
             }
         }
     }
@@ -328,13 +328,13 @@ impl<'a> Statement<'a> {
             println!("{:?}", std::any::type_name::<R>());
             anyhow::ensure!(
                 this.step()? == StepResult::Row,
-                "single called with query that returns no rows."
+                "single 被调用时查询未返回任何行。"
             );
             let result = callback(this)?;
 
             anyhow::ensure!(
                 this.step()? == StepResult::Done,
-                "single called with a query that returns more than one row."
+                "single 被调用时查询返回了多行。"
             );
 
             Ok(result)
@@ -356,17 +356,17 @@ impl<'a> Statement<'a> {
             this: &mut Statement,
             callback: impl FnOnce(&mut Statement) -> Result<R>,
         ) -> Result<Option<R>> {
-            if this.step().context("Failed on step call")? != StepResult::Row {
+            if this.step().context("step 调用失败")? != StepResult::Row {
                 return Ok(None);
             }
 
             let result = callback(this)
                 .map(|r| Some(r))
-                .context("Failed to parse row result")?;
+                .context("解析行结果失败")?;
 
             anyhow::ensure!(
-                this.step().context("Second step call")? == StepResult::Done,
-                "maybe called with a query that returns more than one row."
+                this.step().context("第二次 step 调用")? == StepResult::Done,
+                "maybe 被调用时查询返回了多行。"
             );
 
             Ok(result)
@@ -423,13 +423,13 @@ mod test {
 
         statement
             .bind_int(1, 1)
-            .expect("Could not bind parameter to first index");
+            .expect("无法将参数绑定到第一个索引");
         statement
             .bind_int(2, 2)
-            .expect("Could not bind parameter to second index");
+            .expect("无法将参数绑定到第二个索引");
         statement
             .bind_int(3, 3)
-            .expect("Could not bind parameter to third index");
+            .expect("无法将参数绑定到第三个索引");
     }
 
     #[test]

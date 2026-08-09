@@ -69,7 +69,7 @@ pub trait ProtoClient: Send + Sync {
     ) -> BoxFuture<'static, Result<BoxStream<'static, Result<Envelope>>>> {
         async move {
             anyhow::bail!(
-                "stream requests are not supported for {request_type}: {:?}",
+                "流式请求不支持 {request_type}: {:?}",
                 envelope.payload
             )
         }
@@ -124,7 +124,7 @@ impl ProtoMessageHandlerSet {
             .insert(message_type_id, entity);
         let prev_handler = self.message_handlers.insert(message_type_id, handler);
         if prev_handler.is_some() {
-            panic!("registered handler for the same message twice");
+            panic!("同一消息重复注册了处理器");
         }
     }
 
@@ -142,7 +142,7 @@ impl ProtoMessageHandlerSet {
             .insert(message_type_id, entity_type_id);
         let prev_handler = self.message_handlers.insert(message_type_id, handler);
         if prev_handler.is_some() {
-            panic!("registered handler for the same message twice");
+            panic!("同一消息重复注册了处理器");
         }
     }
 
@@ -234,7 +234,7 @@ impl AnyProtoClient {
         let response = self.0.client.request(envelope, T::NAME);
         async move {
             T::Response::from_envelope(response.await?)
-                .context("received response of the wrong type")
+                .context("收到错误类型的响应")
         }
     }
 
@@ -249,7 +249,7 @@ impl AnyProtoClient {
                 .await?
                 .map(|response| {
                     T::Response::from_envelope(response?)
-                        .context("received response of the wrong type")
+                        .context("收到错误类型的响应")
                 })
                 .boxed())
         }
@@ -301,7 +301,7 @@ impl AnyProtoClient {
                 Ok(_request_enqueued) => {}
                 Err(e) => {
                     request_ids.lock().remove(&new_id);
-                    return Err(e).context("sending LSP proto request");
+                    return Err(e).context("发送 LSP 协议请求");
                 }
             }
 
@@ -312,7 +312,7 @@ impl AnyProtoClient {
             match response {
                 Ok(Ok(response)) => {
                     let response = response
-                        .context("waiting for LSP proto response")?
+                        .context("等待 LSP 协议响应")?
                         .map(|response| {
                             anyhow::Ok(TypedEnvelope {
                                 payload: response
@@ -327,7 +327,7 @@ impl AnyProtoClient {
                             })
                         })
                         .transpose()
-                        .context("converting LSP proto response")?;
+                        .context("转换 LSP 协议响应")?;
                     Ok(response)
                 }
                 Err(_cancelled_due_timeout) => Ok(None),
@@ -622,7 +622,7 @@ impl AnyProtoClient {
             .entities_by_type_and_remote_id
             .contains_key(&id)
         {
-            panic!("already subscribed to entity");
+            panic!("已订阅该实体");
         }
 
         message_handlers.entities_by_type_and_remote_id.insert(

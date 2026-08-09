@@ -99,7 +99,7 @@ async fn test_edit_prediction_context(cx: &mut TestAppContext) {
             .related_files_with_buffers(cx)
             .find(|(file, _)| file.path.to_str() == Some("root/src/company.rs"))
             .map(|(_, buffer)| buffer)
-            .expect("company.rs buffer not found")
+            .expect("未找到 company.rs 缓冲区")
     });
 
     company_buffer.update(cx, |buffer, cx| {
@@ -399,7 +399,7 @@ async fn test_fake_type_definition_lsp(cx: &mut TestAppContext) {
     // (same as regular definition)
     let type_defs = project
         .update(cx, |project, cx| {
-            let offset = buffer_text.find("Address {").expect("Address { not found");
+            let offset = buffer_text.find("Address {").expect("未找到 Address {");
             project.type_definitions(&buffer, offset, cx)
         })
         .await
@@ -420,7 +420,7 @@ async fn test_fake_type_definition_lsp(cx: &mut TestAppContext) {
     let company_text = company_buffer.read_with(cx, |buffer, _| buffer.text());
     let type_defs = project
         .update(cx, |project, cx| {
-            let offset = company_text.find("owner").expect("owner not found");
+            let offset = company_text.find("owner").expect("未找到 owner");
             project.type_definitions(&company_buffer, offset, cx)
         })
         .await
@@ -431,7 +431,7 @@ async fn test_fake_type_definition_lsp(cx: &mut TestAppContext) {
     // Type definition on another field: `address: Address` → Address.
     let type_defs = project
         .update(cx, |project, cx| {
-            let offset = company_text.find("address").expect("address not found");
+            let offset = company_text.find("address").expect("未找到 address");
             project.type_definitions(&company_buffer, offset, cx)
         })
         .await
@@ -442,7 +442,7 @@ async fn test_fake_type_definition_lsp(cx: &mut TestAppContext) {
     // Type definition on a lowercase name with no type annotation returns empty.
     let type_defs = project
         .update(cx, |project, cx| {
-            let offset = buffer_text.find("main").expect("main not found");
+            let offset = buffer_text.find("main").expect("未找到 main");
             project.type_definitions(&buffer, offset, cx)
         })
         .await;
@@ -451,7 +451,7 @@ async fn test_fake_type_definition_lsp(cx: &mut TestAppContext) {
         Ok(None) => true,
         Err(_) => false,
     };
-    assert!(is_empty, "expected no type definitions for `main`");
+    assert!(is_empty, "预期 `main` 没有类型定义");
 }
 
 #[gpui::test]
@@ -479,7 +479,7 @@ async fn test_type_definitions_in_related_files(cx: &mut TestAppContext) {
                     impl Widget {
                         pub fn render(&self) {
                             if self.config.debug {
-                                println!("debug mode");
+                                println!("调试模式");
                             }
                         }
                     }
@@ -509,7 +509,7 @@ async fn test_type_definitions_in_related_files(cx: &mut TestAppContext) {
             let offset = buffer
                 .text()
                 .find("self.config.debug")
-                .expect("self.config.debug not found");
+                .expect("未找到 self.config.debug");
             buffer.anchor_before(offset)
         };
 
@@ -609,7 +609,7 @@ async fn test_type_definition_deduplication(cx: &mut TestAppContext) {
     related_excerpt_store.update(cx, |store, cx| {
         let position = {
             let buffer = buffer.read(cx);
-            let offset = buffer.text().find("let item").expect("let item not found");
+            let offset = buffer.text().find("let item").expect("未找到 let item");
             buffer.anchor_before(offset)
         };
 
@@ -687,7 +687,7 @@ async fn test_edit_prediction_filters_raw_definitions_before_opening_buffers(
             let offset = buffer
                 .text()
                 .find("target();")
-                .expect("target call not found");
+                .expect("未找到 target 调用");
             buffer.anchor_before(offset)
         };
 
@@ -707,7 +707,7 @@ async fn test_edit_prediction_filters_raw_definitions_before_opening_buffers(
     });
 
     let worktree_id = buffer.read_with(cx, |buffer, cx| {
-        buffer.file().expect("buffer has file").worktree_id(cx)
+        buffer.file().expect("缓冲区有文件").worktree_id(cx)
     });
     let valid_path = ProjectPath {
         worktree_id,
@@ -1025,7 +1025,7 @@ fn test_project_1() -> serde_json::Value {
             pub fn set_company(&mut self, company: Arc<Company>) {
                 self.company = company;
                 if company.owner != self.company.owner {
-                    log("new owner", company.owner.get_first_name()); todo();
+                    log("新所有者", company.owner.get_first_name()); todo();
                 }
             }
         }
@@ -1046,7 +1046,7 @@ fn test_project_1() -> serde_json::Value {
                 },
             };
 
-            println!("Company: {}", company.to_string());
+            println!("公司:{}", company.to_string());
         }
     "#};
 

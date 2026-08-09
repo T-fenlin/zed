@@ -339,7 +339,7 @@ impl Item for SubView {
         window.defer(cx, move |window, cx| {
             let new_pane = weak_running.update(cx, |running, cx| {
                 let Some(project) = running.project.upgrade() else {
-                    return Err(anyhow!("Debugger project has been dropped"));
+                    return Err(anyhow!("调试器项目已被丢弃"));
                 };
 
                 let new_pane = new_debugger_pane(running.workspace.clone(), project, window, cx);
@@ -595,7 +595,7 @@ fn render_debugger_tab_bar(
                     .tooltip({
                         let focus_handle = focus_handle.clone();
                         move |_window, cx| {
-                            let zoomed_text = if zoomed { "Minimize" } else { "Expand" };
+                            let zoomed_text = if zoomed { "最小化" } else { "展开" };
                             Tooltip::for_action_in(
                                 zoomed_text,
                                 &ToggleExpandItem,
@@ -1054,7 +1054,7 @@ impl RunningState {
         cx: &mut Context<Self>,
     ) -> Task<Result<DebugTaskDefinition>> {
         let Some(workspace) = self.workspace.upgrade() else {
-            return Task::ready(Err(anyhow!("no workspace")));
+            return Task::ready(Err(anyhow!("没有工作区")));
         };
         let project = workspace.read(cx).project().clone();
         let dap_store = project.read(cx).dap_store().downgrade();
@@ -1099,7 +1099,7 @@ impl RunningState {
                 }).ok();
 
                 let Some(process_id) = rx.await.ok().flatten() else {
-                    bail!("No process selected with config that contains {}", PROCESS_ID_PLACEHOLDER.as_str())
+                    bail!("未选择包含 {} 的配置对应的进程", PROCESS_ID_PLACEHOLDER.as_str())
                 };
 
                 Self::substitute_process_id_in_config(&mut config, process_id);
@@ -1107,7 +1107,7 @@ impl RunningState {
 
             let request_type = match dap_registry
                 .adapter(&adapter)
-                .with_context(|| format!("{}: is not a valid adapter name", &adapter)) {
+                .with_context(|| format!("{}: 不是有效的适配器名称", &adapter)) {
                     Ok(adapter) => adapter.request_kind(&config).await,
                     Err(e) => Err(e)
                 };
@@ -1135,12 +1135,12 @@ impl RunningState {
                         let task = match task {
                             Some(task) => task.await,
                             None => None,
-                        }.with_context(|| format!("Couldn't find task template for {build:?}"))?;
+                        }.with_context(|| format!("找不到 {build:?} 的任务模板"))?;
                         (task, None)
                     }
                 };
                 let Some(mut task) = task_template.resolve_task("debug-build-task", &task_context) else {
-                    anyhow::bail!("Could not resolve task variables within a debug scenario");
+                    anyhow::bail!("无法在调试场景中解析任务变量");
                 };
 
                 let locator_name = if let Some(locator_name) = locator_name {
@@ -1224,10 +1224,10 @@ impl RunningState {
                 let exit_status = terminal
                     .read_with(cx, |terminal, cx| terminal.wait_for_completed_task(cx))
                     .await
-                    .context("Failed to wait for completed task")?;
+                    .context("等待任务完成失败")?;
 
                 if !exit_status.success() {
-                    anyhow::bail!("Build failed");
+                    anyhow::bail!("构建失败");
                 }
                 Some((task.resolved.clone(), locator_name, extra_config))
             } else {
@@ -1238,7 +1238,7 @@ impl RunningState {
             } else if let Some((task, locator_name, extra_config)) = build_output {
                 let locator_name =
                     locator_name.with_context(|| {
-                        format!("Could not find a valid locator for a build task and configure is invalid with error: {}", request_type.err()
+                        format!("找不到构建任务的有效定位器,且配置无效,错误信息: {}", request_type.err()
                             .map(|err| err.to_string())
                             .unwrap_or_default())
                     })?;
@@ -1257,7 +1257,7 @@ impl RunningState {
 
                 let scenario = dap_registry
                     .adapter(&adapter)
-                    .with_context(|| anyhow!("{}: is not a valid adapter name", &adapter))?.config_from_zed_format(zed_config)
+                    .with_context(|| anyhow!("{}: 不是有效的适配器名称", &adapter))?.config_from_zed_format(zed_config)
                     .await?;
                 config = scenario.config;
                 util::merge_non_null_json_value_into(extra_config, &mut config);
@@ -1267,7 +1267,7 @@ impl RunningState {
                 let Err(e) = request_type else {
                     unreachable!();
                 };
-                anyhow::bail!("Zed cannot determine how to run this debug scenario. `build` field was not provided and Debug Adapter won't accept provided configuration because: {e}");
+                anyhow::bail!("Zed 无法确定如何运行此调试场景。未提供 `build` 字段,且调试适配器不接受提供的配置,原因: {e}");
             };
 
             Ok(DebugTaskDefinition {
@@ -1291,7 +1291,7 @@ impl RunningState {
             .workspace
             .read_with(cx, |workspace, _| workspace.project().clone())
         else {
-            return Task::ready(Err(anyhow!("no workspace")));
+            return Task::ready(Err(anyhow!("没有工作区")));
         };
         let session = self.session.read(cx);
 
@@ -1343,7 +1343,7 @@ impl RunningState {
             .clone()
             .filter(|title| !title.is_empty())
             .or_else(|| command.clone())
-            .unwrap_or_else(|| "Debug terminal".to_string());
+            .unwrap_or_else(|| "调试终端".to_string());
         let kind = task::SpawnInTerminal {
             id: task::TaskId("debug".to_string()),
             full_label: title.clone(),
@@ -1389,7 +1389,7 @@ impl RunningState {
                 terminal
                     .pid()
                     .map(|pid| pid.as_u32())
-                    .context("Terminal was spawned but PID was not available")
+                    .context("终端已启动,但无法获取 PID")
             })
         });
 
@@ -1495,7 +1495,7 @@ impl RunningState {
     ) {
         debug_assert!(
             item_kind.is_supported(self.session.read(cx).capabilities()),
-            "We should only allow adding supported item kinds"
+            "我们只应允许添加受支持的项目类型"
         );
 
         if let Some(pane) = self.panes.pane_at_pixel_position(position) {

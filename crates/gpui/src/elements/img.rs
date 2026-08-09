@@ -636,7 +636,7 @@ impl Asset for ImageAssetLoader {
                     let mut response = client
                         .get(uri.as_ref(), ().into(), true)
                         .await
-                        .with_context(|| format!("loading image asset from {uri:?}"))?;
+                        .with_context(|| format!("从 {uri:?} 加载图片资源"))?;
                     let mut body = Vec::new();
                     response.body_mut().read_to_end(&mut body).await?;
                     if !response.status().is_success() {
@@ -657,7 +657,7 @@ impl Asset for ImageAssetLoader {
                         data.to_vec()
                     } else {
                         return Err(ImageCacheError::Asset(
-                            format!("Embedded resource not found: {}", path).into(),
+                            format!("未找到嵌入资源: {}", path).into(),
                         ));
                     }
                 }
@@ -680,7 +680,7 @@ impl Asset for ImageAssetLoader {
                                 }
                                 Err(err) => {
                                     log::debug!(
-                                        "Skipping GIF frame in {source:?} due to decode error: {err}"
+                                        "由于解码错误,跳过 {source:?} 中的 GIF 帧: {err}"
                                     );
                                 }
                             }
@@ -688,7 +688,7 @@ impl Asset for ImageAssetLoader {
 
                         if frames.is_empty() {
                             return Err(ImageCacheError::Other(Arc::new(anyhow::anyhow!(
-                                "GIF could not be decoded: all frames failed ({source:?})"
+                                "GIF 无法解码: 所有帧均失败 ({source:?})"
                             ))));
                         }
 
@@ -712,7 +712,7 @@ impl Asset for ImageAssetLoader {
                                     }
                                     Err(err) => {
                                         log::debug!(
-                                            "Skipping WebP frame in {source:?} due to decode error: {err}"
+                                            "由于解码错误,跳过 {source:?} 中的 WebP 帧: {err}"
                                         );
                                     }
                                 }
@@ -720,7 +720,7 @@ impl Asset for ImageAssetLoader {
 
                             if frames.is_empty() {
                                 return Err(ImageCacheError::Other(Arc::new(anyhow::anyhow!(
-                                    "WebP could not be decoded: all frames failed ({source:?})"
+                                    "WebP 无法解码: 所有帧均失败 ({source:?})"
                                 ))));
                             }
 
@@ -746,13 +746,13 @@ impl Asset for ImageAssetLoader {
 #[derive(Debug, Error, Clone)]
 pub enum ImageCacheError {
     /// Some other kind of error occurred
-    #[error("error: {0}")]
+    #[error("错误: {0}")]
     Other(#[from] Arc<anyhow::Error>),
     /// An error that occurred while reading the image from disk.
-    #[error("IO error: {0}")]
+    #[error("IO 错误: {0}")]
     Io(Arc<std::io::Error>),
     /// An error that occurred while processing an image.
-    #[error("unexpected http status for {uri}: {status}, body: {body}")]
+    #[error("{uri} 的 HTTP 状态码异常: {status}, 响应体: {body}")]
     BadStatus {
         /// The URI of the image.
         uri: SharedUri,
@@ -762,13 +762,13 @@ pub enum ImageCacheError {
         body: String,
     },
     /// An error that occurred while processing an asset.
-    #[error("asset error: {0}")]
+    #[error("资源错误: {0}")]
     Asset(SharedString),
     /// An error that occurred while processing an image.
-    #[error("image error: {0}")]
+    #[error("图片错误: {0}")]
     Image(Arc<ImageError>),
     /// An error that occurred while processing an SVG.
-    #[error("svg error: {0}")]
+    #[error("SVG 错误: {0}")]
     Usvg(Arc<usvg::Error>),
 }
 
@@ -823,7 +823,7 @@ mod tests {
             move |_, _, window, _| {
                 window.with_global_id(TEST_IMG_ID.into(), |id, window| {
                     window.with_element_state::<ImgState, _>(id, |state, _| {
-                        let mut state = state.expect("img state should be initialized");
+                        let mut state = state.expect("img 状态应已初始化");
                         state.frame_index = frame_index;
                         ((), state)
                     });
@@ -856,7 +856,7 @@ mod tests {
                 .scene
                 .polychrome_sprites
                 .last()
-                .expect("fill image should paint a sprite")
+                .expect("填充图片应绘制一个精灵")
                 .tile
                 .bounds
         });
@@ -874,7 +874,7 @@ mod tests {
                 .scene
                 .polychrome_sprites
                 .last()
-                .expect("cover image should paint a sprite");
+                .expect("覆盖图片应绘制一个精灵");
             (sprite.bounds, sprite.tile.bounds, window.scale_factor())
         });
         assert_eq!(

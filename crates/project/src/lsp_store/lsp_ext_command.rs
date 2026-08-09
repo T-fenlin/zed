@@ -65,7 +65,7 @@ impl LspCommand for ExpandMacro {
     type ProtoRequest = proto::LspExtExpandMacro;
 
     fn display_name(&self) -> &str {
-        "Expand macro"
+        "展开宏"
     }
 
     fn check_capabilities(&self, _: AdapterServerCapabilities) -> bool {
@@ -120,7 +120,7 @@ impl LspCommand for ExpandMacro {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         Ok(Self {
             position: buffer.read_with(&cx, |buffer, _| position.to_point_utf16(buffer)),
         })
@@ -197,7 +197,7 @@ impl LspCommand for OpenDocs {
     type ProtoRequest = proto::LspExtOpenDocs;
 
     fn display_name(&self) -> &str {
-        "Open docs"
+        "打开文档"
     }
 
     fn check_capabilities(&self, _: AdapterServerCapabilities) -> bool {
@@ -212,7 +212,7 @@ impl LspCommand for OpenDocs {
         _: &App,
     ) -> Result<OpenDocsParams> {
         let uri = lsp::Uri::from_file_path(path)
-            .map_err(|()| anyhow::anyhow!("{path:?} is not a valid URI"))?;
+            .map_err(|()| anyhow::anyhow!("{path:?} 不是有效的 URI"))?;
         Ok(OpenDocsParams {
             text_document: lsp::TextDocumentIdentifier { uri },
             position: point_to_lsp(self.position),
@@ -254,7 +254,7 @@ impl LspCommand for OpenDocs {
         let position = message
             .position
             .and_then(deserialize_anchor)
-            .context("invalid position")?;
+            .context("无效位置")?;
         Ok(Self {
             position: buffer.read_with(&cx, |buffer, _| position.to_point_utf16(buffer)),
         })
@@ -331,7 +331,7 @@ impl LspCommand for SwitchSourceHeader {
     type ProtoRequest = proto::LspExtSwitchSourceHeader;
 
     fn display_name(&self) -> &str {
-        "Switch source header"
+        "切换源文件/头文件"
     }
 
     fn check_capabilities(&self, _: AdapterServerCapabilities) -> bool {
@@ -413,7 +413,7 @@ impl LspCommand for GoToParentModule {
     type ProtoRequest = proto::LspExtGoToParentModule;
 
     fn display_name(&self) -> &str {
-        "Go to parent module"
+        "转到父模块"
     }
 
     fn check_capabilities(&self, _: AdapterServerCapabilities) -> bool {
@@ -467,7 +467,7 @@ impl LspCommand for GoToParentModule {
         let position = request
             .position
             .and_then(deserialize_anchor)
-            .context("bad request with bad position")?;
+            .context("请求无效,位置无效")?;
         Ok(Self {
             position: buffer.read_with(&cx, |buffer, _| position.to_point_utf16(buffer)),
         })
@@ -670,7 +670,7 @@ impl LspCommand for GetLspRunnables {
     type ProtoRequest = proto::LspExtRunnables;
 
     fn display_name(&self) -> &str {
-        "LSP Runnables"
+        "LSP 可运行项"
     }
 
     fn check_capabilities(&self, _: AdapterServerCapabilities) -> bool {
@@ -779,7 +779,7 @@ impl LspCommand for GetLspRunnables {
                 None => None,
             };
             let task_template = serde_json::from_slice(&lsp_runnable.task_template)
-                .context("deserializing task template from proto")?;
+                .context("从 proto 反序列化任务模板")?;
             runnables.runnables.push((location, task_template));
         }
 
@@ -841,9 +841,9 @@ mod tests {
         });
 
         let runnable: Runnable =
-            serde_json::from_value(json).expect("shell runnable should deserialize");
+            serde_json::from_value(json).expect("Shell 可运行项应能反序列化");
         let RunnableArgs::Shell(shell) = &runnable.args else {
-            panic!("expected Shell variant, got {:?}", runnable.args);
+            panic!("应为 Shell 变体,实际为 {:?}", runnable.args);
         };
         assert_eq!(shell.program, "cargo");
         assert_eq!(shell.args[0], "nextest");
@@ -867,9 +867,9 @@ mod tests {
         });
 
         let runnable: Runnable =
-            serde_json::from_value(json).expect("cargo runnable should deserialize");
+            serde_json::from_value(json).expect("Cargo 可运行项应能反序列化");
         let RunnableArgs::Cargo(cargo) = &runnable.args else {
-            panic!("expected Cargo variant, got {:?}", runnable.args);
+            panic!("应为 Cargo 变体,实际为 {:?}", runnable.args);
         };
         assert_eq!(
             cargo.cargo_args,

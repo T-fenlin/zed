@@ -178,11 +178,11 @@ impl PrettierStore {
                                 })
                                 .ok()?
                             {
-                                log::debug!("Found already started prettier in {prettier_dir:?}");
+                                log::debug!("在 {prettier_dir:?} 中发现已启动的 prettier");
                                 return Some((Some(prettier_dir), prettier_task.await.log_err()?));
                             }
 
-                            log::info!("Found prettier in {prettier_dir:?}, starting.");
+                            log::info!("在 {prettier_dir:?} 中发现 prettier,正在启动。");
                             let new_prettier_task = lsp_store
                                 .update(cx, |lsp_store, cx| {
                                     let new_prettier_task = Self::start_prettier(
@@ -204,7 +204,7 @@ impl PrettierStore {
                             Some((Some(prettier_dir), new_prettier_task))
                         }
                         Err(e) => {
-                            log::error!("Failed to determine prettier path for buffer: {e:#}");
+                            log::error!("无法确定缓冲区的 prettier 路径:{e:#}");
                             None
                         }
                     }
@@ -250,7 +250,7 @@ impl PrettierStore {
                         Ok(ControlFlow::Break(())) => None,
                         Ok(ControlFlow::Continue(None)) => None,
                         Ok(ControlFlow::Continue(Some(ignore_dir))) => {
-                            log::debug!("Found prettier ignore in {ignore_dir:?}");
+                            log::debug!("在 {ignore_dir:?} 中发现 prettier 忽略文件");
                             lsp_store
                                 .update(cx, |store, _| {
                                     store
@@ -264,7 +264,7 @@ impl PrettierStore {
                         }
                         Err(e) => {
                             log::error!(
-                                "Failed to determine prettier ignore path for buffer: {e:#}"
+                                "无法确定缓冲区的 prettier 忽略文件路径:{e:#}"
                             );
                             None
                         }
@@ -286,7 +286,7 @@ impl PrettierStore {
             .get_request_timeout();
 
         cx.spawn(async move |prettier_store, cx| {
-            log::info!("Starting prettier at path {prettier_dir:?}");
+            log::info!("正在路径 {prettier_dir:?} 启动 prettier");
             let new_server_id = prettier_store.read_with(cx, |prettier_store, _| {
                 prettier_store.languages.next_language_server_id()
             })?;
@@ -299,7 +299,7 @@ impl PrettierStore {
                 cx.clone(),
             )
             .await
-            .context("default prettier spawn")
+            .context("默认 prettier 启动")
             .map(Arc::new)
             .map_err(Arc::new)?;
             Self::register_new_prettier(
@@ -332,10 +332,10 @@ impl PrettierStore {
             })?;
             match installation_task {
                 ControlFlow::Continue(None) => {
-                    anyhow::bail!("Default prettier is not installed and cannot be started")
+                    anyhow::bail!("默认 prettier 未安装,无法启动")
                 }
                 ControlFlow::Continue(Some(installation_task)) => {
-                    log::info!("Waiting for default prettier to install");
+                    log::info!("正在等待默认 prettier 安装");
                     if let Err(e) = installation_task.await {
                         prettier_store.update(cx, |project, _| {
                             if let PrettierInstallation::NotInstalled {
@@ -349,7 +349,7 @@ impl PrettierStore {
                             }
                         })?;
                         anyhow::bail!(
-                            "Cannot start default prettier due to its installation failure: {e:#}"
+                            "由于安装失败,无法启动默认 prettier:{e:#}"
                         );
                     }
                     let new_default_prettier =
@@ -404,15 +404,15 @@ impl PrettierStore {
         let prettier_dir = prettier.prettier_dir();
         let is_default = prettier.is_default();
         if is_default {
-            log::info!("Started default prettier in {prettier_dir:?}");
+            log::info!("已在 {prettier_dir:?} 启动默认 prettier");
         } else {
-            log::info!("Started prettier in {prettier_dir:?}");
+            log::info!("已在 {prettier_dir:?} 启动 prettier");
         }
         if let Some(prettier_server) = prettier.server() {
             prettier_store
                 .update(cx, |prettier_store, cx| {
                     let name = if is_default {
-                        LanguageServerName("prettier (default)".into())
+                        LanguageServerName("prettier(默认)".into())
                     } else {
                         let worktree_path = worktree_id
                             .and_then(|id| {
@@ -429,16 +429,16 @@ impl PrettierStore {
                                         .file_name()
                                         .and_then(|name| name.to_str())
                                         .unwrap_or_default();
-                                    format!("prettier ({name})")
+                                    format!("prettier({name})")
                                 } else {
                                     let dir_to_display = prettier_dir
                                         .strip_prefix(worktree_path.as_ref())
                                         .ok()
                                         .unwrap_or(prettier_dir);
-                                    format!("prettier ({})", dir_to_display.display())
+                                    format!("prettier({})", dir_to_display.display())
                                 }
                             }
-                            None => format!("prettier ({})", prettier_dir.display()),
+                            None => format!("prettier({})", prettier_dir.display()),
                         };
                         LanguageServerName(name.into())
                     };
@@ -480,7 +480,7 @@ impl PrettierStore {
         let current_worktree_id = worktree.read(cx).id();
 
         log::info!(
-            "Prettier config file {config_path:?} changed, reloading prettier instances for worktree {current_worktree_id}"
+            "Prettier 配置文件 {config_path:?} 已更改,正在为工作树 {current_worktree_id} 重新加载 prettier 实例"
         );
 
         let prettiers_to_reload = self
@@ -521,10 +521,10 @@ impl PrettierStore {
                         Err(e) => {
                             match prettier_path {
                                 Some(prettier_path) => log::error!(
-                                    "Failed to clear prettier {prettier_path:?} cache for worktree {worktree_id:?} on prettier settings update: {e:#}"
+                                    "在 prettier 设置更新时,无法清除工作树 {worktree_id:?} 的 prettier {prettier_path:?} 缓存:{e:#}"
                                 ),
                                 None => log::error!(
-                                    "Failed to clear default prettier cache for worktree {worktree_id:?} on prettier settings update: {e:#}"
+                                    "在 prettier 设置更新时,无法清除工作树 {worktree_id:?} 的默认 prettier 缓存:{e:#}"
                                 ),
                             }
                         },
@@ -566,7 +566,7 @@ impl PrettierStore {
                 if installation_attempt > prettier::FAIL_THRESHOLD {
                     *installation_task = None;
                     log::warn!(
-                        "Default prettier installation had failed {installation_attempt} times, not attempting again",
+                        "默认 prettier 安装已失败 {installation_attempt} 次,不再尝试",
                     );
                     return;
                 }
@@ -604,7 +604,7 @@ impl PrettierStore {
                         locate_from.as_ref(),
                     )
                     .await
-                    .context("locate prettier installation").map_err(Arc::new)?,
+                    .context("定位 prettier 安装").map_err(Arc::new)?,
                     None => ControlFlow::Continue(None),
                 };
 
@@ -618,7 +618,7 @@ impl PrettierStore {
                         let mut needs_install = should_write_prettier_server_file(fs.as_ref()).await;
                         if let Some(previous_installation_task) = previous_installation_task
                             && let Err(e) = previous_installation_task.await {
-                                log::error!("Failed to install default prettier: {e:#}");
+                                log::error!("安装默认 prettier 失败:{e:#}");
                                 prettier_store.update(cx, |prettier_store, _| {
                                     if let PrettierInstallation::NotInstalled { attempts, not_installed_plugins, .. } = &mut prettier_store.default_prettier.prettier {
                                         *attempts += 1;
@@ -635,7 +635,7 @@ impl PrettierStore {
                                 };
                             })?;
                             log::warn!(
-                                "Default prettier installation had failed {installation_attempt} times, not attempting again",
+                                "默认 prettier 安装已失败 {installation_attempt} 次,不再尝试",
                             );
                             return Ok(());
                         }
@@ -652,7 +652,7 @@ impl PrettierStore {
                             needs_install |= !new_plugins.is_empty();
                         })?;
                         if needs_install {
-                            log::info!("Initializing default prettier with plugins {new_plugins:?}");
+                            log::info!("正在使用插件 {new_plugins:?} 初始化默认 prettier");
                             let installed_plugins = new_plugins.clone();
                             cx.background_spawn(async move {
                                 install_prettier_packages(fs.as_ref(), new_plugins, node).await?;
@@ -661,9 +661,9 @@ impl PrettierStore {
                                 anyhow::Ok(())
                             })
                                 .await
-                                .context("prettier & plugins install")
+                                .context("prettier 与插件安装")
                                 .map_err(Arc::new)?;
-                            log::info!("Initialized default prettier with plugins: {installed_plugins:?}");
+                            log::info!("已使用插件 {installed_plugins:?} 初始化默认 prettier");
                             prettier_store.update(cx, |prettier_store, _| {
                                 prettier_store.default_prettier.prettier =
                                     PrettierInstallation::Installed(PrettierInstance {
@@ -756,8 +756,8 @@ pub(super) async fn format_with_prettier(
     let (prettier_path, prettier_task) = prettier_instance?;
 
     let prettier_description = match prettier_path.as_ref() {
-        Some(path) => format!("prettier at {path:?}"),
-        None => "default prettier instance".to_string(),
+        Some(path) => format!("位于 {path:?} 的 prettier"),
+        None => "默认 prettier 实例".to_string(),
     };
 
     let request_timeout: Duration = cx.update(|app| {
@@ -782,7 +782,7 @@ pub(super) async fn format_with_prettier(
                     cx,
                 )
                 .await
-                .with_context(|| format!("{} failed to format buffer", prettier_description));
+                .with_context(|| format!("{} 无法格式化缓冲区", prettier_description));
 
             Some(format_result)
         }
@@ -805,7 +805,7 @@ pub(super) async fn format_with_prettier(
                 .log_err();
 
             Some(Err(anyhow!(
-                "{prettier_description} failed to spawn: {error:#}"
+                "{prettier_description} 启动失败:{error:#}"
             )))
         }
     }
@@ -885,9 +885,9 @@ impl PrettierInstance {
         if self.attempt > prettier::FAIL_THRESHOLD {
             match prettier_dir {
                 Some(prettier_dir) => log::warn!(
-                    "Prettier from path {prettier_dir:?} exceeded launch threshold, not starting"
+                    "来自路径 {prettier_dir:?} 的 prettier 超过启动阈值,不启动"
                 ),
-                None => log::warn!("Default prettier exceeded launch threshold, not starting"),
+                None => log::warn!("默认 prettier 超过启动阈值,不启动"),
             }
             return None;
         }
@@ -938,26 +938,26 @@ async fn install_prettier_packages(
 
     let default_prettier_dir = default_prettier_dir().as_path();
     match fs.metadata(default_prettier_dir).await.with_context(|| {
-        format!("fetching FS metadata for default prettier dir {default_prettier_dir:?}")
+        format!("获取默认 prettier 目录 {default_prettier_dir:?} 的文件系统元数据")
     })? {
         Some(prettier_dir_metadata) => anyhow::ensure!(
             prettier_dir_metadata.is_dir,
-            "default prettier dir {default_prettier_dir:?} is not a directory"
+            "默认 prettier 目录 {default_prettier_dir:?} 不是目录"
         ),
         None => fs
             .create_dir(default_prettier_dir)
             .await
-            .with_context(|| format!("creating default prettier dir {default_prettier_dir:?}"))?,
+            .with_context(|| format!("正在创建默认 prettier 目录 {default_prettier_dir:?}"))?,
     }
 
-    log::info!("Installing default prettier and plugins: {packages_to_install:?}");
+    log::info!("正在安装默认 prettier 和插件:{packages_to_install:?}");
     let borrowed_packages = packages_to_install
         .iter()
         .map(|package_name| package_name.as_str())
         .collect::<Vec<_>>();
     node.npm_install_latest_packages(default_prettier_dir, &borrowed_packages)
         .await
-        .context("fetching formatter packages")?;
+        .context("获取格式化程序包")?;
     anyhow::Ok(())
 }
 
@@ -971,7 +971,7 @@ async fn save_prettier_server_file(fs: &dyn Fs) -> anyhow::Result<()> {
     .await
     .with_context(|| {
         format!(
-            "writing {} file at {prettier_wrapper_path:?}",
+            "正在 {prettier_wrapper_path:?} 写入 {} 文件",
             prettier::PRETTIER_SERVER_FILE
         )
     })?;

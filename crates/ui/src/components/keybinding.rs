@@ -632,22 +632,22 @@ impl Component for KeyBinding {
             .gap_6()
             .children(vec![
                 example_group_with_title(
-                    "Platform Styles",
+                    "平台样式",
                     vec![
                         single_example(
-                            "Mac Style",
+                            "Mac 样式",
                             keybinding("cmd-s")
                                 .platform_style(PlatformStyle::Mac)
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Linux Style",
+                            "Linux 样式",
                             keybinding("ctrl-s")
                                 .platform_style(PlatformStyle::Linux)
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Windows Style",
+                            "Windows 样式",
                             keybinding("ctrl-s")
                                 .platform_style(PlatformStyle::Windows)
                                 .into_any_element(),
@@ -655,24 +655,24 @@ impl Component for KeyBinding {
                     ],
                 ),
                 example_group_with_title(
-                    "Vim Mode Style",
+                    "Vim 模式样式",
                     vec![
                         single_example(
-                            "Simple",
+                            "简单",
                             keybinding("s")
                                 .platform_style(PlatformStyle::Mac)
                                 .vim_mode(true)
                                 .into_any_element(),
                         ),
                         single_example(
-                            "With Modifiers",
+                            "带修饰键",
                             keybinding("ctrl-s")
                                 .platform_style(PlatformStyle::Linux)
                                 .vim_mode(true)
                                 .into_any_element(),
                         ),
                         single_example(
-                            "With other special key",
+                            "带其他特殊键",
                             keybinding("ctrl-escape")
                                 .platform_style(PlatformStyle::Windows)
                                 .vim_mode(true)

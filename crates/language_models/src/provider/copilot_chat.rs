@@ -133,13 +133,13 @@ impl LanguageModelProvider for CopilotChatLanguageModelProvider {
         let title = if is_authenticated {
             None
         } else {
-            Some("Configure Copilot Chat".into())
+            Some("配置 Copilot Chat".into())
         };
         let description = if is_authenticated {
             None
         } else {
             Some(language_model::InlineDescription::Text(
-                "Requires an active GitHub Copilot subscription.".into(),
+                "需要有效的 GitHub Copilot 订阅。".into(),
             ))
         };
 

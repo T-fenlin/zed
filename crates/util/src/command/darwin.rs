@@ -565,7 +565,7 @@ fn cvt_nz(error: libc::c_int) -> io::Result<()> {
 fn invalid_input_error() -> io::Error {
     io::Error::new(
         io::ErrorKind::InvalidInput,
-        "invalid argument: path or argument contains null byte",
+        "无效参数:路径或参数包含空字节",
     )
 }
 
@@ -585,7 +585,7 @@ mod tests {
     // git's stdin write end open and deadlock the git child on `read()`.
     #[test]
     fn test_create_pipe_not_inherited_by_unrelated_spawn() {
-        let (read_file, write_file) = create_pipe().expect("create_pipe failed");
+        let (read_file, write_file) = create_pipe().expect("创建管道失败");
         let read_fd = read_file.as_raw_fd();
         let write_fd = write_file.as_raw_fd();
 
@@ -606,7 +606,7 @@ mod tests {
                 echo DONE"
             ))
             .output()
-            .expect("failed to spawn sh");
+            .expect("无法启动 sh");
 
         let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
 
@@ -625,7 +625,7 @@ mod tests {
             }
             assert!(
                 std::time::Instant::now() < deadline,
-                "process {pid} was not reaped"
+                "进程 {pid} 未被回收"
             );
             std::thread::sleep(std::time::Duration::from_millis(10));
         }
@@ -636,7 +636,7 @@ mod tests {
         smol::block_on(async {
             let child = Command::new("/usr/bin/true")
                 .spawn()
-                .expect("failed to spawn command");
+                .expect("无法启动命令");
             let pid = child.id();
             drop(child);
             wait_until_gone(pid);
@@ -650,7 +650,7 @@ mod tests {
                 .arg("60")
                 .kill_on_drop(true)
                 .spawn()
-                .expect("failed to spawn command");
+                .expect("无法启动命令");
             let pid = child.id();
             drop(child);
             wait_until_gone(pid);
@@ -664,7 +664,7 @@ mod tests {
                 .args(["-n", "hello world"])
                 .output()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(output.status.success());
             assert_eq!(output.stdout, b"hello world");
@@ -678,18 +678,18 @@ mod tests {
                 .stdin(Stdio::piped())
                 .stdout(Stdio::piped())
                 .spawn()
-                .expect("failed to spawn");
+                .expect("无法启动");
 
             if let Some(ref mut stdin) = child.stdin {
                 stdin
                     .write_all(b"hello from stdin")
                     .await
-                    .expect("failed to write");
-                stdin.close().await.expect("failed to close");
+                    .expect("写入失败");
+                stdin.close().await.expect("关闭失败");
             }
             drop(child.stdin.take());
 
-            let output = child.output().await.expect("failed to get output");
+            let output = child.output().await.expect("无法获取输出");
             assert!(output.status.success());
             assert_eq!(output.stdout, b"hello from stdin");
         });
@@ -702,7 +702,7 @@ mod tests {
                 .args(["-c", "echo error >&2"])
                 .output()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(output.status.success());
             assert_eq!(output.stderr, b"error\n");
@@ -716,7 +716,7 @@ mod tests {
                 .args(["-c", "exit 42"])
                 .output()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(!output.status.success());
             assert_eq!(output.status.code(), Some(42));
@@ -730,7 +730,7 @@ mod tests {
                 .current_dir("/tmp")
                 .output()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(output.status.success());
             let pwd = String::from_utf8_lossy(&output.stdout);
@@ -746,7 +746,7 @@ mod tests {
                 .env("MY_TEST_VAR", "test_value")
                 .output()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(output.status.success());
             assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "test_value");
@@ -759,14 +759,14 @@ mod tests {
             let status = Command::new("/usr/bin/true")
                 .status()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(status.success());
 
             let status = Command::new("/usr/bin/false")
                 .status()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(!status.success());
         });
@@ -781,7 +781,7 @@ mod tests {
                 .env_remove("MY_VAR")
                 .output()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(output.status.success());
             assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "unset");
@@ -799,7 +799,7 @@ mod tests {
                 .env_remove("TEST_INHERITED_VAR")
                 .output()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(output.status.success());
             assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "unset");
@@ -818,7 +818,7 @@ mod tests {
                 .env("MY_VAR", "new_value")
                 .output()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(output.status.success());
             assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "new_value");
@@ -835,7 +835,7 @@ mod tests {
                 .env_remove("MY_VAR")
                 .output()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(output.status.success());
             assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "unset");
@@ -849,13 +849,13 @@ mod tests {
                 .stdin(Stdio::null())
                 .stdout(Stdio::piped())
                 .spawn()
-                .expect("failed to spawn");
+                .expect("无法启动");
 
-            let output = child.output().await.expect("failed to get output");
+            let output = child.output().await.expect("无法获取输出");
             assert!(output.status.success());
             assert!(
                 output.stdout.is_empty(),
-                "stdin from /dev/null should produce no output from cat"
+                "从 /dev/null 读取的标准输入不应让 cat 产生任何输出"
             );
         });
     }
@@ -867,14 +867,14 @@ mod tests {
                 .args(["hello"])
                 .stdout(Stdio::null())
                 .spawn()
-                .expect("failed to spawn");
+                .expect("无法启动");
 
             assert!(
                 child.stdout.is_none(),
-                "stdout should be None when Stdio::null() is used"
+                "使用 Stdio::null() 时 stdout 应为 None"
             );
 
-            let status = child.status().await.expect("failed to get status");
+            let status = child.status().await.expect("无法获取状态");
             assert!(status.success());
         });
     }
@@ -886,14 +886,14 @@ mod tests {
                 .args(["-c", "echo error >&2"])
                 .stderr(Stdio::null())
                 .spawn()
-                .expect("failed to spawn");
+                .expect("无法启动");
 
             assert!(
                 child.stderr.is_none(),
-                "stderr should be None when Stdio::null() is used"
+                "使用 Stdio::null() 时 stderr 应为 None"
             );
 
-            let status = child.status().await.expect("failed to get status");
+            let status = child.status().await.expect("无法获取状态");
             assert!(status.success());
         });
     }
@@ -905,23 +905,23 @@ mod tests {
                 .stdin(Stdio::piped())
                 .stdout(Stdio::piped())
                 .spawn()
-                .expect("failed to spawn");
+                .expect("无法启动");
 
             assert!(
                 child.stdin.is_some(),
-                "stdin should be Some when Stdio::piped() is used"
+                "使用 Stdio::piped() 时 stdin 应为 Some"
             );
 
             if let Some(ref mut stdin) = child.stdin {
                 stdin
                     .write_all(b"piped input")
                     .await
-                    .expect("failed to write");
-                stdin.close().await.expect("failed to close");
+                    .expect("写入失败");
+                stdin.close().await.expect("关闭失败");
             }
             drop(child.stdin.take());
 
-            let output = child.output().await.expect("failed to get output");
+            let output = child.output().await.expect("无法获取输出");
             assert!(output.status.success());
             assert_eq!(output.stdout, b"piped input");
         });
@@ -929,10 +929,10 @@ mod tests {
 
     #[test]
     fn test_bare_program_resolved_via_custom_path() {
-        let temp_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let temp_dir = tempfile::tempdir().expect("无法创建临时目录");
 
         let link_path = temp_dir.path().join("zed-test-echo");
-        std::os::unix::fs::symlink("/bin/echo", &link_path).expect("failed to create symlink");
+        std::os::unix::fs::symlink("/bin/echo", &link_path).expect("无法创建符号链接");
 
         let custom_path = temp_dir.path().to_string_lossy().into_owned();
 
@@ -942,7 +942,7 @@ mod tests {
                 .env("PATH", &custom_path)
                 .output()
                 .await
-                .expect("failed to spawn with custom PATH");
+                .expect("使用自定义 PATH 启动失败");
 
             assert!(output.status.success());
             assert_eq!(output.stdout, b"from-custom-path");
@@ -951,10 +951,10 @@ mod tests {
 
     #[test]
     fn test_bare_program_preserves_argv0_when_resolved_via_custom_path() {
-        let temp_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let temp_dir = tempfile::tempdir().expect("无法创建临时目录");
 
         let link_path = temp_dir.path().join("zed-test-sh");
-        std::os::unix::fs::symlink("/bin/sh", &link_path).expect("failed to create symlink");
+        std::os::unix::fs::symlink("/bin/sh", &link_path).expect("无法创建符号链接");
 
         let custom_path = temp_dir.path().to_string_lossy().into_owned();
 
@@ -964,7 +964,7 @@ mod tests {
                 .env("PATH", &custom_path)
                 .output()
                 .await
-                .expect("failed to spawn with custom PATH");
+                .expect("使用自定义 PATH 启动失败");
 
             assert!(output.status.success());
             assert_eq!(output.stdout, b"zed-test-sh");
@@ -990,7 +990,7 @@ mod tests {
                 .env("ZED_TEST_VAR", "test")
                 .output()
                 .await
-                .expect("failed to spawn with custom env but no PATH override");
+                .expect("使用自定义环境但未覆盖 PATH 时启动失败");
 
             assert!(output.status.success());
             assert_eq!(output.stdout, b"from-inherited-path");
@@ -999,10 +999,10 @@ mod tests {
 
     #[test]
     fn test_relative_path_resolved_against_current_dir() {
-        let temp_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let temp_dir = tempfile::tempdir().expect("无法创建临时目录");
 
         let link_path = temp_dir.path().join("zed-test-echo");
-        std::os::unix::fs::symlink("/bin/echo", &link_path).expect("failed to create symlink");
+        std::os::unix::fs::symlink("/bin/echo", &link_path).expect("无法创建符号链接");
 
         let relative_path = "./zed-test-echo";
 
@@ -1013,7 +1013,7 @@ mod tests {
                 .env("PATH", "/nonexistent/path")
                 .output()
                 .await
-                .expect("failed to spawn with relative path");
+                .expect("使用相对路径启动失败");
 
             assert!(output.status.success());
             assert_eq!(output.stdout, b"from-relative-path");
@@ -1028,7 +1028,7 @@ mod tests {
                 .env("PATH", "/nonexistent/path")
                 .output()
                 .await
-                .expect("failed to spawn with absolute path");
+                .expect("使用绝对路径启动失败");
 
             assert!(output.status.success());
             assert_eq!(output.stdout, b"from-absolute-path");
@@ -1048,11 +1048,11 @@ mod tests {
                 .stderr(Stdio::inherit())
                 .status()
                 .await
-                .expect("failed to run command");
+                .expect("无法运行命令");
 
             assert!(
                 status.success(),
-                "stdio fds should be open in the child when using Stdio::inherit()"
+                "使用 Stdio::inherit() 时,子进程中的标准输入输出文件描述符应保持打开"
             );
         });
     }
@@ -1065,25 +1065,25 @@ mod tests {
         let std_output = std::process::Command::new("/bin/sh")
             .args(["-c", SCRIPT])
             .output()
-            .expect("failed to run std command");
+            .expect("无法运行标准命令");
 
         let our_output = smol::block_on(async {
             Command::new("/bin/sh")
                 .args(["-c", SCRIPT])
                 .output()
                 .await
-                .expect("failed to run command")
+                .expect("无法运行命令")
         });
 
         assert_eq!(
             std_output.status.signal(),
             Some(libc::SIGPIPE),
-            "expected std to reset SIGPIPE to SIG_DFL in children; did its default change?"
+            "期望 std 在子进程中重置 SIGPIPE 为 SIG_DFL;其默认值是否已更改?"
         );
         assert_eq!(
             our_output.status.signal(),
             std_output.status.signal(),
-            "child SIGPIPE disposition diverges from std::process::Command"
+            "子进程的 SIGPIPE 处理方式与 std::process::Command 不一致"
         );
         assert_eq!(our_output.stdout, std_output.stdout);
     }
@@ -1107,13 +1107,13 @@ mod tests {
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped())
                 .spawn()
-                .expect_err("spawn should fail for a nonexistent binary");
+                .expect_err("对于不存在的二进制文件,启动应失败");
         }
         let after = count_open_fds();
 
         assert!(
             after <= before + SLACK,
-            "fd leak detected: {before} open fds before, {after} after {ATTEMPTS} failed spawns"
+            "检测到文件描述符泄漏:启动前有 {before} 个打开的文件描述符,{ATTEMPTS} 次启动失败后有 {after} 个"
         );
     }
 }

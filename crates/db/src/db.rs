@@ -85,7 +85,7 @@ impl AppDatabase {
             #[cfg(any(feature = "test-support", test))]
             return &TEST_APP_DATABASE.0;
 
-            panic!("database not initialized")
+            panic!("数据库未初始化")
         }
     }
 }
@@ -184,7 +184,7 @@ pub async fn open_db<M: Migrator + 'static>(
     let connection = maybe!(async {
         if let Some(parent) = db_path.parent() {
             create_dir_all(parent)
-                .context("Could not create db directory")
+                .context("无法创建数据库目录")
                 .log_err()?;
         }
         open_main_db::<M>(&db_path).await
@@ -203,7 +203,7 @@ pub async fn open_db<M: Migrator + 'static>(
 }
 
 async fn open_main_db<M: Migrator>(db_path: &Path) -> Option<ThreadSafeConnection> {
-    log::trace!("Opening database {}", db_path.display());
+    log::trace!("正在打开数据库 {}", db_path.display());
     ThreadSafeConnection::builder::<M>(db_path.to_string_lossy().as_ref(), true)
         .with_db_initialization_query(DB_INITIALIZE_QUERY)
         .with_connection_initialize_query(CONNECTION_INITIALIZE_QUERY)
@@ -213,14 +213,14 @@ async fn open_main_db<M: Migrator>(db_path: &Path) -> Option<ThreadSafeConnectio
 }
 
 async fn open_fallback_db<M: Migrator>() -> ThreadSafeConnection {
-    log::warn!("Opening fallback in-memory database");
+    log::warn!("正在打开备用内存数据库");
     ThreadSafeConnection::builder::<M>(FALLBACK_DB_NAME, false)
         .with_db_initialization_query(DB_INITIALIZE_QUERY)
         .with_connection_initialize_query(CONNECTION_INITIALIZE_QUERY)
         .build()
         .await
         .expect(
-            "Fallback in memory database failed. Likely initialization queries or migrations have fundamental errors",
+            "备用内存数据库打开失败。初始化查询或迁移可能存在根本性错误",
         )
 }
 

@@ -37,7 +37,7 @@ fn compile_time_release_channel_name() -> String {
 pub static RELEASE_CHANNEL: LazyLock<ReleaseChannel> =
     LazyLock::new(|| match ReleaseChannel::from_str(&RELEASE_CHANNEL_NAME) {
         Ok(channel) => channel,
-        _ => panic!("invalid release channel {}", *RELEASE_CHANNEL_NAME),
+        _ => panic!("无效的发布频道 {}", *RELEASE_CHANNEL_NAME),
     });
 
 /// The app identifier for the current release channel, Windows only.
@@ -102,9 +102,9 @@ impl AppVersion {
         commit_sha: Option<AppCommitSha>,
     ) -> Version {
         let mut version: Version = if let Ok(from_env) = env::var("ZED_APP_VERSION") {
-            from_env.parse().expect("invalid ZED_APP_VERSION")
+            from_env.parse().expect("无效的 ZED_APP_VERSION")
         } else {
-            pkg_version.parse().expect("invalid version in Cargo.toml")
+            pkg_version.parse().expect("Cargo.toml 中的版本无效")
         };
         let mut pre = String::from(RELEASE_CHANNEL.dev_name());
 

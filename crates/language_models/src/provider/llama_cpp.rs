@@ -129,7 +129,7 @@ impl State {
             match load_key_task.await {
                 Ok(()) | Err(AuthenticateError::CredentialsNotFound) => {}
                 Err(error) => {
-                    log::warn!("failed to load llama.cpp API key: {error}");
+                    log::warn!("加载 llama.cpp API 密钥失败:{error}");
                 }
             }
             let fetch_models_task = this.update(cx, |this, cx| this.fetch_models(cx))?;
@@ -236,7 +236,7 @@ impl State {
                 );
                 sync_capability_cells(&this.capability_cells, &effective);
                 // Drop progress labels for models no longer loading, so a stale
-                // "Loading …" can't stick after a preempted load or missed event.
+                // "加载中 …" can't stick after a preempted load or missed event.
                 write_recover(&this.loading_progress).retain(|id, _| loading_ids.contains(id));
                 // Router mode loads models on demand: subscribe so capabilities
                 // self-correct as they load/unload. Start it once (events trigger
@@ -281,7 +281,7 @@ impl State {
                             };
                             if let Some(exit_code) = event.load_failure() {
                                 log::error!(
-                                    "llama.cpp model {} failed to load (exit code {exit_code})",
+                                    "llama.cpp 模型 {} 加载失败(退出代码 {exit_code})",
                                     event.model
                                 );
                             }
@@ -319,7 +319,7 @@ impl State {
                     }
                     // Endpoint missing (older build) or connection failed; retry after a backoff.
                     Err(error) => {
-                        log::warn!("llama.cpp model event stream unavailable: {error:#}");
+                        log::warn!("llama.cpp 模型事件流不可用:{error:#}");
                     }
                 }
 
@@ -364,7 +364,7 @@ impl LiveCapabilities {
 /// Live capabilities keyed by model name, shared by the provider and its models.
 type CapabilityCells = Arc<RwLock<HashMap<String, LiveCapabilities>>>;
 
-/// Model name → load-status label (e.g. `"Loading weights 42%"`) while a router
+/// Model name → load-status label (e.g. `"正在加载权重 42%"`) while a router
 /// model loads, shared so the model selector can show progress. Absent once loaded.
 type LoadingProgress = Arc<RwLock<HashMap<String, SharedString>>>;
 
@@ -605,7 +605,7 @@ impl LanguageModelProvider for LlamaCppLanguageModelProvider {
                     .into()
             })
             .description(InlineDescription::Text(
-                "Run local models on your machine with LlamaCpp.".into(),
+                "使用 LlamaCpp 在您的机器上运行本地模型。".into(),
             )),
         ))
     }
@@ -699,7 +699,7 @@ fn build_llama_cpp_request(
     request: LanguageModelRequest,
 ) -> Result<llama_cpp::ChatCompletionRequest> {
     if request.contains_custom_tool_input() {
-        anyhow::bail!("llama.cpp does not support custom tools");
+        anyhow::bail!("llama.cpp 不支持自定义工具");
     }
 
     let supports_tools = capabilities.supports_tools;
@@ -748,7 +748,7 @@ fn build_llama_cpp_request(
                 }
                 MessageContent::ToolUse(tool_use) => {
                     let input = tool_use.input.as_json().ok_or_else(|| {
-                        anyhow::anyhow!("llama.cpp does not support custom tool calls")
+                        anyhow::anyhow!("llama.cpp 不支持自定义工具调用")
                     })?;
                     let tool_call = llama_cpp::ToolCall {
                         id: tool_use.id.to_string(),
@@ -824,7 +824,7 @@ fn build_llama_cpp_request(
                         ..
                     } => input_schema,
                     language_model::LanguageModelRequestToolInput::Custom { .. } => {
-                        return Err(anyhow::anyhow!("llama.cpp does not support custom tools"));
+                        return Err(anyhow::anyhow!("llama.cpp 不支持自定义工具"));
                     }
                 };
                 Ok(llama_cpp::ToolDefinition::Function {
@@ -1065,7 +1065,7 @@ impl LlamaCppEventMapper {
                         )));
                     }
                     unexpected => {
-                        log::warn!("Unexpected llama.cpp finish_reason: {unexpected:?}");
+                        log::warn!("意外的 llama.cpp finish_reason:{unexpected:?}");
                         events.push(Ok(LanguageModelCompletionEvent::Stop(StopReason::EndTurn)));
                     }
                 }
@@ -1180,7 +1180,7 @@ struct ConfigurationView {
 
 impl ConfigurationView {
     pub fn new(state: Entity<State>, window: &mut Window, cx: &mut Context<Self>) -> Self {
-        let api_key_editor = cx.new(|cx| InputField::new(window, cx, "sk-...").label("API key"));
+        let api_key_editor = cx.new(|cx| InputField::new(window, cx, "sk-...").label("API 密钥"));
 
         let api_url_editor = cx.new(|cx| {
             let input = InputField::new(window, cx, LLAMA_CPP_API_URL).label("API URL");
@@ -1189,7 +1189,7 @@ impl ConfigurationView {
         });
 
         let context_window_editor = cx.new(|cx| {
-            let input = InputField::new(window, cx, "8192").label("Context Window");
+            let input = InputField::new(window, cx, "8192").label("上下文窗口");
             if let Some(context_window) = LlamaCppLanguageModelProvider::settings(cx).context_window
             {
                 input.set_text(&context_window.to_string(), window, cx);
@@ -1353,24 +1353,24 @@ impl ConfigurationView {
                 )
                 .color(Color::Muted),
             )
-            .child(Label::new("To use a local llama.cpp server:").color(Color::Muted))
+            .child(Label::new("要使用本地 llama.cpp 服务器:").color(Color::Muted))
             .child(
                 List::new()
                     .child(
                         ListBulletItem::new("")
-                            .child(Label::new("Install llama.cpp from").color(Color::Muted))
+                            .child(Label::new("从以下位置安装 llama.cpp").color(Color::Muted))
                             .child(ButtonLink::new("llama.app", LLAMA_CPP_DOWNLOAD_URL)),
                     )
                     .child(
                         ListBulletItem::new("")
                             .child(
-                                Label::new("Start the server in router mode:").color(Color::Muted),
+                                Label::new("以路由器模式启动服务器:").color(Color::Muted),
                             )
                             .child(Label::new("llama serve").inline_code(cx)),
                     )
                     .child(
                         ListBulletItem::new(
-                            "Click 'Connect' below to start using llama.cpp in Zed",
+                            "点击下方的“连接”开始在 Zed 中使用 llama.cpp",
                         )
                         .label_color(Color::Muted),
                     ),
@@ -1388,9 +1388,9 @@ impl ConfigurationView {
         let state = self.state.read(cx);
         let env_var_set = state.api_key_state.is_from_env_var();
         let configured_card_label = if env_var_set {
-            format!("API key set in {API_KEY_ENV_VAR_NAME} environment variable.")
+            format!("API 密钥已在 {API_KEY_ENV_VAR_NAME} 环境变量中设置。")
         } else {
-            "API key configured".to_string()
+            "API 密钥已配置".to_string()
         };
 
         let api_key_control = if !state.api_key_state.has_key() {
@@ -1401,7 +1401,7 @@ impl ConfigurationView {
                 .on_click(cx.listener(|this, _, window, cx| this.reset_api_key(window, cx)))
                 .when(env_var_set, |this| {
                     this.tooltip_label(format!(
-                        "To reset your API key, unset the {API_KEY_ENV_VAR_NAME} environment variable."
+                        "要重置您的 API 密钥,请取消设置 {API_KEY_ENV_VAR_NAME} 环境变量。"
                     ))
                 })
                 .into_any_element()
@@ -1414,7 +1414,7 @@ impl ConfigurationView {
             .mb_2()
             .child(
                 Label::new(format!(
-                    "You can also set the {API_KEY_ENV_VAR_NAME} environment variable and restart Zed."
+                    "您也可以设置 {API_KEY_ENV_VAR_NAME} 环境变量并重启 Zed。"
                 ))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
@@ -1438,12 +1438,12 @@ impl ConfigurationView {
                         .gap_1()
                         .child(Icon::new(IconName::Check).color(Color::Success))
                         .child(Label::new(format!(
-                            "Context Window: {}",
+                            "上下文窗口:{}",
                             settings.context_window.unwrap_or_default()
                         ))),
                 )
                 .child(
-                    Button::new("reset-context-window", "Reset")
+                    Button::new("reset-context-window", "重置")
                         .style(ButtonStyle::Outlined)
                         .label_size(LabelSize::Small)
                         .start_icon(Icon::new(IconName::Undo).size(IconSize::Small))
@@ -1463,7 +1463,7 @@ impl ConfigurationView {
                 .child(self.context_window_editor.clone())
                 .gap_1p5()
                 .child(
-                    Label::new("Default: Discovered from the server")
+                    Label::new("默认值:从服务器自动发现")
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -1489,7 +1489,7 @@ impl ConfigurationView {
                         .child(Label::new(api_url)),
                 )
                 .child(
-                    Button::new("reset-api-url", "Reset API URL")
+                    Button::new("reset-api-url", "重置 API URL")
                         .style(ButtonStyle::Outlined)
                         .label_size(LabelSize::Small)
                         .start_icon(Icon::new(IconName::Undo).size(IconSize::Small))
@@ -1534,7 +1534,7 @@ impl Render for ConfigurationView {
                             .map(|this| {
                                 if is_authenticated {
                                     this.child(
-                                        Button::new("llama-cpp-webui", "Open WebUI")
+                                        Button::new("llama-cpp-webui", "打开 WebUI")
                                             .style(ButtonStyle::OutlinedGhost)
                                             .size(ButtonSize::Medium)
                                             .end_icon(
@@ -1565,7 +1565,7 @@ impl Render for ConfigurationView {
                                     )
                                 } else {
                                     this.child(
-                                        Button::new("download_llama_cpp_button", "Get llama.cpp")
+                                        Button::new("download_llama_cpp_button", "获取 llama.cpp")
                                             .style(ButtonStyle::OutlinedGhost)
                                             .size(ButtonSize::Medium)
                                             .end_icon(
@@ -1581,7 +1581,7 @@ impl Render for ConfigurationView {
                                 }
                             })
                             .child(
-                                Button::new("view-models", "Browse GGUF Models")
+                                Button::new("view-models", "浏览 GGUF 模型")
                                     .style(ButtonStyle::OutlinedGhost)
                                     .size(ButtonSize::Medium)
                                     .end_icon(
@@ -1601,12 +1601,12 @@ impl Render for ConfigurationView {
                                         h_flex()
                                             .gap_1()
                                             .child(Icon::new(IconName::Check).color(Color::Success))
-                                            .child(Label::new("Connected")),
+                                            .child(Label::new("已连接")),
                                     )
                                     .child(
                                         IconButton::new("refresh-models", IconName::RotateCcw)
                                             .icon_size(IconSize::Small)
-                                            .tooltip(Tooltip::text("Refresh Models"))
+                                            .tooltip(Tooltip::text("刷新模型"))
                                             .on_click(cx.listener(|this, _, window, cx| {
                                                 this.state.update(cx, |state, _| {
                                                     state.fetched_models.clear();
@@ -1617,7 +1617,7 @@ impl Render for ConfigurationView {
                             )
                         } else {
                             this.child(
-                                Button::new("retry_llama_cpp_models", "Connect")
+                                Button::new("retry_llama_cpp_models", "连接")
                                     .style(ButtonStyle::Outlined)
                                     .size(ButtonSize::Medium)
                                     .start_icon(
@@ -1865,7 +1865,7 @@ mod tests {
                 assert_eq!(reasoning_content, "reasoning");
                 assert!(tool_calls.is_empty());
             }
-            message => panic!("unexpected message: {message:?}"),
+            message => panic!("意外消息:{message:?}"),
         }
     }
 
@@ -1909,7 +1909,7 @@ mod tests {
                 assert!(reasoning_content.is_none());
                 assert!(tool_calls.is_empty());
             }
-            message => panic!("unexpected message: {message:?}"),
+            message => panic!("意外消息:{message:?}"),
         }
     }
 
@@ -1960,7 +1960,7 @@ mod tests {
                 assert_eq!(reasoning_content, "reasoning");
                 assert_eq!(tool_calls.len(), 1);
             }
-            message => panic!("unexpected message: {message:?}"),
+            message => panic!("意外消息:{message:?}"),
         }
     }
 

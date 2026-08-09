@@ -179,12 +179,12 @@ where
     F: FnOnce(HMODULE) -> Result<R>,
 {
     let library = unsafe {
-        LoadLibraryA(dll_name).with_context(|| format!("Loading dll: {}", dll_name.display()))?
+        LoadLibraryA(dll_name).with_context(|| format!("正在加载 DLL: {}", dll_name.display()))?
     };
     let result = f(library);
     unsafe {
         FreeLibrary(library)
-            .with_context(|| format!("Freeing dll: {}", dll_name.display()))
+            .with_context(|| format!("正在释放 DLL: {}", dll_name.display()))
             .log_err();
     }
     result

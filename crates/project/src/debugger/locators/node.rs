@@ -57,6 +57,6 @@ impl DapLocator for NodeLocator {
     }
 
     async fn run(&self, _: SpawnInTerminal, _executor: BackgroundExecutor) -> Result<DebugRequest> {
-        bail!("JavaScript locator should not require DapLocator::run to be ran");
+        bail!("JavaScript 定位器不应要求运行 DapLocator::run");
     }
 }

@@ -72,8 +72,8 @@ pub fn sidebar_side_context_menu(
         let fs = <dyn fs::Fs>::global(cx);
         ContextMenu::build(window, cx, move |mut menu, _, _cx| {
             let positions: [(SidebarDockPosition, &str); 2] = [
-                (SidebarDockPosition::Left, "Left"),
-                (SidebarDockPosition::Right, "Right"),
+                (SidebarDockPosition::Left, "左侧"),
+                (SidebarDockPosition::Right, "右侧"),
             ];
             for (position, label) in positions {
                 let fs = fs.clone();
@@ -1133,7 +1133,7 @@ impl MultiWorkspace {
         cx.spawn(async move |_this, cx| {
             let session = connect_task
                 .await?
-                .ok_or_else(|| anyhow::anyhow!("Remote connection was cancelled"))?;
+                .ok_or_else(|| anyhow::anyhow!("远程连接已取消"))?;
 
             let new_project = cx.update(|cx| {
                 Project::remote(
@@ -1609,7 +1609,7 @@ impl MultiWorkspace {
         {
             anyhow::ensure!(
                 retained_ids.insert(workspace.entity_id()),
-                "workspace {:?} is retained more than once",
+                "工作区 {:?} 被保留了多次",
                 workspace.entity_id(),
             );
 
@@ -1618,7 +1618,7 @@ impl MultiWorkspace {
                 self.project_groups
                     .iter()
                     .any(|group| group.key == live_key),
-                "workspace {:?} has live key {:?} but no project-group metadata",
+                "工作区 {:?} 具有活动键 {:?},但没有项目组元数据",
                 workspace.entity_id(),
                 live_key,
             );

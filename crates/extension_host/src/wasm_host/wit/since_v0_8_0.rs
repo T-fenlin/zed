@@ -337,7 +337,7 @@ impl TryFrom<SpawnInTerminal> for ResolvedTask {
     fn try_from(value: SpawnInTerminal) -> Result<Self, Self::Error> {
         Ok(Self {
             label: value.label,
-            command: value.command.context("missing command")?,
+            command: value.command.context("缺少命令")?,
             args: value.args,
             env: value.env.into_iter().collect(),
             cwd: value.cwd.map(|s| {
@@ -532,7 +532,7 @@ impl TryFrom<ContextServerConfiguration> for extension::ContextServerConfigurati
 
     fn try_from(value: ContextServerConfiguration) -> Result<Self, Self::Error> {
         let settings_schema: serde_json::Value = serde_json::from_str(&value.settings_schema)
-            .context("Failed to parse settings_schema")?;
+            .context("无法解析 settings_schema")?;
 
         Ok(Self {
             installation_instructions: value.installation_instructions,
@@ -636,7 +636,7 @@ impl http_client::Host for WasmState {
             let mut response = self.host.http_client.send(request).await?;
 
             if response.status().is_client_error() || response.status().is_server_error() {
-                bail!("failed to fetch '{url}': status code {}", response.status())
+                bail!("无法获取 '{url}': 状态码 {}", response.status())
             }
             convert_response(&mut response).await
         })
@@ -865,12 +865,12 @@ impl platform::Host for WasmState {
                 "macos" => platform::Os::Mac,
                 "linux" => platform::Os::Linux,
                 "windows" => platform::Os::Windows,
-                _ => bail!("unsupported os"),
+                _ => bail!("不支持的操作系统"),
             },
             match env::consts::ARCH {
                 "aarch64" => platform::Architecture::Aarch64,
                 "x86_64" => platform::Architecture::X8664,
-                _ => bail!("unsupported architecture"),
+                _ => bail!("不支持的架构"),
             },
         ))
     }
@@ -1026,12 +1026,12 @@ impl ExtensionImports for WasmState {
                                 settings: Some(settings),
                             })?),
                             project::project_settings::ContextServerSettings::Http { .. } => {
-                                bail!("remote context server settings not supported in 0.6.0")
+                                bail!("0.6.0 版本不支持远程上下文服务器设置")
                             }
                         }
                     }
                     _ => {
-                        bail!("Unknown settings category: {}", category);
+                        bail!("未知的设置类别:{}", category);
                     }
                 })
             }
@@ -1085,11 +1085,11 @@ impl ExtensionImports for WasmState {
                 .http_client
                 .get(&url, Default::default(), true)
                 .await
-                .context("downloading release")?;
+                .context("正在下载发布版本")?;
 
             anyhow::ensure!(
                 response.status().is_success(),
-                "download failed with status {}",
+                "下载失败,状态码 {}",
                 response.status()
             );
             let mut body = BufReader::new(response.body_mut());
@@ -1125,7 +1125,7 @@ impl ExtensionImports for WasmState {
                     futures::pin_mut!(body);
                     extract_zip(&destination_path, body)
                         .await
-                        .with_context(|| format!("unzipping {path:?} archive"))?;
+                        .with_context(|| format!("正在解压 {path:?} 压缩包"))?;
                 }
             }
 
@@ -1143,7 +1143,7 @@ impl ExtensionImports for WasmState {
 
         make_file_executable(&path)
             .await
-            .with_context(|| format!("setting permissions for path {path:?}"))
+            .with_context(|| format!("正在为路径 {path:?} 设置权限"))
             .to_wasmtime_result()
     }
 }

@@ -109,7 +109,7 @@ impl EditorPreview {
 
     fn clear(&mut self) {
         let mut message = HighlightedTextBuilder::default();
-        message.push_plain("No results to preview");
+        message.push_plain("没有可预览的结果");
         self.message = Some(message.build());
     }
 

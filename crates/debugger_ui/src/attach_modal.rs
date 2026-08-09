@@ -51,7 +51,7 @@ impl AttachModalDelegate {
             intent,
             selected_index: 0,
             matches: Vec::default(),
-            placeholder_text: Arc::from("Select the process you want to attach the debugger to"),
+            placeholder_text: Arc::from("选择要附加调试器的进程"),
         }
     }
 }
@@ -246,7 +246,7 @@ impl PickerDelegate for AttachModalDelegate {
                         config.process_id = Some(candidate.pid);
                     }
                     DebugRequest::Launch(_) => {
-                        debug_panic!("Debugger attach modal used on launch debug config");
+                        debug_panic!("调试器附加模态框用于启动调试配置");
                         return;
                     }
                 }

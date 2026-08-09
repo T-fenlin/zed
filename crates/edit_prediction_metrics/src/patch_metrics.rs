@@ -784,7 +784,7 @@ mod test_optimization {
             // Just verify it produces a reasonable score (0-100)
             assert!(
                 score >= 0.0 && score <= 100.0,
-                "Score {} out of range for ({}, {}, {})",
+                "分数 {} 超出范围 ({}, {}, {})",
                 score,
                 original,
                 expected,
@@ -854,7 +854,7 @@ mod test_optimization {
 
             assert!(
                 (optimized_metrics.score - reference_metrics.score).abs() < 1e-10,
-                "Score mismatch for ({:?}, {:?}, {:?}):\n  optimized: {}\n  reference: {}",
+                "分数不匹配 ({:?}, {:?}, {:?}):\n  优化后: {}\n  参考: {}",
                 original,
                 expected,
                 actual,
@@ -1244,7 +1244,7 @@ index abc123..def456 100644
         // "# " vs "# SIP Call" — the "SIP" and "Call" tokens (and a whitespace token) are inserted
         assert!(
             counts.inserted_tokens > 0,
-            "expected inserted tokens > 0, got {}",
+            "预期插入的令牌数大于 0,实际为 {}",
             counts.inserted_tokens
         );
         assert_eq!(counts.deleted_tokens, 0);
@@ -1257,12 +1257,12 @@ index abc123..def456 100644
         let counts = count_patch_token_changes(patch);
         assert!(
             counts.inserted_tokens > 0,
-            "expected inserted tokens > 0, got {}",
+            "预期插入的令牌数大于 0,实际为 {}",
             counts.inserted_tokens
         );
         assert!(
             counts.deleted_tokens > 0,
-            "expected deleted tokens > 0, got {}",
+            "预期删除的令牌数大于 0,实际为 {}",
             counts.deleted_tokens
         );
     }
@@ -1277,8 +1277,8 @@ index abc123..def456 100644
              }
         "};
         let counts = count_patch_token_changes(patch);
-        assert_eq!(counts.deleted_tokens, 1, "deleted: \"hello\"");
-        assert_eq!(counts.inserted_tokens, 1, "inserted: \"world\"");
+        assert_eq!(counts.deleted_tokens, 1, "已删除: \"hello\"");
+        assert_eq!(counts.inserted_tokens, 1, "已插入: \"world\"");
     }
 
     #[test]
@@ -1330,8 +1330,8 @@ index abc123..def456 100644
              }
         "};
         let counts = count_patch_token_changes(patch);
-        assert_eq!(counts.deleted_tokens, 2, "deleted: \"1\" and \"3\"");
-        assert_eq!(counts.inserted_tokens, 2, "inserted: \"2\" and \"4\"");
+        assert_eq!(counts.deleted_tokens, 2, "已删除: \"1\" 和 \"3\"");
+        assert_eq!(counts.inserted_tokens, 2, "已插入: \"2\" 和 \"4\"");
     }
 
     #[test]

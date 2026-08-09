@@ -219,7 +219,7 @@ pub fn load_bundled_themes(registry: &ThemeRegistry) {
     let theme_paths = registry
         .assets()
         .list("themes/")
-        .expect("failed to list theme assets")
+        .expect("无法列出主题资源")
         .into_iter()
         .filter(|path| path.ends_with(".json"));
 
@@ -229,7 +229,7 @@ pub fn load_bundled_themes(registry: &ThemeRegistry) {
         };
 
         let Some(theme_family) = serde_json::from_slice(&theme)
-            .with_context(|| format!("failed to parse theme at path \"{path}\""))
+            .with_context(|| format!("无法解析路径 \"{path}\" 处的主题"))
             .log_err()
         else {
             continue;
@@ -260,7 +260,7 @@ pub fn deserialize_user_theme(bytes: &[u8]) -> Result<ThemeFamilyContent> {
             .is_some()
         {
             log::warn!(
-                r#"Theme "{theme_name}" is using a deprecated style property: scrollbar_thumb.background. Use `scrollbar.thumb.background` instead."#,
+                r#"Theme "{theme_name}"正在使用已弃用的样式属性: scrollbar_thumb.background。请改用 `scrollbar.thumb.background`。"#,
                 theme_name = theme.name
             )
         }

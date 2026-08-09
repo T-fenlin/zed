@@ -209,7 +209,7 @@ impl Side for Middle {
     fn cursor(&self) -> CursorStyle {
         match self.0 {
             Layout::Hidden => {
-                unreachable!("This resize handle is not drawn when the preview is hidden")
+                unreachable!("预览隐藏时不绘制此调整大小手柄")
             }
             Layout::Below => CursorStyle::ResizeRow,
             Layout::Right => CursorStyle::ResizeColumn,
@@ -224,7 +224,7 @@ impl Side for Middle {
     ) -> gpui::Stateful<Div> {
         match self.0 {
             Layout::Hidden => {
-                unreachable!("This resize handle is not drawn when the preview is hidden")
+                unreachable!("预览隐藏时不绘制此调整大小手柄")
             }
             Layout::Below => div
                 .left(Self::corner_clearance(window))
@@ -246,7 +246,7 @@ impl Side for Middle {
     ) -> PositionAndShape {
         match self.0 {
             Layout::Hidden => {
-                unreachable!("This resize handle is not drawn when the preview is hidden")
+                unreachable!("预览隐藏时不绘制此调整大小手柄")
             }
             Layout::Below => shape_before.preview -= mouse_movement.y,
             Layout::Right => shape_before.preview -= mouse_movement.x,

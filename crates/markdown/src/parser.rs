@@ -1077,7 +1077,7 @@ mod tests {
     fn test_metadata_table_rows_parse_simple_colon_pairs() {
         let source = "title: Post\nauthor: Zed\n";
         let Some(rows) = parse_metadata_table_rows(source, 0..source.len()) else {
-            panic!("expected metadata rows");
+            panic!("应为元数据行");
         };
         let pairs = rows
             .into_iter()
@@ -1332,14 +1332,14 @@ mod tests {
                 End(MarkdownTagEnd::CodeBlock) => {
                     assert!(
                         code_block_depth > 0,
-                        "encountered a code block end without a matching start"
+                        "遇到没有匹配开始的代码块结束"
                     );
                     code_block_depth -= 1;
                 }
                 Start(Link { .. }) | End(MarkdownTagEnd::Link) => {
                     assert_eq!(
                         code_block_depth, 0,
-                        "code blocks should not emit link events"
+                        "代码块不应发出链接事件"
                     );
                 }
                 Text | SubstitutedText(_) if code_block_depth > 0 => {
@@ -1349,11 +1349,11 @@ mod tests {
             }
         }
 
-        assert_eq!(code_block_count, 1, "expected exactly one code block");
-        assert_eq!(code_block_depth, 0, "unterminated code block");
+        assert_eq!(code_block_count, 1, "应恰好有一个代码块");
+        assert_eq!(code_block_depth, 0, "未终止的代码块");
         assert!(
             saw_text_inside_code_block,
-            "expected text inside the code block"
+            "代码块内应有文本"
         );
     }
 
@@ -1470,7 +1470,7 @@ mod tests {
 
         assert!(
             !saw_task_list_marker,
-            "Table checkboxes should remain text, not task-list markers"
+            "表格复选框应保持为文本,而不是任务列表标记"
         );
         assert_eq!(checkbox_cells, vec!["[x]", "[ ]"]);
     }
@@ -1525,7 +1525,7 @@ mod tests {
                 .events
                 .iter()
                 .any(|(range, event)| range == &(1..5) && event == &Code),
-            "expected escaped pipe outside a table to remain normal inline code: {:?}",
+            "表格外的转义管道符应保持为普通内联代码: {:?}",
             parsed.events
         );
     }
@@ -1700,7 +1700,7 @@ mod tests {
         let second = parsed.heading_slugs.get("duplicate-1").copied();
         assert!(first.is_some());
         assert!(second.is_some());
-        assert!(first.expect("first slug missing") < second.expect("second slug missing"));
+        assert!(first.expect("第一个锚点缺失") < second.expect("第二个锚点缺失"));
     }
 
     #[test]
@@ -1760,10 +1760,10 @@ mod tests {
             let has_empty_substituted_text = parsed.events.iter().any(|(_, event)| {
                 matches!(event, MarkdownEvent::SubstitutedText(text) if text.is_empty())
             });
-            assert!(has_hard_break, "<br> in \"{input}\" should emit HardBreak");
+            assert!(has_hard_break, "\"{input}\" 中的 <br> 应发出 HardBreak");
             assert!(
                 !has_empty_substituted_text,
-                "<br> in \"{input}\" should not produce empty SubstitutedText"
+                "\"{input}\" 中的 <br> 不应产生空的 SubstitutedText"
             );
         }
     }
@@ -1782,11 +1782,11 @@ mod tests {
                 .any(|(_, event)| matches!(event, MarkdownEvent::InlineHtml));
             assert!(
                 !has_hard_break,
-                "<br> in \"{input}\" should not emit HardBreak when parse_html is disabled"
+                "当 parse_html 禁用时,\"{input}\" 中的 <br> 不应发出 HardBreak"
             );
             assert!(
                 has_inline_html,
-                "<br> in \"{input}\" should be preserved as InlineHtml when parse_html is disabled"
+                "当 parse_html 禁用时,\"{input}\" 中的 <br> 应保留为 InlineHtml"
             );
         }
     }
@@ -1801,7 +1801,7 @@ mod tests {
                 .any(|(_, event)| matches!(event, MarkdownEvent::HardBreak));
             assert!(
                 !has_hard_break,
-                "\"{input}\" should not be treated as a <br> hard break"
+                "\"{input}\" 不应被视为 <br> 硬换行"
             );
         }
     }
@@ -1820,11 +1820,11 @@ mod tests {
                 .any(|(_, event)| matches!(event, MarkdownEvent::HardBreak));
             assert!(
                 has_inline_html,
-                "unrecognized inline HTML \"{input}\" should emit InlineHtml"
+                "无法识别的内联 HTML \"{input}\" 应发出 InlineHtml"
             );
             assert!(
                 !has_hard_break,
-                "unrecognized inline HTML \"{input}\" should not emit HardBreak"
+                "无法识别的内联 HTML \"{input}\" 不应发出 HardBreak"
             );
         }
     }

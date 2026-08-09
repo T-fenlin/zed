@@ -81,7 +81,7 @@ impl TestDb {
         let mut db = runtime.block_on(async {
             sqlx::Postgres::create_database(&url)
                 .await
-                .expect("failed to create test db");
+                .expect("创建测试数据库失败");
             let mut options = ConnectOptions::new(url);
             options
                 .max_connections(5)

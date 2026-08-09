@@ -2205,20 +2205,20 @@ impl Editor {
             if action.language.is_none() && action.name.is_none() {
                 Snippet::parse(snippet_body)?
             } else {
-                bail!("`snippet` is mutually exclusive with `language` and `name`")
+                bail!("`代码片段` 与 `language` 和 `name` 互斥")
             }
         } else if let Some(name) = &action.name {
-            let project = self.project().context("no project")?;
+            let project = self.project().context("没有项目")?;
             let snippet_store = project.read(cx).snippets().read(cx);
             let snippet = snippet_store
                 .snippets_for(action.language.clone(), cx)
                 .into_iter()
                 .find(|snippet| snippet.name == *name)
-                .context("snippet not found")?;
+                .context("未找到代码片段")?;
             Snippet::parse(&snippet.body)?
         } else {
             // todo(andrew): open modal to select snippet
-            bail!("`name` or `snippet` is required")
+            bail!("必须提供 `name` 或 `代码片段`")
         };
 
         self.insert_snippet(&insertion_ranges, snippet, window, cx)

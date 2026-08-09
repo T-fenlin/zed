@@ -54,7 +54,7 @@ pub fn provider_compaction_encrypted_content(
     }
     if state.format() != COMPACTION_STATE_FORMAT {
         return Err(anyhow!(
-            "unsupported Anthropic compaction state format: {}",
+            "不支持的 Anthropic 压缩状态格式: {}",
             state.format()
         ));
     }
@@ -169,7 +169,7 @@ fn to_anthropic_content(
                 cache_control: None,
             })),
             LanguageModelToolUseInput::Text(_) => Err(anyhow::anyhow!(
-                "Anthropic does not support custom tool calls"
+                "Anthropic 不支持自定义工具调用"
             )),
         },
         MessageContent::ToolResult(tool_result) => {
@@ -255,7 +255,7 @@ pub fn into_anthropic(
                 let anthropic_role = match message.role {
                     Role::User => crate::Role::User,
                     Role::Assistant => crate::Role::Assistant,
-                    Role::System => unreachable!("System role should never occur here"),
+                    Role::System => unreachable!("系统角色不应出现在此处"),
                 };
                 if anthropic_message_content.is_empty() {
                     continue;
@@ -331,7 +331,7 @@ pub fn into_anthropic(
                 cache_control: None,
             }),
             LanguageModelRequestToolInput::Custom { .. } => {
-                Err(anyhow::anyhow!("Anthropic does not support custom tools"))
+                Err(anyhow::anyhow!("Anthropic 不支持自定义工具"))
             }
         })
         .collect::<Result<_>>()?;
@@ -540,7 +540,7 @@ impl AnthropicEventMapper {
                 } => {
                     let Some(compaction) = self.compactions_by_index.get_mut(&index) else {
                         return vec![Err(LanguageModelCompletionError::Other(anyhow::anyhow!(
-                            "Anthropic streamed a compaction delta before starting its content block"
+                            "Anthropic 在开始其内容块之前流式传输了压缩增量"
                         )))];
                     };
                     // Unlike summary text, `encrypted_content` arrives whole:
@@ -657,7 +657,7 @@ impl AnthropicEventMapper {
                         "tool_use" => StopReason::ToolUse,
                         "refusal" => StopReason::Refusal,
                         _ => {
-                            log::error!("Unexpected anthropic stop_reason: {stop_reason}");
+                            log::error!("意外的 Anthropic 停止原因: {stop_reason}");
                             StopReason::EndTurn
                         }
                     };
@@ -675,7 +675,7 @@ impl AnthropicEventMapper {
                 if !self.compactions_by_index.is_empty() {
                     self.compactions_by_index.clear();
                     return vec![Err(LanguageModelCompletionError::Other(anyhow::anyhow!(
-                        "Anthropic ended the stream without finishing its compaction summary"
+                        "Anthropic 在未完成其压缩摘要的情况下结束了流"
                     )))];
                 }
                 vec![Ok(LanguageModelCompletionEvent::Stop(self.stop_reason))]
@@ -802,7 +802,7 @@ mod tests {
             };
             assert!(
                 cache_control.is_none(),
-                "message content blocks should no longer be individually marked",
+                "消息内容块不应再被单独标记",
             );
         }
 
@@ -832,7 +832,7 @@ mod tests {
                     }
                 ));
             }
-            other => panic!("expected system content array, got {other:?}"),
+            other => panic!("预期系统内容数组,实际为 {other:?}"),
         }
 
         // The last (and only) tool carries a long-TTL breakpoint.
@@ -1009,18 +1009,18 @@ mod tests {
             if expects_explicit_opt_out {
                 assert!(
                     matches!(anthropic_request.thinking, Some(Thinking::Disabled)),
-                    "{model} should send an explicit thinking opt-out"
+                    "{model} 应发送显式的思考退出指令"
                 );
                 // `disabled` combined with effort `xhigh`/`max` is a 400, so
                 // no effort may accompany the opt-out.
                 assert!(
                     anthropic_request.output_config.is_none(),
-                    "{model} must not send output_config with thinking disabled"
+                    "{model} 在思考被禁用时不得发送 output_config"
                 );
             } else {
                 assert!(
                     anthropic_request.thinking.is_none(),
-                    "{model} should omit the thinking field entirely"
+                    "{model} 应完全省略思考字段"
                 );
             }
         }
@@ -1124,26 +1124,26 @@ mod tests {
     fn test_unsigned_thinking_blocks_stripped() {
         let result = request_with_assistant_content(vec![
             MessageContent::Thinking {
-                text: "Cancelled mid-think, no signature".to_string(),
+                text: "思考中途取消,无签名".to_string(),
                 signature: None,
             },
-            MessageContent::Text("Some response text".to_string()),
+            MessageContent::Text("一些响应文本".to_string()),
         ]);
 
         let assistant_message = result
             .messages
             .iter()
             .find(|m| m.role == crate::Role::Assistant)
-            .expect("assistant message should still exist");
+            .expect("助手消息应仍然存在");
 
         assert_eq!(
             assistant_message.content.len(),
             1,
-            "Only the text content should remain; unsigned thinking block should be stripped"
+            "应仅保留文本内容;未签名的思考块应被移除"
         );
         assert!(matches!(
             &assistant_message.content[0],
-            RequestContent::Text { text, .. } if text == "Some response text"
+            RequestContent::Text { text, .. } if text == "一些响应文本"
         ));
     }
 
@@ -1151,34 +1151,34 @@ mod tests {
     fn test_signed_thinking_blocks_preserved() {
         let result = request_with_assistant_content(vec![
             MessageContent::Thinking {
-                text: "Completed thinking".to_string(),
+                text: "思考完成".to_string(),
                 signature: Some("valid-signature".to_string()),
             },
-            MessageContent::Text("Response".to_string()),
+            MessageContent::Text("响应".to_string()),
         ]);
 
         let assistant_message = result
             .messages
             .iter()
             .find(|m| m.role == crate::Role::Assistant)
-            .expect("assistant message should exist");
+            .expect("助手消息应存在");
 
         assert_eq!(
             assistant_message.content.len(),
             2,
-            "Both the signed thinking block and text should be preserved"
+            "已签名的思考块和文本都应保留"
         );
         assert!(matches!(
             &assistant_message.content[0],
             RequestContent::Thinking { thinking, signature, .. }
-                if thinking == "Completed thinking" && signature == "valid-signature"
+                if thinking == "思考完成" && signature == "valid-signature"
         ));
     }
 
     #[test]
     fn test_only_unsigned_thinking_block_omits_entire_message() {
         let result = request_with_assistant_content(vec![MessageContent::Thinking {
-            text: "Cancelled before any text or signature".to_string(),
+            text: "在任何文本或签名之前取消".to_string(),
             signature: None,
         }]);
 
@@ -1234,7 +1234,7 @@ mod tests {
     #[test]
     fn test_no_context_management_without_compact_at_tokens() {
         let result =
-            request_with_assistant_content(vec![MessageContent::Text("Response".to_string())]);
+            request_with_assistant_content(vec![MessageContent::Text("响应".to_string())]);
 
         assert!(result.context_management.is_none());
     }
@@ -1243,23 +1243,23 @@ mod tests {
     fn test_compaction_content_replayed_as_compaction_block() {
         let result = request_with_assistant_content(vec![
             MessageContent::Compaction(CompactedContext::Summary {
-                content: "Summary of the conversation so far.".into(),
+                content: "到目前为止的对话摘要。".into(),
                 provider_state: None,
             }),
-            MessageContent::Text("Response".to_string()),
+            MessageContent::Text("响应".to_string()),
         ]);
 
         let assistant_message = result
             .messages
             .iter()
             .find(|m| m.role == crate::Role::Assistant)
-            .expect("assistant message should exist");
+            .expect("助手消息应存在");
 
         assert_eq!(
             serde_json::to_value(&assistant_message.content[0]).unwrap(),
             serde_json::json!({
                 "type": "compaction",
-                "content": "Summary of the conversation so far."
+                "content": "到目前为止的对话摘要。"
             })
         );
     }
@@ -1268,7 +1268,7 @@ mod tests {
     fn test_compaction_encrypted_content_replayed_only_for_owning_backend() {
         let summary_owned_by = |owner: LanguageModelProviderId| {
             MessageContent::Compaction(CompactedContext::Summary {
-                content: "Summary of the conversation so far.".into(),
+                content: "到目前为止的对话摘要。".into(),
                 provider_state: Some(provider_compaction_state_from_encrypted_content(
                     owner,
                     "opaque-compaction-payload",
@@ -1281,12 +1281,12 @@ mod tests {
             &ANTHROPIC_PROVIDER_ID,
         )
         .unwrap()
-        .expect("compaction block should be produced");
+        .expect("应生成压缩块");
         assert_eq!(
             serde_json::to_value(&owned).unwrap(),
             serde_json::json!({
                 "type": "compaction",
-                "content": "Summary of the conversation so far.",
+                "content": "到目前为止的对话摘要。",
                 "encrypted_content": "opaque-compaction-payload"
             })
         );
@@ -1299,12 +1299,12 @@ mod tests {
             &ANTHROPIC_PROVIDER_ID,
         )
         .unwrap()
-        .expect("compaction block should be produced");
+        .expect("应生成压缩块");
         assert_eq!(
             serde_json::to_value(&foreign).unwrap(),
             serde_json::json!({
                 "type": "compaction",
-                "content": "Summary of the conversation so far."
+                "content": "到目前为止的对话摘要。"
             })
         );
     }
@@ -1316,13 +1316,13 @@ mod tests {
         let start_event: Event = serde_json::from_value(serde_json::json!({
             "type": "content_block_start",
             "index": 0,
-            "content_block": { "type": "compaction", "content": "Summary " }
+            "content_block": { "type": "compaction", "content": "摘要 " }
         }))
         .unwrap();
         let delta_event: Event = serde_json::from_value(serde_json::json!({
             "type": "content_block_delta",
             "index": 0,
-            "delta": { "type": "compaction_delta", "content": "in " }
+            "delta": { "type": "compaction_delta", "content": "在 " }
         }))
         .unwrap();
         let second_delta_event: Event = serde_json::from_value(serde_json::json!({
@@ -1345,24 +1345,24 @@ mod tests {
         let events = events
             .into_iter()
             .collect::<Result<Vec<_>, _>>()
-            .expect("all events should map successfully");
+            .expect("所有事件都应成功映射");
 
         assert_eq!(
             events,
             vec![
                 LanguageModelCompletionEvent::Compaction(CompactionUpdate::Started),
                 LanguageModelCompletionEvent::Compaction(CompactionUpdate::SummaryDelta(
-                    "Summary ".into()
+                    "摘要 ".into()
                 )),
                 LanguageModelCompletionEvent::Compaction(CompactionUpdate::SummaryDelta(
-                    "in ".into()
+                    "在 ".into()
                 )),
                 LanguageModelCompletionEvent::Compaction(CompactionUpdate::SummaryDelta(
                     "chunks".into()
                 )),
                 LanguageModelCompletionEvent::Compaction(CompactionUpdate::Finished(
                     CompactedContext::Summary {
-                        content: "Summary in chunks".into(),
+                        content: "分块摘要".into(),
                         provider_state: None,
                     }
                 )),
@@ -1388,7 +1388,7 @@ mod tests {
             "index": 0,
             "delta": {
                 "type": "compaction_delta",
-                "content": "Earlier conversation summarized.",
+                "content": "之前的对话已总结。",
                 "encrypted_content": "opaque-compaction-payload"
             }
         }))
@@ -1406,7 +1406,7 @@ mod tests {
         let mut events = events
             .into_iter()
             .collect::<Result<Vec<_>, _>>()
-            .expect("all events should map successfully");
+            .expect("所有事件都应成功映射");
 
         let Some(LanguageModelCompletionEvent::Compaction(CompactionUpdate::Finished(
             CompactedContext::Summary {
@@ -1415,9 +1415,9 @@ mod tests {
             },
         ))) = events.pop()
         else {
-            panic!("expected a finished summary carrying provider state");
+            panic!("预期一个携带提供者状态的已完成摘要");
         };
-        assert_eq!(content.as_ref(), "Earlier conversation summarized.");
+        assert_eq!(content.as_ref(), "之前的对话已总结。");
         assert_eq!(
             provider_compaction_encrypted_content(&state, &ANTHROPIC_PROVIDER_ID)
                 .unwrap()
@@ -1481,7 +1481,7 @@ mod tests {
         let delta_event: Event = serde_json::from_value(serde_json::json!({
             "type": "content_block_delta",
             "index": 0,
-            "delta": { "type": "compaction_delta", "content": "Summary chunk" }
+            "delta": { "type": "compaction_delta", "content": "摘要块" }
         }))
         .unwrap();
 
@@ -1490,7 +1490,7 @@ mod tests {
         assert!(
             error
                 .to_string()
-                .contains("compaction delta before starting")
+                .contains("开始前的压缩增量")
         );
     }
 
@@ -1500,7 +1500,7 @@ mod tests {
         let start_event: Event = serde_json::from_value(serde_json::json!({
             "type": "content_block_start",
             "index": 0,
-            "content_block": { "type": "compaction", "content": "Summary " }
+            "content_block": { "type": "compaction", "content": "摘要 " }
         }))
         .unwrap();
         let stop_event: Event = serde_json::from_value(serde_json::json!({
@@ -1518,7 +1518,7 @@ mod tests {
             vec![
                 LanguageModelCompletionEvent::Compaction(CompactionUpdate::Started),
                 LanguageModelCompletionEvent::Compaction(CompactionUpdate::SummaryDelta(
-                    "Summary ".into()
+                    "摘要 ".into()
                 )),
             ]
         );
@@ -1528,7 +1528,7 @@ mod tests {
         assert!(
             error
                 .to_string()
-                .contains("without finishing its compaction summary")
+                .contains("未完成其压缩摘要")
         );
     }
 
@@ -1549,9 +1549,9 @@ mod tests {
         .unwrap();
 
         let Event::MessageDelta { usage, .. } = event else {
-            panic!("expected message_delta event");
+            panic!("预期 message_delta 事件");
         };
-        let iterations = usage.iterations.as_deref().expect("iterations expected");
+        let iterations = usage.iterations.as_deref().expect("预期迭代次数");
         assert!(matches!(
             iterations[0],
             UsageIteration {

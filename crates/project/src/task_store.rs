@@ -71,7 +71,7 @@ impl TaskStore {
         let location = envelope
             .payload
             .location
-            .context("no location given for task context handling")?;
+            .context("处理任务上下文时未提供位置信息")?;
         let (buffer_store, is_remote) = store.read_with(&cx, |store, _| {
             Ok(match store {
                 TaskStore::Functional(state) => (
@@ -82,17 +82,17 @@ impl TaskStore {
                     },
                 ),
                 TaskStore::Noop => {
-                    anyhow::bail!("empty task store cannot handle task context requests")
+                    anyhow::bail!("空任务存储无法处理任务上下文请求")
                 }
             })
         })?;
         let buffer_store = buffer_store
             .upgrade()
-            .context("no buffer store when handling task context request")?;
+            .context("处理任务上下文请求时没有缓冲区存储")?;
 
         let buffer_id = BufferId::new(location.buffer_id).with_context(|| {
             format!(
-                "cannot handle task context request for invalid buffer id: {}",
+                "无法处理无效缓冲区 ID 的任务上下文请求: {}",
                 location.buffer_id
             )
         })?;
@@ -100,11 +100,11 @@ impl TaskStore {
         let start = location
             .start
             .and_then(deserialize_anchor)
-            .context("missing task context location start")?;
+            .context("缺少任务上下文位置的起始点")?;
         let end = location
             .end
             .and_then(deserialize_anchor)
-            .context("missing task context location end")?;
+            .context("缺少任务上下文位置的结束点")?;
         let buffer = buffer_store
             .update(&mut cx, |buffer_store, cx| {
                 if is_remote {
@@ -113,7 +113,7 @@ impl TaskStore {
                     Task::ready(
                         buffer_store
                             .get(buffer_id)
-                            .with_context(|| format!("no local buffer with id {buffer_id}")),
+                            .with_context(|| format!("没有 ID 为 {buffer_id} 的本地缓冲区")),
                     )
                 }
             })
@@ -411,7 +411,7 @@ fn remote_task_context_for_location(
                     |(variable_name, variable_value)| match variable_name.parse() {
                         Ok(variable_name) => Some((variable_name, variable_value)),
                         Err(()) => {
-                            log::error!("Unknown variable name: {variable_name}");
+                            log::error!("未知变量名: {variable_name}");
                             None
                         }
                     },
@@ -478,7 +478,7 @@ fn combine_task_variables(
                 )
             })
             .await
-            .context("building basic default context")?;
+            .context("正在构建基本默认上下文")?;
         captured_variables.extend(baseline);
         if let Some(provider) = language_context_provider {
             captured_variables.extend(

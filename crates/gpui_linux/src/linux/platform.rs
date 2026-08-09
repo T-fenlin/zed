@@ -44,7 +44,7 @@ pub(crate) const KEYRING_LABEL: &str = "zed-github-account";
 
 #[cfg(any(feature = "wayland", feature = "x11"))]
 const FILE_PICKER_PORTAL_MISSING: &str =
-    "Couldn't open file picker due to missing xdg-desktop-portal implementation.";
+    "由于缺少 xdg-desktop-portal 实现,无法打开文件选择器。";
 
 pub(crate) trait LinuxClient {
     fn compositor_name(&self) -> &'static str;
@@ -67,7 +67,7 @@ pub(crate) trait LinuxClient {
         let (sources_tx, sources_rx) = oneshot::channel();
         sources_tx
             .send(Err(anyhow::anyhow!(
-                "gpui_linux was compiled without the screen-capture feature"
+                "gpui_linux 在编译时未启用屏幕捕获功能"
             )))
             .ok();
         sources_rx
@@ -182,7 +182,7 @@ impl LinuxCommon {
                 let wake_sender = self.wake_sender.clone();
                 async move {
                     if let Err(error) = listen_for_system_wake(wake_sender).await {
-                        log::debug!("failed to listen for system wake events: {error:?}");
+                        log::debug!("监听系统唤醒事件失败:{error:?}");
                     }
                 }
             })
@@ -295,13 +295,13 @@ impl<P: LinuxClient + 'static> Platform for LinuxPlatform<P> {
             match self.app_path() {
                 Ok(path) => path,
                 Err(err) => {
-                    log::error!("Failed to get app path: {:?}", err);
+                    log::error!("获取应用路径失败:{:?}", err);
                     return;
                 }
             }
         };
 
-        log::info!("Restarting process, using app path: {:?}", app_path);
+        log::info!("正在重启进程,使用应用路径:{:?}", app_path);
 
         // Script to wait for the current process to exit and then restart the app.
         // Pass dynamic values as positional parameters to avoid shell interpolation issues.
@@ -328,24 +328,24 @@ impl<P: LinuxClient + 'static> Platform for LinuxPlatform<P> {
 
         match restart_process {
             Ok(_) => self.quit(),
-            Err(e) => log::error!("failed to spawn restart script: {:?}", e),
+            Err(e) => log::error!("无法生成重启脚本: {:?}", e),
         }
     }
 
     fn activate(&self, _ignoring_other_apps: bool) {
-        log::info!("activate is not implemented on Linux, ignoring the call")
+        log::info!("Linux 上未实现 activate,忽略该调用")
     }
 
     fn hide(&self) {
-        log::info!("hide is not implemented on Linux, ignoring the call")
+        log::info!("Linux 上未实现 hide,忽略该调用")
     }
 
     fn hide_other_apps(&self) {
-        log::info!("hide_other_apps is not implemented on Linux, ignoring the call")
+        log::info!("Linux 上未实现 hide_other_apps,忽略该调用")
     }
 
     fn unhide_other_apps(&self) {
-        log::info!("unhide_other_apps is not implemented on Linux, ignoring the call")
+        log::info!("Linux 上未实现 unhide_other_apps,忽略该调用")
     }
 
     fn primary_display(&self) -> Option<Rc<dyn PlatformDisplay>> {
@@ -409,9 +409,9 @@ impl<P: LinuxClient + 'static> Platform for LinuxPlatform<P> {
         self.foreground_executor()
             .spawn(async move {
                 let title = if options.directories {
-                    "Open Folder"
+                    "打开文件夹"
                 } else {
-                    "Open File"
+                    "打开文件"
                 };
 
                 let request = match ashpd::desktop::file_chooser::OpenFileRequest::default()
@@ -477,9 +477,9 @@ impl<P: LinuxClient + 'static> Platform for LinuxPlatform<P> {
                         ashpd::desktop::file_chooser::SaveFileRequest::default()
                             .identifier(identifier.await)
                             .modal(true)
-                            .title("Save File")
+                            .title("保存文件")
                             .current_folder(directory)
-                            .expect("pathbuf should not be nul terminated");
+                            .expect("pathbuf 不应以 nul 结尾");
 
                     if let Some(suggested_name) = suggested_name {
                         request_builder = request_builder.current_name(suggested_name.as_str());
@@ -517,7 +517,7 @@ impl<P: LinuxClient + 'static> Platform for LinuxPlatform<P> {
     }
 
     fn can_select_mixed_files_and_dirs(&self) -> bool {
-        // org.freedesktop.portal.FileChooser only supports "pick files" and "pick directories".
+        // org.freedesktop.portal.FileChooser only supports "选择文件" and "选择目录".
         false
     }
 
@@ -536,7 +536,7 @@ impl<P: LinuxClient + 'static> Platform for LinuxPlatform<P> {
                 new_std_command("xdg-open")
                     .arg(path)
                     .status()
-                    .context("invoking xdg-open")
+                    .context("正在调用 xdg-打开")
                     .log_err();
             })
             .detach();
@@ -629,7 +629,7 @@ impl<P: LinuxClient + 'static> Platform for LinuxPlatform<P> {
 
     fn path_for_auxiliary_executable(&self, _name: &str) -> Result<PathBuf> {
         Err(anyhow::Error::msg(
-            "Platform<LinuxPlatform>::path_for_auxiliary_executable is not implemented yet",
+            "Platform<LinuxPlatform>::path_for_auxiliary_executable 尚未实现",
         ))
     }
 
@@ -681,7 +681,7 @@ impl<P: LinuxClient + 'static> Platform for LinuxPlatform<P> {
                     let attributes = item.attributes().await?;
                     let username = attributes
                         .get("username")
-                        .context("Cannot find username in stored credentials")?;
+                        .context("在存储的凭据中找不到用户名")?;
                     item.unlock().await?;
                     let secret = item.secret().await?;
 
@@ -724,7 +724,7 @@ impl<P: LinuxClient + 'static> Platform for LinuxPlatform<P> {
     }
 
     fn register_url_scheme(&self, _: &str) -> Task<anyhow::Result<()>> {
-        Task::ready(Err(anyhow!("register_url_scheme unimplemented")))
+        Task::ready(Err(anyhow!("register_url_scheme 未实现")))
     }
 
     fn write_to_primary(&self, item: ClipboardItem) {
@@ -765,16 +765,16 @@ pub(super) fn open_uri_internal(
                         Ok(mut cmd) => match cmd.status().await {
                             Ok(status) if status.success() => return,
                             Ok(status) => {
-                                log::error!("Command {} exited with status: {}", program, status);
+                                log::error!("命令 {} 以状态 {} 退出", program, status);
                                 xdg_open_failed = true;
                             }
                             Err(e) => {
-                                log::error!("Failed to get status from {}: {}", program, e);
+                                log::error!("从 {} 获取状态失败:{}", program, e);
                                 xdg_open_failed = true;
                             }
                         },
                         Err(e) => {
-                            log::error!("Failed to open with {}: {}", program, e);
+                            log::error!("使用 {} 打开失败:{}", program, e);
                             xdg_open_failed = true;
                         }
                     }
@@ -790,7 +790,7 @@ pub(super) fn open_uri_internal(
                         Ok(()) => {}
                         Err(ashpd::Error::Response(ashpd::desktop::ResponseError::Cancelled)) => {}
                         Err(e) => {
-                            log::error!("Failed to open with dbus: {}", e);
+                            log::error!("使用 dbus 打开失败:{}", e);
                         }
                     }
                 }
@@ -814,7 +814,7 @@ pub(super) fn reveal_path_internal(
                     .await
                 {
                     Ok(_) => return,
-                    Err(e) => log::error!("Failed to open with dbus: {}", e),
+                    Err(e) => log::error!("使用 dbus 打开失败:{}", e),
                 }
                 if path.is_dir() {
                     open::that_detached(path).log_err();
@@ -881,7 +881,7 @@ pub(super) fn read_fd_with_timeout(
             Err(err) => return Err(err.into()),
         };
         if ready == 0 {
-            anyhow::bail!("timed out waiting for data on pipe after {timeout:?}");
+            anyhow::bail!("等待管道数据超时,超时时间:{timeout:?}");
         }
         match fd.read(&mut chunk) {
             Ok(0) => return Ok(buffer),
@@ -1228,7 +1228,7 @@ pub(super) fn compositor_gpu_hint_from_dev_t(dev: u64) -> Option<gpui_wgpu::Comp
     let device_id = read_sysfs_hex_id(&device_path)?;
 
     log::info!(
-        "Compositor GPU hint: vendor={:#06x}, device={:#06x} (from dev {major}:{minor})",
+        "合成器 GPU 提示:vendor={:#06x},device={:#06x}(来自 dev {major}:{minor})",
         vendor_id,
         device_id,
     );
@@ -1299,10 +1299,10 @@ mod tests {
 
             let err = result.unwrap_err();
             assert!(
-                err.to_string().contains("timed out"),
-                "unexpected error: {err}"
+                err.to_string().contains("超时"),
+                "意外错误:{err}"
             );
-            assert!(elapsed >= timeout, "returned before the timeout elapsed");
+            assert!(elapsed >= timeout, "在超时前返回");
         }
 
         #[test]
@@ -1313,8 +1313,8 @@ mod tests {
 
             let err = read_fd_with_timeout(pipe.read, Duration::from_millis(50)).unwrap_err();
             assert!(
-                err.to_string().contains("timed out"),
-                "unexpected error: {err}"
+                err.to_string().contains("超时"),
+                "意外错误:{err}"
             );
         }
 

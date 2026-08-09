@@ -91,7 +91,7 @@ mod tests {
 
         cx.read_entity(&a_value, |value, _| assert_eq!(value, "x"));
         cx.read_entity(&b_value, |value, _| {
-            assert_eq!(value, "", "typing in input A must not touch input B")
+            assert_eq!(value, "", "在输入框 A 中键入不得影响输入框 B")
         });
     }
 
@@ -114,7 +114,7 @@ mod tests {
 
         cx.read_entity(&a_value, |value, _| assert_eq!(value, "日本"));
         cx.read_entity(&editor, |editor, _| {
-            assert_eq!(editor.cursor, 3, "cursor must clamp to a char boundary");
+            assert_eq!(editor.cursor, 3, "光标必须限制在字符边界上");
         });
     }
 

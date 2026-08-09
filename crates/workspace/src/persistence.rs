@@ -102,7 +102,7 @@ impl sqlez::bindable::Column for SerializedAxis {
                 match axis_text.as_str() {
                     "Horizontal" => Self(Axis::Horizontal),
                     "Vertical" => Self(Axis::Vertical),
-                    _ => anyhow::bail!("Stored serialized item kind is incorrect"),
+                    _ => anyhow::bail!("存储的序列化项目类型不正确"),
                 },
                 next_index,
             ))
@@ -176,7 +176,7 @@ impl Column for SerializedWindowBounds {
             "Windowed" | "Fixed" => SerializedWindowBounds(WindowBounds::Windowed(bounds)),
             "Maximized" => SerializedWindowBounds(WindowBounds::Maximized(bounds)),
             "FullScreen" => SerializedWindowBounds(WindowBounds::Fullscreen(bounds)),
-            _ => bail!("Window State did not have a valid string"),
+            _ => bail!("窗口状态没有有效的字符串"),
         };
 
         Ok((status, next_index + 4))
@@ -419,7 +419,7 @@ impl Column for Bookmark {
     fn column(statement: &mut Statement, start_index: i32) -> Result<(Self, i32)> {
         let row = statement
             .column_int(start_index)
-            .with_context(|| format!("Failed to read bookmark at index {start_index}"))?
+            .with_context(|| format!("读取索引 {start_index} 处的书签失败"))?
             as u32;
 
         let (label, next_index) = String::column(statement, start_index + 1)?;
@@ -465,7 +465,7 @@ impl Column for BreakpointStateWrapper<'_> {
         match state {
             0 => Ok((BreakpointState::Enabled.into(), start_index + 1)),
             1 => Ok((BreakpointState::Disabled.into(), start_index + 1)),
-            _ => anyhow::bail!("Invalid BreakpointState discriminant {state}"),
+            _ => anyhow::bail!("无效的断点状态判别值 {state}"),
         }
     }
 }
@@ -498,7 +498,7 @@ impl Column for Breakpoint {
     fn column(statement: &mut Statement, start_index: i32) -> Result<(Self, i32)> {
         let position = statement
             .column_int(start_index)
-            .with_context(|| format!("Failed to read BreakPoint at index {start_index}"))?
+            .with_context(|| format!("读取索引 {start_index} 处的断点失败"))?
             as u32;
         let (message, next_index) = Option::<String>::column(statement, start_index + 1)?;
         let (condition, next_index) = Option::<String>::column(statement, next_index)?;
@@ -1158,7 +1158,7 @@ impl WorkspaceDb {
                     remote_connection_id.map(|id| id.0 as i32),
                 ))
             })
-            .context("No workspaces found")
+            .context("未找到工作区")
             .warn_on_err()
             .flatten()?;
 
@@ -1175,7 +1175,7 @@ impl WorkspaceDb {
 
         let remote_connection_options = if let Some(remote_connection_id) = remote_connection_id {
             self.remote_connection(remote_connection_id)
-                .context("Get remote connection")
+                .context("获取远程连接")
                 .log_err()
         } else {
             None
@@ -1191,7 +1191,7 @@ impl WorkspaceDb {
             identity_paths,
             center_group: self
                 .get_center_pane_group(workspace_id)
-                .context("Getting center group")
+                .context("获取中心分组")
                 .log_err()?,
             window_bounds,
             centered_layout: centered_layout.unwrap_or(false),
@@ -1261,7 +1261,7 @@ impl WorkspaceDb {
                 WHERE workspace_id = ?
             })
             .and_then(|mut prepared_statement| (prepared_statement)(workspace_id))
-            .context("No workspace found for id")
+            .context("未找到对应 ID 的工作区")
             .warn_on_err()
             .flatten()?;
 
@@ -1279,7 +1279,7 @@ impl WorkspaceDb {
         let remote_connection_id = remote_connection_id.map(|id| RemoteConnectionId(id as u64));
         let remote_connection_options = if let Some(remote_connection_id) = remote_connection_id {
             self.remote_connection(remote_connection_id)
-                .context("Get remote connection")
+                .context("获取远程连接")
                 .log_err()
         } else {
             None
@@ -1295,7 +1295,7 @@ impl WorkspaceDb {
             identity_paths,
             center_group: self
                 .get_center_pane_group(workspace_id)
-                .context("Getting center group")
+                .context("获取中心分组")
                 .log_err()?,
             window_bounds,
             centered_layout: centered_layout.unwrap_or(false),
@@ -1322,7 +1322,7 @@ impl WorkspaceDb {
         match bookmarks {
             Ok(bookmarks) => {
                 if bookmarks.is_empty() {
-                    log::debug!("Bookmarks are empty after querying database for them");
+                    log::debug!("从数据库查询后书签为空");
                 }
 
                 let mut map: BTreeMap<_, Vec<_>> = BTreeMap::default();
@@ -1340,7 +1340,7 @@ impl WorkspaceDb {
                 map
             }
             Err(e) => {
-                log::error!("Failed to load bookmarks: {}", e);
+                log::error!("加载书签失败:{}", e);
                 BTreeMap::default()
             }
         }
@@ -1358,7 +1358,7 @@ impl WorkspaceDb {
         match breakpoints {
             Ok(bp) => {
                 if bp.is_empty() {
-                    log::debug!("Breakpoints are empty after querying database for them");
+                    log::debug!("从数据库查询后断点为空");
                 }
 
                 let mut map: BTreeMap<Arc<Path>, Vec<SourceBreakpoint>> = Default::default();
@@ -1377,7 +1377,7 @@ impl WorkspaceDb {
 
                 for (path, bps) in map.iter() {
                     log::info!(
-                        "Got {} breakpoints from database at path: {}",
+                        "从数据库路径 {} 获取到 {} 个断点",
                         bps.len(),
                         path.to_string_lossy()
                     );
@@ -1386,7 +1386,7 @@ impl WorkspaceDb {
                 map
             }
             Err(msg) => {
-                log::error!("Breakpoints query failed with msg: {msg}");
+                log::error!("断点查询失败,消息:{msg}");
                 Default::default()
             }
         }
@@ -1468,7 +1468,7 @@ impl WorkspaceDb {
     pub(crate) async fn save_workspace(&self, workspace: SerializedWorkspace) {
         let paths = workspace.paths.serialize();
         let identity_paths = workspace.identity_paths.map(|paths| paths.serialize());
-        log::debug!("Saving workspace at location: {:?}", workspace.location);
+        log::debug!("正在保存位置 {:?} 处的工作区", workspace.location);
         self.write(move |conn| {
             conn.with_savepoint("update_worktrees", || {
                 let remote_connection_id = match workspace.location.clone() {
@@ -1485,20 +1485,20 @@ impl WorkspaceDb {
                 conn.exec_bound(sql!(
                     DELETE FROM pane_groups WHERE workspace_id = ?1;
                     DELETE FROM panes WHERE workspace_id = ?1;))?(workspace.id)
-                    .context("Clearing old panes")?;
+                    .context("正在清除旧窗格")?;
 
                 conn.exec_bound(
                     sql!(
                         DELETE FROM bookmarks WHERE workspace_id = ?1;
                     )
-                )?(workspace.id).context("Clearing old bookmarks")?;
+                )?(workspace.id).context("正在清除旧书签")?;
 
                 for (path, bookmarks) in workspace.bookmarks {
                     for bookmark in bookmarks {
                         conn.exec_bound(sql!(
                             INSERT INTO bookmarks (workspace_id, path, row, label)
                             VALUES (?1, ?2, ?3, ?4);
-                        ))?((workspace.id, path.as_ref(), bookmark.row, bookmark.label)).context("Inserting bookmark")?;
+                        ))?((workspace.id, path.as_ref(), bookmark.row, bookmark.label)).context("正在插入书签")?;
                     }
                 }
 
@@ -1506,7 +1506,7 @@ impl WorkspaceDb {
                     sql!(
                         DELETE FROM breakpoints WHERE workspace_id = ?1;
                     )
-                )?(workspace.id).context("Clearing old breakpoints")?;
+                )?(workspace.id).context("正在清除旧断点")?;
 
                 for (path, breakpoints) in workspace.breakpoints {
                     for bp in breakpoints {
@@ -1525,7 +1525,7 @@ impl WorkspaceDb {
                             state,
                         )) {
                             Ok(_) => {
-                                log::debug!("Stored breakpoint at row: {} in path: {}", bp.row, path.to_string_lossy())
+                                log::debug!("已在路径 {} 的第 {} 行存储断点", bp.row, path.to_string_lossy())
                             }
                             Err(err) => {
                                 log::error!("{err}");
@@ -1539,7 +1539,7 @@ impl WorkspaceDb {
                     sql!(
                         DELETE FROM user_toolchains WHERE workspace_id = ?1;
                     )
-                )?(workspace.id).context("Clearing old user toolchains")?;
+                )?(workspace.id).context("正在清除旧用户工具链")?;
 
                 for (scope, toolchains) in workspace.user_toolchains {
                     for toolchain in toolchains {
@@ -1574,7 +1574,7 @@ impl WorkspaceDb {
                         paths.paths.clone(),
                         remote_connection_id,
                     ))
-                    .context("clearing out old locations")?;
+                    .context("正在清除旧位置")?;
                 }
 
                 // Upsert
@@ -1633,11 +1633,11 @@ impl WorkspaceDb {
                     workspace.window_id,
                 );
 
-                prepared_query(args).context("Updating workspace")?;
+                prepared_query(args).context("正在更新工作区")?;
 
                 // Save center pane group
                 Self::save_pane_group(conn, workspace.id, &workspace.center_group, None)
-                    .context("save pane group in save workspace")?;
+                    .context("在保存工作区时保存窗格组")?;
 
                 Ok(())
             })
@@ -1784,7 +1784,7 @@ impl WorkspaceDb {
                 use_podman,
                 remote_env,
             ))?
-            .context("failed to insert remote project")?;
+            .context("插入远程项目失败")?;
             Ok(RemoteConnectionId(id))
         }
     }
@@ -1940,7 +1940,7 @@ impl WorkspaceDb {
                 FROM remote_connections
                 WHERE id = ?
             ))?(id.0)?
-            .context("no such remote connection")?;
+            .context("没有这样的远程连接")?;
         Self::remote_connection_from_row(
             kind,
             host,
@@ -1952,7 +1952,7 @@ impl WorkspaceDb {
             use_podman,
             remote_env,
         )
-        .context("invalid remote_connection row")
+        .context("无效的远程连接行")
     }
 
     fn remote_connection_from_row(
@@ -2301,7 +2301,7 @@ impl WorkspaceDb {
                     pinned_count,
                 )))
             } else {
-                bail!("Pane Group Child was neither a pane group or a pane");
+                bail!("窗格组子项既不是窗格组也不是窗格");
             }
         })
         // Filter out panes and pane groups which don't have any children or items
@@ -2320,7 +2320,7 @@ impl WorkspaceDb {
         parent: Option<(GroupId, usize)>,
     ) -> Result<()> {
         if parent.is_none() {
-            log::debug!("Saving a pane group for workspace {workspace_id:?}");
+            log::debug!("正在为工作区 {workspace_id:?} 保存窗格组");
         }
         match pane_group {
             SerializedPaneGroup::Group {
@@ -2351,7 +2351,7 @@ impl WorkspaceDb {
                     *axis,
                     flex_string,
                 ))?
-                .context("Couldn't retrieve group_id from inserted pane_group")?;
+                .context("无法从插入的窗格组中获取 group_id")?;
 
                 for (position, group) in children.iter().enumerate() {
                     Self::save_pane_group(conn, workspace_id, group, Some((group_id, position)))?
@@ -2377,7 +2377,7 @@ impl WorkspaceDb {
             VALUES (?, ?, ?)
             RETURNING pane_id
         ))?((workspace_id, pane.active, pane.pinned_count))?
-        .context("Could not retrieve inserted pane_id")?;
+        .context("无法获取插入的窗格 ID")?;
 
         let (parent_id, order) = parent.unzip();
         conn.exec_bound(sql!(
@@ -2385,7 +2385,7 @@ impl WorkspaceDb {
             VALUES (?, ?, ?)
         ))?((pane_id, parent_id, order))?;
 
-        Self::save_items(conn, workspace_id, pane_id, &pane.children).context("Saving items")?;
+        Self::save_items(conn, workspace_id, pane_id, &pane.children).context("正在保存项目")?;
 
         Ok(pane_id)
     }
@@ -2406,7 +2406,7 @@ impl WorkspaceDb {
     ) -> Result<()> {
         let mut insert = conn.exec_bound(sql!(
             INSERT INTO items(workspace_id, pane_id, position, kind, item_id, active, preview) VALUES (?, ?, ?, ?, ?, ?, ?)
-        )).context("Preparing insertion")?;
+        )).context("正在准备插入")?;
         for (position, item) in items.iter().enumerate() {
             insert((workspace_id, pane_id, position, item))?;
         }
@@ -2480,7 +2480,7 @@ impl WorkspaceDb {
                     FROM toolchains
                     WHERE workspace_id = ?
                 ))
-                .context("select toolchains")?;
+                .context("选择工具链")?;
 
             let toolchain: Vec<(String, String, String, String, String, String)> =
                 select(workspace_id)?;
@@ -2514,7 +2514,7 @@ impl WorkspaceDb {
         toolchain: Toolchain,
     ) -> Result<()> {
         log::debug!(
-            "Setting toolchain for workspace, worktree: {worktree_root_path:?}, relative path: {relative_worktree_path:?}, toolchain: {}",
+            "正在为工作区设置工具链,工作树:{worktree_root_path:?},相对路径:{relative_worktree_path:?},工具链:{}",
             toolchain.name
         );
         self.write(move |conn| {
@@ -2527,7 +2527,7 @@ impl WorkspaceDb {
                         path = ?6,
                         raw_json = ?7
                 ))
-                .context("Preparing insertion")?;
+                .context("正在准备插入")?;
 
             insert((
                 workspace_id,
@@ -2553,7 +2553,7 @@ impl WorkspaceDb {
 
         self.clear_trusted_worktrees()
             .await
-            .context("clearing previous trust state")?;
+            .context("正在清除先前的信任状态")?;
 
         let trusted_worktrees = trusted_worktrees
             .into_iter()
@@ -2612,7 +2612,7 @@ VALUES {placeholders};"#
                 statement.exec()
             })
             .await
-            .context("inserting new trusted state")?;
+            .context("正在插入新的信任状态")?;
         }
         Ok(())
     }
@@ -2842,7 +2842,7 @@ mod tests {
             let ws = mw
                 .workspaces()
                 .find(|ws| *ws != &active)
-                .expect("should have a non-active workspace");
+                .expect("应该有一个非活动的工作区");
             mw.remove([ws.clone()], RemovalIntent::CloseProject, _window, cx)
                 .detach_and_log_err(cx);
         });
@@ -2878,7 +2878,7 @@ mod tests {
 
         let log_breakpoint = Breakpoint {
             position: 456,
-            message: Some("Test log message".into()),
+            message: Some("测试日志消息".into()),
             state: BreakpointState::Enabled,
             condition: None,
             hit_condition: None,
@@ -3314,16 +3314,16 @@ mod tests {
                     vec![
                         SerializedPaneGroup::Pane(SerializedPane::new(
                             vec![
-                                SerializedItem::new("Terminal", 5, false, false),
-                                SerializedItem::new("Terminal", 6, true, false),
+                                SerializedItem::new("终端", 5, false, false),
+                                SerializedItem::new("终端", 6, true, false),
                             ],
                             false,
                             0,
                         )),
                         SerializedPaneGroup::Pane(SerializedPane::new(
                             vec![
-                                SerializedItem::new("Terminal", 7, true, false),
-                                SerializedItem::new("Terminal", 8, false, false),
+                                SerializedItem::new("终端", 7, true, false),
+                                SerializedItem::new("终端", 8, false, false),
                             ],
                             false,
                             0,
@@ -3332,8 +3332,8 @@ mod tests {
                 ),
                 SerializedPaneGroup::Pane(SerializedPane::new(
                     vec![
-                        SerializedItem::new("Terminal", 9, false, false),
-                        SerializedItem::new("Terminal", 10, true, false),
+                        SerializedItem::new("终端", 9, false, false),
+                        SerializedItem::new("终端", 10, true, false),
                     ],
                     false,
                     0,
@@ -3758,7 +3758,7 @@ mod tests {
         SerializedPaneGroup::Pane(SerializedPane::new(
             item_ids
                 .iter()
-                .map(|id| SerializedItem::new("Terminal", *id, true, false))
+                .map(|id| SerializedItem::new("终端", *id, true, false))
                 .collect(),
             true,
             0,
@@ -3858,7 +3858,7 @@ mod tests {
             recents
                 .iter()
                 .all(|workspace| workspace.workspace_id != WorkspaceId(1)),
-            "scratch-only workspace must not appear in the recent-projects UI"
+            "仅临时工作区不得出现在最近项目界面中"
         );
     }
 
@@ -3875,7 +3875,7 @@ mod tests {
             .unwrap();
         assert!(
             db.workspace_for_id(WorkspaceId(1)).is_some(),
-            "fresh stale workspace must not be deleted before the 7-day window"
+            "新的过期工作区在 7 天窗口期之前不得被删除"
         );
     }
 
@@ -3895,7 +3895,7 @@ mod tests {
             .unwrap();
         assert!(
             db.workspace_for_id(WorkspaceId(1)).is_none(),
-            "stale empty workspace older than the retention window must be deleted"
+            "超过保留窗口期的过期空工作区必须被删除"
         );
     }
 
@@ -3922,7 +3922,7 @@ mod tests {
             .unwrap();
         assert!(
             db.workspace_for_id(WorkspaceId(1)).is_some(),
-            "a stale workspace within the retention window must be kept"
+            "保留窗口期内的过期工作区必须保留"
         );
 
         db.set_timestamp_for_tests(WorkspaceId(1), "2000-01-01 00:00:00".to_owned())
@@ -3933,7 +3933,7 @@ mod tests {
             .unwrap();
         assert!(
             db.workspace_for_id(WorkspaceId(1)).is_none(),
-            "a stale workspace past the retention window must be deleted"
+            "超过保留窗口期的过期工作区必须被删除"
         );
     }
 
@@ -3961,15 +3961,15 @@ mod tests {
 
         assert!(
             db.workspace_for_id(WorkspaceId(1)).is_some(),
-            "GC must not delete workspaces belonging to the current session"
+            "GC 不得删除属于当前会话的工作区"
         );
         assert!(
             db.workspace_for_id(WorkspaceId(2)).is_some(),
-            "GC must not delete workspaces belonging to the last session"
+            "GC 不得删除属于上一会话的工作区"
         );
         assert!(
             db.workspace_for_id(WorkspaceId(3)).is_none(),
-            "GC should still delete stale workspaces from other sessions"
+            "GC 仍应删除来自其他会话的过期工作区"
         );
     }
 
@@ -3989,7 +3989,7 @@ mod tests {
             .unwrap();
         assert!(
             db.workspace_for_id(WorkspaceId(1)).is_none(),
-            "a stale empty-path workspace must be deleted regardless of its items"
+            "过期的空路径工作区无论其项目如何都必须被删除"
         );
     }
 
@@ -4017,7 +4017,7 @@ mod tests {
             .unwrap();
         assert!(
             sessions.is_empty(),
-            "workspaces whose paths no longer exist on disk must not restore"
+            "路径在磁盘上不再存在的工作区不得恢复"
         );
     }
 
@@ -4293,16 +4293,16 @@ mod tests {
                     vec![
                         SerializedPaneGroup::Pane(SerializedPane::new(
                             vec![
-                                SerializedItem::new("Terminal", 1, false, false),
-                                SerializedItem::new("Terminal", 2, true, false),
+                                SerializedItem::new("终端", 1, false, false),
+                                SerializedItem::new("终端", 2, true, false),
                             ],
                             false,
                             0,
                         )),
                         SerializedPaneGroup::Pane(SerializedPane::new(
                             vec![
-                                SerializedItem::new("Terminal", 4, false, false),
-                                SerializedItem::new("Terminal", 3, true, false),
+                                SerializedItem::new("终端", 4, false, false),
+                                SerializedItem::new("终端", 3, true, false),
                             ],
                             true,
                             0,
@@ -4311,8 +4311,8 @@ mod tests {
                 ),
                 SerializedPaneGroup::Pane(SerializedPane::new(
                     vec![
-                        SerializedItem::new("Terminal", 5, true, false),
-                        SerializedItem::new("Terminal", 6, false, false),
+                        SerializedItem::new("终端", 5, true, false),
+                        SerializedItem::new("终端", 6, false, false),
                     ],
                     false,
                     0,
@@ -4343,16 +4343,16 @@ mod tests {
                     vec![
                         SerializedPaneGroup::Pane(SerializedPane::new(
                             vec![
-                                SerializedItem::new("Terminal", 1, false, false),
-                                SerializedItem::new("Terminal", 2, true, false),
+                                SerializedItem::new("终端", 1, false, false),
+                                SerializedItem::new("终端", 2, true, false),
                             ],
                             false,
                             0,
                         )),
                         SerializedPaneGroup::Pane(SerializedPane::new(
                             vec![
-                                SerializedItem::new("Terminal", 4, false, false),
-                                SerializedItem::new("Terminal", 3, true, false),
+                                SerializedItem::new("终端", 4, false, false),
+                                SerializedItem::new("终端", 3, true, false),
                             ],
                             true,
                             0,
@@ -4361,8 +4361,8 @@ mod tests {
                 ),
                 SerializedPaneGroup::Pane(SerializedPane::new(
                     vec![
-                        SerializedItem::new("Terminal", 5, false, false),
-                        SerializedItem::new("Terminal", 6, true, false),
+                        SerializedItem::new("终端", 5, false, false),
+                        SerializedItem::new("终端", 6, true, false),
                     ],
                     false,
                     0,
@@ -4381,16 +4381,16 @@ mod tests {
             vec![
                 SerializedPaneGroup::Pane(SerializedPane::new(
                     vec![
-                        SerializedItem::new("Terminal", 1, false, false),
-                        SerializedItem::new("Terminal", 2, true, false),
+                        SerializedItem::new("终端", 1, false, false),
+                        SerializedItem::new("终端", 2, true, false),
                     ],
                     false,
                     0,
                 )),
                 SerializedPaneGroup::Pane(SerializedPane::new(
                     vec![
-                        SerializedItem::new("Terminal", 4, true, false),
-                        SerializedItem::new("Terminal", 3, false, false),
+                        SerializedItem::new("终端", 4, true, false),
+                        SerializedItem::new("终端", 3, false, false),
                     ],
                     true,
                     0,
@@ -4529,7 +4529,7 @@ mod tests {
         for session_workspace in &locations {
             assert!(
                 session_workspace.window_id.is_some(),
-                "workspace {:?} missing window_id",
+                "工作区 {:?} 缺少 window_id",
                 session_workspace.workspace_id
             );
         }
@@ -4549,7 +4549,7 @@ mod tests {
         assert_eq!(
             by_window.len(),
             3,
-            "Expected 3 window groups, got {}: {:?}",
+            "预期有 3 个窗口组,实际得到 {}:{:?}",
             by_window.len(),
             by_window
         );
@@ -4694,7 +4694,7 @@ mod tests {
         let serialized = db.workspace_for_id(workspace_id);
         assert!(
             serialized.is_some(),
-            "flush_serialization should have persisted the workspace to DB"
+            "flush_serialization 应该已将工作区持久化到数据库"
         );
     }
 
@@ -4729,14 +4729,14 @@ mod tests {
             multi_workspace.read_with(cx, |mw, cx| mw.workspace().read(cx).database_id());
         assert!(
             new_workspace_db_id.is_some(),
-            "New workspace should have a database_id after run_until_parked"
+            "运行 run_until_parked 后,新工作区应具有 database_id"
         );
 
         // The multi-workspace state should record it as the active workspace.
         let state = cx.update(|_, cx| read_multi_workspace_state(window_id, cx));
         assert_eq!(
             state.active_workspace_id, new_workspace_db_id,
-            "Serialized active_workspace_id should match the new workspace's database_id"
+            "序列化的 active_workspace_id 应与新工作区的 database_id 匹配"
         );
 
         // The individual workspace row should exist with real data
@@ -4746,7 +4746,7 @@ mod tests {
         let serialized = db.workspace_for_id(workspace_id);
         assert!(
             serialized.is_some(),
-            "Newly created workspace should be fully serialized in the DB after database_id assignment"
+            "分配 database_id 后,新创建的工作区应完全序列化到数据库中"
         );
     }
 
@@ -4805,7 +4805,7 @@ mod tests {
 
         assert!(
             db.workspace_for_id(workspace2_db_id).is_some(),
-            "Workspace2 should exist in DB before removal"
+            "移除前 Workspace2 应存在于数据库中"
         );
 
         // Remove workspace at index 1 (the second workspace).
@@ -4822,7 +4822,7 @@ mod tests {
         // restored as part of any future session.
         assert!(
             db.workspace_for_id(workspace2_db_id).is_some(),
-            "Removed workspace's DB row should be preserved for recent projects"
+            "已移除工作区的数据库行应保留以供最近项目使用"
         );
 
         let session_workspaces = db
@@ -4835,7 +4835,7 @@ mod tests {
             .collect();
         assert!(
             !restored_ids.contains(&workspace2_db_id),
-            "Removed workspace should not appear in session restoration"
+            "已移除的工作区不应出现在会话恢复中"
         );
     }
 
@@ -4936,12 +4936,12 @@ mod tests {
         let restored_ids: Vec<WorkspaceId> = locations.iter().map(|sw| sw.workspace_id).collect();
         assert!(
             !restored_ids.contains(&ws2_id),
-            "Removed workspace should not appear in session restoration list. Found: {:?}",
+            "已移除的工作区不应出现在会话恢复列表中。找到:{:?}",
             restored_ids
         );
         assert!(
             restored_ids.contains(&ws1_id),
-            "Remaining workspace should still appear in session restoration list"
+            "剩余的工作区仍应出现在会话恢复列表中"
         );
     }
 
@@ -5030,7 +5030,7 @@ mod tests {
         // binding should have been cleared by the pending removal task.
         assert!(
             db.workspace_for_id(workspace2_db_id).is_some(),
-            "Workspace row should be preserved for recent projects"
+            "工作区行应保留以供最近项目使用"
         );
 
         let session_workspaces = db
@@ -5043,7 +5043,7 @@ mod tests {
             .collect();
         assert!(
             !restored_ids.contains(&workspace2_db_id),
-            "Pending removal task should have cleared the session binding"
+            "待处理的移除任务应已清除会话绑定"
         );
     }
 
@@ -5069,7 +5069,7 @@ mod tests {
             multi_workspace.read_with(cx, |mw, cx| mw.workspace().read(cx).database_id());
         assert!(
             new_workspace_db_id.is_some(),
-            "After run_until_parked, the workspace should have a database_id"
+            "运行 run_until_parked 后,工作区应具有 database_id"
         );
 
         let workspace_id = new_workspace_db_id.unwrap();
@@ -5078,7 +5078,7 @@ mod tests {
 
         assert!(
             db.workspace_for_id(workspace_id).is_some(),
-            "The workspace row should exist in the DB"
+            "工作区行应存在于数据库中"
         );
 
         cx.simulate_resize(gpui::size(px(1024.0), px(768.0)));
@@ -5090,7 +5090,7 @@ mod tests {
 
         let serialized = db
             .workspace_for_id(workspace_id)
-            .expect("workspace row should still exist");
+            .expect("工作区行仍应存在");
         assert!(
             serialized.window_bounds.is_some(),
             "The bounds observer should write bounds for the workspace's real DB ID, \
@@ -5128,10 +5128,10 @@ mod tests {
 
         let after = db
             .workspace_for_id(workspace_id)
-            .expect("workspace row should exist after flush_serialization");
+            .expect("flush_serialization 后工作区行应存在");
         assert!(
             !after.paths.is_empty(),
-            "flush_serialization should have written paths via save_workspace"
+            "flush_serialization 应已通过 save_workspace 写入路径"
         );
         assert!(
             after.window_bounds.is_some(),
@@ -5715,7 +5715,7 @@ mod tests {
         let active_db_id = workspace_worktree.read_with(cx, |ws, _| ws.database_id());
         assert!(
             active_db_id.is_some(),
-            "Active workspace should have a database ID"
+            "活动工作区应具有数据库 ID"
         );
 
         // --- Phase 2: Read back and verify the serialized state ---
@@ -5727,10 +5727,10 @@ mod tests {
         let session_workspaces = db
             .last_session_workspace_locations(&session_id, None, fs.as_ref())
             .await
-            .expect("should load session workspaces");
+            .expect("应加载会话工作区");
         assert!(
             !session_workspaces.is_empty(),
-            "Should have at least one session workspace"
+            "应至少有一个会话工作区"
         );
 
         let multi_workspaces =
@@ -5738,7 +5738,7 @@ mod tests {
         assert_eq!(
             multi_workspaces.len(),
             1,
-            "All workspaces share one window, so there should be exactly one multi-workspace"
+            "所有工作区共享一个窗口,因此应恰好有一个多工作区"
         );
 
         let serialized = &multi_workspaces[0];
@@ -5763,7 +5763,7 @@ mod tests {
         ];
         assert_eq!(
             restored_keys, expected_keys,
-            "Deserialized project group keys should match the originals"
+            "反序列化的项目组键应与原始键匹配"
         );
 
         // --- Phase 3: Restore the window and verify the result ---
@@ -5779,7 +5779,7 @@ mod tests {
                 })
             })
             .await
-            .expect("restore_multiworkspace should succeed");
+            .expect("restore_multiworkspace 应成功");
 
         cx.run_until_parked();
 
@@ -5789,7 +5789,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             restored_keys, expected_keys,
-            "Restored window should have the same project group keys as the original"
+            "恢复的窗口应具有与原始窗口相同的项目组键"
         );
 
         // The active workspace in the restored window should have the linked
@@ -5807,7 +5807,7 @@ mod tests {
         assert_eq!(
             active_paths,
             vec![PathBuf::from("/worktree-feature")],
-            "The restored active workspace should be the linked worktree project"
+            "恢复的活动工作区应为链接的工作树项目"
         );
     }
 
@@ -5866,12 +5866,12 @@ mod tests {
                 .map(|p| p.to_path_buf())
                 .collect::<Vec<_>>(),
             vec![dir_a.clone()],
-            "After removing the middle group, should fall back to the group below (A)"
+            "移除中间组后,应回退到下方组 (A)"
         );
 
         // After removing B, keys = [A, C], sidebar = [C, A].
         // Activate workspace A (the bottom) so removing it tests the
-        // "fall back upward" path.
+        // "向上回退" path.
         let workspace_a =
             multi_workspace.read_with(cx, |mw, _cx| mw.workspaces().next().unwrap().clone());
         multi_workspace.update_in(cx, |mw, window, cx| {
@@ -5895,7 +5895,7 @@ mod tests {
                 .map(|p| p.to_path_buf())
                 .collect::<Vec<_>>(),
             vec![dir_c.clone()],
-            "After removing the bottom group, should fall back to the group above (C)"
+            "移除底部组后,应回退到上方组 (C)"
         );
 
         // --- Remove group C (the only one remaining). ---
@@ -5910,7 +5910,7 @@ mod tests {
             multi_workspace.read_with(cx, |mw, cx| mw.workspace().read(cx).root_paths(cx));
         assert!(
             active_paths.is_empty(),
-            "After removing the only remaining group, should have an empty workspace"
+            "移除唯一剩余的组后,应有一个空工作区"
         );
     }
 
@@ -5973,7 +5973,7 @@ mod tests {
             assert_eq!(
                 mw.workspace(),
                 &workspace_b,
-                "fallback should have found workspace_b, not the excluded workspace_a"
+                "回退应找到 workspace_b,而不是被排除的 workspace_a"
             );
         });
     }

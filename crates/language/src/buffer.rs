@@ -1014,11 +1014,11 @@ impl Buffer {
         message: proto::BufferState,
         file: Option<Arc<dyn File>>,
     ) -> Result<Self> {
-        let buffer_id = BufferId::new(message.id).context("Could not deserialize buffer_id")?;
+        let buffer_id = BufferId::new(message.id).context("无法反序列化 buffer_id")?;
         let buffer = TextBuffer::new(replica_id, buffer_id, message.base_text);
         let mut this = Self::build(buffer, file, capability);
         this.text.set_line_ending(proto::deserialize_line_ending(
-            rpc::proto::LineEnding::from_i32(message.line_ending).context("missing line_ending")?,
+            rpc::proto::LineEnding::from_i32(message.line_ending).context("缺少行尾符")?,
         ));
         this.saved_version = proto::deserialize_version(&message.saved_version);
         this.saved_mtime = message.saved_mtime.map(|time| time.into());
@@ -1347,7 +1347,7 @@ impl Buffer {
     /// be a branch buffer to call this method.
     pub fn merge_into_base(&mut self, ranges: Vec<Range<usize>>, cx: &mut Context<Self>) {
         let Some(base_buffer) = self.base_buffer() else {
-            debug_panic!("not a branch buffer");
+            debug_panic!("不是分支缓冲区");
             return;
         };
 
@@ -1615,7 +1615,7 @@ impl Buffer {
 
             anyhow::ensure!(
                 analyze_byte_content(&bytes) != ByteContent::Binary,
-                "Binary files are not supported"
+                "不支持二进制文件"
             );
 
             let is_unicode = target_encoding == encoding_rs::UTF_8
@@ -2323,7 +2323,7 @@ impl Buffer {
     /// When `modified_rows` is `None`, the whole buffer is considered: trailing whitespace and
     /// blank lines at the end of the file are collapsed into a single newline.
     ///
-    /// When `modified_rows` is `Some`, the operation is scoped to a "Format Selection": a single
+    /// When `modified_rows` is `Some`, the operation is scoped to a "格式化所选内容": a single
     /// newline is appended only when the last line is non-empty and its row falls within one of
     /// the ranges. Trailing blank lines are left intact so that formatting a selection cannot
     /// delete unselected rows.
@@ -3153,7 +3153,7 @@ impl Buffer {
     fn can_apply_op(&self, operation: &Operation) -> bool {
         match operation {
             Operation::Buffer(_) => {
-                unreachable!("buffer operations should never be applied at this layer")
+                unreachable!("缓冲区操作不应在此层应用")
             }
             Operation::UpdateDiagnostics {
                 diagnostics: diagnostic_set,
@@ -3172,7 +3172,7 @@ impl Buffer {
     fn apply_op(&mut self, operation: Operation, cx: &mut Context<Self>) {
         match operation {
             Operation::Buffer(_) => {
-                unreachable!("buffer operations should never be applied at this layer")
+                unreachable!("缓冲区操作不应在此层应用")
             }
             Operation::UpdateDiagnostics {
                 server_id,
@@ -3678,7 +3678,7 @@ impl BufferSnapshot {
                 grammar
                     .indents_config
                     .as_ref()
-                    .expect("grammar in indent match set has indents_config")
+                    .expect("缩进匹配集中的语法必须具有 indents_config")
             })
             .collect::<Vec<_>>();
 
@@ -5402,7 +5402,7 @@ impl<'a> BufferChunks<'a> {
                 // Seeking such BufferChunks is not supported.
                 debug_assert!(
                     false,
-                    "Attempted to seek on a language-aware buffer iterator without associated buffer snapshot"
+                    "尝试在没有关联缓冲区快照的情况下在语言感知缓冲区迭代器上执行 seek 操作"
                 );
             }
 
@@ -5601,7 +5601,7 @@ impl operation_queue::Operation for Operation {
     fn lamport_timestamp(&self) -> clock::Lamport {
         match self {
             Operation::Buffer(_) => {
-                unreachable!("buffer operations should never be deferred at this layer")
+                unreachable!("缓冲区操作不应在此层延迟")
             }
             Operation::UpdateDiagnostics {
                 lamport_timestamp, ..

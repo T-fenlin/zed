@@ -227,7 +227,7 @@ impl Render for CursorPosition {
                     .label_size(LabelSize::Small)
                     .tab_index(0isize)
                     .aria_label(format!(
-                        "Line {}, column {}",
+                        "第 {} 行,第 {} 列",
                         position.line, position.character
                     ))
                     .on_click(cx.listener(|this, _, window, cx| {
@@ -247,13 +247,13 @@ impl Render for CursorPosition {
                     }))
                     .tooltip(move |_window, cx| match context.as_ref() {
                         Some(context) => Tooltip::for_action_in(
-                            "Go to Line/Column",
+                            "转到行/列",
                             &editor::actions::ToggleGoToLine,
                             context,
                             cx,
                         ),
                         None => Tooltip::for_action(
-                            "Go to Line/Column",
+                            "转到行/列",
                             &editor::actions::ToggleGoToLine,
                             cx,
                         ),

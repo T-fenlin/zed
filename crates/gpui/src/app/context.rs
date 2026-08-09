@@ -50,7 +50,7 @@ impl<'a, T: 'static> Context<'a, T> {
     pub fn entity(&self) -> Entity<T> {
         self.weak_entity()
             .upgrade()
-            .expect("The entity must be alive if we have a entity context")
+            .expect("实体必须存在,因为我们持有实体上下文")
     }
 
     /// Returns a weak handle to the entity belonging to this context.
@@ -139,7 +139,7 @@ impl<'a, T: 'static> Context<'a, T> {
         let (subscription, activate) = self.app.release_listeners.insert(
             self.entity_state.entity_id,
             Box::new(move |this, cx| {
-                let this = this.downcast_mut().expect("invalid entity type");
+                let this = this.downcast_mut().expect("无效的实体类型");
                 on_release(this, cx);
             }),
         );
@@ -162,7 +162,7 @@ impl<'a, T: 'static> Context<'a, T> {
         let (subscription, activate) = self.app.release_listeners.insert(
             entity_id,
             Box::new(move |entity, cx| {
-                let entity = entity.downcast_mut().expect("invalid entity type");
+                let entity = entity.downcast_mut().expect("无效的实体类型");
                 if let Some(this) = this.upgrade() {
                     this.update(cx, |this, cx| on_release(this, entity, cx));
                 }
@@ -375,7 +375,7 @@ impl<'a, T: 'static> Context<'a, T> {
                     else {
                         return false;
                     };
-                    let event = event.downcast_ref().expect("invalid event type");
+                    let event = event.downcast_ref().expect("无效的事件类型");
                     cx.with_window(subscriber_id, |window, cx| {
                         subscriber.update(cx, |subscriber, cx| {
                             on_event(subscriber, &emitter, event, window, cx);

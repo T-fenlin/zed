@@ -667,11 +667,11 @@ mod tests {
         assert_eq!(
             full_counter.load(atomic::Ordering::Acquire),
             0,
-            "no semantic tokens should be requested before the capability is registered"
+            "在注册能力之前不应请求语义标记"
         );
         assert!(
             extract_semantic_highlights(&cx.editor, &cx).is_empty(),
-            "no semantic highlights before the capability is registered"
+            "在注册能力之前不应有语义高亮"
         );
 
         cx.lsp
@@ -706,19 +706,19 @@ mod tests {
             )
             .await
             .into_response()
-            .expect("register capability request failed");
+            .expect("注册能力请求失败");
 
         cx.executor().advance_clock(Duration::from_millis(200));
         cx.run_until_parked();
         assert!(
             full_counter.load(atomic::Ordering::Acquire) >= 1,
-            "dynamic registration should re-query semantic tokens for the open document"
+            "动态注册应重新查询打开文档的语义标记"
         );
 
         assert_eq!(
             extract_semantic_highlights(&cx.editor, &cx),
             vec![MultiBufferOffset(3)..MultiBufferOffset(7)],
-            "the open document should display semantic tokens after dynamic registration"
+            "动态注册后,打开的文档应显示语义标记"
         );
     }
 
@@ -1073,12 +1073,12 @@ mod tests {
                 workspace.open_path(toml_file, None, true, window, cx)
             })
             .await
-            .expect("Could not open test file");
+            .expect("无法打开测试文件");
 
         let editor = cx.update(|_, cx| {
             toml_item
                 .act_as::<Editor>(cx)
-                .expect("Opened test file wasn't an editor")
+                .expect("打开的文件不是编辑器")
         });
 
         editor.update_in(cx, |editor, window, cx| {
@@ -1316,12 +1316,12 @@ mod tests {
                 workspace.open_path(toml_file, None, true, window, cx)
             })
             .await
-            .expect("Could not open test file");
+            .expect("无法打开测试文件");
 
         let editor = cx.update(|_, cx| {
             toml_item
                 .act_as::<Editor>(cx)
-                .expect("Opened test file wasn't an editor")
+                .expect("打开的文件不是编辑器")
         });
 
         editor.update_in(cx, |editor, window, cx| {
@@ -1362,7 +1362,7 @@ mod tests {
                 Some(red_italic),
                 None,
             ],
-            "`toml2` is configured last, so it replaces `toml1` where they overlap and `toml1` resumes after"
+            "`toml2` 最后配置,因此它在重叠区域替换 `toml1`,`toml1` 在其后恢复"
         );
 
         cx.update(|_, cx| {
@@ -1390,7 +1390,7 @@ mod tests {
                 Some(red_italic),
                 None,
             ],
-            "`toml1` is configured last, so it replaces `toml2` across its entire range"
+            "`toml1` 最后配置,因此它在其整个范围内替换 `toml2`"
         );
     }
 
@@ -1575,17 +1575,17 @@ mod tests {
                 workspace.open_path(rust_file, None, true, window, cx),
             )
         });
-        let toml_item = toml_item.await.expect("Could not open test file");
-        let rust_item = rust_item.await.expect("Could not open test file");
+        let toml_item = toml_item.await.expect("无法打开测试文件");
+        let rust_item = rust_item.await.expect("无法打开测试文件");
 
         let (toml_editor, rust_editor) = cx.update(|_, cx| {
             (
                 toml_item
                     .act_as::<Editor>(cx)
-                    .expect("Opened test file wasn't an editor"),
+                    .expect("打开的文件不是编辑器"),
                 rust_item
                     .act_as::<Editor>(cx)
-                    .expect("Opened test file wasn't an editor"),
+                    .expect("打开的文件不是编辑器"),
             )
         });
         let toml_buffer = cx.read(|cx| {
@@ -1811,11 +1811,11 @@ mod tests {
                 workspace.open_path(bar_file, None, true, window, cx)
             })
             .await
-            .expect("Could not open bar.rs");
+            .expect("无法打开 bar.rs");
         let bar_editor = cx.update(|_, cx| {
             bar_item
                 .act_as::<Editor>(cx)
-                .expect("Opened test file wasn't an editor")
+                .expect("打开的文件不是编辑器")
         });
         let bar_buffer = cx.read(|cx| {
             bar_editor
@@ -1836,7 +1836,7 @@ mod tests {
 
         assert!(
             !extract_semantic_highlights(&bar_editor, &cx).is_empty(),
-            "bar.rs should have semantic tokens after initial open"
+            "bar.rs 在初始打开后应具有语义标记"
         );
 
         // Get foo.rs buffer directly from the project. No editor has ever
@@ -1845,7 +1845,7 @@ mod tests {
         let foo_buffer = project
             .update(cx, |project, cx| project.open_buffer(foo_file, cx))
             .await
-            .expect("Could not open foo.rs buffer");
+            .expect("无法打开 foo.rs 缓冲区");
 
         // Build a multibuffer with both files. The foo.rs excerpt covers a
         // range near the end of the file so that opening the singleton will
@@ -1929,12 +1929,12 @@ mod tests {
             workspace
                 .active_item(cx)
                 .and_then(|item| item.act_as::<Editor>(cx))
-                .expect("Active item should be an editor")
+                .expect("活动项应为编辑器")
         });
 
         assert!(
             active_editor.read_with(cx, |editor, cx| editor.buffer().read(cx).is_singleton()),
-            "Active editor should be a singleton buffer"
+            "活动编辑器应为单例缓冲区"
         );
 
         // Wait for semantic tokens on the singleton.
@@ -1946,7 +1946,7 @@ mod tests {
         let highlights = extract_semantic_highlights(&active_editor, &cx);
         assert!(
             !highlights.is_empty(),
-            "Singleton editor opened from multibuffer should have semantic tokens"
+            "从多缓冲区打开的单例编辑器应具有语义标记"
         );
     }
 
@@ -2034,10 +2034,10 @@ mod tests {
         assert_eq!(
             initial_ranges,
             vec![MultiBufferOffset(3)..MultiBufferOffset(7)],
-            "Should have initial semantic token highlights"
+            "应具有初始语义标记高亮"
         );
         let initial_styles = extract_semantic_highlight_styles(&cx.editor, &cx);
-        assert_eq!(initial_styles.len(), 1, "Should have one highlight style");
+        assert_eq!(initial_styles.len(), 1, "应具有一种高亮样式");
         // Initial color should be None or theme default (not red or blue)
         let initial_color = initial_styles[0].color;
 
@@ -2075,16 +2075,16 @@ mod tests {
         assert_eq!(
             styles_after_settings_change.len(),
             1,
-            "Should still have one highlight"
+            "应仍具有一种高亮"
         );
         assert_eq!(
             styles_after_settings_change[0].color,
             Some(Hsla::from(red_color)),
-            "Highlight should have the custom red color from settings.json"
+            "高亮应具有 设置.json 中的自定义红色"
         );
         assert_ne!(
             styles_after_settings_change[0].color, initial_color,
-            "Color should have changed from initial"
+            "颜色应从初始颜色改变"
         );
     }
 
@@ -2149,7 +2149,7 @@ mod tests {
         cx.run_until_parked();
 
         let initial_styles = extract_semantic_highlight_styles(&cx.editor, &cx);
-        assert_eq!(initial_styles.len(), 1, "Should have one highlight style");
+        assert_eq!(initial_styles.len(), 1, "应具有一种高亮样式");
         let initial_color = initial_styles[0].color;
 
         // Changing experimental_theme_overrides triggers GlobalTheme reload,
@@ -2188,11 +2188,11 @@ mod tests {
         assert_eq!(
             styles_after_override[0].color,
             Some(red_color),
-            "Highlight should have red color from theme override"
+            "高亮应具有来自主题覆盖的红色"
         );
         assert_ne!(
             styles_after_override[0].color, initial_color,
-            "Color should have changed from initial"
+            "颜色应从初始颜色改变"
         );
 
         // Changing the override to a different color also restyles.
@@ -2230,7 +2230,7 @@ mod tests {
         assert_eq!(
             styles_after_second_override[0].color,
             Some(blue_color),
-            "Highlight should have blue color from updated theme override"
+            "高亮应具有来自更新后主题覆盖的蓝色"
         );
 
         // Removing overrides reverts to the original theme color.
@@ -2249,7 +2249,7 @@ mod tests {
         assert_eq!(styles_after_clear.len(), 1);
         assert_eq!(
             styles_after_clear[0].color, initial_color,
-            "Highlight should revert to initial color after clearing overrides"
+            "清除覆盖后,高亮应恢复为初始颜色"
         );
     }
 
@@ -2315,7 +2315,7 @@ mod tests {
         cx.run_until_parked();
 
         let initial_styles = extract_semantic_highlight_styles(&cx.editor, &cx);
-        assert_eq!(initial_styles.len(), 1, "Should have one highlight style");
+        assert_eq!(initial_styles.len(), 1, "应具有一种高亮样式");
         let initial_color = initial_styles[0].color;
 
         // Per-theme overrides (theme_overrides keyed by theme name) also go through
@@ -2358,11 +2358,11 @@ mod tests {
         assert_eq!(
             styles_after_override[0].color,
             Some(green_color),
-            "Highlight should have green color from per-theme override"
+            "高亮应具有来自按主题覆盖的绿色"
         );
         assert_ne!(
             styles_after_override[0].color, initial_color,
-            "Color should have changed from initial"
+            "颜色应从初始颜色改变"
         );
     }
 
@@ -2425,7 +2425,7 @@ mod tests {
         assert_eq!(
             extract_semantic_highlights(&cx.editor, &cx),
             vec![MultiBufferOffset(3)..MultiBufferOffset(7)],
-            "Semantic tokens should be present before stopping the server"
+            "停止服务器前应存在语义标记"
         );
 
         cx.update_editor(|editor, _, cx| {
@@ -2440,7 +2440,7 @@ mod tests {
         assert_eq!(
             extract_semantic_highlights(&cx.editor, &cx),
             Vec::new(),
-            "Semantic tokens should be cleared after stopping the server"
+            "停止服务器后应清除语义标记"
         );
     }
 
@@ -2503,7 +2503,7 @@ mod tests {
         assert_eq!(
             extract_semantic_highlights(&cx.editor, &cx),
             vec![MultiBufferOffset(3)..MultiBufferOffset(7)],
-            "Semantic tokens should be present before disabling the setting"
+            "禁用设置前应存在语义标记"
         );
 
         update_test_language_settings(&mut cx, &|language_settings| {
@@ -2521,7 +2521,7 @@ mod tests {
         assert_eq!(
             extract_semantic_highlights(&cx.editor, &cx),
             Vec::new(),
-            "Semantic tokens should be cleared after disabling the setting"
+            "禁用设置后应清除语义标记"
         );
     }
 
@@ -2599,7 +2599,7 @@ mod tests {
 
         assert!(
             extract_semantic_highlights(&cx.editor, &cx).is_empty(),
-            "Highlighting should be disabled by empty style setting"
+            "空样式设置应禁用高亮"
         );
     }
 
@@ -2654,7 +2654,7 @@ mod tests {
         assert_eq!(
             extract_semantic_highlights(&cx.editor, &cx).len(),
             1,
-            "Documentation comment should be highlighted"
+            "文档注释应被高亮"
         );
 
         // Apply a BROAD empty rule for "comment" (no modifiers)
@@ -2680,7 +2680,7 @@ mod tests {
 
         assert!(
             extract_semantic_highlights(&cx.editor, &cx).is_empty(),
-            "Broad empty rule should disable specific documentation comment"
+            "宽泛的空规则应禁用特定的文档注释"
         );
     }
 
@@ -2743,7 +2743,7 @@ mod tests {
         assert_eq!(
             extract_semantic_highlights(&cx.editor, &cx).len(),
             2,
-            "Both documentation and normal comments should be highlighted initially"
+            "文档注释和普通注释最初都应被高亮"
         );
 
         // Apply a SPECIFIC empty rule for documentation only
@@ -2771,7 +2771,7 @@ mod tests {
         assert_eq!(
             extract_semantic_highlights(&cx.editor, &cx).len(),
             1,
-            "Normal comment should still be highlighted (matched by default rule)"
+            "普通注释仍应被高亮(由默认规则匹配)"
         );
     }
 
@@ -2844,7 +2844,7 @@ mod tests {
                         diagnostic: Diagnostic {
                             severity: lsp::DiagnosticSeverity::ERROR,
                             group_id: 1,
-                            message: "unused function".into(),
+                            message: "未使用的函数".into(),
                             ..Default::default()
                         },
                     }],
@@ -2894,7 +2894,7 @@ mod tests {
                         && style.is_some()
                 }
             ),
-            "expected 'main' chunk to have both diagnostic and semantic styling: {:?}",
+            "期望 'main' 块同时具有诊断和语义样式: {:?}",
             chunks
         );
     }

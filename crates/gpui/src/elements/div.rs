@@ -76,7 +76,7 @@ impl<T: 'static> DragMoveEvent<T> {
         cx.active_drag
             .as_ref()
             .and_then(|drag| drag.value.downcast_ref::<T>())
-            .expect("DragMoveEvent is only valid when the stored active drag is of the same type.")
+            .expect("DragMoveEvent 仅在存储的活动拖拽为相同类型时有效。")
     }
 
     /// An item that is about to be dropped.
@@ -603,7 +603,7 @@ impl Interactivity {
     {
         debug_assert!(
             self.drag_listener.is_none(),
-            "calling on_drag more than once on the same element is not supported"
+            "不支持在同一元素上多次调用 on_drag"
         );
         self.drag_listener = Some(DragListener {
             value: Arc::new(value),
@@ -626,16 +626,16 @@ impl Interactivity {
         T: 'static,
     {
         let Some(drag_listener) = self.drag_listener.as_mut() else {
-            debug_assert!(false, "external_drag_payload must be called after on_drag");
+            debug_assert!(false, "external_drag_payload 必须在 on_drag 之后调用");
             return;
         };
         debug_assert!(
             drag_listener.value.as_ref().type_id() == TypeId::of::<T>(),
-            "external_drag_payload must use the same dragged value type as on_drag"
+            "external_drag_payload 必须使用与 on_drag 相同的拖拽值类型"
         );
         debug_assert!(
             drag_listener.external_payload.is_none(),
-            "calling external_drag_payload more than once on the same element is not supported"
+            "不支持在同一元素上多次调用 external_drag_payload"
         );
         drag_listener.external_payload = Some(Box::new(move |value, window, cx| {
             resolver(value.downcast_ref::<T>()?, window, cx)
@@ -654,7 +654,7 @@ impl Interactivity {
     {
         debug_assert!(
             self.hover_listener.is_none(),
-            "calling on_hover more than once on the same element is not supported"
+            "不支持在同一元素上多次调用 on_hover"
         );
         self.hover_listener = Some(Box::new(listener));
     }
@@ -667,7 +667,7 @@ impl Interactivity {
     {
         debug_assert!(
             self.tooltip_builder.is_none(),
-            "calling tooltip more than once on the same element is not supported"
+            "不支持在同一元素上多次调用 tooltip"
         );
         self.tooltip_builder = Some(TooltipBuilder {
             build: Rc::new(build_tooltip),
@@ -686,7 +686,7 @@ impl Interactivity {
     {
         debug_assert!(
             self.tooltip_builder.is_none(),
-            "calling tooltip more than once on the same element is not supported"
+            "不支持在同一元素上多次调用 tooltip"
         );
         self.tooltip_builder = Some(TooltipBuilder {
             build: Rc::new(build_tooltip),
@@ -777,7 +777,7 @@ pub trait InteractiveElement: Sized {
         self
     }
 
-    /// Designate this div as a "tab group". Tab groups have their own location in the tab-index order,
+    /// Designate this div as a "标签页组". Tab groups have their own location in the tab-index order,
     /// but for children of the tab group, the tab index is reset to 0. This can be useful for swapping
     /// the order of tab stops within the group, without having to renumber all the tab stops in the whole
     /// application.
@@ -806,7 +806,7 @@ pub trait InteractiveElement: Sized {
     fn hover(mut self, f: impl FnOnce(StyleRefinement) -> StyleRefinement) -> Self {
         debug_assert!(
             self.interactivity().hover_style.is_none(),
-            "hover style already set"
+            "悬停样式已设置"
         );
         self.interactivity().hover_style = Some(Box::new(f(StyleRefinement::default())));
         self
@@ -1250,7 +1250,7 @@ pub trait StatefulInteractiveElement: InteractiveElement {
     fn role(mut self, role: accesskit::Role) -> Self {
         debug_assert!(
             role != accesskit::Role::GenericContainer,
-            "GenericContainer is filtered out of the a11y tree and has no effect"
+            "GenericContainer 已从无障碍树中过滤掉,不会产生任何效果"
         );
         self.interactivity().override_role = Some(role);
         self
@@ -2229,7 +2229,7 @@ impl Interactivity {
                     // whole window.
                     window
                         .a11y
-                        .note_focus_without_node(focus_handle.id, "it has no element id");
+                        .note_focus_without_node(focus_handle.id, "它没有元素 ID");
                 }
             }
         }
@@ -2597,7 +2597,7 @@ impl Interactivity {
                                     };
 
                                     eprintln!(
-                                        "This element was created at:\n{}:{}:{}",
+                                        "此元素创建于:\n{}:{}:{}",
                                         dir.join(source_location.file()).to_string_lossy(),
                                         source_location.line(),
                                         source_location.column()
@@ -2785,7 +2785,7 @@ impl Interactivity {
                                 let drag = cx
                                     .active_drag
                                     .take()
-                                    .expect("checked for type drag state type above");
+                                    .expect("已在上方检查拖拽状态类型");
 
                                 let mut can_drop = true;
                                 if let Some(predicate) = &can_drop_predicate {
@@ -4828,7 +4828,7 @@ mod tests {
         assert_eq!(
             *mouse_down_out_count.borrow(),
             1,
-            "mouse down outside the element should fire mouse-down-out listeners"
+            "在元素外部按下鼠标应触发 mouse-down-out 监听器"
         );
 
         test_app
@@ -4845,7 +4845,7 @@ mod tests {
         assert_eq!(
             *mouse_down_out_count.borrow(),
             1,
-            "mouse down over an active prompt should not fire mouse-down-out listeners"
+            "在活动提示词上按下鼠标不应触发 mouse-down-out 监听器"
         );
     }
 
@@ -4865,9 +4865,9 @@ mod tests {
     fn test_write_a11y_info_string_and_numeric_properties() {
         let mut interactivity = Interactivity::default();
         interactivity.aria.author_id = Some("settings.buffer-font-size".into());
-        interactivity.aria.label = Some("Buffer Font Size".into());
+        interactivity.aria.label = Some("缓冲区字体大小".into());
         interactivity.aria.value = Some("15".into());
-        interactivity.aria.placeholder = Some("Search".into());
+        interactivity.aria.placeholder = Some("搜索".into());
         interactivity.aria.numeric_value = Some(15.0);
         interactivity.aria.min_numeric_value = Some(6.0);
         interactivity.aria.max_numeric_value = Some(72.0);
@@ -4877,9 +4877,9 @@ mod tests {
         interactivity.write_a11y_info(&mut node);
 
         assert_eq!(node.author_id(), Some("settings.buffer-font-size"));
-        assert_eq!(node.label(), Some("Buffer Font Size"));
+        assert_eq!(node.label(), Some("缓冲区字体大小"));
         assert_eq!(node.value(), Some("15"));
-        assert_eq!(node.placeholder(), Some("Search"));
+        assert_eq!(node.placeholder(), Some("搜索"));
         assert_eq!(node.numeric_value(), Some(15.0));
         assert_eq!(node.min_numeric_value(), Some(6.0));
         assert_eq!(node.max_numeric_value(), Some(72.0));

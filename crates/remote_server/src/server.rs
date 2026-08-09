@@ -103,7 +103,7 @@ pub fn run(command: Commands) -> anyhow::Result<()> {
         Commands::Proxy {
             identifier,
             reconnect,
-        } => execute_proxy(identifier, reconnect).context("running proxy on the remote server"),
+        } => execute_proxy(identifier, reconnect).context("在远程服务器上运行代理"),
         Commands::Version => {
             let release_channel = *RELEASE_CHANNEL;
             match release_channel {
@@ -167,13 +167,13 @@ impl RotatingLogFile {
             .unwrap_or(false)
         {
             rotate_log_file(path, &rotated_log_path(path))
-                .context("failed to rotate existing remote server log")?;
+                .context("轮换现有远程服务器日志失败")?;
         }
 
-        let file = open_log_file(path).context("failed to open remote server log")?;
+        let file = open_log_file(path).context("打开远程服务器日志失败")?;
         let size_bytes = file
             .metadata()
-            .context("failed to read remote server log metadata")?
+            .context("读取远程服务器日志元数据失败")?
             .len();
 
         Ok(Self {
@@ -260,7 +260,7 @@ fn init_logging_server(log_file_path: &Path) -> Result<Receiver<Vec<u8>>> {
     }
 
     let log_file = RotatingLogFile::open(log_file_path)
-        .context("Failed to open rotating remote server log file")?;
+        .context("打开轮换的远程服务器日志文件失败")?;
 
     let (tx, rx) = async_channel::unbounded();
 
@@ -356,12 +356,12 @@ fn handle_crash_files_requests(project: &Entity<HeadlessProject>, client: &AnyPr
 
                     let file_contents = smol::fs::read_to_string(&child_path)
                         .await
-                        .context("error reading panic file")?;
+                        .context("读取 panic 文件时出错")?;
 
                     legacy_panics.push(file_contents);
                     smol::fs::remove_file(&child_path)
                         .await
-                        .context("error removing panic")
+                        .context("移除 panic 文件时出错")
                         .log_err();
                 } else if extension == Some(OsStr::new("dmp")) {
                     let mut json_path = child_path.clone();
@@ -374,7 +374,7 @@ fn handle_crash_files_requests(project: &Entity<HeadlessProject>, client: &AnyPr
                         smol::fs::remove_file(&child_path).await.log_err();
                         smol::fs::remove_file(&json_path).await.log_err();
                     } else {
-                        log::error!("Couldn't find json metadata for crash: {child_path:?}");
+                        log::error!("找不到崩溃的 json 元数据: {child_path:?}");
                     }
                 }
             }
@@ -393,9 +393,9 @@ struct ServerListeners {
 impl ServerListeners {
     pub fn new(stdin_path: PathBuf, stdout_path: PathBuf, stderr_path: PathBuf) -> Result<Self> {
         Ok(Self {
-            stdin: UnixListener::bind(stdin_path).context("failed to bind stdin socket")?,
-            stdout: UnixListener::bind(stdout_path).context("failed to bind stdout socket")?,
-            stderr: UnixListener::bind(stderr_path).context("failed to bind stderr socket")?,
+            stdin: UnixListener::bind(stdin_path).context("绑定 stdin 套接字失败")?,
+            stdout: UnixListener::bind(stdout_path).context("绑定 stdout 套接字失败")?,
+            stderr: UnixListener::bind(stderr_path).context("绑定 stderr 套接字失败")?,
         })
     }
 }
@@ -416,7 +416,7 @@ fn start_server(
     cx.on_app_quit(move |_| {
         let mut app_quit_tx = app_quit_tx.clone();
         async move {
-            log::info!("app quitting. sending signal to server main loop");
+            log::info!("应用退出,正在向服务器主循环发送信号");
             app_quit_tx.send(()).await.ok();
         }
     })
@@ -430,18 +430,18 @@ fn start_server(
                 listeners.stderr.accept(),
             );
 
-            log::info!("accepting new connections");
+            log::info!("正在接受新连接");
             let result = select! {
                 streams = streams.fuse() => {
                     let (Ok((stdin_stream, _)), Ok((stdout_stream, _)), Ok((stderr_stream, _))) = streams else {
-                        log::error!("failed to accept new connections");
+                        log::error!("接受新连接失败");
                         break;
                     };
-                    log::info!("accepted new connections");
+                    log::info!("已接受新连接");
                     anyhow::Ok((stdin_stream, stdout_stream, stderr_stream))
                 }
                 _ = futures::FutureExt::fuse(cx.background_executor().timer(IDLE_TIMEOUT)) => {
-                    log::warn!("timed out waiting for new connections after {:?}. exiting.", IDLE_TIMEOUT);
+                    log::warn!("等待新连接超时({:?})。正在退出。", IDLE_TIMEOUT);
                     cx.update(|cx| {
                         // TODO: This is a hack, because in a headless project, shutdown isn't executed
                         // when calling quit, but it should be.
@@ -451,7 +451,7 @@ fn start_server(
                     break;
                 }
                 _ = app_quit_rx.next().fuse() => {
-                    log::info!("app quit requested");
+                    log::info!("已请求退出应用");
                     break;
                 }
             };
@@ -469,12 +469,12 @@ fn start_server(
                     match read_message(&mut stdin_stream, &mut input_buffer).await {
                         Ok(msg) => {
                             if (stdin_msg_tx.send(msg).await).is_err() {
-                                log::info!("stdin message channel closed, stopping stdin reader");
+                                log::info!("stdin 消息通道已关闭,正在停止 stdin 读取器");
                                 break;
                             }
                         }
                         Err(error) => {
-                            log::warn!("stdin read failed: {error:?}");
+                            log::warn!("stdin 读取失败: {error:?}");
                             break;
                         }
                     }
@@ -490,29 +490,29 @@ fn start_server(
 
                     stdin_message = stdin_msg_rx.next().fuse() => {
                         let Some(message) = stdin_message else {
-                            log::warn!("error reading message on stdin, dropping connection.");
+                            log::warn!("读取 stdin 消息出错,正在断开连接。");
                             break;
                         };
                         if let Err(error) = incoming_tx.unbounded_send(message) {
-                            log::error!("failed to send message to application: {error:?}. exiting.");
+                            log::error!("向应用发送消息失败: {error:?}。正在退出。");
                             return Err(anyhow!(error));
                         }
                     }
 
                     outgoing_message  = outgoing_rx.next().fuse() => {
                         let Some(message) = outgoing_message else {
-                            log::error!("stdout handler, no message");
+                            log::error!("stdout 处理器,无消息");
                             break;
                         };
 
                         if let Err(error) =
                             write_message(&mut stdout_stream, &mut output_buffer, message).await
                         {
-                            log::error!("failed to write stdout message: {:?}", error);
+                            log::error!("写入 stdout 消息失败: {:?}", error);
                             break;
                         }
                         if let Err(error) = stdout_stream.flush().await {
-                            log::error!("failed to flush stdout message: {:?}", error);
+                            log::error!("刷新 stdout 消息失败: {:?}", error);
                             break;
                         }
                     }
@@ -520,11 +520,11 @@ fn start_server(
                     log_message = log_rx.recv().fuse() => {
                         if let Ok(log_message) = log_message {
                             if let Err(error) = stderr_stream.write_all(&log_message).await {
-                                log::error!("failed to write log message to stderr: {:?}", error);
+                                log::error!("向 stderr 写入日志消息失败: {:?}", error);
                                 break;
                             }
                             if let Err(error) = stderr_stream.flush().await {
-                                log::error!("failed to flush stderr stream: {:?}", error);
+                                log::error!("刷新 stderr 流失败: {:?}", error);
                                 break;
                             }
                         }
@@ -552,7 +552,7 @@ fn init_paths() -> anyhow::Result<()> {
     ]
     .iter()
     {
-        std::fs::create_dir_all(path).with_context(|| format!("creating directory {path:?}"))?;
+        std::fs::create_dir_all(path).with_context(|| format!("正在创建目录 {path:?}"))?;
     }
     Ok(())
 }
@@ -599,7 +599,7 @@ pub fn execute_run(
     };
     let log_rx = init_logging_server(&log_file)?;
     log::info!(
-        "starting up with PID {}:\npid_file: {:?}, log_file: {:?}, stdin_socket: {:?}, stdout_socket: {:?}, stderr_socket: {:?}",
+        "正在以 PID {} 启动:\npid_file: {:?}, log_file: {:?}, stdin_socket: {:?}, stdout_socket: {:?}, stderr_socket: {:?}",
         pid,
         pid_file,
         log_file,
@@ -609,7 +609,7 @@ pub fn execute_run(
     );
 
     write_pid_file(&pid_file, pid)
-        .with_context(|| format!("failed to write pid file: {:?}", &pid_file))?;
+        .with_context(|| format!("写入 pid 文件失败: {:?}", &pid_file))?;
 
     let listeners = ServerListeners::new(stdin_socket, stdout_socket, stderr_socket)?;
 
@@ -662,7 +662,7 @@ pub fn execute_run(
             false
         };
 
-        log::info!("gpui app started, initializing server");
+        log::info!("gpui 应用已启动,正在初始化服务器");
         let session = start_server(listeners, log_rx, cx, is_wsl_interop);
         init_telemetry_forwarding(session.clone(), cx);
         trusted_worktrees::init(HashMap::default(), cx);
@@ -694,7 +694,7 @@ pub fn execute_run(
                             std::env::consts::ARCH
                         ),
                     )
-                    .expect("Could not start HTTP client"),
+                    .expect("无法启动 HTTP 客户端"),
                 )
             };
 
@@ -735,23 +735,23 @@ pub fn execute_run(
     let run = std::panic::AssertUnwindSafe(run);
     let res = std::panic::catch_unwind(move || { app }.0.run({ run }.0));
     if let Err(_) = res {
-        log::error!("app panicked. quitting.");
+        log::error!("应用发生 panic。正在退出。");
         Err(anyhow::anyhow!("panicked"))
     } else {
-        log::info!("gpui app is shut down. quitting.");
+        log::info!("gpui 应用已关闭。正在退出。");
         Ok(())
     }
 }
 
 #[derive(Debug, Error)]
 pub enum ServerPathError {
-    #[error("Failed to create server_dir `{path}`")]
+    #[error("创建服务器目录 `{path}` 失败")]
     CreateServerDir {
         #[source]
         source: std::io::Error,
         path: PathBuf,
     },
-    #[error("Failed to create logs_dir `{path}`")]
+    #[error("创建日志目录 `{path}` 失败")]
     CreateLogsDir {
         #[source]
         source: std::io::Error,
@@ -801,30 +801,30 @@ impl ServerPaths {
 
 #[derive(Debug, Error)]
 pub enum ExecuteProxyError {
-    #[error("Failed to init server paths: {0:#}")]
+    #[error("初始化服务器路径失败: {0:#}")]
     ServerPath(#[from] ServerPathError),
 
     #[error(transparent)]
     ServerNotRunning(#[from] ProxyLaunchError),
 
-    #[error("Failed to check PidFile '{path}': {source:#}")]
+    #[error("检查 PidFile '{path}' 失败: {source:#}")]
     CheckPidFile {
         #[source]
         source: CheckPidError,
         path: PathBuf,
     },
 
-    #[error("Failed to kill existing server with pid '{pid}'")]
+    #[error("杀死 PID 为 '{pid}' 的现有服务器失败")]
     KillRunningServer { pid: u32 },
 
-    #[error("failed to spawn server")]
+    #[error("生成服务器进程失败")]
     SpawnServer(#[source] SpawnServerError),
 
-    #[error("stdin_task failed: {0:#}")]
+    #[error("stdin 任务失败: {0:#}")]
     StdinTask(#[source] anyhow::Error),
-    #[error("stdout_task failed: {0:#}")]
+    #[error("stdout 任务失败: {0:#}")]
     StdoutTask(#[source] anyhow::Error),
-    #[error("stderr_task failed: {0:#}")]
+    #[error("stderr 任务失败: {0:#}")]
     StderrTask(#[source] anyhow::Error),
 }
 
@@ -870,7 +870,7 @@ pub(crate) fn execute_proxy(
         ))
         .detach();
     };
-    log::info!("starting proxy process. PID: {}", std::process::id());
+    log::info!("正在启动代理进程。PID: {}", std::process::id());
     let server_pid = {
         let server_pid = check_pid_file(&server_paths.pid_file).map_err(|source| {
             ExecuteProxyError::CheckPidFile {
@@ -881,7 +881,7 @@ pub(crate) fn execute_proxy(
         if is_reconnecting {
             match server_pid {
                 None => {
-                    log::error!("attempted to reconnect, but no server running");
+                    log::error!("尝试重新连接,但没有服务器在运行");
                     return Err(ExecuteProxyError::ServerNotRunning(
                         ProxyLaunchError::ServerNotRunning,
                     ));
@@ -891,7 +891,7 @@ pub(crate) fn execute_proxy(
         } else {
             if let Some(pid) = server_pid {
                 log::info!(
-                    "proxy found server already running with PID {}. Killing process and cleaning up files...",
+                    "代理发现服务器已在运行,PID 为 {}。正在终止进程并清理文件...",
                     pid
                 );
                 kill_running_server(pid, &server_paths)?;
@@ -902,7 +902,7 @@ pub(crate) fn execute_proxy(
                     contents.parse::<u32>().map_err(|_| {
                         std::io::Error::new(
                             std::io::ErrorKind::InvalidData,
-                            "Invalid PID file contents",
+                            "PID 文件内容无效",
                         )
                     })
                 })
@@ -917,7 +917,7 @@ pub(crate) fn execute_proxy(
             .await
             .with_context(|| {
                 format!(
-                    "Failed to connect to stdin socket {}",
+                    "连接到 stdin 套接字 {} 失败",
                     server_paths.stdin_socket.display()
                 )
             })?;
@@ -930,7 +930,7 @@ pub(crate) fn execute_proxy(
             .await
             .with_context(|| {
                 format!(
-                    "Failed to connect to stdout socket {}",
+                    "连接到 stdout 套接字 {} 失败",
                     server_paths.stdout_socket.display()
                 )
             })?;
@@ -943,7 +943,7 @@ pub(crate) fn execute_proxy(
             .await
             .with_context(|| {
                 format!(
-                    "Failed to connect to stderr socket {}",
+                    "连接到 stderr 套接字 {} 失败",
                     server_paths.stderr_socket.display()
                 )
             })?;
@@ -952,11 +952,11 @@ pub(crate) fn execute_proxy(
             match stream
                 .read(&mut stderr_buffer)
                 .await
-                .context("reading stderr")?
+                .context("正在读取 stderr")?
             {
                 0 => {
                     let error =
-                        std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "stderr closed");
+                        std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "stderr 已关闭");
                     Err(anyhow!(error))?;
                 }
                 n => {
@@ -974,9 +974,9 @@ pub(crate) fn execute_proxy(
             result = stderr_task.fuse() => result.map_err(ExecuteProxyError::StderrTask),
         }
     }) {
-        log::error!("encountered error while forwarding messages: {forwarding_result:#}",);
+        log::error!("转发消息时遇到错误: {forwarding_result:#}",);
         if !matches!(gpui::block_on(check_server_running(server_pid)), Ok(true)) {
-            log::error!("server exited unexpectedly");
+            log::error!("服务器意外退出");
             return Err(ExecuteProxyError::ServerNotRunning(
                 ProxyLaunchError::ServerNotRunning,
             ));
@@ -988,7 +988,7 @@ pub(crate) fn execute_proxy(
 }
 
 fn kill_running_server(pid: u32, paths: &ServerPaths) -> Result<(), ExecuteProxyError> {
-    log::info!("killing existing server with PID {}", pid);
+    log::info!("正在终止 PID 为 {} 的现有服务器", pid);
     let system = sysinfo::System::new_with_specifics(
         sysinfo::RefreshKind::nothing().with_processes(sysinfo::ProcessRefreshKind::nothing()),
     );
@@ -1006,7 +1006,7 @@ fn kill_running_server(pid: u32, paths: &ServerPaths) -> Result<(), ExecuteProxy
         &paths.stdout_socket,
         &paths.stderr_socket,
     ] {
-        log::debug!("cleaning up file {:?} before starting new server", file);
+        log::debug!("启动新服务器前正在清理文件 {:?}", file);
         std::fs::remove_file(file).ok();
     }
 
@@ -1015,27 +1015,27 @@ fn kill_running_server(pid: u32, paths: &ServerPaths) -> Result<(), ExecuteProxy
 
 #[derive(Debug, Error)]
 pub enum SpawnServerError {
-    #[error("failed to remove stdin socket")]
+    #[error("移除 stdin 套接字失败")]
     RemoveStdinSocket(#[source] std::io::Error),
 
-    #[error("failed to remove stdout socket")]
+    #[error("移除 stdout 套接字失败")]
     RemoveStdoutSocket(#[source] std::io::Error),
 
-    #[error("failed to remove stderr socket")]
+    #[error("移除 stderr 套接字失败")]
     RemoveStderrSocket(#[source] std::io::Error),
 
-    #[error("failed to get current_exe")]
+    #[error("获取当前可执行文件失败")]
     CurrentExe(#[source] std::io::Error),
 
-    #[error("failed to launch server process")]
+    #[error("启动服务器进程失败")]
     ProcessStatus(#[source] std::io::Error),
 
-    #[error("failed to wait for server to be ready to accept connections")]
+    #[error("等待服务器准备好接受连接失败")]
     Timeout,
 }
 
 async fn spawn_server(paths: &ServerPaths) -> Result<(), SpawnServerError> {
-    log::info!("spawning server process",);
+    log::info!("正在生成服务器进程",);
     if paths.stdin_socket.exists() {
         std::fs::remove_file(&paths.stdin_socket).map_err(SpawnServerError::RemoveStdinSocket)?;
     }
@@ -1064,7 +1064,7 @@ async fn spawn_server(paths: &ServerPaths) -> Result<(), SpawnServerError> {
         || !paths.stdin_socket.exists()
         || !paths.stderr_socket.exists()
     {
-        log::debug!("waiting for server to be ready to accept connections...");
+        log::debug!("正在等待服务器准备好接受连接...");
         std::thread::sleep(wait_duration);
         total_time_waited += wait_duration;
         if total_time_waited > std::time::Duration::from_secs(10) {
@@ -1073,7 +1073,7 @@ async fn spawn_server(paths: &ServerPaths) -> Result<(), SpawnServerError> {
     }
 
     log::info!(
-        "server ready to accept connections. total time waited: {:?}",
+        "服务器已准备好接受连接。总等待时间: {:?}",
         total_time_waited
     );
 
@@ -1130,7 +1130,7 @@ fn spawn_server_normal(binary_name: &Path, paths: &ServerPaths) -> Result<(), Sp
 }
 
 #[derive(Debug, Error)]
-#[error("Failed to remove PID file for missing process (pid `{pid}`")]
+#[error("移除缺失进程(pid `{pid}`)的 PID 文件失败")]
 pub struct CheckPidError {
     #[source]
     source: std::io::Error,
@@ -1153,7 +1153,7 @@ fn check_pid_file(path: &Path) -> Result<Option<u32>, CheckPidError> {
         return Ok(None);
     };
 
-    log::debug!("Checking if process with PID {} exists...", pid);
+    log::debug!("正在检查 PID 为 {} 的进程是否存在...", pid);
 
     let system = sysinfo::System::new_with_specifics(
         sysinfo::RefreshKind::nothing().with_processes(sysinfo::ProcessRefreshKind::nothing()),
@@ -1161,12 +1161,12 @@ fn check_pid_file(path: &Path) -> Result<Option<u32>, CheckPidError> {
 
     if system.process(sysinfo::Pid::from_u32(pid)).is_some() {
         log::debug!(
-            "Process with PID {} exists. NOT spawning new server, but attaching to existing one.",
+            "PID 为 {} 的进程存在。不生成新服务器,而是附加到现有服务器。",
             pid
         );
         Ok(Some(pid))
     } else {
-        log::debug!("Found PID file, but process with that PID does not exist. Removing PID file.");
+        log::debug!("找到 PID 文件,但该 PID 对应的进程不存在。正在移除 PID 文件。");
         std::fs::remove_file(path).map_err(|source| CheckPidError { source, pid })?;
         Ok(None)
     }
@@ -1176,8 +1176,8 @@ fn write_pid_file(path: &Path, pid: u32) -> Result<()> {
     if path.exists() {
         std::fs::remove_file(path)?;
     }
-    log::debug!("writing PID {} to file {:?}", pid, path);
-    std::fs::write(path, pid.to_string()).context("Failed to write PID file")
+    log::debug!("正在将 PID {} 写入文件 {:?}", pid, path);
+    std::fs::write(path, pid.to_string()).context("写入 PID 文件失败")
 }
 
 async fn handle_io<R, W>(mut reader: R, mut writer: W, socket_name: &str) -> Result<()>
@@ -1191,10 +1191,10 @@ where
     loop {
         read_message_raw(&mut reader, &mut buffer)
             .await
-            .with_context(|| format!("failed to read message from {}", socket_name))?;
+            .with_context(|| format!("从 {} 读取消息失败", socket_name))?;
         write_size_prefixed_buffer(&mut writer, &mut buffer)
             .await
-            .with_context(|| format!("failed to write message to {}", socket_name))?;
+            .with_context(|| format!("向 {} 写入消息失败", socket_name))?;
         writer.flush().await?;
         buffer.clear();
     }
@@ -1211,14 +1211,14 @@ fn initialize_settings(
     handle_settings_file_changes(user_settings_file_rx, watcher_task, cx, {
         move |err, _cx| {
             if let Some(e) = err {
-                log::info!("Server settings failed to change: {}", e);
+                log::info!("服务器设置更改失败: {}", e);
 
                 session
                     .send(proto::Toast {
                         project_id: REMOTE_SERVER_PROJECT_ID,
                         notification_id: "server-settings-failed".to_string(),
                         message: format!(
-                            "Error in settings on remote host {:?}: {}",
+                            "远程主机 {:?} 上的设置出错: {}",
                             paths::settings_file(),
                             e
                         ),
@@ -1240,7 +1240,7 @@ fn initialize_settings(
     cx.observe_global::<SettingsStore>(move |cx| {
         let new_node_settings = &ProjectSettings::get_global(cx).node;
         if Some(new_node_settings) != node_settings.as_ref() {
-            log::info!("Got new node settings: {new_node_settings:?}");
+            log::info!("已获取新的节点设置: {new_node_settings:?}");
             let options = NodeBinaryOptions {
                 allow_path_lookup: !new_node_settings.ignore_system_version,
                 // TODO: Implement this setting
@@ -1290,7 +1290,7 @@ pub fn handle_settings_file_changes(
             cx.update_global(|store: &mut SettingsStore, cx| {
                 let result = store.set_server_settings(&server_settings_content, cx);
                 if let Err(err) = &result {
-                    log::error!("Failed to load server settings: {err}");
+                    log::error!("加载服务器设置失败: {err}");
                 }
                 settings_changed(result.err(), cx);
                 cx.refresh_windows();
@@ -1310,7 +1310,7 @@ fn read_proxy_settings(cx: &mut Context<HeadlessProject>) -> Option<Url> {
         .and_then(|input| {
             input
                 .parse::<Url>()
-                .inspect_err(|e| log::error!("Error parsing proxy settings: {}", e))
+                .inspect_err(|e| log::error!("解析代理设置出错: {}", e))
                 .ok()
         })
         .or_else(read_proxy_from_env)
@@ -1329,7 +1329,7 @@ fn cleanup_old_binaries() -> Result<()> {
             && !is_new_version(version)
             && !is_file_in_use(file_name)
         {
-            log::info!("removing old remote server binary: {:?}", path);
+            log::info!("正在移除旧的远程服务器二进制文件: {:?}", path);
             std::fs::remove_file(&path)?;
         }
     }
@@ -1342,7 +1342,7 @@ fn cleanup_old_binaries() -> Result<()> {
 fn cleanup_old_binaries_wsl() {
     let server_dir = paths::remote_wsl_server_dir_relative();
     if let Ok(()) = std::fs::remove_dir_all(server_dir.as_std_path()) {
-        log::info!("removing old wsl remote server folder: {:?}", server_dir);
+        log::info!("正在移除旧的 WSL 远程服务器文件夹: {:?}", server_dir);
     }
 }
 
@@ -1384,21 +1384,21 @@ mod tests {
 
     #[test]
     fn opening_remote_log_rotates_existing_oversized_log() {
-        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let temp_dir = tempfile::tempdir().expect("创建临时目录");
         let log_path = temp_dir.path().join("server-workspace-12.log");
         let rotated_path = temp_dir.path().join("server-workspace-12.1.log");
         let existing_contents = vec![b'x'; REMOTE_SERVER_LOG_MAX_BYTES as usize];
-        std::fs::write(&log_path, &existing_contents).expect("write oversized log");
+        std::fs::write(&log_path, &existing_contents).expect("写入超大日志");
 
-        let _log_file = RotatingLogFile::open(&log_path).expect("open rotating log file");
+        let _log_file = RotatingLogFile::open(&log_path).expect("打开轮换日志文件");
 
         assert_eq!(
-            std::fs::read(&rotated_path).expect("read rotated log"),
+            std::fs::read(&rotated_path).expect("读取轮换日志"),
             existing_contents
         );
         assert_eq!(
             std::fs::metadata(&log_path)
-                .expect("active log metadata")
+                .expect("活动日志元数据")
                 .len(),
             0
         );
@@ -1406,25 +1406,25 @@ mod tests {
 
     #[test]
     fn writing_remote_log_rotates_before_exceeding_size_limit() {
-        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let temp_dir = tempfile::tempdir().expect("创建临时目录");
         let log_path = temp_dir.path().join("server-workspace-12.log");
         let rotated_path = temp_dir.path().join("server-workspace-12.1.log");
         let existing_contents = vec![b'x'; REMOTE_SERVER_LOG_MAX_BYTES as usize - 1];
         let new_contents = b"yz";
-        std::fs::write(&log_path, &existing_contents).expect("write existing log contents");
-        let mut log_file = RotatingLogFile::open(&log_path).expect("open rotating log file");
+        std::fs::write(&log_path, &existing_contents).expect("写入现有日志内容");
+        let mut log_file = RotatingLogFile::open(&log_path).expect("打开轮换日志文件");
 
         log_file
             .write_all(new_contents)
-            .expect("write log contents");
-        log_file.flush().expect("flush log file");
+            .expect("写入日志内容");
+        log_file.flush().expect("刷新日志文件");
 
         assert_eq!(
-            std::fs::read(&rotated_path).expect("read rotated log"),
+            std::fs::read(&rotated_path).expect("读取轮换日志"),
             existing_contents
         );
         assert_eq!(
-            std::fs::read(&log_path).expect("read active log"),
+            std::fs::read(&log_path).expect("读取活动日志"),
             new_contents
         );
     }

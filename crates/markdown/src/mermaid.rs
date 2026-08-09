@@ -598,7 +598,7 @@ pub(crate) fn render_mermaid_diagram(
                 let rasterized_scale = cached.map_or(1.0, |cached| cached.rasterized_scale);
                 let image_element =
                     img(ImageSource::Render(render_image.clone())).with_fallback(|| {
-                        Label::new("Failed to Load Mermaid Diagram").into_any_element()
+                        Label::new("无法加载 Mermaid 图表").into_any_element()
                     });
                 let scroll_handle = markdown.update(cx, |markdown, _| {
                     markdown.mermaid_scroll_handle(source_offset)
@@ -659,7 +659,7 @@ pub(crate) fn render_mermaid_diagram(
                 let fallback_element =
                     img(ImageSource::Render(fallback.clone())).with_fallback(|| {
                         div()
-                            .child(Label::new("Failed to load mermaid diagram"))
+                            .child(Label::new("无法加载 mermaid 图表"))
                             .into_any_element()
                     });
                 let scroll_handle = markdown.update(cx, |markdown, _| {
@@ -714,7 +714,7 @@ pub(crate) fn render_mermaid_diagram(
                     .child(render_mermaid_code_view(&parsed.contents.contents))
                     .child(
                         div().absolute().top_1().right_2().child(
-                            Label::new("Rendering...")
+                            Label::new("渲染中...")
                                 .size(LabelSize::XSmall)
                                 .color(Color::Muted)
                                 .with_animation(
@@ -821,7 +821,7 @@ fn render_mermaid_tab_header(
         .gap_0p5()
         .mb_2p5()
         .child(
-            Button::new(preview_id, "Preview")
+            Button::new(preview_id, "预览")
                 .label_size(LabelSize::Small)
                 .selected_style(ButtonStyle::Tinted(TintColor::Accent))
                 .toggle_state(!showing_code)
@@ -835,7 +835,7 @@ fn render_mermaid_tab_header(
                 }),
         )
         .child(
-            Button::new(code_id, "Code")
+            Button::new(code_id, "代码")
                 .label_size(LabelSize::Small)
                 .selected_style(ButtonStyle::Tinted(TintColor::Accent))
                 .toggle_state(showing_code)
@@ -890,7 +890,7 @@ fn render_mermaid_zoom_indicator(
     h_flex()
         .gap_0p5()
         .child(
-            Label::new(format!("Zoom {percentage}%"))
+            Label::new(format!("缩放 {percentage}%"))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )
@@ -901,7 +901,7 @@ fn render_mermaid_zoom_indicator(
             )
             .icon_size(IconSize::Small)
             .icon_color(Color::Muted)
-            .tooltip(Tooltip::text("Reset Zoom"))
+            .tooltip(Tooltip::text("重置缩放"))
             .on_click(move |_event, window, cx| {
                 let zoom_changed = markdown.update(cx, |markdown, cx| {
                     let current_zoom = markdown.mermaid_zoom_level(source_offset);
@@ -1154,12 +1154,12 @@ mod tests {
         assert_eq!(
             diagrams.len(),
             1,
-            "Only the flowchart should be extracted; sankey and block should be skipped"
+            "只应提取流程图;应跳过 sankey 和 block"
         );
         let diagram = diagrams.values().next().unwrap();
         assert!(
             diagram.contents.contents.contains("flowchart"),
-            "The extracted diagram should be the flowchart"
+            "提取的图表应为流程图"
         );
     }
 
@@ -1341,7 +1341,7 @@ mod tests {
         let cached = state.cache.get(&contents).unwrap();
         assert!(
             cached.render_image.get().is_none(),
-            "the new raster should still be pending"
+            "新的栅格图像应仍处于待处理状态"
         );
         assert_eq!(cached.rasterized_scale, 2.0);
         assert_eq!(
@@ -1350,7 +1350,7 @@ mod tests {
                 .as_ref()
                 .map(|(image, zoom)| (image.id, *zoom)),
             Some((original_image.id, 1.0)),
-            "the old raster should keep being displayed while the new one is pending"
+            "在新栅格图像待处理期间,应继续显示旧栅格图像"
         );
 
         cx.run_until_parked();
@@ -1359,9 +1359,9 @@ mod tests {
         let new_image = cached
             .render_image
             .get()
-            .expect("render should have completed")
+            .expect("渲染应已完成")
             .as_ref()
-            .expect("render should have succeeded");
+            .expect("渲染应已成功");
         let original_size = original_image.size(0);
         let new_size = new_image.size(0);
         assert_eq!(new_size.width.0, original_size.width.0 * 2);
@@ -1427,7 +1427,7 @@ mod tests {
             let cached = markdown.mermaid_state.cache.get(&contents).unwrap();
             assert_eq!(
                 cached.rasterized_scale, 1.0,
-                "no re-raster before the debounce elapses"
+                "在防抖时间结束前不应重新栅格化"
             );
         });
 
@@ -1441,7 +1441,7 @@ mod tests {
             let cached = markdown.mermaid_state.cache.get(&contents).unwrap();
             assert_eq!(
                 cached.rasterized_scale, 1.0,
-                "the second zoom change should restart the debounce timer"
+                "第二次缩放更改应重新启动防抖计时器"
             );
         });
 
@@ -1454,9 +1454,9 @@ mod tests {
             let new_image = cached
                 .render_image
                 .get()
-                .expect("render should have completed")
+                .expect("渲染应已完成")
                 .as_ref()
-                .expect("render should have succeeded");
+                .expect("渲染应已成功");
             let original_size = original_image.size(0);
             let new_size = new_image.size(0);
             assert_eq!(new_size.width.0, original_size.width.0 * 2);
@@ -1601,7 +1601,7 @@ mod tests {
                 .container_width_for_test = Some(px(100.));
             assert!(
                 (markdown.effective_mermaid_zoom_level(source_offset, cx) - 0.85).abs() < 1e-5,
-                "a zoom above the floor must not track container resizes"
+                "高于下限的缩放不应跟踪容器大小调整"
             );
         });
 
@@ -1645,7 +1645,7 @@ mod tests {
                 .mermaid_diagrams
                 .keys()
                 .next()
-                .expect("the mermaid diagram should have been parsed")
+                .expect("mermaid 图表应已被解析")
         });
         markdown.update(cx, |markdown, cx| {
             markdown.set_mermaid_zoom_level(source_offset, 2.0, cx)
@@ -1697,7 +1697,7 @@ mod tests {
                 .mermaid_diagrams
                 .keys()
                 .next()
-                .expect("the mermaid diagram should have been parsed")
+                .expect("mermaid 图表应已被解析")
         });
         let scroll_handle = markdown.update(cx, |markdown, _| {
             markdown.mermaid_scroll_handle(source_offset)

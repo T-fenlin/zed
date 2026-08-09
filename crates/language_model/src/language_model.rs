@@ -153,7 +153,7 @@ pub trait LanguageModel: Send + Sync {
         let provider = self.provider_name();
         async move {
             Err(LanguageModelCompletionError::Other(anyhow::anyhow!(
-                "{provider} does not support explicit compaction"
+                "{provider} 不支持显式压缩"
             )))
         }
         .boxed()
@@ -294,7 +294,7 @@ pub trait LanguageModel: Send + Sync {
 
             // Stream ended without a complete tool use
             Err(LanguageModelCompletionError::Other(anyhow::anyhow!(
-                "Stream ended without receiving a complete tool use"
+                "流结束前未收到完整的工具调用"
             )))
         }
         .boxed()
@@ -442,7 +442,7 @@ impl ApiKeyConfiguration {
 }
 
 /// A live snapshot of a single-API-key provider's credential state, used by the
-/// settings UI to render the provider's "API Key" section.
+/// settings UI to render the provider's "API 密钥" section.
 #[derive(Clone)]
 pub struct ApiKeyConfiguration {
     pub has_key: bool,
@@ -455,7 +455,7 @@ pub struct ApiKeyConfiguration {
 /// shown inline.
 #[derive(Clone)]
 pub enum InlineDescription {
-    /// A clickable "Where to find key" link pointing at the given URL, for
+    /// A clickable "在哪里找到密钥" link pointing at the given URL, for
     /// API-key based providers.
     ApiKeyUrl(SharedString),
     /// Plain descriptive text, e.g. explaining a sign-in based provider.

@@ -87,19 +87,19 @@ pub async fn build_git_log_index(worktree_dir: &Path) -> Result<GitLogIndex> {
         .current_dir(worktree_dir)
         .output()
         .await
-        .with_context(|| format!("failed to run git log in {}", worktree_dir.display()))?;
+        .with_context(|| format!("在 {} 中运行 git log 失败", worktree_dir.display()))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         bail!(
-            "git log failed in {} with status {}: {}",
+            "git log 在 {} 中失败,状态 {}: {}",
             worktree_dir.display(),
             output.status,
             stderr.trim()
         );
     }
 
-    let log = String::from_utf8(output.stdout).context("git log output was not valid UTF-8")?;
+    let log = String::from_utf8(output.stdout).context("git log 输出不是有效的 UTF-8")?;
     let parsed = parse_git_log(&log);
     for files in parsed {
         for i in 0..files.len() {
@@ -134,15 +134,15 @@ fn run() -> Result<()> {
 
     let worktree_dir = arguments.next().ok_or_else(|| {
         print_usage(&program_name);
-        anyhow!("missing worktree path")
+        anyhow!("缺少工作树路径")
     })?;
     let query_path = arguments.next().ok_or_else(|| {
         print_usage(&program_name);
-        anyhow!("missing query path")
+        anyhow!("缺少查询路径")
     })?;
     if arguments.next().is_some() {
         print_usage(&program_name);
-        bail!("too many arguments");
+        bail!("参数过多");
     }
 
     let worktree_dir = PathBuf::from(worktree_dir);
@@ -158,7 +158,7 @@ fn run() -> Result<()> {
 
 #[allow(dead_code)]
 fn print_usage(program_name: &str) {
-    eprintln!("Usage: {program_name} <worktree-path> <query-path>");
+    eprintln!("用法: {program_name} <工作树路径> <查询路径>");
 }
 
 #[allow(dead_code)]

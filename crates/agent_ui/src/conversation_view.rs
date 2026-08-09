@@ -546,7 +546,7 @@ fn resolve_outcome_from_selection(
         }
     }
 
-    // Use the selected granularity choice ("Always for terminal" or "Only this time").
+    // Use the selected granularity choice ("始终允许终端" or "仅此一次").
     let selected_index = selection
         .and_then(|s| s.choice_index())
         .unwrap_or_else(|| choices.len().saturating_sub(1));
@@ -1038,7 +1038,7 @@ impl ConversationView {
         {
             return ServerState::LoadError {
                 error: LoadError::Other(
-                    "External agents are not yet supported in shared projects.".into(),
+                    "共享项目中尚不支持外部代理。".into(),
                 ),
             };
         }
@@ -1128,7 +1128,7 @@ impl ConversationView {
                         )
                     } else {
                         Task::ready(Err(anyhow!(LoadError::Other(
-                            "Loading or resuming sessions is not supported by this agent.".into()
+                            "此代理不支持加载或恢复会话。".into()
                         ))))
                     }
                 })
@@ -1533,16 +1533,16 @@ impl ConversationView {
             ServerState::Loading { .. } => self
                 .loading_status
                 .clone()
-                .unwrap_or_else(|| "Loading…".into()),
+                .unwrap_or_else(|| "加载中…".into()),
             ServerState::LoadError { error, .. } => match error {
                 LoadError::Unsupported { .. } => {
-                    format!("Upgrade {}", self.agent.agent_id()).into()
+                    format!("升级 {}", self.agent.agent_id()).into()
                 }
                 LoadError::FailedToInstall(_) => {
-                    format!("Failed to Install {}", self.agent.agent_id()).into()
+                    format!("安装 {} 失败", self.agent.agent_id()).into()
                 }
-                LoadError::Exited { .. } => format!("{} Exited", self.agent.agent_id()).into(),
-                LoadError::Other(_) => format!("Error Loading {}", self.agent.agent_id()).into(),
+                LoadError::Exited { .. } => format!("{} 已退出", self.agent.agent_id()).into(),
+                LoadError::Other(_) => format!("加载 {} 出错", self.agent.agent_id()).into(),
             },
         }
     }
@@ -1641,11 +1641,11 @@ impl ConversationView {
                 self.load_subagent_session(subagent_session_id.clone(), session_id, window, cx)
             }
             AcpThreadEvent::ToolAuthorizationRequested(_) => {
-                self.notify_with_sound("Waiting for tool confirmation", IconName::Info, window, cx);
+                self.notify_with_sound("等待工具确认", IconName::Info, window, cx);
             }
             AcpThreadEvent::ToolAuthorizationReceived(_) => {}
             AcpThreadEvent::ElicitationRequested(_) => {
-                self.notify_with_sound("Waiting for input", IconName::Info, window, cx);
+                self.notify_with_sound("等待输入", IconName::Info, window, cx);
             }
             AcpThreadEvent::ElicitationResponded(_) => {}
             AcpThreadEvent::Retry(retry) => {
@@ -1707,9 +1707,9 @@ impl ConversationView {
                     let used_tools = thread.read(cx).used_tools_since_last_user_message();
                     self.notify_with_sound(
                         if used_tools {
-                            "Finished running tools"
+                            "工具运行完成"
                         } else {
-                            "New message"
+                            "新消息"
                         },
                         IconName::ZedAssistant,
                         window,
@@ -1728,7 +1728,7 @@ impl ConversationView {
                 if !is_subagent {
                     let model_or_agent_name = self.current_model_name(cx);
                     let notification_message =
-                        format!("{} refused to respond to this request", model_or_agent_name);
+                        format!("{} 拒绝响应此请求", model_or_agent_name);
                     self.notify_with_sound(&notification_message, IconName::Warning, window, cx);
                 }
             }
@@ -1748,7 +1748,7 @@ impl ConversationView {
                 }
                 if !is_subagent {
                     self.notify_with_sound(
-                        "Agent stopped due to an error",
+                        "代理因错误而停止",
                         IconName::Warning,
                         window,
                         cx,
@@ -2100,7 +2100,7 @@ impl ConversationView {
         cx: &mut App,
     ) -> Task<Result<()>> {
         let Some(terminal_panel) = workspace.read(cx).panel::<TerminalPanel>(cx) else {
-            return Task::ready(Err(anyhow!("Terminal panel is unavailable")));
+            return Task::ready(Err(anyhow!("终端面板不可用")));
         };
 
         window.spawn(cx, async move |cx| {
@@ -2138,8 +2138,8 @@ impl ConversationView {
 
             let success_patterns = match method.0.as_ref() {
                 "claude-login" | GEMINI_TERMINAL_AUTH_METHOD_ID => vec![
-                    "Login successful".to_string(),
-                    "Type your message".to_string(),
+                    "登录成功".to_string(),
+                    "输入你的消息".to_string(),
                 ],
                 _ => Vec::new(),
             };
@@ -2152,10 +2152,10 @@ impl ConversationView {
                 match exit_status {
                     Some(status) if status.success() => Ok(()),
                     Some(status) => Err(anyhow!(
-                        "Login command failed with exit code: {:?}",
+                        "登录命令失败,退出代码:{:?}",
                         status.code()
                     )),
-                    None => Err(anyhow!("Login command terminated without exit status")),
+                    None => Err(anyhow!("登录命令在未提供退出状态的情况下终止")),
                 }
             } else {
                 // Look for specific output patterns to detect successful login
@@ -2186,7 +2186,7 @@ impl ConversationView {
                     result = logged_in => {
                         if let Err(e) = result {
                             log::error!("{e}");
-                            return Err(anyhow!("exited before logging in"));
+                            return Err(anyhow!("在登录前退出"));
                         }
                     }
                     _ = exit_status => {
@@ -2208,7 +2208,7 @@ impl ConversationView {
                                 })?
                                 .await;
                         }
-                        return Err(anyhow!("exited before logging in"));
+                        return Err(anyhow!("在登录前退出"));
                     }
                 }
                 terminal.update(cx, |terminal, _| terminal.kill_active_task())?;
@@ -2293,7 +2293,7 @@ impl ConversationView {
         if pending_auth_method.is_some() {
             return Callout::new()
                 .icon(IconName::Info)
-                .title(format!("Authenticating to {}…", agent_display_name))
+                .title(format!("正在向 {} 进行身份验证…", agent_display_name))
                 .actions_slot(
                     Icon::new(IconName::ArrowCircle)
                         .size(IconSize::Small)
@@ -2306,7 +2306,7 @@ impl ConversationView {
 
         Callout::new()
             .icon(IconName::Info)
-            .title(format!("Authenticate to {}", agent_display_name))
+            .title(format!("向 {} 进行身份验证", agent_display_name))
             .when(auth_methods.len() == 1, |this| {
                 this.actions_slot(auth_buttons())
             })
@@ -2316,7 +2316,7 @@ impl ConversationView {
                     .map(|this| {
                         if show_fallback_description {
                             this.child(
-                                Label::new("Choose one of the following authentication options:")
+                                Label::new("选择以下身份验证选项之一:")
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             )
@@ -2712,12 +2712,12 @@ impl ConversationView {
                 return self.render_unsupported(path, current_version, minimum_version, window, cx);
             }
             LoadError::FailedToInstall(msg) => (
-                "Failed to Install",
+                "安装失败",
                 msg.into(),
                 Some(self.create_copy_button(msg.to_string()).into_any_element()),
             ),
             LoadError::Exited { status, stderr } => {
-                let mut message = format!("Server exited with status {status}");
+                let mut message = format!("服务器以状态 {status} 退出");
                 if let Some(stderr) = stderr {
                     message.push_str("\n");
                     message.push_str(stderr);
@@ -2725,10 +2725,10 @@ impl ConversationView {
                 let action_slot = stderr
                     .is_some()
                     .then(|| self.create_copy_button(message.clone()).into_any_element());
-                ("Failed to Launch", message.into(), action_slot)
+                ("启动失败", message.into(), action_slot)
             }
             LoadError::Other(msg) => (
-                "Failed to Launch",
+                "启动失败",
                 msg.into(),
                 Some(self.create_copy_button(msg.to_string()).into_any_element()),
             ),
@@ -2752,15 +2752,15 @@ impl ConversationView {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let (heading_label, description_label) = (
-            format!("Upgrade {} to work with Zed", self.agent.agent_id()),
+            format!("升级 {} 以与 Zed 配合使用", self.agent.agent_id()),
             if version.is_empty() {
                 format!(
-                    "Currently using {}, which does not report a valid --version",
+                    "当前使用 {},它未报告有效的 --version",
                     path,
                 )
             } else {
                 format!(
-                    "Currently using {}, which is only version {} (need at least {minimum_version})",
+                    "当前使用 {},其版本仅为 {}(至少需要 {minimum_version})",
                     path, version
                 )
             },
@@ -3203,7 +3203,7 @@ impl ConversationView {
                 .and_then(|active| active.read(cx).model_selector.clone())
                 .and_then(|selector| selector.read(cx).active_model(cx))
                 .map(|model| model.name.clone())
-                .unwrap_or_else(|| SharedString::from("The model"))
+                .unwrap_or_else(|| SharedString::from("模型"))
         } else {
             // ACP agent - use the agent name (e.g., "Claude Agent", "Gemini CLI")
             self.agent.agent_id().0
@@ -3213,7 +3213,7 @@ impl ConversationView {
     fn create_copy_button(&self, message: impl Into<String>) -> impl IntoElement {
         let message = message.into();
 
-        CopyButton::new("copy-error-message", message).tooltip_label("Copy Error Message")
+        CopyButton::new("copy-error-message", message).tooltip_label("复制错误消息")
     }
 
     pub(crate) fn reauthenticate(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -3223,7 +3223,7 @@ impl ConversationView {
         }
         let this = cx.weak_entity();
         let Some(connection) = self.as_connected().map(|c| c.connection.clone()) else {
-            debug_panic!("This should not be possible");
+            debug_panic!("这不应该发生");
             return;
         };
         window.defer(cx, |window, cx| {
@@ -3311,16 +3311,16 @@ fn native_available_skills(
 fn placeholder_text(agent_name: &str, has_commands: bool) -> String {
     if agent_name == agent::ZED_AGENT_ID.as_ref() {
         format!(
-            "Message the {}, @ to include context, / for commands",
+            "向 {} 发送消息,@ 包含上下文,/ 用于命令",
             agent_name
         )
     } else if has_commands {
         format!(
-            "Message {} — @ to include context, / for commands",
+            "向 {} 发送消息 — @ 包含上下文,/ 用于命令",
             agent_name
         )
     } else {
-        format!("Message {} — @ to include context", agent_name)
+        format!("向 {} 发送消息 — @ 包含上下文", agent_name)
     }
 }
 
@@ -3379,7 +3379,7 @@ impl Render for ConversationView {
                 let label_text = self
                     .loading_status
                     .clone()
-                    .unwrap_or_else(|| "Loading…".into());
+                    .unwrap_or_else(|| "加载中…".into());
                 v_flex()
                     .flex_1()
                     .size_full()
@@ -3427,7 +3427,7 @@ impl Render for ConversationView {
                 if let Some(view) = connected.active_view() {
                     view.clone().into_any_element()
                 } else {
-                    debug_panic!("This state should never be reached");
+                    debug_panic!("不应达到此状态");
                     div().into_any_element()
                 }
             }
@@ -3799,7 +3799,7 @@ pub(crate) mod tests {
         conversation_view.update(cx, |view, cx| {
             view.set_server_state(
                 ServerState::LoadError {
-                    error: LoadError::Other("load failed".into()),
+                    error: LoadError::Other("加载失败".into()),
                 },
                 cx,
             );
@@ -3908,7 +3908,7 @@ pub(crate) mod tests {
     async fn test_external_source_prompt_requires_manual_send(cx: &mut TestAppContext) {
         init_test(cx);
 
-        let Some(prompt) = crate::ExternalSourcePrompt::new("Write me a script") else {
+        let Some(prompt) = crate::ExternalSourcePrompt::new("给我写一个脚本") else {
             panic!("expected prompt from external source to sanitize successfully");
         };
         let initial_content = AgentInitialContent::FromExternalSource(prompt);
@@ -3923,7 +3923,7 @@ pub(crate) mod tests {
         active_thread(&conversation_view, cx).read_with(cx, |view, cx| {
             assert!(view.show_external_source_prompt_warning);
             assert_eq!(view.thread.read(cx).entries().len(), 0);
-            assert_eq!(view.message_editor.read(cx).text(cx), "Write me a script");
+            assert_eq!(view.message_editor.read(cx).text(cx), "给我写一个脚本");
         });
     }
 
@@ -3931,7 +3931,7 @@ pub(crate) mod tests {
     async fn test_external_source_prompt_warning_clears_after_send(cx: &mut TestAppContext) {
         init_test(cx);
 
-        let Some(prompt) = crate::ExternalSourcePrompt::new("Write me a script") else {
+        let Some(prompt) = crate::ExternalSourcePrompt::new("给我写一个脚本") else {
             panic!("expected prompt from external source to sanitize successfully");
         };
         let initial_content = AgentInitialContent::FromExternalSource(prompt);
@@ -4039,7 +4039,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         cx.deactivate_window();
@@ -4103,7 +4103,7 @@ pub(crate) mod tests {
             connection.send_update(
                 session_id.clone(),
                 acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new(
-                    "first response".into(),
+                    "第一个响应".into(),
                 )),
                 cx,
             );
@@ -4220,7 +4220,7 @@ pub(crate) mod tests {
         });
 
         // When this generation completes, the queued message should be picked
-        // up automatically (regression test for the "frozen queue" bug).
+        // up automatically (regression test for the "冻结队列" bug).
         connection.end_turn(session_id, acp::StopReason::EndTurn);
         cx.run_until_parked();
 
@@ -4241,7 +4241,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         cx.deactivate_window();
@@ -4331,7 +4331,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::new(ResumeOnlyAgentConnection)),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     Some(acp::SessionId::new("resume-session")),
                     None,
                     None,
@@ -4409,7 +4409,7 @@ pub(crate) mod tests {
                     thread.handle_session_update(
                         acp::SessionUpdate::AvailableCommandsUpdate(
                             acp::AvailableCommandsUpdate::new(vec![acp::AvailableCommand::new(
-                                "help", "Get help",
+                                "help", "获取帮助",
                             )]),
                         ),
                         cx,
@@ -4466,7 +4466,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::new(RestoredAvailableCommandsConnection)),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     Some(acp::SessionId::new("restored-session")),
                     None,
                     None,
@@ -4497,12 +4497,12 @@ pub(crate) mod tests {
                 .to_vec();
             assert_eq!(available_commands.len(), 1);
             assert_eq!(available_commands[0].name.as_str(), "help");
-            assert_eq!(available_commands[0].description.as_str(), "Get help");
+            assert_eq!(available_commands[0].description.as_str(), "获取帮助");
         });
 
         assert_eq!(
             placeholder,
-            Some("Message Test — @ to include context, / for commands".to_string())
+            Some("向 Test 发送消息 — @ 包含上下文,/ 用于命令".to_string())
         );
 
         message_editor.update_in(cx, |editor, window, cx| {
@@ -4547,7 +4547,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::new(connection)),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     Some(acp::SessionId::new("session-1")),
                     None,
                     Some(PathList::new(&[PathBuf::from("/project/subdir")])),
@@ -4581,7 +4581,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Do something harmful", window, cx);
+            editor.set_text("做一些有害的事情", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -4609,7 +4609,7 @@ pub(crate) mod tests {
             let title = view.title(cx);
             assert_eq!(
                 title.as_ref(),
-                "Error Loading Codex CLI",
+                "加载 Codex CLI 出错",
                 "Tab title should show the agent name with an error prefix"
             );
             match &view.server_state {
@@ -4618,16 +4618,16 @@ pub(crate) mod tests {
                     ..
                 } => {
                     assert!(
-                        msg.contains("Invalid gzip header"),
+                        msg.contains("无效的 gzip 头"),
                         "Error callout should contain the underlying extraction error, got: {msg}"
                     );
                 }
                 other => panic!(
                     "Expected LoadError::Other, got: {}",
                     match other {
-                        ServerState::Loading { .. } => "Loading (stuck!)",
+                        ServerState::Loading { .. } => "加载中(卡住!)",
                         ServerState::LoadError { .. } => "LoadError (wrong variant)",
-                        ServerState::Connected(_) => "Connected",
+                        ServerState::Connected(_) => "已连接",
                     }
                 ),
             }
@@ -4655,7 +4655,7 @@ pub(crate) mod tests {
 
         // Simulate a previous run that persisted metadata for this session.
         let resume_session_id = acp::SessionId::new("persistent-session");
-        let stored_title: SharedString = "Persistent chat".into();
+        let stored_title: SharedString = "持久聊天".into();
         cx.update(|_window, cx| {
             ThreadMetadataStore::global(cx).update(cx, |store, cx| {
                 store.save(
@@ -4869,7 +4869,7 @@ pub(crate) mod tests {
         init_test(cx);
 
         let tool_call_id = acp::ToolCallId::new("1");
-        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "Label")
+        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "标签")
             .kind(acp::ToolKind::Edit)
             .content(vec!["hi".into()]);
         let connection =
@@ -4877,7 +4877,7 @@ pub(crate) mod tests {
                 tool_call_id,
                 PermissionOptions::Flat(vec![acp::PermissionOption::new(
                     "1",
-                    "Allow",
+                    "允许",
                     acp::PermissionOptionKind::AllowOnce,
                 )]),
             )]));
@@ -4889,7 +4889,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         cx.deactivate_window();
@@ -4918,7 +4918,7 @@ pub(crate) mod tests {
         let message_editor = message_editor(&conversation_view, cx);
 
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         // Window is active (don't deactivate), but panel will be hidden
@@ -4948,7 +4948,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         // Deactivate window - should show notification regardless of setting
@@ -5026,7 +5026,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::default_response()),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     None,
                     None,
                     None,
@@ -5056,7 +5056,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -5124,7 +5124,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::default_response()),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     None,
                     None,
                     None,
@@ -5144,7 +5144,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -5199,7 +5199,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::default_response()),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     None,
                     None,
                     None,
@@ -5218,7 +5218,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -5266,7 +5266,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::default_response()),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     None,
                     None,
                     None,
@@ -5286,7 +5286,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -5387,7 +5387,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::new(RestoredAvailableCommandsConnection)),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     None,
                     None,
                     None,
@@ -5413,7 +5413,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         // Create a second workspace and switch to it.
@@ -5449,7 +5449,7 @@ pub(crate) mod tests {
             "Expected notification when workspace is in background within MultiWorkspace"
         );
 
-        // Also verify: clicking "View Panel" should switch to workspace1.
+        // Also verify: clicking "视图面板" should switch to workspace1.
         cx.windows()
             .iter()
             .find_map(|window| window.downcast::<AgentNotification>())
@@ -5501,7 +5501,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         // Window is active
@@ -5531,7 +5531,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         cx.deactivate_window();
@@ -5587,7 +5587,7 @@ pub(crate) mod tests {
             setup_conversation_view(StubAgentServer::new(connection.clone()), cx).await;
 
         message_editor(&conversation_view, cx).update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
         active_thread(&conversation_view, cx).update_in(cx, |view, window, cx| {
             view.send(window, cx);
@@ -5603,7 +5603,7 @@ pub(crate) mod tests {
             connection.send_update(
                 session_id.clone(),
                 acp::SessionUpdate::Plan(acp::Plan::new(vec![acp::PlanEntry::new(
-                    "Do the thing",
+                    "做这件事",
                     acp::PlanEntryPriority::Medium,
                     acp::PlanEntryStatus::InProgress,
                 )])),
@@ -5619,7 +5619,7 @@ pub(crate) mod tests {
             connection.send_update(
                 session_id.clone(),
                 acp::SessionUpdate::Plan(acp::Plan::new(vec![acp::PlanEntry::new(
-                    "Do the thing",
+                    "做这件事",
                     acp::PlanEntryPriority::Medium,
                     acp::PlanEntryStatus::Completed,
                 )])),
@@ -5661,7 +5661,7 @@ pub(crate) mod tests {
         let connection_store =
             cx.update(|_window, cx| cx.new(|cx| AgentConnectionStore::new(project.clone(), cx)));
 
-        let agent_key = Agent::Custom { id: "Test".into() };
+        let agent_key = Agent::Custom { id: "测试".into() };
 
         let conversation_view = cx.update(|window, cx| {
             cx.new(|cx| {
@@ -5715,7 +5715,7 @@ pub(crate) mod tests {
         }
 
         fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-            "Test".into()
+            "测试".into()
         }
     }
 
@@ -5755,7 +5755,7 @@ pub(crate) mod tests {
         pub(crate) fn default_response() -> Self {
             let conn = StubAgentConnection::new();
             conn.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-                acp::ContentChunk::new("Default response".into()),
+                acp::ContentChunk::new("默认响应".into()),
             )]);
             Self::new(conn)
         }
@@ -5770,7 +5770,7 @@ pub(crate) mod tests {
         }
 
         fn agent_id(&self) -> AgentId {
-            "Test".into()
+            "测试".into()
         }
 
         fn connect(
@@ -5933,7 +5933,7 @@ pub(crate) mod tests {
                                 acp::ElicitationSessionScope::new(session_id),
                                 acp::ElicitationSchema::new().string("name", true),
                             ),
-                            "Provide a name",
+                            "提供名称",
                         ),
                         cx,
                     )
@@ -6047,7 +6047,7 @@ pub(crate) mod tests {
                                 acp::ElicitationRequestScope::new(acp::RequestId::Number(1)),
                                 acp::ElicitationSchema::new().string("name", true),
                             ),
-                            "Provide a name",
+                            "提供名称",
                         ),
                         cx,
                     )
@@ -6062,7 +6062,7 @@ pub(crate) mod tests {
                                     acp::ElicitationRequestScope::new(acp::RequestId::Number(2)),
                                     acp::ElicitationSchema::new().string("account", true),
                                 ),
-                                "Provide an account",
+                                "提供账户",
                             ),
                             cx,
                         )
@@ -6175,7 +6175,7 @@ pub(crate) mod tests {
                                 acp::ElicitationRequestScope::new(acp::RequestId::Number(1)),
                                 acp::ElicitationSchema::new().string("name", true),
                             ),
-                            "Provide a name",
+                            "提供名称",
                         ),
                         cx,
                     )
@@ -6310,7 +6310,7 @@ pub(crate) mod tests {
                 authenticated: Arc::new(Mutex::new(false)),
                 auth_method: acp::AuthMethod::Agent(acp::AuthMethodAgent::new(
                     Self::AUTH_METHOD_ID,
-                    "Test Login",
+                    "测试登录",
                 )),
             }
         }
@@ -6333,7 +6333,7 @@ pub(crate) mod tests {
         ) -> Task<gpui::Result<Entity<AcpThread>>> {
             if !*self.authenticated.lock() {
                 return Task::ready(Err(acp_thread::AuthRequired::new()
-                    .with_description("Sign in to continue".to_string())
+                    .with_description("登录以继续".to_string())
                     .into()));
             }
 
@@ -6372,7 +6372,7 @@ pub(crate) mod tests {
                 *self.authenticated.lock() = true;
                 Task::ready(Ok(()))
             } else {
-                Task::ready(Err(anyhow::anyhow!("Unknown auth method")))
+                Task::ready(Err(anyhow::anyhow!("未知的身份验证方法")))
             }
         }
 
@@ -6608,7 +6608,7 @@ pub(crate) mod tests {
             conversation_view
                 .read(cx)
                 .active_thread()
-                .expect("No active thread")
+                .expect("没有活动的对话线程")
                 .clone()
         })
     }
@@ -6636,8 +6636,8 @@ pub(crate) mod tests {
         fs.insert_tree(
             "/project",
             json!({
-                "test1.txt": "old content 1",
-                "test2.txt": "old content 2"
+                "test1.txt": "旧内容 1",
+                "test2.txt": "旧内容 2"
             }),
         )
         .await;
@@ -6656,7 +6656,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::new(connection.as_ref().clone())),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     None,
                     None,
                     None,
@@ -6682,16 +6682,16 @@ pub(crate) mod tests {
 
         // First user message
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::ToolCall(
-            acp::ToolCall::new("tool1", "Edit file 1")
+            acp::ToolCall::new("tool1", "编辑文件 1")
                 .kind(acp::ToolKind::Edit)
                 .status(acp::ToolCallStatus::Completed)
                 .content(vec![acp::ToolCallContent::Diff(
-                    acp::Diff::new("/project/test1.txt", "new content 1").old_text("old content 1"),
+                    acp::Diff::new("/project/test1.txt", "新内容 1").old_text("旧内容 1"),
                 )]),
         )]);
 
         thread
-            .update(cx, |thread, cx| thread.send_raw("Give me a diff", cx))
+            .update(cx, |thread, cx| thread.send_raw("给我一个差异", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -6719,16 +6719,16 @@ pub(crate) mod tests {
 
         // Second user message
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::ToolCall(
-            acp::ToolCall::new("tool2", "Edit file 2")
+            acp::ToolCall::new("tool2", "编辑文件 2")
                 .kind(acp::ToolKind::Edit)
                 .status(acp::ToolCallStatus::Completed)
                 .content(vec![acp::ToolCallContent::Diff(
-                    acp::Diff::new("/project/test2.txt", "new content 2").old_text("old content 2"),
+                    acp::Diff::new("/project/test2.txt", "新内容 2").old_text("旧内容 2"),
                 )]),
         )]);
 
         thread
-            .update(cx, |thread, cx| thread.send_raw("Another one", cx))
+            .update(cx, |thread, cx| thread.send_raw("另一个", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -6810,7 +6810,7 @@ pub(crate) mod tests {
         fs.insert_tree(
             "/project",
             json!({
-                "file.txt": "original content"
+                "file.txt": "原始内容"
             }),
         )
         .await;
@@ -6829,7 +6829,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::new(connection.as_ref().clone())),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     None,
                     None,
                     None,
@@ -6857,14 +6857,14 @@ pub(crate) mod tests {
         // diffs in the parent thread's entries; they are only forwarded to the
         // parent's action log through the linked-log mechanism.
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::ToolCall(
-            acp::ToolCall::new("spawn1", "Subagent task")
+            acp::ToolCall::new("spawn1", "子代理任务")
                 .kind(acp::ToolKind::Other)
                 .status(acp::ToolCallStatus::Completed)
                 .meta(acp_thread::meta_with_tool_name("spawn_agent")),
         )]);
 
         thread
-            .update(cx, |thread, cx| thread.send_raw("Use a subagent", cx))
+            .update(cx, |thread, cx| thread.send_raw("使用子代理", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -6889,7 +6889,7 @@ pub(crate) mod tests {
         cx.update(|_, cx| {
             subagent_action_log.update(cx, |log, cx| log.buffer_read(buffer.clone(), cx));
             buffer.update(cx, |buffer, cx| {
-                buffer.set_text("edited by subagent", cx);
+                buffer.set_text("由子代理编辑", cx);
             });
             subagent_action_log.update(cx, |log, cx| log.buffer_edited(buffer.clone(), cx));
         });
@@ -6905,10 +6905,10 @@ pub(crate) mod tests {
 
         // Second turn: a plain follow-up.
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Response".into()),
+            acp::ContentChunk::new("响应".into()),
         )]);
         thread
-            .update(cx, |thread, cx| thread.send_raw("Follow-up", cx))
+            .update(cx, |thread, cx| thread.send_raw("后续", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -6935,11 +6935,11 @@ pub(crate) mod tests {
                 .clone()
         });
         user_message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Edited follow-up", window, cx);
+            editor.set_text("已编辑的后续", window, cx);
         });
 
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("New response".into()),
+            acp::ContentChunk::new("新响应".into()),
         )]);
         active_thread(&conversation_view, cx).update_in(cx, |view, window, cx| {
             view.regenerate(follow_up_ix, user_message_editor.clone(), window, cx);
@@ -6961,7 +6961,7 @@ pub(crate) mod tests {
         buffer.read_with(cx, |buffer, _| {
             assert_eq!(
                 buffer.text(),
-                "edited by subagent",
+                "由子代理编辑",
                 "pending subagent edits should be kept when regenerating a later prompt"
             );
         });
@@ -6982,7 +6982,7 @@ pub(crate) mod tests {
 
         // Each user prompt will result in a user message entry plus an agent message entry.
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Response 1".into()),
+            acp::ContentChunk::new("响应 1".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -6995,17 +6995,17 @@ pub(crate) mod tests {
             .unwrap();
 
         thread
-            .update(cx, |thread, cx| thread.send_raw("Prompt 1", cx))
+            .update(cx, |thread, cx| thread.send_raw("提示词 1", cx))
             .await
             .unwrap();
         cx.run_until_parked();
 
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Response 2".into()),
+            acp::ContentChunk::new("响应 2".into()),
         )]);
 
         thread
-            .update(cx, |thread, cx| thread.send_raw("Prompt 2", cx))
+            .update(cx, |thread, cx| thread.send_raw("提示词 2", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7058,7 +7058,7 @@ pub(crate) mod tests {
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
             acp::ContentChunk::new(
-                "Yes, you can substitute banana for plantain in this recipe.".into(),
+                "是的,你可以在这个食谱中用香蕉代替大蕉。".into(),
             ),
         )]);
 
@@ -7070,7 +7070,7 @@ pub(crate) mod tests {
 
         thread
             .update(cx, |thread, cx| {
-                thread.send_raw("Can I use banana here?", cx)
+                thread.send_raw("我可以在这里用香蕉吗?", cx)
             })
             .await
             .unwrap();
@@ -7078,13 +7078,13 @@ pub(crate) mod tests {
 
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
             acp::ContentChunk::new(
-                "Banana yogurt also works as a topping; whisk the banana smooth first.".into(),
+                "香蕉酸奶也可以作为配料;先将香蕉搅打至顺滑。".into(),
             ),
         )]);
 
         thread
             .update(cx, |thread, cx| {
-                thread.send_raw("What about as a topping?", cx)
+                thread.send_raw("作为配料怎么样?", cx)
             })
             .await
             .unwrap();
@@ -7098,7 +7098,7 @@ pub(crate) mod tests {
 
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
                 editor.set_text("banana", window, cx);
@@ -7111,7 +7111,7 @@ pub(crate) mod tests {
             bar.read_with(cx, |bar, cx| (bar.match_count(), bar.active_match_text(cx)));
         assert_eq!(
             match_count, 4,
-            "expected 4 matches for case-insensitive 'banana'"
+            "不区分大小写的 'banana' 应匹配 4 处"
         );
         assert_eq!(active_text.as_deref(), Some("1/4"));
 
@@ -7156,10 +7156,10 @@ pub(crate) mod tests {
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![
             acp::SessionUpdate::AgentThoughtChunk(acp::ContentChunk::new(
-                "Hidden papaya reasoning.".into(),
+                "隐藏的木瓜推理。".into(),
             )),
             acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new(
-                "Final answer without that fruit.".into(),
+                "不含该水果的最终答案。".into(),
             )),
         ]);
 
@@ -7169,7 +7169,7 @@ pub(crate) mod tests {
         let thread =
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
-            .update(cx, |thread, cx| thread.send_raw("Think this through", cx))
+            .update(cx, |thread, cx| thread.send_raw("仔细思考", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7187,7 +7187,7 @@ pub(crate) mod tests {
                         .map(|chunk_ix| (entry_ix, chunk_ix)),
                     _ => None,
                 })
-                .expect("assistant thought chunk should exist")
+                .expect("助手思考块应存在")
         });
 
         let thread_view = active_thread(&conversation_view, cx);
@@ -7198,7 +7198,7 @@ pub(crate) mod tests {
 
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
                 editor.set_text("papaya", window, cx);
@@ -7209,7 +7209,7 @@ pub(crate) mod tests {
         assert_eq!(
             bar.read_with(cx, |bar, _| bar.match_count()),
             0,
-            "collapsed thinking content should not be searched",
+            "折叠的思考内容不应被搜索",
         );
 
         thread_view.update(cx, |view, cx| {
@@ -7225,7 +7225,7 @@ pub(crate) mod tests {
         assert_eq!(
             bar.read_with(cx, |bar, _| bar.match_count()),
             1,
-            "expanded thinking content should be searchable",
+            "展开的思考内容应可搜索",
         );
     }
 
@@ -7236,10 +7236,10 @@ pub(crate) mod tests {
         let tool_call_id = acp::ToolCallId::new("search-tool-content");
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::ToolCall(
-            acp::ToolCall::new(tool_call_id.clone(), "Inspect output")
+            acp::ToolCall::new(tool_call_id.clone(), "检查输出")
                 .kind(acp::ToolKind::Other)
                 .status(acp::ToolCallStatus::Completed)
-                .content(vec!["Tool output mentions papaya once.".into()]),
+                .content(vec!["工具输出提到一次木瓜。".into()]),
         )]);
 
         let (conversation_view, cx) =
@@ -7248,7 +7248,7 @@ pub(crate) mod tests {
         let thread =
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
-            .update(cx, |thread, cx| thread.send_raw("Run the tool", cx))
+            .update(cx, |thread, cx| thread.send_raw("运行工具", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7261,7 +7261,7 @@ pub(crate) mod tests {
 
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
                 editor.set_text("papaya", window, cx);
@@ -7272,7 +7272,7 @@ pub(crate) mod tests {
         assert_eq!(
             bar.read_with(cx, |bar, _| bar.match_count()),
             0,
-            "collapsed tool-call content should not be searched",
+            "折叠的工具调用内容不应被搜索",
         );
 
         thread_view.update(cx, |view, cx| {
@@ -7288,7 +7288,7 @@ pub(crate) mod tests {
         assert_eq!(
             bar.read_with(cx, |bar, _| bar.match_count()),
             1,
-            "expanded tool-call content should be searchable",
+            "展开的工具调用内容应可搜索",
         );
     }
 
@@ -7298,7 +7298,7 @@ pub(crate) mod tests {
 
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("First reply, no fruit here.".into()),
+            acp::ContentChunk::new("第一条回复,这里没有水果。".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -7308,15 +7308,15 @@ pub(crate) mod tests {
         let thread =
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
-            .update(cx, |thread, cx| thread.send_raw("First question", cx))
+            .update(cx, |thread, cx| thread.send_raw("第一个问题", cx))
             .await
             .unwrap();
         cx.run_until_parked();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Second reply, still no fruit.".into()),
+            acp::ContentChunk::new("第二条回复,仍然没有水果。".into()),
         )]);
         thread
-            .update(cx, |thread, cx| thread.send_raw("Where is the papaya?", cx))
+            .update(cx, |thread, cx| thread.send_raw("木瓜在哪里?", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7327,7 +7327,7 @@ pub(crate) mod tests {
                 .entries()
                 .iter()
                 .rposition(|entry| matches!(entry, AgentThreadEntry::UserMessage(_)))
-                .expect("a user message entry should exist")
+                .expect("应存在用户消息条目")
         });
 
         thread_view.update_in(cx, |view, window, cx| {
@@ -7336,7 +7336,7 @@ pub(crate) mod tests {
         cx.run_until_parked();
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
                 editor.set_text("papaya", window, cx);
@@ -7349,7 +7349,7 @@ pub(crate) mod tests {
             assert_eq!(
                 bar.match_count(),
                 1,
-                "only the second user message matches 'papaya'"
+                "只有第二条用户消息匹配 'papaya'"
             );
         });
 
@@ -7357,7 +7357,7 @@ pub(crate) mod tests {
             assert_eq!(
                 view.list_state.logical_scroll_top().item_ix,
                 papaya_entry_ix,
-                "list should scroll to the user-message entry that owns the match",
+                "列表应滚动到拥有匹配项的用户消息条目",
             );
         });
     }
@@ -7370,7 +7370,7 @@ pub(crate) mod tests {
 
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("First reply, no fruit here.".into()),
+            acp::ContentChunk::new("第一条回复,这里没有水果。".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -7380,15 +7380,15 @@ pub(crate) mod tests {
         let thread =
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
-            .update(cx, |thread, cx| thread.send_raw("First question", cx))
+            .update(cx, |thread, cx| thread.send_raw("第一个问题", cx))
             .await
             .unwrap();
         cx.run_until_parked();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Second reply, still no fruit.".into()),
+            acp::ContentChunk::new("第二条回复,仍然没有水果。".into()),
         )]);
         thread
-            .update(cx, |thread, cx| thread.send_raw("Where is the papaya?", cx))
+            .update(cx, |thread, cx| thread.send_raw("木瓜在哪里?", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7399,7 +7399,7 @@ pub(crate) mod tests {
                 .entries()
                 .iter()
                 .rposition(|entry| matches!(entry, AgentThreadEntry::UserMessage(_)))
-                .expect("a user message entry should exist")
+                .expect("应存在用户消息条目")
         });
 
         thread_view.update_in(cx, |view, window, cx| {
@@ -7408,7 +7408,7 @@ pub(crate) mod tests {
         cx.run_until_parked();
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
                 editor.set_text("papaya", window, cx);
@@ -7442,7 +7442,7 @@ pub(crate) mod tests {
             assert_eq!(
                 view.list_state.logical_scroll_top().item_ix,
                 0,
-                "a passive rescan must not scroll back to the active match",
+                "被动重新扫描不得滚动回活动匹配项",
             );
         });
     }
@@ -7453,7 +7453,7 @@ pub(crate) mod tests {
 
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Mango is a tropical fruit.".into()),
+            acp::ContentChunk::new("芒果是一种热带水果。".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -7463,7 +7463,7 @@ pub(crate) mod tests {
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
 
         thread
-            .update(cx, |thread, cx| thread.send_raw("Tell me about mango", cx))
+            .update(cx, |thread, cx| thread.send_raw("告诉我关于芒果的事", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7503,7 +7503,7 @@ pub(crate) mod tests {
 
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Mango is a tropical fruit.".into()),
+            acp::ContentChunk::new("芒果是一种热带水果。".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -7512,7 +7512,7 @@ pub(crate) mod tests {
         let thread =
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
-            .update(cx, |thread, cx| thread.send_raw("Tell me about mango", cx))
+            .update(cx, |thread, cx| thread.send_raw("告诉我关于芒果的事", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7532,7 +7532,7 @@ pub(crate) mod tests {
                     }
                     _ => None,
                 })
-                .expect("assistant message should have markdown")
+                .expect("助手消息应包含 Markdown")
         });
 
         let entry_view_state = active_thread(&conversation_view, cx)
@@ -7561,7 +7561,7 @@ pub(crate) mod tests {
         assert!(
             assistant_markdown
                 .read_with(cx, |markdown, _| !markdown.search_highlights().is_empty()),
-            "search should have highlighted the assistant markdown before release",
+            "释放前搜索应已高亮助手 Markdown",
         );
 
         drop(bar);
@@ -7570,7 +7570,7 @@ pub(crate) mod tests {
 
         assert!(
             assistant_markdown.read_with(cx, |markdown, _| markdown.search_highlights().is_empty()),
-            "releasing the search bar should clear retained markdown highlights",
+            "释放搜索栏应清除保留的 Markdown 高亮",
         );
     }
 
@@ -7580,7 +7580,7 @@ pub(crate) mod tests {
 
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("First reply mentions banana once.".into()),
+            acp::ContentChunk::new("第一条回复提到一次香蕉。".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -7589,7 +7589,7 @@ pub(crate) mod tests {
         let thread =
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
-            .update(cx, |thread, cx| thread.send_raw("Tell me about banana", cx))
+            .update(cx, |thread, cx| thread.send_raw("告诉我关于香蕉的事", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7602,7 +7602,7 @@ pub(crate) mod tests {
 
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
                 editor.set_text("banana", window, cx);
@@ -7614,7 +7614,7 @@ pub(crate) mod tests {
         let count_before = bar.read_with(cx, |bar, _| bar.match_count());
         assert!(
             count_before >= 2,
-            "expected at least two initial matches, got {count_before}",
+            "预期至少两个初始匹配,实际为 {count_before}",
         );
 
         bar.update_in(cx, |bar, window, cx| {
@@ -7624,15 +7624,15 @@ pub(crate) mod tests {
         assert_eq!(
             bar.read_with(cx, |bar, _| bar.active_match_index()),
             Some(1),
-            "setup precondition: second match should be active before the refresh",
+            "设置前提:刷新前第二个匹配项应为活动状态",
         );
 
         // Advance past the debounced thread-update rescan.
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Banana banana: two more banana hits here.".into()),
+            acp::ContentChunk::new("香蕉香蕉:这里又多了两处香蕉匹配。".into()),
         )]);
         thread
-            .update(cx, |thread, cx| thread.send_raw("More banana please", cx))
+            .update(cx, |thread, cx| thread.send_raw("请再来点香蕉", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7650,7 +7650,7 @@ pub(crate) mod tests {
         assert_eq!(
             active_after,
             Some(1),
-            "refreshing matches should preserve the active result when it still exists",
+            "刷新匹配项时,如果活动结果仍然存在,应保留它",
         );
     }
 
@@ -7664,7 +7664,7 @@ pub(crate) mod tests {
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
             acp::ContentChunk::new(
-                "Banana banana banana, the banana fits the banana bread.".into(),
+                "香蕉香蕉香蕉,香蕉适合做香蕉面包。".into(),
             ),
         )]);
 
@@ -7674,7 +7674,7 @@ pub(crate) mod tests {
         let thread =
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
-            .update(cx, |thread, cx| thread.send_raw("Need banana help", cx))
+            .update(cx, |thread, cx| thread.send_raw("需要香蕉帮助", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7687,7 +7687,7 @@ pub(crate) mod tests {
 
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
                 editor.set_text("banana", window, cx);
@@ -7699,7 +7699,7 @@ pub(crate) mod tests {
         let initial_match_count = bar.read_with(cx, |bar, _| bar.match_count());
         assert!(
             initial_match_count >= 2,
-            "setup precondition: expected at least 2 matches, got {}",
+            "设置前提:预期至少 2 个匹配,实际为 {}",
             initial_match_count,
         );
 
@@ -7707,7 +7707,7 @@ pub(crate) mod tests {
             let bar = view
                 .thread_search_bar
                 .clone()
-                .expect("bar should still be set");
+                .expect("搜索栏应仍然设置");
             bar.update(cx, |bar, cx| {
                 bar.select_next_match(&super::thread_search_bar::SelectNextThreadMatch, window, cx);
             });
@@ -7718,7 +7718,7 @@ pub(crate) mod tests {
         assert_eq!(
             active_after,
             Some(1),
-            "select_next_match should have advanced from match 0 to match 1",
+            "select_next_match 应从匹配 0 前进到匹配 1",
         );
     }
 
@@ -7729,7 +7729,7 @@ pub(crate) mod tests {
 
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Sure, I can help with that.".into()),
+            acp::ContentChunk::new("当然,我可以帮忙。".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -7740,7 +7740,7 @@ pub(crate) mod tests {
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
             .update(cx, |thread, cx| {
-                thread.send_raw("Where do I find a kumquat?", cx)
+                thread.send_raw("我在哪里可以找到金桔?", cx)
             })
             .await
             .unwrap();
@@ -7754,7 +7754,7 @@ pub(crate) mod tests {
 
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
                 editor.set_text("kumquat", window, cx);
@@ -7766,7 +7766,7 @@ pub(crate) mod tests {
         let match_count = bar.read_with(cx, |bar, _| bar.match_count());
         assert_eq!(
             match_count, 1,
-            "expected exactly one match for 'kumquat' (in the user message)",
+            "预期 'kumquat' 恰好匹配一处(在用户消息中)",
         );
 
         let user_message_editor = thread_view.read_with(cx, |view, cx| {
@@ -7775,14 +7775,14 @@ pub(crate) mod tests {
                 .entry(0)
                 .and_then(|entry| entry.message_editor())
                 .map(|message_editor| message_editor.read(cx).editor().clone())
-                .expect("entry 0 should be a user message with a message editor")
+                .expect("条目 0 应为带有消息编辑器的用户消息")
         });
         let has_highlight = user_message_editor.read_with(cx, |editor, _cx| {
             editor.has_background_highlights(editor::HighlightKey::BufferSearchHighlights)
         });
         assert!(
             has_highlight,
-            "user message editor should carry BufferSearchHighlights after the bar's matcher ran",
+            "搜索栏匹配器运行后,用户消息编辑器应携带 BufferSearchHighlights",
         );
 
         bar.update(cx, |bar, cx| bar.clear_highlights(cx));
@@ -7792,7 +7792,7 @@ pub(crate) mod tests {
         });
         assert!(
             !has_highlight_after_clear,
-            "clear_highlights should remove the editor-backed highlights",
+            "clear_highlights 应移除编辑器支持的高亮",
         );
     }
 
@@ -7814,12 +7814,12 @@ pub(crate) mod tests {
         let visible_before = thread_view.read_with(cx, |view, _| view.thread_search_visible);
         assert!(
             visible_before,
-            "search bar should be visible after toggle_search"
+            "toggle_search 后搜索栏应可见"
         );
 
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("bar should be set");
+            .expect("搜索栏应设置");
         let query_focus = bar.read_with(cx, |bar, cx| bar.query_editor.focus_handle(cx));
         cx.update(|window, cx| {
             window.focus(&query_focus, cx);
@@ -7834,7 +7834,7 @@ pub(crate) mod tests {
         let visible_after = thread_view.read_with(cx, |view, _| view.thread_search_visible);
         assert!(
             !visible_after,
-            "editor::Cancel should have dismissed the bar before reaching the workspace",
+            "编辑器::Cancel 应在到达工作区之前关闭搜索栏",
         );
     }
 
@@ -7872,7 +7872,7 @@ pub(crate) mod tests {
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
             acp::ContentChunk::new(
-                "Banana banana banana, multiple banana mentions in this reply.".into(),
+                "香蕉香蕉香蕉,这条回复中多次提到香蕉。".into(),
             ),
         )]);
 
@@ -7883,7 +7883,7 @@ pub(crate) mod tests {
         let thread =
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
-            .update(cx, |thread, cx| thread.send_raw("Need banana help", cx))
+            .update(cx, |thread, cx| thread.send_raw("需要香蕉帮助", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7896,7 +7896,7 @@ pub(crate) mod tests {
 
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
 
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
@@ -7909,13 +7909,13 @@ pub(crate) mod tests {
         let initial_count = bar.read_with(cx, |bar, _| bar.match_count());
         assert!(
             initial_count >= 2,
-            "test precondition: need ≥2 matches across the thread, got {}",
+            "测试前提:整个线程需要 ≥2 个匹配,实际为 {}",
             initial_count,
         );
         assert_eq!(
             bar.read_with(cx, |bar, _| bar.active_match_index()),
             Some(0),
-            "first match should be active after the bar populates its match list",
+            "搜索栏填充匹配列表后,第一个匹配项应为活动状态",
         );
 
         let query_focus = bar.read_with(cx, |bar, cx| bar.query_editor.focus_handle(cx));
@@ -7926,7 +7926,7 @@ pub(crate) mod tests {
         cx.update(|window, cx| {
             assert!(
                 query_focus.contains_focused(window, cx),
-                "query editor must be focused before simulating shift-enter",
+                "模拟 shift-enter 前,查询编辑器必须获得焦点",
             );
         });
 
@@ -7936,7 +7936,7 @@ pub(crate) mod tests {
         let query_text_after = bar.read_with(cx, |bar, cx| bar.query_editor.read(cx).text(cx));
         assert!(
             !query_text_after.contains('\n'),
-            "shift-enter must not insert a newline into the query buffer; got {:?}",
+            "shift-enter 不得在查询缓冲区中插入换行符;实际为 {:?}",
             query_text_after,
         );
 
@@ -7944,7 +7944,7 @@ pub(crate) mod tests {
         assert_eq!(
             active_after,
             Some(initial_count - 1),
-            "shift-enter should have wrapped active match from 0 to {} (got {:?})",
+            "shift-enter 应将活动匹配项从 0 循环到 {}(实际为 {:?})",
             initial_count - 1,
             active_after,
         );
@@ -7972,7 +7972,7 @@ pub(crate) mod tests {
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
             acp::ContentChunk::new(
-                "Banana banana banana, multiple banana mentions in this reply.".into(),
+                "香蕉香蕉香蕉,这条回复中多次提到香蕉。".into(),
             ),
         )]);
 
@@ -7983,7 +7983,7 @@ pub(crate) mod tests {
         let thread =
             active_thread(&conversation_view, cx).read_with(cx, |view, _| view.thread.clone());
         thread
-            .update(cx, |thread, cx| thread.send_raw("Need banana help", cx))
+            .update(cx, |thread, cx| thread.send_raw("需要香蕉帮助", cx))
             .await
             .unwrap();
         cx.run_until_parked();
@@ -7996,7 +7996,7 @@ pub(crate) mod tests {
 
         let bar = thread_view
             .read_with(cx, |view, _| view.thread_search_bar.clone())
-            .expect("thread_search_bar should be set after toggle_search");
+            .expect("toggle_search 后应设置 thread_search_bar");
         bar.update_in(cx, |bar, window, cx| {
             bar.query_editor.update(cx, |editor, cx| {
                 editor.set_text("banana", window, cx);
@@ -8008,7 +8008,7 @@ pub(crate) mod tests {
         let initial_count = bar.read_with(cx, |bar, _| bar.match_count());
         assert!(
             initial_count >= 2,
-            "test precondition: need ≥ 2 matches, got {}",
+            "测试前提:需要 ≥ 2 个匹配,实际为 {}",
             initial_count,
         );
         assert_eq!(
@@ -8026,7 +8026,7 @@ pub(crate) mod tests {
                     .focus_handle(cx)
                     .contains_focused(window, cx)
             });
-            assert!(!bar_focused, "search bar must not be focused for this test");
+            assert!(!bar_focused, "此测试中搜索栏不得获得焦点");
         });
 
         cx.simulate_keystrokes("f3");
@@ -8034,7 +8034,7 @@ pub(crate) mod tests {
         assert_eq!(
             bar.read_with(cx, |bar, _| bar.active_match_index()),
             Some(1),
-            "f3 from outside the bar should advance to the next match",
+            "从搜索栏外部按 f3 应前进到下一个匹配项",
         );
 
         cx.simulate_keystrokes("shift-f3");
@@ -8042,7 +8042,7 @@ pub(crate) mod tests {
         assert_eq!(
             bar.read_with(cx, |bar, _| bar.active_match_index()),
             Some(0),
-            "shift-f3 from outside the bar should return to the previous match",
+            "从搜索栏外部按 shift-f3 应返回到上一个匹配项",
         );
     }
 
@@ -8053,7 +8053,7 @@ pub(crate) mod tests {
         let connection = StubAgentConnection::new();
 
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Response".into()),
+            acp::ContentChunk::new("响应".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -8062,7 +8062,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Original message to edit", window, cx);
+            editor.set_text("要编辑的原始消息", window, cx);
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.send(window, cx));
@@ -8100,7 +8100,7 @@ pub(crate) mod tests {
 
         // Edit
         user_message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Edited message content", window, cx);
+            editor.set_text("编辑后的消息内容", window, cx);
         });
 
         // Cancel
@@ -8117,7 +8117,7 @@ pub(crate) mod tests {
         });
 
         user_message_editor.read_with(cx, |editor, cx| {
-            assert_eq!(editor.text(cx), "Original message to edit");
+            assert_eq!(editor.text(cx), "要编辑的原始消息");
         });
     }
 
@@ -8155,7 +8155,7 @@ pub(crate) mod tests {
         let entries_after = cx.read(|cx| thread.read(cx).entries().len());
         assert_eq!(
             entries_before, entries_after,
-            "No message should be sent when editor is empty"
+            "编辑器为空时不应发送消息"
         );
     }
 
@@ -8166,7 +8166,7 @@ pub(crate) mod tests {
         let connection = StubAgentConnection::new();
 
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Response".into()),
+            acp::ContentChunk::new("响应".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -8175,7 +8175,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Original message to edit", window, cx);
+            editor.set_text("要编辑的原始消息", window, cx);
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.send(window, cx));
@@ -8216,12 +8216,12 @@ pub(crate) mod tests {
 
         // Edit
         user_message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Edited message content", window, cx);
+            editor.set_text("编辑后的消息内容", window, cx);
         });
 
         // Send
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("New Response".into()),
+            acp::ContentChunk::new("新回复".into()),
         )]);
 
         user_message_editor.update_in(cx, |_editor, window, cx| {
@@ -8263,7 +8263,7 @@ pub(crate) mod tests {
                 state.entry(0).unwrap().message_editor().unwrap().clone()
             });
 
-            assert_eq!(new_editor.read(cx).text(cx), "Edited message content");
+            assert_eq!(new_editor.read(cx).text(cx), "编辑后的消息内容");
         })
     }
 
@@ -8279,7 +8279,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Original message to edit", window, cx);
+            editor.set_text("要编辑的原始消息", window, cx);
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.send(window, cx));
@@ -8318,7 +8318,7 @@ pub(crate) mod tests {
 
         // Edit
         user_message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Edited message content", window, cx);
+            editor.set_text("编辑后的消息内容", window, cx);
         });
 
         conversation_view.read_with(cx, |view, cx| {
@@ -8333,7 +8333,7 @@ pub(crate) mod tests {
         cx.update(|_, cx| {
             connection.send_update(
                 session_id.clone(),
-                acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new("Response".into())),
+                acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new("响应".into())),
                 cx,
             );
             connection.end_turn(session_id, acp::StopReason::EndTurn);
@@ -8361,7 +8361,7 @@ pub(crate) mod tests {
             );
             assert_eq!(
                 user_message_editor.read(cx).text(cx),
-                "Edited message content"
+                "编辑后的消息内容"
             );
         });
     }
@@ -8380,7 +8380,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Original message to edit", window, cx);
+            editor.set_text("要编辑的原始消息", window, cx);
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.send(window, cx));
@@ -8402,7 +8402,7 @@ pub(crate) mod tests {
 
         cx.focus(&user_message_editor);
         user_message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Edited message content", window, cx);
+            editor.set_text("编辑后的消息内容", window, cx);
         });
 
         user_message_editor.update_in(cx, |_editor, window, cx| {
@@ -8418,7 +8418,7 @@ pub(crate) mod tests {
             assert_eq!(active.thread.read(cx).status(), ThreadStatus::Generating);
             assert!(
                 active.list_state.is_following_tail(),
-                "stale stop events from the cancelled turn must not disable follow-tail for the new turn"
+                "已取消轮次的过期停止事件不得禁用新轮次的跟随尾部"
             );
         });
     }
@@ -8440,7 +8440,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.send(window, cx));
@@ -8462,7 +8462,7 @@ pub(crate) mod tests {
             connection.send_update(
                 session_id.clone(),
                 acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new(
-                    "Response chunk".into(),
+                    "回复片段".into(),
                 )),
                 cx,
             );
@@ -8576,7 +8576,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Message 1", window, cx);
+            editor.set_text("消息 1", window, cx);
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.send(window, cx));
@@ -8593,7 +8593,7 @@ pub(crate) mod tests {
             connection.send_update(
                 session_id.clone(),
                 acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new(
-                    "Message 1 resp".into(),
+                    "消息 1 回复".into(),
                 )),
                 cx,
             );
@@ -8618,7 +8618,7 @@ pub(crate) mod tests {
         });
 
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Message 2", window, cx);
+            editor.set_text("消息 2", window, cx);
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.interrupt_and_send(window, cx));
@@ -8659,7 +8659,7 @@ pub(crate) mod tests {
             connection.send_update(
                 session_id.clone(),
                 acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new(
-                    "Message 2 response".into(),
+                    "消息 2 回复".into(),
                 )),
                 cx,
             );
@@ -8699,7 +8699,7 @@ pub(crate) mod tests {
 
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Response".into()),
+            acp::ContentChunk::new("响应".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -8708,7 +8708,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Original message to edit", window, cx)
+            editor.set_text("要编辑的原始消息", window, cx)
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.send(window, cx));
@@ -8722,9 +8722,9 @@ pub(crate) mod tests {
                 .unwrap()
                 .read(cx)
                 .entry(0)
-                .expect("Should have at least one entry")
+                .expect("应至少有一个条目")
                 .message_editor()
-                .expect("Should have message editor")
+                .expect("应有消息编辑器")
                 .clone()
         });
 
@@ -8740,7 +8740,7 @@ pub(crate) mod tests {
         // Ensure to edit the focused message before proceeding otherwise, since
         // its content is not different from what was sent, focus will be lost.
         user_message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Original message to edit with ", window, cx)
+            editor.set_text("要编辑的原始消息,附带 ", window, cx)
         });
 
         // Create a simple buffer with some text so we can create a selection
@@ -8789,7 +8789,7 @@ pub(crate) mod tests {
 
         user_message_editor.read_with(cx, |editor, cx| {
             let text = editor.editor().read(cx).text(cx);
-            let expected_text = String::from("Original message to edit with selection ");
+            let expected_text = String::from("要编辑的原始消息,附带选区 ");
 
             assert_eq!(text, expected_text);
         });
@@ -8801,7 +8801,7 @@ pub(crate) mod tests {
 
         let connection = StubAgentConnection::new();
         connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Response".into()),
+            acp::ContentChunk::new("响应".into()),
         )]);
 
         let (conversation_view, cx) =
@@ -8810,7 +8810,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Can you review this snippet ", window, cx)
+            editor.set_text("你能审查这段代码片段吗 ", window, cx)
         });
 
         // Create a simple buffer with some text so we can create a selection
@@ -8859,7 +8859,7 @@ pub(crate) mod tests {
 
         message_editor.read_with(cx, |editor, cx| {
             let text = editor.text(cx);
-            let expected_txt = String::from("Can you review this snippet selection ");
+            let expected_txt = String::from("你能审查这段代码片段选区吗 ");
 
             assert_eq!(text, expected_txt);
         })
@@ -8870,7 +8870,7 @@ pub(crate) mod tests {
         init_test(cx);
 
         let tool_call_id = acp::ToolCallId::new("terminal-1");
-        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "Run `cargo build --release`")
+        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "运行 `cargo build --release`")
             .kind(acp::ToolKind::Edit);
 
         let permission_options = ToolPermissionContext::new(
@@ -8903,7 +8903,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Run cargo build", window, cx);
+            editor.set_text("运行 cargo build", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -8915,7 +8915,7 @@ pub(crate) mod tests {
         conversation_view.read_with(cx, |conversation_view, cx| {
             let thread = conversation_view
                 .active_thread()
-                .expect("Thread should exist")
+                .expect("线程应存在")
                 .read(cx)
                 .thread
                 .clone();
@@ -8929,7 +8929,7 @@ pub(crate) mod tests {
                 }
             });
 
-            assert!(tool_call.is_some(), "Expected a tool call entry");
+            assert!(tool_call.is_some(), "预期有一个工具调用条目");
             let tool_call = tool_call.unwrap();
 
             // Verify it's waiting for confirmation
@@ -8938,7 +8938,7 @@ pub(crate) mod tests {
                     tool_call.status,
                     acp_thread::ToolCallStatus::WaitingForConfirmation { .. }
                 ),
-                "Expected WaitingForConfirmation status, got {:?}",
+                "预期 WaitingForConfirmation 状态,实际为 {:?}",
                 tool_call.status
             );
 
@@ -8947,13 +8947,13 @@ pub(crate) mod tests {
                 &tool_call.status
             {
                 let PermissionOptions::Dropdown(choices) = options else {
-                    panic!("Expected dropdown permission options");
+                    panic!("预期有下拉权限选项");
                 };
 
                 assert_eq!(
                     choices.len(),
                     3,
-                    "Expected 3 permission options (granularity only)"
+                    "预期有 3 个权限选项(仅粒度)"
                 );
 
                 // Verify specific button labels (now using neutral names)
@@ -8962,16 +8962,16 @@ pub(crate) mod tests {
                     .map(|choice| choice.allow.name.as_ref())
                     .collect();
                 assert!(
-                    labels.contains(&"Always for terminal"),
-                    "Missing 'Always for terminal' option"
+                    labels.contains(&"始终允许终端"),
+                    "缺少“始终用于终端”选项"
                 );
                 assert!(
-                    labels.contains(&"Always for `cargo build` commands"),
-                    "Missing pattern option"
+                    labels.contains(&"始终用于 `cargo build` 命令"),
+                    "缺少模式选项"
                 );
                 assert!(
-                    labels.contains(&"Only this time"),
-                    "Missing 'Only this time' option"
+                    labels.contains(&"仅此一次"),
+                    "缺少“仅此一次”选项"
                 );
             }
         });
@@ -8982,7 +8982,7 @@ pub(crate) mod tests {
         init_test(cx);
 
         let tool_call_id = acp::ToolCallId::new("edit-file-1");
-        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "Edit `src/main.rs`")
+        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "编辑 `src/main.rs`")
             .kind(acp::ToolKind::Edit);
 
         let permission_options =
@@ -9013,7 +9013,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Edit the main file", window, cx);
+            editor.set_text("编辑主文件", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -9025,7 +9025,7 @@ pub(crate) mod tests {
         conversation_view.read_with(cx, |conversation_view, cx| {
             let thread = conversation_view
                 .active_thread()
-                .expect("Thread should exist")
+                .expect("线程应存在")
                 .read(cx)
                 .thread
                 .clone();
@@ -9039,14 +9039,14 @@ pub(crate) mod tests {
                 }
             });
 
-            assert!(tool_call.is_some(), "Expected a tool call entry");
+            assert!(tool_call.is_some(), "预期有一个工具调用条目");
             let tool_call = tool_call.unwrap();
 
             if let acp_thread::ToolCallStatus::WaitingForConfirmation { options, .. } =
                 &tool_call.status
             {
                 let PermissionOptions::Dropdown(choices) = options else {
-                    panic!("Expected dropdown permission options");
+                    panic!("预期有下拉权限选项");
                 };
 
                 let labels: Vec<&str> = choices
@@ -9054,15 +9054,15 @@ pub(crate) mod tests {
                     .map(|choice| choice.allow.name.as_ref())
                     .collect();
                 assert!(
-                    labels.contains(&"Always for edit file"),
-                    "Missing 'Always for edit file' option"
+                    labels.contains(&"始终用于编辑文件"),
+                    "缺少“始终用于编辑文件”选项"
                 );
                 assert!(
-                    labels.contains(&"Always for `src/`"),
-                    "Missing path pattern option"
+                    labels.contains(&"始终用于 `src/`"),
+                    "缺少路径模式选项"
                 );
             } else {
-                panic!("Expected WaitingForConfirmation status");
+                panic!("预期 WaitingForConfirmation 状态");
             }
         });
     }
@@ -9072,7 +9072,7 @@ pub(crate) mod tests {
         init_test(cx);
 
         let tool_call_id = acp::ToolCallId::new("fetch-1");
-        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "Fetch `https://docs.rs/gpui`")
+        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "获取 `https://docs.rs/gpui`")
             .kind(acp::ToolKind::Fetch);
 
         let permission_options =
@@ -9103,7 +9103,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Fetch the docs", window, cx);
+            editor.set_text("获取文档", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -9115,7 +9115,7 @@ pub(crate) mod tests {
         conversation_view.read_with(cx, |conversation_view, cx| {
             let thread = conversation_view
                 .active_thread()
-                .expect("Thread should exist")
+                .expect("线程应存在")
                 .read(cx)
                 .thread
                 .clone();
@@ -9129,14 +9129,14 @@ pub(crate) mod tests {
                 }
             });
 
-            assert!(tool_call.is_some(), "Expected a tool call entry");
+            assert!(tool_call.is_some(), "预期有一个工具调用条目");
             let tool_call = tool_call.unwrap();
 
             if let acp_thread::ToolCallStatus::WaitingForConfirmation { options, .. } =
                 &tool_call.status
             {
                 let PermissionOptions::Dropdown(choices) = options else {
-                    panic!("Expected dropdown permission options");
+                    panic!("预期有下拉权限选项");
                 };
 
                 let labels: Vec<&str> = choices
@@ -9144,15 +9144,15 @@ pub(crate) mod tests {
                     .map(|choice| choice.allow.name.as_ref())
                     .collect();
                 assert!(
-                    labels.contains(&"Always for fetch"),
-                    "Missing 'Always for fetch' option"
+                    labels.contains(&"始终用于获取"),
+                    "缺少“始终用于获取”选项"
                 );
                 assert!(
-                    labels.contains(&"Always for `docs.rs`"),
-                    "Missing domain pattern option"
+                    labels.contains(&"始终用于 `docs.rs`"),
+                    "缺少域模式选项"
                 );
             } else {
-                panic!("Expected WaitingForConfirmation status");
+                panic!("预期 WaitingForConfirmation 状态");
             }
         });
     }
@@ -9162,7 +9162,7 @@ pub(crate) mod tests {
         init_test(cx);
 
         let tool_call_id = acp::ToolCallId::new("terminal-no-pattern-1");
-        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "Run `./deploy.sh --production`")
+        let tool_call = acp::ToolCall::new(tool_call_id.clone(), "运行 `./deploy.sh --production`")
             .kind(acp::ToolKind::Edit);
 
         // No pattern button since ./deploy.sh doesn't match the alphanumeric pattern
@@ -9196,7 +9196,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Run the deploy script", window, cx);
+            editor.set_text("运行部署脚本", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -9208,7 +9208,7 @@ pub(crate) mod tests {
         conversation_view.read_with(cx, |conversation_view, cx| {
             let thread = conversation_view
                 .active_thread()
-                .expect("Thread should exist")
+                .expect("线程应存在")
                 .read(cx)
                 .thread
                 .clone();
@@ -9222,20 +9222,20 @@ pub(crate) mod tests {
                 }
             });
 
-            assert!(tool_call.is_some(), "Expected a tool call entry");
+            assert!(tool_call.is_some(), "预期有一个工具调用条目");
             let tool_call = tool_call.unwrap();
 
             if let acp_thread::ToolCallStatus::WaitingForConfirmation { options, .. } =
                 &tool_call.status
             {
                 let PermissionOptions::Dropdown(choices) = options else {
-                    panic!("Expected dropdown permission options");
+                    panic!("预期有下拉权限选项");
                 };
 
                 assert_eq!(
                     choices.len(),
                     2,
-                    "Expected 2 permission options (no pattern option)"
+                    "预期有 2 个权限选项(无模式选项)"
                 );
 
                 let labels: Vec<&str> = choices
@@ -9243,20 +9243,20 @@ pub(crate) mod tests {
                     .map(|choice| choice.allow.name.as_ref())
                     .collect();
                 assert!(
-                    labels.contains(&"Always for terminal"),
-                    "Missing 'Always for terminal' option"
+                    labels.contains(&"始终允许终端"),
+                    "缺少“始终用于终端”选项"
                 );
                 assert!(
-                    labels.contains(&"Only this time"),
-                    "Missing 'Only this time' option"
+                    labels.contains(&"仅此一次"),
+                    "缺少“仅此一次”选项"
                 );
                 // Should NOT contain a pattern option
                 assert!(
                     !labels.iter().any(|l| l.contains("commands")),
-                    "Should not have pattern option"
+                    "不应有模式选项"
                 );
             } else {
-                panic!("Expected WaitingForConfirmation status");
+                panic!("预期 WaitingForConfirmation 状态");
             }
         });
     }
@@ -9267,7 +9267,7 @@ pub(crate) mod tests {
 
         let tool_call_id = acp::ToolCallId::new("action-test-1");
         let tool_call =
-            acp::ToolCall::new(tool_call_id.clone(), "Run `cargo test`").kind(acp::ToolKind::Edit);
+            acp::ToolCall::new(tool_call_id.clone(), "运行 `cargo test`").kind(acp::ToolKind::Edit);
 
         let permission_options =
             ToolPermissionContext::new(TerminalTool::NAME, vec!["cargo test".to_string()])
@@ -9297,7 +9297,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Run tests", window, cx);
+            editor.set_text("运行测试", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -9310,7 +9310,7 @@ pub(crate) mod tests {
             let tool_call = conversation_view.pending_tool_call(cx);
             assert!(
                 tool_call.is_some(),
-                "Expected a tool call waiting for confirmation"
+                "预期有一个等待确认的工具调用"
             );
         });
 
@@ -9320,7 +9320,7 @@ pub(crate) mod tests {
                 crate::AuthorizeToolCall {
                     tool_call_id: "action-test-1".to_string(),
                     option_id: "allow".to_string(),
-                    option_kind: "AllowOnce".to_string(),
+                    option_kind: "允许一次".to_string(),
                 }
                 .boxed_clone(),
                 cx,
@@ -9334,7 +9334,7 @@ pub(crate) mod tests {
             let tool_call = conversation_view.pending_tool_call(cx);
             assert!(
                 tool_call.is_none(),
-                "Tool call should no longer be waiting for confirmation after AuthorizeToolCall action"
+                "AuthorizeToolCall 操作后,工具调用不应再等待确认"
             );
         });
     }
@@ -9345,7 +9345,7 @@ pub(crate) mod tests {
 
         let tool_call_id = acp::ToolCallId::new("pattern-action-test-1");
         let tool_call =
-            acp::ToolCall::new(tool_call_id.clone(), "Run `npm install`").kind(acp::ToolKind::Edit);
+            acp::ToolCall::new(tool_call_id.clone(), "运行 `npm 安装`").kind(acp::ToolKind::Edit);
 
         let permission_options =
             ToolPermissionContext::new(TerminalTool::NAME, vec!["npm install".to_string()])
@@ -9375,7 +9375,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Install dependencies", window, cx);
+            editor.set_text("安装依赖", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -9389,17 +9389,17 @@ pub(crate) mod tests {
                 .iter()
                 .find(|choice| !choice.sub_patterns.is_empty())
                 .map(|choice| &choice.allow)
-                .expect("Should have a pattern option for npm command"),
-            _ => panic!("Expected dropdown permission options"),
+                .expect("npm 命令应有模式选项"),
+            _ => panic!("预期有下拉权限选项"),
         };
 
-        // Dispatch action with the pattern option (simulating "Always allow `npm` commands")
+        // Dispatch action with the pattern option (simulating "始终允许 `npm` 命令")
         conversation_view.update_in(cx, |_, window, cx| {
             window.dispatch_action(
                 crate::AuthorizeToolCall {
                     tool_call_id: "pattern-action-test-1".to_string(),
                     option_id: pattern_option.option_id.0.to_string(),
-                    option_kind: "AllowAlways".to_string(),
+                    option_kind: "始终允许".to_string(),
                 }
                 .boxed_clone(),
                 cx,
@@ -9413,7 +9413,7 @@ pub(crate) mod tests {
             let tool_call = conversation_view.pending_tool_call(cx);
             assert!(
                 tool_call.is_none(),
-                "Tool call should be authorized after selecting pattern option"
+                "选择模式选项后,工具调用应被授权"
             );
         });
     }
@@ -9424,7 +9424,7 @@ pub(crate) mod tests {
 
         let tool_call_id = acp::ToolCallId::new("granularity-test-1");
         let tool_call =
-            acp::ToolCall::new(tool_call_id.clone(), "Run `cargo build`").kind(acp::ToolKind::Edit);
+            acp::ToolCall::new(tool_call_id.clone(), "运行 `cargo build`").kind(acp::ToolKind::Edit);
 
         let permission_options =
             ToolPermissionContext::new(TerminalTool::NAME, vec!["cargo build".to_string()])
@@ -9453,24 +9453,24 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&thread_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Build the project", window, cx);
+            editor.set_text("构建项目", window, cx);
         });
 
         active_thread(&thread_view, cx).update_in(cx, |view, window, cx| view.send(window, cx));
 
         cx.run_until_parked();
 
-        // Verify default granularity is the last option (index 2 = "Only this time")
+        // Verify default granularity is the last option (index 2 = "仅此一次")
         thread_view.read_with(cx, |thread_view, cx| {
             let state = thread_view.active_thread().unwrap();
             let selected = state.read(cx).permission_selections.get(&tool_call_id);
             assert!(
                 selected.is_none(),
-                "Should have no selection initially (defaults to last)"
+                "初始不应有选择(默认为最后一个)"
             );
         });
 
-        // Select the first option (index 0 = "Always for terminal")
+        // Select the first option (index 0 = "始终允许终端")
         thread_view.update_in(cx, |_, window, cx| {
             window.dispatch_action(
                 crate::SelectPermissionGranularity {
@@ -9491,7 +9491,7 @@ pub(crate) mod tests {
             assert_eq!(
                 selected.and_then(|s| s.choice_index()),
                 Some(0),
-                "Should have selected index 0"
+                "应已选择索引 0"
             );
         });
     }
@@ -9502,7 +9502,7 @@ pub(crate) mod tests {
 
         let tool_call_id = acp::ToolCallId::new("allow-granularity-test-1");
         let tool_call =
-            acp::ToolCall::new(tool_call_id.clone(), "Run `npm install`").kind(acp::ToolKind::Edit);
+            acp::ToolCall::new(tool_call_id.clone(), "运行 `npm 安装`").kind(acp::ToolKind::Edit);
 
         let permission_options =
             ToolPermissionContext::new(TerminalTool::NAME, vec!["npm install".to_string()])
@@ -9510,7 +9510,7 @@ pub(crate) mod tests {
 
         // Verify we have the expected options
         let PermissionOptions::Dropdown(choices) = &permission_options else {
-            panic!("Expected dropdown permission options");
+            panic!("预期有下拉权限选项");
         };
 
         assert_eq!(choices.len(), 3);
@@ -9554,14 +9554,14 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&thread_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Install dependencies", window, cx);
+            editor.set_text("安装依赖", window, cx);
         });
 
         active_thread(&thread_view, cx).update_in(cx, |view, window, cx| view.send(window, cx));
 
         cx.run_until_parked();
 
-        // Select the pattern option (index 1 = "Always for `npm` commands")
+        // Select the pattern option (index 1 = "始终用于 `npm` 命令")
         thread_view.update_in(cx, |_, window, cx| {
             window.dispatch_action(
                 crate::SelectPermissionGranularity {
@@ -9588,7 +9588,7 @@ pub(crate) mod tests {
             let tool_call = thread_view.pending_tool_call(cx);
             assert!(
                 tool_call.is_none(),
-                "Tool call should be authorized after Allow with pattern granularity"
+                "使用模式粒度允许后,工具调用应被授权"
             );
         });
     }
@@ -9599,7 +9599,7 @@ pub(crate) mod tests {
 
         let tool_call_id = acp::ToolCallId::new("deny-granularity-test-1");
         let tool_call =
-            acp::ToolCall::new(tool_call_id.clone(), "Run `git push`").kind(acp::ToolKind::Edit);
+            acp::ToolCall::new(tool_call_id.clone(), "运行 `git push`").kind(acp::ToolKind::Edit);
 
         let permission_options =
             ToolPermissionContext::new(TerminalTool::NAME, vec!["git push".to_string()])
@@ -9629,7 +9629,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Push changes", window, cx);
+            editor.set_text("推送更改", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -9637,7 +9637,7 @@ pub(crate) mod tests {
 
         cx.run_until_parked();
 
-        // Use default granularity (last option = "Only this time")
+        // Use default granularity (last option = "仅此一次")
         // Simulate clicking the Deny button
         active_thread(&conversation_view, cx).update_in(cx, |view, window, cx| {
             view.reject_once(&RejectOnce, window, cx)
@@ -9650,7 +9650,7 @@ pub(crate) mod tests {
             let tool_call = conversation_view.pending_tool_call(cx);
             assert!(
                 tool_call.is_none(),
-                "Tool call should be rejected after Deny"
+                "拒绝后,工具调用应被拒绝"
             );
         });
     }
@@ -9664,7 +9664,7 @@ pub(crate) mod tests {
         .build_permission_options();
 
         let PermissionOptions::Dropdown(choices) = permission_options else {
-            panic!("Expected dropdown permission options");
+            panic!("预期有下拉权限选项");
         };
 
         let allow_ids: Vec<String> = choices
@@ -9679,7 +9679,7 @@ pub(crate) mod tests {
                 .filter(|id| *id == "always_allow:terminal")
                 .count(),
             2,
-            "Expected two always_allow:terminal IDs (one whole-tool, one pattern with sub_patterns)"
+            "预期有两个 always_allow:终端 ID(一个整工具,一个带子模式的模式)"
         );
     }
 
@@ -9692,7 +9692,7 @@ pub(crate) mod tests {
         .build_permission_options();
 
         let PermissionOptions::Dropdown(choices) = permission_options else {
-            panic!("Expected dropdown permission options");
+            panic!("预期有下拉权限选项");
         };
 
         let deny_ids: Vec<String> = choices
@@ -9707,7 +9707,7 @@ pub(crate) mod tests {
                 .filter(|id| *id == "always_deny:terminal")
                 .count(),
             2,
-            "Expected two always_deny:terminal IDs (one whole-tool, one pattern with sub_patterns)"
+            "预期有两个 always_deny:终端 ID(一个整工具,一个带子模式的模式)"
         );
     }
 
@@ -9715,12 +9715,12 @@ pub(crate) mod tests {
         PermissionOptions::Flat(vec![
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new("allow"),
-                "Yes",
+                "是",
                 acp::PermissionOptionKind::AllowOnce,
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new("deny"),
-                "No",
+                "否",
                 acp::PermissionOptionKind::RejectOnce,
             ),
         ])
@@ -9730,22 +9730,22 @@ pub(crate) mod tests {
         PermissionOptions::Flat(vec![
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new("allow"),
-                "Allow once",
+                "允许一次",
                 acp::PermissionOptionKind::AllowOnce,
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new("allow_thread"),
-                "Allow for this thread",
+                "允许此对话线程",
                 acp::PermissionOptionKind::AllowAlways,
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new("allow_always"),
-                "Allow always",
+                "始终允许",
                 acp::PermissionOptionKind::AllowAlways,
             ),
             acp::PermissionOption::new(
                 acp::PermissionOptionId::new("deny"),
-                "Deny",
+                "拒绝",
                 acp::PermissionOptionKind::RejectOnce,
             ),
         ])
@@ -9802,7 +9802,7 @@ pub(crate) mod tests {
 
         let outcome = super::resolve_outcome_from_selection(&options, None, true).unwrap();
 
-        // Last choice is "Only this time" → option_id "allow".
+        // Last choice is "仅此一次" → option_id "allow".
         assert_eq!(outcome.option_id.0.as_ref(), "allow");
         assert_eq!(outcome.option_kind, acp::PermissionOptionKind::AllowOnce);
     }
@@ -9817,7 +9817,7 @@ pub(crate) mod tests {
         let outcome =
             super::resolve_outcome_from_selection(&options, Some(&selection), true).unwrap();
 
-        // Choice 0 = "Always for terminal".
+        // Choice 0 = "始终允许终端".
         assert!(outcome.option_id.0.contains("always_allow:terminal"));
         assert_eq!(outcome.option_kind, acp::PermissionOptionKind::AllowAlways);
     }
@@ -9832,7 +9832,7 @@ pub(crate) mod tests {
         let outcome =
             super::resolve_outcome_from_selection(&options, Some(&selection), true).unwrap();
 
-        // choices.get(999) is None, falls back to choices.last() → "Only this time".
+        // choices.get(999) is None, falls back to choices.last() → "仅此一次".
         assert_eq!(outcome.option_id.0.as_ref(), "allow");
     }
 
@@ -9880,7 +9880,7 @@ pub(crate) mod tests {
         assert_eq!(outcome.option_kind, acp::PermissionOptionKind::AllowAlways);
         assert!(
             outcome.params.is_some(),
-            "checked patterns should attach terminal params"
+            "选中的模式应附加终端参数"
         );
     }
 
@@ -9904,15 +9904,15 @@ pub(crate) mod tests {
         cx.focus(&title_editor);
 
         cx.dispatch_action(editor::actions::DeleteLine);
-        cx.simulate_input("My Custom Title");
+        cx.simulate_input("我的自定义标题");
 
         cx.run_until_parked();
 
         title_editor.read_with(cx, |editor, cx| {
-            assert_eq!(editor.text(cx), "My Custom Title");
+            assert_eq!(editor.text(cx), "我的自定义标题");
         });
         thread.read_with(cx, |thread, _cx| {
-            assert_eq!(thread.title(), Some("My Custom Title".into()));
+            assert_eq!(thread.title(), Some("我的自定义标题".into()));
         });
     }
 
@@ -9927,7 +9927,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Some prompt", window, cx);
+            editor.set_text("一些提示词", window, cx);
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.send(window, cx));
@@ -9955,7 +9955,7 @@ pub(crate) mod tests {
             let error = &state.read(cx).thread_error;
             assert!(
                 matches!(error, Some(ThreadError::MaxOutputTokens)),
-                "Expected ThreadError::MaxOutputTokens, got: {:?}",
+                "预期 ThreadError::MaxOutputTokens,实际为:{:?}",
                 error.is_some()
             );
         });
@@ -9991,7 +9991,7 @@ pub(crate) mod tests {
         cx: &mut TestAppContext,
     ) -> Task<acp_thread::RequestPermissionOutcome> {
         let tool_call_id = acp::ToolCallId::new(tool_call_id);
-        let label = format!("Tool {tool_call_id}");
+        let label = format!("工具 {tool_call_id}");
         let option_id = acp::PermissionOptionId::new(option_id);
         cx.update(|cx| {
             thread.update(cx, |thread, cx| {
@@ -10002,7 +10002,7 @@ pub(crate) mod tests {
                             .into(),
                         PermissionOptions::Flat(vec![acp::PermissionOption::new(
                             option_id,
-                            "Allow",
+                            "允许",
                             acp::PermissionOptionKind::AllowOnce,
                         )]),
                         acp_thread::AuthorizationKind::PermissionGrant,
@@ -10040,7 +10040,7 @@ pub(crate) mod tests {
             let (_, tool_call_id, _) = conversation
                 .read(cx)
                 .pending_tool_call(&session_id, cx)
-                .expect("Expected a pending tool call");
+                .expect("预期有一个待处理的工具调用");
             assert_eq!(tool_call_id, acp::ToolCallId::new("tc-1"));
         });
 
@@ -10064,7 +10064,7 @@ pub(crate) mod tests {
             let (_, tool_call_id, _) = conversation
                 .read(cx)
                 .pending_tool_call(&session_id, cx)
-                .expect("Expected tc-2 to be pending after tc-1 was authorized");
+                .expect("tc-1 被授权后,预期 tc-2 处于待处理状态");
             assert_eq!(tool_call_id, acp::ToolCallId::new("tc-2"));
         });
 
@@ -10090,7 +10090,7 @@ pub(crate) mod tests {
                     .read(cx)
                     .pending_tool_call(&session_id, cx)
                     .is_none(),
-                "Expected no pending tool calls after both were authorized"
+                "两者都被授权后,预期没有待处理的工具调用"
             );
         });
     }
@@ -10135,7 +10135,7 @@ pub(crate) mod tests {
             let (returned_session_id, tool_call_id, _) = conversation
                 .read(cx)
                 .pending_tool_call(&subagent_session_id, cx)
-                .expect("Expected subagent's pending tool call");
+                .expect("预期子代理有待处理的工具调用");
             assert_eq!(returned_session_id, subagent_session_id);
             assert_eq!(tool_call_id, acp::ToolCallId::new("subagent-tc"));
         });
@@ -10146,7 +10146,7 @@ pub(crate) mod tests {
             let (returned_session_id, tool_call_id, _) = conversation
                 .read(cx)
                 .pending_tool_call(&parent_session_id, cx)
-                .expect("Expected a pending tool call from parent query");
+                .expect("预期父查询有一个待处理的工具调用");
             assert_eq!(returned_session_id, parent_session_id);
             assert_eq!(tool_call_id, acp::ToolCallId::new("parent-tc"));
         });
@@ -10198,10 +10198,10 @@ pub(crate) mod tests {
             let (returned_session_id, tool_call_id, _) = conversation
                 .read(cx)
                 .pending_tool_call(&session_id_b, cx)
-                .expect("Expected a pending tool call from thread-b query");
+                .expect("预期对话线程-b 查询有一个待处理的工具调用");
             assert_eq!(
                 returned_session_id, session_id_a,
-                "Non-subagent queries always return the first pending request in FIFO order"
+                "非子代理查询始终按 FIFO 顺序返回第一个待处理请求"
             );
             assert_eq!(tool_call_id, acp::ToolCallId::new("tc-a"));
         });
@@ -10227,7 +10227,7 @@ pub(crate) mod tests {
             let (returned_session_id, tool_call_id, _) = conversation
                 .read(cx)
                 .pending_tool_call(&session_id_b, cx)
-                .expect("Expected thread-b's tool call after thread-a's was authorized");
+                .expect("对话线程-a 的工具调用被授权后,预期对话线程-b 的工具调用");
             assert_eq!(returned_session_id, session_id_b);
             assert_eq!(tool_call_id, acp::ToolCallId::new("tc-b"));
         });
@@ -10254,7 +10254,7 @@ pub(crate) mod tests {
                 tool_call_id_value.clone(),
                 PermissionOptions::Flat(vec![acp::PermissionOption::new(
                     "allow",
-                    "Allow",
+                    "允许",
                     acp::PermissionOptionKind::AllowOnce,
                 )]),
             )]));
@@ -10276,7 +10276,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
 
         active_thread(&conversation_view, cx)
@@ -10297,7 +10297,7 @@ pub(crate) mod tests {
                             if call.id == tool_call_id_value
                     )
                 })
-                .expect("tool call entry should exist after run_until_parked")
+                .expect("run_until_parked 后应存在工具调用条目")
         });
 
         (conversation_view, thread_view, entry_ix, cx)
@@ -10354,7 +10354,7 @@ pub(crate) mod tests {
             assert!(
                 view.render_main_agent_awaiting_permission(window, cx)
                     .is_none(),
-                "Floating row should stay hidden until the inline prompt has known list bounds"
+                "在内联提示具有已知列表边界之前,浮动行应保持隐藏"
             );
         });
     }
@@ -10398,7 +10398,7 @@ pub(crate) mod tests {
             let tool_call_id_b = conversation
                 .read(cx)
                 .pending_tool_call_for_session(&session_id_b, cx)
-                .expect("Expected a pending tool call in thread B");
+                .expect("预期线程 B 中有一个待处理的工具调用");
             assert_eq!(tool_call_id_b, acp::ToolCallId::new("tc-b"));
         });
     }
@@ -10435,7 +10435,7 @@ pub(crate) mod tests {
             );
         });
 
-        // Simulate clicking "Scroll to": the list scrolls to the entry and the
+        // Simulate clicking "滚动到": the list scrolls to the entry and the
         // measured item bounds intersect the viewport.
         draw_thread_list_at(
             &thread_view,
@@ -10450,7 +10450,7 @@ pub(crate) mod tests {
             assert!(
                 view.render_main_agent_awaiting_permission(window, cx)
                     .is_none(),
-                "Floating row should disappear after scrolling brings the inline prompt into view"
+                "滚动使内联提示进入视图后,浮动行应消失"
             );
         });
     }
@@ -10482,7 +10482,7 @@ pub(crate) mod tests {
                     )),
                     cx,
                 )
-                .expect("tool call content update should be accepted");
+                .expect("工具调用内容更新应被接受");
         });
         cx.run_until_parked();
 
@@ -10516,7 +10516,7 @@ pub(crate) mod tests {
         assert_eq!(
             row_visibility,
             vec![true; 4],
-            "Floating row visibility must be stable across frames (false entries mean flicker)"
+            "浮动行可见性必须在帧间保持稳定(false 条目表示闪烁)"
         );
     }
 
@@ -10533,13 +10533,13 @@ pub(crate) mod tests {
         thread.update(cx, |thread, cx| {
             let result = thread.handle_session_update(
                 acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new(
-                    "More content".into(),
+                    "更多内容".into(),
                 )),
                 cx,
             );
             assert!(
                 result.is_ok(),
-                "following assistant message should be accepted"
+                "后续助手消息应被接受"
             );
         });
 
@@ -10554,14 +10554,14 @@ pub(crate) mod tests {
         thread_view.read_with(cx, |view, _cx| {
             assert!(
                 entry_ix < view.list_state.logical_scroll_top().item_ix,
-                "The tool call entry should be above the logical scroll top"
+                "工具调用条目应位于逻辑滚动顶部之上"
             );
         });
         thread_view.update_in(cx, |view, window, cx| {
             assert!(
                 view.render_main_agent_awaiting_permission(window, cx)
                     .is_some(),
-                "Floating row should be visible when the inline prompt is above the viewport"
+                "当内联提示位于视口上方时,浮动行应可见"
             );
         });
 
@@ -10578,7 +10578,7 @@ pub(crate) mod tests {
             assert!(
                 view.render_main_agent_awaiting_permission(window, cx)
                     .is_none(),
-                "Floating row should disappear after scrolling brings the inline prompt into view"
+                "滚动使内联提示进入视图后,浮动行应消失"
             );
         });
     }
@@ -10603,7 +10603,7 @@ pub(crate) mod tests {
             assert!(
                 view.render_main_agent_awaiting_permission(window, cx)
                     .is_some(),
-                "Floating row should be visible before authorizing"
+                "授权前浮动行应可见"
             );
         });
 
@@ -10614,7 +10614,7 @@ pub(crate) mod tests {
                 crate::AuthorizeToolCall {
                     tool_call_id: "perm-allow".to_string(),
                     option_id: "allow".to_string(),
-                    option_kind: "AllowOnce".to_string(),
+                    option_kind: "允许一次".to_string(),
                 }
                 .boxed_clone(),
                 cx,
@@ -10625,14 +10625,14 @@ pub(crate) mod tests {
         conversation_view.read_with(cx, |view, cx| {
             assert!(
                 view.pending_tool_call(cx).is_none(),
-                "Tool call should no longer be pending after Allow is clicked"
+                "单击“允许”后,工具调用不应再处于待处理状态"
             );
         });
         thread_view.update_in(cx, |view, window, cx| {
             assert!(
                 view.render_main_agent_awaiting_permission(window, cx)
                     .is_none(),
-                "Floating row should disappear once the permission is granted"
+                "授予权限后,浮动行应消失"
             );
         });
     }
@@ -10649,7 +10649,7 @@ pub(crate) mod tests {
 
         let message_editor = message_editor(&conversation_view, cx);
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Hello", window, cx);
+            editor.set_text("你好", window, cx);
         });
         active_thread(&conversation_view, cx)
             .update_in(cx, |view, window, cx| view.send(window, cx));
@@ -10693,7 +10693,7 @@ pub(crate) mod tests {
                     .read(cx)
                     .subagents_awaiting_permission(cx)
                     .is_empty(),
-                "Subagent permission row should still see the pending request"
+                "子代理权限行仍应看到待处理请求"
             );
         });
 
@@ -10701,7 +10701,7 @@ pub(crate) mod tests {
             assert!(
                 view.render_main_agent_awaiting_permission(window, cx)
                     .is_none(),
-                "Subagent permission requests should not trigger the main-agent floating row"
+                "子代理权限请求不应触发主代理浮动行"
             );
         });
     }
@@ -10717,7 +10717,7 @@ pub(crate) mod tests {
         active_thread(&conversation_view, cx).update_in(cx, |thread, window, cx| {
             thread.add_to_queue(
                 vec![acp::ContentBlock::Text(acp::TextContent::new(
-                    "queued message".to_string(),
+                    "排队消息".to_string(),
                 ))],
                 vec![],
                 window,
@@ -10735,13 +10735,13 @@ pub(crate) mod tests {
         // Queue should now be empty.
         let queue_len = active_thread(&conversation_view, cx)
             .read_with(cx, |thread, _cx| thread.message_queue.len());
-        assert_eq!(queue_len, 0, "Queue should be empty after move");
+        assert_eq!(queue_len, 0, "移动后队列应为空");
 
         // Main editor should contain the queued message text.
         let text = message_editor(&conversation_view, cx).update(cx, |editor, cx| editor.text(cx));
         assert_eq!(
-            text, "queued message",
-            "Main editor should contain the moved queued message"
+            text, "排队消息",
+            "主编辑器应包含已移动的排队消息"
         );
     }
 
@@ -10756,7 +10756,7 @@ pub(crate) mod tests {
         message_editor(&conversation_view, cx).update_in(cx, |editor, window, cx| {
             editor.set_message(
                 vec![acp::ContentBlock::Text(acp::TextContent::new(
-                    "existing content".to_string(),
+                    "现有内容".to_string(),
                 ))],
                 window,
                 cx,
@@ -10767,7 +10767,7 @@ pub(crate) mod tests {
         active_thread(&conversation_view, cx).update_in(cx, |thread, window, cx| {
             thread.add_to_queue(
                 vec![acp::ContentBlock::Text(acp::TextContent::new(
-                    "queued message".to_string(),
+                    "排队消息".to_string(),
                 ))],
                 vec![],
                 window,
@@ -10782,13 +10782,13 @@ pub(crate) mod tests {
         // Queue should now be empty.
         let queue_len = active_thread(&conversation_view, cx)
             .read_with(cx, |thread, _cx| thread.message_queue.len());
-        assert_eq!(queue_len, 0, "Queue should be empty after move");
+        assert_eq!(queue_len, 0, "移动后队列应为空");
 
         // Main editor should contain existing content + separator + queued content.
         let text = message_editor(&conversation_view, cx).update(cx, |editor, cx| editor.text(cx));
         assert_eq!(
             text, "existing content\n\nqueued message",
-            "Main editor should have existing content and queued message separated by two newlines"
+            "主编辑器应包含由两个换行符分隔的现有内容和排队消息"
         );
     }
 
@@ -10803,7 +10803,7 @@ pub(crate) mod tests {
         active_thread(&conversation_view, cx).update_in(cx, |thread, window, cx| {
             thread.add_to_queue(
                 vec![acp::ContentBlock::Text(acp::TextContent::new(
-                    "first queued".to_string(),
+                    "第一条排队".to_string(),
                 ))],
                 vec![],
                 window,
@@ -10811,7 +10811,7 @@ pub(crate) mod tests {
             );
             thread.add_to_queue(
                 vec![acp::ContentBlock::Text(acp::TextContent::new(
-                    "second queued".to_string(),
+                    "第二条排队".to_string(),
                 ))],
                 vec![],
                 window,
@@ -10832,12 +10832,12 @@ pub(crate) mod tests {
             .read_with(cx, |thread, _cx| thread.message_queue.len());
         assert_eq!(
             queue_len, 1,
-            "Up arrow should pull the last queued message out of the queue"
+            "向上箭头应将最后一条排队消息从队列中取出"
         );
         let text = editor.update(cx, |editor, cx| editor.text(cx));
         assert_eq!(
-            text, "second queued",
-            "Main editor should contain the last queued message"
+            text, "第二条排队",
+            "主编辑器应包含最后一条排队消息"
         );
 
         // With a non-empty editor, another MoveUp must not consume the queue.
@@ -10848,9 +10848,9 @@ pub(crate) mod tests {
 
         let queue_len = active_thread(&conversation_view, cx)
             .read_with(cx, |thread, _cx| thread.message_queue.len());
-        assert_eq!(queue_len, 1, "Queue should be untouched");
+        assert_eq!(queue_len, 1, "队列应保持不变");
         let text = editor.update(cx, |editor, cx| editor.text(cx));
-        assert_eq!(text, "second queued");
+        assert_eq!(text, "第二条排队");
     }
 
     #[gpui::test]
@@ -10858,14 +10858,14 @@ pub(crate) mod tests {
         init_test(cx);
 
         let (conversation_view, cx) =
-            paste_into_queued_message(cx, ClipboardItem::new_string("PASTED".to_string())).await;
+            paste_into_queued_message(cx, ClipboardItem::new_string("已粘贴".to_string())).await;
 
         let queue_len = active_thread(&conversation_view, cx)
             .read_with(cx, |thread, _cx| thread.message_queue.len());
         assert_eq!(queue_len, 0);
 
         let text = message_editor(&conversation_view, cx).update(cx, |editor, cx| editor.text(cx));
-        assert_eq!(text, "queued PASTEDmessage");
+        assert_eq!(text, "排队已粘贴消息");
     }
 
     #[gpui::test]
@@ -10903,7 +10903,7 @@ pub(crate) mod tests {
         .to_string();
         assert_eq!(
             text,
-            format!("queued [@{image_name}]({expected_uri}) message"),
+            format!("排队 [@{image_name}]({expected_uri}) 消息"),
         );
     }
 
@@ -10922,7 +10922,7 @@ pub(crate) mod tests {
                 .set_prompt_capabilities(acp::PromptCapabilities::new().image(true));
             thread.add_to_queue(
                 vec![acp::ContentBlock::Text(acp::TextContent::new(
-                    "queued message".to_string(),
+                    "排队消息".to_string(),
                 ))],
                 vec![],
                 window,
@@ -10937,7 +10937,7 @@ pub(crate) mod tests {
                 .message_queue
                 .first()
                 .map(|entry| entry.editor.clone())
-                .expect("queued message editor not created")
+                .expect("未创建排队消息编辑器")
         });
 
         cx.write_to_clipboard(clipboard);
@@ -10975,7 +10975,7 @@ pub(crate) mod tests {
                 ConversationView::new(
                     Rc::new(StubAgentServer::default_response()),
                     connection_store,
-                    Agent::Custom { id: "Test".into() },
+                    Agent::Custom { id: "测试".into() },
                     None,
                     None,
                     None,
@@ -10994,21 +10994,21 @@ pub(crate) mod tests {
         cx.run_until_parked();
 
         conversation_view.read_with(cx, |view, _cx| {
-            let connected = view.as_connected().expect("Should be connected");
+            let connected = view.as_connected().expect("应已连接");
             assert!(
                 !connected.threads.is_empty(),
-                "There should be at least one thread"
+                "应至少有一个线程"
             );
             assert!(
                 !connected.connection.supports_close_session(),
-                "StubAgentConnection should not support close"
+                "StubAgentConnection 不应支持关闭"
             );
         });
 
         conversation_view
             .update(cx, |view, cx| {
                 view.as_connected()
-                    .expect("Should be connected")
+                    .expect("应已连接")
                     .close_all_sessions(cx)
             })
             .await;
@@ -11024,27 +11024,27 @@ pub(crate) mod tests {
         cx.run_until_parked();
 
         let close_capable = conversation_view.read_with(cx, |view, _cx| {
-            let connected = view.as_connected().expect("Should be connected");
+            let connected = view.as_connected().expect("应已连接");
             assert!(
                 !connected.threads.is_empty(),
-                "There should be at least one thread"
+                "应至少有一个线程"
             );
             assert!(
                 connected.connection.supports_close_session(),
-                "CloseCapableConnection should support close"
+                "CloseCapableConnection 应支持关闭"
             );
             connected
                 .connection
                 .clone()
                 .into_any()
                 .downcast::<CloseCapableConnection>()
-                .expect("Should be CloseCapableConnection")
+                .expect("应为 CloseCapableConnection")
         });
 
         conversation_view
             .update(cx, |view, cx| {
                 view.as_connected()
-                    .expect("Should be connected")
+                    .expect("应已连接")
                     .close_all_sessions(cx)
             })
             .await;
@@ -11052,7 +11052,7 @@ pub(crate) mod tests {
         let closed_count = close_capable.closed_sessions.lock().len();
         assert!(
             closed_count > 0,
-            "close_session should have been called for each thread"
+            "应为每个线程调用 close_session"
         );
     }
 
@@ -11067,16 +11067,16 @@ pub(crate) mod tests {
 
         let result = conversation_view
             .update(cx, |view, cx| {
-                let connected = view.as_connected().expect("Should be connected");
+                let connected = view.as_connected().expect("应已连接");
                 assert!(
                     !connected.connection.supports_close_session(),
-                    "StubAgentConnection should not support close"
+                    "StubAgentConnection 不应支持关闭"
                 );
                 let thread_view = connected
                     .threads
                     .values()
                     .next()
-                    .expect("Should have at least one thread");
+                    .expect("应至少有一个线程");
                 let session_id = thread_view.read(cx).thread.read(cx).session_id().clone();
                 connected.connection.clone().close_session(&session_id, cx)
             })
@@ -11084,11 +11084,11 @@ pub(crate) mod tests {
 
         assert!(
             result.is_err(),
-            "close_session should return an error when close is not supported"
+            "不支持关闭时,close_session 应返回错误"
         );
         assert!(
-            result.unwrap_err().to_string().contains("not supported"),
-            "Error message should indicate that closing is not supported"
+            result.unwrap_err().to_string().contains("不支持"),
+            "错误消息应表明不支持关闭"
         );
     }
 

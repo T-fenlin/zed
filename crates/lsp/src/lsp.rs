@@ -442,7 +442,7 @@ impl LanguageServer {
             root_path.parent().unwrap_or_else(|| Path::new("/"))
         };
         let root_uri = Uri::from_file_path(&working_dir)
-            .map_err(|()| anyhow!("{working_dir:?} is not a valid URI"))?;
+            .map_err(|()| anyhow!("{working_dir:?} 不是有效的 URI"))?;
         log::info!(
             "starting language server process. binary path: \
             {:?}, working directory: {:?}, args: {:?}",
@@ -462,7 +462,7 @@ impl LanguageServer {
 
         let mut server = command
             .spawn()
-            .with_context(|| format!("failed to spawn command {command:?}",))?;
+            .with_context(|| format!("无法启动命令 {command:?}",))?;
 
         let stdin = server.stdin.take().unwrap();
         let stdout = server.stdout.take().unwrap();
@@ -482,7 +482,7 @@ impl LanguageServer {
             cx,
             move |notification| {
                 log::info!(
-                    "Language server with id {} sent unhandled notification {}:\n{}",
+                    "ID 为 {} 的语言服务器发送了未处理的通知 {}:\n{}",
                     server_id,
                     notification.method,
                     serde_json::to_string_pretty(&notification.params).unwrap(),
@@ -535,7 +535,7 @@ impl LanguageServer {
                             id: message_id,
                             error: Some(Error {
                                 code: -32601,
-                                message: format!("Unrecognized method `{}`", msg.method),
+                                message: format!("无法识别的方法 `{}`", msg.method),
                                 data: None,
                             }),
                             result: None,
@@ -724,7 +724,7 @@ impl LanguageServer {
             }
 
             if let Ok(message) = std::str::from_utf8(&buffer) {
-                log::trace!("incoming stderr message:{message}");
+                log::trace!("传入的 stderr 消息:{message}");
                 for handler in io_handlers.lock().values_mut() {
                     handler(IoKind::StdErr, message);
                 }
@@ -758,7 +758,7 @@ impl LanguageServer {
         });
         let mut content_len_buffer = Vec::new();
         while let Ok(message) = outbound_rx.recv().await {
-            log::trace!("outgoing message:{}", message);
+            log::trace!("传出的消息:{}", message);
             for handler in io_handlers.lock().values_mut() {
                 handler(IoKind::StdIn, &message);
             }
@@ -1090,7 +1090,7 @@ impl LanguageServer {
                 .into_response()
                 .with_context(|| {
                     format!(
-                        "initializing server {}, id {}",
+                        "正在初始化服务器 {},ID {}",
                         self.name(),
                         self.server_id()
                     )
@@ -1132,26 +1132,26 @@ impl LanguageServer {
         let server_id = self.server_id;
         let mut timer = self.executor.timer(SERVER_SHUTDOWN_TIMEOUT).fuse();
         Some(async move {
-            log::debug!("language server shutdown started");
+            log::debug!("语言服务器关闭已开始");
 
             select! {
                 request_result = shutdown_request.fuse() => {
                     match request_result {
                         ConnectionResult::Timeout => {
-                            log::warn!("timeout waiting for language server {name} (id {server_id}) to shutdown");
+                            log::warn!("等待语言服务器 {name}(ID {server_id})关闭超时");
                         },
                         ConnectionResult::ConnectionReset => {
-                            log::warn!("language server {name} (id {server_id}) closed the shutdown request connection");
+                            log::warn!("语言服务器 {name}(ID {server_id})关闭了关闭请求连接");
                         },
                         ConnectionResult::Result(Err(e)) => {
-                            log::error!("Shutdown request failure, server {name} (id {server_id}): {e:#}");
+                            log::error!("关闭请求失败,服务器 {name}(ID {server_id}):{e:#}");
                         },
                         ConnectionResult::Result(Ok(())) => {}
                     }
                 }
 
                 _ = timer => {
-                    log::info!("timeout waiting for language server {name} (id {server_id}) to shutdown");
+                    log::info!("等待语言服务器 {name}(ID {server_id})关闭超时");
                 },
             }
 
@@ -1161,7 +1161,7 @@ impl LanguageServer {
             output_done.recv().await;
             server.lock().take().map(|mut child| child.kill());
             drop(tasks);
-            log::debug!("language server shutdown finished");
+            log::debug!("语言服务器关闭已完成");
             Some(())
         })
     }
@@ -1237,7 +1237,7 @@ impl LanguageServer {
         );
         assert!(
             prev_handler.is_none(),
-            "registered multiple handlers for the same LSP method"
+            "为同一个 LSP 方法注册了多个处理器"
         );
         Subscription::Notification {
             method,
@@ -1295,7 +1295,7 @@ impl LanguageServer {
                         }
 
                         Err(error) => {
-                            log::error!("error deserializing {} request: {:?}", method, error);
+                            log::error!("反序列化 {} 请求时出错:{:?}", method, error);
                             let response = AnyResponse {
                                 jsonrpc: JSON_RPC_VERSION,
                                 id,
@@ -1316,7 +1316,7 @@ impl LanguageServer {
         );
         assert!(
             prev_handler.is_none(),
-            "registered multiple handlers for the same LSP method"
+            "为同一个 LSP 方法注册了多个处理器"
         );
         Subscription::Notification {
             method,
@@ -1468,13 +1468,13 @@ impl LanguageServer {
             method: T::METHOD,
             params,
         })
-        .expect("LSP message should be serializable to JSON");
+        .expect("LSP 消息应可序列化为 JSON");
 
         let (tx, rx) = oneshot::channel();
         let handle_response = response_handlers
             .lock()
             .as_mut()
-            .context("server shut down")
+            .context("服务器已关闭")
             .map(|handlers| {
                 let executor = executor.clone();
                 handlers.insert(
@@ -1486,8 +1486,8 @@ impl LanguageServer {
                                     Ok(response) => match deserialize_result(&response) {
                                         Ok(deserialized) => Ok(deserialized),
                                         Err(error) => {
-                                            log::error!("failed to deserialize response from language server: {}. response from language server: {:?}", error, response);
-                                            Err(error).context("failed to deserialize response")
+                                            log::error!("无法反序列化来自语言服务器的响应:{}。来自语言服务器的响应:{:?}", error, response);
+                                            Err(error).context("无法反序列化响应")
                                         }
                                     }
                                     Err(error) => Err(anyhow!("{}", error.message)),
@@ -1500,7 +1500,7 @@ impl LanguageServer {
 
         let send = outbound_tx
             .try_send(message)
-            .context("failed to write to language server's stdin");
+            .context("无法写入语言服务器的标准输入");
 
         let response_handlers = Arc::clone(response_handlers);
         let notification_serializers = notification_serializers.downgrade();
@@ -1529,23 +1529,23 @@ impl LanguageServer {
             select! {
                 response = rx.fuse() => {
                     let elapsed = started.elapsed();
-                    log::trace!("Took {elapsed:?} to receive response to {method:?} id {id}");
+                    log::trace!("接收对 {method:?} ID {id} 的响应耗时 {elapsed:?}");
                     cancel_on_drop.abort();
                     match response {
                         Ok(response_result) => ConnectionResult::Result(response_result),
                         Err(Canceled) => {
-                            log::error!("Server reset connection for a request {method:?} id {id}");
+                            log::error!("服务器重置了请求 {method:?} ID {id} 的连接");
                             ConnectionResult::ConnectionReset
                         },
                     }
                 }
 
                 message = timer.fuse() => {
-                    log::error!("Cancelled LSP request task for {method:?} id {id} {message}");
+                    log::error!("已取消 {method:?} ID {id} {message} 的 LSP 请求任务");
                     match response_handlers
                         .lock()
                         .as_mut()
-                        .context("server shut down") {
+                        .context("服务器已关闭") {
                             Ok(handlers) => {
                                 handlers.remove(&RequestId::Int(id));
                                 ConnectionResult::Timeout
@@ -1594,7 +1594,7 @@ impl LanguageServer {
         Either::Right(
             executor
                 .timer(request_timeout)
-                .map(move |_| format!("which took over {request_timeout:?}")),
+                .map(move |_| format!("耗时超过 {request_timeout:?}")),
         )
     }
 
@@ -1987,7 +1987,7 @@ impl FakeLanguageServer {
             if method == T::METHOD {
                 return Some(serde_json::from_str::<T::Params>(&params).unwrap());
             } else {
-                log::info!("skipping message in fake language server {:?}", params);
+                log::info!("跳过模拟语言服务器中的消息 {:?}", params);
             }
         }
     }
@@ -2249,7 +2249,7 @@ mod tests {
         );
         assert!(
             retained_payload_handle.upgrade().is_none(),
-            "handler with a retained subscription was kept alive after the server was dropped"
+            "服务器被丢弃后,具有保留订阅的处理器仍然存活"
         );
 
         drop(subscription);
@@ -2341,7 +2341,7 @@ mod tests {
     fn test_deserialize_string_digit_id() {
         let json = r#"{"jsonrpc":"2.0","id":"2","method":"workspace/configuration","params":{"items":[{"scopeUri":"file:///Users/mph/Devel/personal/hello-scala/","section":"metals"}]}}"#;
         let notification = serde_json::from_str::<NotificationOrRequest>(json)
-            .expect("message with string id should be parsed");
+            .expect("应解析带有字符串 ID 的消息");
         let expected_id = RequestId::Str("2".to_string());
         assert_eq!(notification.id, Some(expected_id));
     }
@@ -2350,7 +2350,7 @@ mod tests {
     fn test_deserialize_string_id() {
         let json = r#"{"jsonrpc":"2.0","id":"anythingAtAll","method":"workspace/configuration","params":{"items":[{"scopeUri":"file:///Users/mph/Devel/personal/hello-scala/","section":"metals"}]}}"#;
         let notification = serde_json::from_str::<NotificationOrRequest>(json)
-            .expect("message with string id should be parsed");
+            .expect("应解析带有字符串 ID 的消息");
         let expected_id = RequestId::Str("anythingAtAll".to_string());
         assert_eq!(notification.id, Some(expected_id));
     }
@@ -2359,7 +2359,7 @@ mod tests {
     fn test_deserialize_int_id() {
         let json = r#"{"jsonrpc":"2.0","id":2,"method":"workspace/configuration","params":{"items":[{"scopeUri":"file:///Users/mph/Devel/personal/hello-scala/","section":"metals"}]}}"#;
         let notification = serde_json::from_str::<NotificationOrRequest>(json)
-            .expect("message with string id should be parsed");
+            .expect("应解析带有字符串 ID 的消息");
         let expected_id = RequestId::Int(2);
         assert_eq!(notification.id, Some(expected_id));
     }
@@ -2371,7 +2371,7 @@ mod tests {
             id: RequestId::Int(0),
             error: Some(Error {
                 code: -32601,
-                message: "Unrecognized method".to_string(),
+                message: "无法识别的方法".to_string(),
                 data: None,
             }),
             result: None,
@@ -2421,32 +2421,32 @@ mod tests {
             Default::default(),
             &mut cx.to_async(),
         );
-        let project_uri = Uri::from_file_path(std::env::temp_dir().join("my project"))
-            .expect("workspace folder URI should be valid");
+        let project_uri = Uri::from_file_path(std::env::temp_dir().join("我的项目"))
+            .expect("工作区文件夹 URI 应有效");
         server.set_workspace_folders(BTreeSet::from_iter([project_uri.clone()]));
 
         let params = cx.update(|cx| server.default_initialize_params(false, false, cx));
 
         #[allow(deprecated)]
-        let root_uri = params.root_uri.expect("root_uri should be set");
+        let root_uri = params.root_uri.expect("应设置 root_uri");
         #[allow(deprecated)]
-        let root_path = params.root_path.expect("root_path should be set");
+        let root_path = params.root_path.expect("应设置 root_path");
 
         let expected_path = root_uri
             .to_file_path()
-            .expect("root_uri should be a valid file path");
+            .expect("root_uri 应为有效的文件路径");
         assert_eq!(
             root_path,
             expected_path.to_string_lossy(),
-            "root_path should be derived from root_uri"
+            "root_path 应从 root_uri 派生"
         );
         let workspace_folders = params
             .workspace_folders
-            .expect("workspace folders should be set");
+            .expect("应设置工作区文件夹");
 
         let expected_workspace_folders = vec![WorkspaceFolder {
             uri: project_uri,
-            name: "my project".to_string(),
+            name: "我的项目".to_string(),
         }];
         assert_eq!(workspace_folders, expected_workspace_folders);
     }

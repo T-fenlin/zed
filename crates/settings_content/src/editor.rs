@@ -1187,7 +1187,7 @@ impl schemars::JsonSchema for CenteredPaddingSettings {
             "minimum": Self::MIN_PADDING,
             "maximum": Self::MAX_PADDING,
             "default": Self::DEFAULT_PADDING,
-            "description": "Centered layout related setting (left/right)."
+            "description": "居中布局相关设置(左/右)。"
         })
     }
 }

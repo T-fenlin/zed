@@ -285,7 +285,7 @@ impl Drop for RemotelyCreatedModelGuard {
             let mut remote_models = remote_models.lock();
             assert!(
                 remote_models.retain_count > 0,
-                "RemotelyCreatedModelGuard dropped too many times"
+                "RemotelyCreatedModelGuard 被释放次数过多"
             );
             remote_models.retain_count -= 1;
             if remote_models.retain_count == 0 {
@@ -783,7 +783,7 @@ impl LspAction {
                 .command
                 .as_ref()
                 .map(|command| command.title.as_str())
-                .unwrap_or("Unknown command"),
+                .unwrap_or("未知命令"),
         }
     }
 
@@ -1318,7 +1318,7 @@ impl Project {
                     toolchain_store
                         .read(cx)
                         .as_local_store()
-                        .expect("Toolchain store to be local")
+                        .expect("工具链存储必须是本地的")
                         .clone(),
                     environment.clone(),
                     manifest_tree,
@@ -2585,7 +2585,7 @@ impl Project {
         let project_path = project_path.into();
         let Some(worktree) = self.worktree_for_id(project_path.worktree_id, cx) else {
             return Task::ready(Err(anyhow!(format!(
-                "No worktree for path {project_path:?}"
+                "路径 {project_path:?} 没有对应的工作树"
             ))));
         };
         worktree.update(cx, |worktree, cx| {
@@ -2621,7 +2621,7 @@ impl Project {
             .worktree_and_entry_for_id(entry_id, cx)
             .map(|(worktree, entry)| (worktree, entry.path.clone(), entry.is_dir()))
         else {
-            return Task::ready(Err(anyhow!(format!("No worktree for entry {entry_id:?}"))));
+            return Task::ready(Err(anyhow!(format!("条目 {entry_id:?} 没有对应的工作树"))));
         };
 
         let worktree_id = worktree.read(cx).id();
@@ -2726,7 +2726,7 @@ impl Project {
         cx: &mut Context<'_, Self>,
     ) -> Task<Result<ProjectPath>> {
         let Some(worktree) = self.worktree_for_id(worktree_id, cx) else {
-            return Task::ready(Err(anyhow!("No worktree for id {worktree_id:?}")));
+            return Task::ready(Err(anyhow!("ID {worktree_id:?} 没有对应的工作树")));
         };
 
         cx.spawn(async move |_, cx| {
@@ -2763,7 +2763,7 @@ impl Project {
             worktree.expand_all_for_entry(entry_id, cx)
         });
         Some(cx.spawn(async move |this, cx| {
-            task.context("no task")?.await?;
+            task.context("无任务")?.await?;
             this.update(cx, |_, cx| {
                 cx.emit(Event::ExpandedAllForEntry(worktree_id, entry_id));
             })?;
@@ -2774,7 +2774,7 @@ impl Project {
     pub fn shared(&mut self, project_id: u64, cx: &mut Context<Self>) -> Result<()> {
         anyhow::ensure!(
             matches!(self.client_state, ProjectClientState::Local),
-            "project was already shared"
+            "项目已共享"
         );
 
         self.client_subscriptions.extend([
@@ -2901,7 +2901,7 @@ impl Project {
     fn unshare_internal(&mut self, cx: &mut App) -> Result<()> {
         anyhow::ensure!(
             !self.is_via_collab(),
-            "attempted to unshare a remote project"
+            "尝试取消共享远程项目"
         );
 
         if let ProjectClientState::Shared { remote_id, .. } = self.client_state {
@@ -2938,7 +2938,7 @@ impl Project {
                 .ok();
             Ok(())
         } else {
-            anyhow::bail!("attempted to unshare an unshared project");
+            anyhow::bail!("尝试取消共享未共享的项目");
         }
     }
 
@@ -3118,7 +3118,7 @@ impl Project {
         cx: &mut Context<Self>,
     ) -> Entity<Buffer> {
         if self.is_remote() {
-            panic!("called create_local_buffer on a remote project")
+            panic!("在远程项目上调用了 create_local_buffer")
         }
         self.buffer_store.update(cx, |buffer_store, cx| {
             buffer_store.create_local_buffer(text, language, project_searchable, cx)
@@ -3165,7 +3165,7 @@ impl Project {
         if let Some((worktree, relative_path)) = self.find_worktree(abs_path.as_ref(), cx) {
             self.open_buffer_with_lsp((worktree.read(cx).id(), relative_path), cx)
         } else {
-            Task::ready(Err(anyhow!("no such path")))
+            Task::ready(Err(anyhow!("路径不存在")))
         }
     }
 
@@ -3177,15 +3177,15 @@ impl Project {
         cx: &mut Context<Self>,
     ) -> Task<Result<()>> {
         log::debug!(
-            "download_file called: worktree_id={:?}, path={:?}, destination={:?}",
+            "调用 download_file:worktree_id={:?},路径={:?},目标={:?}",
             worktree_id,
             path,
             destination_path
         );
 
         let Some(remote_client) = &self.remote_client else {
-            log::error!("download_file: not a remote project");
-            return Task::ready(Err(anyhow!("not a remote project")));
+            log::error!("download_file:不是远程项目");
+            return Task::ready(Err(anyhow!("不是远程项目")));
         };
 
         let proto_client = remote_client.read(cx).proto_client();
@@ -3201,7 +3201,7 @@ impl Project {
         // Register BEFORE sending request to avoid race condition
         let key = (worktree_id, path_str.clone());
         log::debug!(
-            "download_file: pre-registering download with key={:?}, file_id={}",
+            "download_file:正在预注册下载,键={:?},file_id={}",
             key,
             file_id
         );
@@ -3215,12 +3215,12 @@ impl Project {
             },
         );
         log::debug!(
-            "download_file: sending DownloadFileByPath request, path_str={}",
+            "download_file:正在发送 DownloadFileByPath 请求,路径={}",
             path_str
         );
 
         cx.spawn(async move |_this, _cx| {
-            log::debug!("download_file: sending request with file_id={}...", file_id);
+            log::debug!("download_file:正在发送请求,file_id={}...", file_id);
             let response = proto_client
                 .request(proto::DownloadFileByPath {
                     project_id,
@@ -3230,7 +3230,7 @@ impl Project {
                 })
                 .await?;
 
-            log::debug!("download_file: got response, file_id={}", response.file_id);
+            log::debug!("download_file:收到响应,file_id={}", response.file_id);
             // The file_id is set from the State message, we just confirm the request succeeded
             Ok(())
         })
@@ -3379,7 +3379,7 @@ impl Project {
         if let Some(buffer) = self.buffer_for_id(id, cx) {
             Task::ready(Ok(buffer))
         } else if self.is_local() || self.is_via_remote_server() {
-            Task::ready(Err(anyhow!("buffer {id} does not exist")))
+            Task::ready(Err(anyhow!("缓冲区 {id} 不存在")))
         } else if let Some(project_id) = self.remote_id() {
             let request = self.collab_client.request(proto::OpenBufferById {
                 project_id,
@@ -3396,7 +3396,7 @@ impl Project {
                     .await
             })
         } else {
-            Task::ready(Err(anyhow!("cannot open buffer while disconnected")))
+            Task::ready(Err(anyhow!("断开连接时无法打开缓冲区")))
         }
     }
 
@@ -3475,7 +3475,7 @@ impl Project {
                 cx.read_entity(&image_item, |item, _| item.image_metadata.is_none());
 
             if needs_metadata {
-                let project = weak_project.upgrade().context("Project dropped")?;
+                let project = weak_project.upgrade().context("项目已释放")?;
                 let metadata =
                     ImageItem::load_image_metadata(image_item.clone(), project, cx).await?;
                 image_item.update(cx, |image_item, cx| {
@@ -3854,7 +3854,7 @@ impl Project {
         match event {
             SettingsObserverEvent::LocalSettingsUpdated(result) => match result {
                 Err(InvalidSettingsError::LocalSettings { message, path }) => {
-                    let message = format!("Failed to set local settings in {path:?}:\n{message}");
+                    let message = format!("在 {path:?} 中设置本地设置失败:\n{message}");
                     cx.emit(Event::Toast {
                         notification_id: format!("local-settings-{path:?}").into(),
                         link: None,
@@ -3868,11 +3868,11 @@ impl Project {
             },
             SettingsObserverEvent::LocalTasksUpdated(result) => match result {
                 Err(InvalidSettingsError::Tasks { message, path }) => {
-                    let message = format!("Failed to set local tasks in {path:?}:\n{message}");
+                    let message = format!("在 {path:?} 中设置本地任务失败:\n{message}");
                     cx.emit(Event::Toast {
                         notification_id: format!("local-tasks-{path:?}").into(),
                         link: Some(ToastLink {
-                            label: "Open Tasks Documentation",
+                            label: "打开任务文档",
                             url: "https://zed.dev/docs/tasks",
                         }),
                         message,
@@ -3886,7 +3886,7 @@ impl Project {
             SettingsObserverEvent::LocalDebugScenariosUpdated(result) => match result {
                 Err(InvalidSettingsError::Debug { message, path }) => {
                     let message =
-                        format!("Failed to set local debug scenarios in {path:?}:\n{message}");
+                        format!("在 {path:?} 中设置本地调试场景失败:\n{message}");
                     cx.emit(Event::Toast {
                         notification_id: format!("local-debug-scenarios-{path:?}").into(),
                         link: None,
@@ -4241,7 +4241,7 @@ impl Project {
                     .await
             })
         } else {
-            Task::ready(Err(anyhow!("This project does not support toolchains")))
+            Task::ready(Err(anyhow!("此项目不支持工具链")))
         }
     }
 
@@ -4476,7 +4476,7 @@ impl Project {
     pub fn open_server_settings(&mut self, cx: &mut Context<Self>) -> Task<Result<Entity<Buffer>>> {
         let guard = self.retain_remotely_created_models(cx);
         let Some(remote) = self.remote_client.as_ref() else {
-            return Task::ready(Err(anyhow!("not an ssh project")));
+            return Task::ready(Err(anyhow!("不是 SSH 项目")));
         };
 
         let proto_client = remote.read(cx).proto_client();
@@ -4985,7 +4985,7 @@ impl Project {
                     .collect())
             })
         } else {
-            Task::ready(Err(anyhow!("cannot list directory in remote project")))
+            Task::ready(Err(anyhow!("无法在远程项目中列出目录")))
         }
     }
 
@@ -5033,7 +5033,7 @@ impl Project {
             let _release_subscription = release_subscription;
             released_rx
                 .await
-                .map_err(|_| anyhow!("worktree release observer dropped before release"))?;
+                .map_err(|_| anyhow!("工作树释放观察器在释放前被丢弃"))?;
             Ok(())
         })
     }
@@ -5298,7 +5298,7 @@ impl Project {
             .payload
             .collaborator
             .take()
-            .context("empty collaborator")?;
+            .context("空的协作者")?;
 
         let collaborator = Collaborator::from_proto(collaborator)?;
         this.update(&mut cx, |this, cx| {
@@ -5322,20 +5322,20 @@ impl Project {
         let old_peer_id = envelope
             .payload
             .old_peer_id
-            .context("missing old peer id")?;
+            .context("缺少旧对等 ID")?;
         let new_peer_id = envelope
             .payload
             .new_peer_id
-            .context("missing new peer id")?;
+            .context("缺少新对等 ID")?;
         this.update(&mut cx, |this, cx| {
             let collaborator = this
                 .collaborators
                 .remove(&old_peer_id)
-                .context("received UpdateProjectCollaborator for unknown peer")?;
+                .context("收到未知对等方的 UpdateProjectCollaborator")?;
             let is_host = collaborator.is_host;
             this.collaborators.insert(new_peer_id, collaborator);
 
-            log::info!("peer {} became {}", old_peer_id, new_peer_id,);
+            log::info!("对等方 {} 变为 {}", old_peer_id, new_peer_id,);
             this.buffer_store.update(cx, |buffer_store, _| {
                 buffer_store.update_peer_id(&old_peer_id, new_peer_id)
             });
@@ -5362,11 +5362,11 @@ impl Project {
         mut cx: AsyncApp,
     ) -> Result<()> {
         this.update(&mut cx, |this, cx| {
-            let peer_id = envelope.payload.peer_id.context("invalid peer id")?;
+            let peer_id = envelope.payload.peer_id.context("无效的对等 ID")?;
             let replica_id = this
                 .collaborators
                 .remove(&peer_id)
-                .with_context(|| format!("unknown peer {peer_id:?}"))?
+                .with_context(|| format!("未知对等方 {peer_id:?}"))?
                 .replica_id;
             this.buffer_store.update(cx, |buffer_store, cx| {
                 buffer_store.forget_shared_buffers_for(&peer_id);
@@ -5474,7 +5474,7 @@ impl Project {
         this.update(&mut cx, |_, cx| {
             cx.emit(Event::LanguageServerPrompt(
                 LanguageServerPromptRequest::new(
-                    proto_to_prompt(envelope.payload.level.context("Invalid prompt level")?),
+                    proto_to_prompt(envelope.payload.level.context("无效的提示级别")?),
                     envelope.payload.message,
                     actions.clone(),
                     envelope.payload.lsp_name,
@@ -5564,7 +5564,7 @@ impl Project {
 
         let trusted_worktrees = cx
             .update(|cx| TrustedWorktrees::try_get_global(cx))
-            .context("missing trusted worktrees")?;
+            .context("缺少受信任的工作树")?;
         trusted_worktrees.update(&mut cx, |trusted_worktrees, cx| {
             trusted_worktrees.trust(
                 &this.read(cx).worktree_store(),
@@ -5591,7 +5591,7 @@ impl Project {
 
         let trusted_worktrees = cx
             .update(|cx| TrustedWorktrees::try_get_global(cx))
-            .context("missing trusted worktrees")?;
+            .context("缺少受信任的工作树")?;
         trusted_worktrees.update(&mut cx, |trusted_worktrees, cx| {
             let worktree_store = this.read(cx).worktree_store().downgrade();
             let restricted_paths = envelope
@@ -5698,7 +5698,7 @@ impl Project {
     ) -> Result<()> {
         let toggled_log_kind =
             match proto::toggle_lsp_logs::LogType::from_i32(envelope.payload.log_type)
-                .context("invalid log type")?
+                .context("无效的日志类型")?
             {
                 proto::toggle_lsp_logs::LogType::Log => LogKind::Logs,
                 proto::toggle_lsp_logs::LogType::Trace => LogKind::Trace,
@@ -5740,7 +5740,7 @@ impl Project {
         let project_id = message.project_id;
         let path_style = this.read_with(&cx, |this, cx| this.path_style(cx));
         let query =
-            SearchQuery::from_proto(message.query.context("missing query field")?, path_style)?;
+            SearchQuery::from_proto(message.query.context("缺少查询字段")?, path_style)?;
 
         let handle = message.handle;
         let buffer_store = this.read_with(&cx, |this, _| this.buffer_store().clone());
@@ -5896,7 +5896,7 @@ impl Project {
         mut cx: AsyncApp,
     ) -> Result<()> {
         use proto::create_file_for_peer::Variant;
-        log::debug!("handle_create_file_for_peer: received message");
+        log::debug!("handle_create_file_for_peer:收到消息");
 
         let downloading_files: Arc<Mutex<HashMap<(WorktreeId, String), DownloadingFile>>> =
             this.update(&mut cx, |this, _| this.downloading_files.clone());
@@ -5904,7 +5904,7 @@ impl Project {
         match &envelope.payload.variant {
             Some(Variant::State(state)) => {
                 log::debug!(
-                    "handle_create_file_for_peer: got State: id={}, content_size={}",
+                    "handle_create_file_for_peer:收到状态:id={},内容大小={}",
                     state.id,
                     state.content_size
                 );
@@ -5914,12 +5914,12 @@ impl Project {
                     let worktree_id = WorktreeId::from_proto(file.worktree_id);
                     let path = file.path.clone();
                     let key = (worktree_id, path);
-                    log::debug!("handle_create_file_for_peer: looking up key={:?}", key);
+                    log::debug!("handle_create_file_for_peer:正在查找键={:?}", key);
 
                     let empty_file_destination: Option<PathBuf> = {
                         let mut files = downloading_files.lock();
                         log::trace!(
-                            "handle_create_file_for_peer: current downloading_files keys: {:?}",
+                            "handle_create_file_for_peer:当前 downloading_files 键:{:?}",
                             files.keys().collect::<Vec<_>>()
                         );
 
@@ -5927,13 +5927,13 @@ impl Project {
                             file_entry.total_size = state.content_size;
                             file_entry.file_id = Some(state.id);
                             log::debug!(
-                                "handle_create_file_for_peer: updated file entry: total_size={}, file_id={}",
+                                "handle_create_file_for_peer:已更新文件条目:总大小={},file_id={}",
                                 state.content_size,
                                 state.id
                             );
                         } else {
                             log::warn!(
-                                "handle_create_file_for_peer: key={:?} not found in downloading_files",
+                                "handle_create_file_for_peer:在 downloading_files 中未找到键={:?}",
                                 key
                             );
                         }
@@ -5948,27 +5948,27 @@ impl Project {
 
                     if let Some(destination) = empty_file_destination {
                         log::debug!(
-                            "handle_create_file_for_peer: writing empty file to {:?}",
+                            "handle_create_file_for_peer:正在将空文件写入 {:?}",
                             destination
                         );
                         match smol::fs::write(&destination, &[] as &[u8]).await {
                             Ok(_) => log::info!(
-                                "handle_create_file_for_peer: successfully wrote file to {:?}",
+                                "handle_create_file_for_peer:成功将文件写入 {:?}",
                                 destination
                             ),
                             Err(e) => log::error!(
-                                "handle_create_file_for_peer: failed to write empty file: {:?}",
+                                "handle_create_file_for_peer:写入空文件失败:{:?}",
                                 e
                             ),
                         }
                     }
                 } else {
-                    log::warn!("handle_create_file_for_peer: State has no file field");
+                    log::warn!("handle_create_file_for_peer:状态没有文件字段");
                 }
             }
             Some(Variant::Chunk(chunk)) => {
                 log::debug!(
-                    "handle_create_file_for_peer: got Chunk: file_id={}, data_len={}",
+                    "handle_create_file_for_peer:收到数据块:file_id={},数据长度={}",
                     chunk.file_id,
                     chunk.data.len()
                 );
@@ -5986,7 +5986,7 @@ impl Project {
                         if file_entry.file_id == Some(chunk.file_id) {
                             file_entry.chunks.extend_from_slice(&chunk.data);
                             log::debug!(
-                                "handle_create_file_for_peer: accumulated {} bytes, total_size={}",
+                                "handle_create_file_for_peer:已累积 {} 字节,总大小={}",
                                 file_entry.chunks.len(),
                                 file_entry.total_size
                             );
@@ -6008,17 +6008,17 @@ impl Project {
                 // Perform the async write outside the lock
                 if let Some((destination, content)) = write_info {
                     log::debug!(
-                        "handle_create_file_for_peer: writing {} bytes to {:?}",
+                        "handle_create_file_for_peer:正在将 {} 字节写入 {:?}",
                         content.len(),
                         destination
                     );
                     match smol::fs::write(&destination, &content).await {
                         Ok(_) => log::info!(
-                            "handle_create_file_for_peer: successfully wrote file to {:?}",
+                            "handle_create_file_for_peer:成功将文件写入 {:?}",
                             destination
                         ),
                         Err(e) => log::error!(
-                            "handle_create_file_for_peer: failed to write file: {:?}",
+                            "handle_create_file_for_peer:写入文件失败:{:?}",
                             e
                         ),
                     }
@@ -6027,11 +6027,11 @@ impl Project {
                 // Remove the completed entry
                 if let Some(key) = key_to_remove {
                     downloading_files.lock().remove(&key);
-                    log::debug!("handle_create_file_for_peer: removed completed download entry");
+                    log::debug!("handle_create_file_for_peer:已移除完成的下载条目");
                 }
             }
             None => {
-                log::warn!("handle_create_file_for_peer: got None variant");
+                log::warn!("handle_create_file_for_peer:收到 None 变体");
             }
         }
 
@@ -6047,7 +6047,7 @@ impl Project {
             } => {
                 if sharing_has_stopped {
                     return Task::ready(Err(anyhow!(
-                        "can't synchronize remote buffers on a readonly project"
+                        "无法在只读项目上同步远程缓冲区"
                     )));
                 } else {
                     remote_id
@@ -6055,7 +6055,7 @@ impl Project {
             }
             ProjectClientState::Shared { .. } | ProjectClientState::Local => {
                 return Task::ready(Err(anyhow!(
-                    "can't synchronize remote buffers on a local project"
+                    "无法在本地项目上同步远程缓冲区"
                 )));
             }
         };
@@ -6454,7 +6454,7 @@ impl ProjectGroupKey {
             }
         }
         if names.is_empty() {
-            "Empty Workspace".into()
+            "空工作区".into()
         } else {
             names.join(", ").into()
         }

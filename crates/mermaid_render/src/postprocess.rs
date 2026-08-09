@@ -45,7 +45,7 @@ pub(super) fn postprocess(svg: &str, theme: &MermaidTheme) -> Result<String> {
     for event in events {
         writer.write_event(event?)?;
     }
-    String::from_utf8(writer.into_inner()).context("SVG output is not valid UTF-8")
+    String::from_utf8(writer.into_inner()).context("SVG 输出不是有效的 UTF-8")
 }
 
 fn extract_svg_id(svg: &str) -> String {

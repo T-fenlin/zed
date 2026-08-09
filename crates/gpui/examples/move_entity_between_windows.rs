@@ -38,13 +38,13 @@ impl HelloWorld {
                 let result = this.update_in(cx, |this, window, _cx| {
                     this.tick_count += 1;
                     println!(
-                        "tick #{} fired in entity's current window {}",
+                        "实体当前窗口中触发的第 {} 次计时器 {}",
                         this.tick_count,
                         window.window_handle().window_id().as_u64(),
                     );
                 });
                 if let Err(err) = result {
-                    println!("tick task giving up: {err}");
+                    println!("计时器任务放弃:{err}");
                     return;
                 }
             }
@@ -56,7 +56,7 @@ impl HelloWorld {
             move |this, _emitter, _event, window, cx| {
                 let entered_window_id = window.window_handle().window_id().as_u64();
                 println!(
-                    "MoveToNewWindow handler fired in entity's current window {entered_window_id}",
+                    "MoveToNewWindow 处理器在实体的当前窗口 {entered_window_id} 中触发",
                 );
 
                 this.move_count += 1;
@@ -73,7 +73,7 @@ impl HelloWorld {
                         },
                         move |_, _| entity,
                     )
-                    .expect("failed to open new window");
+                    .expect("无法打开新窗口");
                     old_window
                         .update(cx, |_, window, _| window.remove_window())
                         .ok();
@@ -82,7 +82,7 @@ impl HelloWorld {
         );
 
         Self {
-            text: "World".into(),
+            text: "世界".into(),
             tick_count: 0,
             move_count: 0,
             _tasks: vec![task],
@@ -105,17 +105,17 @@ impl Render for HelloWorld {
             .items_center()
             .text_xl()
             .text_color(rgb(0xffffff))
-            .child(format!("Hello, {}!", &self.text))
-            .child(format!("Rendering in window: {window_id}"))
-            .child(format!("Ticks observed by entity: {}", self.tick_count))
-            .child(format!("Moves observed by entity: {}", self.move_count))
+            .child(format!("你好,{}!", &self.text))
+            .child(format!("正在窗口 {window_id} 中渲染"))
+            .child(format!("实体观察到的计时器次数:{}", self.tick_count))
+            .child(format!("实体观察到的移动次数:{}", self.move_count))
             .child(
                 div()
                     .px_4()
                     .py_2()
                     .bg(rgb(0x4040ff))
                     .rounded_md()
-                    .child("Move me to a new window")
+                    .child("将我移动到新窗口")
                     .on_mouse_down(
                         MouseButton::Left,
                         cx.listener(|_this, _, _window, cx| {

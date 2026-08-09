@@ -52,7 +52,7 @@ pub fn process_env(filter: Option<String>) {
             filter::init_env_filter(filter);
         }
         Err(err) => {
-            eprintln!("Failed to parse log filter: {}", err);
+            eprintln!("无法解析日志过滤器: {}", err);
         }
     }
 }
@@ -209,7 +209,7 @@ pub const fn scoped_logger(parent: Logger, name: &'static str) -> Logger {
     if index >= scope.len() {
         #[cfg(debug_assertions)]
         {
-            panic!("Scope overflow trying to add scope... ignoring scope");
+            panic!("添加作用域时作用域溢出... 忽略该作用域");
         }
     }
     scope[index] = name;
@@ -334,7 +334,7 @@ impl Drop for Timer {
 }
 
 impl Timer {
-    #[must_use = "Timer will stop when dropped, the result of this function should be saved in a variable prefixed with `_` if it should stop when dropped"]
+    #[must_use = "计时器在丢弃时会停止,如果希望在丢弃时停止,应将此函数的结果保存在以 `_` 为前缀的变量中"]
     pub fn new(logger: Logger, name: &'static str) -> Self {
         Self {
             logger,
@@ -364,7 +364,7 @@ impl Timer {
         {
             crate::warn!(
                 self.logger =>
-                "Timer '{}' took {:?}. Which was longer than the expected limit of {:?}",
+                "计时器 '{}' 耗时 {:?},超过了预期的 {:?} 限制",
                 self.name,
                 elapsed,
                 warn_limit
@@ -374,7 +374,7 @@ impl Timer {
         }
         crate::trace!(
             self.logger =>
-            "Timer '{}' finished in {:?}",
+            "计时器 '{}' 在 {:?} 内完成",
             self.name,
             elapsed
         );

@@ -46,7 +46,7 @@ impl Child {
             .spawn()
             .with_context(|| {
                 format!(
-                    "failed to spawn command {}",
+                    "无法启动命令 {}",
                     crate::redact::redact_command(&format!("{command:?}"))
                 )
             })?;
@@ -68,7 +68,7 @@ impl Child {
             .spawn()
             .with_context(|| {
                 format!(
-                    "failed to spawn command {}",
+                    "无法启动命令 {}",
                     crate::redact::redact_command(&format!("{command:?}"))
                 )
             })?;
@@ -94,7 +94,7 @@ impl Child {
                 Ok(job)
             })
             .map_err(|error| {
-                log::error!("failed to assign spawned process to a job object: {error:#}");
+                log::error!("无法将生成的进程分配给作业对象:{error:#}");
             })
             .ok();
 
@@ -162,7 +162,7 @@ mod windows_job {
         pub(crate) fn new() -> Result<Self> {
             unsafe {
                 let job =
-                    Self(CreateJobObjectW(None, None).context("failed to create job object")?);
+                    Self(CreateJobObjectW(None, None).context("无法创建作业对象")?);
                 let mut info = JOBOBJECT_EXTENDED_LIMIT_INFORMATION::default();
                 info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
                 SetInformationJobObject(
@@ -171,7 +171,7 @@ mod windows_job {
                     &info as *const _ as *const _,
                     size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
                 )
-                .context("failed to set job object limits")?;
+                .context("无法设置作业对象限制")?;
                 Ok(job)
             }
         }
@@ -179,16 +179,16 @@ mod windows_job {
         pub(crate) fn assign_process(&self, pid: u32) -> Result<()> {
             unsafe {
                 let process = OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE, false, pid)
-                    .context("failed to open process")?;
+                    .context("无法打开进程")?;
                 let result = AssignProcessToJobObject(self.0, process)
-                    .context("failed to assign process to job object");
+                    .context("无法将进程分配给作业对象");
                 CloseHandle(process).log_err();
                 result
             }
         }
 
         pub(crate) fn terminate(&self) -> Result<()> {
-            unsafe { TerminateJobObject(self.0, 1).context("failed to terminate job object") }
+            unsafe { TerminateJobObject(self.0, 1).context("无法终止作业对象") }
         }
     }
 
@@ -218,7 +218,7 @@ mod windows_tests {
             pid_file.display()
         ));
         let child = Child::spawn(command, Stdio::null(), Stdio::null(), Stdio::null())
-            .expect("failed to spawn powershell");
+            .expect("无法启动 PowerShell");
 
         let deadline = Instant::now() + Duration::from_secs(5);
         let grandchild_pid = loop {
@@ -229,13 +229,13 @@ mod windows_tests {
             }
             assert!(
                 Instant::now() < deadline,
-                "timed out waiting for grandchild pid file"
+                "等待子进程 PID 文件超时"
             );
             std::thread::sleep(Duration::from_millis(50));
         };
         assert!(
             process_is_alive(grandchild_pid),
-            "grandchild should be alive after spawning"
+            "生成后子进程应处于活动状态"
         );
         (child, grandchild_pid)
     }
@@ -255,7 +255,7 @@ mod windows_tests {
             let mut exit_code = 0u32;
             let alive = GetExitCodeProcess(handle, &mut exit_code).is_ok()
                 && exit_code == STILL_ACTIVE.0 as u32;
-            CloseHandle(handle).expect("failed to close process handle");
+            CloseHandle(handle).expect("无法关闭进程句柄");
             alive
         }
     }
@@ -263,7 +263,7 @@ mod windows_tests {
     fn assert_process_exits(pid: u32, message: &str) {
         let deadline = Instant::now() + Duration::from_secs(2);
         while process_is_alive(pid) {
-            assert!(Instant::now() < deadline, "{message} (pid {pid})");
+            assert!(Instant::now() < deadline, "{message}(PID {pid})");
             std::thread::sleep(Duration::from_millis(100));
         }
     }
@@ -273,11 +273,11 @@ mod windows_tests {
         let temp_dir = tempfile::tempdir().unwrap();
         let (mut child, grandchild_pid) = spawn_process_tree(temp_dir.path());
 
-        child.kill().expect("failed to kill child");
+        child.kill().expect("无法终止子进程");
 
         assert_process_exits(
             grandchild_pid,
-            "grandchild should be terminated after killing the child",
+            "终止子进程后,子进程的子进程也应被终止",
         );
     }
 
@@ -290,7 +290,7 @@ mod windows_tests {
 
         assert_process_exits(
             grandchild_pid,
-            "grandchild should be terminated after dropping the child",
+            "释放子进程后,子进程的子进程也应被终止",
         );
     }
 }

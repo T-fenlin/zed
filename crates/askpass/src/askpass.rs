@@ -249,7 +249,7 @@ impl PasswordProxy {
         let temp_dir = tempfile::Builder::new().prefix("zed-askpass").tempdir()?;
         let askpass_socket = temp_dir.path().join("askpass.sock");
         let current_exec =
-            std::env::current_exe().context("Failed to determine current zed executable path.")?;
+            std::env::current_exe().context("无法确定当前 Zed 可执行文件路径。")?;
 
         let askpass_program = ASKPASS_PROGRAM.get_or_init(|| current_exec);
 
@@ -275,7 +275,7 @@ impl PasswordProxy {
                     Some(script),
                 ),
                 Err(err) => {
-                    log::warn!("could not create gpg askpass wrapper: {err:#}");
+                    log::warn!("无法创建 gpg askpass 包装器:{err:#}");
                     (None, None)
                 }
             };
@@ -283,7 +283,7 @@ impl PasswordProxy {
         let _task = executor.spawn(async move {
             maybe!(async move {
                 let listener =
-                    UnixListener::bind(&askpass_socket).context("creating askpass socket")?;
+                    UnixListener::bind(&askpass_socket).context("创建 askpass 套接字")?;
 
                 while let Ok((mut stream, _)) = listener.accept().await {
                     let mut buffer = Vec::new();
@@ -325,11 +325,11 @@ impl PasswordProxy {
             let askpass_script = generate_askpass_script(askpass_program, &askpass_socket_path)?;
             fs::write(&askpass_script_path, askpass_script)
                 .await
-                .with_context(|| format!("creating askpass script at {askpass_script_path:?}"))?;
+                .with_context(|| format!("在 {askpass_script_path:?} 创建 askpass 脚本"))?;
             make_file_executable(&askpass_script_path)
                 .await
                 .with_context(|| {
-                    format!("marking askpass script executable at {askpass_script_path:?}")
+                    format!("在 {askpass_script_path:?} 标记 askpass 脚本为可执行")
                 })?;
         }
 
@@ -340,9 +340,9 @@ impl PasswordProxy {
                 match async {
                     fs::write(&path, script)
                         .await
-                        .with_context(|| format!("creating gpg wrapper script at {path:?}"))?;
+                        .with_context(|| format!("在 {path:?} 创建 gpg 包装器脚本"))?;
                     make_file_executable(&path).await.with_context(|| {
-                        format!("marking gpg wrapper script executable at {path:?}")
+                        format!("在 {path:?} 标记 gpg 包装器脚本为可执行")
                     })?;
                     anyhow::Ok(())
                 }
@@ -350,7 +350,7 @@ impl PasswordProxy {
                 {
                     Ok(()) => Some(path),
                     Err(err) => {
-                        log::warn!("could not write gpg askpass wrapper: {err:#}");
+                        log::warn!("无法写入 gpg askpass 包装器:{err:#}");
                         None
                     }
                 }
@@ -390,7 +390,7 @@ pub fn main(socket: &str) {
 
     let mut buffer = Vec::new();
     if let Err(err) = io::stdin().read_to_end(&mut buffer) {
-        eprintln!("Error reading from stdin: {}", err);
+        eprintln!("从标准输入读取错误:{}", err);
         exit(1);
     }
 
@@ -411,7 +411,7 @@ fn connect_and_write_prompt(socket: &str, mut buffer: Vec<u8>) {
     let mut stream = match UnixStream::connect(socket) {
         Ok(stream) => stream,
         Err(err) => {
-            eprintln!("Error connecting to socket {}: {}", socket, err);
+            eprintln!("连接套接字 {} 错误:{}", socket, err);
             exit(1);
         }
     };
@@ -425,25 +425,25 @@ fn connect_and_write_prompt(socket: &str, mut buffer: Vec<u8>) {
     }
 
     if let Err(err) = stream.write_all(&buffer) {
-        eprintln!("Error writing to socket: {}", err);
+        eprintln!("写入套接字错误:{}", err);
         exit(1);
     }
 
     let mut response = Vec::new();
     if let Err(err) = stream.read_to_end(&mut response) {
-        eprintln!("Error reading from socket: {}", err);
+        eprintln!("从套接字读取错误:{}", err);
         exit(1);
     }
 
     if let Err(err) = io::stdout().write_all(&response) {
-        eprintln!("Error writing to stdout: {}", err);
+        eprintln!("写入标准输出错误:{}", err);
         exit(1);
     }
 }
 
 pub fn set_askpass_program(path: std::path::PathBuf) {
     if ASKPASS_PROGRAM.set(path).is_err() {
-        debug_panic!("askpass program has already been set");
+        debug_panic!("askpass 程序已设置");
     }
 }
 
@@ -458,14 +458,14 @@ fn generate_askpass_script(
     let askpass_program = shell_kind.prepend_command_prefix(
         askpass_program
             .to_str()
-            .context("Askpass program is on a non-utf8 path")?,
+            .context("Askpass 程序位于非 UTF-8 路径")?,
     );
     let askpass_program = shell_kind
         .try_quote_prefix_aware(&askpass_program)
-        .context("Failed to shell-escape Askpass program path")?;
+        .context("无法对 Askpass 程序路径进行 Shell 转义")?;
     let askpass_socket = askpass_socket
         .try_shell_safe(shell_kind)
-        .context("Failed to shell-escape Askpass socket path")?;
+        .context("无法对 Askpass 套接字路径进行 Shell 转义")?;
     let print_args = "printf '%s\\0' \"$@\"";
     let shebang = "#!/bin/sh";
     Ok(format!(
@@ -480,29 +480,29 @@ fn generate_gpg_wrapper_script(
     askpass_socket: &std::path::Path,
 ) -> Result<String> {
     let shell_kind = ShellKind::Posix;
-    let gpg_program = find_gpg_program().context("could not find a gpg binary on PATH")?;
+    let gpg_program = find_gpg_program().context("在 PATH 中找不到 gpg 可执行文件")?;
     let gpg_program = gpg_program
         .to_str()
-        .context("gpg program is on a non-utf8 path")?;
+        .context("gpg 程序位于非 UTF-8 路径")?;
     let gpg_program = shell_kind
         .try_quote_prefix_aware(gpg_program)
-        .context("Failed to shell-escape gpg program path")?;
+        .context("无法对 gpg 程序路径进行 Shell 转义")?;
 
     let askpass_program = shell_kind.prepend_command_prefix(
         askpass_program
             .to_str()
-            .context("Askpass program is on a non-utf8 path")?,
+            .context("Askpass 程序位于非 UTF-8 路径")?,
     );
     let askpass_program = shell_kind
         .try_quote_prefix_aware(&askpass_program)
-        .context("Failed to shell-escape Askpass program path")?;
+        .context("无法对 Askpass 程序路径进行 Shell 转义")?;
     let askpass_socket = askpass_socket
         .try_shell_safe(shell_kind)
-        .context("Failed to shell-escape Askpass socket path")?;
+        .context("无法对 Askpass 套接字路径进行 Shell 转义")?;
 
     let prompt = shell_kind
-        .try_quote_prefix_aware("Enter passphrase for your Git signing key:")
-        .context("Failed to shell-escape gpg passphrase prompt")?;
+        .try_quote_prefix_aware("输入您的 Git 签名密钥的密码短语:")
+        .context("无法对 gpg 密码短语提示进行 Shell 转义")?;
 
     // The wrapper only intervenes when git asks gpg to *sign* (e.g. `gpg -bsau
     // <key>`); other invocations like `--verify` run unchanged. For signing we

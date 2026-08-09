@@ -88,7 +88,7 @@ impl MentionUri {
         let validate_query_params = |url: &Url, allowed: &[&str]| -> Result<()> {
             for (key, _) in url.query_pairs() {
                 if !allowed.contains(&key.as_ref()) {
-                    bail!("invalid query parameter")
+                    bail!("无效的查询参数")
                 }
             }
             Ok(())
@@ -96,7 +96,7 @@ impl MentionUri {
 
         if is_absolute(input, path_style) && !input.contains("://") {
             return parse_absolute_path(input)
-                .with_context(|| format!("Invalid absolute path mention URI: {input}"));
+                .with_context(|| format!("无效的绝对路径提及 URI:{input}"));
         }
 
         let url = url::Url::parse(input)?;
@@ -148,14 +148,14 @@ impl MentionUri {
             }
             "zed" => {
                 if let Some(thread_id) = path.strip_prefix("/agent/thread/") {
-                    let name = single_query_param(&url, "name")?.context("Missing thread name")?;
+                    let name = single_query_param(&url, "name")?.context("缺少线程名称")?;
                     Ok(Self::Thread {
                         id: acp::SessionId::new(thread_id),
                         name,
                     })
                 } else if let Some(rule_id) = path.strip_prefix("/agent/rule/") {
                     // Deprecated: parses legacy rule mentions.
-                    let name = single_query_param(&url, "name")?.context("Missing rule name")?;
+                    let name = single_query_param(&url, "name")?.context("缺少规则名称")?;
                     let id = if rule_id.is_empty() {
                         default_deprecated_rule_id()
                     } else {
@@ -169,7 +169,7 @@ impl MentionUri {
                         match key.as_ref() {
                             "include_warnings" => include_warnings = value == "true",
                             "include_errors" => include_errors = value == "true",
-                            _ => bail!("invalid query parameter"),
+                            _ => bail!("无效的查询参数"),
                         }
                     }
                     Ok(Self::Diagnostics {
@@ -178,12 +178,12 @@ impl MentionUri {
                     })
                 } else if path.starts_with("/agent/pasted-image") {
                     let name =
-                        single_query_param(&url, "name")?.unwrap_or_else(|| "Image".to_string());
+                        single_query_param(&url, "name")?.unwrap_or_else(|| "图片".to_string());
                     Ok(Self::PastedImage { name })
                 } else if path.starts_with("/agent/untitled-buffer") {
                     let fragment = url
                         .fragment()
-                        .context("Missing fragment for untitled buffer selection")?;
+                        .context("缺少未命名缓冲区选择的片段")?;
                     let line_range = parse_line_range(fragment)?;
                     validate_query_params(&url, &["column"])?;
                     Ok(Self::Selection {
@@ -194,10 +194,10 @@ impl MentionUri {
                 } else if let Some(name) = path.strip_prefix("/agent/symbol/") {
                     let fragment = url
                         .fragment()
-                        .context("Missing fragment for untitled buffer selection")?;
+                        .context("缺少未命名缓冲区选择的片段")?;
                     let line_range = parse_line_range(fragment)?;
                     let path =
-                        single_query_param(&url, "path")?.context("Missing path for symbol")?;
+                        single_query_param(&url, "path")?.context("缺少符号的路径")?;
                     Ok(Self::Symbol {
                         name: name.to_string(),
                         abs_path: path.into(),
@@ -205,22 +205,22 @@ impl MentionUri {
                     })
                 } else if path.starts_with("/agent/file") {
                     let path =
-                        single_query_param(&url, "path")?.context("Missing path for file")?;
+                        single_query_param(&url, "path")?.context("缺少文件的路径")?;
                     Ok(Self::File {
                         abs_path: path.into(),
                     })
                 } else if path.starts_with("/agent/directory") {
                     let path =
-                        single_query_param(&url, "path")?.context("Missing path for directory")?;
+                        single_query_param(&url, "path")?.context("缺少目录的路径")?;
                     Ok(Self::Directory {
                         abs_path: path.into(),
                     })
                 } else if path.starts_with("/agent/selection") {
                     validate_query_params(&url, &["path", "column"])?;
-                    let fragment = url.fragment().context("Missing fragment for selection")?;
+                    let fragment = url.fragment().context("缺少选择的片段")?;
                     let line_range = parse_line_range(fragment)?;
                     let column = parse_column(query_param(&url, "column"));
-                    let path = query_param(&url, "path").context("Missing path for selection")?;
+                    let path = query_param(&url, "path").context("缺少选择的路径")?;
                     Ok(Self::Selection {
                         abs_path: Some(path.into()),
                         line_range,
@@ -248,12 +248,12 @@ impl MentionUri {
                         match key.as_ref() {
                             "name" => {
                                 if name.replace(value.to_string()).is_some() {
-                                    bail!("duplicate skill name query parameter");
+                                    bail!("重复的技能名称查询参数");
                                 }
                             }
                             "source" => {
                                 if source.replace(value.to_string()).is_some() {
-                                    bail!("duplicate skill source query parameter");
+                                    bail!("重复的技能来源查询参数");
                                 }
                             }
                             "path" => {
@@ -261,24 +261,24 @@ impl MentionUri {
                                     .replace(PathBuf::from(value.to_string()))
                                     .is_some()
                                 {
-                                    bail!("duplicate skill file path query parameter");
+                                    bail!("重复的技能文件路径查询参数");
                                 }
                             }
-                            _ => bail!("invalid query parameter"),
+                            _ => bail!("无效的查询参数"),
                         }
                     }
 
                     Ok(Self::Skill {
-                        name: name.context("missing skill name")?,
-                        source: source.context("missing skill source")?,
-                        skill_file_path: skill_file_path.context("missing skill file path")?,
+                        name: name.context("缺少技能名称")?,
+                        source: source.context("缺少技能来源")?,
+                        skill_file_path: skill_file_path.context("缺少技能文件路径")?,
                     })
                 } else {
-                    bail!("invalid zed url: {:?}", input);
+                    bail!("无效的 zed URL:{:?}", input);
                 }
             }
             "http" | "https" => Ok(MentionUri::Fetch { url }),
-            other => bail!("unrecognized scheme {:?}", other),
+            other => bail!("无法识别的协议 {:?}", other),
         }
     }
 
@@ -292,7 +292,7 @@ impl MentionUri {
     pub fn parse_hyperlink(input: &str, path_style: PathStyle) -> Result<Self> {
         if let Some(target) = bare_path_target(input, path_style) {
             return parse_hyperlink_path(target, path_style, DecodePercentEscapes::Yes)
-                .with_context(|| format!("Invalid hyperlink path target: {input}"));
+                .with_context(|| format!("无效的超链接路径目标:{input}"));
         }
         Self::parse(input, path_style)
     }
@@ -343,21 +343,21 @@ impl MentionUri {
             MentionUri::Symbol { name, .. } => name.clone(),
             MentionUri::Thread { name, .. } => name.clone(),
             MentionUri::Rule { name, .. } => name.clone(),
-            MentionUri::Diagnostics { .. } => "Diagnostics".to_string(),
+            MentionUri::Diagnostics { .. } => "诊断".to_string(),
             MentionUri::TerminalSelection { line_count } => {
                 if *line_count == 1 {
-                    "Terminal (1 line)".to_string()
+                    "终端(1 行)".to_string()
                 } else {
-                    format!("Terminal ({} lines)", line_count)
+                    format!("终端({} 行)", line_count)
                 }
             }
-            MentionUri::GitDiff { base_ref } => format!("Branch Diff ({})", base_ref),
+            MentionUri::GitDiff { base_ref } => format!("分支差异({})", base_ref),
             MentionUri::MergeConflict { file_path } => {
                 let name = Path::new(file_path)
                     .file_name()
                     .unwrap_or_default()
                     .to_string_lossy();
-                format!("Merge Conflict ({name})")
+                format!("合并冲突({name})")
             }
             MentionUri::Selection {
                 abs_path: path,
@@ -383,7 +383,7 @@ impl MentionUri {
             MentionUri::Skill { name, source, .. } => {
                 if source.is_empty() {
                     // Must match `SkillSource::display_label()` in agent_skills.
-                    format!("{} (global)", name)
+                    format!("{}(全局)", name)
                 } else {
                     format!("{} ({})", name, source)
                 }
@@ -615,14 +615,14 @@ fn parse_line_range(fragment: &str) -> Result<RangeInclusive<u32>> {
 
     let start_line = start
         .parse::<u32>()
-        .context("Parsing line range start")?
+        .context("解析行范围起始")?
         .checked_sub(1)
-        .context("Line numbers should be 1-based")?;
+        .context("行号应从 1 开始")?;
     let end_line = end
         .parse::<u32>()
-        .context("Parsing line range end")?
+        .context("解析行范围结束")?
         .checked_sub(1)
-        .context("Line numbers should be 1-based")?;
+        .context("行号应从 1 开始")?;
 
     Ok(start_line..=end_line)
 }
@@ -673,7 +673,7 @@ fn absolute_path_mention(path_input: &str, fragment: Option<&str>) -> Result<Men
     if let Some(row) = path_with_position.row {
         let line = row
             .checked_sub(1)
-            .context("Line numbers should be 1-based")?;
+            .context("行号应从 1 开始")?;
         Ok(MentionUri::Selection {
             abs_path: Some(abs_path),
             line_range: line..=line,
@@ -826,12 +826,12 @@ fn single_query_param(url: &Url, name: &'static str) -> Result<Option<String>> {
         [] => Ok(None),
         [(k, v)] => {
             if k != name {
-                bail!("invalid query parameter")
+                bail!("无效的查询参数")
             }
 
             Ok(Some(v.to_string()))
         }
-        _ => bail!("too many query pairs"),
+        _ => bail!("查询参数对过多"),
     }
 }
 
@@ -839,7 +839,7 @@ pub fn selection_name(path: Option<&Path>, line_range: &RangeInclusive<u32>) -> 
     format!(
         "{} ({}:{})",
         path.and_then(|path| path.file_name())
-            .unwrap_or("Untitled".as_ref())
+            .unwrap_or("未命名".as_ref())
             .display(),
         *line_range.start() + 1,
         *line_range.end() + 1
@@ -872,7 +872,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, Path::new(path!("/path/to/file.rs")));
             }
-            _ => panic!("Expected File variant"),
+            _ => panic!("应为文件变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), file_uri);
     }
@@ -885,7 +885,7 @@ mod tests {
             MentionUri::Directory { abs_path } => {
                 assert_eq!(abs_path, Path::new(path!("/path/to/dir/")));
             }
-            _ => panic!("Expected Directory variant"),
+            _ => panic!("应为目录变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), file_uri);
     }
@@ -897,7 +897,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, PathBuf::from("C:\\path\\to\\file.rs"));
             }
-            other => panic!("Expected File variant, got {other:?}"),
+            other => panic!("应为文件变体,实际为 {other:?}"),
         }
 
         let parsed = MentionUri::parse("file:///C:/path/to/dir/", PathStyle::Windows).unwrap();
@@ -905,7 +905,7 @@ mod tests {
             MentionUri::Directory { abs_path } => {
                 assert_eq!(abs_path, PathBuf::from("C:\\path\\to\\dir\\"));
             }
-            other => panic!("Expected Directory variant, got {other:?}"),
+            other => panic!("应为目录变体,实际为 {other:?}"),
         }
 
         let parsed = MentionUri::parse(
@@ -917,7 +917,7 @@ mod tests {
             MentionUri::Symbol { abs_path, .. } => {
                 assert_eq!(abs_path, PathBuf::from("C:\\path\\to\\file.rs"));
             }
-            other => panic!("Expected Symbol variant, got {other:?}"),
+            other => panic!("应为符号变体,实际为 {other:?}"),
         }
 
         let parsed =
@@ -929,7 +929,7 @@ mod tests {
             } => {
                 assert_eq!(abs_path, PathBuf::from("C:\\path\\to\\file.rs"));
             }
-            other => panic!("Expected Selection variant, got {other:?}"),
+            other => panic!("应为选择变体,实际为 {other:?}"),
         }
     }
 
@@ -942,7 +942,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, PathBuf::from("C:\\path with space\\file.rs"));
             }
-            other => panic!("Expected File variant, got {other:?}"),
+            other => panic!("应为文件变体,实际为 {other:?}"),
         }
         assert_eq!(
             MentionUri::File {
@@ -973,7 +973,7 @@ mod tests {
                 );
                 assert_eq!(line_range, 1..=1);
             }
-            other => panic!("Expected Selection variant, got {other:?}"),
+            other => panic!("应为选择变体,实际为 {other:?}"),
         }
     }
 
@@ -996,7 +996,7 @@ mod tests {
                 );
                 assert_eq!(line_range, 41..=41);
             }
-            other => panic!("Expected Selection variant, got {other:?}"),
+            other => panic!("应为选择变体,实际为 {other:?}"),
         }
     }
 
@@ -1014,7 +1014,7 @@ mod tests {
                     PathBuf::from("C:\\Projects\\Example Workspace\\AGENTS.md")
                 );
             }
-            other => panic!("Expected File variant, got {other:?}"),
+            other => panic!("应为文件变体,实际为 {other:?}"),
         }
     }
 
@@ -1031,7 +1031,7 @@ mod tests {
                 assert_eq!(abs_path, PathBuf::from("C:\\Projects\\Cargo.toml"));
                 assert_eq!(line_range, 3..=3);
             }
-            other => panic!("Expected Selection variant, got {other:?}"),
+            other => panic!("应为选择变体,实际为 {other:?}"),
         }
     }
 
@@ -1057,7 +1057,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, PathBuf::from("\\\\server\\share\\dir\\file.rs"));
             }
-            other => panic!("Expected File variant, got {other:?}"),
+            other => panic!("应为文件变体,实际为 {other:?}"),
         }
     }
 
@@ -1076,7 +1076,7 @@ mod tests {
                 MentionUri::File {
                     abs_path: PathBuf::from("C:\\foo\\bar.rs")
                 },
-                "input: {input}"
+                "输入:{input}"
             );
         }
     }
@@ -1089,7 +1089,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, PathBuf::from("\\C\\Users\\readme.md"));
             }
-            other => panic!("Expected File variant, got {other:?}"),
+            other => panic!("应为文件变体,实际为 {other:?}"),
         }
     }
 
@@ -1100,7 +1100,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, PathBuf::from("/c/Projects/AGENTS.md"));
             }
-            other => panic!("Expected File variant, got {other:?}"),
+            other => panic!("应为文件变体,实际为 {other:?}"),
         }
     }
 
@@ -1238,11 +1238,11 @@ mod tests {
             abs_path: PathBuf::from(path!("/path/to/dir")),
         };
         let serialized = uri.to_uri().to_string();
-        assert!(serialized.ends_with('/'), "directory URI must end with /");
+        assert!(serialized.ends_with('/'), "目录 URI 必须以 / 结尾");
         let parsed = MentionUri::parse(&serialized, PathStyle::local()).unwrap();
         assert!(
             matches!(parsed, MentionUri::Directory { .. }),
-            "expected Directory variant, got {:?}",
+            "应为目录变体,实际为 {:?}",
             parsed
         );
     }
@@ -1263,7 +1263,7 @@ mod tests {
                 assert_eq!(line_range.start(), &9);
                 assert_eq!(line_range.end(), &19);
             }
-            _ => panic!("Expected Symbol variant"),
+            _ => panic!("应为符号变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), symbol_uri);
     }
@@ -1282,7 +1282,7 @@ mod tests {
                 assert_eq!(line_range.start(), &4);
                 assert_eq!(line_range.end(), &14);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), selection_uri);
     }
@@ -1295,7 +1295,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, Path::new(path!("/path/to/日本語.txt")));
             }
-            _ => panic!("Expected File variant"),
+            _ => panic!("应为文件变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), file_uri);
     }
@@ -1313,7 +1313,7 @@ mod tests {
                 assert_eq!(line_range.start(), &0);
                 assert_eq!(line_range.end(), &9);
             }
-            _ => panic!("Expected Selection variant without path"),
+            _ => panic!("应为不带路径的选择变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), selection_uri);
     }
@@ -1328,9 +1328,9 @@ mod tests {
                 name,
             } => {
                 assert_eq!(thread_id.to_string(), "session123");
-                assert_eq!(name, "Thread name");
+                assert_eq!(name, "线程名称");
             }
-            _ => panic!("Expected Thread variant"),
+            _ => panic!("应为线程变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), thread_uri);
     }
@@ -1340,8 +1340,8 @@ mod tests {
         let rule_uri = "zed:///agent/rule/d8694ff2-90d5-4b6f-be33-33c1763acd52?name=Some+rule";
         let parsed = MentionUri::parse(rule_uri, PathStyle::local()).unwrap();
         match &parsed {
-            MentionUri::Rule { name, .. } => assert_eq!(name, "Some rule"),
-            _ => panic!("Expected Rule variant"),
+            MentionUri::Rule { name, .. } => assert_eq!(name, "某规则"),
+            _ => panic!("应为规则变体"),
         }
         // The id round-trips through the URI.
         assert_eq!(parsed.to_uri().to_string(), rule_uri);
@@ -1350,15 +1350,15 @@ mod tests {
     #[test]
     fn test_legacy_rule_mention_preserves_id() {
         // The `id` older Zed versions require must survive a load + save.
-        let json = r#"{"Rule":{"id":{"User":{"uuid":"d8694ff2-90d5-4b6f-be33-33c1763acd52"}},"name":"Some rule"}}"#;
+        let json = r#"{"规则":{"id":{"User":{"uuid":"d8694ff2-90d5-4b6f-be33-33c1763acd52"}},"name":"某规则"}}"#;
         let parsed: MentionUri = serde_json::from_str(json).unwrap();
         match &parsed {
-            MentionUri::Rule { name, .. } => assert_eq!(name, "Some rule"),
-            _ => panic!("Expected Rule variant"),
+            MentionUri::Rule { name, .. } => assert_eq!(name, "某规则"),
+            _ => panic!("应为规则变体"),
         }
         let reserialized = serde_json::to_value(&parsed).unwrap();
         assert_eq!(
-            reserialized["Rule"]["id"]["User"]["uuid"],
+            reserialized["规则"]["id"]["User"]["uuid"],
             "d8694ff2-90d5-4b6f-be33-33c1763acd52"
         );
     }
@@ -1366,10 +1366,10 @@ mod tests {
     #[test]
     fn test_legacy_rule_mention_without_id_gets_placeholder() {
         // A mention missing its id still serializes a valid id for older versions.
-        let json = r#"{"Rule":{"name":"Some rule"}}"#;
+        let json = r#"{"规则":{"name":"某规则"}}"#;
         let parsed: MentionUri = serde_json::from_str(json).unwrap();
         let reserialized = serde_json::to_value(&parsed).unwrap();
-        assert!(reserialized["Rule"]["id"]["User"]["uuid"].is_string());
+        assert!(reserialized["规则"]["id"]["User"]["uuid"].is_string());
     }
 
     #[test]
@@ -1394,7 +1394,7 @@ mod tests {
             MentionUri::Fetch { url } => {
                 assert_eq!(url.to_string(), http_uri);
             }
-            _ => panic!("Expected Fetch variant"),
+            _ => panic!("应为获取变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), http_uri);
     }
@@ -1407,7 +1407,7 @@ mod tests {
             MentionUri::Fetch { url } => {
                 assert_eq!(url.to_string(), https_uri);
             }
-            _ => panic!("Expected Fetch variant"),
+            _ => panic!("应为获取变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), https_uri);
     }
@@ -1424,7 +1424,7 @@ mod tests {
                 assert!(include_errors);
                 assert!(include_warnings);
             }
-            _ => panic!("Expected Diagnostics variant"),
+            _ => panic!("应为诊断变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), uri);
     }
@@ -1441,7 +1441,7 @@ mod tests {
                 assert!(!include_errors);
                 assert!(include_warnings);
             }
-            _ => panic!("Expected Diagnostics variant"),
+            _ => panic!("应为诊断变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), uri);
     }
@@ -1467,7 +1467,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, Path::new(file_path));
             }
-            _ => panic!("Expected File variant"),
+            _ => panic!("应为文件变体"),
         }
     }
 
@@ -1485,7 +1485,7 @@ mod tests {
                 assert_eq!(line_range.start(), &41);
                 assert_eq!(line_range.end(), &41);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
     }
 
@@ -1505,10 +1505,10 @@ mod tests {
                 assert_eq!(column, &Some(4));
 
                 let parsed_again = MentionUri::parse(parsed.to_uri().as_ref(), PathStyle::Unix)
-                    .expect("selection URI with column should parse");
+                    .expect("带列的选择 URI 应能解析");
                 assert_eq!(parsed_again, parsed.clone());
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
     }
 
@@ -1526,7 +1526,7 @@ mod tests {
                 assert_eq!(line_range.start(), &41);
                 assert_eq!(line_range.end(), &41);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
     }
 
@@ -1538,7 +1538,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, Path::new("C:\\Users\\zed\\project\\main.rs"));
             }
-            _ => panic!("Expected File variant"),
+            _ => panic!("应为文件变体"),
         }
     }
 
@@ -1559,7 +1559,7 @@ mod tests {
                 assert_eq!(line_range.start(), &41);
                 assert_eq!(line_range.end(), &41);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
     }
 
@@ -1580,7 +1580,7 @@ mod tests {
                 assert_eq!(line_range.start(), &41);
                 assert_eq!(line_range.end(), &41);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
     }
 
@@ -1592,7 +1592,7 @@ mod tests {
             MentionUri::File { abs_path } => {
                 assert_eq!(abs_path, Path::new("/path/to/file.rs"));
             }
-            _ => panic!("Expected File variant"),
+            _ => panic!("应为文件变体"),
         }
     }
 
@@ -1610,7 +1610,7 @@ mod tests {
                 assert_eq!(line_range.start(), &41);
                 assert_eq!(line_range.end(), &41);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
     }
 
@@ -1631,7 +1631,7 @@ mod tests {
                 assert_eq!(line_range.start(), &41);
                 assert_eq!(line_range.end(), &41);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
     }
 
@@ -1650,7 +1650,7 @@ mod tests {
                 assert_eq!(line_range.start(), &1871);
                 assert_eq!(line_range.end(), &1871);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
     }
 
@@ -1668,7 +1668,7 @@ mod tests {
                 assert_eq!(line_range.start(), &9);
                 assert_eq!(line_range.end(), &19);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
 
         // Also test L10-L20 format
@@ -1684,7 +1684,7 @@ mod tests {
                 assert_eq!(line_range.start(), &9);
                 assert_eq!(line_range.end(), &19);
             }
-            _ => panic!("Expected Selection variant"),
+            _ => panic!("应为选择变体"),
         }
     }
 
@@ -1696,15 +1696,15 @@ mod tests {
             MentionUri::TerminalSelection { line_count } => {
                 assert_eq!(*line_count, 42);
             }
-            _ => panic!("Expected TerminalSelection variant"),
+            _ => panic!("应为终端选择变体"),
         }
         assert_eq!(parsed.to_uri().to_string(), terminal_uri);
-        assert_eq!(parsed.name(), "Terminal (42 lines)");
+        assert_eq!(parsed.name(), "终端(42 行)");
 
         // Test single line
         let single_line_uri = "zed:///agent/terminal-selection?lines=1";
         let parsed_single = MentionUri::parse(single_line_uri, PathStyle::local()).unwrap();
-        assert_eq!(parsed_single.name(), "Terminal (1 line)");
+        assert_eq!(parsed_single.name(), "终端(1 行)");
     }
 
     #[test]
@@ -1747,21 +1747,21 @@ mod tests {
         };
         assert_eq!(global_skill.name(), "create-skill");
         assert_eq!(global_skill.disambiguated_name(0), "create-skill");
-        assert_eq!(global_skill.disambiguated_name(1), "create-skill (global)");
+        assert_eq!(global_skill.disambiguated_name(1), "create-skill(全局)");
         assert_eq!(
             project_skill.disambiguated_name(1),
-            "create-skill (my-project)"
+            "create-skill(my-项目)"
         );
 
         // A type without special disambiguation (Thread) — detail has no effect
         // (the value is a fixed point so the disambiguation loop terminates).
         let thread = MentionUri::Thread {
             id: acp::SessionId::new("123"),
-            name: "My Thread".into(),
+            name: "我的对话线程".into(),
         };
-        assert_eq!(thread.disambiguated_name(0), "My Thread");
-        assert_eq!(thread.disambiguated_name(1), "My Thread");
-        assert_eq!(thread.disambiguated_name(5), "My Thread");
+        assert_eq!(thread.disambiguated_name(0), "我的对话线程");
+        assert_eq!(thread.disambiguated_name(1), "我的对话线程");
+        assert_eq!(thread.disambiguated_name(5), "我的对话线程");
 
         // Edge case: file at filesystem root has no parent to show
         let root_file = MentionUri::File {

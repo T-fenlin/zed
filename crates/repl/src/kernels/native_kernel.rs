@@ -44,11 +44,11 @@ impl LocalKernelSpecification {
     fn command(&self, connection_path: &PathBuf) -> Result<std::process::Command> {
         let argv = &self.kernelspec.argv;
 
-        anyhow::ensure!(!argv.is_empty(), "Empty argv in kernelspec {}", self.name);
-        anyhow::ensure!(argv.len() >= 2, "Invalid argv in kernelspec {}", self.name);
+        anyhow::ensure!(!argv.is_empty(), "kernelspec {} 中的 argv 为空", self.name);
+        anyhow::ensure!(argv.len() >= 2, "kernelspec {} 中的 argv 无效", self.name);
         anyhow::ensure!(
             argv.iter().any(|arg| arg == "{connection_file}"),
-            "Missing 'connection_file' in argv in kernelspec {}",
+            "kernelspec {} 的 argv 中缺少 'connection_file'",
             self.name
         );
 
@@ -64,12 +64,12 @@ impl LocalKernelSpecification {
 
         if let Some(env) = &self.kernelspec.env {
             log::info!(
-                "LocalKernelSpecification: applying env to command: {:?}",
+                "LocalKernelSpecification: 正在将环境变量应用到命令: {:?}",
                 env.keys()
             );
             cmd.envs(env);
         } else {
-            log::info!("LocalKernelSpecification: no env in kernelspec");
+            log::info!("LocalKernelSpecification: kernelspec 中没有环境变量");
         }
 
         Ok(cmd)
@@ -140,7 +140,7 @@ impl NativeRunningKernel {
             let runtime_dir = dirs::runtime_dir();
             fs.create_dir(&runtime_dir)
                 .await
-                .with_context(|| format!("Failed to create jupyter runtime dir {runtime_dir:?}"))?;
+                .with_context(|| format!("无法创建 Jupyter 运行时目录 {runtime_dir:?}"))?;
             let connection_path = runtime_dir.join(format!("kernel-zed-{entity_id}.json"));
             let content = serde_json::to_string(&connection_info)?;
             fs.atomic_write(connection_path.clone(), content).await?;
@@ -210,7 +210,7 @@ impl NativeRunningKernel {
                 };
                 let mut lines = futures::stream::select(stderr_lines, stdout_lines);
                 while let Some((level, Ok(line))) = lines.next().await {
-                    log::log!(level, "kernel: {}", line);
+                    log::log!(level, "内核: {}", line);
                 }
             })
             .detach();
@@ -221,14 +221,14 @@ impl NativeRunningKernel {
                 let error_message = match status.await {
                     Ok(status) => {
                         if status.success() {
-                            log::info!("kernel process exited successfully");
+                            log::info!("内核进程已成功退出");
                             return;
                         }
 
-                        format!("kernel process exited with status: {:?}", status)
+                        format!("内核进程退出,状态: {:?}", status)
                     }
                     Err(err) => {
-                        format!("kernel process exited with error: {:?}", err)
+                        format!("内核进程退出,错误: {:?}", err)
                     }
                 };
 
@@ -314,11 +314,11 @@ async fn read_kernelspec_at(
     let kernel_name = if let Some(kernel_name) = path.file_name() {
         kernel_name.to_string_lossy().into_owned()
     } else {
-        anyhow::bail!("Invalid kernelspec directory: {path:?}");
+        anyhow::bail!("无效的 kernelspec 目录: {path:?}");
     };
 
     if !fs.is_dir(path.as_path()).await {
-        anyhow::bail!("Not a directory: {path:?}");
+        anyhow::bail!("不是目录: {path:?}");
     }
 
     let expected_kernel_json = path.join("kernel.json");
@@ -346,7 +346,7 @@ async fn read_kernels_dir(path: PathBuf, fs: &dyn Fs) -> Result<Vec<LocalKernelS
                     valid_kernelspecs.push(kernelspec);
                 }
             }
-            Err(err) => log::warn!("Error reading kernelspec directory: {err:?}"),
+            Err(err) => log::warn!("读取 kernelspec 目录时出错: {err:?}"),
         }
     }
 

@@ -357,7 +357,7 @@ fn generate_split_commit_at_split(
     let cursor = match cursor_opt {
         Some(cursor) => cursor,
         None => sample_cursor_position(&split_commit, rng)
-            .context("failed to sample cursor position")?,
+            .context("无法采样光标位置")?,
     };
 
     Ok(GeneratedSplitCommit {
@@ -495,20 +495,20 @@ pub fn run_split_commit(
             Box::new(io::BufReader::new(io::stdin()))
         } else {
             let file = fs::File::open(input_path)
-                .with_context(|| format!("failed to open input file {}", input_path.display()))?;
+                .with_context(|| format!("无法打开输入文件 {}", input_path.display()))?;
             Box::new(io::BufReader::new(file))
         };
 
         for (line_num, line_result) in input.lines().enumerate() {
             let line =
-                line_result.with_context(|| format!("failed to read line {}", line_num + 1))?;
+                line_result.with_context(|| format!("无法读取第 {} 行", line_num + 1))?;
 
             if line.trim().is_empty() {
                 continue;
             }
 
             let annotated: AnnotatedCommit = serde_json::from_str(&line)
-                .with_context(|| format!("failed to parse JSON at line {}", line_num + 1))?;
+                .with_context(|| format!("无法解析第 {} 行的 JSON", line_num + 1))?;
 
             // Generate multiple samples if num_samples is set
             if let Some(num_samples) = args.num_samples {
@@ -529,14 +529,14 @@ pub fn run_split_commit(
                         Ok(case) => case,
                         Err(e) => {
                             let err_msg = format!(
-                                "failed to generate evaluation example for commit {} at line {} (sample {}): {}",
+                                "无法为第 {} 行的提交 {} 生成评估示例(样本 {}):{}",
                                 annotated.commit_sha,
                                 line_num + 1,
                                 sample_idx,
                                 e
                             );
                             if e.is::<NoMatchingSplitPointError>() {
-                                eprintln!("skipping: {}", err_msg);
+                                eprintln!("跳过:{}", err_msg);
                                 continue;
                             }
                             match failed {
@@ -556,7 +556,7 @@ pub fn run_split_commit(
                     } else {
                         serde_json::to_string(&case)
                     }
-                    .context("failed to serialize evaluation case as JSON")?;
+                    .context("无法将评估用例序列化为 JSON")?;
 
                     // Only add unique samples (different split points may produce same result)
                     if seen_samples.insert(json.clone()) {
@@ -575,13 +575,13 @@ pub fn run_split_commit(
                     Ok(case) => case,
                     Err(e) => {
                         let err_msg = format!(
-                            "failed to generate evaluation example for commit {} at line {}: {}",
+                            "无法为第 {} 行的提交 {} 生成评估示例:{}",
                             annotated.commit_sha,
                             line_num + 1,
                             e
                         );
                         if e.is::<NoMatchingSplitPointError>() {
-                            eprintln!("skipping: {}", err_msg);
+                            eprintln!("跳过:{}", err_msg);
                             continue;
                         }
                         match failed {
@@ -601,20 +601,20 @@ pub fn run_split_commit(
                 } else {
                     serde_json::to_string(&case)
                 }
-                .context("failed to serialize evaluation case as JSON")?;
+                .context("无法将评估用例序列化为 JSON")?;
 
                 output_lines.push(json);
             }
 
             processed_commits += 1;
             eprint!(
-                "\rsplit-commit: processed {} commits, generated {} examples",
+                "\rsplit-commit:已处理 {} 个提交,生成 {} 个示例",
                 processed_commits,
                 output_lines.len()
             );
             io::stderr()
                 .flush()
-                .context("failed to flush progress to stderr")?;
+                .context("无法将进度刷新到标准错误输出")?;
         }
     }
 
@@ -626,11 +626,11 @@ pub fn run_split_commit(
 
     if let Some(path) = output_path {
         fs::write(path, &output_content)
-            .with_context(|| format!("failed to write output to {}", path.display()))?;
+            .with_context(|| format!("无法将输出写入 {}", path.display()))?;
     } else {
         io::stdout()
             .write_all(output_content.as_bytes())
-            .context("failed to write to stdout")?;
+            .context("无法写入标准输出")?;
     }
 
     Ok(())
@@ -655,7 +655,7 @@ pub fn generate_evaluation_example_from_ordered_commit(
 ) -> Result<ExampleSpec> {
     anyhow::ensure!(
         !has_submodule_gitlink_hunk(commit),
-        "commit contains submodule/gitlink hunk"
+        "提交包含子模块/gitlink 代码块"
     );
 
     let mut rng: Box<dyn rand::RngCore> = match seed {
@@ -682,7 +682,7 @@ pub fn generate_evaluation_example_from_ordered_commit(
     let stats = patch.stats();
     let num_edits = stats.added + stats.removed;
 
-    anyhow::ensure!(num_edits != 0, "no edits found in commit");
+    anyhow::ensure!(num_edits != 0, "提交中未找到编辑");
 
     let generated_split_commit = match split_point {
         None => {
@@ -705,7 +705,7 @@ pub fn generate_evaluation_example_from_ordered_commit(
             let actual_kind = classify_generated_split_commit(&generated_split_commit);
             anyhow::ensure!(
                 actual_kind == Some(kind),
-                "split point {split} classified as {}, expected {kind}",
+                "分割点 {split} 被分类为 {},预期为 {kind}",
                 actual_kind
                     .map(|kind| kind.to_string())
                     .unwrap_or_else(|| "empty-target".to_string())
@@ -724,7 +724,7 @@ pub fn generate_evaluation_example_from_ordered_commit(
         &split_commit.source_patch,
         &split_commit.target_patch,
     )
-    .context("failed to generate cursor excerpt")?;
+    .context("无法生成光标摘录")?;
 
     // Where the source patch is empty, there's not enough info to make a
     // meaningful prediction
@@ -2073,7 +2073,7 @@ Date: Mon Jan 1 00:00:00 2024
         // Cursor excerpt should contain the cursor marker
         assert!(
             result.cursor_position.contains("<|user_cursor|>"),
-            "Cursor excerpt should contain marker: {}",
+            "光标摘录应包含标记:{}",
             result.cursor_position
         );
     }
@@ -2263,7 +2263,7 @@ index 21e68b9..cadabda 160000
         );
 
         let Err(error) = result else {
-            panic!("expected submodule/gitlink commit to be rejected");
+            panic!("预期子模块/gitlink 提交被拒绝");
         };
         assert!(error.to_string().contains("submodule/gitlink"));
     }
@@ -2347,13 +2347,13 @@ index 21e68b9..cadabda 160000
 
         assert!(
             weight_after_paren > weight_mid_ident,
-            "After '(' ({}) should be weighted higher than mid-identifier ({})",
+            "在 '(' 之后 ({}) 的权重应高于标识符中间 ({})",
             weight_after_paren,
             weight_mid_ident
         );
         assert!(
             weight_after_comma > weight_mid_ident,
-            "After ',' ({}) should be weighted higher than mid-identifier ({})",
+            "在 ',' 之后 ({}) 的权重应高于标识符中间 ({})",
             weight_after_comma,
             weight_mid_ident
         );
@@ -2382,30 +2382,30 @@ index 21e68b9..cadabda 160000
         // Should have transformed the patches
         assert_ne!(
             new_src, source,
-            "Source should be modified for pure insertion"
+            "纯插入时源应被修改"
         );
         assert_ne!(
             new_tgt, target,
-            "Target should be modified for pure insertion"
+            "纯插入时目标应被修改"
         );
-        assert!(cursor.is_some(), "Cursor should be set");
+        assert!(cursor.is_some(), "应设置光标");
 
         // Source should now have a partial addition
         let src_patch = Patch::parse_unified_diff(&new_src);
         assert!(
             src_patch.stats().added > 0,
-            "Source should have added lines"
+            "源应包含新增行"
         );
 
         // Target should have both a deletion (of partial) and addition (of full)
         let tgt_patch = Patch::parse_unified_diff(&new_tgt);
         assert!(
             tgt_patch.stats().removed > 0,
-            "Target should have removed lines (partial)"
+            "目标应包含删除行(部分)"
         );
         assert!(
             tgt_patch.stats().added > 0,
-            "Target should have added lines (full)"
+            "目标应包含新增行(完整)"
         );
 
         // The cursor should be in test.rs
@@ -2428,13 +2428,13 @@ index 21e68b9..cadabda 160000
         let (new_src, _new_tgt, cursor) = imitate_human_edits(source, target, 123);
 
         // Should have created a source patch with partial insertion
-        assert!(!new_src.is_empty(), "Source should not be empty");
-        assert!(cursor.is_some(), "Cursor should be set");
+        assert!(!new_src.is_empty(), "源不应为空");
+        assert!(cursor.is_some(), "应设置光标");
 
         let src_patch = Patch::parse_unified_diff(&new_src);
         assert!(
             src_patch.stats().added > 0,
-            "Source should have added lines"
+            "源应包含新增行"
         );
     }
 
@@ -2481,7 +2481,7 @@ index 21e68b9..cadabda 160000
                                 }
                                 assert!(
                                     has_deletion,
-                                    "Target should have deletion of partial line"
+                                    "目标应包含部分行的删除"
                                 );
                             }
                         }
@@ -2492,7 +2492,7 @@ index 21e68b9..cadabda 160000
 
         assert!(
             found_partial,
-            "At least one seed should produce a partial intermediate state"
+            "至少一个种子应产生部分中间状态"
         );
     }
 
@@ -2530,7 +2530,7 @@ index 21e68b9..cadabda 160000
         let (new_src, _new_tgt, cursor) = imitate_human_edits(source, target, 42);
 
         // The function should produce a modified patch
-        assert!(cursor.is_some(), "Should produce intermediate state");
+        assert!(cursor.is_some(), "应产生中间状态");
 
         let src_patch = Patch::parse_unified_diff(&new_src);
         let all_additions: Vec<_> = src_patch
@@ -2545,10 +2545,10 @@ index 21e68b9..cadabda 160000
 
         // The intermediate content (partial 'print("hello world")') should be
         // the LAST addition, appearing after "+import qux" (the last source edit)
-        let last_addition = all_additions.last().expect("Should have additions");
+        let last_addition = all_additions.last().expect("应有新增内容");
         assert!(
             last_addition.trim_start().starts_with("pr"),
-            "Intermediate content should be the last addition (partial 'print'), but last was: {:?}",
+            "中间内容应为最后一次新增(部分 'print'),但最后一次是:{:?}",
             last_addition
         );
 
@@ -2559,16 +2559,16 @@ index 21e68b9..cadabda 160000
             .iter()
             .position(|s| s.trim_start().starts_with("pr"));
 
-        assert!(foo_pos.is_some(), "Should have 'import foo'");
-        assert!(qux_pos.is_some(), "Should have 'import qux'");
+        assert!(foo_pos.is_some(), "应包含 'import foo'");
+        assert!(qux_pos.is_some(), "应包含 'import qux'");
         assert!(
             intermediate_pos.is_some(),
-            "Should have intermediate content"
+            "应包含中间内容"
         );
 
         assert!(
             foo_pos < qux_pos && qux_pos < intermediate_pos,
-            "Order should be: foo < qux < intermediate. Got foo={:?}, qux={:?}, intermediate={:?}",
+            "顺序应为:foo < qux < intermediate。实际为 foo={:?}, qux={:?}, intermediate={:?}",
             foo_pos,
             qux_pos,
             intermediate_pos
@@ -2601,7 +2601,7 @@ index 21e68b9..cadabda 160000
         if let Some(excerpt) = result {
             assert!(
                 excerpt.contains("<|user_cursor|>"),
-                "Cursor excerpt should contain marker"
+                "光标摘录应包含标记"
             );
             // The marker should be placed at a valid character boundary
             // (either at the start or after '第')

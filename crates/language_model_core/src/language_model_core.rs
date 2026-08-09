@@ -104,7 +104,7 @@ impl LanguageModelCompletionEvent {
 
 #[derive(Error, Debug)]
 pub enum LanguageModelCompletionError {
-    #[error("prompt too large for context window")]
+    #[error("提示词超出上下文窗口大小")]
     PromptTooLarge { tokens: Option<u64> },
     /// The model requires the user to consent to the upstream provider
     /// retaining inference logs (see `LanguageModel::requires_data_retention`)
@@ -114,19 +114,19 @@ pub enum LanguageModelCompletionError {
         Anthropic will retain inference logs."
     )]
     DataRetentionConsentRequired { model_name: String },
-    #[error("missing {provider} API key")]
+    #[error("缺少 {provider} API 密钥")]
     NoApiKey { provider: LanguageModelProviderName },
-    #[error("{provider}'s API rate limit exceeded")]
+    #[error("超出 {provider} API 速率限制")]
     RateLimitExceeded {
         provider: LanguageModelProviderName,
         retry_after: Option<Duration>,
     },
-    #[error("{provider}'s API servers are overloaded right now")]
+    #[error("{provider} API 服务器当前过载")]
     ServerOverloaded {
         provider: LanguageModelProviderName,
         retry_after: Option<Duration>,
     },
-    #[error("{provider}'s API server reported an internal server error: {message}")]
+    #[error("{provider} API 服务器报告内部服务器错误:{message}")]
     ApiInternalServerError {
         provider: LanguageModelProviderName,
         message: String,
@@ -137,62 +137,62 @@ pub enum LanguageModelCompletionError {
         status: StatusCode,
         retry_after: Option<Duration>,
     },
-    #[error("HTTP response error from {provider}'s API: status {status_code} - {message:?}")]
+    #[error("来自 {provider} API 的 HTTP 响应错误:状态 {status_code} - {message:?}")]
     HttpResponseError {
         provider: LanguageModelProviderName,
         status_code: StatusCode,
         message: String,
     },
-    #[error("invalid request format to {provider}'s API: {message}")]
+    #[error("发送给 {provider} API 的请求格式无效:{message}")]
     BadRequestFormat {
         provider: LanguageModelProviderName,
         message: String,
     },
-    #[error("authentication error with {provider}'s API: {message}")]
+    #[error("{provider} API 身份验证错误:{message}")]
     AuthenticationError {
         provider: LanguageModelProviderName,
         message: String,
     },
-    #[error("Permission error with {provider}'s API: {message}")]
+    #[error("{provider} API 权限错误:{message}")]
     PermissionError {
         provider: LanguageModelProviderName,
         message: String,
     },
-    #[error("language model provider API endpoint not found")]
+    #[error("语言模型提供商 API 端点未找到")]
     ApiEndpointNotFound { provider: LanguageModelProviderName },
-    #[error("I/O error reading response from {provider}'s API")]
+    #[error("读取 {provider} API 响应时发生 I/O 错误")]
     ApiReadResponseError {
         provider: LanguageModelProviderName,
         #[source]
         error: io::Error,
     },
-    #[error("error serializing request to {provider} API")]
+    #[error("序列化发送给 {provider} API 的请求时出错")]
     SerializeRequest {
         provider: LanguageModelProviderName,
         #[source]
         error: serde_json::Error,
     },
-    #[error("error building request body to {provider} API")]
+    #[error("构建发送给 {provider} API 的请求体时出错")]
     BuildRequestBody {
         provider: LanguageModelProviderName,
         #[source]
         error: http::Error,
     },
-    #[error("error sending HTTP request to {provider} API")]
+    #[error("发送 HTTP 请求到 {provider} API 时出错")]
     HttpSend {
         provider: LanguageModelProviderName,
         #[source]
         error: anyhow::Error,
     },
-    #[error("error deserializing {provider} API response")]
+    #[error("反序列化 {provider} API 响应时出错")]
     DeserializeResponse {
         provider: LanguageModelProviderName,
         #[source]
         error: serde_json::Error,
     },
-    #[error("stream from {provider} ended unexpectedly")]
+    #[error("来自 {provider} 的流意外结束")]
     StreamEndedUnexpectedly { provider: LanguageModelProviderName },
-    #[error("payment required to use this language model; please upgrade your account")]
+    #[error("使用此语言模型需要付费;请升级您的账户")]
     PaymentRequired,
     #[error(transparent)]
     Other(#[from] anyhow::Error),
@@ -235,7 +235,7 @@ impl LanguageModelCompletionError {
                     retry_after,
                 );
             }
-            anyhow!("completion request failed, code: {code}, message: {message}").into()
+            anyhow!("补全请求失败,代码:{code},消息:{message}").into()
         } else if let Some(status_code) = code
             .strip_prefix("upstream_http_")
             .and_then(|code| StatusCode::from_str(code).ok())
@@ -247,7 +247,7 @@ impl LanguageModelCompletionError {
         {
             Self::from_http_status(ZED_CLOUD_PROVIDER_NAME, status_code, message, retry_after)
         } else {
-            anyhow!("completion request failed, code: {code}, message: {message}").into()
+            anyhow!("补全请求失败,代码:{code},消息:{message}").into()
         }
     }
 
@@ -425,7 +425,7 @@ impl<'de> Deserialize<'de> for LanguageModelToolUseInput {
                 "text" => input
                     .as_str()
                     .map(|input| Self::Text(input.to_string()))
-                    .ok_or_else(|| serde::de::Error::custom("text tool input must be a string")),
+                    .ok_or_else(|| serde::de::Error::custom("文本工具输入必须是字符串")),
                 _ => Ok(Self::Json(value)),
             };
         }
@@ -448,16 +448,16 @@ impl LanguageModelToolUseInput {
     pub fn parse<T: serde::de::DeserializeOwned>(&self) -> Result<T> {
         match self {
             Self::Json(input) => {
-                serde_json::from_value(input.clone()).context("failed to parse JSON tool input")
+                serde_json::from_value(input.clone()).context("解析 JSON 工具输入失败")
             }
-            Self::Text(_) => Err(anyhow!("custom tool text input cannot be parsed as JSON")),
+            Self::Text(_) => Err(anyhow!("自定义工具文本输入无法解析为 JSON")),
         }
     }
 
     pub fn into_json(self) -> Result<serde_json::Value> {
         match self {
             Self::Json(input) => Ok(input),
-            Self::Text(_) => Err(anyhow!("custom tool text input cannot be used as JSON")),
+            Self::Text(_) => Err(anyhow!("自定义工具文本输入不能用作 JSON")),
         }
     }
 
@@ -479,9 +479,9 @@ pub struct LanguageModelEffortLevel {
 /// An error that occurred when trying to authenticate the language model provider.
 #[derive(Debug, Error)]
 pub enum AuthenticateError {
-    #[error("connection refused")]
+    #[error("连接被拒绝")]
     ConnectionRefused,
-    #[error("credentials not found")]
+    #[error("未找到凭据")]
     CredentialsNotFound,
     #[error(transparent)]
     Other(#[from] anyhow::Error),
@@ -637,7 +637,7 @@ mod tests {
         let error = LanguageModelCompletionError::from_cloud_failure(
             String::from("anthropic").into(),
             "upstream_http_error".to_string(),
-            r#"{"code":"upstream_http_error","message":"Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers. reset reason: connection timeout","upstream_status":503}"#.to_string(),
+            r#"{"code":"upstream_http_error","message":"从 Anthropic API 收到错误:上游连接错误或标头前断开/重置。重置原因:连接超时","upstream_status":503}"#.to_string(),
             None,
         );
 
@@ -654,14 +654,14 @@ mod tests {
         let error = LanguageModelCompletionError::from_cloud_failure(
             String::from("anthropic").into(),
             "upstream_http_error".to_string(),
-            r#"{"code":"upstream_http_error","message":"Internal server error","upstream_status":500}"#.to_string(),
+            r#"{"code":"upstream_http_error","message":"内部服务器错误","upstream_status":500}"#.to_string(),
             None,
         );
 
         match error {
             LanguageModelCompletionError::ApiInternalServerError { provider, message } => {
                 assert_eq!(provider.0, "anthropic");
-                assert_eq!(message, "Internal server error");
+                assert_eq!(message, "内部服务器错误");
             }
             _ => panic!(
                 "Expected ApiInternalServerError for 500 status, got: {:?}",
@@ -687,7 +687,7 @@ mod tests {
         let error = LanguageModelCompletionError::from_http_status(
             String::from("OpenAI").into(),
             StatusCode::BAD_REQUEST,
-            "Invalid request.".to_string(),
+            "无效请求。".to_string(),
             None,
         );
 
@@ -702,7 +702,7 @@ mod tests {
         let error = LanguageModelCompletionError::from_cloud_failure(
             String::from("anthropic").into(),
             "upstream_http_503".to_string(),
-            "Service unavailable".to_string(),
+            "服务不可用".to_string(),
             None,
         );
 
@@ -719,7 +719,7 @@ mod tests {
         let error = LanguageModelCompletionError::from_cloud_failure(
             String::from("anthropic").into(),
             "upstream_http_error".to_string(),
-            r#"{"code":"upstream_http_error","message":"Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers. reset reason: connection timeout","upstream_status":503}"#.to_string(),
+            r#"{"code":"upstream_http_error","message":"从 Anthropic API 收到错误:上游连接错误或标头前断开/重置。重置原因:连接超时","upstream_status":503}"#.to_string(),
             None,
         );
 
@@ -736,7 +736,7 @@ mod tests {
         let error = LanguageModelCompletionError::from_cloud_failure(
             String::from("anthropic").into(),
             "upstream_http_error".to_string(),
-            r#"{"code":"upstream_http_error","message":"Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers. reset reason: connection timeout","upstream_status":500}"#.to_string(),
+            r#"{"code":"upstream_http_error","message":"从 Anthropic API 收到错误:上游连接错误或标头前断开/重置。重置原因:连接超时","upstream_status":500}"#.to_string(),
             None,
         );
 
@@ -745,7 +745,7 @@ mod tests {
                 assert_eq!(provider.0, "anthropic");
                 assert_eq!(
                     message,
-                    "Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers. reset reason: connection timeout"
+                    "从 Anthropic API 收到错误:上游连接错误或标头前断开/重置。重置原因:连接超时"
                 );
             }
             _ => panic!(
@@ -859,7 +859,7 @@ mod tests {
         assert!(
             error
                 .to_string()
-                .contains("custom tool text input cannot be parsed as JSON")
+                .contains("自定义工具文本输入无法解析为 JSON")
         );
     }
 

@@ -27,7 +27,7 @@ impl TryFrom<String> for Role {
             "assistant" => Ok(Self::Assistant),
             "system" => Ok(Self::System),
             "tool" => Ok(Self::Tool),
-            _ => anyhow::bail!("invalid role '{value}'"),
+            _ => anyhow::bail!("无效角色 '{value}'"),
         }
     }
 }
@@ -393,7 +393,7 @@ pub async fn complete(
         response.body_mut().read_to_end(&mut body).await?;
         let body_str = std::str::from_utf8(&body)?;
         anyhow::bail!(
-            "Failed to connect to API: {} {}",
+            "无法连接到 API:{} {}",
             response.status(),
             body_str
         );
@@ -449,7 +449,7 @@ pub async fn stream_chat_completion(
         let mut body = String::new();
         response.body_mut().read_to_string(&mut body).await?;
         anyhow::bail!(
-            "Failed to connect to LM Studio API: {} {}",
+            "无法连接到 LM Studio API:{} {}",
             response.status(),
             body,
         );
@@ -484,12 +484,12 @@ pub async fn get_models(
 
     anyhow::ensure!(
         response.status().is_success(),
-        "Failed to connect to LM Studio API: {} {}",
+        "无法连接到 LM Studio API:{} {}",
         response.status(),
         body,
     );
     let response: ListModelsResponse =
-        serde_json::from_str(&body).context("Unable to parse LM Studio models response")?;
+        serde_json::from_str(&body).context("无法解析 LM Studio 模型响应")?;
     Ok(response.data)
 }
 
@@ -507,7 +507,7 @@ mod tests {
         };
 
         let json = serde_json::to_string(&image_part).unwrap();
-        println!("Serialized image part: {}", json);
+        println!("序列化图片部分:{}", json);
 
         // Verify the structure matches what LM Studio expects
         let expected_structure = r#"{"type":"image_url","image_url":{"url":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="}}"#;
@@ -521,7 +521,7 @@ mod tests {
         };
 
         let json = serde_json::to_string(&text_part).unwrap();
-        println!("Serialized text part: {}", json);
+        println!("序列化文本部分:{}", json);
 
         let expected_structure = r#"{"type":"text","text":"Hello, world!"}"#;
         assert_eq!(json, expected_structure);

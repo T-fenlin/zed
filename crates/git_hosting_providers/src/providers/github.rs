@@ -78,7 +78,7 @@ fn build_cdn_avatar_url(email: &str) -> Result<Url> {
         "https://avatars.githubusercontent.com/u/e?email={}&s=128",
         encode(email)
     ))
-    .context("failed to construct avatar URL")
+    .context("无法构造头像 URL")
 }
 
 fn build_cdn_avatar_url_for_author_email(email: &str) -> Result<Option<Url>> {
@@ -105,7 +105,7 @@ impl Github {
     pub fn from_remote_url(remote_url: &str) -> Result<Self> {
         let host = get_host_from_git_remote_url(remote_url)?;
         if host == "github.com" {
-            bail!("the GitHub instance is not self-hosted");
+            bail!("该 GitHub 实例并非自托管");
         }
 
         // TODO: detecting self hosted instances by checking whether "github" is in the url or not
@@ -116,7 +116,7 @@ impl Github {
         }
 
         Ok(Self::new(
-            "GitHub Self-Hosted",
+            "GitHub 自托管",
             Url::parse(&format!("https://{}", host))?,
         ))
     }
@@ -129,7 +129,7 @@ impl Github {
         client: &Arc<dyn HttpClient>,
     ) -> Result<Option<User>> {
         let Some(host) = self.base_url.host_str() else {
-            bail!("failed to get host from github base url");
+            bail!("无法从 GitHub 基础 URL 获取主机名");
         };
         let url = format!("https://api.{host}/repos/{repo_owner}/{repo}/commits/{commit}");
 
@@ -144,7 +144,7 @@ impl Github {
         let mut response = client
             .send(request.body(AsyncBody::default())?)
             .await
-            .with_context(|| format!("error fetching GitHub commit details at {:?}", url))?;
+            .with_context(|| format!("获取 GitHub 提交详情时出错:{:?}", url))?;
 
         let mut body = Vec::new();
         response.body_mut().read_to_end(&mut body).await?;
@@ -152,7 +152,7 @@ impl Github {
         if response.status().is_client_error() {
             let text = String::from_utf8_lossy(body.as_slice());
             bail!(
-                "status error {}, response: {text:?}",
+                "状态错误 {}, 响应: {text:?}",
                 response.status().as_u16()
             );
         }
@@ -161,7 +161,7 @@ impl Github {
 
         serde_json::from_str::<CommitDetails>(body_str)
             .map(|commit| commit.author)
-            .context("failed to deserialize GitHub commit details")
+            .context("无法反序列化 GitHub 提交详情")
     }
 }
 
@@ -337,7 +337,7 @@ mod tests {
         let github = Github::from_remote_url(remote_url).unwrap();
 
         assert!(!github.supports_avatars());
-        assert_eq!(github.name, "GitHub Self-Hosted".to_string());
+        assert_eq!(github.name, "GitHub 自托管".to_string());
         assert_eq!(
             github.base_url,
             Url::parse("https://github.my-enterprise.com").unwrap()
@@ -350,7 +350,7 @@ mod tests {
         let github = Github::from_remote_url(remote_url).unwrap();
 
         assert!(!github.supports_avatars());
-        assert_eq!(github.name, "GitHub Self-Hosted".to_string());
+        assert_eq!(github.name, "GitHub 自托管".to_string());
         assert_eq!(
             github.base_url,
             Url::parse("https://github.my-enterprise.com").unwrap()
@@ -520,7 +520,7 @@ mod tests {
 
         let url = provider
             .build_create_pull_request_url(&remote, "feature/something cool")
-            .expect("url should be constructed");
+            .expect("应构造 URL");
 
         assert_eq!(
             url.as_str(),
@@ -536,18 +536,18 @@ mod tests {
         };
 
         let github = Github::public_instance();
-        let message = "This does not contain a pull request";
+        let message = "此内容不包含拉取请求";
         assert!(github.extract_pull_request(&remote, message).is_none());
 
         // Pull request number at end of first line
         let message = indoc! {r#"
-            project panel: do not expand collapsed worktrees on "collapse all entries" (#10687)
+            project panel: do not expand collapsed worktrees on "折叠所有条目" (#10687)
 
             Fixes #10597
 
             Release Notes:
 
-            - Fixed "project panel: collapse all entries" expanding collapsed worktrees.
+            - Fixed "项目面板:折叠所有条目" expanding collapsed worktrees.
             "#
         };
 
@@ -607,10 +607,10 @@ mod tests {
         );
 
         let base_url = Url::parse("https://github.zed.com").unwrap();
-        let github = Github::new("GitHub Self-Hosted", base_url);
+        let github = Github::new("GitHub 自托管", base_url);
         let url = github
             .build_create_pull_request_url(&remote, "feature/new-feature")
-            .expect("should be able to build pull request url");
+            .expect("应能构造拉取请求 URL");
 
         assert_eq!(
             url.as_str(),

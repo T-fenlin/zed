@@ -765,7 +765,7 @@ impl ExcerptBoundaryInfo {
     pub fn buffer<'a>(&self, snapshot: &'a MultiBufferSnapshot) -> &'a BufferSnapshot {
         snapshot
             .buffer_for_id(self.buffer_id())
-            .expect("buffer snapshot not found for excerpt boundary")
+            .expect("在摘录边界处未找到缓冲区快照")
     }
 }
 
@@ -1588,7 +1588,7 @@ impl MultiBuffer {
             let original_indent_column = original_indent_columns.get(ix).copied().flatten();
 
             cursor.seek(&range.start);
-            let mut start_region = cursor.region().expect("start offset out of bounds");
+            let mut start_region = cursor.region().expect("起始偏移超出范围");
             if !start_region.is_main_buffer {
                 cursor.next();
                 if let Some(region) = cursor.region() {
@@ -1606,7 +1606,7 @@ impl MultiBuffer {
             if range.end > start_region.range.end {
                 cursor.seek_forward(&range.end);
             }
-            let mut end_region = cursor.region().expect("end offset out of bounds");
+            let mut end_region = cursor.region().expect("结束偏移超出范围");
             if !end_region.is_main_buffer {
                 cursor.prev();
                 if let Some(region) = cursor.region() {
@@ -1955,7 +1955,7 @@ impl MultiBuffer {
                     });
                 } else {
                     error = Some(anyhow!(
-                        "buffer {:?} is not part of this multi-buffer",
+                        "缓冲区 {:?} 不属于此多缓冲区",
                         excerpt_anchor.text_anchor.buffer_id
                     ));
                     break;
@@ -2566,7 +2566,7 @@ impl MultiBuffer {
             let buffer = buffer_state.buffer.read(cx);
             let last_snapshot = buffer_snapshots
                 .get(&buffer.remote_id())
-                .expect("each buffer should have a snapshot");
+                .expect("每个缓冲区都应有一个快照");
             let current_version = buffer.version();
             let non_text_state_update_count = buffer.non_text_state_update_count();
 
@@ -2822,7 +2822,7 @@ impl MultiBuffer {
         change_kind: DiffChangeKind,
     ) -> bool {
         log::trace!(
-            "recomputing diff transform for edit {:?} => {:?}",
+            "正在为编辑 {:?} => {:?} 重新计算差异变换",
             edit.old.start..edit.old.end,
             edit.new.start..edit.new.end
         );
@@ -2831,7 +2831,7 @@ impl MultiBuffer {
         while let Some(item) = old_diff_transforms.item() {
             if let Some(hunk_info) = item.hunk_info() {
                 log::trace!(
-                    "previously expanded hunk at {:?}",
+                    "先前在 {:?} 处展开的代码块",
                     old_diff_transforms.start()
                 );
                 old_expanded_hunks.insert(hunk_info);
@@ -2878,7 +2878,7 @@ impl MultiBuffer {
                         did_expand_hunks = true;
                         let hunk_buffer_range = hunk.diff_base_byte_range.clone();
                         if hunk_buffer_range.start < excerpt_buffer_start {
-                            log::trace!("skipping hunk that starts before excerpt");
+                            log::trace!("跳过在摘录之前开始的代码块");
                             continue;
                         }
                         let hunk_excerpt_start = excerpt_start
@@ -2913,7 +2913,7 @@ impl MultiBuffer {
 
                         let hunk_buffer_range = hunk.buffer_range.to_offset(buffer_snapshot);
                         if hunk_buffer_range.start < excerpt_buffer_start {
-                            log::trace!("skipping hunk that starts before excerpt");
+                            log::trace!("跳过在摘录之前开始的代码块");
                             continue;
                         }
 
@@ -2960,7 +2960,7 @@ impl MultiBuffer {
                         if should_expand_hunk {
                             did_expand_hunks = true;
                             log::trace!(
-                                "expanding hunk {:?}",
+                                "正在展开代码块 {:?}",
                                 hunk_excerpt_start..hunk_excerpt_end,
                             );
 
@@ -3228,7 +3228,7 @@ impl MultiBuffer {
 
             edits.push((range, new_text.into()));
         }
-        log::info!("mutating multi-buffer with {:?}", edits);
+        log::info!("正在使用 {:?} 修改多缓冲区", edits);
         drop(snapshot);
 
         self.edit(edits, None, cx);
@@ -3245,7 +3245,7 @@ impl MultiBuffer {
         use util::RandomCharIter;
 
         let max_buffers = env::var("MAX_BUFFERS")
-            .map(|i| i.parse().expect("invalid `MAX_EXCERPTS` variable"))
+            .map(|i| i.parse().expect("无效的 `MAX_EXCERPTS` 变量"))
             .unwrap_or(5);
 
         let mut buffers = Vec::new();
@@ -3258,7 +3258,7 @@ impl MultiBuffer {
                     buffers.push(cx.new(|cx| Buffer::local(text, cx)));
                     let buffer = buffers.last().unwrap().read(cx);
                     log::info!(
-                        "Creating new buffer {} with text: {:?}",
+                        "正在创建新缓冲区 {},文本为: {:?}",
                         buffer.remote_id(),
                         buffer.text()
                     );
@@ -3287,7 +3287,7 @@ impl MultiBuffer {
                     })
                     .collect::<Vec<_>>();
                 log::info!(
-                    "Inserting excerpts from buffer {} and ranges {:?}: {:?}",
+                    "正在从缓冲区 {} 插入摘录,范围 {:?}: {:?}",
                     buffer_handle.read(cx).remote_id(),
                     ranges.iter().map(|r| &r.context).collect::<Vec<_>>(),
                     ranges
@@ -3304,7 +3304,7 @@ impl MultiBuffer {
                     ranges,
                     cx,
                 );
-                log::info!("Inserted with path_key: {:?}", path_key);
+                log::info!("已使用 path_key 插入: {:?}", path_key);
             } else {
                 let path_key = self
                     .snapshot
@@ -3314,7 +3314,7 @@ impl MultiBuffer {
                     .unwrap()
                     .path_key
                     .clone();
-                log::info!("Removing excerpts {:?}", path_key);
+                log::info!("正在移除摘录 {:?}", path_key);
                 self.remove_excerpts(path_key, cx);
             }
         }
@@ -4627,7 +4627,7 @@ impl MultiBufferSnapshot {
                 let mut buffer_end = base_text_byte_range.start + end_overshoot;
                 let Some(base_text) = self.diff_state(*buffer_id).map(|diff| diff.base_text())
                 else {
-                    panic!("{:?} is in non-existent deleted hunk", range.start)
+                    panic!("{:?} 位于不存在的已删除代码块中", range.start)
                 };
 
                 let include_trailing_newline =
@@ -4680,7 +4680,7 @@ impl MultiBufferSnapshot {
                 let buffer_end = base_text_byte_range.start + overshoot;
                 let Some(base_text) = self.diff_state(*buffer_id).map(|diff| diff.base_text())
                 else {
-                    panic!("{:?} is in non-existent deleted hunk", range.end)
+                    panic!("{:?} 位于不存在的已删除代码块中", range.end)
                 };
 
                 let mut suffix = base_text.text_summary_for_range::<MBD::TextDimension, _>(
@@ -5233,7 +5233,7 @@ impl MultiBufferSnapshot {
             ..
         }) = diff_transforms.item()
         {
-            let diff = self.diff_state(*buffer_id).expect("missing diff");
+            let diff = self.diff_state(*buffer_id).expect("缺少差异");
             if offset_in_transform > base_text_byte_range.len() {
                 debug_assert!(*has_trailing_newline);
                 bias = Bias::Right;
@@ -5466,7 +5466,7 @@ impl MultiBufferSnapshot {
                 Bound::Included(start_offset)
             }
             Bound::Excluded(_) => {
-                panic!("not supported")
+                panic!("不支持")
             }
             Bound::Unbounded => {
                 start_offset = MultiBufferOffset::ZERO;
@@ -6440,7 +6440,7 @@ impl MultiBufferSnapshot {
 
     pub fn path_for_anchor(&self, anchor: ExcerptAnchor) -> &PathKey {
         self.try_path_for_anchor(anchor)
-            .expect("invalid anchor: path was never added to multibuffer")
+            .expect("无效锚点: 路径从未添加到多缓冲区")
     }
 
     /// Returns the excerpt containing range and its offset start within the multibuffer or none if `range` spans multiple excerpts
@@ -6822,7 +6822,7 @@ impl MultiBufferSnapshot {
             let path_key = buffer.path_key.clone();
             assert!(
                 all_buffer_path_keys.insert(path_key),
-                "path key reused for multiple buffers: {:#?}",
+                "路径键被多个缓冲区重复使用: {:#?}",
                 self.buffers
             );
         }
@@ -6834,11 +6834,11 @@ impl MultiBufferSnapshot {
                 let prev = &excerpts[ix - 1];
 
                 if excerpt.path_key < prev.path_key {
-                    panic!("excerpt path_keys are out-of-order: {:#?}", excerpts);
+                    panic!("摘录路径键顺序错乱: {:#?}", excerpts);
                 } else if excerpt.path_key == prev.path_key {
                     assert_eq!(
                         excerpt.buffer_id, prev.buffer_id,
-                        "excerpts with same path_key have different buffer_ids: {:#?}",
+                        "具有相同路径键的摘录具有不同的缓冲区 ID: {:#?}",
                         excerpts
                     );
                     if excerpt
@@ -6846,14 +6846,14 @@ impl MultiBufferSnapshot {
                         .cmp(&prev.end_anchor(), &self)
                         .is_le()
                     {
-                        panic!("excerpt anchors are out-of-order: {:#?}", excerpts);
+                        panic!("摘录锚点顺序错乱: {:#?}", excerpts);
                     }
                     if excerpt
                         .start_anchor()
                         .cmp(&excerpt.end_anchor(), &self)
                         .is_ge()
                     {
-                        panic!("excerpt with backward range: {:#?}", excerpts);
+                        panic!("摘录范围反向: {:#?}", excerpts);
                     }
                 }
             }
@@ -6861,25 +6861,25 @@ impl MultiBufferSnapshot {
             if ix < excerpts.len() - 1 {
                 assert!(
                     excerpt.has_trailing_newline,
-                    "non-trailing excerpt has no trailing newline: {:#?}",
+                    "非尾部摘录没有尾部换行符: {:#?}",
                     excerpts
                 );
             } else {
                 assert!(
                     !excerpt.has_trailing_newline,
-                    "trailing excerpt has trailing newline: {:#?}",
+                    "尾部摘录有尾部换行符: {:#?}",
                     excerpts
                 );
             }
             assert!(
                 all_buffer_path_keys.contains(&excerpt.path_key),
-                "excerpt path key not found in active path keys: {:#?}",
+                "在活动路径键中未找到摘录路径键: {:#?}",
                 excerpt.path_key
             );
             assert_eq!(
                 self.path_keys.get_index(excerpt.path_key_index.0 as usize),
                 Some(&excerpt.path_key),
-                "excerpt path key index does not match path key: {:#?}",
+                "摘录路径键索引与路径键不匹配: {:#?}",
                 excerpt.path_key,
             );
         }
@@ -6887,7 +6887,7 @@ impl MultiBufferSnapshot {
 
         if self.diff_transforms.summary().input != self.excerpts.summary().text {
             panic!(
-                "incorrect input summary. expected {:?}, got {:?}. transforms: {:+?}",
+                "输入摘要不正确。预期 {:?},实际 {:?}。变换: {:+?}",
                 self.excerpts.summary().text,
                 self.diff_transforms.summary().input,
                 self.diff_transforms.items(()),
@@ -6908,12 +6908,12 @@ impl MultiBufferSnapshot {
                     && *inserted_hunk_info == *prev_inserted_hunk_info
                 {
                     panic!(
-                        "multiple adjacent buffer content transforms with is_inserted_hunk = {inserted_hunk_info:?}. transforms: {:+?}",
+                        "多个相邻缓冲区内容变换,is_inserted_hunk = {inserted_hunk_info:?}。变换: {:+?}",
                         self.diff_transforms.items(())
                     );
                 }
                 if summary.len == MultiBufferOffset(0) && !self.is_empty() {
-                    panic!("empty buffer content transform");
+                    panic!("空的缓冲区内容变换");
                 }
             }
             prev_transform = Some(item);
@@ -7275,14 +7275,14 @@ impl Excerpt {
         &snapshot
             .buffers
             .get(&self.buffer_id)
-            .expect("buffer snapshot not found for excerpt")
+            .expect("未找到摘录的缓冲区快照")
             .buffer_snapshot
     }
 
     fn buffer(&self, multibuffer: &MultiBuffer) -> Entity<Buffer> {
         multibuffer
             .buffer(self.buffer_id)
-            .expect("buffer entity not found for excerpt")
+            .expect("未找到摘录的缓冲区实体")
     }
 
     fn chunks_in_range<'a>(
@@ -7468,7 +7468,7 @@ impl sum_tree::ContextLessSummary for ExcerptSummary {
     fn add_summary(&mut self, summary: &Self) {
         debug_assert!(
             summary.path_key >= self.path_key,
-            "Path keys must be in ascending order: {:?} > {:?}",
+            "路径键必须按升序排列: {:?} > {:?}",
             summary.path_key,
             self.path_key
         );
@@ -7524,7 +7524,7 @@ impl sum_tree::ContextLessSummary for PathKey {
     fn add_summary(&mut self, summary: &Self) {
         debug_assert!(
             summary >= self,
-            "Path keys must be in ascending order: {:?} > {:?}",
+            "路径键必须按升序排列: {:?} > {:?}",
             summary,
             self
         );
@@ -7981,7 +7981,7 @@ impl<'a> Iterator for MultiBufferChunks<'a> {
         let diff_transform_end = self.diff_transforms.end().0;
         debug_assert!(
             self.range.start < diff_transform_end,
-            "{:?} < {:?} of ({1:?}..{2:?})",
+            "{:?} < {:?} 位于 ({1:?}..{2:?}) 中",
             self.range.start,
             diff_transform_end,
             diff_transform_start
@@ -8197,7 +8197,7 @@ impl ToOffset for MultiBufferOffset {
     fn to_offset<'a>(&self, snapshot: &MultiBufferSnapshot) -> MultiBufferOffset {
         assert!(
             *self <= snapshot.len(),
-            "offset {} is greater than the snapshot.len() {}",
+            "偏移量 {} 大于 snapshot.len() {}",
             self.0,
             snapshot.len().0,
         );

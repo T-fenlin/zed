@@ -175,7 +175,7 @@ impl ExtensionManifest {
 
         if !is_allowed {
             bail!(
-                "capability for process:exec {desired_command} {desired_args:?} was not listed in the extension manifest",
+                "扩展清单中未列出 process:exec {desired_command} {desired_args:?} 的能力",
             );
         }
 
@@ -391,12 +391,12 @@ impl ExtensionManifest {
         let extension_name = extension_dir
             .file_name()
             .and_then(OsStr::to_str)
-            .context("invalid extension name")?;
+            .context("无效的扩展名称")?;
 
         let extension_manifest_path = extension_dir.join("extension.toml");
         if fs.is_file(&extension_manifest_path).await {
             let manifest_content = fs.load(&extension_manifest_path).await.with_context(|| {
-                format!("loading {extension_name} extension.toml, {extension_manifest_path:?}")
+                format!("正在加载 {extension_name} 扩展的 extension.toml,{extension_manifest_path:?}")
             })?;
             toml::from_str(&manifest_content).map_err(|err| {
                 anyhow!("Invalid extension.toml for extension {extension_name}:\n{err}")
@@ -405,14 +405,14 @@ impl ExtensionManifest {
             && fs.is_file(&extension_manifest_path).await
         {
             let manifest_content = fs.load(&extension_manifest_path).await.with_context(|| {
-                format!("loading {extension_name} extension.json, {extension_manifest_path:?}")
+                format!("正在加载 {extension_name} 扩展的 extension.json,{extension_manifest_path:?}")
             })?;
 
             serde_json::from_str::<OldExtensionManifest>(&manifest_content)
-                .with_context(|| format!("invalid extension.json for extension {extension_name}"))
+                .with_context(|| format!("扩展 {extension_name} 的 extension.json 无效"))
                 .map(|manifest_json| manifest_from_old_manifest(manifest_json, extension_name))
         } else {
-            anyhow::bail!("No extension manifest found for extension {extension_name}")
+            anyhow::bail!("未找到扩展 {extension_name} 的扩展清单")
         }
     }
 }

@@ -290,7 +290,7 @@ impl AcpTools {
         self.selected_connection
             .as_ref()
             .map(|agent_id| agent_id.0.clone())
-            .unwrap_or_else(|| SharedString::from("No connection selected"))
+            .unwrap_or_else(|| SharedString::from("未选择连接"))
     }
 
     fn connection_menu(&self, window: &mut Window, cx: &mut Context<Self>) -> Entity<ContextMenu> {
@@ -300,7 +300,7 @@ impl AcpTools {
 
         ContextMenu::build(window, cx, move |mut menu, _window, _cx| {
             if entries.is_empty() {
-                return menu.entry("No active connections", None, |_, _| {});
+                return menu.entry("无活动连接", None, |_, _| {});
             }
 
             for entry in &entries {
@@ -552,7 +552,7 @@ fn push_stream_message_for_connection(
             } else {
                 (
                     Some(id),
-                    "[unrecognized response]".into(),
+                    "[无法识别的响应]".into(),
                     MessageType::Response,
                     result,
                 )
@@ -658,10 +658,10 @@ enum MessageType {
 impl Display for MessageType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            MessageType::Request => write!(f, "Request"),
-            MessageType::Response => write!(f, "Response"),
-            MessageType::Notification => write!(f, "Notification"),
-            MessageType::Stderr => write!(f, "Stderr"),
+            MessageType::Request => write!(f, "请求"),
+            MessageType::Response => write!(f, "响应"),
+            MessageType::Notification => write!(f, "通知"),
+            MessageType::Stderr => write!(f, "标准错误"),
         }
     }
 }
@@ -677,7 +677,7 @@ impl Item for AcpTools {
         format!(
             "ACP: {}",
             self.selected_watched_connection()
-                .map_or("Disconnected", |connection| connection.agent_id.0.as_ref())
+                .map_or("已断开连接", |connection| connection.agent_id.0.as_ref())
         )
         .into()
     }
@@ -733,7 +733,7 @@ impl Render for AcpTools {
                             .child(
                                 IconButton::new("restart_connection", IconName::RotateCw)
                                     .icon_size(IconSize::Small)
-                                    .tooltip(Tooltip::text("Restart Connection"))
+                                    .tooltip(Tooltip::text("重启连接"))
                                     .disabled(!can_restart)
                                     .on_click(cx.listener(|this, _, _window, cx| {
                                         this.restart_selected_connection(cx);
@@ -741,13 +741,13 @@ impl Render for AcpTools {
                             )
                             .child(
                                 CopyButton::new("copy-all-messages", copied_messages)
-                                    .tooltip_label("Copy All Messages")
+                                    .tooltip_label("复制所有消息")
                                     .disabled(!has_messages),
                             )
                             .child(
                                 IconButton::new("clear_messages", IconName::Trash)
                                     .icon_size(IconSize::Small)
-                                    .tooltip(Tooltip::text("Clear Messages"))
+                                    .tooltip(Tooltip::text("清除消息"))
                                     .disabled(!has_messages)
                                     .on_click(cx.listener(|this, _, _window, cx| {
                                         this.clear_messages(cx);
@@ -762,7 +762,7 @@ impl Render for AcpTools {
                             .size_full()
                             .justify_center()
                             .items_center()
-                            .child("No messages recorded yet")
+                            .child("尚未记录消息")
                             .into_any()
                     } else {
                         div()
@@ -786,7 +786,7 @@ impl Render for AcpTools {
                         .justify_center()
                         .items_center()
                         .child(format!(
-                            "Reconnecting to {}",
+                            "正在重新连接到 {}",
                             self.selected_connection_label()
                         ))
                         .into_any(),
@@ -794,7 +794,7 @@ impl Render for AcpTools {
                         .size_full()
                         .justify_center()
                         .items_center()
-                        .child("No active connection")
+                        .child("无活动连接")
                         .into_any(),
                 },
             })

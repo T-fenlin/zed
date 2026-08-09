@@ -81,20 +81,20 @@ impl std::fmt::Display for WebWindowError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::AlreadyOpen => formatter.write_str(
-                "GPUI web supports only one top-level window; a window is already open",
+                "GPUI Web 仅支持一个顶级窗口;已有一个窗口处于打开状态",
             ),
             Self::ReopeningUnsupported => formatter.write_str(
-                "reopening the GPUI web top-level window after it closes is not supported",
+                "不支持在 GPUI Web 顶级窗口关闭后重新打开",
             ),
             Self::UnsupportedWindowKind(kind) => write!(
                 formatter,
-                "GPUI web does not support {kind} as a separate top-level window; render it inside the normal window instead"
+                "GPUI Web 不支持将 {kind} 作为单独的顶级窗口;请改为在普通窗口中渲染"
             ),
             Self::GraphicsInitializationPending => formatter.write_str(
-                "browser graphics initialization has not completed yet; open windows from the callback passed to Platform::run",
+                "浏览器图形初始化尚未完成;请从传递给 Platform::run 的回调中打开 Windows",
             ),
             Self::GraphicsUnavailable => formatter.write_str(
-                "browser graphics are unavailable because graphics initialization or an earlier window creation failed",
+                "浏览器图形不可用,因为图形初始化或之前的窗口创建失败",
             ),
         }
     }
@@ -124,7 +124,7 @@ impl WebPlatform {
         backend_preference: WebBackendPreference,
     ) -> Self {
         let browser_window =
-            web_sys::window().expect("must be running in a browser window context");
+            web_sys::window().expect("必须在浏览器窗口上下文中运行");
         let dispatcher = Arc::new(WebDispatcher::new(
             browser_window.clone(),
             allow_multi_threading,
@@ -139,7 +139,7 @@ impl WebPlatform {
             .map(|bytes| Cow::Borrowed(*bytes))
             .collect();
         if let Err(error) = text_system.add_fonts(fonts) {
-            log::error!("failed to load bundled fonts: {error:#}");
+            log::error!("加载内置字体失败:{error:#}");
         }
         let text_system: Arc<dyn PlatformTextSystem> = text_system;
         let active_display: Rc<dyn PlatformDisplay> =
@@ -201,7 +201,7 @@ async fn initialize_graphics(
                 WgpuContext::new_web(&webgpu_canvas, WebBackendPreference::WebGpu).await
             } else {
                 Err(anyhow::anyhow!(
-                    "browser WebGPU probe did not return a usable adapter"
+                    "浏览器 WebGPU 探测未返回可用的适配器"
                 ))
             };
             match webgpu_result {
@@ -212,7 +212,7 @@ async fn initialize_graphics(
                     let canvas: &web_sys::Element = webgpu_canvas.as_ref();
                     canvas.remove();
                     log::warn!(
-                        "WebGPU initialization failed; falling back to WebGL2: {webgpu_error:#}"
+                        "WebGPU 初始化失败;回退到 WebGL2:{webgpu_error:#}"
                     );
 
                     let webgl_canvas =
@@ -286,7 +286,7 @@ impl Platform for WebPlatform {
             match initialize_graphics(&browser_window, backend_preference).await {
                 Ok((canvas, context, surface)) => {
                     log::info!(
-                        "Browser graphics initialized successfully with {:?}",
+                        "浏览器图形已成功初始化,使用 {:?}",
                         context.backend()
                     );
                     *wgpu_context.borrow_mut() = Some(context);
@@ -295,7 +295,7 @@ impl Platform for WebPlatform {
                 }
                 Err(error) => {
                     window_lifecycle.set(WebWindowLifecycle::Unavailable);
-                    log::error!("Failed to initialize browser graphics: {error:#}");
+                    log::error!("初始化浏览器图形失败:{error:#}");
                     show_graphics_unavailable_message(&browser_window, &error);
                 }
             }
@@ -303,7 +303,7 @@ impl Platform for WebPlatform {
     }
 
     fn quit(&self) {
-        log::warn!("WebPlatform::quit called, but quitting is not supported in the browser .");
+        log::warn!("已调用 WebPlatform::quit,但浏览器不支持退出操作。");
     }
 
     fn restart(&self, _binary_path: Option<PathBuf>) {}
@@ -337,13 +337,13 @@ impl Platform for WebPlatform {
             WindowKind::Normal => {}
             WindowKind::AnchoredPopup(_) => return Err(PopupNotSupportedError.into()),
             WindowKind::PopUp => {
-                return Err(WebWindowError::UnsupportedWindowKind("popup windows").into());
+                return Err(WebWindowError::UnsupportedWindowKind("弹出 Windows").into());
             }
             WindowKind::Floating => {
-                return Err(WebWindowError::UnsupportedWindowKind("floating windows").into());
+                return Err(WebWindowError::UnsupportedWindowKind("浮动 Windows").into());
             }
             WindowKind::Dialog => {
-                return Err(WebWindowError::UnsupportedWindowKind("dialog windows").into());
+                return Err(WebWindowError::UnsupportedWindowKind("对话框 Windows").into());
             }
         }
 
@@ -411,7 +411,7 @@ impl Platform for WebPlatform {
 
     fn open_url(&self, url: &str) {
         if let Err(error) = self.browser_window.open_with_url(url) {
-            log::warn!("Failed to open URL '{url}': {error:?}");
+            log::warn!("打开 URL '{url}' 失败:{error:?}");
         }
     }
 
@@ -429,7 +429,7 @@ impl Platform for WebPlatform {
     ) -> oneshot::Receiver<Result<Option<Vec<PathBuf>>>> {
         let (tx, rx) = oneshot::channel();
         tx.send(Err(anyhow::anyhow!(
-            "prompt_for_paths is not supported on the web"
+            "Web 上不支持 prompt_for_paths"
         )))
         .ok();
         rx
@@ -443,7 +443,7 @@ impl Platform for WebPlatform {
         let (sender, receiver) = oneshot::channel();
         sender
             .send(Err(anyhow::anyhow!(
-                "prompt_for_new_path is not supported on the web"
+                "Web 上不支持 prompt_for_new_path"
             )))
             .ok();
         receiver
@@ -567,7 +567,7 @@ impl Platform for WebPlatform {
 
     fn write_credentials(&self, _url: &str, _username: &str, _password: &[u8]) -> Task<Result<()>> {
         Task::ready(Err(anyhow::anyhow!(
-            "credential storage is not available on the web"
+            "Web 上无法使用凭据存储"
         )))
     }
 
@@ -641,7 +641,7 @@ fn show_graphics_unavailable_message(browser_window: &web_sys::Window, error: &a
         return;
     };
     message.set_text_content(Some(&format!(
-        "Failed to initialize browser graphics: {error}"
+        "初始化浏览器图形失败:{error}"
     )));
     body.append_child(&message).ok();
 }
@@ -651,6 +651,6 @@ fn set_body_cursor(browser_window: &web_sys::Window, css_cursor: &str) {
         && let Some(body) = document.body()
         && let Err(error) = body.style().set_property("cursor", css_cursor)
     {
-        log::warn!("Failed to set cursor style: {error:?}");
+        log::warn!("设置光标样式失败:{error:?}");
     }
 }

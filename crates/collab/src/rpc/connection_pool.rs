@@ -83,7 +83,7 @@ impl ConnectionPool {
         let connection = self
             .connections
             .get_mut(&connection_id)
-            .context("no such connection")?;
+            .context("无此连接")?;
 
         let user_id = connection.user_id;
 

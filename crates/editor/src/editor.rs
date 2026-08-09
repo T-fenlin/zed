@@ -316,9 +316,9 @@ enum ReportEditorEvent {
 impl ReportEditorEvent {
     pub fn event_type(&self) -> &'static str {
         match self {
-            Self::Saved { .. } => "Editor Saved",
-            Self::EditorOpened => "Editor Opened",
-            Self::Closed => "Editor Closed",
+            Self::Saved { .. } => "编辑器已保存",
+            Self::EditorOpened => "编辑器已打开",
+            Self::Closed => "编辑器已关闭",
         }
     }
 }
@@ -1640,8 +1640,8 @@ enum GutterButtonIntent {
 impl GutterButtonIntent {
     fn as_str(&self) -> &'static str {
         match self {
-            Self::SetBookmark => "Set Bookmark",
-            Self::SetBreakpoint => "Set Breakpoint",
+            Self::SetBookmark => "设置书签",
+            Self::SetBreakpoint => "设置断点",
         }
     }
 
@@ -1683,7 +1683,7 @@ impl GutterButtonTooltip {
     }
 
     fn meta_text(&self, intent: GutterButtonIntent) -> String {
-        const RIGHT_CLICK_HINT: &str = "right-click for more options";
+        const RIGHT_CLICK_HINT: &str = "右键点击查看更多选项";
 
         if self.primary == self.secondary {
             return RIGHT_CLICK_HINT.to_string();
@@ -1696,7 +1696,7 @@ impl GutterButtonTooltip {
             GutterButtonIntent::SetBookmark => "breakpoint",
             GutterButtonIntent::SetBreakpoint => "bookmark",
         };
-        format!("{modifier_as_text}-click to add a {other}\n{RIGHT_CLICK_HINT}")
+        format!("{modifier_as_text}-点击添加{other}\n{RIGHT_CLICK_HINT}")
     }
 }
 
@@ -1923,7 +1923,7 @@ impl Editor {
     ) -> Self {
         debug_assert!(
             display_map.is_none() || mode.is_minimap(),
-            "Providing a display map for a new editor is only intended for the minimap and might have unintended side effects otherwise!"
+            "仅为迷你地图提供新编辑器的显示映射,否则可能会产生意外的副作用!"
         );
 
         let full_mode = mode.is_full();
@@ -2105,7 +2105,7 @@ impl Editor {
                             Self::open_transaction_for_hidden_buffers(
                                 workspace,
                                 transaction.clone(),
-                                "Rename".to_string(),
+                                "重命名".to_string(),
                                 window,
                                 cx,
                             );
@@ -2125,7 +2125,7 @@ impl Editor {
                             Self::open_transaction_for_hidden_buffers(
                                 workspace,
                                 transaction.clone(),
-                                "LSP Edit".to_string(),
+                                "LSP 编辑".to_string(),
                                 window,
                                 cx,
                             );
@@ -2854,13 +2854,13 @@ impl Editor {
         cx: &mut Context<Workspace>,
     ) {
         Self::new_in_workspace(workspace, window, cx).detach_and_prompt_err(
-            "Failed to create buffer",
+            "无法创建缓冲区",
             window,
             cx,
             |e, _, _| match e.error_code() {
                 ErrorCode::RemoteUpgradeRequired => Some(format!(
-                "The remote instance of Zed does not support this yet. It must be upgraded to {}",
-                e.error_tag("required").unwrap_or("the latest version")
+                "远程 Zed 实例尚不支持此功能。必须将其升级到 {}",
+                e.error_tag("required").unwrap_or("最新版本")
             )),
                 _ => None,
             },
@@ -2936,11 +2936,11 @@ impl Editor {
             })?;
             anyhow::Ok(())
         })
-        .detach_and_prompt_err("Failed to create buffer", window, cx, |e, _, _| {
+        .detach_and_prompt_err("无法创建缓冲区", window, cx, |e, _, _| {
             match e.error_code() {
                 ErrorCode::RemoteUpgradeRequired => Some(format!(
-                "The remote instance of Zed does not support this yet. It must be upgraded to {}",
-                e.error_tag("required").unwrap_or("the latest version")
+                "远程 Zed 实例尚不支持此功能。必须将其升级到 {}",
+                e.error_tag("required").unwrap_or("最新版本")
             )),
                 _ => None,
             }
@@ -4108,7 +4108,7 @@ impl Editor {
 
     fn render_bookmark(&self, row: DisplayRow, cx: &mut Context<Self>) -> IconButton {
         let focus_handle = self.focus_handle.clone();
-        IconButton::new(("bookmark indicator", row.0 as usize), IconName::Bookmark)
+        IconButton::new(("书签指示器", row.0 as usize), IconName::Bookmark)
             .icon_size(IconSize::XSmall)
             .size(ui::ButtonSize::None)
             .icon_color(Color::Info)
@@ -4121,9 +4121,9 @@ impl Editor {
             }))
             .tooltip(move |_window, cx| {
                 Tooltip::with_meta_in(
-                    "Remove Bookmark",
+                    "移除书签",
                     Some(&ToggleBookmark),
-                    SharedString::from("Right-click for more options"),
+                    SharedString::from("右键点击查看更多选项"),
                     &focus_handle,
                     cx,
                 )
@@ -4211,47 +4211,47 @@ impl Editor {
             .map(|(anchor, bp)| (anchor, Arc::from(bp)));
 
         let log_breakpoint_msg = if breakpoint.as_ref().is_some_and(|bp| bp.1.message.is_some()) {
-            "Edit Log Breakpoint"
+            "编辑日志断点"
         } else {
-            "Set Log Breakpoint"
+            "设置日志断点"
         };
 
         let condition_breakpoint_msg = if breakpoint
             .as_ref()
             .is_some_and(|bp| bp.1.condition.is_some())
         {
-            "Edit Condition Breakpoint"
+            "编辑条件断点"
         } else {
-            "Set Condition Breakpoint"
+            "设置条件断点"
         };
 
         let hit_condition_breakpoint_msg = if breakpoint
             .as_ref()
             .is_some_and(|bp| bp.1.hit_condition.is_some())
         {
-            "Edit Hit Condition Breakpoint"
+            "编辑命中条件断点"
         } else {
-            "Set Hit Condition Breakpoint"
+            "设置命中条件断点"
         };
 
         let set_breakpoint_msg = if breakpoint.as_ref().is_some() {
-            "Unset Breakpoint"
+            "取消断点"
         } else {
-            "Set Breakpoint"
+            "设置断点"
         };
 
         let git_blame_msg = if self.show_git_blame_gutter {
-            "Close Git Blame"
+            "关闭 Git 追溯"
         } else {
-            "Open Git Blame"
+            "打开 Git 追溯"
         };
 
         let bookmark = self.bookmark_at_row(row, window, cx);
 
         let set_bookmark_msg = if bookmark.as_ref().is_some() {
-            "Remove Bookmark"
+            "移除书签"
         } else {
-            "Add Bookmark"
+            "添加书签"
         };
         let has_bookmark = bookmark.as_ref().is_some();
 
@@ -4269,10 +4269,10 @@ impl Editor {
         let toggle_state_entry: Option<(&str, Box<dyn Action>)> =
             breakpoint.as_ref().map(|bp| match bp.1.state {
                 BreakpointState::Enabled => {
-                    ("Disable", crate::actions::DisableBreakpoint.boxed_clone())
+                    ("禁用", crate::actions::DisableBreakpoint.boxed_clone())
                 }
                 BreakpointState::Disabled => {
-                    ("Enable", crate::actions::EnableBreakpoint.boxed_clone())
+                    ("启用", crate::actions::EnableBreakpoint.boxed_clone())
                 }
             });
 
@@ -4285,7 +4285,7 @@ impl Editor {
                 .when_some(
                     clear_runnable_task_status,
                     |this, (buffer_id, buffer_row)| {
-                        this.entry("Clear Run Status", None, {
+                        this.entry("清除运行状态", None, {
                             let weak_editor = weak_editor.clone();
                             move |_window, cx| {
                                 weak_editor
@@ -4301,7 +4301,7 @@ impl Editor {
                 .when(run_to_cursor, |this| {
                     let weak_editor = weak_editor.clone();
                     this.entry(
-                        "Run to Cursor",
+                        "运行到光标处",
                         Some(RunToCursor.boxed_clone()),
                         move |window, cx| {
                             weak_editor
@@ -4441,7 +4441,7 @@ impl Editor {
                 })
                 .when(has_bookmark, |this| {
                     this.entry(
-                        "Edit Bookmark",
+                        "编辑书签",
                         Some(EditBookmark.boxed_clone()),
                         move |window, cx| {
                             weak_editor
@@ -4488,18 +4488,18 @@ impl Editor {
             modifiers: Modifiers::secondary_key(),
             ..Default::default()
         };
-        let primary_action_text = "Unset breakpoint";
+        let primary_action_text = "取消断点";
         let focus_handle = self.focus_handle.clone();
         let has_context_menu = self.has_mouse_context_menu();
 
         let meta = if is_rejected {
-            SharedString::from("No executable code is associated with this line.")
+            SharedString::from("此行没有关联的可执行代码。")
         } else if !breakpoint.is_disabled() {
             SharedString::from(format!(
-                "{alt_as_text}-click to disable\nright-click for more options"
+                "{alt_as_text}-点击禁用\n右键点击查看更多选项"
             ))
         } else {
-            SharedString::from("Right-click for more options")
+            SharedString::from("右键点击查看更多选项")
         };
         IconButton::new(("breakpoint_indicator", row.0 as usize), icon)
             .icon_size(IconSize::XSmall)
@@ -4561,7 +4561,7 @@ impl Editor {
             [true, false] => [GutterButtonIntent::SetBreakpoint; 2],
             [false, true] => [GutterButtonIntent::SetBookmark; 2],
             [false, false] => {
-                log::error!("Trying to place gutter_hover without anything enabled!!");
+                log::error!("尝试放置行号槽悬停提示,但未启用任何功能!!");
                 [GutterButtonIntent::SetBookmark; 2]
             }
         };
@@ -5996,12 +5996,12 @@ impl Editor {
 
         let placeholder_text = match edit_action {
             BreakpointPromptEditAction::Log => {
-                "Message to log when a breakpoint is hit. Expressions within {} are interpolated."
+                "命中断点时记录的消息。{} 内的表达式将被插值。"
             }
             BreakpointPromptEditAction::Condition => {
-                "Condition when a breakpoint is hit. Expressions within {} are interpolated."
+                "命中断点时的条件。{} 内的表达式将被插值。"
             }
-            BreakpointPromptEditAction::HitCondition => "How many breakpoint hits to ignore",
+            BreakpointPromptEditAction::HitCondition => "要忽略的断点命中次数",
         };
 
         let breakpoint = breakpoint.clone();
@@ -7647,7 +7647,7 @@ impl Editor {
         if let Some(transaction_id) = self.buffer.update(cx, |buffer, cx| buffer.undo(cx)) {
             let transaction = self.selection_history.transaction(transaction_id);
             if transaction.is_none() {
-                log::error!("No selection history for undone transaction; selection unchanged");
+                log::error!("没有已撤销事务的选择历史;选择未更改");
             }
             let selections = transaction.map(|transaction| transaction.undo.clone());
             self.restore_selections(selections, window, cx);
@@ -8012,7 +8012,7 @@ impl Editor {
                 &editor,
                 workspace,
                 project_transaction,
-                format!("Rename: {} → {}", old_name, new_name),
+                format!("重命名: {} → {}", old_name, new_name),
                 cx,
             )
             .await?;
@@ -8207,7 +8207,7 @@ impl Editor {
             let transaction = futures::select_biased! {
                 transaction = format.log_err().fuse() => transaction,
                 () = timeout => {
-                    log::warn!("timed out waiting for formatting");
+                    log::warn!("等待格式化超时");
                     None
                 }
             };
@@ -8277,7 +8277,7 @@ impl Editor {
         cx.spawn_in(window, async move |_, cx| {
             let transaction = futures::select_biased! {
                 () = timeout => {
-                    log::warn!("timed out waiting for executing code action");
+                    log::warn!("等待执行代码操作超时");
                     None
                 }
                 transaction = apply_action.log_err().fuse() => transaction,
@@ -8423,7 +8423,7 @@ impl Editor {
             if let Some(transaction) = self.selection_history.transaction_mut(transaction_id) {
                 transaction.redo = Some(self.selections.disjoint_anchors_arc());
             } else {
-                log::error!("unexpectedly ended a transaction that wasn't started by this editor");
+                log::error!("意外结束了并非由此编辑器启动的事务");
             }
 
             cx.emit(EditorEvent::Edited { transaction_id });
@@ -8580,7 +8580,7 @@ impl Editor {
             this.buffer
                 .read(cx)
                 .as_singleton()
-                .expect("you can only call set_text on editors for singleton buffers")
+                .expect("只能在单例缓冲区的编辑器上调用 set_text")
                 .update(cx, |buffer, cx| buffer.set_text(text, cx));
         });
     }
@@ -8864,7 +8864,7 @@ impl Editor {
                 Self::open_locations_in_multibuffer(
                     workspace,
                     locations,
-                    format!("Selections for '{title}'"),
+                    format!("'{title}' 的选择"),
                     false,
                     false,
                     MultibufferSelectionMode::All,
@@ -9556,7 +9556,7 @@ impl Editor {
                 .ok()
                 .flatten()?
                 .await
-                .context("refreshing debugger inlays")
+                .context("正在刷新调试器内联提示")
                 .log_err()?;
 
             let mut buffer_inline_values: HashMap<BufferId, Vec<InlayHint>> = HashMap::default();
@@ -11146,21 +11146,21 @@ fn process_completion_for_edit(
         {
             debug_assert_eq!(
                 insert_range.start, replace_range.start,
-                "insert_range and replace_range should start at the same position"
+                "insert_range 和 replace_range 应从相同位置开始"
             );
             debug_assert!(
                 insert_range
                     .start
                     .cmp(cursor_position, &buffer_snapshot)
                     .is_le(),
-                "insert_range should start before or at cursor position"
+                "insert_range 应在光标位置或之前开始"
             );
             debug_assert!(
                 replace_range
                     .start
                     .cmp(cursor_position, &buffer_snapshot)
                     .is_le(),
-                "replace_range should start before or at cursor position"
+                "replace_range 应在光标位置或之前开始"
             );
 
             let should_replace = match intent {
@@ -11583,7 +11583,7 @@ impl EditorSnapshot {
                         cursor_shape,
                         line_mode,
                         collaborator_id: CollaboratorId::Agent,
-                        user_name: Some("Agent".into()),
+                        user_name: Some("代理".into()),
                         color: cx.theme().players().agent(),
                     })
                 } else {
@@ -11673,7 +11673,7 @@ impl EditorSnapshot {
                 self.git_blame_gutter_max_author_length
                     .map(|max_author_length| {
                         let renderer = cx.global::<GlobalBlameRenderer>().0.clone();
-                        const MAX_RELATIVE_TIMESTAMP: &str = "2 years, 11 months ago";
+                        const MAX_RELATIVE_TIMESTAMP: &str = "2 年 11 个月前";
 
                         let max_char_count = max_author_length.min(renderer.max_author_length())
                             + ::git::SHORT_SHA_LENGTH
@@ -12406,7 +12406,7 @@ impl PromptEditor {
                 .buffer
                 .read(cx)
                 .as_singleton()
-                .expect("A multi buffer in prompt isn't possible")
+                .expect("提示词中不能使用多缓冲区")
                 .read(cx)
                 .as_rope()
                 .to_string();
@@ -12431,7 +12431,7 @@ impl PromptEditor {
                     .buffer
                     .read(cx)
                     .as_singleton()
-                    .expect("A multi buffer in prompt isn't possible")
+                    .expect("提示词中不能使用多缓冲区")
                     .read(cx)
                     .as_rope()
                     .to_string();
@@ -12478,7 +12478,7 @@ impl PromptEditor {
             .icon_color(Color::Muted)
             .shape(IconButtonShape::Square)
             .tooltip(move |_window, cx| {
-                Tooltip::for_action_in("Cancel", &menu::Cancel, &focus_handle, cx)
+                Tooltip::for_action_in("取消", &menu::Cancel, &focus_handle, cx)
             })
             .on_click(cx.listener(|this, _, window, cx| {
                 this.cancel(&menu::Cancel, window, cx);
@@ -12491,7 +12491,7 @@ impl PromptEditor {
             .icon_color(Color::Muted)
             .shape(IconButtonShape::Square)
             .tooltip(move |_window, cx| {
-                Tooltip::for_action_in("Confirm", &menu::Confirm, &focus_handle, cx)
+                Tooltip::for_action_in("确认", &menu::Confirm, &focus_handle, cx)
             })
             .on_click(cx.listener(|this, _, window, cx| {
                 this.confirm(&menu::Confirm, window, cx);

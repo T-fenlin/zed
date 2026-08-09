@@ -114,14 +114,14 @@ pub(crate) async fn send_custom_server_request(
             if !status.is_success() {
                 let mut body = String::new();
                 response.body_mut().read_to_string(&mut body).await?;
-                anyhow::bail!("custom server error: {} - {}", status, body);
+                anyhow::bail!("自定义服务器错误:{} - {}", status, body);
             }
 
             let mut body = String::new();
             response.body_mut().read_to_string(&mut body).await?;
 
             let parsed: RawCompletionResponse =
-                serde_json::from_str(&body).context("Failed to parse completion response")?;
+                serde_json::from_str(&body).context("无法解析补全响应")?;
             let text = parsed
                 .choices
                 .into_iter()

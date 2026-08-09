@@ -265,7 +265,7 @@ impl ConverseModel {
         } else if id.starts_with("claude-haiku-4-5") {
             Ok(Self::ClaudeHaiku4_5)
         } else {
-            anyhow::bail!("invalid model id {id}");
+            anyhow::bail!("无效的模型 ID {id}");
         }
     }
 
@@ -732,7 +732,7 @@ impl ConverseModel {
                 "apac"
             }
         } else {
-            anyhow::bail!("Unsupported Region {region}");
+            anyhow::bail!("不支持的区域 {region}");
         };
 
         match (self, region_group) {
@@ -1088,17 +1088,17 @@ mod tests {
         {
             assert!(
                 ids.insert(model.id().to_string()),
-                "duplicate MantleModel id: {}",
+                "重复的 MantleModel id: {}",
                 model.id()
             );
             assert!(
                 request_ids.insert(model.request_id().to_string()),
-                "duplicate MantleModel request_id: {}",
+                "重复的 MantleModel request_id: {}",
                 model.request_id()
             );
             assert!(
                 model.max_output_tokens() <= model.max_token_count(),
-                "{} has max_output_tokens ({}) greater than max_token_count ({})",
+                "{} 的 max_output_tokens ({}) 大于 max_token_count ({})",
                 model.id(),
                 model.max_output_tokens(),
                 model.max_token_count()
@@ -1389,7 +1389,7 @@ mod tests {
         let custom_model = ConverseModel::Custom {
             name: "custom.my-model-v1:0".to_string(),
             max_tokens: 100000,
-            display_name: Some("My Custom Model".to_string()),
+            display_name: Some("我的自定义模型".to_string()),
             max_output_tokens: Some(8192),
             default_temperature: Some(0.7),
             cache_configuration: None,

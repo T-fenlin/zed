@@ -262,7 +262,7 @@ async fn test_remote_telemetry_event_forwarding(
     assert_eq!(
         events.len(),
         1,
-        "the forwarded event should be reported once"
+        "转发的事件应被报告一次"
     );
     let event = &events[0];
     assert_eq!(event.event_type, "fs_watcher_poll");
@@ -323,7 +323,7 @@ async fn do_search_and_assert(
             let response = receiver.rx.recv().await.unwrap();
             match response {
                 SearchResult::Buffer { buffer, .. } => break buffer,
-                SearchResult::LimitReached => panic!("incorrect result"),
+                SearchResult::LimitReached => panic!("结果不正确"),
                 SearchResult::WaitingForScan | SearchResult::Searching => continue,
             }
         };
@@ -561,7 +561,7 @@ async fn test_remote_settings(cx: &mut TestAppContext, server_cx: &mut TestAppCo
                 .language(None, Some(&"Rust".into()), cx)
                 .language_servers,
             [ConfiguredLanguageServer::new("from-local-settings")],
-            "User language settings should be synchronized with the server settings"
+            "用户语言设置应与服务器设置同步"
         )
     });
 
@@ -582,7 +582,7 @@ async fn test_remote_settings(cx: &mut TestAppContext, server_cx: &mut TestAppCo
                 .language(None, Some(&"Rust".into()), cx)
                 .language_servers,
             [ConfiguredLanguageServer::new("from-server-settings")],
-            "Server language settings should take precedence over the user settings"
+            "服务器语言设置应优先于用户设置"
         )
     });
 
@@ -959,7 +959,7 @@ async fn test_remote_code_action_resolve(cx: &mut TestAppContext, server_cx: &mu
                     |_, _| async move {
                         Ok(Some(vec![lsp::CodeActionOrCommand::CodeAction(
                             lsp::CodeAction {
-                                title: "Use two".to_string(),
+                                title: "使用 two".to_string(),
                                 data: Some(serde_json::json!({ "id": "action" })),
                                 ..lsp::CodeAction::default()
                             },
@@ -1141,7 +1141,7 @@ async fn test_remote_code_lens_fetch_after_lsp_starts(
     assert_eq!(
         initial_actions.map(|a| a.len()),
         Some(0),
-        "Before any LSP starts, code lenses should be empty"
+        "在任何 LSP 启动之前,代码镜头应为空"
     );
 
     // Now register the LSP on the host. This triggers server startup and
@@ -1159,7 +1159,7 @@ async fn test_remote_code_lens_fetch_after_lsp_starts(
                                 lsp::Position::new(0, 9),
                             ),
                             command: Some(lsp::Command {
-                                title: "1 reference".to_string(),
+                                title: "1 个引用".to_string(),
                                 command: "lens_cmd".to_string(),
                                 arguments: None,
                             }),
@@ -1185,15 +1185,15 @@ async fn test_remote_code_lens_fetch_after_lsp_starts(
         .update(cx, |lsp_store, cx| lsp_store.code_lens_actions(&buffer, cx))
         .await
         .unwrap();
-    let actions = actions.expect("Should have code lens actions after LSP starts");
+    let actions = actions.expect("LSP 启动后应有代码镜头操作");
     assert_eq!(
         actions.len(),
         1,
-        "Should have fetched one code lens from the newly started LSP"
+        "应从新启动的 LSP 获取一个代码镜头"
     );
     assert_eq!(
         actions.values().next().unwrap().lsp_action.title(),
-        "1 reference",
+        "1 个引用",
     );
 }
 
@@ -1263,7 +1263,7 @@ async fn test_remote_code_lens_refetch_after_refresh(
                                         lsp::Position::new(0, 9),
                                     ),
                                     command: Some(lsp::Command {
-                                        title: format!("{generation} references"),
+                                        title: format!("{generation} 个引用"),
                                         command: "lens_cmd".to_string(),
                                         arguments: None,
                                     }),
@@ -1304,14 +1304,14 @@ async fn test_remote_code_lens_refetch_after_refresh(
         .update(cx, |lsp_store, cx| lsp_store.code_lens_actions(&buffer, cx))
         .await
         .unwrap()
-        .expect("Should have code lens actions after the initial fetch");
+        .expect("初始获取后应有代码镜头操作");
     assert_eq!(
         actions
             .values()
             .map(|action| action.lsp_action.title().to_owned())
             .collect::<Vec<_>>(),
-        vec!["0 references".to_string()],
-        "Expected the initial code lens data on the client",
+        vec!["0 个引用".to_string()],
+        "期望客户端上有初始代码镜头数据",
     );
 
     lens_generation.store(1, Ordering::Release);
@@ -1326,14 +1326,14 @@ async fn test_remote_code_lens_refetch_after_refresh(
         .update(cx, |lsp_store, cx| lsp_store.code_lens_actions(&buffer, cx))
         .await
         .unwrap()
-        .expect("Should have code lens actions after the refresh");
+        .expect("刷新后应有代码镜头操作");
     assert_eq!(
         actions
             .values()
             .map(|action| action.lsp_action.title().to_owned())
             .collect::<Vec<_>>(),
-        vec!["1 references".to_string()],
-        "Expected the client to re-fetch code lens data after the server-initiated refresh, without any buffer edits",
+        vec!["1 个引用".to_string()],
+        "期望客户端在服务器发起的刷新后重新获取代码镜头数据,且无需任何缓冲区编辑",
     );
 }
 
@@ -1409,7 +1409,7 @@ async fn test_remote_lsp_data_cache_converges_with_multiple_servers(
                                         lsp::Position::new(0, 9),
                                     ),
                                     command: Some(lsp::Command {
-                                        title: "the lens".to_string(),
+                                        title: "该镜头".to_string(),
                                         command: "lens_cmd".to_string(),
                                         arguments: None,
                                     }),
@@ -1465,7 +1465,7 @@ async fn test_remote_lsp_data_cache_converges_with_multiple_servers(
     assert_eq!(
         *queried_uris.lock().unwrap(),
         queried_lib_1,
-        "Expected the initial fetch to query the buffer's own language server only",
+        "期望初始获取仅查询缓冲区自身的语言服务器",
     );
 
     lsp_store
@@ -1490,19 +1490,19 @@ async fn test_remote_lsp_data_cache_converges_with_multiple_servers(
         })
         .await
         .unwrap()
-        .expect("Should have code lens actions cached");
+        .expect("应缓存代码镜头操作");
     assert_eq!(
         actions
             .values()
             .map(|action| action.lsp_action.title().to_owned())
             .collect::<Vec<_>>(),
-        vec!["the lens".to_string()],
-        "Expected the cached data to survive an empty relevant server set (buffer without a language)",
+        vec!["该镜头".to_string()],
+        "期望缓存数据在相关服务器集为空(缓冲区无语言)时仍然有效",
     );
     assert_eq!(
         *queried_uris.lock().unwrap(),
         queried_lib_1,
-        "Expected no new queries for the buffer without a language",
+        "期望对无语言的缓冲区不进行新的查询",
     );
 }
 
@@ -1629,7 +1629,7 @@ async fn test_remote_per_server_refresh_queries_only_the_refreshed_server(
             lens_requests_b.load(Ordering::Acquire),
         ),
         (1, 1),
-        "Expected the initial fetch to query both servers",
+        "期望初始获取查询两个服务器",
     );
 
     fake_lsp_a
@@ -1649,7 +1649,7 @@ async fn test_remote_per_server_refresh_queries_only_the_refreshed_server(
             lens_requests_b.load(Ordering::Acquire),
         ),
         (2, 1),
-        "Expected the refetch after a per-server refresh to query the refreshed server only",
+        "期望在按服务器刷新后的重新获取仅查询已刷新的服务器",
     );
 }
 
@@ -1732,7 +1732,7 @@ async fn test_remote_code_lens_resolve(cx: &mut TestAppContext, server_cx: &mut 
                     |lens, _| async move {
                         Ok(lsp::CodeLens {
                             command: Some(lsp::Command {
-                                title: "1 reference".to_string(),
+                                title: "1 个引用".to_string(),
                                 command: "noop".to_string(),
                                 arguments: None,
                             }),
@@ -1802,13 +1802,13 @@ async fn test_remote_code_lens_resolve(cx: &mut TestAppContext, server_cx: &mut 
         let menu = editor.context_menu().borrow();
         let actions_menu = match menu.as_ref() {
             Some(CodeContextMenu::CodeActions(m)) => m,
-            _ => panic!("Expected code actions menu to be visible"),
+            _ => panic!("预期代码操作菜单可见"),
         };
         let item = actions_menu
             .actions
             .get(0)
-            .expect("Expected at least one item in menu");
-        assert_eq!(item.label(), "1 reference");
+            .expect("预期菜单中至少有一个项目");
+        assert_eq!(item.label(), "1 个引用");
     });
 }
 
@@ -2745,7 +2745,7 @@ async fn test_remote_search_commits_streams_proto_chunks(
             project.find_or_create_worktree(path!("/code/project1"), true, cx)
         })
         .await
-        .expect("should open remote worktree");
+        .expect("应打开远程工作树");
     server_cx.run_until_parked();
     cx.run_until_parked();
     project
@@ -2755,11 +2755,11 @@ async fn test_remote_search_commits_streams_proto_chunks(
     let (remote_client, repository_id) = project.read_with(cx, |project, cx| {
         let repository = project
             .active_repository(cx)
-            .expect("remote project should have an active repository");
+            .expect("远程项目应有一个活动的仓库");
         let repository_id = repository.read(cx).snapshot().id;
         let remote_client = project
             .remote_client()
-            .expect("project should have a remote client");
+            .expect("项目应有一个远程客户端");
         (remote_client, repository_id)
     });
     let proto_client = remote_client.read_with(cx, |remote_client, _| remote_client.proto_client());
@@ -2776,21 +2776,21 @@ async fn test_remote_search_commits_streams_proto_chunks(
             case_sensitive: true,
         })
         .await
-        .expect("search commits stream should start");
+        .expect("搜索提交流应启动");
 
     let mut chunks = Vec::new();
     while let Some(response) = futures::StreamExt::next(&mut stream).await {
-        chunks.push(response.expect("search commits chunk should succeed").shas);
+        chunks.push(response.expect("搜索提交块应成功").shas);
     }
 
     assert!(
         chunks.len() > 1,
-        "expected search results to stream in multiple chunks"
+        "期望搜索结果以多个块的形式流式传输"
     );
     for chunk in chunks.iter().take(chunks.len() - 1) {
         assert!(
             chunk.len() <= RESPONSE_MAX_SIZE,
-            "non-final chunks should meet the target byte size"
+            "非最终块应满足目标字节大小"
         );
     }
 
@@ -2825,21 +2825,21 @@ async fn test_remote_archive_git_operations_are_supported(
             project.find_or_create_worktree(Path::new("/project"), true, cx)
         })
         .await
-        .expect("should open remote worktree");
+        .expect("应打开远程工作树");
     cx.run_until_parked();
 
     let repository = project.read_with(cx, |project, cx| {
         project
             .active_repository(cx)
-            .expect("remote project should have an active repository")
+            .expect("远程项目应有一个活动的仓库")
     });
 
     let head_sha = cx
         .update(|cx| repository.update(cx, |repository, _| repository.head_sha()))
         .await
-        .expect("head_sha request should complete")
-        .expect("head_sha should succeed")
-        .expect("HEAD should exist");
+        .expect("head_sha 请求应完成")
+        .expect("head_sha 应成功")
+        .expect("HEAD 应存在");
 
     cx.run_until_parked();
 
@@ -2849,8 +2849,8 @@ async fn test_remote_archive_git_operations_are_supported(
         })
     })
     .await
-    .expect("update_ref request should complete")
-    .expect("update_ref should succeed for remote repository");
+    .expect("update_ref 请求应完成")
+    .expect("update_ref 对远程仓库应成功");
 
     cx.run_until_parked();
 
@@ -2860,23 +2860,23 @@ async fn test_remote_archive_git_operations_are_supported(
         })
     })
     .await
-    .expect("delete_ref request should complete")
-    .expect("delete_ref should succeed for remote repository");
+    .expect("delete_ref 请求应完成")
+    .expect("delete_ref 对远程仓库应成功");
 
     cx.run_until_parked();
 
     cx.update(|cx| repository.update(cx, |repository, _| repository.repair_worktrees()))
         .await
-        .expect("repair_worktrees request should complete")
-        .expect("repair_worktrees should succeed for remote repository");
+        .expect("repair_worktrees 请求应完成")
+        .expect("repair_worktrees 对远程仓库应成功");
 
     cx.run_until_parked();
 
     let (staged_commit_sha, unstaged_commit_sha) = cx
         .update(|cx| repository.update(cx, |repository, _| repository.create_archive_checkpoint()))
         .await
-        .expect("create_archive_checkpoint request should complete")
-        .expect("create_archive_checkpoint should succeed for remote repository");
+        .expect("create_archive_checkpoint 请求应完成")
+        .expect("create_archive_checkpoint 对远程仓库应成功");
 
     cx.run_until_parked();
 
@@ -2886,8 +2886,8 @@ async fn test_remote_archive_git_operations_are_supported(
         })
     })
     .await
-    .expect("restore_archive_checkpoint request should complete")
-    .expect("restore_archive_checkpoint should succeed for remote repository");
+    .expect("restore_archive_checkpoint 请求应完成")
+    .expect("restore_archive_checkpoint 对远程仓库应成功");
 }
 
 #[gpui::test]
@@ -2921,25 +2921,25 @@ async fn test_add_path_to_gitignore_in_remote_repository(
             project.find_or_create_worktree(Path::new("/project"), true, cx)
         })
         .await
-        .expect("should open remote worktree");
+        .expect("应打开远程工作树");
     cx.run_until_parked();
 
     let repository = project.read_with(cx, |project, cx| {
         project
             .active_repository(cx)
-            .expect("remote project should have an active repository")
+            .expect("远程项目应有一个活动的仓库")
     });
 
     for (path, is_dir) in [("tmp.txt", false), ("logs", true), ("tmp.txt", false)] {
-        let repo_path = RepoPath::new(path).expect("path should be a valid repo path");
+        let repo_path = RepoPath::new(path).expect("路径应为有效的仓库路径");
         cx.update(|cx| {
             repository.update(cx, |repository, _| {
                 repository.add_path_to_gitignore(&repo_path, is_dir)
             })
         })
         .await
-        .expect("add to .gitignore request should complete")
-        .expect("add to .gitignore should succeed for remote repository");
+        .expect("添加到 .gitignore 请求应完成")
+        .expect("添加到 .gitignore 对远程仓库应成功");
     }
 
     server_cx.run_until_parked();
@@ -2948,7 +2948,7 @@ async fn test_add_path_to_gitignore_in_remote_repository(
     assert_eq!(
         fs.load(Path::new("/project/.gitignore"))
             .await
-            .expect(".gitignore should be readable"),
+            .expect(".gitignore 应可读"),
         "existing\ntmp.txt\nlogs/\n"
     );
 }
@@ -2979,25 +2979,25 @@ async fn test_add_path_to_git_info_exclude_in_remote_repository(
             project.find_or_create_worktree(Path::new("/project"), true, cx)
         })
         .await
-        .expect("should open remote worktree");
+        .expect("应打开远程工作树");
     cx.run_until_parked();
 
     let repository = project.read_with(cx, |project, cx| {
         project
             .active_repository(cx)
-            .expect("remote project should have an active repository")
+            .expect("远程项目应有一个活动的仓库")
     });
 
     for (path, is_dir) in [("tmp.txt", false), ("logs", true), ("tmp.txt", false)] {
-        let repo_path = RepoPath::new(path).expect("path should be a valid repo path");
+        let repo_path = RepoPath::new(path).expect("路径应为有效的仓库路径");
         cx.update(|cx| {
             repository.update(cx, |repository, _| {
                 repository.add_path_to_git_info_exclude(&repo_path, is_dir)
             })
         })
         .await
-        .expect("add to info/exclude request should complete")
-        .expect("add to info/exclude should succeed for remote repository");
+        .expect("添加到 info/exclude 请求应完成")
+        .expect("添加到 info/exclude 对远程仓库应成功");
     }
 
     server_cx.run_until_parked();
@@ -3006,7 +3006,7 @@ async fn test_add_path_to_git_info_exclude_in_remote_repository(
     assert_eq!(
         fs.load(Path::new("/project/.git/info/exclude"))
             .await
-            .expect("info/exclude should be readable"),
+            .expect("info/exclude 应可读"),
         "tmp.txt\nlogs/\n"
     );
 }
@@ -3460,7 +3460,7 @@ async fn test_remote_git_checkpoints(cx: &mut TestAppContext, server_cx: &mut Te
         .await
         .unwrap()
         .unwrap();
-    assert!(equal, "a checkpoint compared with itself should be equal");
+    assert!(equal, "与自身比较的检查点应相等");
 
     // 5. compare_checkpoints: different states => not equal
     let equal = repository
@@ -3472,7 +3472,7 @@ async fn test_remote_git_checkpoints(cx: &mut TestAppContext, server_cx: &mut Te
         .unwrap();
     assert!(
         !equal,
-        "checkpoints of different states should not be equal"
+        "不同状态的检查点不应相等"
     );
 
     // 6. diff_checkpoints: same checkpoint => empty diff
@@ -3485,7 +3485,7 @@ async fn test_remote_git_checkpoints(cx: &mut TestAppContext, server_cx: &mut Te
         .unwrap();
     assert!(
         diff.is_empty(),
-        "diff of identical checkpoints should be empty"
+        "相同检查点的差异应为空"
     );
 
     // 7. diff_checkpoints: different checkpoints => non-empty diff mentioning the changed file
@@ -3498,19 +3498,19 @@ async fn test_remote_git_checkpoints(cx: &mut TestAppContext, server_cx: &mut Te
         .unwrap();
     assert!(
         !diff.is_empty(),
-        "diff of different checkpoints should be non-empty"
+        "不同检查点的差异不应为空"
     );
     assert!(
         diff.contains("file.txt"),
-        "diff should mention the changed file"
+        "差异应提及更改的文件"
     );
     assert!(
         diff.contains("original content"),
-        "diff should contain removed content"
+        "差异应包含已删除的内容"
     );
     assert!(
         diff.contains("modified content"),
-        "diff should contain added content"
+        "差异应包含已添加的内容"
     );
 
     // 8. restore_checkpoint: restore to original state
@@ -3538,7 +3538,7 @@ async fn test_remote_git_checkpoints(cx: &mut TestAppContext, server_cx: &mut Te
         .await
         .unwrap()
         .unwrap();
-    assert!(equal, "restored state should match original checkpoint");
+    assert!(equal, "恢复的状态应与原始检查点匹配");
 
     // 11. diff_checkpoints: restored state vs original => empty diff
     let diff = repository
@@ -3548,7 +3548,7 @@ async fn test_remote_git_checkpoints(cx: &mut TestAppContext, server_cx: &mut Te
         .await
         .unwrap()
         .unwrap();
-    assert!(diff.is_empty(), "diff after restore should be empty");
+    assert!(diff.is_empty(), "恢复后的差异应为空");
 }
 
 #[gpui::test]
@@ -3681,7 +3681,7 @@ async fn test_adding_remote_skill(cx: &mut TestAppContext, server_cx: &mut TestA
             "<source>project-local</source>\n",
             "<worktree>project</worktree>\n",
             "<directory>{}</directory>\n",
-            "Relative paths in this skill resolve against <directory>.\n",
+            "此技能中的相对路径相对于 <directory> 解析。\n",
             "\n",
             "test body\n",
             "</skill_content>\n",
@@ -3730,7 +3730,7 @@ async fn test_adding_remote_skill(cx: &mut TestAppContext, server_cx: &mut TestA
             "<source>project-local</source>\n",
             "<worktree>project</worktree>\n",
             "<directory>{}</directory>\n",
-            "Relative paths in this skill resolve against <directory>.\n",
+            "此技能中的相对路径相对于 <directory> 解析。\n",
             "\n",
             "test body\n",
             "</skill_content>\n",
@@ -3905,7 +3905,7 @@ async fn test_remote_apply_code_action_skips_unadvertised_command(
                 fake.set_request_handler::<lsp::request::ExecuteCommand, _, _>(
                     |params, _| async move {
                         panic!(
-                            "Unadvertised command {} must not reach the language server",
+                            "未通告的命令 {} 不得到达语言服务器",
                             params.command
                         );
                     },
@@ -3968,7 +3968,7 @@ async fn test_remote_apply_code_action_skips_unadvertised_command(
             project.apply_code_action(buffer.clone(), action, true, cx)
         })
         .await
-        .expect("Unadvertised command must not be forwarded to executeCommand");
+        .expect("未通告的命令不得转发到 executeCommand");
     assert_eq!(transaction.0.len(), 0);
 }
 
@@ -4057,7 +4057,7 @@ async fn test_remote_restore_unstaged_hunk_clears_diff(
                 &snapshot.buffer_snapshot(),
             )
             .collect();
-        assert!(!hunks.is_empty(), "should have diff hunks before restore");
+        assert!(!hunks.is_empty(), "恢复前应有差异代码块");
     });
 
     cx.update_window_entity(&editor, |editor, window, cx| {
@@ -4071,13 +4071,13 @@ async fn test_remote_restore_unstaged_hunk_clears_diff(
         assert_eq!(
             snapshot.text(),
             base_text,
-            "buffer text should match base after restoring all hunks"
+            "恢复所有代码块后,缓冲区文本应与基础版本匹配"
         );
 
         let hunks: Vec<_> = editor
             .diff_hunks_in_ranges(&[editor::Anchor::Min..editor::Anchor::Max], &snapshot)
             .collect();
-        assert!(hunks.is_empty(), "should have no diff hunks after restore");
+        assert!(hunks.is_empty(), "恢复后应没有差异代码块");
     });
 }
 
@@ -4101,7 +4101,7 @@ async fn test_remote_load_commit_template(cx: &mut TestAppContext, server_cx: &m
             template: "chore: commit template".to_string(),
         })
     })
-    .expect("Should successfully update repository state");
+    .expect("应成功更新仓库状态");
 
     let (project, _) = init_test(&fs, cx, server_cx).await;
     project
@@ -4118,7 +4118,7 @@ async fn test_remote_load_commit_template(cx: &mut TestAppContext, server_cx: &m
         .await
         .unwrap()
         .unwrap()
-        .expect("Loading commit template in remote should work");
+        .expect("在远程加载提交模板应有效");
 
     assert_eq!(commit_template.template, "chore: commit template");
 }
@@ -4156,7 +4156,7 @@ async fn test_remote_delete_project_entry_with_trash(
     let remote_client = project.read_with(cx, |project, _cx| {
         project
             .remote_client()
-            .expect("project should have a remote client")
+            .expect("项目应有一个远程客户端")
     });
 
     let proto_client =

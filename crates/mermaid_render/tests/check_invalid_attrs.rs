@@ -230,7 +230,7 @@ fn accent_colors_auto_applied_to_nodes() {
     // automatic accent colors applied to its node groups.
     let source = "stateDiagram-v2\n    [*] --> Idle\n    Idle --> Processing\n    Processing --> Done\n    Done --> [*]";
 
-    let svg = mermaid_render::render_to_svg(source, &theme).expect("render failed");
+    let svg = mermaid_render::render_to_svg(source, &theme).expect("渲染失败");
 
     // accent_fill_and_text darkens the background color for dark mode.
     // The stroke colors are direct hex conversions of the accent rgb values.
@@ -248,7 +248,7 @@ fn accent_colors_auto_applied_to_nodes() {
     );
     assert!(
         svg.contains(accent1_stroke),
-        "Expected accent1 stroke color ({accent1_stroke}) in auto-colored state diagram SVG."
+        "在自动着色的状态图 SVG 中,期望找到 accent1 描边颜色 ({accent1_stroke})。"
     );
 }
 
@@ -256,14 +256,14 @@ fn accent_colors_auto_applied_to_nodes() {
 fn generics_not_double_escaped() {
     let theme = rgb_theme();
     let source = "classDiagram\n    class Shelter {\n        -List~Animal~ animals\n        +adopt(Animal a) bool\n    }";
-    let svg = mermaid_render::render_to_svg(source, &theme).expect("render failed");
+    let svg = mermaid_render::render_to_svg(source, &theme).expect("渲染失败");
     assert!(
         !svg.contains("&amp;lt;"),
-        "Double-escaped &amp;lt; found in SVG"
+        "在 SVG 中发现双重转义的 &amp;lt;"
     );
     assert!(
         !svg.contains("&amp;gt;"),
-        "Double-escaped &amp;gt; found in SVG"
+        "在 SVG 中发现双重转义的 &amp;gt;"
     );
 }
 
@@ -281,7 +281,7 @@ fn class_diagram_label_text_uses_accent_classes() {
     }
     Dog --|> Animal"#;
 
-    let svg = mermaid_render::render_to_svg(source, &theme).expect("render failed");
+    let svg = mermaid_render::render_to_svg(source, &theme).expect("渲染失败");
 
     use quick_xml::events::Event;
     let mut reader = quick_xml::Reader::from_str(&svg);
@@ -305,7 +305,7 @@ fn class_diagram_label_text_uses_accent_classes() {
 
     assert!(
         !accent_classes.is_empty(),
-        "expected zed-accent-N classes on label text elements",
+        "期望在标签文本元素上找到 zed-accent-N 类",
     );
 }
 
@@ -313,7 +313,7 @@ fn class_diagram_label_text_uses_accent_classes() {
 fn sequence_diagram_tspan_uses_accent_classes() {
     let theme = rgb_theme();
     let source = "sequenceDiagram\n    participant Database";
-    let svg = mermaid_render::render_to_svg(source, &theme).expect("render failed");
+    let svg = mermaid_render::render_to_svg(source, &theme).expect("渲染失败");
 
     use quick_xml::events::Event;
     let mut reader = quick_xml::Reader::from_str(&svg);
@@ -337,7 +337,7 @@ fn sequence_diagram_tspan_uses_accent_classes() {
 
     assert!(
         !accent_classes.is_empty(),
-        "expected zed-accent-N classes on tspan elements in sequence diagram",
+        "期望在时序图的 tspan 元素上找到 zed-accent-N 类",
     );
 }
 
@@ -349,7 +349,7 @@ fn no_empty_attributes_or_nan_with_rgb_theme() {
     for (name, source) in DIAGRAMS {
         match mermaid_render::render_to_svg(source, &theme) {
             Ok(svg) => all_issues.extend(check_svg_issues(name, &svg)),
-            Err(e) => eprintln!("{name}: render failed (skipped): {e}"),
+            Err(e) => eprintln!("{name}: 渲染失败(已跳过): {e}"),
         }
     }
 

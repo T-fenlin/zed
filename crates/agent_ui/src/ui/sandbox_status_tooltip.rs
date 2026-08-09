@@ -167,7 +167,7 @@ impl RenderOnce for SandboxStatusTooltip {
         let content = match self {
             SandboxStatusTooltip::DisabledInSettings => v_flex()
                 .child(
-                    Label::new("You have sandboxing disabled in settings.")
+                    Label::new("你已在设置中禁用沙箱。")
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -176,7 +176,7 @@ impl RenderOnce for SandboxStatusTooltip {
                 .gap_1()
                 .child(div().opacity(0.5).child(settings.render(cx)))
                 .child(Divider::horizontal())
-                .child(Label::new("Sandboxing is disabled for this thread").size(LabelSize::Small))
+                .child(Label::new("此对话线程已禁用沙箱").size(LabelSize::Small))
                 .into_any_element(),
             SandboxStatusTooltip::Enabled { settings, thread } => v_flex()
                 .gap_2()
@@ -193,7 +193,7 @@ impl RenderOnce for SandboxStatusTooltip {
         v_flex()
             .w(rems_from_px(280_f32))
             .gap_1()
-            .child(Label::new("Sandboxing"))
+            .child(Label::new("沙箱"))
             .child(content)
     }
 }
@@ -214,29 +214,29 @@ impl Component for SandboxStatusTooltip {
     }
 
     fn preview(_window: &mut Window, cx: &mut App) -> AnyElement {
-        let settings_section = SandboxSection::new("Defined in your settings:")
-            .group(SandboxGroup::new("Write Access").rows([
+        let settings_section = SandboxSection::new("在您的设置中定义:")
+            .group(SandboxGroup::new("写入权限").rows([
                 SandboxRow::path("/Users/you/project"),
                 SandboxRow::path("/tmp (isolated)"),
             ]))
-            .group(SandboxGroup::new("Network Access").rows([
+            .group(SandboxGroup::new("网络访问").rows([
                 SandboxRow::domain("github.com"),
                 SandboxRow::domain("*.npmjs.org"),
             ]));
 
-        let thread_section = SandboxSection::new("Allowed for this thread:")
+        let thread_section = SandboxSection::new("此对话线程允许:")
             .group(
-                SandboxGroup::new("Write Access").row(SandboxRow::path("/Users/you/project/build")),
+                SandboxGroup::new("写入权限").row(SandboxRow::path("/Users/you/project/build")),
             )
-            .group(SandboxGroup::new("Network Access").row(SandboxRow::message("None")));
+            .group(SandboxGroup::new("网络访问").row(SandboxRow::message("无")));
 
-        let unrestricted_section = SandboxSection::new("Defined in your settings:")
-            .group(SandboxGroup::new("Write Access").row(SandboxRow::message(
-                "All paths except protected Git metadata",
+        let unrestricted_section = SandboxSection::new("在您的设置中定义:")
+            .group(SandboxGroup::new("写入权限").row(SandboxRow::message(
+                "除受保护的 Git 元数据外的所有路径",
             )))
             .group(
-                SandboxGroup::new("Network Access")
-                    .row(SandboxRow::message("All domains (unrestricted)")),
+                SandboxGroup::new("网络访问")
+                    .row(SandboxRow::message("所有域名(不受限制)")),
             );
 
         let container = || div().p_2().elevation_2(cx).max_w_112();
@@ -245,7 +245,7 @@ impl Component for SandboxStatusTooltip {
             .gap_4()
             .child(example_group(vec![
                 single_example(
-                    "Enabled",
+                    "已启用",
                     container()
                         .child(SandboxStatusTooltip::enabled(
                             settings_section.clone(),
@@ -254,19 +254,19 @@ impl Component for SandboxStatusTooltip {
                         .into_any_element(),
                 ),
                 single_example(
-                    "Enabled (unrestricted, no overrides)",
+                    "已启用(不受限制,无覆盖)",
                     container()
                         .child(SandboxStatusTooltip::enabled(unrestricted_section, None))
                         .into_any_element(),
                 ),
                 single_example(
-                    "Disabled for thread",
+                    "已为对话线程禁用",
                     container()
                         .child(SandboxStatusTooltip::disabled_for_thread(settings_section))
                         .into_any_element(),
                 ),
                 single_example(
-                    "Disabled in settings",
+                    "已在设置中禁用",
                     container()
                         .child(SandboxStatusTooltip::disabled_in_settings())
                         .into_any_element(),

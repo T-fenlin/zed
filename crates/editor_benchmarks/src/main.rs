@@ -71,9 +71,9 @@ fn parse_args() -> Args {
 fn main() {
     let args = parse_args();
 
-    let file_contents = std::fs::read_to_string(&args.file).expect("failed to read input file");
+    let file_contents = std::fs::read_to_string(&args.file).expect("无法读取输入文件");
     let file_len = file_contents.len();
-    println!("Read {} ({file_len} bytes)", args.file);
+    println!("已读取 {}({file_len} 字节)", args.file);
 
     let mut query = if args.regex {
         SearchQuery::regex(
@@ -87,7 +87,7 @@ fn main() {
             false,
             None,
         )
-        .expect("invalid regex query")
+        .expect("无效的正则表达式查询")
     } else {
         SearchQuery::text(
             &args.query,
@@ -99,7 +99,7 @@ fn main() {
             false,
             None,
         )
-        .expect("invalid text query")
+        .expect("无效的文本查询")
     };
 
     if let Some(replacement) = args.replace.as_deref() {
@@ -135,7 +135,7 @@ fn main() {
                 },
                 |window, cx| cx.new(|cx| Editor::for_buffer(buffer, None, window, cx)),
             )
-            .expect("failed to open window");
+            .expect("无法打开窗口");
 
         window_handle
             .update(cx, move |_, window, cx| {
@@ -148,17 +148,17 @@ fn main() {
                             editor.find_matches(query.clone(), window, cx)
                         })?;
 
-                        println!("Finding matches...");
+                        println!("正在查找匹配项...");
                         let timer = std::time::Instant::now();
                         let matches: Vec<std::ops::Range<Anchor>> = find_task.await;
                         let find_elapsed = timer.elapsed();
-                        println!("Found {} matches in {find_elapsed:?}", matches.len());
+                        println!("在 {find_elapsed:?} 内找到 {} 个匹配项", matches.len());
 
                         if has_replacement && !matches.is_empty() {
                             window_handle.update(cx, |editor: &mut Editor, window, cx| {
                                 let to_replace = if single { 1 } else { matches.len() };
                                 let mut match_iter = matches.iter().take(to_replace);
-                                println!("Replacing {to_replace} matches...");
+                                println!("正在替换 {to_replace} 个匹配项...");
                                 let timer = std::time::Instant::now();
                                 editor.replace_all(
                                     &mut match_iter,
@@ -168,7 +168,7 @@ fn main() {
                                     cx,
                                 );
                                 let replace_elapsed = timer.elapsed();
-                                println!("Replaced {to_replace} matches in {replace_elapsed:?}");
+                                println!("在 {replace_elapsed:?} 内替换了 {to_replace} 个匹配项");
                             })?;
                         }
 

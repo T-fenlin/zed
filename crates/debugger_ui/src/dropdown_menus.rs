@@ -121,7 +121,7 @@ impl DebugPanel {
                 active_session.label(cx).unwrap_or("(child)".into())
             })
         } else {
-            SharedString::new_static("Unknown Session")
+            SharedString::new_static("未知会话")
         };
         let running_state = running_state.read(cx);
 
@@ -212,7 +212,7 @@ impl DebugPanel {
         )
         .attach(Anchor::BottomLeft)
         .handle(self.session_picker_menu_handle.clone())
-        .trigger_tooltip(Tooltip::text("Select a Debug Session"));
+        .trigger_tooltip(Tooltip::text("选择调试会话"));
 
         Some(menu)
     }

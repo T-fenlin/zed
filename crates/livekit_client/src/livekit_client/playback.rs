@@ -169,9 +169,9 @@ impl AudioStack {
             name: user_name,
             is_staff,
         };
-        log::info!("Microphone speaker: {speaker:?}");
+        log::info!("麦克风扬声器: {speaker:?}");
         let track_name = serde_urlencoded::to_string(speaker)
-            .context("Could not encode user information in track name")?;
+            .context("无法在轨道名称中编码用户信息")?;
 
         let track = track::LocalAudioTrack::create_audio_track(
             &track_name,
@@ -241,7 +241,7 @@ impl AudioStack {
             let mut device_change_listener = DeviceChangeListener::new(false)?;
             let (output_device, output_config) =
                 crate::default_device(false, output_audio_device.as_ref())?;
-            info!("Output config: {output_config:?}");
+            info!("输出配置: {output_config:?}");
             let (end_on_drop_tx, end_on_drop_rx) = std::sync::mpsc::channel::<()>();
             let mixer = mixer.clone();
             let apm = apm.clone();
@@ -293,7 +293,7 @@ impl AudioStack {
                                 }
                             }
                         },
-                        |error| log::error!("error playing audio track: {:?}", error),
+                        |error| log::error!("播放音频轨道出错: {:?}", error),
                         Some(Duration::from_millis(100)),
                     );
 
@@ -332,9 +332,9 @@ impl AudioStack {
                 .spawn_with_priority(Priority::RealtimeAudio, async move {
                     maybe!({
                         if let Some(desc) = device.description().ok() {
-                            log::info!("Using microphone: {}", desc.name())
+                            log::info!("正在使用麦克风: {}", desc.name())
                         } else {
-                            log::info!("Using microphone: <unknown>");
+                            log::info!("正在使用麦克风: <未知>");
                         }
 
                         let ten_ms_buffer_size =
@@ -395,10 +395,10 @@ impl AudioStack {
                                         }
                                     }
                                 },
-                                |err| log::error!("error capturing audio track: {:?}", err),
+                                |err| log::error!("捕获音频轨道时出错: {:?}", err),
                                 Some(Duration::from_millis(100)),
                             )
-                            .context("failed to build input stream")?;
+                            .context("无法构建输入流")?;
 
                         stream.play()?;
                         // Keep the thread alive and holding onto the `stream`
@@ -469,7 +469,7 @@ pub(crate) async fn capture_local_video_track(
 
     Ok((
         LocalVideoTrack(track::LocalVideoTrack::create_video_track(
-            "screen share",
+            "屏幕共享",
             RtcVideoSource::Native(track_source),
         )),
         capture_stream,
@@ -639,7 +639,7 @@ fn create_buffer_pool(
     ]);
 
     pixel_buffer_pool::CVPixelBufferPool::new(None, Some(&buffer_attributes)).map_err(|cv_return| {
-        anyhow::anyhow!("failed to create pixel buffer pool: CVReturn({cv_return})",)
+        anyhow::anyhow!("创建像素缓冲区池失败: CVReturn({cv_return})",)
     })
 }
 
@@ -744,7 +744,7 @@ fn video_frame_buffer_from_webrtc(buffer: Box<dyn VideoBuffer>) -> Option<Remote
 
     // TODO: Unclear why providing argb_image to RgbaImage works properly.
     let image = RgbaImage::from_raw(width, height, argb_image)
-        .with_context(|| "Bug: not enough bytes allocated for image.")
+        .with_context(|| "错误: 为图像分配的字节数不足。")
         .log_err()?;
 
     Some(Arc::new(RenderImage::new(SmallVec::from_elem(
@@ -815,7 +815,7 @@ fn video_frame_buffer_to_webrtc(frame: ScreenCaptureFrame) -> Option<impl AsRef<
         }
         _ => {
             log::error!(
-                "Expected BGRx or YUV frame from scap screen capture but got some other format."
+                "预期从 scap 屏幕捕获获取 BGRx 或 YUV 帧,但得到了其他格式。"
             );
             None
         }
@@ -867,7 +867,7 @@ mod macos {
             unsafe {
                 let process_info = NSProcessInfo::processInfo(nil);
                 #[allow(clippy::disallowed_methods)]
-                let reason = NSString::alloc(nil).init_str("Audio playback in progress");
+                let reason = NSString::alloc(nil).init_str("音频播放进行中");
                 let activity: id = msg_send![process_info, beginActivityWithOptions:NS_ACTIVITY_USER_INITIATED_ALLOWING_IDLE_SYSTEM_SLEEP reason:reason];
                 let _: () = msg_send![reason, release];
                 let _: () = msg_send![activity, retain];
@@ -953,7 +953,7 @@ mod macos {
                         &mut input_device as *mut _ as *mut _,
                     );
                     if result != 0 {
-                        log::warn!("Failed to get default input device ID");
+                        log::warn!("获取默认输入设备 ID 失败");
                         0
                     } else {
                         input_device
@@ -974,7 +974,7 @@ mod macos {
                         &mut output_device as *mut _ as *mut _,
                     );
                     if result != 0 {
-                        log::warn!("Failed to get default output device ID");
+                        log::warn!("获取默认输出设备 ID 失败");
                         0
                     } else {
                         output_device

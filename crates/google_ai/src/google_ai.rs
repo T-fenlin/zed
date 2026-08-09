@@ -54,7 +54,7 @@ pub async fn stream_generate_content(
                             match serde_json::from_str(line) {
                                 Ok(response) => Some(Ok(response)),
                                 Err(error) => Some(Err(anyhow!(format!(
-                                    "Error parsing JSON: {error:?}\n{line:?}"
+                                    "解析 JSON 时出错: {error:?}\n{line:?}"
                                 )))),
                             }
                         } else {
@@ -69,7 +69,7 @@ pub async fn stream_generate_content(
         let mut text = String::new();
         response.body_mut().read_to_string(&mut text).await?;
         Err(anyhow!(
-            "error during streamGenerateContent, status code: {:?}, body: {}",
+            "streamGenerateContent 期间出错,状态码: {:?},响应体: {}",
             response.status(),
             text
         ))
@@ -78,11 +78,11 @@ pub async fn stream_generate_content(
 
 pub fn validate_generate_content_request(request: &GenerateContentRequest) -> Result<()> {
     if request.model.is_empty() {
-        bail!("Model must be specified");
+        bail!("必须指定模型");
     }
 
     if request.contents.is_empty() {
-        bail!("Request must contain at least one content item");
+        bail!("请求必须至少包含一个内容项");
     }
 
     if let Some(user_content) = request
@@ -91,7 +91,7 @@ pub fn validate_generate_content_request(request: &GenerateContentRequest) -> Re
         .find(|content| content.role == Role::User)
         && user_content.parts.is_empty()
     {
-        bail!("User content must contain at least one part");
+        bail!("用户内容必须至少包含一个部分");
     }
 
     Ok(())
@@ -489,7 +489,7 @@ impl<'de> Deserialize<'de> for ModelName {
             })
         } else {
             Err(serde::de::Error::custom(format!(
-                "Expected model name to begin with {}, got: {}",
+                "预期模型名称以 {} 开头,实际为: {}",
                 MODEL_NAME_PREFIX, string
             )))
         }

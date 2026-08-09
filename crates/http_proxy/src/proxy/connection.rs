@@ -131,12 +131,12 @@ pub(crate) fn handle(client: ClientStream, state: Arc<RuntimeState>) -> Result<(
     if let ClientStream::Tcp(stream) = &client
         && let Err(error) = stream.set_nodelay(true)
     {
-        log::debug!("[http_proxy] failed to set TCP_NODELAY on client socket: {error}");
+        log::debug!("[http_proxy] 设置客户端套接字 TCP_NODELAY 失败: {error}");
     }
 
     let mut client = client;
     if let Err(error) = client.set_read_timeout(Some(HEADER_READ_TIMEOUT)) {
-        log::debug!("[http_proxy] failed to set client header read timeout: {error}");
+        log::debug!("[http_proxy] 设置客户端标头读取超时失败: {error}");
     }
 
     // Read until end-of-headers (`\r\n\r\n`). The first request determines
@@ -146,7 +146,7 @@ pub(crate) fn handle(client: ClientStream, state: Arc<RuntimeState>) -> Result<(
     // The header timeout must not apply to the pump phase. (Socket options
     // are shared with the `try_clone` handles used by the pump.)
     if let Err(error) = client.set_read_timeout(None) {
-        log::debug!("[http_proxy] failed to clear client read timeout: {error}");
+        log::debug!("[http_proxy] 清除客户端读取超时失败: {error}");
     }
 
     let request = ParsedRequest::parse(&header_buf[..header_end])?;
@@ -187,7 +187,7 @@ fn read_request_headers(client: &mut ClientStream) -> Result<(Vec<u8>, usize)> {
     loop {
         let n = client.read(&mut tmp)?;
         if n == 0 {
-            bail!("client closed before sending complete request headers");
+            bail!("客户端在发送完整请求标头前关闭了连接");
         }
         buf.extend_from_slice(&tmp[..n]);
         // Only scan the new bytes (plus 3 bytes of overlap for a delimiter
@@ -198,7 +198,7 @@ fn read_request_headers(client: &mut ClientStream) -> Result<(Vec<u8>, usize)> {
         }
         searched = buf.len();
         if buf.len() > MAX_HEADER_BYTES {
-            bail!("request headers exceed {MAX_HEADER_BYTES} bytes");
+            bail!("请求标头超过 {MAX_HEADER_BYTES} 字节");
         }
     }
 }
@@ -229,16 +229,16 @@ impl ParsedRequest {
     fn parse(headers: &[u8]) -> Result<Self> {
         let mut header_storage = [httparse::EMPTY_HEADER; 64];
         let mut req = httparse::Request::new(&mut header_storage);
-        let status = req.parse(headers).context("malformed HTTP request")?;
+        let status = req.parse(headers).context("格式错误的 HTTP 请求")?;
         if !status.is_complete() {
-            bail!("incomplete HTTP request after \\r\\n\\r\\n boundary");
+            bail!("在 \\r\\n\\r\\n 边界之后 HTTP 请求不完整");
         }
 
         let method = req
             .method
-            .ok_or_else(|| anyhow!("missing HTTP method"))?
+            .ok_or_else(|| anyhow!("缺少 HTTP 方法"))?
             .to_string();
-        let target = req.path.ok_or_else(|| anyhow!("missing request target"))?;
+        let target = req.path.ok_or_else(|| anyhow!("缺少请求目标"))?;
 
         if method.eq_ignore_ascii_case("CONNECT") {
             let (host, port) = parse_authority_form(target)?;
@@ -260,9 +260,9 @@ impl ParsedRequest {
                 .headers
                 .iter()
                 .find(|h| h.name.eq_ignore_ascii_case("host"))
-                .ok_or_else(|| anyhow!("origin-form request missing Host: header"))?;
+                .ok_or_else(|| anyhow!("原始形式请求缺少 Host: 标头"))?;
             let value =
-                std::str::from_utf8(host_hdr.value).context("Host: header is not valid UTF-8")?;
+                std::str::from_utf8(host_hdr.value).context("Host: 标头不是有效的 UTF-8")?;
             let (host, port) = parse_host_header(value)?;
             Ok(ParsedRequest::Http {
                 method,
@@ -285,15 +285,15 @@ impl ParsedRequest {
 fn parse_authority_form(input: &str) -> Result<(String, u16)> {
     let (host_part, port_part) = input
         .rsplit_once(':')
-        .ok_or_else(|| anyhow!("CONNECT target '{input}' must include a port"))?;
+        .ok_or_else(|| anyhow!("CONNECT 目标 '{input}' 必须包含端口"))?;
     let port: u16 = port_part
         .parse()
-        .with_context(|| format!("CONNECT target '{input}' has an invalid port"))?;
+        .with_context(|| format!("CONNECT 目标 '{input}' 包含无效端口"))?;
     let parsed = Url::parse(&format!("http://{host_part}"))
-        .with_context(|| format!("parsing CONNECT target '{input}'"))?;
+        .with_context(|| format!("解析 CONNECT 目标 '{input}'"))?;
     let host = parsed
         .host_str()
-        .ok_or_else(|| anyhow!("CONNECT target '{input}' has no host"))?
+        .ok_or_else(|| anyhow!("CONNECT 目标 '{input}' 没有主机"))?
         .to_string();
     Ok((host, port))
 }
@@ -302,16 +302,16 @@ fn parse_authority_form(input: &str) -> Result<(String, u16)> {
 /// Returns the parsed URL too, for the origin-form rewrite.
 fn parse_absolute_form_target(target: &str) -> Result<(String, u16, Url)> {
     let parsed =
-        Url::parse(target).with_context(|| format!("parsing absolute-form target '{target}'"))?;
+        Url::parse(target).with_context(|| format!("解析绝对形式目标 '{target}'"))?;
     let host = parsed
         .host_str()
-        .ok_or_else(|| anyhow!("absolute-form target '{target}' has no host"))?
+        .ok_or_else(|| anyhow!("绝对形式目标 '{target}' 没有主机"))?
         .to_string();
     // `port_or_known_default` covers `http://foo.com` (→ 80) without forcing
     // the agent to spell it.
     let port = parsed
         .port_or_known_default()
-        .ok_or_else(|| anyhow!("absolute-form target '{target}' has no port"))?;
+        .ok_or_else(|| anyhow!("绝对形式目标 '{target}' 没有端口"))?;
     Ok((host, port, parsed))
 }
 
@@ -373,13 +373,13 @@ fn build_origin_form_request(
 fn parse_host_header(value: &str) -> Result<(String, u16)> {
     let value = value.trim();
     if value.is_empty() {
-        bail!("empty Host header");
+        bail!("空的 Host 标头");
     }
     let parsed = Url::parse(&format!("http://{value}"))
-        .with_context(|| format!("parsing Host header '{value}'"))?;
+        .with_context(|| format!("解析 Host 标头 '{value}'"))?;
     let host = parsed
         .host_str()
-        .ok_or_else(|| anyhow!("Host header '{value}' has no host"))?
+        .ok_or_else(|| anyhow!("Host 标头 '{value}' 没有主机"))?
         .to_string();
     let port = parsed.port().unwrap_or(80);
     Ok((host, port))
@@ -439,7 +439,7 @@ enum Route {
 enum RouteFailure {
     /// Policy denial — respond with 511.
     Denied(DenyReason),
-    /// Network-level failure — close silently, per "no proxy here".
+    /// Network-level failure — close silently, per "此处无代理".
     Error(anyhow::Error),
 }
 
@@ -506,8 +506,8 @@ fn handle_connect(
             );
         }
         Err(RouteFailure::Error(error)) => {
-            log::debug!("[http_proxy] routing failed for CONNECT {normalized}:{port}: {error:#}");
-            // Per "no proxy here" — close abruptly. Client sees a connection drop.
+            log::debug!("[http_proxy] CONNECT {normalized}:{port} 路由失败: {error:#}");
+            // Per "此处无代理" — close abruptly. Client sees a connection drop.
             return Ok(());
         }
     };
@@ -526,14 +526,14 @@ fn handle_connect(
         Ok(opened) => opened,
         Err(error) => {
             log::debug!(
-                "[http_proxy] upstream open failed for CONNECT {normalized}:{port}: {error:#}"
+                "[http_proxy] CONNECT {normalized}:{port} 上游连接失败: {error:#}"
             );
             return Ok(());
         }
     };
 
     if let Err(error) = upstream.set_nodelay(true) {
-        log::debug!("[http_proxy] failed to set TCP_NODELAY on upstream socket: {error}");
+        log::debug!("[http_proxy] 设置上游套接字 TCP_NODELAY 失败: {error}");
     }
 
     // Tell the client the tunnel is up, then replay anything the upstream
@@ -600,7 +600,7 @@ fn handle_http_forward(
             );
         }
         Err(RouteFailure::Error(error)) => {
-            log::debug!("[http_proxy] routing failed for {method} {normalized}:{port}: {error:#}");
+            log::debug!("[http_proxy] {method} {normalized}:{port} 路由失败: {error:#}");
             return Ok(());
         }
     };
@@ -619,14 +619,14 @@ fn handle_http_forward(
         Ok(opened) => opened,
         Err(error) => {
             log::debug!(
-                "[http_proxy] upstream open failed for {method} {normalized}:{port}: {error:#}"
+                "[http_proxy] {method} {normalized}:{port} 上游连接失败: {error:#}"
             );
             return Ok(());
         }
     };
 
     if let Err(error) = upstream.set_nodelay(true) {
-        log::debug!("[http_proxy] failed to set TCP_NODELAY on upstream socket: {error}");
+        log::debug!("[http_proxy] 设置上游套接字 TCP_NODELAY 失败: {error}");
     }
 
     if !upstream_leftover.is_empty() {
@@ -690,8 +690,8 @@ fn connect_to_any(addrs: &[SocketAddr], host: &str, port: u16) -> Result<TcpStre
         }
     }
     match last_error {
-        Some(error) => Err(anyhow!("connect to {host}:{port}: {error}")),
-        None => Err(anyhow!("no addresses to connect to for {host}:{port}")),
+        Some(error) => Err(anyhow!("连接到 {host}:{port}: {error}")),
+        None => Err(anyhow!("没有可用于连接 {host}:{port} 的地址")),
     }
 }
 
@@ -705,13 +705,13 @@ fn connect_via_upstream(
 ) -> Result<(TcpStream, Vec<u8>)> {
     let addrs: Vec<SocketAddr> = (upstream.host.as_str(), upstream.port)
         .to_socket_addrs()
-        .with_context(|| format!("resolving upstream proxy {upstream}"))?
+        .with_context(|| format!("解析上游代理 {upstream}"))?
         .collect();
     let mut stream = connect_to_any(&addrs, &upstream.host, upstream.port)
-        .with_context(|| format!("connect to upstream proxy {upstream}"))?;
+        .with_context(|| format!("连接到上游代理 {upstream}"))?;
 
     if let Err(error) = stream.set_read_timeout(Some(UPSTREAM_HANDSHAKE_TIMEOUT)) {
-        log::debug!("[http_proxy] failed to set upstream handshake timeout: {error}");
+        log::debug!("[http_proxy] 设置上游握手超时失败: {error}");
     }
 
     let auth_header = upstream.auth.as_ref().map(|auth| {
@@ -737,14 +737,14 @@ fn connect_via_upstream(
     let header_end = loop {
         let n = stream.read(&mut tmp)?;
         if n == 0 {
-            bail!("upstream closed before responding to CONNECT");
+            bail!("上游在响应 CONNECT 之前关闭了连接");
         }
         buf.extend_from_slice(&tmp[..n]);
         if let Some(end) = find_double_crlf(&buf) {
             break end;
         }
         if buf.len() > MAX_HEADER_BYTES {
-            bail!("upstream CONNECT response headers exceed {MAX_HEADER_BYTES} bytes");
+            bail!("上游 CONNECT 响应标头超过 {MAX_HEADER_BYTES} 字节");
         }
     };
 
@@ -752,17 +752,17 @@ fn connect_via_upstream(
     let mut response = httparse::Response::new(&mut header_storage);
     response
         .parse(&buf[..header_end])
-        .context("malformed upstream CONNECT response")?;
+        .context("格式错误的上游 CONNECT 响应")?;
     let status = response
         .code
-        .ok_or_else(|| anyhow!("upstream CONNECT response missing status code"))?;
+        .ok_or_else(|| anyhow!("上游 CONNECT 响应缺少状态码"))?;
     if status != 200 {
         let reason = response.reason.unwrap_or("");
-        bail!("upstream CONNECT refused: HTTP {status} {reason}");
+        bail!("上游 CONNECT 被拒绝: HTTP {status} {reason}");
     }
 
     if let Err(error) = stream.set_read_timeout(None) {
-        log::debug!("[http_proxy] failed to clear upstream handshake timeout: {error}");
+        log::debug!("[http_proxy] 清除上游握手超时失败: {error}");
     }
 
     // Bytes past the response headers already belong to the tunnel (an
@@ -848,14 +848,14 @@ fn pump_bidir(client: ClientStream, upstream: TcpStream) -> (u64, u64) {
     let client_read = match client.try_clone() {
         Ok(s) => s,
         Err(e) => {
-            log::debug!("[http_proxy] failed to clone client socket for bidir pump: {e}");
+            log::debug!("[http_proxy] 为双向泵克隆客户端套接字失败: {e}");
             return (0, 0);
         }
     };
     let upstream_read = match upstream.try_clone() {
         Ok(s) => s,
         Err(e) => {
-            log::debug!("[http_proxy] failed to clone upstream socket for bidir pump: {e}");
+            log::debug!("[http_proxy] 为双向泵克隆上游套接字失败: {e}");
             return (0, 0);
         }
     };
@@ -870,13 +870,13 @@ fn pump_bidir(client: ClientStream, upstream: TcpStream) -> (u64, u64) {
         Ok(handle) => handle,
         Err(error) => {
             // Returning drops all stream handles, closing both sockets.
-            log::warn!("[http_proxy] failed to spawn pump thread: {error}");
+            log::warn!("[http_proxy] 生成泵线程失败: {error}");
             return (0, 0);
         }
     };
     let from_remote = copy_one_way(upstream_read, client_write);
     let to_remote = to_remote_handle.join().unwrap_or_else(|_| {
-        log::warn!("[http_proxy] pump thread panicked");
+        log::warn!("[http_proxy] 泵线程发生恐慌");
         0
     });
     (to_remote, from_remote)
@@ -923,9 +923,9 @@ mod tests {
             Err(RouteFailure::Denied(DenyReason::ResolvedToForbiddenIp { host })) => {
                 assert_eq!(host, "localhost");
             }
-            Ok(_) => panic!("expected denial, got a route"),
-            Err(RouteFailure::Denied(reason)) => panic!("unexpected deny reason: {reason:?}"),
-            Err(RouteFailure::Error(error)) => panic!("expected denial, got error: {error}"),
+            Ok(_) => panic!("预期拒绝,但获得了路由"),
+            Err(RouteFailure::Denied(reason)) => panic!("意外的拒绝原因: {reason:?}"),
+            Err(RouteFailure::Error(error)) => panic!("预期拒绝,但出现错误: {error}"),
         }
     }
 
@@ -938,9 +938,9 @@ mod tests {
                 assert!(!addrs.is_empty());
                 assert!(addrs.iter().all(|addr| addr.ip().is_loopback()));
             }
-            Ok(Route::ViaUpstream(_)) => panic!("expected direct route"),
-            Err(RouteFailure::Denied(reason)) => panic!("unexpected denial: {reason:?}"),
-            Err(RouteFailure::Error(error)) => panic!("unexpected error: {error}"),
+            Ok(Route::ViaUpstream(_)) => panic!("预期直接路由"),
+            Err(RouteFailure::Denied(reason)) => panic!("意外的拒绝: {reason:?}"),
+            Err(RouteFailure::Error(error)) => panic!("意外错误: {error}"),
         }
     }
 
@@ -971,7 +971,7 @@ mod tests {
     #[test]
     fn parse_authority_form_accepts_scheme_default_ports() {
         // Regression test: `Url::parse` elides scheme-default ports, so a
-        // naive URL round-trip would reject `host:80` as "missing a port".
+        // naive URL round-trip would reject `host:80` as "缺少端口".
         let (h, p) = parse_authority_form("example.com:80").unwrap();
         assert_eq!(h, "example.com");
         assert_eq!(p, 80);
@@ -1037,7 +1037,7 @@ mod tests {
                 assert_eq!(host, "example.com");
                 assert_eq!(port, 443);
             }
-            ParsedRequest::Http { .. } => panic!("expected Connect"),
+            ParsedRequest::Http { .. } => panic!("预期 Connect"),
         }
     }
 
@@ -1052,7 +1052,7 @@ mod tests {
                 assert_eq!(host, "example.com");
                 assert_eq!(port, 80);
             }
-            ParsedRequest::Connect { .. } => panic!("expected Http"),
+            ParsedRequest::Connect { .. } => panic!("预期 Http"),
         }
     }
 
@@ -1077,7 +1077,7 @@ mod tests {
                 assert!(text.contains("User-Agent: test\r\n"), "{text}");
                 assert!(text.ends_with("\r\n\r\n"), "{text}");
             }
-            ParsedRequest::Connect { .. } => panic!("expected Http"),
+            ParsedRequest::Connect { .. } => panic!("预期 Http"),
         }
     }
 
@@ -1090,7 +1090,7 @@ mod tests {
                 assert!(text.starts_with("GET / HTTP/1.1\r\n"), "{text}");
                 assert!(text.contains("Host: example.com:8080\r\n"), "{text}");
             }
-            ParsedRequest::Connect { .. } => panic!("expected Http"),
+            ParsedRequest::Connect { .. } => panic!("预期 Http"),
         }
     }
 
@@ -1109,7 +1109,7 @@ mod tests {
                 // Origin-form bytes pass through verbatim.
                 assert_eq!(request_bytes, req.to_vec());
             }
-            ParsedRequest::Connect { .. } => panic!("expected Http"),
+            ParsedRequest::Connect { .. } => panic!("预期 Http"),
         }
     }
 }

@@ -54,7 +54,7 @@ pub enum ContextServerStatus {
     Stopped,
     Error(Arc<str>),
     /// The server returned 401 and OAuth authorization is needed. The UI
-    /// should show an "Authenticate" button.
+    /// should show an "身份验证" button.
     AuthRequired,
     /// The server has a pre-registered OAuth client_id, but a client_secret
     /// is needed and not available in settings or the keychain.
@@ -235,13 +235,13 @@ impl ContextServerConfiguration {
                     }),
                     Either::Left((Err(e), _)) => {
                         log::error!(
-                            "Failed to create context server configuration from settings: {e:#}"
+                            "从设置创建上下文服务器配置失败:{e:#}"
                         );
                         None
                     }
                     Either::Right(_) => {
                         log::error!(
-                            "Timed out resolving command for extension context server {id}"
+                            "解析扩展上下文服务器 {id} 的命令超时"
                         );
                         None
                     }
@@ -652,13 +652,13 @@ impl ContextServerStore {
 
     pub fn start_server(&mut self, server: Arc<ContextServer>, cx: &mut Context<Self>) {
         cx.spawn(async move |this, cx| {
-            let this = this.upgrade().context("Context server store dropped")?;
+            let this = this.upgrade().context("上下文服务器存储已释放")?;
             let id = server.id();
             let settings_entry = this
                 .update(cx, |this, _| {
                     this.context_server_settings.get(&id.0).cloned()
                 })
-                .context("Failed to get context server settings")?;
+                .context("获取上下文服务器设置失败")?;
 
             if !settings_entry.settings.enabled() {
                 return anyhow::Ok(());
@@ -675,7 +675,7 @@ impl ContextServerStore {
                 cx,
             )
             .await
-            .context("Failed to create context server configuration")?;
+            .context("创建上下文服务器配置失败")?;
 
             this.update(cx, |this, cx| {
                 this.run_server(server, Arc::new(configuration), cx)
@@ -696,7 +696,7 @@ impl ContextServerStore {
         let state = self
             .servers
             .remove(id)
-            .context("Context server not found")?;
+            .context("未找到上下文服务器")?;
 
         let server = state.server();
         let configuration = state.configuration();
@@ -827,7 +827,7 @@ impl ContextServerStore {
         }
         let configuration = configuration.clone();
 
-        log::info!("{id} received 401 after initialization; initiating OAuth authorization");
+        log::info!("{id} 初始化后收到 401;正在启动 OAuth 授权");
 
         // The 401 already tore down the client's output loop. Stop the dead
         // client, then resolve auth using the captured `WWW-Authenticate` — do
@@ -864,7 +864,7 @@ impl ContextServerStore {
         let state = self
             .servers
             .remove(id)
-            .context("Context server not found")?;
+            .context("未找到上下文服务器")?;
         self.server_working_directories.remove(id);
 
         if let ContextServerConfiguration::Http { url, .. } = state.configuration().as_ref() {
@@ -874,7 +874,7 @@ impl ContextServerStore {
                 let credentials_provider = cx.update(|cx| zed_credentials_provider::global(cx));
                 if let Err(err) = Self::clear_session(&credentials_provider, &server_url, &cx).await
                 {
-                    log::warn!("{} failed to clear OAuth session on removal: {}", id, err);
+                    log::warn!("{} 在移除时清除 OAuth 会话失败:{}", id, err);
                 }
             })
             .detach();
@@ -997,7 +997,7 @@ impl ContextServerStore {
 
                     match Self::load_session(&credentials_provider, url, &cx).await {
                         Ok(Some(session)) => {
-                            log::info!("{} loaded cached OAuth session from keychain", id);
+                            log::info!("{} 从钥匙串加载了缓存的 OAuth 会话", id);
                             Some(Self::create_oauth_token_provider(
                                 &id,
                                 url,
@@ -1009,7 +1009,7 @@ impl ContextServerStore {
                         }
                         Ok(None) => None,
                         Err(err) => {
-                            log::warn!("{} failed to load cached OAuth session: {}", id, err);
+                            log::warn!("{} 加载缓存的 OAuth 会话失败:{}", id, err);
                             None
                         }
                     }
@@ -1046,7 +1046,7 @@ impl ContextServerStore {
                 _ => {
                     let mut command = configuration
                         .command()
-                        .context("Missing command configuration for stdio context server")?
+                        .context("缺少 stdio 上下文服务器的命令配置")?
                         .clone();
                     command.timeout = Some(
                         command
@@ -1083,7 +1083,7 @@ impl ContextServerStore {
                 } = &this.state
                 else {
                     anyhow::bail!(
-                        "unexpected GetContextServerCommand request in a non-local project"
+                        "在非本地项目中收到意外的 GetContextServerCommand 请求"
                     );
                 };
 
@@ -1100,7 +1100,7 @@ impl ContextServerStore {
                                 settings: ContextServerSettings::default_extension(),
                             })
                     })
-                    .with_context(|| format!("context server `{}` not found", server_id))?;
+                    .with_context(|| format!("未找到上下文服务器 `{}`", server_id))?;
 
                 anyhow::Ok((settings, this.registry.clone(), this.worktree_store.clone()))
             })?;
@@ -1113,11 +1113,11 @@ impl ContextServerStore {
             &cx,
         )
         .await
-        .with_context(|| format!("failed to build configuration for `{}`", server_id))?;
+        .with_context(|| format!("为 `{}` 构建配置失败", server_id))?;
 
         let command = configuration
             .command()
-            .context("context server has no command (HTTP servers don't need RPC)")?;
+            .context("上下文服务器没有命令(HTTP 服务器不需要 RPC)")?;
 
         Ok(proto::ContextServerCommand {
             path: command.path.display().to_string(),
@@ -1173,10 +1173,10 @@ impl ContextServerStore {
                     Self::store_session(&credentials_provider, &server_url, &refreshed_session, &cx)
                         .await
                 {
-                    log::warn!("{} failed to persist refreshed OAuth session: {}", id, err);
+                    log::warn!("{} 持久化刷新后的 OAuth 会话失败:{}", id, err);
                 }
             }
-            log::debug!("{} OAuth session persistence task ended", id);
+            log::debug!("{} OAuth 会话持久化任务已结束", id);
         })
         .detach();
 
@@ -1215,7 +1215,7 @@ impl ContextServerStore {
         id: &ContextServerId,
         cx: &mut Context<Self>,
     ) -> Result<()> {
-        let state = self.servers.get(id).context("Context server not found")?;
+        let state = self.servers.get(id).context("未找到上下文服务器")?;
         let global_timeout = self.timeout_for_server(id, cx);
 
         let (discovery, server, configuration) = match state {
@@ -1224,7 +1224,7 @@ impl ContextServerStore {
                 server,
                 configuration,
             } => (discovery.clone(), server.clone(), configuration.clone()),
-            _ => anyhow::bail!("Server is not in AuthRequired state"),
+            _ => anyhow::bail!("服务器不处于 AuthRequired 状态"),
         };
 
         let needs_keychain_check = match configuration.as_ref() {
@@ -1281,7 +1281,7 @@ impl ContextServerStore {
                 .await;
 
                 if let Err(err) = &result {
-                    log::error!("{} OAuth authentication failed: {:?}", id, err);
+                    log::error!("{} OAuth 认证失败:{:?}", id, err);
                     this.update(cx, |this, cx| {
                         this.update_server_state(
                             id.clone(),
@@ -1318,7 +1318,7 @@ impl ContextServerStore {
         secret: String,
         cx: &mut Context<Self>,
     ) -> Result<()> {
-        let state = self.servers.get(id).context("Context server not found")?;
+        let state = self.servers.get(id).context("未找到上下文服务器")?;
         let global_timeout = self.timeout_for_server(id, cx);
 
         let (server, configuration, discovery) = match state {
@@ -1328,12 +1328,12 @@ impl ContextServerStore {
                 discovery,
                 ..
             } => (server.clone(), configuration.clone(), discovery.clone()),
-            _ => anyhow::bail!("Server is not in ClientSecretRequired state"),
+            _ => anyhow::bail!("服务器不处于 ClientSecretRequired 状态"),
         };
 
         let server_url = match configuration.as_ref() {
             ContextServerConfiguration::Http { url, .. } => url.clone(),
-            _ => anyhow::bail!("OAuth only supported for HTTP servers"),
+            _ => anyhow::bail!("OAuth 仅支持 HTTP 服务器"),
         };
 
         let id = id.clone();
@@ -1351,7 +1351,7 @@ impl ContextServerStore {
                             .await
                     {
                         log::error!(
-                            "{} failed to store client secret in keychain: {:?}",
+                            "{} 在钥匙串中存储客户端密钥失败:{:?}",
                             id,
                             err
                         );
@@ -1369,7 +1369,7 @@ impl ContextServerStore {
                 .await;
 
                 if let Err(err) = &result {
-                    log::error!("{} OAuth authentication failed: {:?}", id, err);
+                    log::error!("{} OAuth 认证失败:{:?}", id, err);
 
                     let is_bad_client_credentials = err
                         .downcast_ref::<oauth::OAuthTokenError>()
@@ -1447,13 +1447,13 @@ impl ContextServerStore {
         // includes this port so the browser sends the callback directly to our
         // process.
         let (redirect_uri, callback_rx) =
-            oauth::start_callback_server().context("Failed to start OAuth callback server")?;
+            oauth::start_callback_server().context("无法启动 OAuth 回调服务器")?;
 
         let http_client = cx.update(|cx| cx.http_client());
         let credentials_provider = cx.update(|cx| zed_credentials_provider::global(cx));
         let server_url = match configuration.as_ref() {
             ContextServerConfiguration::Http { url, .. } => url.clone(),
-            _ => anyhow::bail!("OAuth authentication only supported for HTTP servers"),
+            _ => anyhow::bail!("OAuth 认证仅支持 HTTP 服务器"),
         };
 
         let client_registration = match configuration.as_ref() {
@@ -1478,7 +1478,7 @@ impl ContextServerStore {
             }
             _ => oauth::resolve_client_registration(&http_client, &discovery, &redirect_uri)
                 .await
-                .context("Failed to resolve OAuth client registration")?,
+                .context("解析 OAuth 客户端注册信息失败")?,
         };
 
         let auth_url = oauth::build_authorization_url(
@@ -1495,10 +1495,10 @@ impl ContextServerStore {
 
         let callback = callback_rx
             .await
-            .context("OAuth callback server received an invalid request")?;
+            .context("OAuth 回调服务器收到无效请求")?;
 
         if callback.state != state_param {
-            anyhow::bail!("OAuth state parameter mismatch (possible CSRF)");
+            anyhow::bail!("OAuth 状态参数不匹配(可能存在 CSRF 攻击)");
         }
 
         let tokens = oauth::exchange_code(
@@ -1512,7 +1512,7 @@ impl ContextServerStore {
             client_registration.client_secret.as_deref(),
         )
         .await
-        .context("Failed to exchange authorization code for tokens")?;
+        .context("交换授权码以获取令牌失败")?;
 
         let session = OAuthSession {
             token_endpoint: discovery.auth_server_metadata.token_endpoint.clone(),
@@ -1523,7 +1523,7 @@ impl ContextServerStore {
 
         Self::store_session(&credentials_provider, &server_url, &session, cx)
             .await
-            .context("Failed to persist OAuth session in keychain")?;
+            .context("在钥匙串中持久化 OAuth 会话失败")?;
 
         let token_provider = Self::create_oauth_token_provider(
             &id,
@@ -1556,7 +1556,7 @@ impl ContextServerStore {
                     )),
                 )))
             }
-            _ => anyhow::bail!("OAuth authentication only supported for HTTP servers"),
+            _ => anyhow::bail!("OAuth 认证仅支持 HTTP 服务器"),
         })??;
 
         this.update(cx, |this, cx| {
@@ -1655,12 +1655,12 @@ impl ContextServerStore {
     /// Log out of an OAuth-authenticated MCP server: clear the stored OAuth
     /// session from the keychain and stop the server.
     pub fn logout_server(&mut self, id: &ContextServerId, cx: &mut Context<Self>) -> Result<()> {
-        let state = self.servers.get(id).context("Context server not found")?;
+        let state = self.servers.get(id).context("未找到上下文服务器")?;
         let configuration = state.configuration();
 
         let server_url = match configuration.as_ref() {
             ContextServerConfiguration::Http { url, .. } => url.clone(),
-            _ => anyhow::bail!("logout only applies to HTTP servers with OAuth"),
+            _ => anyhow::bail!("注销仅适用于启用 OAuth 的 HTTP 服务器"),
         };
 
         let id = id.clone();
@@ -1669,7 +1669,7 @@ impl ContextServerStore {
         cx.spawn(async move |this, cx| {
             let credentials_provider = cx.update(|cx| zed_credentials_provider::global(cx));
             if let Err(err) = Self::clear_session(&credentials_provider, &server_url, &cx).await {
-                log::error!("{} failed to clear OAuth session: {}", id, err);
+                log::error!("{} 清除 OAuth 会话失败:{}", id, err);
             }
             // Also clear any client secret so the user gets a fresh prompt on
             // the next authentication attempt.
@@ -1710,7 +1710,7 @@ impl ContextServerStore {
             self.needs_server_update = false;
             self.update_servers_task = Some(cx.spawn(async move |this, cx| {
                 if let Err(err) = Self::maintain_servers(this.clone(), cx).await {
-                    log::error!("Error maintaining context servers: {}", err);
+                    log::error!("维护上下文服务器时出错:{}", err);
                 }
 
                 this.update(cx, |this, cx| {
@@ -1848,7 +1848,7 @@ impl ContextServerStore {
                     })?;
                 }
                 Err(err) => {
-                    log::error!("{id} context server failed to create: {err:#}");
+                    log::error!("{id} 上下文服务器创建失败:{err:#}");
                     this.update(cx, |_this, cx| {
                         cx.emit(ServerStatusChangedEvent {
                             server_id: id,
@@ -1909,7 +1909,7 @@ async fn resolve_start_failure(
                 url.clone()
             }
             _ => {
-                log::error!("{id} context server failed to start: {err}");
+                log::error!("{id} 上下文服务器启动失败:{err}");
                 return ContextServerState::Error {
                     configuration,
                     server,
@@ -1921,13 +1921,13 @@ async fn resolve_start_failure(
         let credentials_provider = cx.update(|cx| zed_credentials_provider::global(cx));
         match ContextServerStore::load_session(&credentials_provider, &server_url, cx).await {
             Ok(Some(_)) => {
-                log::info!("{id} start failed with a cached OAuth session present; clearing it");
+                log::info!("{id} 启动失败,但存在缓存的 OAuth 会话;正在清除它");
                 ContextServerStore::clear_session(&credentials_provider, &server_url, cx)
                     .await
                     .log_err();
             }
             _ => {
-                log::error!("{id} context server failed to start: {err}");
+                log::error!("{id} 上下文服务器启动失败:{err}");
                 return ContextServerState::Error {
                     configuration,
                     server,
@@ -1965,11 +1965,11 @@ async fn resolve_auth_required(
     cx: &AsyncApp,
 ) -> ContextServerState {
     if configuration.has_static_auth_header() {
-        log::warn!("{id} received 401 with a static Authorization header configured");
+        log::warn!("{id} 收到 401,但已配置静态 Authorization 头");
         return ContextServerState::Error {
             configuration,
             server,
-            error: "Server returned 401 Unauthorized. Check your configured Authorization header."
+            error: "服务器返回 401 未授权。请检查您配置的 Authorization 头。"
                 .into(),
         };
     }
@@ -1977,11 +1977,11 @@ async fn resolve_auth_required(
     let server_url = match configuration.as_ref() {
         ContextServerConfiguration::Http { url, .. } => url.clone(),
         _ => {
-            log::error!("{id} got OAuth 401 on a non-HTTP transport");
+            log::error!("{id} 在非 HTTP 传输上收到 OAuth 401");
             return ContextServerState::Error {
                 configuration,
                 server,
-                error: "Server returned 401 Unauthorized on a non-HTTP transport".into(),
+                error: "服务器在非 HTTP 传输上返回 401 未授权".into(),
             };
         }
     };
@@ -2019,7 +2019,7 @@ async fn resolve_auth_required(
             }
 
             log::info!(
-                "{id} requires OAuth authorization (auth server: {})",
+                "{id} 需要 OAuth 授权(认证服务器:{})",
                 discovery.auth_server_metadata.issuer,
             );
             ContextServerState::AuthRequired {
@@ -2029,11 +2029,11 @@ async fn resolve_auth_required(
             }
         }
         Err(discovery_err) => {
-            log::error!("{id} OAuth discovery failed: {discovery_err}");
+            log::error!("{id} OAuth 发现失败:{discovery_err}");
             ContextServerState::Error {
                 configuration,
                 server,
-                error: format!("OAuth discovery failed: {discovery_err}").into(),
+                error: format!("OAuth 发现失败:{discovery_err}").into(),
             }
         }
     }

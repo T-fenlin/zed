@@ -46,22 +46,22 @@ impl fmt::Display for HostPattern {
 #[derive(Debug, Error)]
 pub enum HostPatternError {
     /// The pattern was empty after trimming.
-    #[error("host pattern cannot be empty")]
+    #[error("主机模式不能为空")]
     Empty,
     /// The pattern contained an IP literal (IPv4, IPv6) or a local hostname
     /// (`localhost`, `*.localhost`). Hostname-based allowlisting cannot
     /// meaningfully apply to the local machine.
     #[error(
-        "host pattern '{0}' is an IP literal or local hostname; only remote hostnames are allowed"
+        "主机模式 '{0}' 是 IP 字面量或本地主机名;只允许远程主机名"
     )]
     IpLiteral(String),
     /// The pattern contained a wildcard somewhere other than as a leading
     /// label. We support `*.foo.com` but not `foo.*.com`, `*.com`, etc.
-    #[error("host pattern '{0}' has a wildcard somewhere other than the leading label")]
+    #[error("主机模式 '{0}' 的通配符不在开头标签位置")]
     InvalidWildcard(String),
     /// The pattern was syntactically invalid (e.g., empty labels, contained
     /// characters that no IDN-form hostname could contain).
-    #[error("host pattern '{pattern}' is not a valid hostname: {reason}")]
+    #[error("主机模式 '{pattern}' 不是有效的主机名:{reason}")]
     Invalid { pattern: String, reason: String },
 }
 
@@ -105,7 +105,7 @@ impl HostPattern {
         let ascii =
             idna::domain_to_ascii(without_trailing_dot).map_err(|e| HostPatternError::Invalid {
                 pattern: input.to_string(),
-                reason: format!("idna conversion failed: {e}"),
+                reason: format!("IDNA 转换失败:{e}"),
             })?;
 
         if ascii.is_empty() {
@@ -128,7 +128,7 @@ impl HostPattern {
         if ascii.starts_with('.') || ascii.ends_with('.') || ascii.contains("..") {
             return Err(HostPatternError::Invalid {
                 pattern: input.to_string(),
-                reason: "empty label".to_string(),
+                reason: "空标签".to_string(),
             });
         }
 
@@ -140,7 +140,7 @@ impl HostPattern {
         // `localhost` (and the whole `.localhost` special-use domain, which
         // resolvers treat as loopback per RFC 6761) isn't an IP literal but
         // is treated like one for the purposes of network policy: nothing
-        // about a "hostname allowlist" makes sense for loopback names, and
+        // about a "主机名允许列表" makes sense for loopback names, and
         // allowing them would punch a hole through the proxy back into the
         // host machine.
         if canonical == "localhost" || canonical.ends_with(".localhost") {
@@ -333,7 +333,7 @@ mod tests {
                     HostPattern::parse(ip).unwrap_err(),
                     HostPatternError::IpLiteral(_)
                 ),
-                "expected IpLiteral for {ip}"
+                "预期 {ip} 为 IpLiteral"
             );
         }
     }
@@ -355,7 +355,7 @@ mod tests {
                     HostPattern::parse(pattern).unwrap_err(),
                     HostPatternError::IpLiteral(_)
                 ),
-                "expected IpLiteral for {pattern}"
+                "预期 {pattern} 为 IpLiteral"
             );
         }
     }
@@ -368,7 +368,7 @@ mod tests {
                     HostPattern::parse(pat).unwrap_err(),
                     HostPatternError::InvalidWildcard(_)
                 ),
-                "expected InvalidWildcard for {pat}"
+                "预期 {pat} 为 InvalidWildcard"
             );
         }
     }

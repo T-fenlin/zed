@@ -17,23 +17,23 @@ use std::process;
 use std::sync::{LazyLock, OnceLock};
 
 static KEYMAP_MACOS: LazyLock<KeymapFile> = LazyLock::new(|| {
-    load_keymap("keymaps/default-macos.json").expect("Failed to load MacOS keymap")
+    load_keymap("keymaps/default-macos.json").expect("无法加载 macOS 键位映射")
 });
 
 static KEYMAP_LINUX: LazyLock<KeymapFile> = LazyLock::new(|| {
-    load_keymap("keymaps/default-linux.json").expect("Failed to load Linux keymap")
+    load_keymap("keymaps/default-linux.json").expect("无法加载 Linux 键位映射")
 });
 
 static KEYMAP_WINDOWS: LazyLock<KeymapFile> = LazyLock::new(|| {
-    load_keymap("keymaps/default-windows.json").expect("Failed to load Windows keymap")
+    load_keymap("keymaps/default-windows.json").expect("无法加载 Windows 键位映射")
 });
 
 static KEYMAP_JETBRAINS_MACOS: LazyLock<KeymapFile> = LazyLock::new(|| {
-    load_keymap("keymaps/macos/jetbrains.json").expect("Failed to load JetBrains macOS keymap")
+    load_keymap("keymaps/macos/jetbrains.json").expect("无法加载 JetBrains macOS 键位映射")
 });
 
 static KEYMAP_JETBRAINS_LINUX: LazyLock<KeymapFile> = LazyLock::new(|| {
-    load_keymap("keymaps/linux/jetbrains.json").expect("Failed to load JetBrains Linux keymap")
+    load_keymap("keymaps/linux/jetbrains.json").expect("无法加载 JetBrains Linux 键位映射")
 });
 
 static ALL_ACTIONS: LazyLock<ActionManifest> = LazyLock::new(load_all_actions);
@@ -76,7 +76,7 @@ fn main() -> Result<()> {
 
     match args.get(0).map(String::as_str) {
         Some("supports") => {
-            let renderer = args.get(1).expect("Required argument");
+            let renderer = args.get(1).expect("缺少必需参数");
             let supported = renderer != "not-supported";
             if supported {
                 process::exit(0);
@@ -134,7 +134,7 @@ impl PreprocessorError {
         error: String,
     ) -> Self {
         PreprocessorError::InvalidSettingsJson {
-            file: chapter.path.clone().expect("chapter has path"),
+            file: chapter.path.clone().expect("章节缺少路径"),
             line: chapter.content[..location].lines().count() + 1,
             snippet,
             error,
@@ -146,14 +146,14 @@ impl std::fmt::Display for PreprocessorError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             PreprocessorError::InvalidFrontmatterLine(line) => {
-                write!(f, "Invalid frontmatter line: {}", line)
+                write!(f, "无效的 frontmatter 行: {}", line)
             }
             PreprocessorError::ActionNotFound { action_name } => {
-                write!(f, "Action not found: {}", action_name)
+                write!(f, "未找到操作: {}", action_name)
             }
             PreprocessorError::DeprecatedActionUsed { used, should_be } => write!(
                 f,
-                "Deprecated action used: {} should be {}",
+                "使用了已弃用的操作: {} 应为 {}",
                 used, should_be
             ),
             PreprocessorError::InvalidSettingsJson {
@@ -174,7 +174,7 @@ impl std::fmt::Display for PreprocessorError {
             PreprocessorError::UnknownKeymapOverlay { overlay_name } => {
                 write!(
                     f,
-                    "Unknown keymap overlay: '{}'. Supported overlays: jetbrains",
+                    "未知的键位映射覆盖: '{}'。支持的覆盖: jetbrains",
                     overlay_name
                 )
             }
@@ -200,9 +200,9 @@ fn handle_preprocessing() -> Result<()> {
         const ANSI_RED: &str = "\x1b[31m";
         const ANSI_RESET: &str = "\x1b[0m";
         for error in &errors {
-            eprintln!("{ANSI_RED}ERROR{ANSI_RESET}: {}", error);
+            eprintln!("{ANSI_RED}错误{ANSI_RESET}: {}", error);
         }
-        return Err(anyhow::anyhow!("Found {} errors in docs", errors.len()));
+        return Err(anyhow::anyhow!("在文档中发现 {} 个错误", errors.len()));
     }
 
     serde_json::to_writer(io::stdout(), &book)?;
@@ -232,7 +232,7 @@ fn handle_frontmatter(book: &mut Book, errors: &mut HashSet<PreprocessorError>) 
             }
             FRONT_MATTER_COMMENT.replace(
                 "{}",
-                &serde_json::to_string(&metadata).expect("Failed to serialize metadata"),
+                &serde_json::to_string(&metadata).expect("无法序列化元数据"),
             )
         });
         if let Cow::Owned(content) = new_content {
@@ -293,7 +293,7 @@ fn template_and_validate_keybindings(book: &mut Book, errors: &mut HashSet<Prepr
                         .unwrap_or_default();
 
                 if macos_binding.is_empty() && linux_binding.is_empty() {
-                    return "<div>No default binding</div>".to_string();
+                    return "<div>无默认绑定</div>".to_string();
                 }
 
                 let formatted_macos_binding = format_binding(macos_binding);
@@ -402,7 +402,7 @@ fn template_and_validate_json_snippets(
     };
     let settings_schema = SettingsStore::json_schema(&params);
     let settings_validator = jsonschema::validator_for(&settings_schema)
-        .context("failed to compile settings JSON schema")?;
+        .context("无法编译设置 JSON 模式")?;
 
     // The keymap schema is built from the action manifest. When `actions.json`
     // is unavailable (e.g. when running outside of CI without first generating
@@ -414,7 +414,7 @@ fn template_and_validate_json_snippets(
             keymap_schema_for_actions(&ALL_ACTIONS.actions, &ALL_ACTIONS.schema_definitions);
         Some(
             jsonschema::validator_for(&keymap_schema)
-                .context("failed to compile keymap JSON schema")?,
+                .context("无法编译键位映射 JSON 模式")?,
         )
     } else {
         None
@@ -439,7 +439,7 @@ fn template_and_validate_json_snippets(
                         chapter,
                         loc,
                         chapter.content[loc..tag_start].to_string(),
-                        "Unclosed JSON block tag".to_string(),
+                        "未闭合的 JSON 代码块标签".to_string(),
                     ));
                     continue;
                 };
@@ -452,7 +452,7 @@ fn template_and_validate_json_snippets(
                         chapter,
                         loc,
                         chapter.content[loc..tag_start].to_string(),
-                        "Unclosed JSON block tag".to_string(),
+                        "未闭合的 JSON 代码块标签".to_string(),
                     ));
                     continue;
                 }
@@ -466,7 +466,7 @@ fn template_and_validate_json_snippets(
                         chapter,
                         loc,
                         chapter.content[loc..tag_end + 1].to_string(),
-                        "Missing closing code block".to_string(),
+                        "缺少闭合代码块".to_string(),
                     ));
                     continue;
                 };
@@ -573,7 +573,7 @@ fn template_and_validate_json_snippets(
                     &snippet_json_fixed,
                 )?;
             }
-            label => anyhow::bail!("Unexpected JSON code block tag: {label}"),
+            label => anyhow::bail!("意外的 JSON 代码块标签: {label}"),
         };
         Ok(())
     });
@@ -660,16 +660,16 @@ fn load_all_actions() -> ActionManifest {
     match std::fs::read_to_string(asset_path) {
         Ok(content) => {
             let mut manifest: ActionManifest =
-                serde_json::from_str(&content).expect("Failed to parse actions.json");
+                serde_json::from_str(&content).expect("无法解析 actions.json");
             manifest.actions.sort_by(|a, b| a.name.cmp(&b.name));
             manifest
         }
         Err(err) => {
             if std::env::var("CI").is_ok() {
-                panic!("actions.json not found at {}: {}", asset_path, err);
+                panic!("在 {} 处未找到 actions.json: {}", asset_path, err);
             }
             eprintln!(
-                "Warning: actions.json not found, action validation will be skipped: {}",
+                "警告: 未找到 actions.json,将跳过操作验证: {}",
                 err
             );
             ActionManifest {
@@ -686,10 +686,10 @@ fn handle_postprocessing() -> Result<()> {
     let output = ctx
         .config
         .get_mut("output")
-        .expect("has output")
+        .expect("有输出")
         .as_table_mut()
-        .expect("output is table");
-    let zed_html = output.remove("zed-html").expect("zed-html output defined");
+        .expect("输出为表格");
+    let zed_html = output.remove("zed-html").expect("已定义 zed-html 输出");
     let redirects = zed_html
         .get("redirect")
         .and_then(|redirects| redirects.as_table())
@@ -705,15 +705,15 @@ fn handle_postprocessing() -> Result<()> {
         });
     let default_description = zed_html
         .get("default-description")
-        .expect("Default description not found")
+        .expect("未找到默认描述")
         .as_str()
-        .expect("Default description not a string")
+        .expect("默认描述不是字符串")
         .to_string();
     let default_title = zed_html
         .get("default-title")
-        .expect("Default title not found")
+        .expect("未找到默认标题")
         .as_str()
-        .expect("Default title not a string")
+        .expect("默认标题不是字符串")
         .to_string();
     let amplitude_key = std::env::var("DOCS_AMPLITUDE_API_KEY").unwrap_or_default();
     let consent_io_instance = std::env::var("DOCS_CONSENT_IO_INSTANCE").unwrap_or_default();
@@ -744,11 +744,11 @@ fn handle_postprocessing() -> Result<()> {
     let mut queue = Vec::with_capacity(64);
     queue.push(root_dir.clone());
     while let Some(dir) = queue.pop() {
-        for entry in std::fs::read_dir(&dir).context("failed to read docs dir")? {
+        for entry in std::fs::read_dir(&dir).context("无法读取文档目录")? {
             let Ok(entry) = entry else {
                 continue;
             };
-            let file_type = entry.file_type().context("Failed to determine file type")?;
+            let file_type = entry.file_type().context("无法确定文件类型")?;
             if file_type.is_dir() {
                 queue.push(entry.path());
             }
@@ -759,7 +759,7 @@ fn handle_postprocessing() -> Result<()> {
                 )
             {
                 if ignore_list.contains(&&*entry.file_name().to_string_lossy()) {
-                    zlog::info!(logger => "Ignoring {}", entry.path().to_string_lossy());
+                    zlog::info!(logger => "忽略 {}", entry.path().to_string_lossy());
                 } else {
                     files.push(entry.path());
                 }
@@ -767,7 +767,7 @@ fn handle_postprocessing() -> Result<()> {
         }
     }
 
-    zlog::info!(logger => "Processing {} `.html` files", files.len());
+    zlog::info!(logger => "正在处理 {} 个 `.html` 文件", files.len());
     let pages = docs_pages(&ctx.book)?;
     write_ai_discovery_artifacts(&pages, &root_dir, &site_url)?;
     let meta_regex = Regex::new(&FRONT_MATTER_COMMENT.replace("{}", "(.*)")).unwrap();
@@ -776,7 +776,7 @@ fn handle_postprocessing() -> Result<()> {
         let mut meta_description = None;
         let mut meta_title = None;
         let contents = meta_regex.replace(&contents, |caps: &regex::Captures| {
-            let metadata: HashMap<String, String> = serde_json::from_str(&caps[1]).with_context(|| format!("JSON Metadata: {:?}", &caps[1])).expect("Failed to deserialize metadata");
+            let metadata: HashMap<String, String> = serde_json::from_str(&caps[1]).with_context(|| format!("JSON 元数据: {:?}", &caps[1])).expect("无法反序列化元数据");
             for (kind, content) in metadata {
                 match kind.as_str() {
                     "description" => {
@@ -786,23 +786,23 @@ fn handle_postprocessing() -> Result<()> {
                         meta_title = Some(content);
                     }
                     _ => {
-                        zlog::warn!(logger => "Unrecognized frontmatter key: {} in {:?}", kind, pretty_path(&file, &root_dir));
+                        zlog::warn!(logger => "无法识别的 frontmatter 键: {} 位于 {:?}", kind, pretty_path(&file, &root_dir));
                     }
                 }
             }
             String::new()
         });
         let meta_description = meta_description.as_ref().unwrap_or_else(|| {
-            zlog::warn!(logger => "No meta description found for {:?}", pretty_path(&file, &root_dir));
+            zlog::warn!(logger => "未找到 {:?} 的元描述", pretty_path(&file, &root_dir));
             &default_description
         });
         let page_title = extract_title_from_page(&contents, pretty_path(&file, &root_dir));
         let meta_title = meta_title.as_ref().unwrap_or_else(|| {
-            zlog::debug!(logger => "No meta title found for {:?}", pretty_path(&file, &root_dir));
+            zlog::debug!(logger => "未找到 {:?} 的元标题", pretty_path(&file, &root_dir));
             &default_title
         });
         let meta_title = format!("{} | {}", page_title, meta_title);
-        zlog::trace!(logger => "Updating {:?}", pretty_path(&file, &root_dir));
+        zlog::trace!(logger => "正在更新 {:?}", pretty_path(&file, &root_dir));
         let contents = contents.replace("#description#", meta_description);
         let contents = contents.replace("#amplitude_key#", &amplitude_key);
         let contents = contents.replace("#consent_io_instance#", &consent_io_instance);
@@ -831,8 +831,8 @@ fn handle_postprocessing() -> Result<()> {
     fn extract_title_from_page(contents: &str, pretty_path: &std::path::Path) -> String {
         let title_tag_contents = &title_regex()
             .captures(contents)
-            .with_context(|| format!("Failed to find title in {:?}", pretty_path))
-            .expect("Page has <title> element")[1];
+            .with_context(|| format!("无法在 {:?} 中找到标题", pretty_path))
+            .expect("页面包含 <title> 元素")[1];
 
         title_tag_contents
             .trim()
@@ -879,11 +879,11 @@ fn generate_big_table_of_actions() -> String {
             );
             output.push_str("<br>\n");
         }
-        output.push_str("Keymap Name: <code>");
+        output.push_str("键位映射名称: <code>");
         output.push_str(&action.name);
         output.push_str("</code><br>\n");
         if !action.deprecated_aliases.is_empty() {
-            output.push_str("Deprecated Alias(es): ");
+            output.push_str("已弃用的别名: ");
             for alias in action.deprecated_aliases.iter() {
                 output.push_str("<code>");
                 output.push_str(alias);

@@ -78,15 +78,15 @@ pub enum HighlightCategory {
 impl HighlightCategory {
     fn label(&self) -> SharedString {
         match self {
-            HighlightCategory::Text(key) => format!("text: {key:?}").into(),
+            HighlightCategory::Text(key) => format!("文本: {key:?}").into(),
             HighlightCategory::SyntaxToken {
                 capture_name,
                 theme_key: Some(theme_key),
-            } => format!("syntax: {capture_name} \u{2192} {theme_key}").into(),
+            } => format!("语法: {capture_name} \u{2192} {theme_key}").into(),
             HighlightCategory::SyntaxToken {
                 capture_name,
                 theme_key: None,
-            } => format!("syntax: {capture_name}").into(),
+            } => format!("语法: {capture_name}").into(),
             HighlightCategory::SemanticToken {
                 token_type,
                 token_modifiers,
@@ -94,11 +94,11 @@ impl HighlightCategory {
             } => {
                 let label = match (token_type, token_modifiers) {
                     (Some(token_type), Some(modifiers)) => {
-                        format!("semantic token: {token_type} [{modifiers}]")
+                        format!("语义标记: {token_type} [{modifiers}]")
                     }
-                    (Some(token_type), None) => format!("semantic token: {token_type}"),
-                    (None, Some(modifiers)) => format!("semantic token [{modifiers}]"),
-                    (None, None) => "semantic token".to_string(),
+                    (Some(token_type), None) => format!("语义标记: {token_type}"),
+                    (None, Some(modifiers)) => format!("语义标记 [{modifiers}]"),
+                    (None, None) => "语义标记".to_string(),
                 };
 
                 if let Some(theme_key) = theme_key {
@@ -846,24 +846,24 @@ impl Render for HighlightsTreeView {
                             if self.editor.is_some() {
                                 let has_any = !self.cached_entries.is_empty();
                                 if has_any {
-                                    this.child(Label::new("All highlights are filtered out"))
+                                    this.child(Label::new("所有高亮已被过滤"))
                                         .child(
                                             Label::new(
-                                                "Enable text, syntax, or semantic highlights in the toolbar",
+                                                "在工具栏中启用文本、语法或语义高亮",
                                             )
                                             .size(LabelSize::Small),
                                         )
                                 } else {
-                                    this.child(Label::new("No highlights found")).child(
+                                    this.child(Label::new("未找到高亮")).child(
                                         Label::new(
-                                            "The editor has no text, syntax, or semantic token highlights",
+                                            "编辑器中没有文本、语法或语义标记高亮",
                                         )
                                         .size(LabelSize::Small),
                                     )
                                 }
                             } else {
-                                this.child(Label::new("Not attached to an editor")).child(
-                                    Label::new("Focus an editor to show highlights")
+                                this.child(Label::new("未附加到编辑器")).child(
+                                    Label::new("聚焦编辑器以显示高亮")
                                         .size(LabelSize::Small),
                                 )
                             }
@@ -893,7 +893,7 @@ impl Item for HighlightsTreeView {
     fn to_item_events(_: &Self::Event, _: &mut dyn FnMut(workspace::item::ItemEvent)) {}
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Highlights".into()
+        "高亮".into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -956,9 +956,9 @@ impl HighlightsTreeToolbarItemView {
         let filtered = tree_view.entry_count();
 
         let label = if filtered == total {
-            format!("{} highlights", total)
+            format!("{} 个高亮", total)
         } else {
-            format!("{} / {} highlights", filtered, total)
+            format!("{} / {} 个高亮", filtered, total)
         };
 
         Some(ButtonLike::new("highlights header").child(Label::new(label)))
@@ -985,7 +985,7 @@ impl HighlightsTreeToolbarItemView {
                 IconButton::new("toggle-highlights-settings-icon", IconName::Filter)
                     .icon_size(IconSize::Small)
                     .toggle_state(self.toggle_settings_handle.is_deployed()),
-                Tooltip::text("Highlights Settings"),
+                Tooltip::text("高亮设置"),
             )
             .anchor(gpui::Anchor::TopRight)
             .with_handle(self.toggle_settings_handle.clone())
@@ -996,7 +996,7 @@ impl HighlightsTreeToolbarItemView {
 
                 let menu = ContextMenu::build(window, cx, move |menu, _, _| {
                     menu.toggleable_entry(
-                        "Text Highlights",
+                        "文本高亮",
                         show_text,
                         IconPosition::Start,
                         Some(ToggleTextHighlights.boxed_clone()),
@@ -1020,7 +1020,7 @@ impl HighlightsTreeToolbarItemView {
                         },
                     )
                     .toggleable_entry(
-                        "Syntax Tokens",
+                        "语法标记",
                         show_syntax,
                         IconPosition::Start,
                         Some(ToggleSyntaxTokens.boxed_clone()),
@@ -1044,7 +1044,7 @@ impl HighlightsTreeToolbarItemView {
                         },
                     )
                     .toggleable_entry(
-                        "Semantic Tokens",
+                        "语义标记",
                         show_semantic,
                         IconPosition::Start,
                         Some(ToggleSemanticTokens.boxed_clone()),

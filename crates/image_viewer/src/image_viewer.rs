@@ -697,14 +697,14 @@ impl SerializableItem for ImageView {
         window.spawn(cx, async move |cx| {
             let image_path = db
                 .get_image_path(item_id, workspace_id)?
-                .context("No image path found")?;
+                .context("未找到图像路径")?;
 
             let (worktree, relative_path) = project
                 .update(cx, |project, cx| {
                     project.find_or_create_worktree(image_path.clone(), false, cx)
                 })
                 .await
-                .context("Path not found")?;
+                .context("未找到路径")?;
             let worktree_id = worktree.update(cx, |worktree, _cx| worktree.id());
 
             let project_path = ProjectPath {
@@ -746,7 +746,7 @@ impl SerializableItem for ImageView {
         let db = ImageViewerDb::global(cx);
         Some(cx.background_spawn({
             async move {
-                log::debug!("Saving image at path {image_path:?}");
+                log::debug!("正在保存路径为 {image_path:?} 的图像");
                 db.save_image_path(item_id, workspace_id, image_path).await
             }
         }))
@@ -945,7 +945,7 @@ impl Render for ImageViewToolbarControls {
             .child(
                 IconButton::new("zoom-out", IconName::Dash)
                     .icon_size(IconSize::Small)
-                    .tooltip(|_window, cx| Tooltip::for_action("Zoom Out", &ZoomOut, cx))
+                    .tooltip(|_window, cx| Tooltip::for_action("缩小", &ZoomOut, cx))
                     .on_click({
                         let image_view = image_view.downgrade();
                         move |_, window, cx| {
@@ -1002,7 +1002,7 @@ impl Render for ImageViewToolbarControls {
                     .child(Label::new(zoom_percentage).size(LabelSize::Small))
                     .id("zoom-label")
                     .tooltip(|_window, cx| {
-                        Tooltip::with_meta("Edit Zoom", None, "Right-click to reset to 100%.", cx)
+                        Tooltip::with_meta("编辑缩放", None, "右键单击可重置为 100%。", cx)
                     })
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.start_editing_zoom(window, cx);
@@ -1022,7 +1022,7 @@ impl Render for ImageViewToolbarControls {
             .child(
                 IconButton::new("zoom-in", IconName::Plus)
                     .icon_size(IconSize::Small)
-                    .tooltip(|_, cx| Tooltip::for_action("Zoom In", &ZoomIn, cx))
+                    .tooltip(|_, cx| Tooltip::for_action("放大", &ZoomIn, cx))
                     .on_click({
                         let image_view = image_view.downgrade();
                         move |_, window, cx| {
@@ -1037,7 +1037,7 @@ impl Render for ImageViewToolbarControls {
             .child(
                 IconButton::new("fit-to-view", IconName::Maximize)
                     .icon_size(IconSize::Small)
-                    .tooltip(|_window, cx| Tooltip::for_action("Fit to View", &FitToView, cx))
+                    .tooltip(|_window, cx| Tooltip::for_action("适应视图", &FitToView, cx))
                     .on_click({
                         let image_view = image_view.downgrade();
                         move |_, window, cx| {
@@ -1110,7 +1110,7 @@ mod tests {
         let fs = FakeFs::new(cx.executor());
         fs.create_dir(Path::new("/root"))
             .await
-            .expect("test root should be created");
+            .expect("应创建测试根目录");
         fs.insert_file("/root/image.ppm", test_image(0).bytes.clone())
             .await;
 
@@ -1120,7 +1120,7 @@ mod tests {
                 .read(cx)
                 .worktrees(cx)
                 .next()
-                .expect("test project should contain a worktree")
+                .expect("测试项目应包含一个工作树")
                 .read(cx)
                 .id()
         });
@@ -1135,7 +1135,7 @@ mod tests {
                 )
             })
             .await
-            .expect("test image should open");
+            .expect("测试图像应能打开");
 
         (project, image_item)
     }
@@ -1210,7 +1210,7 @@ mod tests {
         assert_eq!(
             displayed_source_id(&image_view, cx),
             Some(original_image.id()),
-            "the original image should finish decoding and be displayed"
+            "原始图像应完成解码并显示"
         );
 
         let reloaded_image = test_image(1);
@@ -1221,11 +1221,11 @@ mod tests {
         assert_eq!(
             displayed_source_id(&image_view, cx),
             Some(reloaded_image.id()),
-            "the reloaded image should replace the original"
+            "重新加载的图像应替换原始图像"
         );
         assert!(
             !image_is_cached(&original_image, cx),
-            "the replaced image remained in GPUI's asset cache"
+            "被替换的图像仍保留在 GPUI 的资源缓存中"
         );
     }
 
@@ -1242,7 +1242,7 @@ mod tests {
         assert_ne!(
             displayed_source_id(&image_view, cx),
             Some(superseded_image.id()),
-            "the superseded image should still be decoding"
+            "被取代的图像应仍在解码中"
         );
 
         let current_image = test_image(2);
@@ -1250,7 +1250,7 @@ mod tests {
         assert_ne!(
             displayed_source_id(&image_view, cx),
             Some(current_image.id()),
-            "the current image should start decoding before the superseded decode completes"
+            "当前图像应在被取代的图像解码完成前开始解码"
         );
 
         cx.run_until_parked();
@@ -1259,11 +1259,11 @@ mod tests {
         assert_eq!(
             displayed_source_id(&image_view, cx),
             Some(current_image.id()),
-            "the current image should finish decoding"
+            "当前图像应完成解码"
         );
         assert!(
             !image_is_cached(&superseded_image, cx),
-            "the superseded image remained in GPUI's asset cache"
+            "被取代的图像仍保留在 GPUI 的资源缓存中"
         );
     }
 
@@ -1289,7 +1289,7 @@ mod tests {
 
         assert!(
             !image_is_cached(&prefetched_image, cx),
-            "the superseded constructor prefetch remained in GPUI's asset cache"
+            "被取代的构造函数预取仍保留在 GPUI 的资源缓存中"
         );
     }
 
@@ -1307,7 +1307,7 @@ mod tests {
                 image_view.clone_on_split(None, window, cx)
             })
             .await
-            .expect("image view should support splitting");
+            .expect("图像视图应支持拆分");
 
         let draw_split_views = |cx: &mut VisualTestContext| {
             cx.draw(point(px(0.), px(0.)), size(px(2.), px(1.)), |_, _| {
@@ -1323,16 +1323,16 @@ mod tests {
         draw_split_views(cx);
 
         let original_render_image = displayed_render_image(&original_image_view, cx)
-            .expect("the original image view should finish decoding");
+            .expect("原始图像视图应完成解码");
         let split_render_image = displayed_render_image(&split_image_view, cx)
-            .expect("the split image view should finish decoding");
+            .expect("拆分后的图像视图应完成解码");
         assert_eq!(
             original_render_image.id, split_render_image.id,
-            "both image views should share the decoded render image"
+            "两个图像视图应共享解码后的渲染图像"
         );
         assert!(
             cx.update(|window, _| window.has_image_atlas_entry(&original_render_image)),
-            "the shared image should be present in the window atlas"
+            "共享图像应存在于窗口图集中"
         );
 
         drop(original_image_view);
@@ -1341,7 +1341,7 @@ mod tests {
 
         assert!(
             cx.update(|window, _| window.has_image_atlas_entry(&split_render_image)),
-            "releasing one image view removed an atlas entry still used by its split"
+            "释放一个图像视图移除了其拆分视图仍在使用的图集条目"
         );
 
         cx.draw(point(px(0.), px(0.)), size(px(1.), px(1.)), |_, _| {

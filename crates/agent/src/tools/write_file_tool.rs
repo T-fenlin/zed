@@ -15,7 +15,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use ui::SharedString;
 
-const DEFAULT_UI_TEXT: &str = "Writing file";
+const DEFAULT_UI_TEXT: &str = "正在写入文件";
 
 /// This is a tool for creating a new file or overwriting an existing file with completely new contents.
 ///
@@ -119,7 +119,7 @@ impl WriteFileTool {
                                         {
                                             Ok(created_session) => session = Some(created_session),
                                             Err(error) => {
-                                                log::error!("Failed to create edit session: {}", error);
+                                                log::error!("创建编辑会话失败:{}", error);
                                                 return EditSessionResult::Failed {
                                                     error,
                                                     session: None,
@@ -131,7 +131,7 @@ impl WriteFileTool {
                                     if let Some(current_session) = &mut session
                                         && let Err(error) = current_session.process_write(parsed.content.as_deref(), cx)
                                     {
-                                        log::error!("Failed to process write: {}", error);
+                                        log::error!("处理写入失败:{}", error);
                                         return EditSessionResult::Failed { error, session };
                                     }
                                 }
@@ -152,7 +152,7 @@ impl WriteFileTool {
                                     {
                                         Ok(created_session) => created_session,
                                         Err(error) => {
-                                            log::error!("Failed to create edit session: {}", error);
+                                            log::error!("创建编辑会话失败:{}", error);
                                             return EditSessionResult::Failed {
                                                 error,
                                                 session: None,
@@ -164,7 +164,7 @@ impl WriteFileTool {
                                 return match session.finalize_write(&full_input.content, cx).await {
                                     Ok(()) => EditSessionResult::Completed(session),
                                     Err(error) => {
-                                        log::error!("Failed to finalize write: {}", error);
+                                        log::error!("完成写入失败:{}", error);
                                         EditSessionResult::Failed {
                                             error,
                                             session: Some(session),
@@ -173,7 +173,7 @@ impl WriteFileTool {
                                 };
                             }
                             ToolInputPayload::InvalidJson { error_message } => {
-                                log::error!("Received invalid JSON: {error_message}");
+                                log::error!("收到无效的 JSON:{error_message}");
                                 return EditSessionResult::Failed {
                                     error: error_message,
                                     session,
@@ -190,7 +190,7 @@ impl WriteFileTool {
                 }
                 _ = event_stream.cancelled_by_user().fuse() => {
                     return EditSessionResult::Failed {
-                        error: "Write cancelled by user".to_string(),
+                        error: "用户已取消写入".to_string(),
                         session,
                     };
                 }
@@ -515,13 +515,13 @@ mod tests {
         let result = test_resolve_path(&mode, "root/dir/subdir", cx);
         assert_eq!(
             result.await.unwrap_err(),
-            "Can't write to file: path is a directory"
+            "无法写入文件: 路径是目录"
         );
 
         let result = test_resolve_path(&mode, "root/dir/nonexistent_dir/new.txt", cx);
         assert_eq!(
             result.await.unwrap_err(),
-            "Can't create file: parent directory doesn't exist"
+            "无法创建文件:父目录不存在"
         );
     }
 
@@ -1161,7 +1161,7 @@ mod tests {
     }
 
     /// When the buffer has unsaved user edits and the user picks
-    /// "Discard my edits", the pending edits are reverted to match disk
+    /// "放弃我的编辑", the pending edits are reverted to match disk
     /// and the agent's overwrite proceeds.
     #[gpui::test]
     async fn test_streaming_write_dirty_buffer_discard(cx: &mut TestAppContext) {
@@ -1240,7 +1240,7 @@ mod tests {
     }
 
     /// When the buffer has unsaved user edits and the user picks
-    /// "Keep my edits", the overwrite is cancelled with an error and the
+    /// "保留我的编辑", the overwrite is cancelled with an error and the
     /// user's pending edits are preserved.
     #[gpui::test]
     async fn test_streaming_write_dirty_buffer_keep(cx: &mut TestAppContext) {
@@ -1302,7 +1302,7 @@ mod tests {
     }
 
     /// When the user manually saves the buffer (e.g. cmd-s) while the
-    /// overwrite prompt is visible, that's treated as "Keep my edits":
+    /// overwrite prompt is visible, that's treated as "保留我的编辑":
     /// the user just deliberately persisted their work, so we cancel the
     /// agent's overwrite to avoid clobbering it.
     #[gpui::test]

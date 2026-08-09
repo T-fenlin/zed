@@ -79,12 +79,12 @@ impl WebWindow {
     ) -> anyhow::Result<web_sys::HtmlCanvasElement> {
         let document = browser_window
             .document()
-            .ok_or_else(|| anyhow::anyhow!("No `document` found on window"))?;
+            .ok_or_else(|| anyhow::anyhow!("窗口上未找到 `document`"))?;
         let canvas: web_sys::HtmlCanvasElement = document
             .create_element("canvas")
-            .map_err(|error| anyhow::anyhow!("Failed to create canvas element: {error:?}"))?
+            .map_err(|error| anyhow::anyhow!("创建画布元素失败:{error:?}"))?
             .dyn_into()
-            .map_err(|error| anyhow::anyhow!("Created element is not a canvas: {error:?}"))?;
+            .map_err(|error| anyhow::anyhow!("创建的元素不是画布:{error:?}"))?;
         canvas.set_tab_index(-1);
 
         let style = canvas.style();
@@ -96,15 +96,15 @@ impl WebWindow {
             ("touch-action", "none"),
         ] {
             style.set_property(property, value).map_err(|error| {
-                anyhow::anyhow!("Failed to set canvas {property} style: {error:?}")
+                anyhow::anyhow!("设置画布 {property} 样式失败:{error:?}")
             })?;
         }
 
         let body = document
             .body()
-            .ok_or_else(|| anyhow::anyhow!("No `body` found on document"))?;
+            .ok_or_else(|| anyhow::anyhow!("文档中未找到 `body`"))?;
         body.append_child(&canvas)
-            .map_err(|error| anyhow::anyhow!("Failed to append canvas to body: {error:?}"))?;
+            .map_err(|error| anyhow::anyhow!("将画布附加到 body 失败:{error:?}"))?;
         Ok(canvas)
     }
 
@@ -121,10 +121,10 @@ impl WebWindow {
     ) -> anyhow::Result<Self> {
         let document = browser_window
             .document()
-            .ok_or_else(|| anyhow::anyhow!("No `document` found on window"))?;
+            .ok_or_else(|| anyhow::anyhow!("窗口上未找到 `document`"))?;
         let body = document
             .body()
-            .ok_or_else(|| anyhow::anyhow!("No `body` found on document"))?;
+            .ok_or_else(|| anyhow::anyhow!("文档中未找到 `body`"))?;
         let dpr = browser_window.device_pixel_ratio() as f32;
         let max_texture_dimension = context.device.limits().max_texture_dimension_2d;
         let has_device_pixel_support = check_device_pixel_support();
@@ -140,9 +140,9 @@ impl WebWindow {
 
         let input_element: web_sys::HtmlInputElement = document
             .create_element("input")
-            .map_err(|e| anyhow::anyhow!("Failed to create input element: {e:?}"))?
+            .map_err(|e| anyhow::anyhow!("创建输入元素失败:{e:?}"))?
             .dyn_into()
-            .map_err(|e| anyhow::anyhow!("Created element is not an input: {e:?}"))?;
+            .map_err(|e| anyhow::anyhow!("创建的元素不是输入框:{e:?}"))?;
         let input_style = input_element.style();
         input_style.set_property("position", "fixed").ok();
         input_style.set_property("top", "0").ok();
@@ -151,7 +151,7 @@ impl WebWindow {
         input_style.set_property("height", "1px").ok();
         input_style.set_property("opacity", "0").ok();
         body.append_child(&input_element)
-            .map_err(|e| anyhow::anyhow!("Failed to append input to body: {e:?}"))?;
+            .map_err(|e| anyhow::anyhow!("将输入框附加到 body 失败:{e:?}"))?;
         input_element.focus().ok();
 
         let display: Rc<dyn PlatformDisplay> = Rc::new(WebDisplay::new(browser_window.clone()));
@@ -507,7 +507,7 @@ impl Drop for WebWindow {
         // Cancel the pending requestAnimationFrame callback before
         // `_raf_closure` is freed, and disconnect the resize observer before
         // `_resize_observer_closure` is freed; a late invocation of either
-        // would throw "closure invoked after being dropped".
+        // would throw "闭包在释放后被调用".
         if let Some(raf_id) = self.inner.raf_id.take() {
             self.inner
                 .browser_window
@@ -693,11 +693,11 @@ impl PlatformWindow for WebWindow {
     fn set_background_appearance(&self, _background: WindowBackgroundAppearance) {}
 
     fn minimize(&self) {
-        log::warn!("WebWindow::minimize is not supported in the browser");
+        log::warn!("浏览器中不支持 WebWindow::minimize");
     }
 
     fn zoom(&self) {
-        log::warn!("WebWindow::zoom is not supported in the browser");
+        log::warn!("浏览器中不支持 WebWindow::zoom");
     }
 
     fn toggle_fullscreen(&self) {

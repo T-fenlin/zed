@@ -337,7 +337,7 @@ impl ActionRegistry {
         let name = self
             .names_by_type_id
             .get(type_id)
-            .with_context(|| format!("no action type registered for {type_id:?}"))?;
+            .with_context(|| format!("未为 {type_id:?} 注册操作类型"))?;
 
         Ok(self.build_action(name, None)?)
     }
@@ -383,7 +383,7 @@ impl ActionRegistry {
                 let action_data = self
                     .by_name
                     .get(name)
-                    .expect("All actions in all_names should be registered");
+                    .expect("all_names 中的所有操作都应已注册");
                 (*name, (action_data.json_schema)(generator))
             })
             .collect::<Vec<_>>()

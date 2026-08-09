@@ -58,7 +58,7 @@ impl SoloDiffView {
         cx: &mut App,
     ) -> Task<Result<Entity<Self>>> {
         let Some(workspace_entity) = workspace.upgrade() else {
-            return Task::ready(Err(anyhow::anyhow!("workspace was dropped")));
+            return Task::ready(Err(anyhow::anyhow!("工作区已被销毁")));
         };
 
         let existing = workspace_entity
@@ -78,7 +78,7 @@ impl SoloDiffView {
             .repo_path_to_project_path(&entry.repo_path, cx)
         else {
             return Task::ready(Err(anyhow::anyhow!(
-                "could not resolve repository path {:?}",
+                "无法解析仓库路径 {:?}",
                 entry.repo_path
             )));
         };
@@ -352,9 +352,9 @@ impl SoloDiffView {
                 .await
                 .with_context(|| {
                     if stage {
-                        "failed to stage file"
+                        "暂存文件失败"
                     } else {
-                        "failed to unstage file"
+                        "取消暂存文件失败"
                     }
                 })
         });
@@ -630,9 +630,9 @@ impl Render for SoloDiffStyleToolbar {
             GitPanelSettings::get_global(cx).status_style != StatusStyle::LabelColor;
 
         let (expand_icon, expand_tooltip) = if showing_full_file {
-            (IconName::ChevronDownUp, "Show Changes Only")
+            (IconName::ChevronDownUp, "仅显示更改")
         } else {
-            (IconName::ChevronUpDown, "Show Full File")
+            (IconName::ChevronUpDown, "显示完整文件")
         };
 
         h_flex()
@@ -793,7 +793,7 @@ impl Render for SoloDiffGitToolbar {
                             .icon_size(IconSize::Small)
                             .disabled(!button_states.prev_next)
                             .tooltip(Tooltip::for_action_title_in(
-                                "Go to Previous Hunk",
+                                "转到上一个代码块",
                                 &GoToPreviousHunk,
                                 &focus_handle,
                             ))
@@ -806,7 +806,7 @@ impl Render for SoloDiffGitToolbar {
                             .icon_size(IconSize::Small)
                             .disabled(!button_states.prev_next)
                             .tooltip(Tooltip::for_action_title_in(
-                                "Go to Next Hunk",
+                                "转到下一个代码块",
                                 &GoToHunk,
                                 &focus_handle,
                             ))
@@ -820,10 +820,10 @@ impl Render for SoloDiffGitToolbar {
                 h_group_sm()
                     .when(button_states.selection, |el| {
                         el.child(
-                            Button::new("stage", "Toggle Staged")
+                            Button::new("stage", "切换暂存状态")
                                 .disabled(!button_states.stage && !button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    "Toggle Staged",
+                                    "切换暂存状态",
                                     &ToggleStaged,
                                     &focus_handle,
                                 ))
@@ -834,10 +834,10 @@ impl Render for SoloDiffGitToolbar {
                     })
                     .when(!button_states.selection, |el| {
                         el.child(
-                            Button::new("stage", "Stage")
+                            Button::new("stage", "暂存")
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    "Stage and Go to Next Hunk",
+                                    "暂存并转到下一个代码块",
                                     &StageAndNext,
                                     &focus_handle,
                                 ))
@@ -846,10 +846,10 @@ impl Render for SoloDiffGitToolbar {
                                 })),
                         )
                         .child(
-                            Button::new("unstage", "Unstage")
+                            Button::new("unstage", "取消暂存")
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    "Unstage and Go to Next Hunk",
+                                    "取消暂存并转到下一个代码块",
                                     &UnstageAndNext,
                                     &focus_handle,
                                 ))
@@ -859,9 +859,9 @@ impl Render for SoloDiffGitToolbar {
                         )
                     })
                     .child(
-                        Button::new("restore", "Restore")
+                        Button::new("restore", "还原")
                             .tooltip(Tooltip::for_action_title_in(
-                                "Restore selected hunk",
+                                "还原选中的代码块",
                                 &Restore,
                                 &focus_handle,
                             ))
@@ -873,21 +873,21 @@ impl Render for SoloDiffGitToolbar {
             )
             .child(Divider::vertical())
             .child(h_group_sm().child(if button_states.stage_file {
-                Button::new("stage-file", "Stage All")
+                Button::new("stage-file", "全部暂存")
                     .width(rems_from_px(80_f32))
                     .disabled(!button_states.stage_file)
                     .tooltip(Tooltip::for_action_title_in(
-                        "Stage All",
+                        "全部暂存",
                         &StageFile,
                         &focus_handle,
                     ))
                     .on_click(cx.listener(|this, _, window, cx| this.stage_file(window, cx)))
             } else {
-                Button::new("unstage-file", "Unstage All")
+                Button::new("unstage-file", "全部取消暂存")
                     .width(rems_from_px(80_f32))
                     .disabled(!button_states.unstage_file)
                     .tooltip(Tooltip::for_action_title_in(
-                        "Unstage All",
+                        "全部取消暂存",
                         &UnstageFile,
                         &focus_handle,
                     ))
@@ -895,9 +895,9 @@ impl Render for SoloDiffGitToolbar {
             }))
             .child(Divider::vertical())
             .child(
-                Button::new("commit", "Commit")
+                Button::new("commit", "提交")
                     .tooltip(Tooltip::for_action_title_in(
-                        "Commit",
+                        "提交",
                         &Commit,
                         &focus_handle,
                     ))

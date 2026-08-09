@@ -131,20 +131,20 @@ pub fn provider_compaction_items(
     }
     if state.format() != COMPACTION_STATE_FORMAT {
         return Err(anyhow!(
-            "unsupported OpenAI compaction state format: {}",
+            "不支持的 OpenAI 压缩状态格式:{}",
             state.format()
         ));
     }
 
     let items = serde_json::from_str::<Vec<Value>>(state.payload())
-        .context("malformed OpenAI compaction state payload")?;
+        .context("OpenAI 压缩状态负载格式错误")?;
     validate_compaction_items(&items)?;
     Ok(Some(items))
 }
 
 fn validate_compaction_items(items: &[Value]) -> Result<()> {
     if items.is_empty() {
-        return Err(anyhow!("OpenAI returned an empty compaction output"));
+        return Err(anyhow!("OpenAI 返回了空的压缩输出"));
     }
     if !items.iter().any(|item| {
         item.get("type")
@@ -797,7 +797,7 @@ pub async fn stream_response(
                                     Ok(event) => Some(Ok(event)),
                                     Err(error) => {
                                         log::error!(
-                                            "Failed to parse OpenAI responses stream event: `{}`\nResponse: `{}`",
+                                            "无法解析 OpenAI 响应流事件:`{}`\n响应:`{}`",
                                             error,
                                             line,
                                         );
@@ -919,7 +919,7 @@ pub async fn stream_response(
                 }
                 Err(error) => {
                     log::error!(
-                        "Failed to parse OpenAI non-streaming response: `{}`\nResponse: `{}`",
+                        "无法解析 OpenAI 非流式响应:`{}`\n响应:`{}`",
                         error,
                         body,
                     );
@@ -1013,7 +1013,7 @@ mod tests {
                     .unwrap()
                 {
                     CompactedContext::ProviderState(state) => state,
-                    CompactedContext::Summary { .. } => panic!("expected provider state"),
+                    CompactedContext::Summary { .. } => panic!("预期的提供者状态"),
                 },
                 &OPEN_AI_PROVIDER_ID
             )
@@ -1037,7 +1037,7 @@ mod tests {
                     "role": "user",
                     "content": [{
                         "type": "input_text",
-                        "text": "Retain this context."
+                        "text": "保留此上下文。"
                     }]
                 }],
                 "prompt_cache_key": "thread-123",
@@ -1052,7 +1052,7 @@ mod tests {
             Ok(http_client::Response::builder()
                 .status(429)
                 .header("retry-after", "5")
-                .body(AsyncBody::from("rate limited"))?)
+                .body(AsyncBody::from("请求频率受限"))?)
         });
 
         let error = block_on(compact_response(
@@ -1074,16 +1074,16 @@ mod tests {
             } => {
                 assert_eq!(provider, "OpenAI");
                 assert_eq!(status_code, 429);
-                assert_eq!(body, "rate limited");
+                assert_eq!(body, "请求频率受限");
                 assert_eq!(headers["retry-after"], "5");
             }
-            error => panic!("expected an HTTP response error, got {error:?}"),
+            error => panic!("预期收到 HTTP 响应错误,实际得到 {error:?}"),
         }
 
         let http_client = FakeHttpClient::create(|_| async move {
             Ok(http_client::Response::builder()
                 .status(200)
-                .body(AsyncBody::from("not valid JSON"))?)
+                .body(AsyncBody::from("不是有效的 JSON"))?)
         });
 
         let error = block_on(compact_response(
@@ -1098,7 +1098,7 @@ mod tests {
 
         assert!(
             matches!(error, RequestError::Other(_)),
-            "expected malformed JSON to produce a request error, got {error:?}"
+            "预期格式错误的 JSON 会产生请求错误,实际得到 {error:?}"
         );
     }
 
@@ -1108,7 +1108,7 @@ mod tests {
             json!({
                 "type": "message",
                 "role": "user",
-                "content": "Retained user context.",
+                "content": "已保留用户上下文。",
                 "provider_extension": {"preserve": true}
             }),
             json!({
@@ -1136,7 +1136,7 @@ mod tests {
             .into_compacted_context(OPEN_AI_PROVIDER_ID)
             .unwrap()
         else {
-            panic!("expected provider state");
+            panic!("预期的提供者状态");
         };
         assert_eq!(
             provider_compaction_items(&state, &OPEN_AI_PROVIDER_ID).unwrap(),
@@ -1158,7 +1158,7 @@ mod tests {
                 .into_compacted_context(OPEN_AI_PROVIDER_ID)
                 .unwrap()
             else {
-                panic!("expected provider state");
+                panic!("预期的提供者状态");
             };
             assert_eq!(
                 provider_compaction_items(&state, &OPEN_AI_PROVIDER_ID).unwrap(),
@@ -1176,7 +1176,7 @@ mod tests {
             "output": [{
                 "type": "message",
                 "role": "user",
-                "content": "Retained user context."
+                "content": "已保留用户上下文。"
             }],
             "usage": {
                 "input_tokens": 100,
@@ -1193,7 +1193,7 @@ mod tests {
                 .into_compacted_context(OPEN_AI_PROVIDER_ID)
                 .unwrap_err()
                 .to_string()
-                .contains("compaction item")
+                .contains("压缩项")
         );
     }
 
@@ -1266,7 +1266,7 @@ mod tests {
             provider_compaction_items(&state, &OPEN_AI_PROVIDER_ID)
                 .unwrap_err()
                 .to_string()
-                .contains("unsupported OpenAI compaction state format")
+                .contains("不支持的 OpenAI 压缩状态格式")
         );
     }
 
@@ -1275,7 +1275,7 @@ mod tests {
         let state = ProviderCompactionState::new(
             OPEN_AI_PROVIDER_ID,
             COMPACTION_STATE_FORMAT,
-            "not valid JSON",
+            "不是有效的 JSON",
         );
 
         assert!(provider_compaction_items(&state, &OPEN_AI_PROVIDER_ID).is_err());
@@ -1290,7 +1290,7 @@ mod tests {
                 vec![ResponseInputItem::Message(ResponseMessageItem {
                     role: Role::User,
                     content: vec![ResponseInputContent::Text {
-                        text: "Retain this context.".to_string(),
+                        text: "保留此上下文。".to_string(),
                     }],
                     phase: None,
                 })],

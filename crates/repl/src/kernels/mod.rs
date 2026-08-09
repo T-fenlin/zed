@@ -133,7 +133,7 @@ pub fn start_kernel_tasks<S: KernelSession + 'static>(
                         | runtimelib::RuntimeError::SerdeError(_)),
                     ) => {
                         let error_detail = format!("Kernel issue on {channel} channel\n\n{err}");
-                        log::warn!("kernel: {error_detail}");
+                        log::warn!("内核: {error_detail}");
                         session
                             .update_in(cx, |session, _window, cx| {
                                 session.kernel_errored(error_detail, cx);
@@ -183,14 +183,14 @@ pub fn start_kernel_tasks<S: KernelSession + 'static>(
             }
 
             let mut tasks = futures::stream::FuturesUnordered::new();
-            tasks.push(with_name("recv task", recv_task));
-            tasks.push(with_name("routing task", routing_task));
-            tasks.push(with_name("stdin routing task", stdin_routing_task));
+            tasks.push(with_name("接收任务", recv_task));
+            tasks.push(with_name("路由任务", routing_task));
+            tasks.push(with_name("标准输入路由任务", stdin_routing_task));
 
             while let Some((name, result)) = tasks.next().await {
                 if let Err(err) = result {
                     session.update(cx, |session, cx| {
-                        session.kernel_errored(format!("handling failed for {name}: {err}"), cx);
+                        session.kernel_errored(format!("{name} 处理失败: {err}"), cx);
                         cx.notify();
                     });
                 }
@@ -312,7 +312,7 @@ impl KernelSpecification {
             Self::PythonEnv(spec) => SharedString::from(
                 spec.environment_kind
                     .clone()
-                    .unwrap_or_else(|| "Python Environment".to_string()),
+                    .unwrap_or_else(|| "Python 环境".to_string()),
             ),
             Self::JupyterServer(_) => "Jupyter Server".into(),
             Self::SshRemote(_) => "SSH Remote".into(),
@@ -384,20 +384,20 @@ fn extract_environment_kind(toolchain_json: &serde_json::Value) -> Option<String
         "Conda" => "Conda",
         "Pixi" => "pixi",
         "Homebrew" => "Homebrew",
-        "Pyenv" => "global (Pyenv)",
+        "Pyenv" => "全局 (Pyenv)",
         "GlobalPaths" => "global",
         "PyenvVirtualEnv" => "Pyenv",
         "Pipenv" => "Pipenv",
         "Poetry" => "Poetry",
-        "MacPythonOrg" => "global (Python.org)",
-        "MacCommandLineTools" => "global (Command Line Tools for Xcode)",
+        "MacPythonOrg" => "全局 (Python.org)",
+        "MacCommandLineTools" => "全局 (Xcode 命令行工具)",
         "LinuxGlobal" => "global",
-        "MacXCode" => "global (Xcode)",
+        "MacXCode" => "全局 (Xcode)",
         "Venv" => "venv",
         "VirtualEnv" => "virtualenv",
         "VirtualEnvWrapper" => "virtualenvwrapper",
-        "WindowsStore" => "global (Windows Store)",
-        "WindowsRegistry" => "global (Windows Registry)",
+        "WindowsStore" => "全局 (Windows 应用商店)",
+        "WindowsRegistry" => "全局 (Windows 注册表)",
         "Uv" => "uv",
         "UvWorkspace" => "uv (Workspace)",
         _ => kind_str,
@@ -497,7 +497,7 @@ pub fn python_env_kernel_specifications(
                         );
                         return Some(KernelSpecification::SshRemote(
                             SshRemoteKernelSpecification {
-                                name: format!("Remote {}", toolchain.name),
+                                name: format!("远程 {}", toolchain.name),
                                 path: toolchain.path.clone(),
                                 kernelspec: default_kernelspec,
                             },
@@ -529,15 +529,15 @@ pub fn python_env_kernel_specifications(
                         }
                     }
 
-                    log::info!("Preparing Python kernel for toolchain: {}", toolchain.name);
-                    log::info!("Python path: {}", python_path);
+                    log::info!("正在为工具链准备 Python 内核: {}", toolchain.name);
+                    log::info!("Python 路径: {}", python_path);
                     if let Some(path) = env.get("PATH") {
-                         log::info!("Kernel PATH: {}", path);
+                         log::info!("内核 PATH: {}", path);
                     } else {
-                         log::info!("Kernel PATH not set in env");
+                         log::info!("环境中未设置内核 PATH");
                     }
                     if let Some(venv) = env.get("VIRTUAL_ENV") {
-                         log::info!("Kernel VIRTUAL_ENV: {}", venv);
+                         log::info!("内核 VIRTUAL_ENV: {}", venv);
                     }
 
                     let kernelspec = JupyterKernelspec {
@@ -626,7 +626,7 @@ pub fn python_env_kernel_specifications(
                                     format!("({})", venv_name),
                                 )
                             } else {
-                                (python_cmd, "(System)".to_string())
+                                (python_cmd, "(系统)".to_string())
                             };
 
                             let display_name = format!("WSL: {} {}", distro, display_suffix);
@@ -694,13 +694,13 @@ impl KernelStatus {
 impl ToString for KernelStatus {
     fn to_string(&self) -> String {
         match self {
-            KernelStatus::Idle => "Idle".to_string(),
-            KernelStatus::Busy => "Busy".to_string(),
-            KernelStatus::Starting => "Starting".to_string(),
-            KernelStatus::Error => "Error".to_string(),
-            KernelStatus::ShuttingDown => "Shutting Down".to_string(),
-            KernelStatus::Shutdown => "Shutdown".to_string(),
-            KernelStatus::Restarting => "Restarting".to_string(),
+            KernelStatus::Idle => "空闲".to_string(),
+            KernelStatus::Busy => "忙碌".to_string(),
+            KernelStatus::Starting => "正在启动".to_string(),
+            KernelStatus::Error => "错误".to_string(),
+            KernelStatus::ShuttingDown => "正在关闭".to_string(),
+            KernelStatus::Shutdown => "关闭".to_string(),
+            KernelStatus::Restarting => "正在重启".to_string(),
         }
     }
 }

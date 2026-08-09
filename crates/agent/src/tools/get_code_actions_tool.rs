@@ -53,9 +53,9 @@ impl AgentTool for GetCodeActionsTool {
         _cx: &mut App,
     ) -> SharedString {
         if let Ok(input) = input {
-            format!("Get code actions for `{}`", input.symbol.symbol_name).into()
+            format!("获取 `{}` 的代码操作", input.symbol.symbol_name).into()
         } else {
-            "Get code actions".into()
+            "获取代码操作".into()
         }
     }
 
@@ -71,7 +71,7 @@ impl AgentTool for GetCodeActionsTool {
             let input = input
                 .recv()
                 .await
-                .map_err(|e| format!("Failed to receive tool input: {e}"))?;
+                .map_err(|e| format!("接收工具输入失败:{e}"))?;
 
             let resolved = input.symbol.resolve(&project, cx).await?;
 
@@ -82,13 +82,13 @@ impl AgentTool for GetCodeActionsTool {
 
             let actions = actions_task
                 .await
-                .map_err(|e| format!("Failed to get code actions: {e}"))?
+                .map_err(|e| format!("获取代码操作失败:{e}"))?
                 .unwrap_or_default();
 
             if actions.is_empty() {
                 store.update(cx, |store, _cx| *store = None);
                 return Ok(format!(
-                    "No code actions available for '{}' at this location.",
+                    "此位置没有可用于 '{}' 的代码操作。",
                     input.symbol.symbol_name
                 ));
             }

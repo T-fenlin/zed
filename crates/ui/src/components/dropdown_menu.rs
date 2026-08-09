@@ -337,26 +337,26 @@ impl Component for DropdownMenu {
         });
 
         let menu_with_submenu = ContextMenu::build(window, cx, |this, _, _| {
-            this.entry("Toggle All Docks", None, |_, _| {})
-                .submenu("Editor Layout", |menu, _, _| {
-                    menu.entry("Split Up", None, |_, _| {})
-                        .entry("Split Down", None, |_, _| {})
+            this.entry("切换所有停靠面板", None, |_, _| {})
+                .submenu("编辑器布局", |menu, _, _| {
+                    menu.entry("向上拆分", None, |_, _| {})
+                        .entry("向下拆分", None, |_, _| {})
                         .separator()
-                        .entry("Split Side", None, |_, _| {})
+                        .entry("侧边拆分", None, |_, _| {})
                 })
                 .separator()
-                .entry("Project Panel", None, |_, _| {})
-                .entry("Outline Panel", None, |_, _| {})
+                .entry("项目面板", None, |_, _| {})
+                .entry("大纲面板", None, |_, _| {})
                 .separator()
-                .submenu("Autofill", |menu, _, _| {
-                    menu.entry("Contact…", None, |_, _| {})
-                        .entry("Passwords…", None, |_, _| {})
+                .submenu("自动填充", |menu, _, _| {
+                    menu.entry("联系人…", None, |_, _| {})
+                        .entry("密码…", None, |_, _| {})
                 })
-                .submenu_with_icon("Predict", IconName::ZedPredict, |menu, _, _| {
-                    menu.entry("Everywhere", None, |_, _| {})
-                        .entry("At Cursor", None, |_, _| {})
-                        .entry("Over Here", None, |_, _| {})
-                        .entry("Over There", None, |_, _| {})
+                .submenu_with_icon("预测", IconName::ZedPredict, |menu, _, _| {
+                    menu.entry("所有位置", None, |_, _| {})
+                        .entry("光标处", None, |_, _| {})
+                        .entry("在这里", None, |_, _| {})
+                        .entry("在那里", None, |_, _| {})
                 })
         });
 
@@ -364,51 +364,51 @@ impl Component for DropdownMenu {
             .gap_6()
             .children(vec![
                 example_group_with_title(
-                    "Basic Usage",
+                    "基本用法",
                     vec![
                         single_example(
-                            "Default",
-                            DropdownMenu::new("default", "Select an option", menu.clone())
+                            "默认",
+                            DropdownMenu::new("default", "选择一个选项", menu.clone())
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Full Width",
-                            DropdownMenu::new("full-width", "Full Width Dropdown", menu.clone())
+                            "全宽",
+                            DropdownMenu::new("full-width", "全宽下拉菜单", menu.clone())
                                 .full_width(true)
                                 .into_any_element(),
                         ),
                     ],
                 ),
                 example_group_with_title(
-                    "Submenus",
+                    "子菜单",
                     vec![single_example(
-                        "With Submenus",
-                        DropdownMenu::new("submenu", "Submenu", menu_with_submenu)
+                        "带子菜单",
+                        DropdownMenu::new("submenu", "子菜单", menu_with_submenu)
                             .into_any_element(),
                     )],
                 ),
                 example_group_with_title(
-                    "Styles",
+                    "样式",
                     vec![
                         single_example(
-                            "Outlined",
-                            DropdownMenu::new("outlined", "Outlined Dropdown", menu.clone())
+                            "描边",
+                            DropdownMenu::new("outlined", "描边下拉菜单", menu.clone())
                                 .style(DropdownStyle::Outlined)
                                 .into_any_element(),
                         ),
                         single_example(
-                            "Ghost",
-                            DropdownMenu::new("ghost", "Ghost Dropdown", menu.clone())
+                            "幽灵",
+                            DropdownMenu::new("ghost", "幽灵下拉菜单", menu.clone())
                                 .style(DropdownStyle::Ghost)
                                 .into_any_element(),
                         ),
                     ],
                 ),
                 example_group_with_title(
-                    "States",
+                    "状态",
                     vec![single_example(
-                        "Disabled",
-                        DropdownMenu::new("disabled", "Disabled Dropdown", menu)
+                        "已禁用",
+                        DropdownMenu::new("disabled", "禁用的下拉菜单", menu)
                             .disabled(true)
                             .into_any_element(),
                     )],

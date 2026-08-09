@@ -295,12 +295,12 @@ impl LanguageModel for DeepSeekLanguageModel {
 
         vec![
             LanguageModelEffortLevel {
-                name: "High".into(),
+                name: "高".into(),
                 value: "high".into(),
                 is_default: true,
             },
             LanguageModelEffortLevel {
-                name: "Max".into(),
+                name: "最大".into(),
                 value: "max".into(),
                 is_default: false,
             },
@@ -358,7 +358,7 @@ pub fn into_deepseek(
     max_output_tokens: Option<u64>,
 ) -> Result<deepseek::Request> {
     if request.contains_custom_tool_input() {
-        anyhow::bail!("DeepSeek does not support custom tools");
+        anyhow::bail!("DeepSeek 不支持自定义工具");
     }
 
     let thinking = deepseek_thinking(model, request.thinking_allowed);
@@ -402,7 +402,7 @@ pub fn into_deepseek(
                     let input = tool_use
                         .input
                         .as_json()
-                        .ok_or_else(|| anyhow!("DeepSeek does not support custom tool calls"))?;
+                        .ok_or_else(|| anyhow!("DeepSeek 不支持自定义工具调用"))?;
                     let tool_call = deepseek::ToolCall {
                         id: tool_use.id.to_string(),
                         content: deepseek::ToolCallContent::Function {
@@ -433,12 +433,12 @@ pub fn into_deepseek(
                                 text_parts.push(text.to_string());
                             }
                             LanguageModelToolResultContent::Image(_) => {
-                                text_parts.push("[Tool responded with an image]".to_string());
+                                text_parts.push("[工具以图片形式响应]".to_string());
                             }
                         }
                     }
                     let content = if text_parts.is_empty() {
-                        "<Tool returned an empty string>".to_string()
+                        "<工具返回了空字符串>".to_string()
                     } else {
                         text_parts.join("\n")
                     };
@@ -483,7 +483,7 @@ pub fn into_deepseek(
                         ..
                     } => input_schema,
                     language_model::LanguageModelRequestToolInput::Custom { .. } => {
-                        return Err(anyhow::anyhow!("DeepSeek does not support custom tools"));
+                        return Err(anyhow::anyhow!("DeepSeek 不支持自定义工具"));
                     }
                 };
                 Ok(deepseek::ToolDefinition::Function {
@@ -554,7 +554,7 @@ impl DeepSeekEventMapper {
     ) -> Vec<Result<LanguageModelCompletionEvent, LanguageModelCompletionError>> {
         let Some(choice) = event.choices.first() else {
             return vec![Err(LanguageModelCompletionError::from(anyhow!(
-                "Response contained no choices"
+                "响应中不包含任何选项"
             )))];
         };
 
@@ -647,7 +647,7 @@ impl DeepSeekEventMapper {
                 events.push(Ok(LanguageModelCompletionEvent::Stop(StopReason::ToolUse)));
             }
             Some(stop_reason) => {
-                log::error!("Unexpected DeepSeek stop_reason: {stop_reason:?}",);
+                log::error!("意外的 DeepSeek 停止原因: {stop_reason:?}",);
                 events.push(Ok(LanguageModelCompletionEvent::Stop(StopReason::EndTurn)));
             }
             None => {}

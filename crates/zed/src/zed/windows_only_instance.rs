@@ -33,7 +33,7 @@ fn is_first_instance() -> bool {
             false,
             &HSTRING::from(format!("{}-Instance-Mutex", app_identifier())),
         )
-        .expect("Unable to create instance mutex.")
+        .expect("无法创建实例互斥锁。")
     };
     unsafe { GetLastError() != ERROR_ALREADY_EXISTS }
 }
@@ -75,7 +75,7 @@ fn with_pipe(f: &dyn Fn(String)) {
         )
     };
     if pipe.is_invalid() {
-        log::error!("Failed to create named pipe: {:?}", unsafe {
+        log::error!("创建命名管道失败:{:?}", unsafe {
             GetLastError()
         });
         return;
@@ -83,7 +83,7 @@ fn with_pipe(f: &dyn Fn(String)) {
 
     loop {
         if let Some(message) = retrieve_message_from_pipe(pipe)
-            .context("Failed to read from named pipe")
+            .context("从命名管道读取失败")
             .log_err()
         {
             f(message);
@@ -115,7 +115,7 @@ fn send_args_to_instance(args: &Args) -> anyhow::Result<()> {
     }
 
     let (server, server_name) =
-        IpcOneShotServer::<IpcHandshake>::new().context("Handshake before Zed spawn")?;
+        IpcOneShotServer::<IpcHandshake>::new().context("Zed 启动前的握手")?;
     let url = format!("zed-cli://{server_name}");
 
     let request = {
@@ -134,7 +134,7 @@ fn send_args_to_instance(args: &Args) -> anyhow::Result<()> {
                     {
                         urls.push(path.clone());
                     } else {
-                        log::error!("error parsing path argument: {}", error);
+                        log::error!("解析路径参数时出错:{}", error);
                     }
                 }
             }
@@ -172,7 +172,7 @@ fn send_args_to_instance(args: &Args) -> anyhow::Result<()> {
         .spawn({
             let exit_status = exit_status.clone();
             move || {
-                let (_, handshake) = server.accept().context("Handshake after Zed spawn")?;
+                let (_, handshake) = server.accept().context("Zed 启动后的握手")?;
                 let (tx, rx) = (handshake.requests, handshake.responses);
 
                 tx.send(request)?;

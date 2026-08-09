@@ -226,7 +226,7 @@ impl ProjectDiff {
             DiffMultibuffer::new(
                 branch_diff,
                 Capability::ReadWrite,
-                "No uncommitted changes",
+                "无未提交的更改",
                 move |editor, cx| {
                     editor.set_diff_hunk_delegate(Some(Arc::new(UncommittedDiffHunkDelegate)), cx);
                     editor.rhs_editor().update(cx, |rhs_editor, _cx| {
@@ -434,7 +434,7 @@ impl Item for ProjectDiff {
     }
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Uncommitted Changes".into()
+        "未提交的更改".into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -834,7 +834,7 @@ impl Render for ProjectDiffToolbar {
                             .icon_size(IconSize::Small)
                             .disabled(!button_states.prev_next)
                             .tooltip(Tooltip::for_action_title_in(
-                                "Go to Previous Hunk",
+                                "转到上一个代码块",
                                 &GoToPreviousHunk,
                                 &focus_handle,
                             ))
@@ -847,7 +847,7 @@ impl Render for ProjectDiffToolbar {
                             .icon_size(IconSize::Small)
                             .disabled(!button_states.prev_next)
                             .tooltip(Tooltip::for_action_title_in(
-                                "Go to Next Hunk",
+                                "转到下一个代码块",
                                 &GoToHunk,
                                 &focus_handle,
                             ))
@@ -861,9 +861,9 @@ impl Render for ProjectDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", "Toggle Staged")
+                            Button::new("stage", "切换暂存状态")
                                 .tooltip(Tooltip::for_action_title_in(
-                                    "Toggle Staged",
+                                    "切换暂存状态",
                                     &ToggleStaged,
                                     &focus_handle,
                                 ))
@@ -875,10 +875,10 @@ impl Render for ProjectDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", "Stage")
+                            Button::new("stage", "暂存")
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    "Stage and Go to Next Hunk",
+                                    "暂存并转到下一个代码块",
                                     &StageAndNext,
                                     &focus_handle,
                                 ))
@@ -887,10 +887,10 @@ impl Render for ProjectDiffToolbar {
                                 })),
                         )
                         .child(
-                            Button::new("unstage", "Unstage")
+                            Button::new("unstage", "取消暂存")
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    "Unstage and Go to Next Hunk",
+                                    "取消暂存并转到下一个代码块",
                                     &UnstageAndNext,
                                     &focus_handle,
                                 ))
@@ -905,10 +905,10 @@ impl Render for ProjectDiffToolbar {
                 button_states.unstage_all && !button_states.stage_all,
                 |this| {
                     this.child(
-                        Button::new("unstage-all", "Unstage All")
+                        Button::new("unstage-all", "全部取消暂存")
                             .width(stage_all_button_width)
                             .tooltip(Tooltip::for_action_title_in(
-                                "Unstage All Changes",
+                                "取消暂存所有更改",
                                 &UnstageAll,
                                 &focus_handle,
                             ))
@@ -922,11 +922,11 @@ impl Render for ProjectDiffToolbar {
                 !button_states.unstage_all || button_states.stage_all,
                 |this| {
                     this.child(
-                        Button::new("stage-all", "Stage All")
+                        Button::new("stage-all", "全部暂存")
                             .width(stage_all_button_width)
                             .disabled(!button_states.stage_all)
                             .tooltip(Tooltip::for_action_title_in(
-                                "Stage All Changes",
+                                "暂存所有更改",
                                 &StageAll,
                                 &focus_handle,
                             ))
@@ -938,9 +938,9 @@ impl Render for ProjectDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", "Commit")
+                Button::new("commit", "提交")
                     .tooltip(Tooltip::for_action_title_in(
-                        "Commit",
+                        "提交",
                         &Commit,
                         &focus_handle,
                     ))
@@ -966,7 +966,7 @@ pub(crate) fn render_send_review_to_agent_button(
 ) -> Button {
     Button::new(
         "send-review",
-        format!("Send Review to Agent ({})", review_count),
+        format!("将评审发送给助手 ({})", review_count),
     )
     .start_icon(
         Icon::new(IconName::ZedAssistant)
@@ -974,7 +974,7 @@ pub(crate) fn render_send_review_to_agent_button(
             .color(Color::Muted),
     )
     .tooltip(Tooltip::for_action_title_in(
-        "Send all review comments to the Agent panel",
+        "将所有评审意见发送到助手面板",
         &SendReviewToAgent,
         focus_handle,
     ))
@@ -1421,7 +1421,7 @@ mod tests {
         assert_ne!(diff_item.entity_id(), unstaged_item.entity_id());
         let unstaged_editor = workspace.update(cx, |workspace, cx| {
             let active_item = workspace.active_item(cx).unwrap();
-            assert_eq!(active_item.tab_content_text(0, cx), "Unstaged Changes");
+            assert_eq!(active_item.tab_content_text(0, cx), "未暂存的更改");
             active_item
                 .act_as::<DiffMultibuffer>(cx)
                 .unwrap()
@@ -1454,7 +1454,7 @@ mod tests {
         assert_eq!(diff_item.entity_id(), uncommitted_item.entity_id());
         assert_eq!(
             uncommitted_item.read_with(cx, |diff, cx| diff.tab_content_text(0, cx)),
-            "Uncommitted Changes"
+            "未提交的更改"
         );
         let uncommitted_editor = uncommitted_item
             .read_with(cx, |diff, cx| diff.editor(cx).read(cx).rhs_editor().clone());
@@ -1481,7 +1481,7 @@ mod tests {
         let staged_editor = workspace.update(cx, |workspace, cx| {
             workspace.active_item_as::<StagedDiff>(cx).unwrap();
             let active_item = workspace.active_item(cx).unwrap();
-            assert_eq!(active_item.tab_content_text(0, cx), "Staged Changes");
+            assert_eq!(active_item.tab_content_text(0, cx), "已暂存的更改");
             active_item
                 .act_as::<DiffMultibuffer>(cx)
                 .unwrap()

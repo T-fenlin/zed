@@ -70,7 +70,7 @@ impl KeyValueStore {
     }
 
     pub async fn write_kvp(&self, key: String, value: String) -> anyhow::Result<()> {
-        log::debug!("Writing key-value pair for key {key}");
+        log::debug!("正在写入键 {key} 的键值对");
         self.write_kvp_inner(key, value).await
     }
 
@@ -104,7 +104,7 @@ impl ScopedKeyValueStore<'_> {
         self.store.select_row_bound::<(&str, &str), String>(
             "SELECT value FROM scoped_kv_store WHERE namespace = (?) AND key = (?)",
         )?((self.namespace, key))
-        .context("Failed to read from scoped_kv_store")
+        .context("从作用域键值存储中读取失败")
     }
 
     pub async fn write(&self, key: String, value: String) -> anyhow::Result<()> {
@@ -114,7 +114,7 @@ impl ScopedKeyValueStore<'_> {
                 connection.exec_bound::<(&str, &str, &str)>(
                     "INSERT OR REPLACE INTO scoped_kv_store(namespace, key, value) VALUES ((?), (?), (?))",
                 )?((&namespace, &key, &value))
-                .context("Failed to write to scoped_kv_store")
+                .context("写入作用域键值存储失败")
             })
             .await
     }
@@ -126,7 +126,7 @@ impl ScopedKeyValueStore<'_> {
                 connection.exec_bound::<(&str, &str)>(
                     "DELETE FROM scoped_kv_store WHERE namespace = (?) AND key = (?)",
                 )?((&namespace, &key))
-                .context("Failed to delete from scoped_kv_store")
+                .context("从作用域键值存储中删除失败")
             })
             .await
     }
@@ -139,7 +139,7 @@ impl ScopedKeyValueStore<'_> {
                     .exec_bound::<&str>("DELETE FROM scoped_kv_store WHERE namespace = (?)")?(
                     &namespace,
                 )
-                .context("Failed to delete_all from scoped_kv_store")
+                .context("从作用域键值存储中删除全部失败")
             })
             .await
     }
@@ -261,7 +261,7 @@ impl GlobalKeyValueStore {
     }
 
     pub async fn write_kvp(&self, key: String, value: String) -> anyhow::Result<()> {
-        log::debug!("Writing global key-value pair for key {key}");
+        log::debug!("正在写入键 {key} 的全局键值对");
         self.write_kvp_inner(key, value).await
     }
 

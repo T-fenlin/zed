@@ -42,14 +42,14 @@ pub(crate) fn resolve_custom_headers(
                 .any(|reserved| reserved.eq_ignore_ascii_case(name))
             {
                 log::warn!(
-                    "ignoring custom {provider_name} header `{name}`: managed by Zed and cannot be overridden"
+                    "忽略自定义 {provider_name} 请求头 `{name}`:由 Zed 管理,无法覆盖"
                 );
                 return None;
             }
             let header_name = match name.parse::<HeaderName>() {
                 Ok(header_name) => header_name,
                 Err(err) => {
-                    log::warn!("ignoring custom {provider_name} header `{name}`: invalid header name ({err})");
+                    log::warn!("忽略自定义 {provider_name} 请求头 `{name}`:无效的请求头名称 ({err})");
                     return None;
                 }
             };
@@ -57,7 +57,7 @@ pub(crate) fn resolve_custom_headers(
                 Ok(header_value) => header_value,
                 Err(err) => {
                     log::warn!(
-                        "ignoring custom {provider_name} header `{name}`: invalid header value ({err})"
+                        "忽略自定义 {provider_name} 请求头 `{name}`:无效的请求头值 ({err})"
                     );
                     return None;
                 }

@@ -104,10 +104,10 @@ impl ExcerptAnchor {
 
     pub(crate) fn cmp(&self, other: &Self, snapshot: &MultiBufferSnapshot) -> Ordering {
         let Some(self_path_key) = snapshot.path_keys.get_index(self.path.0 as usize) else {
-            panic!("anchor's path was never added to multibuffer")
+            panic!("锚点的路径从未添加到多缓冲区中")
         };
         let Some(other_path_key) = snapshot.path_keys.get_index(other.path.0 as usize) else {
-            panic!("anchor's path was never added to multibuffer")
+            panic!("锚点的路径从未添加到多缓冲区中")
         };
 
         match self_path_key.cmp(other_path_key) {
@@ -258,7 +258,7 @@ impl ExcerptAnchor {
         snapshot: &'a MultiBufferSnapshot,
     ) -> AnchorSeekTarget<'a> {
         self.try_seek_target(snapshot)
-            .expect("anchor is from different multi-buffer")
+            .expect("锚点来自不同的多缓冲区")
     }
 
     pub(crate) fn try_seek_target<'a>(

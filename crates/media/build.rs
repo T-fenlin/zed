@@ -32,12 +32,12 @@ fn main() {
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .layout_tests(false)
         .generate()
-        .expect("unable to generate bindings");
+        .expect("无法生成绑定");
 
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     bindings
         .write_to_file(out_path.join("bindings.rs"))
-        .expect("couldn't write dispatch bindings");
+        .expect("无法写入调度绑定");
 }
 
 #[cfg(not(target_os = "macos"))]

@@ -103,7 +103,7 @@ where
                 _ => {}
             }
         }
-        anyhow::bail!("connection closed");
+        anyhow::bail!("连接已关闭");
     }
 }
 

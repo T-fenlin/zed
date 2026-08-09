@@ -73,7 +73,7 @@ mod tests {
                 }
                 "#
                 .unindent(),
-                "statements under a case label should be indented, and the next label outdented"
+                "case 标签下的语句应缩进,下一个标签应取消缩进"
             );
 
             buffer
@@ -123,7 +123,7 @@ mod tests {
                 };
                 "#
                 .unindent(),
-                "members after access specifiers should be indented one level deeper than the specifier"
+                "访问说明符后的成员应比说明符多缩进一级"
             );
 
             buffer
@@ -175,7 +175,7 @@ mod tests {
                 };
                 "#
                 .unindent(),
-                "members after access specifiers should be indented one level deeper than the specifier"
+                "访问说明符后的成员应比说明符多缩进一级"
             );
 
             buffer
@@ -235,7 +235,7 @@ mod tests {
                 };
                 "#
                 .unindent(),
-                "nested class access specifiers should indent independently at each nesting level"
+                "嵌套类的访问说明符应在每个嵌套级别独立缩进"
             );
 
             buffer
@@ -285,7 +285,7 @@ mod tests {
                 };
                 "#
                 .unindent(),
-                "consecutive access specifiers with no members between them should all align at class level"
+                "连续的访问说明符之间没有成员时,应在类级别对齐"
             );
 
             buffer
@@ -337,7 +337,7 @@ mod tests {
                 };
                 "#
                 .unindent(),
-                "access specifiers should be indented one level inside class braces"
+                "访问说明符应在类花括号内缩进一级"
             );
 
             buffer
@@ -399,7 +399,7 @@ mod tests {
                 };
                 "#
                 .unindent(),
-                "method bodies inside access specifier sections should compose brace and specifier indent"
+                "访问说明符部分内的方法体应组合花括号和说明符的缩进"
             );
 
             buffer
@@ -429,7 +429,7 @@ mod tests {
             assert_eq!(
                 buffer.text(),
                 "int main() {\n  \n}",
-                "content inside braces should be indented"
+                "花括号内的内容应缩进"
             );
 
             buffer
@@ -475,7 +475,7 @@ mod tests {
                 }
                 "#
                 .unindent(),
-                "body of if-statement without braces should be indented"
+                "没有花括号的 if 语句体应缩进"
             );
 
             let ix = buffer.len() - 4;
@@ -490,7 +490,7 @@ mod tests {
                 }
                 "#
                 .unindent(),
-                "field expression (.c) should be indented further than the statement body"
+                "字段表达式 (.c) 应比语句体缩进更多"
             );
 
             buffer.edit([(0..buffer.len(), "")], Some(AutoindentMode::EachLine), cx);
@@ -517,7 +517,7 @@ mod tests {
                 }
                 "#
                 .unindent(),
-                "single-line if/else without braces should align at the same level"
+                "没有花括号的单行 if/else 应对齐在同一层级"
             );
 
             buffer.edit([(0..buffer.len(), "")], Some(AutoindentMode::EachLine), cx);
@@ -548,7 +548,7 @@ mod tests {
                 }
                 "#
                 .unindent(),
-                "multi-line if/else without braces should indent statement bodies"
+                "没有花括号的多行 if/else 应缩进语句体"
             );
 
             buffer.edit([(0..buffer.len(), "")], Some(AutoindentMode::EachLine), cx);
@@ -577,7 +577,7 @@ mod tests {
                 }
                 "#
                 .unindent(),
-                "nested if statements without braces should indent properly"
+                "没有花括号的嵌套 if 语句应正确缩进"
             );
 
             buffer.edit([(0..buffer.len(), "")], Some(AutoindentMode::EachLine), cx);
@@ -612,7 +612,7 @@ mod tests {
                 }
                 "#
                 .unindent(),
-                "else-if chains should align all conditions at same level with indented bodies"
+                "else-if 链应将所有条件对齐在同一层级,并缩进语句体"
             );
 
             buffer.edit([(0..buffer.len(), "")], Some(AutoindentMode::EachLine), cx);
@@ -643,7 +643,7 @@ mod tests {
                 }
                 "#
                 .unindent(),
-                "mixed braces should indent properly"
+                "混合花括号应正确缩进"
             );
 
             buffer

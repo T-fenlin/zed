@@ -6,7 +6,7 @@ pub enum ProxyLaunchError {
     // We're using 90 as the exit code, because 0-78 are often taken
     // by shells and other conventions and >128 also has certain meanings
     // in certain contexts.
-    #[error("Attempted reconnect, but server not running.")]
+    #[error("尝试重新连接,但服务器未运行。")]
     ServerNotRunning = 90,
 }
 

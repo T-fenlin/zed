@@ -216,9 +216,9 @@ impl TerminalInlineAssistant {
     ) -> Result<Task<LanguageModelRequest>> {
         let ConfiguredModel { model, .. } = LanguageModelRegistry::read_global(cx)
             .inline_assistant_model()
-            .context("No inline assistant model")?;
+            .context("未配置内联助手模型")?;
 
-        let assist = self.assists.get(&assist_id).context("invalid assist")?;
+        let assist = self.assists.get(&assist_id).context("无效的助手会话")?;
 
         let shell = std::env::var("SHELL").ok();
         let (latest_output, working_directory) = assist
@@ -234,7 +234,7 @@ impl TerminalInlineAssistant {
             .ok()
             .unwrap_or_default();
 
-        let prompt_editor = assist.prompt_editor.clone().context("invalid assist")?;
+        let prompt_editor = assist.prompt_editor.clone().context("无效的助手会话")?;
 
         let prompt = self.prompt_builder.generate_terminal_assistant_prompt(
             &prompt_editor.read(cx).prompt(cx),
@@ -443,7 +443,7 @@ impl TerminalInlineAssist {
                                 && assist.prompt_editor.is_none()
                                 && let Some(workspace) = assist.workspace.upgrade()
                             {
-                                let error = format!("Terminal inline assistant error: {}", error);
+                                let error = format!("终端内联助手错误:{}", error);
                                 workspace.update(cx, |workspace, cx| {
                                     struct InlineAssistantError;
 

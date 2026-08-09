@@ -46,7 +46,7 @@ pub fn current_platform(headless: bool) -> Rc<dyn gpui::Platform> {
         #[cfg(feature = "x11")]
         "X11" => Rc::new(LinuxPlatform {
             inner: X11Client::new()
-                .context("Failed to initialize X11 client.")
+                .context("无法初始化 X11 客户端。")
                 .unwrap(),
         }),
 

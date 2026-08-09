@@ -179,7 +179,7 @@ impl PromptContextAction {
 
     pub fn label(&self) -> &'static str {
         match self {
-            Self::AddSelections => "Selection",
+            Self::AddSelections => "选区",
         }
     }
 
@@ -211,18 +211,18 @@ impl PromptLocalCommand {
 
     pub fn label(&self) -> &'static str {
         match self {
-            Self::ThumbsUp => "Positive Feedback",
-            Self::ThumbsDown => "Negative Feedback",
+            Self::ThumbsUp => "正面反馈",
+            Self::ThumbsDown => "负面反馈",
         }
     }
 
     pub fn description(&self) -> &'static str {
         match self {
             Self::ThumbsUp => {
-                "Rate this response as helpful. Sends the current conversation to the Zed team."
+                "将此回复评为有帮助。将当前对话发送给 Zed 团队。"
             }
             Self::ThumbsDown => {
-                "Rate this response as not helpful. Sends the current conversation to the Zed team."
+                "将此回复评为没有帮助。将当前对话发送给 Zed 团队。"
             }
         }
     }
@@ -247,7 +247,7 @@ impl TryFrom<&str> for PromptContextType {
             "skill" => Ok(Self::Skill),
             "diagnostics" => Ok(Self::Diagnostics),
             "diff" => Ok(Self::BranchDiff),
-            _ => Err(format!("Invalid context picker mode: {}", value)),
+            _ => Err(format!("无效的上下文选择器模式:{}", value)),
         }
     }
 }
@@ -267,13 +267,13 @@ impl PromptContextType {
 
     pub fn label(&self) -> &'static str {
         match self {
-            Self::File => "Files & Directories",
-            Self::Symbol => "Symbols",
-            Self::Fetch => "Fetch",
-            Self::Thread => "Threads",
-            Self::Skill => "Skills",
-            Self::Diagnostics => "Diagnostics",
-            Self::BranchDiff => "Branch Diff",
+            Self::File => "文件与目录",
+            Self::Symbol => "符号",
+            Self::Fetch => "获取",
+            Self::Thread => "对话线程",
+            Self::Skill => "技能",
+            Self::Diagnostics => "诊断",
+            Self::BranchDiff => "分支差异",
         }
     }
 
@@ -396,9 +396,9 @@ impl AvailableCommand {
     /// Completion group key and header label for this command's category.
     fn group(&self) -> CompletionGroup {
         let (key, label) = match self.category {
-            Some(acp_thread::CommandCategory::Native) => ("commands", "Commands"),
-            Some(acp_thread::CommandCategory::Mcp) => ("mcp-commands", "MCP Server Commands"),
-            None => ("acp-commands", "Commands"),
+            Some(acp_thread::CommandCategory::Native) => ("commands", "命令"),
+            Some(acp_thread::CommandCategory::Mcp) => ("mcp-commands", "MCP 服务器命令"),
+            None => ("acp-commands", "命令"),
         };
         CompletionGroup {
             key: key.into(),
@@ -977,7 +977,7 @@ impl<T: PromptCompletionProviderDelegate> PromptCompletionProvider<T> {
         let uri = MentionUri::GitDiff {
             base_ref: base_ref.to_string(),
         };
-        let crease_text: SharedString = format!("Branch Diff (vs {})", base_ref).into();
+        let crease_text: SharedString = format!("分支差异(对比 {})", base_ref).into();
         let display_text = format!("@{}", crease_text);
         let new_text = format!("[{}]({}) ", display_text, uri.to_uri());
         let new_text_len = new_text.len();
@@ -1549,7 +1549,7 @@ impl<T: PromptCompletionProviderDelegate> CompletionProvider for PromptCompletio
                                     confirm: Some(confirm),
                                     group: show_section_headers.then(|| CompletionGroup {
                                         key: "skills".into(),
-                                        label: Some("Skills".into()),
+                                        label: Some("技能".into()),
                                     }),
                                 }
                             }
@@ -1618,7 +1618,7 @@ impl<T: PromptCompletionProviderDelegate> CompletionProvider for PromptCompletio
                             SlashCompletionCandidate::LocalCommand(command) => {
                                 let group = show_section_headers.then(|| CompletionGroup {
                                     key: "local-commands".into(),
-                                    label: Some("Actions".into()),
+                                    label: Some("操作".into()),
                                 });
 
                                 Completion {
@@ -2183,7 +2183,7 @@ fn diagnostics_label(
     }
 
     if parts.is_empty() {
-        return "Diagnostics".into();
+        return "诊断".into();
     }
 
     let body = if parts.len() == 2 {
@@ -2194,7 +2194,7 @@ fn diagnostics_label(
             .expect("at least one part present after non-empty check")
     };
 
-    format!("Diagnostics: {body}")
+    format!("诊断:{body}")
 }
 
 fn diagnostics_submenu_label(
@@ -2220,7 +2220,7 @@ fn diagnostics_submenu_label(
             summary.warning_count,
             pluralize("warning", summary.warning_count)
         ),
-        _ => "Diagnostics".into(),
+        _ => "诊断".into(),
     }
 }
 
@@ -3168,19 +3168,19 @@ mod tests {
         assert_eq!(
             MentionCompletion::try_parse("Lorem@symbol", 0, &supported_modes),
             None,
-            "Should not parse mention inside word"
+            "不应解析单词内部的提及"
         );
 
         assert_eq!(
             MentionCompletion::try_parse("Lorem @ file", 0, &supported_modes),
             None,
-            "Should not parse with a space after @"
+            "不应解析 @ 后有空格的情况"
         );
 
         assert_eq!(
             MentionCompletion::try_parse("@ file", 0, &supported_modes),
             None,
-            "Should not parse with a space after @ at the start of the line"
+            "不应解析行首 @ 后有空格的情况"
         );
 
         assert_eq!(
@@ -3194,7 +3194,7 @@ mod tests {
                 mode: Some(PromptContextType::Fetch),
                 argument: Some("https://www.npmjs.com/package/@matterport/sdk".to_string()),
             }),
-            "Should handle URLs with @ in the path"
+            "应处理路径中包含 @ 的 URL"
         );
 
         assert_eq!(
@@ -3208,7 +3208,7 @@ mod tests {
                 mode: Some(PromptContextType::Fetch),
                 argument: Some("https://example.com/@org/@repo/file".to_string()),
             }),
-            "Should handle URLs with multiple @ characters"
+            "应处理包含多个 @ 字符的 URL"
         );
 
         assert_eq!(
@@ -3222,7 +3222,7 @@ mod tests {
                 mode: Some(PromptContextType::Fetch),
                 argument: Some("https://example.com/@".to_string()),
             }),
-            "Should parse URL ending with @ (even if URL is incomplete)"
+            "应解析以 @ 结尾的 URL(即使 URL 不完整)"
         );
 
         // Bracketed mentions: opening brackets count as a boundary before '@' so
@@ -3235,7 +3235,7 @@ mod tests {
                 mode: None,
                 argument: None,
             }),
-            "Should parse mention immediately after '('"
+            "应解析紧跟在 '(' 后的提及"
         );
 
         assert_eq!(
@@ -3245,7 +3245,7 @@ mod tests {
                 mode: None,
                 argument: None,
             }),
-            "Should parse mention immediately after '['"
+            "应解析紧跟在 '[' 后的提及"
         );
 
         assert_eq!(
@@ -3255,7 +3255,7 @@ mod tests {
                 mode: None,
                 argument: None,
             }),
-            "Should parse mention immediately after '{{'"
+            "应解析紧跟在 '{{' 后的提及"
         );
     }
 
@@ -3263,11 +3263,11 @@ mod tests {
     async fn test_filter_sessions_by_query(cx: &mut TestAppContext) {
         let alpha = SessionMatch {
             session_id: acp::SessionId::new("session-alpha"),
-            title: "Alpha Session".into(),
+            title: "Alpha 会话".into(),
         };
         let beta = SessionMatch {
             session_id: acp::SessionId::new("session-beta"),
-            title: "Beta Session".into(),
+            title: "Beta 会话".into(),
         };
 
         let sessions = vec![alpha.clone(), beta];
@@ -3352,16 +3352,16 @@ mod tests {
             })
             .await;
 
-        assert_eq!(results.len(), 2, "expected 2 matching files");
+        assert_eq!(results.len(), 2, "预期匹配 2 个文件");
         assert_eq!(
             results[0].mat.path.as_ref(),
             rel_path("dir2/a.txt"),
-            "dir2/a.txt should be first because it's closer to the recently opened dir2/b.txt"
+            "dir2/a.txt 应排在第一位,因为它更接近最近打开的 dir2/b.txt"
         );
         assert_eq!(
             results[1].mat.path.as_ref(),
             rel_path("dir1/a.txt"),
-            "dir1/a.txt should be second"
+            "dir1/a.txt 应排在第二位"
         );
     }
 
@@ -3404,16 +3404,16 @@ mod tests {
         workspace.update(cx, |workspace, cx| {
             let selection = source
                 .read_selection(workspace, true, cx)
-                .expect("editor source with cursor on a line should yield a selection");
+                .expect("光标位于某行的编辑器源应产生一个选区");
             assert!(
                 matches!(selection, AgentContextSelection::Editor(_)),
-                "expected Editor variant"
+                "预期为编辑器变体"
             );
             if let AgentContextSelection::Editor(ranges) = selection {
                 assert_eq!(
                     ranges.len(),
                     1,
-                    "expected exactly one range for whole-line fallback"
+                    "整行回退应恰好产生一个范围"
                 );
                 let (range_buffer, range) = &ranges[0];
                 let snapshot = range_buffer.read(cx).snapshot();
@@ -3422,7 +3422,7 @@ mod tests {
                 assert_eq!(
                     &snapshot.text()[start_offset..end_offset],
                     "def",
-                    "whole-line fallback should capture the current row"
+                    "整行回退应捕获当前行"
                 );
             }
 

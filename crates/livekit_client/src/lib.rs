@@ -220,11 +220,11 @@ pub(crate) fn default_device(
     let config = if input {
         device
             .default_input_config()
-            .context("failed to get default input config")?
+            .context("无法获取默认输入配置")?
     } else {
         device
             .default_output_config()
-            .context("failed to get default output config")?
+            .context("无法获取默认输出配置")?
     };
     Ok((device, config))
 }
@@ -245,7 +245,7 @@ pub(crate) fn get_sample_data(
         cpal::SampleFormat::U64 => Ok(convert_sample_data::<u64, i16>(data)),
         cpal::SampleFormat::F32 => Ok(convert_sample_data::<f32, i16>(data)),
         cpal::SampleFormat::F64 => Ok(convert_sample_data::<f64, i16>(data)),
-        _ => anyhow::bail!("Unsupported sample format"),
+        _ => anyhow::bail!("不支持的采样格式"),
     }
 }
 

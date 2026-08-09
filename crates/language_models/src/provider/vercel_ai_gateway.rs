@@ -360,11 +360,11 @@ fn clean_error_message(message: &str) -> String {
     let lower = message.to_lowercase();
 
     if lower.contains("vercel_oidc_token") && lower.contains("oidc token") {
-        return "Authentication failed for Vercel AI Gateway. Use a Vercel AI Gateway key (vck_...).\nCreate or manage keys in Vercel AI Gateway console.\nIf this persists, regenerate the key and update it in Vercel AI Gateway provider settings in Zed.".to_string();
+        return "Vercel AI Gateway 身份验证失败。请使用 Vercel AI Gateway 密钥(vck_...)。\n在 Vercel AI Gateway 控制台中创建或管理密钥。\n如果问题仍然存在,请重新生成密钥并在 Zed 的 Vercel AI Gateway 提供程序设置中更新。".to_string();
     }
 
     if lower.contains("invalid api key") || lower.contains("invalid_api_key") {
-        return "Authentication failed for Vercel AI Gateway. Check that your Vercel AI Gateway key starts with vck_ and is active.".to_string();
+        return "Vercel AI Gateway 身份验证失败。请检查您的 Vercel AI Gateway 密钥是否以 vck_ 开头且处于活动状态。".to_string();
     }
 
     message.to_string()

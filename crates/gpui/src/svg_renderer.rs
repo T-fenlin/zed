@@ -224,7 +224,7 @@ impl SvgRenderer {
         params: &RenderSvgParams,
         bytes: Option<&[u8]>,
     ) -> Result<Option<(Size<DevicePixels>, Vec<u8>)>> {
-        anyhow::ensure!(!params.size.is_zero(), "can't render at a zero size");
+        anyhow::ensure!(!params.size.is_zero(), "无法在零尺寸下渲染");
 
         let render_pixmap = |bytes| {
             let pixmap = self.render_pixmap(bytes, SvgSize::Size(params.size))?;
@@ -271,12 +271,12 @@ fn rasterize_tree(tree: &usvg::Tree, size: SvgSize) -> Result<Pixmap, usvg::Erro
 
     let width = svg_size.width() * scale;
     if width > MAX_SIZE {
-        log::warn!("Attempted to render pixmap where width ({width}) > MAX_SIZE ({MAX_SIZE})");
+        log::warn!("尝试渲染宽度 ({width}) > MAX_SIZE ({MAX_SIZE}) 的像素图");
         scale *= MAX_SIZE / width;
     }
     let height = svg_size.height() * scale;
     if height > MAX_SIZE {
-        log::warn!("Attempted to render pixmap where height ({height}) > MAX_SIZE ({MAX_SIZE})");
+        log::warn!("尝试渲染高度 ({height}) > MAX_SIZE ({MAX_SIZE}) 的像素图");
         scale *= MAX_SIZE / height;
     }
 
@@ -302,8 +302,8 @@ fn load_bundled_fonts(asset_source: &dyn AssetSource, db: &mut usvg::fontdb::Dat
     for path in font_paths {
         match asset_source.load(path) {
             Ok(Some(data)) => db.load_font_data(data.into_owned()),
-            Ok(None) => log::warn!("Bundled font not found: {path}"),
-            Err(error) => log::warn!("Failed to load bundled font {path}: {error}"),
+            Ok(None) => log::warn!("未找到内置字体: {path}"),
+            Err(error) => log::warn!("加载内置字体 {path} 失败: {error}"),
         }
     }
 }
@@ -369,7 +369,7 @@ mod tests {
 
         // A base letter followed by a stack of combining marks. Under HarfBuzz's
         // default cluster merging every mark glyph shares the base's byte index,
-        // which is the "glyph splitting" condition that triggered the panic. The
+        // which is the "字形分割" condition that triggered the panic. The
         // chunk must use two different fonts so the buggy merge path runs.
         let zalgo = "e\u{0301}\u{0302}\u{0303}\u{0304}\u{0306}\u{0307}\u{0308}\u{030a}";
         let svg = format!(
@@ -379,7 +379,7 @@ mod tests {
         // Before the fix this aborts via panic with a message like
         // "removal index (is 5) should be < len (is 5)".
         usvg::Tree::from_data(svg.as_bytes(), &options)
-            .expect("SVG with mixed-font text should parse");
+            .expect("包含混合字体文本的 SVG 应能解析");
     }
 
     #[test]
@@ -407,7 +407,7 @@ mod tests {
             assert_eq!(
                 is_emoji_presentation(s.chars().next().unwrap()),
                 expected,
-                "for char {:?}",
+                "对于字符 {:?}",
                 s
             );
         }
@@ -433,7 +433,7 @@ mod tests {
             };
             assert!(
                 db.query(&query).is_some(),
-                "Expected generic family {family:?} to resolve after fix_generic_font_families"
+                "调用 fix_generic_font_families 后,通用字体族 {family:?} 应能解析"
             );
         }
     }
@@ -474,11 +474,11 @@ mod tests {
             families: &[Family::Monospace],
             ..Default::default()
         };
-        let id = db.query(&query).expect("Monospace should resolve");
-        let face = db.face(id).expect("Face should exist");
+        let id = db.query(&query).expect("等宽字体应能解析");
+        let face = db.face(id).expect("字体面应存在");
         assert!(
             face.families.iter().any(|(name, _)| name.contains("Lilex")),
-            "Monospace should map to Lilex, got {:?}",
+            "等宽字体应映射到 Lilex,实际为 {:?}",
             face.families
         );
     }

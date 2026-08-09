@@ -122,7 +122,7 @@ pub struct SplitSpec {
 fn parse_split_spec(spec: &str) -> Result<SplitSpec> {
     let (path, size_str) = spec
         .rsplit_once('=')
-        .with_context(|| format!("invalid split spec '{}': expected <path>=<size>", spec))?;
+        .with_context(|| format!("无效的拆分规格 '{}':应为 <路径>=<大小>", spec))?;
 
     let size = if size_str == "rest" {
         SplitSize::Rest
@@ -130,15 +130,15 @@ fn parse_split_spec(spec: &str) -> Result<SplitSpec> {
         let pct_str = size_str.trim_end_matches('%');
         let pct: f64 = pct_str
             .parse()
-            .with_context(|| format!("invalid percentage '{}' in '{}'", pct_str, spec))?;
+            .with_context(|| format!("'{}' 中的无效百分比 '{}'", pct_str, spec))?;
         if !(0.0..=100.0).contains(&pct) {
-            bail!("percentage must be between 0 and 100, got {}", pct);
+            bail!("百分比必须在 0 到 100 之间,实际为 {}", pct);
         }
         SplitSize::Percentage(pct / 100.0)
     } else {
         let count: usize = size_str
             .parse()
-            .with_context(|| format!("invalid count '{}' in '{}'", size_str, spec))?;
+            .with_context(|| format!("'{}' 中的无效数量 '{}'", size_str, spec))?;
         SplitSize::Absolute(count)
     };
 
@@ -152,7 +152,7 @@ fn read_lines_from_input(input: Option<&Path>) -> Result<Vec<String>> {
     let reader: Box<dyn BufRead> = match input {
         Some(path) => {
             let file =
-                File::open(path).with_context(|| format!("failed to open '{}'", path.display()))?;
+                File::open(path).with_context(|| format!("无法打开 '{}'", path.display()))?;
             Box::new(BufReader::new(file))
         }
         None => Box::new(BufReader::new(io::stdin())),
@@ -161,7 +161,7 @@ fn read_lines_from_input(input: Option<&Path>) -> Result<Vec<String>> {
     let lines: Vec<String> = reader
         .lines()
         .collect::<io::Result<Vec<_>>>()
-        .context("failed to read input lines")?;
+        .context("无法读取输入行")?;
 
     Ok(lines)
 }
@@ -184,7 +184,7 @@ fn compute_split_counts(specs: &[SplitSpec], total: usize) -> Result<Vec<usize>>
             }
             SplitSize::Rest => {
                 if rest_index.is_some() {
-                    bail!("only one split can use 'rest'");
+                    bail!("只有一个拆分可以使用 'rest'");
                 }
                 rest_index = Some(i);
             }
@@ -202,29 +202,29 @@ fn write_lines_to_file(path: &Path, lines: &[String]) -> Result<()> {
     if let Some(parent) = path.parent() {
         if !parent.as_os_str().is_empty() {
             std::fs::create_dir_all(parent)
-                .with_context(|| format!("failed to create directory '{}'", parent.display()))?;
+                .with_context(|| format!("无法创建目录 '{}'", parent.display()))?;
         }
     }
 
     let file =
-        File::create(path).with_context(|| format!("failed to create '{}'", path.display()))?;
+        File::create(path).with_context(|| format!("无法创建 '{}'", path.display()))?;
     let mut writer = BufWriter::new(file);
 
     for line in lines {
         writeln!(writer, "{}", line)
-            .with_context(|| format!("failed to write to '{}'", path.display()))?;
+            .with_context(|| format!("无法写入 '{}'", path.display()))?;
     }
 
     writer
         .flush()
-        .with_context(|| format!("failed to flush '{}'", path.display()))?;
+        .with_context(|| format!("无法刷新 '{}'", path.display()))?;
 
     Ok(())
 }
 
 pub fn run_split(args: &SplitArgs, inputs: &[PathBuf]) -> Result<()> {
     if inputs.is_empty() {
-        bail!("usage: ep split [input.jsonl] train.jsonl=80% valid.jsonl=rest");
+        bail!("用法:ep split [input.jsonl] train.jsonl=80% valid.jsonl=rest");
     }
 
     let (input_path, split_specs_raw): (Option<&Path>, &[PathBuf]) =
@@ -244,7 +244,7 @@ pub fn run_split(args: &SplitArgs, inputs: &[PathBuf]) -> Result<()> {
         };
 
     if split_specs_raw.is_empty() {
-        bail!("no split specifications provided");
+        bail!("未提供拆分规格");
     }
 
     let specs: Vec<SplitSpec> = split_specs_raw
@@ -266,14 +266,14 @@ pub fn run_split(args: &SplitArgs, inputs: &[PathBuf]) -> Result<()> {
 
     if args.stratify != Stratify::None {
         eprintln!(
-            "Stratifying by {} ({} unique groups, {} examples)",
+            "按 {} 分层({} 个唯一分组,{} 个示例)",
             args.stratify,
             grouped_lines.len(),
             total_lines
         );
     } else {
         eprintln!(
-            "No stratification, splitting {} examples by line",
+            "无分层,按行拆分 {} 个示例",
             total_lines
         );
     }
@@ -313,7 +313,7 @@ pub fn run_split(args: &SplitArgs, inputs: &[PathBuf]) -> Result<()> {
 
     for (spec, output_lines) in specs.iter().zip(split_outputs.iter()) {
         write_lines_to_file(&spec.path, output_lines)?;
-        eprintln!("{}: {} examples", spec.path.display(), output_lines.len());
+        eprintln!("{}:{} 个示例", spec.path.display(), output_lines.len());
     }
 
     Ok(())
@@ -385,7 +385,7 @@ mod tests {
         assert_eq!(spec.path, PathBuf::from("train.jsonl"));
         match spec.size {
             SplitSize::Percentage(p) => assert!((p - 0.8).abs() < 0.001),
-            _ => panic!("expected percentage"),
+            _ => panic!("应为百分比"),
         }
     }
 
@@ -395,7 +395,7 @@ mod tests {
         assert_eq!(spec.path, PathBuf::from("test.jsonl"));
         match spec.size {
             SplitSize::Absolute(n) => assert_eq!(n, 100),
-            _ => panic!("expected absolute"),
+            _ => panic!("应为绝对数量"),
         }
     }
 
@@ -549,7 +549,7 @@ mod tests {
 
         assert!(
             train_repos.is_disjoint(&valid_repos),
-            "train and valid should have non-overlapping repos"
+            "训练集和验证集应包含不重叠的仓库"
         );
     }
 

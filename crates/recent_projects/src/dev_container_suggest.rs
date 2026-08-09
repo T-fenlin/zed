@@ -31,7 +31,7 @@ fn project_devcontainer_key(project_path: &str) -> String {
     format!("{}_{}", DEV_CONTAINER_SUGGEST_KEY, project_path)
 }
 
-/// Returns the path used to remember the user's "Don't Show Again" choice for a
+/// Returns the path used to remember the user's "不再显示" choice for a
 /// worktree's dev container suggestion. This is keyed on the repository's common
 /// Git directory rather than the worktree's own path, so that dismissing the
 /// suggestion in one git worktree also suppresses it in sibling worktrees of the
@@ -155,7 +155,7 @@ pub fn suggest_on_worktree_updated(
         workspace.show_notification(notification_id, cx, |cx| {
             cx.new(move |cx| {
                 let message: SharedString = format!(
-                    "{worktree_name} contains a Dev Container configuration file. Would you like to re-open it in a container?"
+                    "{worktree_name} 包含 Dev Container 配置文件。是否要在容器中重新打开?"
                 )
                 .into();
                 let tooltip_text: SharedString = project_path.clone().into();
@@ -166,7 +166,7 @@ pub fn suggest_on_worktree_updated(
                         .tooltip(Tooltip::text(tooltip_text.clone()))
                         .into_any_element()
                 })
-                .primary_message("Yes, Open in Container")
+                .primary_message("是,在容器中打开")
                 .primary_icon(IconName::Check)
                 .primary_icon_color(Color::Success)
                 .primary_on_click({
@@ -174,7 +174,7 @@ pub fn suggest_on_worktree_updated(
                         window.dispatch_action(Box::new(zed_actions::OpenDevContainer), cx);
                     }
                 })
-                .secondary_message("Don't Show Again")
+                .secondary_message("不再显示")
                 .secondary_icon(IconName::Close)
                 .secondary_icon_color(Color::Error)
                 .secondary_on_click({

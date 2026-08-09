@@ -580,7 +580,7 @@ mod tests {
         let runnables = collect_runnables(cx, source, query, None);
         assert!(
             runnables.is_empty(),
-            "matches without @run should produce no runnables, got {}",
+            "没有 @run 的匹配不应产生可运行项,实际得到 {} 个",
             runnables.len()
         );
     }
@@ -611,7 +611,7 @@ mod tests {
         assert_eq!(
             run_texts,
             vec!["test_alpha"],
-            "syntax matches that produce no runnable must not terminate iteration"
+            "不产生可运行项的语法匹配不应终止迭代"
         );
     }
 
@@ -621,7 +621,7 @@ mod tests {
         let runnables = collect_runnables(cx, GROUPED_SOURCE, GROUPED_QUERY, None);
         assert!(
             runnables.is_empty(),
-            "grouped path with no resolver should emit nothing, got {}",
+            "没有解析器的分组路径不应产生任何内容,实际得到 {} 个",
             runnables.len()
         );
     }
@@ -647,7 +647,7 @@ mod tests {
             assert_eq!(
                 range.extra_captures.get("_outer").map(String::as_str),
                 Some("outer"),
-                "every grouped runnable should inherit the shared `_outer` capture"
+                "每个分组可运行项都应继承共享的 `_outer` 捕获"
             );
         }
         assert_eq!(runnables.len(), 3);
@@ -665,7 +665,7 @@ mod tests {
         assert_eq!(
             calls,
             vec!["alpha", "beta", "gamma"],
-            "each group's local `_call` capture should come from that row only"
+            "每个组的本地 `_call` 捕获应仅来自该行"
         );
     }
 
@@ -695,7 +695,7 @@ mod tests {
         let resolver: Arc<dyn RunnableResolver> = Arc::new(FirstRunResolver);
         let beta_offset = GROUPED_SOURCE
             .find("beta()")
-            .expect("source should contain `beta()`");
+            .expect("源代码应包含 `beta()`");
         let runnables = collect_runnables_in(
             cx,
             GROUPED_SOURCE,
@@ -711,7 +711,7 @@ mod tests {
         assert_eq!(
             run_texts,
             vec!["beta"],
-            "offset_range should restrict emitted groups to those overlapping it"
+            "offset_range 应将输出的组限制为与其重叠的组"
         );
     }
 
@@ -720,7 +720,7 @@ mod tests {
         let resolver: Arc<dyn RunnableResolver> = Arc::new(FirstRunResolver);
         let alpha_offset = GROUPED_SOURCE
             .find("alpha()")
-            .expect("source should contain `alpha()`");
+            .expect("源代码应包含 `alpha()`");
         let runnables = collect_runnables_in(
             cx,
             GROUPED_SOURCE,
@@ -736,7 +736,7 @@ mod tests {
         assert_eq!(
             run_texts,
             vec!["alpha"],
-            "zero-width offset_range at the start of a group should include that group"
+            "组起始处的零宽度 offset_range 应包含该组"
         );
     }
 
@@ -749,7 +749,7 @@ mod tests {
             assert_eq!(
                 range.extra_captures.get("_outer").map(String::as_str),
                 Some("LOCAL"),
-                "local extras should override shared extras with the same key"
+                "本地额外捕获应覆盖具有相同键的共享额外捕获"
             );
         }
         assert_eq!(runnables.len(), 3);

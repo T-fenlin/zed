@@ -226,7 +226,7 @@ fn parse_http_response_head(input: &[u8]) -> Result<Option<usize>, ProxyError> {
                 return Err(ProxyError::HttpResponseTooLarge);
             }
             let code = response.code.ok_or_else(|| {
-                ProxyError::MalformedHttpResponse("missing status code".to_string())
+                ProxyError::MalformedHttpResponse("缺少状态码".to_string())
             })?;
             if !(200..300).contains(&code) {
                 return Err(ProxyError::HttpConnectRefused(code));
@@ -364,7 +364,7 @@ mod tests {
         let request = String::from_utf8(sends[0].clone()).unwrap();
         assert!(
             request.starts_with("CONNECT cloud.example.com:443 HTTP/1.1\r\n"),
-            "unexpected request: {request:?}"
+            "意外的请求: {request:?}"
         );
         assert!(request.contains("Host: cloud.example.com:443\r\n"));
         assert!(request.ends_with("\r\n\r\n"));
@@ -385,7 +385,7 @@ mod tests {
         // "dXNlcjpwYXNz" is base64("user:pass").
         assert!(
             request.contains("Proxy-Authorization: Basic dXNlcjpwYXNz\r\n"),
-            "unexpected request: {request:?}"
+            "意外的请求: {request:?}"
         );
     }
 
@@ -436,7 +436,7 @@ mod tests {
                 let spec = spec(&format!("{scheme}://proxy:1080"));
                 let target = Target::Domain(domain.to_string(), 443);
                 let Err(error) = Handshake::new(&spec, &target) else {
-                    panic!("expected {scheme} handshake construction to fail for {domain:?}");
+                    panic!("预期 {scheme} 握手构建对 {domain:?} 失败");
                 };
                 assert!(matches!(error, ProxyError::DomainContainsControlBytes));
             }
@@ -448,7 +448,7 @@ mod tests {
         let spec = spec("socks4://user%00id@proxy:1080");
         let target = Target::Address("192.0.2.10:443".parse().unwrap());
         let Err(error) = Handshake::new(&spec, &target) else {
-            panic!("expected handshake construction to fail");
+            panic!("预期握手构建失败");
         };
         assert!(matches!(error, ProxyError::Socks4UserIdContainsNul));
     }
@@ -590,7 +590,7 @@ mod tests {
         let spec = spec("socks4://proxy:1080");
         let target = Target::Address("[2001:db8::1]:443".parse().unwrap());
         let Err(error) = Handshake::new(&spec, &target) else {
-            panic!("expected handshake construction to fail");
+            panic!("预期握手构建失败");
         };
         assert!(matches!(error, ProxyError::Socks4Ipv4Only));
     }
@@ -623,7 +623,7 @@ mod tests {
                     (Err(_), Err(_)) => {}
                     (baseline, chunked) => {
                         return Err(TestCaseError::fail(format!(
-                            "outcomes diverged: baseline {baseline:?} vs chunked {chunked:?}"
+                            "结果分歧: 基线 {baseline:?} 与分块 {chunked:?}"
                         )));
                     }
                 }
@@ -684,11 +684,11 @@ mod tests {
                 Step::NeedMoreInput => {
                     assert!(
                         !remaining.is_empty(),
-                        "handshake wants more input than the transcript provides"
+                        "握手需要比记录提供的更多输入"
                     );
                     let size = sizes
                         .next()
-                        .expect("chunk_sizes must not be empty")
+                        .expect("chunk_sizes 不能为空")
                         .clamp(1, remaining.len());
                     let (chunk, rest) = remaining.split_at(size);
                     pending = chunk;

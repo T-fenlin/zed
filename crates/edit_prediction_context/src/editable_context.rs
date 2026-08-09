@@ -382,14 +382,14 @@ async fn collect_bm25_candidate_context(
         Ok(Some(buffer)) => buffer,
         Ok(None) => {
             log::debug!(
-                "failed to find BM25 context path: {}",
+                "无法找到 BM25 上下文路径: {}",
                 candidate.path.display()
             );
             return;
         }
         Err(error) => {
             log::debug!(
-                "failed to open BM25 context path {}: {error:#}",
+                "无法打开 BM25 上下文路径 {}: {error:#}",
                 candidate.path.display()
             );
             return;
@@ -444,12 +444,12 @@ async fn collect_oracle_file_context(
         let buffer = match open_buffer_for_path(&project, &target.path, cx).await {
             Ok(Some(buffer)) => buffer,
             Ok(None) => {
-                log::debug!("failed to find oracle file path: {}", target.path.display());
+                log::debug!("无法找到 oracle 文件路径: {}", target.path.display());
                 continue;
             }
             Err(error) => {
                 log::debug!(
-                    "failed to open oracle file path {}: {error:#}",
+                    "无法打开 oracle 文件路径 {}: {error:#}",
                     target.path.display()
                 );
                 continue;
@@ -489,14 +489,14 @@ async fn collect_oracle_snippet_context(
             Ok(Some(buffer)) => buffer,
             Ok(None) => {
                 log::debug!(
-                    "failed to find oracle snippet path: {}",
+                    "无法找到 oracle 代码片段路径: {}",
                     target.path.display()
                 );
                 continue;
             }
             Err(error) => {
                 log::debug!(
-                    "failed to open oracle snippet path {}: {error:#}",
+                    "无法打开 oracle 代码片段路径 {}: {error:#}",
                     target.path.display()
                 );
                 continue;
@@ -640,7 +640,7 @@ async fn collect_git_log_context(
     let index = match index_result {
         Ok(index) => index,
         Err(error) => {
-            log::debug!("failed to build git log context index: {error:#}");
+            log::debug!("无法构建 git 日志上下文索引: {error:#}");
             return;
         }
     };
@@ -665,7 +665,7 @@ async fn collect_git_log_context(
         {
             Ok(buffer) => buffer,
             Err(error) => {
-                log::debug!("failed to open git log related buffer: {error:#}");
+                log::debug!("无法打开 git 日志相关缓冲区: {error:#}");
                 continue;
             }
         };

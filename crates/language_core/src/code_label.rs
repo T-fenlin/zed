@@ -117,12 +117,12 @@ impl CodeLabel {
     ) -> Self {
         assert!(
             text.get(filter_range.clone()).is_some(),
-            "invalid filter range"
+            "无效的过滤范围"
         );
         runs.iter().for_each(|(range, _)| {
             assert!(
                 text.get(range.clone()).is_some(),
-                "invalid run range with inputs. Requested range {range:?} in text '{text}'",
+                "输入无效的运行范围。请求的范围 {range:?} 在文本 '{text}' 中",
             );
         });
         Self {

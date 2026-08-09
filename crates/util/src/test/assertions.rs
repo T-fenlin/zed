@@ -51,10 +51,10 @@ macro_rules! assert_set_eq {
 
         match set_eq!(&left, &right) {
             Err(SetEqError::LeftMissing(missing)) => {
-                panic!("assertion failed: `(left == right)`\n left: {:?}\nright: {:?}\nleft does not contain {:?}", &left, &right, &missing);
+                panic!("断言失败:`(left == right)`\n left: {:?}\nright: {:?}\nleft 不包含 {:?}", &left, &right, &missing);
             },
             Err(SetEqError::RightMissing(missing)) => {
-                panic!("assertion failed: `(left == right)`\n left: {:?}\nright: {:?}\nright does not contain {:?}", &left, &right, &missing);
+                panic!("断言失败:`(left == right)`\n left: {:?}\nright: {:?}\nright 不包含 {:?}", &left, &right, &missing);
             },
             _ => {}
         }

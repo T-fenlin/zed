@@ -840,7 +840,7 @@ fn build_conflict_resolution_prompt(conflicts: &[ConflictContent]) -> Vec<acp::C
         let conflict = &conflicts[0];
 
         blocks.push(acp::ContentBlock::Text(acp::TextContent::new(
-            "Please resolve the following merge conflict in ",
+            "请解决以下合并冲突:",
         )));
         let mention = MentionUri::File {
             abs_path: PathBuf::from(conflict.file_path.clone()),
@@ -929,19 +929,19 @@ fn format_timestamp_human(dt: &DateTime<Utc>) -> String {
     let duration = now.signed_duration_since(*dt);
 
     let relative = if duration.num_seconds() < 0 {
-        "in the future".to_string()
+        "在未来".to_string()
     } else if duration.num_seconds() < 60 {
         let seconds = duration.num_seconds();
-        format!("{seconds} seconds ago")
+        format!("{seconds} 秒前")
     } else if duration.num_minutes() < 60 {
         let minutes = duration.num_minutes();
-        format!("{minutes} minutes ago")
+        format!("{minutes} 分钟前")
     } else if duration.num_hours() < 24 {
         let hours = duration.num_hours();
-        format!("{hours} hours ago")
+        format!("{hours} 小时前")
     } else {
         let days = duration.num_days();
-        format!("{days} days ago")
+        format!("{days} 天前")
     };
 
     format!("{} ({})", dt.to_rfc3339(), relative)
@@ -1011,7 +1011,7 @@ impl AgentTerminal {
         let terminal = view.terminal().read(cx);
         if terminal.breadcrumb_text.is_empty() {
             let title = terminal.title(true);
-            if title == "Terminal" {
+            if title == "终端" {
                 SharedString::from("")
             } else {
                 title.into()
@@ -1100,7 +1100,7 @@ impl AgentTerminal {
             terminal_program_to_report(&mut self.last_observed_program, current_program)
         {
             telemetry::event!(
-                "Agent Terminal Program Started",
+                "代理终端程序已启动",
                 agent = TERMINAL_AGENT_TELEMETRY_ID,
                 terminal_id = terminal_id.to_key_string(),
                 program = program,
@@ -1310,7 +1310,7 @@ impl AgentPanel {
                         match TerminalId::from_key_string(terminal_id) {
                             Ok(terminal_id) => Some(terminal_id),
                             Err(error) => {
-                                log::warn!("failed to parse last active terminal id: {error}");
+                                log::warn!("无法解析上次活动的终端 ID:{error}");
                                 None
                             }
                         }
@@ -1333,18 +1333,18 @@ impl AgentPanel {
                             Some(metadata) => Some(metadata),
                             None => {
                                 log::info!(
-                                    "last active terminal is missing, skipping restoration"
+                                    "上次活动的终端不存在,跳过恢复"
                                 );
                                 None
                             }
                         }
                     }
                     Ok(None) => {
-                        log::warn!("failed to restore active terminal: metadata store missing");
+                        log::warn!("无法恢复活动终端:元数据存储缺失");
                         None
                     }
                     Err(err) => {
-                        log::warn!("failed to access terminal metadata store: {err}");
+                        log::warn!("无法访问终端元数据存储:{err}");
                         None
                     }
                 }
@@ -1379,18 +1379,18 @@ impl AgentPanel {
                                 Some(thread_id) => Some((info, thread_id)),
                                 None => {
                                     log::info!(
-                                        "last active thread is archived or missing, skipping restoration"
+                                        "上次活动的对话线程已归档或不存在,跳过恢复"
                                     );
                                     None
                                 }
                             }
                         }
                         Ok(None) => {
-                            log::warn!("failed to restore active thread: metadata store missing");
+                            log::warn!("无法恢复活动对话线程:元数据存储缺失");
                             None
                         }
                         Err(err) => {
-                            log::warn!("failed to access thread metadata store: {err}");
+                            log::warn!("无法访问对话线程元数据存储:{err}");
                             None
                         }
                     }
@@ -2050,7 +2050,7 @@ impl AgentPanel {
             let terminal = match terminal_task.await {
                 Ok(terminal) => terminal,
                 Err(error) => {
-                    log::error!("failed to spawn agent panel terminal: {error:#}");
+                    log::error!("无法生成代理面板终端:{error:#}");
                     workspace
                         .update(cx, |workspace, cx| workspace.show_error(error, cx))
                         .log_err();
@@ -2135,11 +2135,11 @@ impl AgentPanel {
             if let Err(error) = terminal.update(cx, move |terminal, cx| {
                 if !terminal.write_init_command_after_startup(input, cx) {
                     log::debug!(
-                        "skipping terminal init command because the terminal is no longer eligible"
+                        "跳过终端初始化命令,因为终端不再符合条件"
                     );
                 }
             }) {
-                log::debug!("skipping terminal init command because the terminal closed: {error}");
+                log::debug!("跳过终端初始化命令,因为终端已关闭:{error}");
             }
             anyhow::Ok(())
         })
@@ -2331,7 +2331,7 @@ impl AgentPanel {
         cx: &App,
     ) {
         telemetry::event!(
-            "Agent Thread Started",
+            "代理对话线程已启动",
             agent = TERMINAL_AGENT_TELEMETRY_ID,
             terminal_id = terminal_id.to_key_string(),
             source = source.as_str(),
@@ -2702,7 +2702,7 @@ impl AgentPanel {
             move |this, _, event: &AgentNotificationEvent, window, cx| match event {
                 AgentNotificationEvent::Accepted => {
                     let Some(handle) = window.window_handle().downcast::<MultiWorkspace>() else {
-                        log::error!("root view should be a MultiWorkspace");
+                        log::error!("根视图应为 MultiWorkspace");
                         return;
                     };
                     cx.activate(true);
@@ -3421,7 +3421,7 @@ impl AgentPanel {
         let session_id = action.from_session_id.clone();
 
         let Some(content) = Self::initial_content_for_thread_summary(session_id.clone(), cx) else {
-            log::error!("No session found for summarization with id {}", session_id);
+            log::error!("未找到 ID 为 {} 的会话以进行摘要", session_id);
             return;
         };
 
@@ -3716,7 +3716,7 @@ impl AgentPanel {
 
     fn copy_thread_to_clipboard(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let Some(thread) = self.active_native_agent_thread(cx) else {
-            Self::show_deferred_toast(&self.workspace, "No active native thread to copy", cx);
+            Self::show_deferred_toast(&self.workspace, "没有活动的原生对话线程可复制", cx);
             return;
         };
 
@@ -3737,7 +3737,7 @@ impl AgentPanel {
                         workspace.show_toast(
                             workspace::Toast::new(
                                 workspace::notifications::NotificationId::unique::<ThreadCopiedToast>(),
-                                "Thread copied to clipboard (base64 encoded)",
+                                "对话线程已复制到剪贴板(base64 编码)",
                             )
                             .autohide(),
                             cx,
@@ -3776,17 +3776,17 @@ impl AgentPanel {
 
     fn load_thread_from_clipboard(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if !self.has_open_project(cx) {
-            Self::show_deferred_toast(&self.workspace, "Open a project to load a thread", cx);
+            Self::show_deferred_toast(&self.workspace, "打开项目以加载对话线程", cx);
             return;
         }
 
         let Some(clipboard) = cx.read_from_clipboard() else {
-            Self::show_deferred_toast(&self.workspace, "No clipboard content available", cx);
+            Self::show_deferred_toast(&self.workspace, "剪贴板中没有内容", cx);
             return;
         };
 
         let Some(encoded) = clipboard.text() else {
-            Self::show_deferred_toast(&self.workspace, "Clipboard does not contain text", cx);
+            Self::show_deferred_toast(&self.workspace, "剪贴板中不包含文本", cx);
             return;
         };
 
@@ -3796,7 +3796,7 @@ impl AgentPanel {
             Err(_) => {
                 Self::show_deferred_toast(
                     &self.workspace,
-                    "Failed to decode clipboard content (expected base64)",
+                    "无法解码剪贴板内容(应为 base64)",
                     cx,
                 );
                 return;
@@ -3808,7 +3808,7 @@ impl AgentPanel {
             Err(_) => {
                 Self::show_deferred_toast(
                     &self.workspace,
-                    "Failed to parse thread data from clipboard",
+                    "无法从剪贴板解析对话线程数据",
                     cx,
                 );
                 return;
@@ -3839,7 +3839,7 @@ impl AgentPanel {
                         workspace.show_toast(
                             workspace::Toast::new(
                                 workspace::notifications::NotificationId::unique::<ThreadLoadedToast>(),
-                                "Thread loaded from clipboard",
+                                "已从剪贴板加载对话线程",
                             )
                             .autohide(),
                             cx,
@@ -3860,23 +3860,23 @@ impl AgentPanel {
         cx: &mut Context<Self>,
     ) {
         let Some(thread_id) = self.active_thread_id(cx) else {
-            Self::show_deferred_toast(&self.workspace, "No active thread", cx);
+            Self::show_deferred_toast(&self.workspace, "没有活动的对话线程", cx);
             return;
         };
 
         let Some(store) = ThreadMetadataStore::try_global(cx) else {
-            Self::show_deferred_toast(&self.workspace, "Thread metadata store not available", cx);
+            Self::show_deferred_toast(&self.workspace, "对话线程元数据存储不可用", cx);
             return;
         };
 
         let Some(metadata) = store.read(cx).entry(thread_id).cloned() else {
-            Self::show_deferred_toast(&self.workspace, "No metadata found for active thread", cx);
+            Self::show_deferred_toast(&self.workspace, "未找到活动对话线程的元数据", cx);
             return;
         };
 
         let json = thread_metadata_to_debug_json(&metadata);
         let text = serde_json::to_string_pretty(&json).unwrap_or_default();
-        let title = format!("Thread Metadata: {}", metadata.display_title());
+        let title = format!("对话线程元数据:{}", metadata.display_title());
 
         self.open_json_buffer(title, text, window, cx);
     }
@@ -3888,7 +3888,7 @@ impl AgentPanel {
         cx: &mut Context<Self>,
     ) {
         let Some(store) = ThreadMetadataStore::try_global(cx) else {
-            Self::show_deferred_toast(&self.workspace, "Thread metadata store not available", cx);
+            Self::show_deferred_toast(&self.workspace, "对话线程元数据存储不可用", cx);
             return;
         };
 
@@ -3902,7 +3902,7 @@ impl AgentPanel {
         let json = serde_json::Value::Array(entries);
         let text = serde_json::to_string_pretty(&json).unwrap_or_default();
 
-        self.open_json_buffer("All Sidebar Thread Metadata".to_string(), text, window, cx);
+        self.open_json_buffer("所有侧边栏对话线程元数据".to_string(), text, window, cx);
     }
 
     fn open_json_buffer(
@@ -4666,7 +4666,7 @@ pub(crate) fn apply_native_model_override(
 ) {
     let Some(selected) = parse_provider_slash_model(model_id) else {
         log::warn!(
-            "create_thread: could not parse model override {model_id:?}; expected `provider/model-id`"
+            "create_thread:无法解析模型覆盖 {model_id:?};应为 `provider/model-id`"
         );
         return;
     };
@@ -4674,7 +4674,7 @@ pub(crate) fn apply_native_model_override(
         .update(cx, |registry, cx| registry.select_model(&selected, cx));
     let Some(configured) = configured else {
         log::warn!(
-            "create_thread: no model registered for {model_id:?}; using thread's default model"
+            "create_thread:未为 {model_id:?} 注册模型;使用对话线程的默认模型"
         );
         return;
     };
@@ -4773,7 +4773,7 @@ impl agent::SiblingThreadHost for AgentPanelSiblingHost {
                 let workspace = panel.read_with(cx, |panel, _cx| panel.workspace.clone())?;
                 let workspace = workspace
                     .upgrade()
-                    .ok_or_else(|| anyhow!("Source workspace is no longer available"))?;
+                    .ok_or_else(|| anyhow!("源工作区不再可用"))?;
                 // The branch target follows the existing UI semantics: when
                 // `base_ref` is set, treat it as the ref to base off of
                 // (resolved like `git switch --detach <ref>`); otherwise base
@@ -4799,7 +4799,7 @@ impl agent::SiblingThreadHost for AgentPanelSiblingHost {
                 })?;
                 let created = creation
                     .await
-                    .context("failed to create worktree workspace")?;
+                    .context("无法创建工作树工作区")?;
                 // The creation flow tells us when the project had multiple
                 // worktrees of the same underlying repo, which it consolidates
                 // into one new worktree — flag it so the calling agent knows
@@ -4820,7 +4820,7 @@ impl agent::SiblingThreadHost for AgentPanelSiblingHost {
                 created
                     .workspace
                     .read_with(cx, |workspace, cx| workspace.panel::<AgentPanel>(cx))
-                    .ok_or_else(|| anyhow!("new workspace did not register an agent panel"))?
+                    .ok_or_else(|| anyhow!("新工作区未注册代理面板"))?
                     .downgrade()
             } else {
                 panel.clone()
@@ -4864,7 +4864,7 @@ impl agent::SiblingThreadHost for AgentPanelSiblingHost {
         let panel = self
             .panel
             .upgrade()
-            .ok_or_else(|| anyhow!("Agent panel is no longer available"))?;
+            .ok_or_else(|| anyhow!("代理面板不再可用"))?;
 
         let mut agents = Vec::new();
 
@@ -4975,7 +4975,7 @@ impl Panel for AgentPanel {
             DockPosition::Left => "left",
             DockPosition::Right | DockPosition::Bottom => "right",
         };
-        telemetry::event!("Agent Panel Side Changed", side = side);
+        telemetry::event!("代理面板侧已更改", side = side);
         settings::update_settings_file(self.fs.clone(), cx, move |settings, _| {
             settings
                 .agent
@@ -5032,7 +5032,7 @@ impl Panel for AgentPanel {
     }
 
     fn icon_tooltip(&self, _window: &Window, _cx: &App) -> Option<&'static str> {
-        Some("Agent Panel")
+        Some("助手面板")
     }
 
     fn toggle_action(&self) -> Box<dyn Action> {
@@ -5160,7 +5160,7 @@ impl AgentPanel {
             window,
             cx,
         ) {
-            log::error!("failed to spawn test agent panel terminal: {error:#}");
+            log::error!("无法生成测试代理面板终端:{error:#}");
             if self.pending_terminal_spawn == Some(terminal_id) {
                 self.pending_terminal_spawn = None;
                 cx.notify();
@@ -5392,7 +5392,7 @@ impl AgentPanel {
                                         .icon_size(IconSize::Small)
                                         .tooltip(move |_window, cx| {
                                             Tooltip::with_meta(
-                                                "Title generation failed. Click to retry.",
+                                                "标题生成失败。点击重试。",
                                                 None,
                                                 title_generation_error.clone(),
                                                 cx,
@@ -5460,11 +5460,11 @@ impl AgentPanel {
                             .into_any_element()
                     }
                 } else {
-                    Label::new("Terminal").into_any_element()
+                    Label::new("终端").into_any_element()
                 }
             }
 
-            VisibleSurface::Uninitialized => Label::new("Agent").truncate().into_any_element(),
+            VisibleSurface::Uninitialized => Label::new("代理").truncate().into_any_element(),
         };
 
         let toolbar_bg = cx.theme().colors().tab_bar_background;
@@ -5498,7 +5498,7 @@ impl AgentPanel {
                             .child(
                                 IconButton::new("edit_tile", IconName::Pencil)
                                     .icon_size(IconSize::Small)
-                                    .tooltip(Tooltip::text("Edit Thread Title")),
+                                    .tooltip(Tooltip::text("编辑对话线程标题")),
                             ),
                     )
             })
@@ -5508,7 +5508,7 @@ impl AgentPanel {
     fn show_no_thread_summary_model_toast(workspace: Entity<Workspace>, cx: &mut App) {
         workspace.update(cx, |workspace, cx| {
             let toast = StatusToast::new(
-                "No model is configured for summarizing thread titles.",
+                "未配置用于生成对话线程标题摘要的模型。",
                 cx,
                 |this, _cx| {
                     this.icon(
@@ -5600,7 +5600,7 @@ impl AgentPanel {
                     .icon_size(IconSize::Small),
                 move |_window, cx| {
                     Tooltip::for_action_in(
-                        "Toggle Agent Menu",
+                        "切换代理菜单",
                         &ToggleOptionsMenu,
                         &focus_handle,
                         cx,
@@ -5615,11 +5615,11 @@ impl AgentPanel {
                         menu = menu.context(menu_action_context.clone());
 
                         if has_thread_messages {
-                            menu = menu.header("Current Thread");
+                            menu = menu.header("当前对话线程");
 
                             if let Some(conversation_view) = conversation_view.as_ref() {
                                 if can_regenerate_thread_title {
-                                    menu = menu.entry("Regenerate Thread Title", None, {
+                                    menu = menu.entry("重新生成对话线程标题", None, {
                                         let conversation_view = conversation_view.clone();
                                         let workspace = workspace.clone();
                                         move |_, cx| {
@@ -5636,7 +5636,7 @@ impl AgentPanel {
                                     conversation_view.read(cx).root_thread_view();
                                 if let Some(thread_view) = root_thread_view {
                                     let workspace = workspace.clone();
-                                    menu = menu.entry("Open Thread as Markdown", None, {
+                                    menu = menu.entry("以 Markdown 打开对话线程", None, {
                                         move |window, cx| {
                                             if let Some(workspace) = workspace.upgrade() {
                                                 thread_view.update(cx, |thread_view, cx| {
@@ -5657,16 +5657,16 @@ impl AgentPanel {
 
                         if !showing_terminal {
                             menu = menu
-                                .header("MCP Servers")
+                                .header("MCP 服务器")
                                 .action(
-                                    "Add Server…",
+                                    "添加服务器…",
                                     Box::new(zed_actions::OpenSettingsAt {
                                         path: "context_servers".to_string(),
                                         target: None,
                                     }),
                                 )
                                 .action(
-                                    "Install New Servers…",
+                                    "安装新服务器…",
                                     Box::new(zed_actions::Extensions {
                                         category_filter: Some(
                                             zed_actions::ExtensionCategoryFilter::ContextServers,
@@ -5675,8 +5675,8 @@ impl AgentPanel {
                                     }),
                                 )
                                 .separator()
-                                .header("Context")
-                                .action("Skills", Box::new(ManageSkills));
+                                .header("上下文")
+                                .action("技能", Box::new(ManageSkills));
 
                             if project_agents_md_path.is_some() || global_agents_md_loaded {
                                 if global_agents_md_loaded {
@@ -5687,7 +5687,7 @@ impl AgentPanel {
                                             h_flex()
                                                 .w_full()
                                                 .gap_1()
-                                                .child(Label::new("Open Global Rules"))
+                                                .child(Label::new("打开全局规则"))
                                                 .child(
                                                     Label::new("(AGENTS.md)")
                                                         .color(Color::Muted)
@@ -5712,7 +5712,7 @@ impl AgentPanel {
                                             h_flex()
                                                 .w_full()
                                                 .gap_1()
-                                                .child(Label::new("Open Project Rules"))
+                                                .child(Label::new("打开项目规则"))
                                                 .child(
                                                     Label::new("(AGENTS.md)")
                                                         .color(Color::Muted)
@@ -5733,22 +5733,22 @@ impl AgentPanel {
 
                             menu = menu
                                 .separator()
-                                .action("Profiles", Box::new(ManageProfiles::default()));
+                                .action("配置文件", Box::new(ManageProfiles::default()));
                         }
 
                         menu = menu
-                            .action("Settings", Box::new(OpenSettings))
+                            .action("设置", Box::new(OpenSettings))
                             .separator()
-                            .action("Toggle Threads Sidebar", Box::new(ToggleWorkspaceSidebar));
+                            .action("切换对话线程侧边栏", Box::new(ToggleWorkspaceSidebar));
 
                         if has_auth_methods || supports_logout {
                             menu = menu.separator()
                         }
                         if has_auth_methods {
-                            menu = menu.action("Reauthenticate", Box::new(ReauthenticateAgent))
+                            menu = menu.action("重新认证", Box::new(ReauthenticateAgent))
                         }
                         if supports_logout {
-                            menu = menu.action("Log Out", Box::new(LogoutAgent))
+                            menu = menu.action("退出登录", Box::new(LogoutAgent))
                         }
 
                         menu
@@ -5761,16 +5761,16 @@ impl AgentPanel {
         let focus_handle = self.focus_handle(cx);
 
         ProjectEmptyState::new(
-            "Agent Panel",
+            "助手面板",
             focus_handle.clone(),
             KeyBinding::for_action_in(&workspace::Open::default(), &focus_handle, cx),
         )
         .on_open_project(|_, window, cx| {
-            telemetry::event!("Agent Panel Add Project Clicked");
+            telemetry::event!("代理面板添加项目已点击");
             window.dispatch_action(workspace::Open::default().boxed_clone(), cx);
         })
         .on_clone_repo(|_, window, cx| {
-            telemetry::event!("Agent Panel Clone Repo Clicked");
+            telemetry::event!("代理面板克隆仓库已点击");
             window.dispatch_action(git::Clone.boxed_clone(), cx);
         })
     }
@@ -5785,7 +5785,7 @@ impl AgentPanel {
         let showing_terminal = matches!(self.visible_surface(), VisibleSurface::Terminal(_));
 
         let (selected_agent_custom_icon, selected_agent_label) = if showing_terminal {
-            (None, SharedString::from("Terminal"))
+            (None, SharedString::from("终端"))
         } else if let Agent::Custom { id, .. } = &self.selected_agent {
             let store = agent_server_store.read(cx);
             let icon = store.agent_icon(&id);
@@ -5818,7 +5818,7 @@ impl AgentPanel {
                 Some(ContextMenu::build(window, cx, |menu, _window, cx| {
                     menu.context(focus_handle.clone())
                         .item(
-                            ContextMenuEntry::new("Zed Agent")
+                            ContextMenuEntry::new("Zed 助手")
                                 .when(
                                     !showing_terminal && is_agent_selected(Agent::NativeAgent),
                                     |this| this.action(Box::new(NewThread)),
@@ -5850,7 +5850,7 @@ impl AgentPanel {
                         )
                         .when(supports_terminal, |menu| {
                             menu.item(
-                                ContextMenuEntry::new("Terminal")
+                                ContextMenuEntry::new("终端")
                                     .when(showing_terminal, |this| this.action(Box::new(NewThread)))
                                     .when(!showing_terminal, |this| {
                                         this.action(Box::new(NewTerminalThread))
@@ -5911,7 +5911,7 @@ impl AgentPanel {
                                 .collect::<Vec<_>>();
 
                             if !agent_items.is_empty() {
-                                menu = menu.separator().header("External Agents");
+                                menu = menu.separator().header("外部代理");
                             }
                             for item in &agent_items {
                                 let mut entry = ContextMenuEntry::new(item.display_name.clone());
@@ -5971,7 +5971,7 @@ impl AgentPanel {
                         })
                         .separator()
                         .item(
-                            ContextMenuEntry::new("Add More Agents")
+                            ContextMenuEntry::new("添加更多代理")
                                 .icon(IconName::Plus)
                                 .icon_color(Color::Muted)
                                 .handler({
@@ -6017,7 +6017,7 @@ impl AgentPanel {
                 Tooltip::with_meta(
                     selected_agent_label_for_tooltip.clone(),
                     None,
-                    "Selected Agent",
+                    "选定的代理",
                     cx,
                 )
             });
@@ -6052,9 +6052,9 @@ impl AgentPanel {
 
         let is_full_screen = self.is_zoomed(window, cx);
         let (icon_name, tooltip_text) = if is_full_screen {
-            (IconName::Minimize, "Disable Full Screen")
+            (IconName::Minimize, "退出全屏")
         } else {
-            (IconName::Maximize, "Enable Full Screen")
+            (IconName::Maximize, "进入全屏")
         };
         let full_screen_button = IconButton::new("toggle-full-screen", icon_name)
             .icon_size(IconSize::Small)
@@ -6076,7 +6076,7 @@ impl AgentPanel {
             .justify_between();
 
         let empty_thread_title = matches!(mode, ToolbarMode::EmptyThread).then(|| {
-            Label::new(format!("New {} Thread", selected_agent_label))
+            Label::new(format!("新建 {} 对话线程", selected_agent_label))
                 .color(Color::Muted)
                 .truncate()
                 .into_any_element()
@@ -6970,19 +6970,19 @@ mod tests {
                 thread
                     .handle_session_update(
                         acp::SessionUpdate::UserMessageChunk(acp::ContentChunk::new(
-                            "Restored user message".into(),
+                            "已恢复的用户消息".into(),
                         )),
                         cx,
                     )
-                    .expect("restored user message should be applied");
+                    .expect("已恢复的用户消息应被应用");
                 thread
                     .handle_session_update(
                         acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new(
-                            "Restored assistant message".into(),
+                            "已恢复的助手消息".into(),
                         )),
                         cx,
                     )
-                    .expect("restored assistant message should be applied");
+                    .expect("已恢复的助手消息应被应用");
             });
             Task::ready(Ok(thread))
         }
@@ -7014,7 +7014,7 @@ mod tests {
             _cx: &mut App,
         ) -> Task<Result<acp::PromptResponse>> {
             if !self.sessions.lock().contains(&params.session_id) {
-                return Task::ready(Err(anyhow!("Session not found")));
+                return Task::ready(Err(anyhow!("未找到会话")));
             }
 
             Task::ready(Ok(acp::PromptResponse::new(acp::StopReason::EndTurn)))
@@ -7064,7 +7064,7 @@ mod tests {
             connection.send_update(
                 session_id.clone(),
                 acp::SessionUpdate::ToolCall(
-                    acp::ToolCall::new(tool_call_id.clone(), "Read file")
+                    acp::ToolCall::new(tool_call_id.clone(), "读取文件")
                         .kind(acp::ToolKind::Fetch)
                         .status(acp::ToolCallStatus::InProgress),
                 ),
@@ -7078,7 +7078,7 @@ mod tests {
                         .status(acp::ToolCallStatus::Completed)
                         .content(vec![acp::ToolCallContent::Content(acp::Content::new(
                             acp::ContentBlock::Text(acp::TextContent::new(
-                                "tool output text".to_string(),
+                                "工具输出文本".to_string(),
                             )),
                         ))]),
                 )),
@@ -7102,25 +7102,25 @@ mod tests {
         // The thread receives only tool-call updates, so entry index 0 should remain stable.
         let output_bounds = cx
             .debug_bounds("tool-call-output-0-0")
-            .expect("tool call output should be rendered");
+            .expect("工具调用输出应被渲染");
         cx.simulate_click(output_bounds.center(), Modifiers::default());
         cx.run_until_parked();
 
         panel.update_in(cx, |panel, window, cx| {
             assert!(
                 panel.focus_handle(cx).contains_focused(window, cx),
-                "clicking tool call output should keep focus within the agent panel"
+                "点击工具调用输出应将焦点保持在代理面板内"
             );
             assert!(
                 panel.is_zoomed(window, cx),
-                "clicking tool call output should not close Zen Mode"
+                "点击工具调用输出不应关闭禅模式"
             );
         });
 
         let title_editor_focus_handle = panel.read_with(cx, |panel, cx| {
             panel
                 .active_thread_view(cx)
-                .expect("active thread view should be present")
+                .expect("活动对话线程视图应存在")
                 .read(cx)
                 .title_editor
                 .focus_handle(cx)
@@ -7133,11 +7133,11 @@ mod tests {
         panel.update_in(cx, |panel, window, cx| {
             assert!(
                 panel.focus_handle(cx).contains_focused(window, cx),
-                "focusing the thread title editor should keep focus within the agent panel"
+                "聚焦对话线程标题编辑器应将焦点保持在代理面板内"
             );
             assert!(
                 panel.is_zoomed(window, cx),
-                "focusing the thread title editor should not close Zen Mode"
+                "聚焦对话线程标题编辑器不应关闭禅模式"
             );
         });
     }
@@ -7199,7 +7199,7 @@ mod tests {
         panel_a.read_with(cx, |panel, cx| {
             assert!(
                 panel.active_agent_thread(cx).is_some(),
-                "workspace A should have an active thread after connection"
+                "工作区 A 在连接后应有一个活动对话线程"
             );
         });
 
@@ -7225,19 +7225,19 @@ mod tests {
 
         let workspace_a_id = workspace_a
             .read_with(cx, |workspace, _cx| workspace.database_id())
-            .expect("workspace A should have a database id");
+            .expect("工作区 A 应有一个数据库 ID");
         let kvp = cx.update(|_window, cx| KeyValueStore::global(cx));
         let serialized_a: SerializedAgentPanel = cx
             .background_spawn(async move { read_serialized_panel(workspace_a_id, &kvp) })
             .await
-            .expect("workspace A should serialize panel state");
+            .expect("工作区 A 应序列化面板状态");
         assert!(
             serialized_a.last_active_thread.is_some(),
-            "active thread should be the thread restore target"
+            "活动对话线程应为对话线程恢复目标"
         );
         assert!(
             serialized_a.last_active_terminal_id.is_none(),
-            "active thread serialization should not also include a terminal restore target"
+            "活动对话线程序列化不应同时包含终端恢复目标"
         );
 
         cx.update(|_window, cx| {
@@ -7248,24 +7248,24 @@ mod tests {
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let loaded_a = AgentPanel::load(workspace_a.downgrade(), async_cx)
             .await
-            .expect("panel A load should succeed");
+            .expect("面板 A 加载应成功");
         cx.run_until_parked();
 
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let loaded_b = AgentPanel::load(workspace_b.downgrade(), async_cx)
             .await
-            .expect("panel B load should succeed");
+            .expect("面板 B 加载应成功");
         cx.run_until_parked();
 
         // Workspace A should restore its thread and agent type
         loaded_a.read_with(cx, |panel, _cx| {
             assert_eq!(
                 panel.selected_agent, agent_type_a,
-                "workspace A agent type should be restored"
+                "工作区 A 的代理类型应被恢复"
             );
             assert!(
                 panel.active_conversation_view().is_some(),
-                "workspace A should have its active thread restored"
+                "工作区 A 应恢复其活动对话线程"
             );
         });
 
@@ -7276,11 +7276,11 @@ mod tests {
                 Agent::Custom {
                     id: "claude-acp".into()
                 },
-                "workspace B agent type should be restored"
+                "工作区 B 的代理类型应被恢复"
             );
             assert!(
                 panel.active_conversation_view().is_none(),
-                "workspace B should have no active thread when it had no prior conversation"
+                "工作区 B 在没有先前对话时不应有活动对话线程"
             );
         });
     }
@@ -7320,27 +7320,27 @@ mod tests {
         });
         let terminal_id = panel
             .update_in(cx, |panel, window, cx| {
-                panel.insert_test_terminal("Dev Server", true, window, cx)
+                panel.insert_test_terminal("开发服务器", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         panel.update(cx, |panel, cx| panel.serialize(cx));
         cx.run_until_parked();
 
         let workspace_id = workspace
             .read_with(cx, |workspace, _cx| workspace.database_id())
-            .expect("workspace should have a database id");
+            .expect("工作区应有一个数据库 ID");
         let kvp = cx.update(|_window, cx| KeyValueStore::global(cx));
         let serialized: SerializedAgentPanel = cx
             .background_spawn(async move { read_serialized_panel(workspace_id, &kvp) })
             .await
-            .expect("workspace should serialize panel state");
+            .expect("工作区应序列化面板状态");
         assert_eq!(
             serialized.last_active_terminal_id,
             Some(terminal_id.to_key_string())
         );
         assert!(
             serialized.last_active_thread.is_none(),
-            "active terminal serialization should not also include a thread restore target"
+            "活动终端序列化不应同时包含对话线程恢复目标"
         );
 
         cx.update(|_window, cx| {
@@ -7349,7 +7349,7 @@ mod tests {
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let loaded = AgentPanel::load(workspace.downgrade(), async_cx)
             .await
-            .expect("panel load should succeed");
+            .expect("面板加载应成功");
         for _ in 0..8 {
             cx.run_until_parked();
         }
@@ -7358,14 +7358,14 @@ mod tests {
             assert_eq!(panel.active_terminal_id(), Some(terminal_id));
             assert!(
                 panel.active_conversation_view().is_none(),
-                "the restored terminal should remain active instead of falling back to a draft"
+                "恢复的终端应保持活动状态,而不是回退到草稿"
             );
             assert!(
                 panel
                     .terminals(cx)
                     .into_iter()
                     .any(|terminal| terminal.id == terminal_id),
-                "active terminal metadata should be restored into the loaded panel"
+                "活动终端元数据应恢复到加载的面板中"
             );
         });
     }
@@ -7405,7 +7405,7 @@ mod tests {
             .read_with(cx, |multi_workspace, _cx| {
                 multi_workspace.workspace().clone()
             })
-            .expect("multi workspace should have an active workspace");
+            .expect("多工作区应有一个活动工作区");
         let cx = &mut VisualTestContext::from_window(multi_workspace.into(), cx);
         let panel = workspace.update_in(cx, |workspace, window, cx| {
             cx.new(|cx| AgentPanel::new(workspace, window, cx))
@@ -7420,7 +7420,7 @@ mod tests {
 
         let metadata = TerminalThreadMetadata {
             terminal_id: TerminalId::new(),
-            title: "Dev Server".into(),
+            title: "开发服务器".into(),
             custom_title: None,
             created_at: Utc::now(),
             worktree_paths: project.read_with(cx, |project, cx| project.worktree_paths(cx)),
@@ -7456,11 +7456,11 @@ mod tests {
         panel.read_with(&cx, |panel, cx| {
             assert!(
                 panel.terminals(cx).is_empty(),
-                "activation while a terminal restore is pending should not create a second terminal"
+                "在终端恢复挂起时激活不应创建第二个终端"
             );
             assert!(
                 panel.active_conversation_view().is_none(),
-                "activation while a terminal restore is pending should not fall back to a draft"
+                "在终端恢复挂起时激活不应回退到草稿"
             );
         });
     }
@@ -7482,11 +7482,11 @@ mod tests {
             assert_eq!(
                 panel.terminals(cx).len(),
                 1,
-                "repeated activation should only enqueue one initial terminal"
+                "重复激活应只排队一个初始终端"
             );
             assert!(
                 panel.active_terminal_id().is_some(),
-                "the single initial terminal should become active"
+                "单个初始终端应变为活动状态"
             );
         });
     }
@@ -7502,7 +7502,7 @@ mod tests {
 
         let metadata = TerminalThreadMetadata {
             terminal_id: TerminalId::new(),
-            title: "Restored Terminal".into(),
+            title: "已恢复的终端".into(),
             custom_title: None,
             created_at: Utc::now(),
             worktree_paths: WorktreePaths::from_folder_paths(&PathList::new(&[PathBuf::from(
@@ -7523,14 +7523,14 @@ mod tests {
                     cx,
                 )
             })
-            .expect("test terminal should be restored");
+            .expect("测试终端应被恢复");
         cx.run_until_parked();
 
         let terminal = panel.read_with(&cx, |panel, cx| {
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should exist")
+                .expect("终端应存在")
                 .view
                 .read(cx)
                 .terminal()
@@ -7556,13 +7556,13 @@ mod tests {
                     cx,
                 )
             })
-            .expect("restoring an existing test terminal should succeed");
+            .expect("恢复现有测试终端应成功");
         cx.run_until_parked();
 
         let input_log = terminal.update(&mut cx, |terminal, _| terminal.take_input_log());
         assert!(
             input_log.is_empty(),
-            "activating an already-restored terminal should not re-run the init command, got {input_log:?}"
+            "激活已恢复的终端不应重新运行初始化命令,得到 {input_log:?}"
         );
     }
 
@@ -7636,7 +7636,7 @@ mod tests {
                     (String::new(), Vec::new())
                 };
                 panic!(
-                    "init command output never appeared in the terminal; terminal_created={terminal_created}, content={content:?}, input_log={input_log:?}"
+                    "初始化命令输出从未出现在终端中;terminal_created={terminal_created},content={content:?},input_log={input_log:?}"
                 );
             }
             cx.executor().timer(Duration::from_millis(50)).await;
@@ -7646,7 +7646,7 @@ mod tests {
         assert_eq!(
             input_log,
             vec![b"printf 'init_ran_%s\\n' 42\r".to_vec()],
-            "init command should be written only after terminal startup has settled"
+            "初始化命令应仅在终端启动稳定后写入"
         );
         assert!(
             !terminal.read_with(&cx, |terminal, _| terminal.keyboard_input_sent()),
@@ -7675,7 +7675,7 @@ mod tests {
 
         let metadata = TerminalThreadMetadata {
             terminal_id: TerminalId::new(),
-            title: "Restored Terminal".into(),
+            title: "已恢复的终端".into(),
             custom_title: None,
             created_at: Utc::now(),
             worktree_paths: WorktreePaths::from_folder_paths(&PathList::new(&[PathBuf::from(
@@ -7695,14 +7695,14 @@ mod tests {
                     cx,
                 )
             })
-            .expect("test terminal should be restored");
+            .expect("测试终端应被恢复");
         cx.run_until_parked();
 
         cx.update(|_, cx| {
             assert_eq!(
                 read_global_last_created_entry_kind(&KeyValueStore::global(cx)),
                 Some(AgentPanelEntryKind::Thread),
-                "restoring a terminal should not change the global new-entry default"
+                "恢复终端不应更改全局新条目默认值"
             );
         });
     }
@@ -7745,7 +7745,7 @@ mod tests {
             .update_in(cx, |panel, window, cx| {
                 panel.insert_test_terminal("Dev Server", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         cx.update(|_window, cx| {
@@ -7765,7 +7765,7 @@ mod tests {
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let loaded = AgentPanel::load(workspace_b.downgrade(), async_cx)
             .await
-            .expect("panel load should succeed");
+            .expect("面板加载应成功");
         workspace_b.update_in(cx, |workspace, window, cx| {
             workspace.add_panel(loaded.clone(), window, cx);
         });
@@ -7779,11 +7779,11 @@ mod tests {
         loaded.read_with(cx, |panel, cx| {
             assert!(
                 panel.active_terminal_id().is_some(),
-                "new workspace should initialize to a terminal when terminal was the globally last used entry kind"
+                "当终端是全局上次使用的条目类型时,新工作区应初始化为终端"
             );
             assert!(
                 panel.active_conversation_view().is_none(),
-                "new workspace should not initialize to a draft when terminal is the global entry kind"
+                "当终端是全局条目类型时,新工作区不应初始化为草稿"
             );
             assert!(panel.should_create_terminal_for_new_entry(cx));
         });
@@ -7832,7 +7832,7 @@ mod tests {
         panel.read_with(cx, |panel, cx| {
             assert!(
                 panel.active_agent_thread(cx).is_some(),
-                "should have an active thread after connection"
+                "连接后应有一个活动对话线程"
             );
         });
 
@@ -7843,13 +7843,13 @@ mod tests {
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let loaded = AgentPanel::load(workspace.downgrade(), async_cx)
             .await
-            .expect("panel load should succeed");
+            .expect("面板加载应成功");
         cx.run_until_parked();
 
         loaded.read_with(cx, |panel, _cx| {
             assert!(
                 panel.active_conversation_view().is_none(),
-                "thread without metadata should not be restored; the panel should have no active thread"
+                "没有元数据的对话线程不应被恢复;面板不应有活动对话线程"
             );
         });
     }
@@ -7880,7 +7880,7 @@ mod tests {
         });
         let workspace_id = workspace
             .read_with(cx, |workspace, _cx| workspace.database_id())
-            .expect("workspace should have a database id");
+            .expect("工作区应有一个数据库 ID");
 
         let cx = &mut VisualTestContext::from_window(multi_workspace.into(), cx);
 
@@ -7893,7 +7893,7 @@ mod tests {
                         thread_id: ThreadId::new(),
                         session_id: Some(resume_session_id.clone()),
                         agent_id: ProjectAgentId::new("Flaky"),
-                        title: Some("Persistent chat".into()),
+                        title: Some("持久聊天".into()),
                         title_override: None,
                         updated_at: Utc::now(),
                         created_at: Some(Utc::now()),
@@ -7930,15 +7930,15 @@ mod tests {
         panel.read_with(cx, |panel, cx| {
             assert!(
                 panel.active_agent_thread(cx).is_none(),
-                "active_agent_thread should be None while the flaky server is failing"
+                "当不稳定的服务器失败时,active_agent_thread 应为 None"
             );
             let conversation_view = panel
                 .active_conversation_view()
-                .expect("panel should still have an active ConversationView");
+                .expect("面板仍应有一个活动的 ConversationView");
             assert_eq!(
                 conversation_view.read(cx).root_session_id.as_ref(),
                 Some(&resume_session_id),
-                "ConversationView should still hold the restored session id"
+                "ConversationView 仍应持有恢复的会话 ID"
             );
         });
 
@@ -7968,7 +7968,7 @@ mod tests {
     fn expect_text_block(block: &acp::ContentBlock) -> &str {
         match block {
             acp::ContentBlock::Text(t) => t.text.as_str(),
-            other => panic!("expected Text block, got {:?}", other),
+            other => panic!("应为 Text 块,得到 {:?}", other),
         }
     }
 
@@ -7980,9 +7980,9 @@ mod tests {
                 acp::EmbeddedResourceResource::TextResourceContents(t) => {
                     (t.text.as_str(), t.uri.as_str())
                 }
-                other => panic!("expected TextResourceContents, got {:?}", other),
+                other => panic!("应为 TextResourceContents,得到 {:?}", other),
             },
-            other => panic!("expected Resource block, got {:?}", other),
+            other => panic!("应为 Resource 块,得到 {:?}", other),
         }
     }
 
@@ -8024,12 +8024,12 @@ mod tests {
         let thread = panel.read_with(cx, |panel, cx| {
             panel
                 .active_agent_thread(cx)
-                .expect("draft thread should be active")
+                .expect("草稿对话线程应处于活动状态")
         });
         let message_editor = panel.read_with(cx, |panel, cx| {
             panel
                 .active_thread_view(cx)
-                .expect("draft thread view should be active")
+                .expect("草稿对话线程视图应处于活动状态")
                 .read(cx)
                 .message_editor
                 .clone()
@@ -8038,26 +8038,26 @@ mod tests {
         thread.update(cx, |thread, cx| {
             thread.set_draft_prompt(
                 Some(vec![acp::ContentBlock::Text(acp::TextContent::new(
-                    "stale prompt",
+                    "过期的提示词",
                 ))]),
                 cx,
             );
         });
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("fresh prompt", window, cx);
+            editor.set_text("新的提示词", window, cx);
         });
         let blocks = panel.read_with(cx, |panel, cx| {
             panel
                 .draft_prompt_blocks_if_in_memory(thread_id, cx)
-                .expect("draft should be in memory")
+                .expect("草稿应在内存中")
         });
         assert_eq!(blocks.len(), 1);
-        assert_eq!(expect_text_block(&blocks[0]), "fresh prompt");
+        assert_eq!(expect_text_block(&blocks[0]), "新的提示词");
 
         thread.update(cx, |thread, cx| {
             thread.set_draft_prompt(
                 Some(vec![acp::ContentBlock::Text(acp::TextContent::new(
-                    "stale prompt after clear",
+                    "清除后的过期提示词",
                 ))]),
                 cx,
             );
@@ -8068,11 +8068,11 @@ mod tests {
         let blocks = panel.read_with(cx, |panel, cx| {
             panel
                 .draft_prompt_blocks_if_in_memory(thread_id, cx)
-                .expect("draft should be in memory")
+                .expect("草稿应在内存中")
         });
         assert!(
             blocks.is_empty(),
-            "cleared editor snapshot should override stale saved draft prompt"
+            "清除的编辑器快照应覆盖过期的已保存草稿提示词"
         );
     }
 
@@ -8144,11 +8144,11 @@ mod tests {
         let panel_a_blocks = panel_a.read_with(cx, |panel, cx| {
             panel
                 .draft_prompt_blocks_if_in_memory(thread_id, cx)
-                .expect("draft should be live in first panel")
+                .expect("草稿应在第一个面板中实时存在")
         });
         assert!(
             panel_a_blocks.is_empty(),
-            "first live draft copy should be empty"
+            "第一个实时草稿副本应为空"
         );
 
         let has_user_content = cx.update(|_, cx| {
@@ -8160,7 +8160,7 @@ mod tests {
         });
         assert!(
             has_user_content,
-            "a later live draft copy with content should keep the draft"
+            "稍后带有内容的实时草稿副本应保留草稿"
         );
     }
 
@@ -8179,55 +8179,55 @@ mod tests {
         assert_eq!(
             blocks.len(),
             4,
-            "expected 2 text + 1 resource link + 1 resource block"
+            "预期 2 个文本块 + 1 个资源链接 + 1 个资源块"
         );
 
         let intro_text = expect_text_block(&blocks[0]);
         assert!(
-            intro_text.contains("Please resolve the following merge conflict in"),
-            "prompt should include single-conflict intro text"
+            intro_text.contains("请解决以下文件中的合并冲突:"),
+            "提示词应包含单个冲突的引言文本"
         );
 
         match &blocks[1] {
             acp::ContentBlock::ResourceLink(link) => {
                 assert!(
                     link.uri.contains("file://"),
-                    "resource link URI should use file scheme"
+                    "资源链接 URI 应使用 file 协议"
                 );
                 assert!(
                     link.uri.contains("main.rs"),
-                    "resource link URI should reference file path"
+                    "资源链接 URI 应引用文件路径"
                 );
             }
-            other => panic!("expected ResourceLink block, got {:?}", other),
+            other => panic!("预期 ResourceLink 块,实际为 {:?}", other),
         }
 
         let body_text = expect_text_block(&blocks[2]);
         assert!(
-            body_text.contains("`HEAD` (ours)"),
-            "prompt should mention ours branch"
+            body_text.contains("`HEAD`(我们的)"),
+            "提示词应提及我们的分支"
         );
         assert!(
-            body_text.contains("`feature` (theirs)"),
-            "prompt should mention theirs branch"
+            body_text.contains("`feature`(他们的)"),
+            "提示词应提及他们的分支"
         );
         assert!(
-            body_text.contains("editing the file directly"),
-            "prompt should instruct the agent to edit the file"
+            body_text.contains("直接编辑文件"),
+            "提示词应指示代理编辑文件"
         );
 
         let (resource_text, resource_uri) = expect_resource_block(&blocks[3]);
         assert!(
             resource_text.contains("<<<<<<< HEAD"),
-            "resource should contain the conflict text"
+            "资源应包含冲突文本"
         );
         assert!(
             resource_uri.contains("merge-conflict"),
-            "resource URI should use the merge-conflict scheme"
+            "资源 URI 应使用 merge-conflict 协议"
         );
         assert!(
             resource_uri.contains("main.rs"),
-            "resource URI should reference the file path"
+            "资源 URI 应引用文件路径"
         );
     }
 
@@ -8252,36 +8252,36 @@ mod tests {
 
         let blocks = build_conflict_resolution_prompt(&conflicts);
         // 1 Text instruction + 2 Resource blocks
-        assert_eq!(blocks.len(), 3, "expected 1 text + 2 resource blocks");
+        assert_eq!(blocks.len(), 3, "预期 1 个文本块 + 2 个资源块");
 
         let text = expect_text_block(&blocks[0]);
         assert!(
-            text.contains("all 2 merge conflicts"),
-            "prompt should mention the total count"
+            text.contains("全部 2 个合并冲突"),
+            "提示词应提及总数量"
         );
         assert!(
-            text.contains("`main` (ours)"),
-            "prompt should mention ours branch"
+            text.contains("`main`(我们的)"),
+            "提示词应提及我们的分支"
         );
         assert!(
-            text.contains("`dev` (theirs)"),
-            "prompt should mention theirs branch"
+            text.contains("`dev`(他们的)"),
+            "提示词应提及他们的分支"
         );
         // Single file, so "file" not "files"
         assert!(
-            text.contains("file directly"),
-            "single file should use singular 'file'"
+            text.contains("直接编辑文件"),
+            "单个文件应使用单数形式“文件”"
         );
 
         let (resource_a, _) = expect_resource_block(&blocks[1]);
         let (resource_b, _) = expect_resource_block(&blocks[2]);
         assert!(
             resource_a.contains("fn a()"),
-            "first resource should contain first conflict"
+            "第一个资源应包含第一个冲突"
         );
         assert!(
             resource_b.contains("fn b()"),
-            "second resource should contain second conflict"
+            "第二个资源应包含第二个冲突"
         );
     }
 
@@ -8304,23 +8304,23 @@ mod tests {
 
         let blocks = build_conflict_resolution_prompt(&conflicts);
         // 1 Text instruction + 2 Resource blocks
-        assert_eq!(blocks.len(), 3, "expected 1 text + 2 resource blocks");
+        assert_eq!(blocks.len(), 3, "预期 1 个文本块 + 2 个资源块");
 
         let text = expect_text_block(&blocks[0]);
         assert!(
-            text.contains("files directly"),
-            "multiple files should use plural 'files'"
+            text.contains("直接编辑文件"),
+            "多个文件应使用复数形式“文件”"
         );
 
         let (_, uri_a) = expect_resource_block(&blocks[1]);
         let (_, uri_b) = expect_resource_block(&blocks[2]);
         assert!(
             uri_a.contains("a.rs"),
-            "first resource URI should reference a.rs"
+            "第一个资源 URI 应引用 a.rs"
         );
         assert!(
             uri_b.contains("b.rs"),
-            "second resource URI should reference b.rs"
+            "第二个资源 URI 应引用 b.rs"
         );
     }
 
@@ -8337,17 +8337,17 @@ mod tests {
         assert_eq!(
             blocks.len(),
             1 + (file_paths.len() * 2),
-            "expected instruction text plus resource links and separators"
+            "预期包含指令文本、资源链接和分隔符"
         );
 
         let text = expect_text_block(&blocks[0]);
         assert!(
-            text.contains("unresolved merge conflicts"),
-            "prompt should describe the task"
+            text.contains("未解决的合并冲突"),
+            "提示词应描述任务"
         );
         assert!(
-            text.contains("conflict markers"),
-            "prompt should mention conflict markers"
+            text.contains("冲突标记"),
+            "提示词应提及冲突标记"
         );
 
         for (index, path) in file_paths.iter().enumerate() {
@@ -8358,15 +8358,15 @@ mod tests {
                 acp::ContentBlock::ResourceLink(link) => {
                     assert!(
                         link.uri.contains("file://"),
-                        "resource link URI should use file scheme"
+                        "资源链接 URI 应使用 file 协议"
                     );
                     assert!(
                         link.uri.contains(path),
-                        "resource link URI should reference file path: {path}"
+                        "资源链接 URI 应引用文件路径:{path}"
                     );
                 }
                 other => panic!(
-                    "expected ResourceLink block at index {}, got {:?}",
+                    "预期索引 {} 处为 ResourceLink 块,实际为 {:?}",
                     link_index, other
                 ),
             }
@@ -8374,7 +8374,7 @@ mod tests {
             let separator = expect_text_block(&blocks[newline_index]);
             assert_eq!(
                 separator, "\n",
-                "expected newline separator after each file"
+                "每个文件后应有换行分隔符"
             );
         }
     }
@@ -8384,7 +8384,7 @@ mod tests {
         let blocks = build_conflict_resolution_prompt(&[]);
         assert!(
             blocks.is_empty(),
-            "empty conflicts should produce no blocks, got {} blocks",
+            "空冲突不应产生任何块,实际产生了 {} 个块",
             blocks.len()
         );
     }
@@ -8394,7 +8394,7 @@ mod tests {
         let blocks = build_conflicted_files_resolution_prompt(&[]);
         assert!(
             blocks.is_empty(),
-            "empty paths should produce no blocks, got {} blocks",
+            "空路径不应产生任何块,实际产生了 {} 个块",
             blocks.len()
         );
     }
@@ -8413,13 +8413,13 @@ mod tests {
 
         assert_eq!(
             text, conflict.conflict_text,
-            "resource text should be the raw conflict"
+            "资源文本应为原始冲突内容"
         );
         assert!(
             uri.starts_with("zed:///agent/merge-conflict"),
-            "URI should use the zed merge-conflict scheme, got: {uri}"
+            "URI 应使用 zed merge-conflict 协议,实际为:{uri}"
         );
-        assert!(uri.contains("utils.rs"), "URI should encode the file path");
+        assert!(uri.contains("utils.rs"), "URI 应对文件路径进行编码");
     }
 
     fn open_generating_thread_with_loadable_connection(
@@ -8497,7 +8497,7 @@ mod tests {
         let stub_connection =
             crate::test_support::set_stub_agent_connection(StubAgentConnection::new());
         stub_connection.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Response".into()),
+            acp::ContentChunk::new("响应".into()),
         )]);
         panel.update_in(cx, |panel, window, cx| {
             panel.selected_agent = Agent::Stub;
@@ -8509,11 +8509,11 @@ mod tests {
         panel.read_with(cx, |panel, cx| {
             assert!(
                 panel.active_thread_is_draft(cx),
-                "thread should be a draft before any message is sent"
+                "在发送任何消息之前,线程应为草稿"
             );
             assert!(
                 panel.draft_thread.is_some(),
-                "draft_thread field should be set"
+                "draft_thread 字段应已设置"
             );
         });
         let draft_session_id = active_session_id(&panel, cx);
@@ -8524,10 +8524,10 @@ mod tests {
             let store = ThreadMetadataStore::global(cx).read(cx);
             let entry = store
                 .entry(thread_id)
-                .expect("draft thread should have a metadata row");
+                .expect("草稿线程应具有元数据行");
             assert!(
                 entry.is_draft(),
-                "draft thread metadata should have session_id=None, got {:?}",
+                "草稿线程元数据的 session_id 应为 None,实际为 {:?}",
                 entry.session_id,
             );
         });
@@ -8535,20 +8535,20 @@ mod tests {
         // Type into the message editor; the editor observer pushes the text
         // into `AcpThread.draft_prompt`, which emits `PromptUpdated` and
         // persists the prompt to the kvp store.
-        crate::test_support::type_draft_prompt(&panel, "Hello from draft", cx);
+        crate::test_support::type_draft_prompt(&panel, "来自草稿的问候", cx);
         panel.update(cx, |panel, cx| panel.serialize(cx));
         cx.run_until_parked();
 
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let reloaded_panel = AgentPanel::load(workspace.downgrade(), async_cx)
             .await
-            .expect("panel load with draft should succeed");
+            .expect("加载包含草稿的面板应成功");
         cx.run_until_parked();
 
         reloaded_panel.read_with(cx, |panel, cx| {
             assert!(
                 panel.active_thread_is_draft(cx),
-                "reloaded panel should still show the draft as active"
+                "重新加载的面板仍应将草稿显示为活动状态"
             );
             assert!(
                 panel.active_view_is_new_draft(cx),
@@ -8570,7 +8570,7 @@ mod tests {
         let reloaded_thread_id = active_thread_id(&reloaded_panel, cx);
         assert_eq!(
             reloaded_thread_id, thread_id,
-            "reloaded draft should preserve its ThreadId"
+            "重新加载的草稿应保留其 ThreadId"
         );
 
         // ACP session_id is NOT preserved: drafts don't persist a session id,
@@ -8578,15 +8578,15 @@ mod tests {
         let reloaded_session_id = active_session_id(&reloaded_panel, cx);
         assert_ne!(
             reloaded_session_id, draft_session_id,
-            "reloaded draft should have a fresh ACP session ID"
+            "重新加载的草稿应具有新的 ACP 会话 ID"
         );
 
         let restored_text =
             reloaded_panel.read_with(cx, |panel, cx| panel.editor_text(reloaded_thread_id, cx));
         assert_eq!(
             restored_text.as_deref(),
-            Some("Hello from draft"),
-            "draft prompt text should be restored from the draft-prompt kvp store"
+            Some("来自草稿的问候"),
+            "草稿提示词文本应从 draft-prompt kvp 存储中恢复"
         );
 
         // Send a message on the reloaded panel — this promotes the draft to a
@@ -8598,16 +8598,16 @@ mod tests {
         panel.read_with(cx, |panel, cx| {
             assert!(
                 !panel.active_thread_is_draft(cx),
-                "thread should no longer be a draft after sending a message"
+                "发送消息后,线程不应再是草稿"
             );
             assert!(
                 panel.draft_thread.is_none(),
-                "draft_thread should be None after promotion"
+                "提升后 draft_thread 应为 None"
             );
             assert_eq!(
                 panel.active_thread_id(cx),
                 Some(thread_id),
-                "same ThreadId should remain active after promotion"
+                "提升后相同的 ThreadId 应保持活动状态"
             );
         });
 
@@ -8615,15 +8615,15 @@ mod tests {
             let store = ThreadMetadataStore::global(cx).read(cx);
             let metadata = store
                 .entry(thread_id)
-                .expect("promoted thread should have metadata");
+                .expect("提升后的线程应具有元数据");
             assert!(
                 !metadata.is_draft(),
-                "promoted thread metadata should no longer be a draft"
+                "提升后的线程元数据不应再是草稿"
             );
             assert_eq!(
                 metadata.session_id.as_ref(),
                 Some(&promoted_session_id),
-                "metadata session_id should match the thread's ACP session"
+                "元数据 session_id 应与线程的 ACP 会话匹配"
             );
         });
 
@@ -8634,7 +8634,7 @@ mod tests {
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let loaded_panel = AgentPanel::load(workspace.downgrade(), async_cx)
             .await
-            .expect("panel load should succeed");
+            .expect("面板加载应成功");
         cx.run_until_parked();
 
         // The second load should restore the promoted real thread, keyed by
@@ -8644,11 +8644,11 @@ mod tests {
             assert_eq!(
                 active_id,
                 Some(thread_id),
-                "loaded panel should restore the promoted thread"
+                "加载的面板应恢复提升后的线程"
             );
             assert!(
                 !panel.active_thread_is_draft(cx),
-                "restored thread should not be a draft"
+                "恢复的线程不应是草稿"
             );
         });
     }
@@ -8706,7 +8706,7 @@ mod tests {
         });
         cx.run_until_parked();
         let retained_draft_id = crate::test_support::active_thread_id(&panel, cx);
-        crate::test_support::type_draft_prompt(&panel, "retained draft text", cx);
+        crate::test_support::type_draft_prompt(&panel, "保留的草稿文本", cx);
 
         panel.update_in(cx, |panel, window, cx| {
             panel.new_thread(&NewThread, window, cx);
@@ -8718,18 +8718,18 @@ mod tests {
         panel.read_with(cx, |panel, cx| {
             assert!(
                 panel.retained_threads.contains_key(&retained_draft_id),
-                "first draft with content should be parked into retained_threads"
+                "第一个有内容的草稿应被暂存到 retained_threads 中"
             );
             assert_ne!(
                 panel.active_thread_id(cx),
                 Some(retained_draft_id),
-                "active view should be a fresh ephemeral draft, not the retained one"
+                "活动视图应为新的临时草稿,而非保留的草稿"
             );
         });
 
         // 3. Type into the new ephemeral draft.
         let draft_thread_id = crate::test_support::active_thread_id(&panel, cx);
-        crate::test_support::type_draft_prompt(&panel, "in-flight draft text", cx);
+        crate::test_support::type_draft_prompt(&panel, "进行中的草稿文本", cx);
 
         // Sanity-check: both drafts' text has been persisted to the kvp
         // store via the editor observer / PromptUpdated chain.
@@ -8741,11 +8741,11 @@ mod tests {
         });
         assert!(
             ephemeral_kvp.is_some(),
-            "ephemeral draft's prompt should be in the kvp store"
+            "临时草稿的提示词应存储在 kvp 存储中"
         );
         assert!(
             retained_kvp.is_some(),
-            "retained draft's prompt should be in the kvp store"
+            "保留的草稿的提示词应存储在 kvp 存储中"
         );
 
         assert_ne!(real_thread_id, draft_thread_id);
@@ -8753,7 +8753,7 @@ mod tests {
         panel.read_with(cx, |panel, cx| {
             assert!(
                 panel.active_view_is_new_draft(cx),
-                "draft should currently occupy the new-draft slot"
+                "草稿当前应占据新草稿槽位"
             );
         });
 
@@ -8785,7 +8785,7 @@ mod tests {
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let loaded_panel = AgentPanel::load(workspace.downgrade(), async_cx)
             .await
-            .expect("panel load should succeed");
+            .expect("面板加载应成功");
         cx.run_until_parked();
 
         // 6. The real thread is the active view on reload. The draft
@@ -8795,15 +8795,15 @@ mod tests {
             assert_eq!(
                 panel.active_thread_id(cx),
                 Some(real_thread_id),
-                "real thread should be the active view after reload"
+                "重新加载后,真实线程应为活动视图"
             );
             assert!(
                 !panel.active_thread_is_draft(cx),
-                "real thread is not a draft"
+                "真实线程不是草稿"
             );
             assert!(
                 panel.draft_thread.is_none(),
-                "draft_thread slot should be empty since the draft was parked on navigate-away"
+                "由于草稿在导航离开时被暂存,draft_thread 槽位应为空"
             );
         });
 
@@ -8812,21 +8812,21 @@ mod tests {
             let store = ThreadMetadataStore::global(cx).read(cx);
             let ephemeral_row = store
                 .entry(draft_thread_id)
-                .expect("ephemeral draft metadata row should survive reload");
+                .expect("临时草稿元数据行应在重新加载后保留");
             assert!(
                 ephemeral_row.is_draft(),
-                "ephemeral draft row should still be a draft"
+                "临时草稿行仍应为草稿"
             );
             let retained_row = store
                 .entry(retained_draft_id)
-                .expect("retained draft metadata row should survive reload");
+                .expect("保留的草稿元数据行应在重新加载后保留");
             assert!(
                 retained_row.is_draft(),
-                "retained draft row should still be a draft"
+                "保留的草稿行仍应为草稿"
             );
             let real_row = store
                 .entry(real_thread_id)
-                .expect("real thread metadata row should survive reload");
+                .expect("真实线程元数据行应在重新加载后保留");
             assert_eq!(real_row.session_id.as_ref(), Some(&real_session_id));
         });
 
@@ -8851,8 +8851,8 @@ mod tests {
             loaded_panel.read_with(cx, |panel, cx| panel.editor_text(draft_thread_id, cx));
         assert_eq!(
             restored_ephemeral_text.as_deref(),
-            Some("in-flight draft text"),
-            "ephemeral draft prompt text should be restored from the kvp store"
+            Some("进行中的草稿文本"),
+            "临时草稿提示词文本应从 kvp 存储中恢复"
         );
 
         // 9. Opening the retained draft via load_agent_thread builds a
@@ -8877,8 +8877,8 @@ mod tests {
             loaded_panel.read_with(cx, |panel, cx| panel.editor_text(retained_draft_id, cx));
         assert_eq!(
             restored_retained_text.as_deref(),
-            Some("retained draft text"),
-            "retained draft prompt text should be restored from the kvp store"
+            Some("保留的草稿文本"),
+            "保留的草稿提示词文本应从 kvp 存储中恢复"
         );
     }
 
@@ -8917,7 +8917,7 @@ mod tests {
         cx.run_until_parked();
 
         let draft_thread_id = crate::test_support::active_thread_id(&panel, cx);
-        crate::test_support::type_draft_prompt(&panel, "pinned to stub", cx);
+        crate::test_support::type_draft_prompt(&panel, "固定到存根", cx);
 
         // Diverge `selected_agent` from the draft's bound agent before
         // serialize.
@@ -8936,7 +8936,7 @@ mod tests {
             let store = ThreadMetadataStore::global(cx).read(cx);
             let row = store
                 .entry(draft_thread_id)
-                .expect("draft metadata row should exist");
+                .expect("草稿元数据行应存在");
             assert_eq!(
                 row.agent_id.as_ref(),
                 "stub",
@@ -8947,18 +8947,18 @@ mod tests {
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let reloaded_panel = AgentPanel::load(workspace.downgrade(), async_cx)
             .await
-            .expect("panel load should succeed");
+            .expect("面板加载应成功");
         cx.run_until_parked();
 
         reloaded_panel.read_with(cx, |panel, cx| {
             let draft_view = panel
                 .draft_thread
                 .as_ref()
-                .expect("draft slot should be repopulated");
+                .expect("草稿槽位应被重新填充");
             assert_eq!(
                 draft_view.read(cx).thread_id,
                 draft_thread_id,
-                "restored draft should have the same ThreadId"
+                "恢复的草稿应具有相同的 ThreadId"
             );
             assert_eq!(
                 draft_view.read(cx).agent_key(),
@@ -9001,7 +9001,7 @@ mod tests {
                     .read(cx)
                     .connection_status(&Agent::NativeAgent, cx),
                 crate::agent_connection_store::AgentConnectionStatus::Disconnected,
-                "empty workspaces should not start the native agent connection"
+                "空工作区不应启动原生代理连接"
             );
         });
 
@@ -9021,15 +9021,15 @@ mod tests {
         panel.read_with(cx, |panel, cx| {
             assert!(
                 panel.active_conversation_view().is_none(),
-                "empty workspaces should not create agent threads"
+                "空工作区不应创建代理线程"
             );
             assert!(
                 panel.draft_thread.is_none(),
-                "empty workspaces should not create draft threads"
+                "空工作区不应创建草稿线程"
             );
             assert!(
                 panel.terminals(cx).is_empty(),
-                "empty workspaces should not create agent panel terminals"
+                "空工作区不应创建代理面板终端"
             );
         });
 
@@ -9044,7 +9044,7 @@ mod tests {
         panel.read_with(cx, |panel, cx| {
             assert!(
                 panel.terminals(cx).is_empty(),
-                "empty workspaces should not create terminals after the terminal feature is enabled"
+                "启用终端功能后,空工作区不应创建终端"
             );
             assert_eq!(
                 panel
@@ -9052,7 +9052,7 @@ mod tests {
                     .read(cx)
                     .connection_status(&Agent::NativeAgent, cx),
                 crate::agent_connection_store::AgentConnectionStatus::Disconnected,
-                "empty workspace actions should not start the native agent connection"
+                "空工作区操作不应启动原生代理连接"
             );
         });
     }
@@ -9095,7 +9095,7 @@ mod tests {
                 panel.insert_display_only_terminal(
                     terminal_id,
                     Some(PathBuf::from("/project")),
-                    Some("Terminal".into()),
+                    Some("终端".into()),
                     None,
                     None,
                     true,
@@ -9106,7 +9106,7 @@ mod tests {
                     cx,
                 )
             })
-            .expect("display-only terminal should be inserted");
+            .expect("应插入仅显示终端");
         cx.run_until_parked();
 
         panel.read_with(&cx, |panel, _cx| {
@@ -9133,7 +9133,7 @@ mod tests {
             workspace
                 .active_item(cx)
                 .and_then(|item| item.act_as::<Editor>(cx))
-                .expect("opened file should be an editor")
+                .expect("打开的文件应为编辑器")
         });
 
         cx.focus(&editor);
@@ -9143,7 +9143,7 @@ mod tests {
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should exist")
+                .expect("终端应存在")
                 .view
                 .read(cx)
                 .terminal()
@@ -9164,7 +9164,7 @@ mod tests {
             terminal.update(&mut cx, |terminal, _| terminal.take_input_log());
         assert!(
             pasted_without_selection.is_empty(),
-            "no selection should paste nothing, got {pasted_without_selection:?}"
+            "无选择时应不粘贴任何内容,实际为 {pasted_without_selection:?}"
         );
 
         // Now highlight a portion of the file: from the start of line 2 into line 3.
@@ -9183,7 +9183,7 @@ mod tests {
         let pasted: String = terminal
             .update(&mut cx, |terminal, _| terminal.take_input_log())
             .into_iter()
-            .map(|bytes| String::from_utf8(bytes).expect("pasted bytes should be valid UTF-8"))
+            .map(|bytes| String::from_utf8(bytes).expect("粘贴的字节应为有效的 UTF-8"))
             .collect();
 
         // Lines are 1-based and inclusive; the path is presented as
@@ -9288,16 +9288,16 @@ mod tests {
 
         let terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Image Upload", true, window, cx)
+                panel.insert_test_terminal("图片上传", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         let terminal = panel.read_with(&cx, |panel, cx| {
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel")
+                .expect("终端应保留在面板中")
                 .view
                 .read(cx)
                 .terminal()
@@ -9312,9 +9312,9 @@ mod tests {
         });
 
         let mut input_log = terminal.update(&mut cx, |terminal, _cx| terminal.take_input_log());
-        assert_eq!(input_log.len(), 1, "expected one write to the terminal");
+        assert_eq!(input_log.len(), 1, "预期向终端写入一次");
         let written =
-            String::from_utf8(input_log.remove(0)).expect("terminal write should be valid UTF-8");
+            String::from_utf8(input_log.remove(0)).expect("终端写入应为有效的 UTF-8");
         assert_eq!(
             written,
             expected_terminal_drop_text(std::slice::from_ref(&image_path))
@@ -9330,16 +9330,16 @@ mod tests {
 
         let terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Image Upload", true, window, cx)
+                panel.insert_test_terminal("图片上传", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         let terminal = panel.read_with(&cx, |panel, cx| {
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel")
+                .expect("终端应保留在面板中")
                 .view
                 .read(cx)
                 .terminal()
@@ -9354,9 +9354,9 @@ mod tests {
         });
 
         let mut input_log = terminal.update(&mut cx, |terminal, _cx| terminal.take_input_log());
-        assert_eq!(input_log.len(), 1, "expected one write to the terminal");
+        assert_eq!(input_log.len(), 1, "预期向终端写入一次");
         let written =
-            String::from_utf8(input_log.remove(0)).expect("terminal write should be valid UTF-8");
+            String::from_utf8(input_log.remove(0)).expect("终端写入应为有效的 UTF-8");
         assert_eq!(
             written,
             expected_terminal_drop_text(std::slice::from_ref(&image_path))
@@ -9405,14 +9405,14 @@ mod tests {
 
         let terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Drop Target", true, window, cx)
+                panel.insert_test_terminal("拖放目标", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         let terminal = panel.read_with(&cx, |panel, cx| {
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel")
+                .expect("终端应保留在面板中")
                 .view
                 .read(cx)
                 .terminal()
@@ -9425,7 +9425,7 @@ mod tests {
         let input_log = terminal.update(&mut cx, |terminal, _cx| terminal.take_input_log());
         assert!(
             input_log.is_empty(),
-            "thread drop completion should not write to the active terminal"
+            "线程拖放完成不应写入活动终端"
         );
 
         let expected_uri = MentionUri::File {
@@ -9448,9 +9448,9 @@ mod tests {
 
         let terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Dev Server", true, window, cx)
+                panel.insert_test_terminal("开发服务器", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         panel.read_with(&cx, |panel, cx| {
@@ -9459,7 +9459,7 @@ mod tests {
             assert!(panel.should_create_terminal_for_new_entry(cx));
             let terminals = panel.terminals(cx);
             assert_eq!(terminals.len(), 1);
-            assert_eq!(terminals[0].title.as_ref(), "Dev Server");
+            assert_eq!(terminals[0].title.as_ref(), "开发服务器");
         });
 
         panel.update_in(&mut cx, |panel, window, cx| {
@@ -9520,11 +9520,11 @@ mod tests {
 
         assert!(
             cx.debug_bounds("MENU_ITEM-Skills").is_some(),
-            "Skills menu item should be visible"
+            "技能菜单项应可见"
         );
         assert!(
             cx.debug_bounds("KEY_BINDING-l").is_some(),
-            "Skills menu item should show the ManageSkills shortcut"
+            "技能菜单项应显示管理技能快捷键"
         );
     }
 
@@ -9535,7 +9535,7 @@ mod tests {
             .update_in(&mut cx, |panel, window, cx| {
                 panel.insert_test_terminal("", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         panel.read_with(&cx, |panel, cx| {
@@ -9545,7 +9545,7 @@ mod tests {
             let terminal = panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert_eq!(terminal.title(cx).as_ref(), "");
         });
 
@@ -9553,7 +9553,7 @@ mod tests {
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel")
+                .expect("终端应保留在面板中")
                 .view
                 .clone()
         });
@@ -9571,12 +9571,12 @@ mod tests {
             let terminal = panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert_eq!(terminal.title(cx).as_ref(), "");
         });
 
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = "Shell Breadcrumb".to_string();
+            terminal.breadcrumb_text = "Shell 面包屑".to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -9589,7 +9589,7 @@ mod tests {
                 .terminals
                 .get(&terminal_id)
                 .expect("terminal should remain in the panel");
-            assert_eq!(terminal.title(cx).as_ref(), "Shell Breadcrumb");
+            assert_eq!(terminal.title(cx).as_ref(), "Shell 面包屑");
         });
     }
 
@@ -9614,7 +9614,7 @@ mod tests {
             .update_in(&mut cx, |panel, window, cx| {
                 panel.insert_test_terminal("Dev Server", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         panel.update_in(&mut cx, |panel, window, cx| {
@@ -9638,7 +9638,7 @@ mod tests {
         let now = Utc::now();
         let metadata = TerminalThreadMetadata {
             terminal_id,
-            title: "Persisted Shell Title".into(),
+            title: "持久化的 Shell 标题".into(),
             custom_title: None,
             created_at: now,
             worktree_paths: WorktreePaths::from_folder_paths(&PathList::new(&[PathBuf::from(
@@ -9651,18 +9651,18 @@ mod tests {
         panel.update_in(&mut cx, |panel, window, cx| {
             panel
                 .restore_test_terminal(metadata, true, AgentThreadSource::Sidebar, None, window, cx)
-                .expect("test terminal should be restored");
+                .expect("测试终端应被恢复");
         });
         cx.run_until_parked();
 
         let terminal_view = panel.read_with(&cx, |panel, cx| {
             let terminals = panel.terminals(cx);
             assert_eq!(terminals.len(), 1);
-            assert_eq!(terminals[0].title.as_ref(), "Persisted Shell Title");
+            assert_eq!(terminals[0].title.as_ref(), "持久化的 Shell 标题");
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should be restored")
+                .expect("终端应被恢复")
                 .view
                 .clone()
         });
@@ -9670,7 +9670,7 @@ mod tests {
         let terminal_entity =
             terminal_view.read_with(&cx, |terminal_view, _cx| terminal_view.terminal().clone());
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = "Fresh Shell Title".to_string();
+            terminal.breadcrumb_text = "新的 Shell 标题".to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -9678,7 +9678,7 @@ mod tests {
         panel.read_with(&cx, |panel, cx| {
             let terminals = panel.terminals(cx);
             assert_eq!(terminals.len(), 1);
-            assert_eq!(terminals[0].title.as_ref(), "Fresh Shell Title");
+            assert_eq!(terminals[0].title.as_ref(), "新的 Shell 标题");
         });
     }
 
@@ -9689,7 +9689,7 @@ mod tests {
         let now = Utc::now();
         let metadata = TerminalThreadMetadata {
             terminal_id,
-            title: "Persisted Shell Title".into(),
+            title: "持久化的 Shell 标题".into(),
             custom_title: None,
             created_at: now,
             worktree_paths: WorktreePaths::from_folder_paths(&PathList::new(&[PathBuf::from(
@@ -9709,7 +9709,7 @@ mod tests {
                     window,
                     cx,
                 )
-                .expect("test terminal should be restored");
+                .expect("测试终端应被恢复");
         });
         cx.run_until_parked();
 
@@ -9725,9 +9725,9 @@ mod tests {
         let (workspace, panel, mut cx) = setup_workspace_panel(cx).await;
         panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Dev Server", false, window, cx)
+                panel.insert_test_terminal("开发服务器", false, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         panel.read_with(&cx, |panel, cx| {
@@ -9738,7 +9738,7 @@ mod tests {
         workspace.update_in(&mut cx, |workspace, window, cx| {
             let panel = workspace
                 .panel::<AgentPanel>(cx)
-                .expect("agent panel should be registered in workspace");
+                .expect("代理面板应在工作区中注册");
             panel.read_with(cx, |panel, cx| {
                 panel.terminal_working_directory(Some(workspace), cx);
             });
@@ -9756,16 +9756,16 @@ mod tests {
         let (panel, mut cx) = setup_panel(cx).await;
         let terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Dev Server", true, window, cx)
+                panel.insert_test_terminal("开发服务器", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         panel.read_with(&cx, |panel, _cx| {
             let terminal = panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(terminal.title_editor.is_none());
         });
 
@@ -9778,7 +9778,7 @@ mod tests {
             let terminal = panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(terminal.title_editor.is_none());
         });
 
@@ -9791,12 +9791,12 @@ mod tests {
             let terminal = panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             let title_editor = terminal
                 .title_editor
                 .as_ref()
-                .expect("terminal title editor should be active while editing");
-            assert_eq!(title_editor.read(cx).text(cx), "Dev Server");
+                .expect("编辑时终端标题编辑器应处于活动状态");
+            assert_eq!(title_editor.read(cx).text(cx), "开发服务器");
         });
 
         panel.update_in(&mut cx, |panel, window, cx| {
@@ -9808,7 +9808,7 @@ mod tests {
             let terminal = panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(terminal.title_editor.is_none());
         });
     }
@@ -9820,16 +9820,16 @@ mod tests {
         let (panel, mut cx) = setup_panel(cx).await;
         let terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Initial Custom Title", true, window, cx)
+                panel.insert_test_terminal("初始自定义标题", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         let terminal_view = panel.read_with(&cx, |panel, _cx| {
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel")
+                .expect("终端应保留在面板中")
                 .view
                 .clone()
         });
@@ -9839,7 +9839,7 @@ mod tests {
         let terminal_entity =
             terminal_view.read_with(&cx, |terminal_view, _cx| terminal_view.terminal().clone());
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = "Shell Breadcrumb".to_string();
+            terminal.breadcrumb_text = "Shell 面包屑".to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -9863,9 +9863,9 @@ mod tests {
             let title_editor = terminal
                 .title_editor
                 .as_ref()
-                .expect("terminal title editor should be active while editing")
+                .expect("编辑时终端标题编辑器应处于活动状态")
                 .clone();
-            assert_eq!(title_editor.read(cx).text(cx), "Shell Breadcrumb");
+            assert_eq!(title_editor.read(cx).text(cx), "Shell 面包屑");
             title_editor
         });
 
@@ -9888,7 +9888,7 @@ mod tests {
             panel.stop_editing_terminal_title(terminal_id, false, window, cx);
         });
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = "Updated Shell Breadcrumb".to_string();
+            terminal.breadcrumb_text = "更新后的 Shell 面包屑".to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -9907,14 +9907,14 @@ mod tests {
             .update_in(&mut cx, |panel, window, cx| {
                 panel.insert_test_terminal("Fix bug", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         let terminal_entity = panel.read_with(&cx, |panel, _cx| {
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel")
+                .expect("终端应保留在面板中")
                 .view
                 .clone()
         });
@@ -9922,7 +9922,7 @@ mod tests {
             terminal_entity.read_with(&cx, |terminal_view, _cx| terminal_view.terminal().clone());
 
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = "⠋ Thinking".to_string();
+            terminal.breadcrumb_text = "⠋ 思考中".to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -9930,20 +9930,20 @@ mod tests {
         panel.read_with(&cx, |panel, cx| {
             let terminals = panel.terminals(cx);
             assert_eq!(terminals.len(), 1);
-            assert_eq!(terminals[0].title.as_ref(), "⠋ Fix bug");
+            assert_eq!(terminals[0].title.as_ref(), "⠋ 修复错误");
             let metadata = panel
                 .terminal_metadata(terminal_id, cx)
-                .expect("terminal metadata should be available");
-            assert_eq!(metadata.title.as_ref(), "⠋ Thinking");
+                .expect("终端元数据应可用");
+            assert_eq!(metadata.title.as_ref(), "⠋ 思考中");
             assert_eq!(
                 metadata.custom_title.as_ref().map(|title| title.as_ref()),
-                Some("Fix bug")
+                Some("修复错误")
             );
-            assert_eq!(metadata.display_title().as_ref(), "⠋ Fix bug");
+            assert_eq!(metadata.display_title().as_ref(), "⠋ 修复错误");
         });
 
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = "⠙ Thinking".to_string();
+            terminal.breadcrumb_text = "⠙ 思考中".to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -9951,16 +9951,16 @@ mod tests {
         panel.read_with(&cx, |panel, cx| {
             let terminals = panel.terminals(cx);
             assert_eq!(terminals.len(), 1);
-            assert_eq!(terminals[0].title.as_ref(), "⠙ Fix bug");
+            assert_eq!(terminals[0].title.as_ref(), "⠙ 修复错误");
             let metadata = panel
                 .terminal_metadata(terminal_id, cx)
-                .expect("terminal metadata should be available");
-            assert_eq!(metadata.title.as_ref(), "⠙ Thinking");
-            assert_eq!(metadata.display_title().as_ref(), "⠙ Fix bug");
+                .expect("终端元数据应可用");
+            assert_eq!(metadata.title.as_ref(), "⠙ 思考中");
+            assert_eq!(metadata.display_title().as_ref(), "⠙ 修复错误");
         });
 
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = "Thinking".to_string();
+            terminal.breadcrumb_text = "思考中".to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -9968,12 +9968,12 @@ mod tests {
         panel.read_with(&cx, |panel, cx| {
             let terminals = panel.terminals(cx);
             assert_eq!(terminals.len(), 1);
-            assert_eq!(terminals[0].title.as_ref(), "Fix bug");
+            assert_eq!(terminals[0].title.as_ref(), "修复错误");
             let metadata = panel
                 .terminal_metadata(terminal_id, cx)
-                .expect("terminal metadata should be available");
-            assert_eq!(metadata.title.as_ref(), "Thinking");
-            assert_eq!(metadata.display_title().as_ref(), "Fix bug");
+                .expect("终端元数据应可用");
+            assert_eq!(metadata.title.as_ref(), "思考中");
+            assert_eq!(metadata.display_title().as_ref(), "修复错误");
         });
     }
 
@@ -9982,16 +9982,16 @@ mod tests {
         let (panel, mut cx) = setup_panel(cx).await;
         let terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Initial Custom Title", true, window, cx)
+                panel.insert_test_terminal("初始自定义标题", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         let terminal_view = panel.read_with(&cx, |panel, _cx| {
             panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel")
+                .expect("终端应保留在面板中")
                 .view
                 .clone()
         });
@@ -10001,7 +10001,7 @@ mod tests {
         let terminal_entity =
             terminal_view.read_with(&cx, |terminal_view, _cx| terminal_view.terminal().clone());
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = "⠋ Thinking".to_string();
+            terminal.breadcrumb_text = "⠋ 思考中".to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -10015,18 +10015,18 @@ mod tests {
             let terminal = panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             let title_editor = terminal
                 .title_editor
                 .as_ref()
-                .expect("terminal title editor should be active while editing")
+                .expect("编辑时终端标题编辑器应处于活动状态")
                 .clone();
-            assert_eq!(title_editor.read(cx).text(cx), "Thinking");
+            assert_eq!(title_editor.read(cx).text(cx), "思考中");
             title_editor
         });
 
         title_editor.update_in(&mut cx, |editor, window, cx| {
-            editor.set_text("Fix bug", window, cx);
+            editor.set_text("修复错误", window, cx);
             editor.focus_handle(cx).focus(window, cx);
         });
         panel.update_in(&mut cx, |panel, window, cx| {
@@ -10041,19 +10041,19 @@ mod tests {
         cx.run_until_parked();
 
         terminal_view.read_with(&cx, |terminal_view, _cx| {
-            assert_eq!(terminal_view.custom_title(), Some("Fix bug"));
+            assert_eq!(terminal_view.custom_title(), Some("修复错误"));
         });
         panel.read_with(&cx, |panel, cx| {
             let terminals = panel.terminals(cx);
             assert_eq!(terminals.len(), 1);
-            assert_eq!(terminals[0].title.as_ref(), "⠋ Fix bug");
+            assert_eq!(terminals[0].title.as_ref(), "⠋ 修复错误");
             let metadata = panel
                 .terminal_metadata(terminal_id, cx)
-                .expect("terminal metadata should be available");
-            assert_eq!(metadata.title.as_ref(), "⠋ Thinking");
+                .expect("终端元数据应可用");
+            assert_eq!(metadata.title.as_ref(), "⠋ 思考中");
             assert_eq!(
                 metadata.custom_title.as_ref().map(|title| title.as_ref()),
-                Some("Fix bug")
+                Some("修复错误")
             );
         });
 
@@ -10067,12 +10067,12 @@ mod tests {
             let terminal = panel
                 .terminals
                 .get(&terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             let title_editor = terminal
                 .title_editor
                 .as_ref()
-                .expect("terminal title editor should be active while editing");
-            assert_eq!(title_editor.read(cx).text(cx), "Fix bug");
+                .expect("编辑时终端标题编辑器应处于活动状态");
+            assert_eq!(title_editor.read(cx).text(cx), "修复错误");
         });
     }
 
@@ -10081,14 +10081,14 @@ mod tests {
         let (panel, mut cx) = setup_panel(cx).await;
         let first_terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Build", true, window, cx)
+                panel.insert_test_terminal("构建", true, window, cx)
             })
-            .expect("first test terminal should be inserted");
+            .expect("应插入第一个测试终端");
         let second_terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Server", true, window, cx)
+                panel.insert_test_terminal("服务器", true, window, cx)
             })
-            .expect("second test terminal should be inserted");
+            .expect("应插入第二个测试终端");
         cx.run_until_parked();
 
         panel.read_with(&cx, |panel, _cx| {
@@ -10105,7 +10105,7 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == first_terminal_id)
-                .expect("first terminal should remain in the panel");
+                .expect("第一个终端应保留在面板中");
             assert!(first_terminal.has_notification);
         });
 
@@ -10119,7 +10119,7 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == first_terminal_id)
-                .expect("first terminal should remain in the panel");
+                .expect("第一个终端应保留在面板中");
             assert!(!first_terminal.has_notification);
         });
     }
@@ -10131,7 +10131,7 @@ mod tests {
             .update_in(&mut cx, |panel, window, cx| {
                 panel.insert_test_terminal("Claude", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         cx.update(|window, cx| {
@@ -10149,7 +10149,7 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(!terminal.has_notification);
         });
         assert!(
@@ -10166,14 +10166,14 @@ mod tests {
             .update_in(&mut cx, |panel, window, cx| {
                 panel.insert_test_terminal("Claude", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         let workspace = cx.update(|window, cx| {
             window
                 .root::<MultiWorkspace>()
                 .flatten()
-                .expect("test window should have a MultiWorkspace root")
+                .expect("测试窗口应具有 MultiWorkspace 根")
                 .read(cx)
                 .workspace()
                 .clone()
@@ -10197,7 +10197,7 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(!terminal.has_notification);
         });
         assert!(
@@ -10212,14 +10212,14 @@ mod tests {
         let (panel, mut cx) = setup_visible_panel(cx).await;
         let first_terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Build", true, window, cx)
+                panel.insert_test_terminal("构建", true, window, cx)
             })
-            .expect("first test terminal should be inserted");
+            .expect("应插入第一个测试终端");
         let second_terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Server", true, window, cx)
+                panel.insert_test_terminal("服务器", true, window, cx)
             })
-            .expect("second test terminal should be inserted");
+            .expect("应插入第二个测试终端");
         cx.run_until_parked();
 
         panel.read_with(&cx, |panel, _cx| {
@@ -10229,7 +10229,7 @@ mod tests {
             let multi_workspace = window
                 .root::<MultiWorkspace>()
                 .flatten()
-                .expect("test window should have a MultiWorkspace root");
+                .expect("测试窗口应具有 MultiWorkspace 根");
             multi_workspace.update(cx, |multi_workspace, cx| {
                 multi_workspace.open_sidebar(cx);
             });
@@ -10246,7 +10246,7 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == first_terminal_id)
-                .expect("first terminal should remain in the panel");
+                .expect("第一个终端应保留在面板中");
             assert!(first_terminal.has_notification);
         });
         assert!(
@@ -10261,14 +10261,14 @@ mod tests {
         let (panel, mut cx) = setup_visible_panel_with_sidebar(cx, false).await;
         let first_terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Build", true, window, cx)
+                panel.insert_test_terminal("构建", true, window, cx)
             })
-            .expect("first test terminal should be inserted");
+            .expect("应插入第一个测试终端");
         let second_terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Server", true, window, cx)
+                panel.insert_test_terminal("服务器", true, window, cx)
             })
-            .expect("second test terminal should be inserted");
+            .expect("应插入第二个测试终端");
         cx.run_until_parked();
 
         panel.read_with(&cx, |panel, _cx| {
@@ -10278,7 +10278,7 @@ mod tests {
             let multi_workspace = window
                 .root::<MultiWorkspace>()
                 .flatten()
-                .expect("test window should have a MultiWorkspace root");
+                .expect("测试窗口应具有 MultiWorkspace 根");
             multi_workspace.update(cx, |multi_workspace, cx| {
                 multi_workspace.open_sidebar(cx);
             });
@@ -10295,13 +10295,13 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == first_terminal_id)
-                .expect("first terminal should remain in the panel");
+                .expect("第一个终端应保留在面板中");
             assert!(first_terminal.has_notification);
         });
         cx.windows()
             .iter()
             .find_map(|window| window.downcast::<AgentNotification>())
-            .expect("terminal bell should notify when the sidebar thread list is hidden");
+            .expect("当侧边栏线程列表隐藏时,终端铃声应发出通知");
     }
 
     #[gpui::test]
@@ -10309,14 +10309,14 @@ mod tests {
         let (panel, mut cx) = setup_visible_panel(cx).await;
         let first_terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Build", true, window, cx)
+                panel.insert_test_terminal("构建", true, window, cx)
             })
-            .expect("first test terminal should be inserted");
+            .expect("应插入第一个测试终端");
         let second_terminal_id = panel
             .update_in(&mut cx, |panel, window, cx| {
-                panel.insert_test_terminal("Server", true, window, cx)
+                panel.insert_test_terminal("服务器", true, window, cx)
             })
-            .expect("second test terminal should be inserted");
+            .expect("应插入第二个测试终端");
         cx.run_until_parked();
 
         panel.read_with(&cx, |panel, _cx| {
@@ -10330,13 +10330,13 @@ mod tests {
         cx.windows()
             .iter()
             .find_map(|window| window.downcast::<AgentNotification>())
-            .expect("inactive terminal bell should show a notification");
+            .expect("非活动终端的铃声应显示通知");
 
         cx.update(|window, cx| {
             let multi_workspace = window
                 .root::<MultiWorkspace>()
                 .flatten()
-                .expect("test window should have a MultiWorkspace root");
+                .expect("测试窗口应具有 MultiWorkspace 根");
             multi_workspace.update(cx, |multi_workspace, cx| {
                 multi_workspace.open_sidebar(cx);
             });
@@ -10348,7 +10348,7 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == first_terminal_id)
-                .expect("first terminal should remain in the panel");
+                .expect("第一个终端应保留在面板中");
             assert!(first_terminal.has_notification);
         });
         assert!(
@@ -10365,7 +10365,7 @@ mod tests {
             .update_in(&mut cx, |panel, window, cx| {
                 panel.insert_test_terminal("Claude", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         cx.update(|window, cx| {
@@ -10387,13 +10387,13 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(terminal.has_notification);
         });
         cx.windows()
             .iter()
             .find_map(|window| window.downcast::<AgentNotification>())
-            .expect("background terminal bell should show a notification");
+            .expect("后台终端的铃声应显示通知");
     }
 
     #[gpui::test]
@@ -10405,7 +10405,7 @@ mod tests {
             .update_in(&mut cx, |panel, window, cx| {
                 panel.insert_test_terminal("Claude", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         cx.deactivate_window();
@@ -10419,13 +10419,13 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(terminal.has_notification);
         });
         cx.windows()
             .iter()
             .find_map(|window| window.downcast::<AgentNotification>())
-            .expect("background terminal bell should show a notification");
+            .expect("后台终端的铃声应显示通知");
 
         cx.update(|window, _cx| {
             window.activate_window();
@@ -10437,7 +10437,7 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(!terminal.has_notification);
         });
         assert!(
@@ -10465,7 +10465,7 @@ mod tests {
             .update_in(&mut cx, |panel, window, cx| {
                 panel.insert_test_terminal("Claude", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         cx.run_until_parked();
 
         panel.update(&mut cx, |panel, cx| {
@@ -10478,19 +10478,19 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(terminal.has_notification);
         });
         cx.windows()
             .iter()
             .find_map(|window| window.downcast::<AgentNotification>())
-            .expect("hidden terminal bell should show a notification");
+            .expect("隐藏终端的铃声应显示通知");
 
         let workspace = cx.update(|window, cx| {
             window
                 .root::<MultiWorkspace>()
                 .flatten()
-                .expect("test window should have a MultiWorkspace root")
+                .expect("测试窗口应具有 MultiWorkspace 根")
                 .read(cx)
                 .workspace()
                 .clone()
@@ -10506,7 +10506,7 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == terminal_id)
-                .expect("terminal should remain in the panel");
+                .expect("终端应保留在面板中");
             assert!(!terminal.has_notification);
         });
         assert!(
@@ -10532,7 +10532,7 @@ mod tests {
             .update_in(&mut cx, |panel, window, cx| {
                 panel.insert_test_terminal("Claude", true, window, cx)
             })
-            .expect("test terminal should be inserted");
+            .expect("测试终端应被插入");
         let weak_panel = panel.downgrade();
         cx.run_until_parked();
 
@@ -10544,7 +10544,7 @@ mod tests {
         cx.windows()
             .iter()
             .find_map(|window| window.downcast::<AgentNotification>())
-            .expect("hidden terminal bell should show a notification");
+            .expect("隐藏终端的铃声应显示通知");
 
         drop(panel);
         cx.update(|_window, _cx| {});
@@ -10552,7 +10552,7 @@ mod tests {
 
         assert!(
             !weak_panel.is_upgradable(),
-            "agent panel should be released after dropping the last handle"
+            "释放最后一个句柄后,代理面板应被释放"
         );
         assert!(
             cx.windows()
@@ -10609,12 +10609,12 @@ mod tests {
             .update_in(cx, |panel, window, cx| {
                 panel.insert_test_terminal("Build", true, window, cx)
             })
-            .expect("first test terminal should be inserted");
+            .expect("应插入第一个测试终端");
         let second_terminal_id = panel_a
             .update_in(cx, |panel, window, cx| {
-                panel.insert_test_terminal("Server", true, window, cx)
+                panel.insert_test_terminal("服务器", true, window, cx)
             })
-            .expect("second test terminal should be inserted");
+            .expect("应插入第二个测试终端");
         cx.run_until_parked();
 
         multi_workspace
@@ -10635,7 +10635,7 @@ mod tests {
             .windows()
             .iter()
             .find_map(|window| window.downcast::<AgentNotification>())
-            .expect("terminal bell should show a notification");
+            .expect("终端铃声应显示通知");
         notification
             .update(cx, |notification, _window, cx| notification.accept(cx))
             .unwrap();
@@ -10657,7 +10657,7 @@ mod tests {
                 .terminals(cx)
                 .into_iter()
                 .find(|terminal| terminal.id == first_terminal_id)
-                .expect("first terminal should remain in the panel");
+                .expect("第一个终端应保留在面板中");
             assert!(!first_terminal.has_notification);
         });
     }
@@ -10698,11 +10698,11 @@ mod tests {
             assert_eq!(
                 panel.retained_threads.len(),
                 1,
-                "Running thread A should be retained in retained_threads"
+                "运行中的线程 A 应保留在 retained_threads 中"
             );
             assert!(
                 panel.retained_threads.contains_key(&thread_id_a),
-                "Retained thread should be keyed by thread A's thread ID"
+                "保留的线程应以线程 A 的线程 ID 为键"
             );
         });
     }
@@ -10713,7 +10713,7 @@ mod tests {
 
         let connection_a = StubAgentConnection::new();
         connection_a.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("Response".into()),
+            acp::ContentChunk::new("响应".into()),
         )]);
         open_thread_with_connection(&panel, connection_a, &mut cx);
         send_message(&panel, &mut cx);
@@ -10737,17 +10737,17 @@ mod tests {
             assert_eq!(
                 panel.retained_threads.len(),
                 1,
-                "Idle non-loadable thread A should be retained in retained_threads"
+                "空闲且不可加载的线程 A 应保留在 retained_threads 中"
             );
             assert!(
                 panel.retained_threads.contains_key(&thread_id_a),
-                "Retained thread should be keyed by thread A's thread ID"
+                "保留的线程应以线程 A 的线程 ID 为键"
             );
         });
 
         assert!(
             weak_view_a.upgrade().is_some(),
-            "Idle non-loadable ConnectionView should still be retained"
+            "空闲且不可加载的 ConnectionView 仍应被保留"
         );
     }
 
@@ -10802,17 +10802,17 @@ mod tests {
         let active_session = active_session_id(&panel, &cx);
         assert_eq!(
             active_session, session_id_a,
-            "Thread A should be the active thread after promotion"
+            "提升后线程 A 应为活动线程"
         );
 
         panel.read_with(&cx, |panel, _cx| {
             assert!(
                 !panel.retained_threads.contains_key(&thread_id_a),
-                "Promoted thread A should no longer be in retained_threads"
+                "提升后的线程 A 不应再位于 retained_threads 中"
             );
             assert!(
                 panel.retained_threads.contains_key(&thread_id_b),
-                "Thread B (idle, non-loadable) should remain retained in retained_threads"
+                "线程 B(空闲、不可加载)应继续保留在 retained_threads 中"
             );
         });
     }
@@ -10861,14 +10861,14 @@ mod tests {
         panel.read_with(&cx, |panel, cx| {
             let active_view = panel
                 .active_conversation_view()
-                .expect("visible conversation should remain open after reopening");
+                .expect("重新打开后,可见的对话应保持打开状态");
             let connected = active_view
                 .read(cx)
                 .as_connected()
-                .expect("visible conversation should still be connected in the UI");
+                .expect("可见的对话在 UI 中仍应保持连接");
             assert!(
                 !connected.has_thread_error(cx),
-                "reopening an already-visible session should keep the thread usable"
+                "重新打开已可见的会话应保持线程可用"
             );
         });
     }
@@ -10882,7 +10882,7 @@ mod tests {
         });
 
         let source_session_id = acp::SessionId::new("source-thread-session");
-        let source_title: SharedString = "Source Thread Title".into();
+        let source_title: SharedString = "源线程标题".into();
         let db_thread = agent::DbThread {
             title: source_title.clone(),
             messages: Vec::new(),
@@ -10914,16 +10914,16 @@ mod tests {
                 )
             })
             .await
-            .expect("saving source thread should succeed");
+            .expect("保存源线程应成功");
         cx.run_until_parked();
 
         thread_store.read_with(cx, |store, _cx| {
             let entry = store
                 .thread_from_session_id(&source_session_id)
-                .expect("saved thread should be listed in the store");
+                .expect("保存的线程应列在存储中");
             assert!(
                 entry.parent_session_id.is_none(),
-                "saved thread is a root thread with no parent session"
+                "保存的线程是没有父会话的根线程"
             );
         });
 
@@ -10931,17 +10931,17 @@ mod tests {
             .update(|cx| {
                 AgentPanel::initial_content_for_thread_summary(source_session_id.clone(), cx)
             })
-            .expect("initial content should be produced for a root thread");
+            .expect("应为根线程生成初始内容");
 
         match content {
             AgentInitialContent::ThreadSummary { session_id, title } => {
                 assert_eq!(
                     session_id, source_session_id,
-                    "thread-summary mention should use the source thread's own session id"
+                    "线程摘要提及应使用源线程自身的会话 ID"
                 );
                 assert_eq!(title, Some(source_title.clone()));
             }
-            _ => panic!("expected AgentInitialContent::ThreadSummary"),
+            _ => panic!("预期为 AgentInitialContent::ThreadSummary"),
         }
 
         // Unknown session ids should still produce no content.
@@ -10953,7 +10953,7 @@ mod tests {
         });
         assert!(
             missing.is_none(),
-            "unknown session ids should not produce initial content"
+            "未知会话 ID 不应生成初始内容"
         );
     }
 
@@ -11001,21 +11001,21 @@ mod tests {
             assert_eq!(
                 panel.retained_threads.len(),
                 5,
-                "cleanup should keep at most five idle loadable retained threads"
+                "清理应最多保留五个空闲且可加载的保留线程"
             );
             assert!(
                 !panel.retained_threads.contains_key(&thread_ids[0]),
-                "oldest idle loadable retained thread should be removed"
+                "最旧的空闲且可加载的保留线程应被移除"
             );
             for thread_id in &thread_ids[1..6] {
                 assert!(
                     panel.retained_threads.contains_key(thread_id),
-                    "more recent idle loadable retained threads should be retained"
+                    "较新的空闲且可加载的保留线程应被保留"
                 );
             }
             assert!(
                 !panel.retained_threads.contains_key(&thread_ids[6]),
-                "the active thread should not also be stored as a retained thread"
+                "活动线程不应同时存储为保留线程"
             );
         });
     }
@@ -11076,25 +11076,25 @@ mod tests {
             assert_eq!(
                 panel.retained_threads.len(),
                 6,
-                "cleanup should keep the non-loadable idle thread in addition to five loadable ones"
+                "清理应在五个可加载线程之外保留不可加载的空闲线程"
             );
             assert!(
                 panel.retained_threads.contains_key(&non_loadable_thread_id),
-                "idle non-loadable retained threads should not be cleanup candidates"
+                "空闲且不可加载的保留线程不应成为清理候选"
             );
             assert!(
                 !panel.retained_threads.contains_key(&loadable_thread_ids[0]),
-                "oldest idle loadable retained thread should still be removed"
+                "最旧的空闲且可加载的保留线程仍应被移除"
             );
             for thread_id in &loadable_thread_ids[1..6] {
                 assert!(
                     panel.retained_threads.contains_key(thread_id),
-                    "more recent idle loadable retained threads should be retained"
+                    "较新的空闲且可加载的保留线程应被保留"
                 );
             }
             assert!(
                 !panel.retained_threads.contains_key(&loadable_thread_ids[6]),
-                "the active loadable thread should not also be stored as a retained thread"
+                "活动且可加载的线程不应同时存储为保留线程"
             );
         });
     }
@@ -11229,7 +11229,7 @@ mod tests {
             );
             assert!(
                 panel.retained_threads.contains_key(&thread_id_c),
-                "Thread C should be in retained_threads"
+                "线程 C 应位于 retained_threads 中"
             );
         });
 
@@ -11241,7 +11241,7 @@ mod tests {
         assert_eq!(
             initial_b_paths.ordered_paths().collect::<Vec<_>>(),
             vec![&PathBuf::from("/project_a")],
-            "Thread B should initially have only /project_a"
+            "线程 B 最初应仅包含 /project_a"
         );
 
         // Now add a second worktree to the project.
@@ -11312,11 +11312,11 @@ mod tests {
 
         // Verify the metadata store reflects the new paths for running threads only.
         cx.run_until_parked();
-        for (label, session_id) in [("thread B", &session_id_b), ("thread A", &session_id_a)] {
+        for (label, session_id) in [("thread B", &session_id_b), ("线程 A", &session_id_a)] {
             let metadata_paths = metadata_store.read_with(&cx, |store, _cx| {
                 let metadata = store
                     .entry_by_session(session_id)
-                    .unwrap_or_else(|| panic!("{label} thread metadata should exist"));
+                    .unwrap_or_else(|| panic!("{label} 线程元数据应存在"));
                 metadata.folder_paths().clone()
             });
             let mut sorted = metadata_paths.ordered_paths().cloned().collect::<Vec<_>>();
@@ -11342,7 +11342,7 @@ mod tests {
         assert_eq!(
             after_remove_b.ordered_paths().collect::<Vec<_>>(),
             vec![&PathBuf::from("/project_a")],
-            "Thread B work_dirs should revert to only /project_a after removing /project_b"
+            "移除 /project_b 后,线程 B 的 work_dirs 应恢复为仅包含 /project_a"
         );
 
         let after_remove_a = panel.read_with(&cx, |panel, cx| {
@@ -11359,7 +11359,7 @@ mod tests {
         assert_eq!(
             after_remove_a.ordered_paths().collect::<Vec<_>>(),
             vec![&PathBuf::from("/project_a")],
-            "Thread A work_dirs should revert to only /project_a after removing /project_b"
+            "移除 /project_b 后,线程 A 的 work_dirs 应恢复为仅包含 /project_a"
         );
     }
 
@@ -11405,13 +11405,13 @@ mod tests {
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let panel = AgentPanel::load(workspace.downgrade(), async_cx)
             .await
-            .expect("panel load should succeed");
+            .expect("面板加载应成功");
         cx.run_until_parked();
 
         panel.read_with(cx, |panel, _cx| {
             assert_eq!(
                 panel.selected_agent, custom_agent,
-                "new workspace should inherit the global last-used agent"
+                "新工作区应继承全局上次使用的代理"
             );
         });
     }
@@ -11457,7 +11457,7 @@ mod tests {
         };
 
         panel.read_with(cx, |panel, cx| {
-            let draft = panel.draft_thread.as_ref().expect("draft should exist");
+            let draft = panel.draft_thread.as_ref().expect("草稿应存在");
             assert_eq!(panel.selected_agent, expected_agent);
             assert_eq!(*draft.read(cx).agent_key(), expected_agent);
         });
@@ -11466,7 +11466,7 @@ mod tests {
         assert_eq!(
             read_global_last_used_agent(&kvp),
             Some(expected_agent),
-            "the selection should be persisted as the global last-used agent"
+            "选择应持久化为全局上次使用的代理"
         );
     }
 
@@ -11538,26 +11538,26 @@ mod tests {
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let loaded_a = AgentPanel::load(workspace_a.downgrade(), async_cx)
             .await
-            .expect("panel A load should succeed");
+            .expect("面板 A 加载应成功");
         cx.run_until_parked();
 
         let async_cx = cx.update(|window, cx| window.to_async(cx));
         let loaded_b = AgentPanel::load(workspace_b.downgrade(), async_cx)
             .await
-            .expect("panel B load should succeed");
+            .expect("面板 B 加载应成功");
         cx.run_until_parked();
 
         loaded_a.read_with(cx, |panel, _cx| {
             assert_eq!(
                 panel.selected_agent, agent_a,
-                "workspace A should restore agent-alpha, not agent-beta"
+                "工作区 A 应恢复 agent-alpha,而非 agent-beta"
             );
         });
 
         loaded_b.read_with(cx, |panel, _cx| {
             assert_eq!(
                 panel.selected_agent, agent_b,
-                "workspace B should restore agent-beta, not agent-alpha"
+                "工作区 B 应恢复 agent-beta,而非 agent-alpha"
             );
         });
     }
@@ -11613,11 +11613,11 @@ mod tests {
         panel.read_with(cx, |panel, _cx| {
             assert_eq!(
                 panel.selected_agent, custom_agent,
-                "selected_agent should remain the custom agent after new_thread"
+                "new_thread 之后 selected_agent 应保持为自定义代理"
             );
             assert!(
                 panel.active_conversation_view().is_some(),
-                "a thread should have been created"
+                "应已创建线程"
             );
         });
     }
@@ -11680,16 +11680,16 @@ mod tests {
         });
 
         panel.read_with(cx, |panel, cx| {
-            let draft = panel.draft_thread.as_ref().expect("draft should exist");
+            let draft = panel.draft_thread.as_ref().expect("草稿应存在");
             assert_ne!(
                 draft.entity_id(),
                 first_draft_id,
-                "a new draft should have been created"
+                "应已创建新草稿"
             );
             assert_eq!(
                 *draft.read(cx).agent_key(),
                 custom_agent,
-                "the new draft should use the custom agent"
+                "新草稿应使用自定义代理"
             );
         });
 
@@ -11707,7 +11707,7 @@ mod tests {
             assert_eq!(
                 panel.draft_thread.as_ref().unwrap().entity_id(),
                 second_draft_id,
-                "draft should be reused when the agent has not changed"
+                "代理未更改时应复用草稿"
             );
         });
     }
@@ -11763,7 +11763,7 @@ mod tests {
         let thread_view = panel.read_with(cx, |panel, cx| panel.active_thread_view(cx).unwrap());
         let message_editor = thread_view.read_with(cx, |view, _cx| view.message_editor.clone());
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("Don't lose me!", window, cx);
+            editor.set_text("别丢下我!", window, cx);
         });
 
         // Press cmd-n on a typed draft — the draft is parked into
@@ -11777,12 +11777,12 @@ mod tests {
         panel.read_with(cx, |panel, _cx| {
             assert!(
                 panel.retained_threads.contains_key(&initial_thread_id),
-                "typed draft should have been parked into retained_threads"
+                "已输入的草稿应已暂存到 retained_threads 中"
             );
             let active_draft_id = panel.draft_thread.as_ref().unwrap().entity_id();
             assert_ne!(
                 active_draft_id, initial_draft_id,
-                "cmd-n should produce a fresh ephemeral draft"
+                "cmd-n 应生成全新的临时草稿"
             );
         });
 
@@ -11790,8 +11790,8 @@ mod tests {
         let parked_text = panel.read_with(cx, |panel, cx| panel.editor_text(initial_thread_id, cx));
         assert_eq!(
             parked_text.as_deref(),
-            Some("Don't lose me!"),
-            "parked draft should retain the typed prompt"
+            Some("别丢下我!"),
+            "暂存的草稿应保留已输入的提示词"
         );
 
         // The new active draft starts empty — no carry-over.
@@ -11799,14 +11799,14 @@ mod tests {
         let active_text = panel.read_with(cx, |panel, cx| panel.editor_text(active_thread_id, cx));
         assert_eq!(
             active_text, None,
-            "fresh ephemeral draft should start empty, not carry the parked draft's prompt"
+            "全新的临时草稿应为空,不应携带暂存草稿的提示词"
         );
     }
 
     /// When the user is viewing a *parked* draft (selected from the
     /// sidebar) and presses `+`, the panel should just focus the
     /// ephemeral new-draft slot — not park it and create yet another
-    /// empty draft. `+` is "go to my new-thread slot", not "reset state".
+    /// empty draft. `+` is "转到我的新线程槽位", not "重置状态".
     #[gpui::test]
     async fn test_plus_with_parked_draft_active_focuses_ephemeral(cx: &mut TestAppContext) {
         init_test(cx);
@@ -11843,7 +11843,7 @@ mod tests {
         });
         cx.run_until_parked();
         let parked_thread_id = crate::test_support::active_thread_id(&panel, cx);
-        crate::test_support::type_draft_prompt(&panel, "parked draft prompt", cx);
+        crate::test_support::type_draft_prompt(&panel, "暂存草稿提示词", cx);
         panel.update_in(cx, |panel, window, cx| {
             panel.new_thread(&NewThread, window, cx);
         });
@@ -11855,7 +11855,7 @@ mod tests {
         });
         assert_ne!(
             ephemeral_thread_id, parked_thread_id,
-            "sanity: parking should have produced a fresh ephemeral draft"
+            "完整性检查:暂存应已生成全新的临时草稿"
         );
 
         // Activate the parked draft (simulates clicking it in the sidebar).
@@ -11875,7 +11875,7 @@ mod tests {
         assert_eq!(
             crate::test_support::active_thread_id(&panel, cx),
             parked_thread_id,
-            "sanity: parked draft should be the active view after load_agent_thread"
+            "完整性检查:load_agent_thread 之后暂存草稿应为活动视图"
         );
         // The parked draft has content, so it was NOT reclaimed as
         // ephemeral. The previous ephemeral draft should still be in
@@ -11884,7 +11884,7 @@ mod tests {
             assert_eq!(
                 panel.draft_thread.as_ref().unwrap().entity_id(),
                 ephemeral_entity_id,
-                "ephemeral draft slot should still hold the fresh draft"
+                "临时草稿槽位应仍持有全新草稿"
             );
         });
 
@@ -11899,16 +11899,16 @@ mod tests {
             assert_eq!(
                 panel.active_thread_id(cx),
                 Some(ephemeral_thread_id),
-                "`+` should have switched back to the existing ephemeral draft"
+                "`+` 应已切换回现有的临时草稿"
             );
             assert_eq!(
                 panel.draft_thread.as_ref().unwrap().entity_id(),
                 ephemeral_entity_id,
-                "`+` should not have replaced the ephemeral draft"
+                "`+` 不应替换临时草稿"
             );
             assert!(
                 panel.retained_threads.contains_key(&parked_thread_id),
-                "parked draft should remain in `retained_threads`"
+                "暂存草稿应保留在 `retained_threads` 中"
             );
         });
     }
@@ -11952,7 +11952,7 @@ mod tests {
         });
         cx.run_until_parked();
         let parked_thread_id = crate::test_support::active_thread_id(&panel, cx);
-        crate::test_support::type_draft_prompt(&panel, "parked prompt", cx);
+        crate::test_support::type_draft_prompt(&panel, "暂存提示词", cx);
         panel.update_in(cx, |panel, window, cx| {
             panel.new_thread(&NewThread, window, cx);
         });
@@ -11964,7 +11964,7 @@ mod tests {
             assert_eq!(
                 panel.draft_thread.as_ref().unwrap().read(cx).agent_key(),
                 &Agent::Stub,
-                "ephemeral draft should be Stub agent"
+                "临时草稿应为 Stub 代理"
             );
         });
 
@@ -11998,11 +11998,11 @@ mod tests {
         cx.run_until_parked();
 
         panel.read_with(cx, |panel, cx| {
-            let draft = panel.draft_thread.as_ref().expect("draft should exist");
+            let draft = panel.draft_thread.as_ref().expect("草稿应存在");
             assert_eq!(
                 draft.read(cx).agent_key(),
                 &Agent::NativeAgent,
-                "ephemeral draft should be bound to NativeAgent, not Stub"
+                "临时草稿应绑定到 NativeAgent,而非 Stub"
             );
             let active_id = panel.active_thread_id(cx).unwrap();
             assert_ne!(
@@ -12011,7 +12011,7 @@ mod tests {
             );
             assert!(
                 panel.retained_threads.contains_key(&parked_thread_id),
-                "parked draft should still be in retained_threads"
+                "暂存草稿应仍在 retained_threads 中"
             );
         });
     }
@@ -12070,7 +12070,7 @@ mod tests {
         let thread_view = panel.read_with(cx, |panel, cx| panel.active_thread_view(cx).unwrap());
         let message_editor = thread_view.read_with(cx, |view, _cx| view.message_editor.clone());
         message_editor.update_in(cx, |editor, window, cx| {
-            editor.set_text("saved prompt", window, cx);
+            editor.set_text("已保存的提示词", window, cx);
         });
 
         // Switch to a different agent. The typed draft should be parked
@@ -12084,20 +12084,20 @@ mod tests {
 
         // A new draft should have been created for the Stub agent.
         panel.read_with(cx, |panel, cx| {
-            let draft = panel.draft_thread.as_ref().expect("draft should exist");
+            let draft = panel.draft_thread.as_ref().expect("草稿应存在");
             assert_ne!(
                 draft.entity_id(),
                 initial_draft_id,
-                "a new draft should have been created for the new agent"
+                "应为新代理创建新草稿"
             );
             assert_eq!(
                 *draft.read(cx).agent_key(),
                 Agent::Stub,
-                "new draft should use the new agent"
+                "新草稿应使用新代理"
             );
             assert!(
                 panel.retained_threads.contains_key(&initial_thread_id),
-                "typed draft should have been parked into retained_threads"
+                "已输入的草稿应已暂存到 retained_threads 中"
             );
         });
 
@@ -12105,8 +12105,8 @@ mod tests {
         let parked_text = panel.read_with(cx, |panel, cx| panel.editor_text(initial_thread_id, cx));
         assert_eq!(
             parked_text.as_deref(),
-            Some("saved prompt"),
-            "parked draft should retain the user's prompt"
+            Some("已保存的提示词"),
+            "暂存草稿应保留用户的提示词"
         );
 
         // The new draft on the new agent starts empty.
@@ -12114,7 +12114,7 @@ mod tests {
         let active_text = panel.read_with(cx, |panel, cx| panel.editor_text(active_thread_id, cx));
         assert_eq!(
             active_text, None,
-            "new draft on the new agent should start empty, not carry the parked draft's prompt"
+            "新代理上的新草稿应为空,不应携带暂存草稿的提示词"
         );
     }
 
@@ -12228,7 +12228,7 @@ mod tests {
         // Verify the worktree directory exists before rollback.
         assert!(
             fs.is_dir(&success_path).await,
-            "worktree directory should exist before rollback"
+            "回滚前工作树目录应存在"
         );
 
         let multi_workspace =
@@ -12241,7 +12241,7 @@ mod tests {
         let (sender_err, receiver_err) = futures::channel::oneshot::channel::<Result<()>>();
         sender_ok.send(Ok(())).unwrap();
         sender_err
-            .send(Err(anyhow!("branch already exists")))
+            .send(Err(anyhow!("分支已存在")))
             .unwrap();
 
         let creation_infos = vec![
@@ -12266,19 +12266,19 @@ mod tests {
 
         assert!(
             result.is_err(),
-            "should return error when any creation fails"
+            "任一创建失败时应返回错误"
         );
         let err_msg = result.unwrap_err().to_string();
         assert!(
-            err_msg.contains("branch already exists"),
-            "error should mention the original failure: {err_msg}"
+            err_msg.contains("分支已存在"),
+            "错误应提及原始失败原因:{err_msg}"
         );
 
         // The successful worktree should have been rolled back by git.
         cx.executor().run_until_parked();
         assert!(
             !fs.is_dir(&success_path).await,
-            "successful worktree directory should be removed by rollback"
+            "回滚应移除已成功创建的工作树目录"
         );
     }
 
@@ -12337,12 +12337,12 @@ mod tests {
 
         assert!(
             result.is_err(),
-            "should return error when receiver is canceled"
+            "接收器被取消时应返回错误"
         );
         let err_msg = result.unwrap_err().to_string();
         assert!(
             err_msg.contains("canceled"),
-            "error should mention cancellation: {err_msg}"
+            "错误应提及取消原因:{err_msg}"
         );
     }
 
@@ -12387,11 +12387,11 @@ mod tests {
 
         assert!(
             fs.is_dir(&orphan_path).await,
-            "orphan dir should exist before rollback"
+            "回滚前孤立目录应存在"
         );
 
         let (sender, receiver) = futures::channel::oneshot::channel::<Result<()>>();
-        sender.send(Err(anyhow!("hook failed"))).unwrap();
+        sender.send(Err(anyhow!("钩子失败"))).unwrap();
 
         let creation_infos = vec![(repository.clone(), orphan_path.clone(), receiver)];
 
@@ -12415,7 +12415,7 @@ mod tests {
         assert!(result.is_err());
         assert!(
             !fs.is_dir(&orphan_path).await,
-            "orphan worktree directory should be removed by filesystem cleanup"
+            "文件系统清理应移除孤立的工作树目录"
         );
     }
 
@@ -12428,7 +12428,7 @@ mod tests {
         // Open thread A and send a message so it is retained.
         let connection_a = StubAgentConnection::new();
         connection_a.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("response a".into()),
+            acp::ContentChunk::new("响应 a".into()),
         )]);
         open_thread_with_connection(&panel, connection_a, &mut cx);
         let _session_id_a = active_session_id(&panel, &cx);
@@ -12448,7 +12448,7 @@ mod tests {
             .with_agent_id("my-custom-agent".into())
             .with_telemetry_id("my-custom-agent".into());
         connection_b.set_next_prompt_updates(vec![acp::SessionUpdate::AgentMessageChunk(
-            acp::ContentChunk::new("response b".into()),
+            acp::ContentChunk::new("响应 b".into()),
         )]);
         open_thread_with_custom_connection(&panel, connection_b, &mut cx);
         send_message(&panel, &mut cx);
@@ -12478,7 +12478,7 @@ mod tests {
         panel.read_with(&cx, |panel, _cx| {
             assert_eq!(
                 panel.selected_agent, stub_agent,
-                "selected_agent should sync back to thread A's agent"
+                "selected_agent 应同步回线程 A 的代理"
             );
         });
     }
@@ -12566,7 +12566,7 @@ mod tests {
             );
             assert!(
                 git_work_dirs.contains(&PathBuf::from("/repo_a")),
-                "repo_a should be in git_repos: {git_work_dirs:?}"
+                "repo_a 应位于 git_repos 中:{git_work_dirs:?}"
             );
             assert!(
                 git_work_dirs.contains(&PathBuf::from("/repo_b")),
@@ -12663,7 +12663,7 @@ mod tests {
         workspace.update_in(&mut cx, |_, window, cx| {
             assert!(
                 panel.read(cx).focus_handle(cx).contains_focused(window, cx),
-                "Agent panel should be focused before pressing '/'"
+                "按下 '/' 之前代理面板应获得焦点"
             );
         });
 
@@ -12674,7 +12674,7 @@ mod tests {
         workspace.update_in(&mut cx, |_, window, cx| {
             assert!(
                 panel.read(cx).focus_handle(cx).contains_focused(window, cx),
-                "Focus should remain on the agent panel after pressing '/'"
+                "按下 '/' 之后焦点应保持在代理面板上"
             );
         });
     }
@@ -12771,19 +12771,19 @@ mod tests {
                 thread
                     .handle_session_update(
                         acp::SessionUpdate::UserMessageChunk(acp::ContentChunk::new(
-                            "Restored user message".into(),
+                            "已恢复的用户消息".into(),
                         )),
                         cx,
                     )
-                    .expect("restored user message should be applied");
+                    .expect("已恢复的用户消息应被应用");
                 thread
                     .handle_session_update(
                         acp::SessionUpdate::AgentMessageChunk(acp::ContentChunk::new(
-                            "Restored assistant message".into(),
+                            "已恢复的助手消息".into(),
                         )),
                         cx,
                     )
-                    .expect("restored assistant message should be applied");
+                    .expect("已恢复的助手消息应被应用");
             });
             Task::ready(Ok(thread))
         }
@@ -12817,7 +12817,7 @@ mod tests {
         ) -> Task<Result<acp::PromptResponse>> {
             if !self.sessions.lock().contains(&params.session_id) {
                 self.missing_prompt_sessions.lock().push(params.session_id);
-                return Task::ready(Err(anyhow!("Session not found")));
+                return Task::ready(Err(anyhow!("未找到会话")));
             }
 
             Task::ready(Ok(acp::PromptResponse::new(acp::StopReason::EndTurn)))
@@ -12877,7 +12877,7 @@ mod tests {
     ///    load_session(X) → both get Connected with session X.
     /// 7. A is eventually cleaned up → on_release → close_all_sessions →
     ///    removes session X.
-    /// 8. C sends → "Session not found".
+    /// 8. C sends → "未找到会话".
     #[gpui::test]
     async fn test_retained_thread_reset_race_disassociates_session(cx: &mut TestAppContext) {
         let (_workspace, panel, mut cx) = setup_workspace_panel(cx).await;
@@ -12936,7 +12936,7 @@ mod tests {
         panel.read_with(&cx, |panel, _cx| {
             assert!(
                 panel.retained_threads.contains_key(&_thread_id_a),
-                "thread A should be in retained_threads after switching to B"
+                "切换到 B 之后线程 A 应位于 retained_threads 中"
             );
         });
 
@@ -12947,7 +12947,7 @@ mod tests {
             panel
                 .retained_threads
                 .get(&_thread_id_a)
-                .expect("thread A should be retained")
+                .expect("线程 A 应被保留")
                 .clone()
         });
         retained_conversation_a.update(&mut cx, |conversation, cx| {
@@ -12955,7 +12955,7 @@ mod tests {
                 thread_view.update(cx, |view, cx| {
                     view.handle_thread_error(
                         crate::conversation_view::ThreadError::Other {
-                            message: "simulated error".into(),
+                            message: "模拟错误".into(),
                             acp_error_code: None,
                         },
                         cx,
@@ -12966,10 +12966,10 @@ mod tests {
 
         // Confirm the thread error is set.
         retained_conversation_a.read_with(&cx, |conversation, cx| {
-            let connected = conversation.as_connected().expect("should be connected");
+            let connected = conversation.as_connected().expect("应已连接");
             assert!(
                 connected.has_thread_error(cx),
-                "retained A should have a thread error"
+                "保留的 A 应具有线程错误"
             );
         });
 
@@ -13013,7 +13013,7 @@ mod tests {
             assert_eq!(
                 active_session,
                 Some(session_id_a.clone()),
-                "session A should be the active session after open_thread"
+                "open_thread 之后会话 A 应为活动会话"
             );
         });
 
@@ -13031,7 +13031,7 @@ mod tests {
 
         // The key assertion: sending messages on the ACTIVE view (C)
         // must succeed. If the session was disassociated by A's cleanup,
-        // this will fail with "Session not found".
+        // this will fail with "未找到会话".
         send_message(&panel, &mut cx);
         send_message(&panel, &mut cx);
 
@@ -13046,14 +13046,14 @@ mod tests {
         panel.read_with(&cx, |panel, cx| {
             let active_view = panel
                 .active_conversation_view()
-                .expect("conversation should remain open");
+                .expect("对话应保持打开");
             let connected = active_view
                 .read(cx)
                 .as_connected()
-                .expect("conversation should be connected");
+                .expect("对话应已连接");
             assert!(
                 !connected.has_thread_error(cx),
-                "conversation should not have a thread error"
+                "对话不应有线程错误"
             );
         });
     }
@@ -13129,7 +13129,7 @@ mod tests {
         });
         assert!(
             transferred,
-            "fresh destination panel should accept source content"
+            "全新的目标面板应接受源内容"
         );
 
         // Verify the panel was initialized: the base_view should now be an
@@ -13141,11 +13141,11 @@ mod tests {
         panel_b.read_with(cx, |panel, _cx| {
             assert!(
                 panel.active_conversation_view().is_some(),
-                "panel_b should have a conversation view after initialization"
+                "初始化后 panel_b 应具有对话视图"
             );
             assert!(
                 panel.draft_thread.is_some(),
-                "panel_b should have a draft_thread set after initialization"
+                "初始化后 panel_b 应设置 draft_thread"
             );
         });
     }
@@ -13211,11 +13211,11 @@ mod tests {
             assert_eq!(
                 panel.selected_agent,
                 Agent::Stub,
-                "destination panel should inherit the source panel's selected agent"
+                "目标面板应继承源面板的 selected_agent"
             );
             assert!(
                 panel.active_conversation_view().is_none(),
-                "agent-only initialization should not create a draft thread"
+                "仅代理初始化不应创建草稿线程"
             );
         });
     }
@@ -13278,7 +13278,7 @@ mod tests {
             assert_eq!(
                 *draft.read(cx).agent_key(),
                 Agent::NativeAgent,
-                "destination draft should start on the default agent"
+                "目标草稿应使用默认代理启动"
             );
             draft.entity_id()
         });
@@ -13288,20 +13288,20 @@ mod tests {
         });
         assert!(
             initialized,
-            "fresh destination draft should inherit the source agent"
+            "全新的目标草稿应继承源代理"
         );
 
         panel_b.read_with(cx, |panel, cx| {
-            let draft = panel.draft_thread.as_ref().expect("draft should exist");
+            let draft = panel.draft_thread.as_ref().expect("草稿应存在");
             assert_ne!(
                 draft.entity_id(),
                 original_draft,
-                "empty destination draft should be replaced when the inherited agent differs"
+                "当继承的代理不同时,空的目标草稿应被替换"
             );
             assert_eq!(
                 *draft.read(cx).agent_key(),
                 Agent::Stub,
-                "empty destination draft should be rebound to the inherited agent"
+                "空的目标草稿应重新绑定到继承的代理"
             );
         });
     }
@@ -13384,7 +13384,7 @@ mod tests {
             panel_b.read_with(cx, |panel, cx| panel.active_thread_view(cx).unwrap());
         let editor_b = thread_view_b.read_with(cx, |view, _cx| view.message_editor.clone());
         editor_b.update_in(cx, |editor, window, cx| {
-            editor.set_text("Existing work in workspace B", window, cx);
+            editor.set_text("工作区 B 中的现有工作", window, cx);
         });
 
         // Attempting to initialize panel_b from workspace_a should be rejected
@@ -13394,18 +13394,18 @@ mod tests {
         });
         assert!(
             !transferred,
-            "destination panel with existing content should not be overwritten"
+            "具有现有内容的目标面板不应被覆盖"
         );
 
         // Verify panel_b still has its original content.
         panel_b.read_with(cx, |panel, cx| {
             let thread_view = panel
                 .active_thread_view(cx)
-                .expect("panel_b should still have its thread view");
+                .expect("panel_b 应仍具有其线程视图");
             let text = thread_view.read(cx).message_editor.read(cx).text(cx);
             assert_eq!(
-                text, "Existing work in workspace B",
-                "destination panel's content should be preserved"
+                text, "工作区 B 中的现有工作",
+                "目标面板的内容应被保留"
             );
         });
     }
@@ -13437,12 +13437,12 @@ mod tests {
         panel.read_with(&cx, |panel, _cx| {
             assert!(
                 panel.retained_threads.contains_key(&no_override_id),
-                "thread created via create_thread_with_options should be retained"
+                "通过 create_thread_with_options 创建的线程应被保留"
             );
             assert_eq!(
                 panel.selected_agent,
                 Agent::Stub,
-                "selected_agent should be unchanged when no agent override is requested"
+                "未请求代理覆盖时 selected_agent 应保持不变"
             );
         });
 
@@ -13469,16 +13469,16 @@ mod tests {
         panel.read_with(&cx, |panel, _cx| {
             assert!(
                 panel.retained_threads.contains_key(&override_id),
-                "thread created with an agent override should also be retained"
+                "使用代理覆盖创建的线程也应被保留"
             );
             assert_ne!(
                 no_override_id, override_id,
-                "each call should produce a distinct ThreadId"
+                "每次调用应生成不同的 ThreadId"
             );
             assert_eq!(
                 panel.selected_agent,
                 Agent::Stub,
-                "selected_agent should be restored to the original after an agent override"
+                "代理覆盖后 selected_agent 应恢复为原始值"
             );
         });
     }

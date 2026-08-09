@@ -108,7 +108,7 @@ impl Component for Animation {
     }
 
     fn description() -> &'static str {
-        "Demonstrates various animation patterns and transitions available in the UI system."
+        "演示 UI 系统中可用的各种动画模式和过渡效果。"
     }
 
     fn preview(_window: &mut Window, cx: &mut App) -> AnyElement {
@@ -130,10 +130,10 @@ impl Component for Animation {
             .gap_6()
             .children(vec![
                 example_group_with_title(
-                    "Animate In",
+                    "进入动画",
                     vec![
                         single_example(
-                            "From Bottom",
+                            "从底部",
                             container()
                                 .size(px(container_size))
                                 .child(
@@ -149,7 +149,7 @@ impl Component for Animation {
                                 .into_any_element(),
                         ),
                         single_example(
-                            "From Top",
+                            "从顶部",
                             container()
                                 .size(px(container_size))
                                 .child(
@@ -165,7 +165,7 @@ impl Component for Animation {
                                 .into_any_element(),
                         ),
                         single_example(
-                            "From Left",
+                            "从左侧",
                             container()
                                 .size(px(container_size))
                                 .child(
@@ -181,7 +181,7 @@ impl Component for Animation {
                                 .into_any_element(),
                         ),
                         single_example(
-                            "From Right",
+                            "从右侧",
                             container()
                                 .size(px(container_size))
                                 .child(
@@ -200,10 +200,10 @@ impl Component for Animation {
                 )
                 .grow(),
                 example_group_with_title(
-                    "Fade and Animate In",
+                    "淡入并进入动画",
                     vec![
                         single_example(
-                            "From Bottom",
+                            "从底部",
                             container()
                                 .size(px(container_size))
                                 .child(
@@ -219,7 +219,7 @@ impl Component for Animation {
                                 .into_any_element(),
                         ),
                         single_example(
-                            "From Top",
+                            "从顶部",
                             container()
                                 .size(px(container_size))
                                 .child(
@@ -235,7 +235,7 @@ impl Component for Animation {
                                 .into_any_element(),
                         ),
                         single_example(
-                            "From Left",
+                            "从左侧",
                             container()
                                 .size(px(container_size))
                                 .child(
@@ -251,7 +251,7 @@ impl Component for Animation {
                                 .into_any_element(),
                         ),
                         single_example(
-                            "From Right",
+                            "从右侧",
                             container()
                                 .size(px(container_size))
                                 .child(

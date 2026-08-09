@@ -149,7 +149,7 @@ impl Visitor<'_> for RgbaVisitor {
     type Value = Rgba;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("a string in the format #rrggbb or #rrggbbaa")
+        formatter.write_str("格式为 #rrggbb 或 #rrggbbaa 的字符串")
     }
 
     fn visit_str<E: de::Error>(self, value: &str) -> Result<Rgba, E> {
@@ -230,37 +230,37 @@ impl TryFrom<&'_ str> for Rgba {
         const RRGGBB: usize = "rrggbb".len();
         const RRGGBBAA: usize = "rrggbbaa".len();
 
-        const EXPECTED_FORMATS: &str = "Expected #rgb, #rgba, #rrggbb, or #rrggbbaa";
-        const INVALID_UNICODE: &str = "invalid unicode characters in color";
+        const EXPECTED_FORMATS: &str = "应为 #rgb、#rgba、#rrggbb 或 #rrggbbaa 格式";
+        const INVALID_UNICODE: &str = "颜色中包含无效的 Unicode 字符";
 
         let Some(("", hex)) = value.trim().split_once('#') else {
-            bail!("invalid RGBA hex color: '{value}'. {EXPECTED_FORMATS}");
+            bail!("无效的 RGBA 十六进制颜色:'{value}'。{EXPECTED_FORMATS}");
         };
 
         let (r, g, b, a) = match hex.len() {
             RGB | RGBA => {
                 let r = u8::from_str_radix(
                     hex.get(0..1).with_context(|| {
-                        format!("{INVALID_UNICODE}: r component of #rgb/#rgba for value: '{value}'")
+                        format!("{INVALID_UNICODE}:#rgb/#rgba 的 r 分量,值:'{value}'")
                     })?,
                     16,
                 )?;
                 let g = u8::from_str_radix(
                     hex.get(1..2).with_context(|| {
-                        format!("{INVALID_UNICODE}: g component of #rgb/#rgba for value: '{value}'")
+                        format!("{INVALID_UNICODE}:#rgb/#rgba 的 g 分量,值:'{value}'")
                     })?,
                     16,
                 )?;
                 let b = u8::from_str_radix(
                     hex.get(2..3).with_context(|| {
-                        format!("{INVALID_UNICODE}: b component of #rgb/#rgba for value: '{value}'")
+                        format!("{INVALID_UNICODE}:#rgb/#rgba 的 b 分量,值:'{value}'")
                     })?,
                     16,
                 )?;
                 let a = if hex.len() == RGBA {
                     u8::from_str_radix(
                         hex.get(3..4).with_context(|| {
-                            format!("{INVALID_UNICODE}: a component of #rgba for value: '{value}'")
+                            format!("{INVALID_UNICODE}:#rgba 的 a 分量,值:'{value}'")
                         })?,
                         16,
                     )?
@@ -280,7 +280,7 @@ impl TryFrom<&'_ str> for Rgba {
                 let r = u8::from_str_radix(
                     hex.get(0..2).with_context(|| {
                         format!(
-                            "{}: r component of #rrggbb/#rrggbbaa for value: '{}'",
+                            "{}:#rrggbb/#rrggbbaa 的 r 分量,值:'{}'",
                             INVALID_UNICODE, value
                         )
                     })?,
@@ -289,7 +289,7 @@ impl TryFrom<&'_ str> for Rgba {
                 let g = u8::from_str_radix(
                     hex.get(2..4).with_context(|| {
                         format!(
-                            "{INVALID_UNICODE}: g component of #rrggbb/#rrggbbaa for value: '{value}'"
+                            "{INVALID_UNICODE}:#rrggbb/#rrggbbaa 的 g 分量,值:'{value}'"
                         )
                     })?,
                     16,
@@ -297,7 +297,7 @@ impl TryFrom<&'_ str> for Rgba {
                 let b = u8::from_str_radix(
                     hex.get(4..6).with_context(|| {
                         format!(
-                            "{INVALID_UNICODE}: b component of #rrggbb/#rrggbbaa for value: '{value}'"
+                            "{INVALID_UNICODE}:#rrggbb/#rrggbbaa 的 b 分量,值:'{value}'"
                         )
                     })?,
                     16,
@@ -306,7 +306,7 @@ impl TryFrom<&'_ str> for Rgba {
                     u8::from_str_radix(
                         hex.get(6..8).with_context(|| {
                             format!(
-                                "{INVALID_UNICODE}: a component of #rrggbbaa for value: '{value}'"
+                                "{INVALID_UNICODE}:#rrggbbaa 的 a 分量,值:'{value}'"
                             )
                         })?,
                         16,
@@ -316,7 +316,7 @@ impl TryFrom<&'_ str> for Rgba {
                 };
                 (r, g, b, a)
             }
-            _ => bail!("invalid RGBA hex color: '{value}'. {EXPECTED_FORMATS}"),
+            _ => bail!("无效的 RGBA 十六进制颜色:'{value}'。{EXPECTED_FORMATS}"),
         };
 
         Ok(Rgba {

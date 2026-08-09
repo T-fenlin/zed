@@ -69,7 +69,7 @@ async fn test_invert_axis_on_panel_position_change(
     assert_eq!(
         dock_position,
         DockPosition::Bottom,
-        "Default dock position should be bottom for debug panel"
+        "调试面板的默认停靠位置应为底部"
     );
 
     let pre_serialized_layout = debug_panel
@@ -125,7 +125,7 @@ async fn test_invert_axis_on_panel_position_change(
                 assert_eq!(pre_pane.active_item, post_pane.active_item);
             }
             _ => {
-                panic!("Variants don't match")
+                panic!("变体不匹配")
             }
         }
     }

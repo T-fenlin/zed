@@ -28,7 +28,7 @@
 
 #[cfg(not(target_os = "windows"))]
 fn main() {
-    eprintln!("wsl_sandbox_test_helper is only supported on Windows");
+    eprintln!("wsl_sandbox_test_helper 仅在 Windows 上受支持");
     std::process::exit(1);
 }
 
@@ -80,7 +80,7 @@ mod imp {
 
     pub fn main() {
         if let Err(error) = run() {
-            eprintln!("{RESULT_TAG} FAILED: {error:#}");
+            eprintln!("{RESULT_TAG} 失败: {error:#}");
             std::process::exit(1);
         }
     }
@@ -88,7 +88,7 @@ mod imp {
     fn run() -> Result<()> {
         let require_enforced = env_flag("ZED_TEST_SANDBOX_REQUIRE_ENFORCED");
         let wsl = Wsl::detect();
-        println!("{RESULT_TAG} starting (require_enforced={require_enforced})");
+        println!("{RESULT_TAG} 启动中 (require_enforced={require_enforced})");
 
         // `wrap_invocation` performs the real environment probe (locate `bwrap`,
         // reject setuid-root, smoke-test the exact namespaces) before it builds
@@ -105,7 +105,7 @@ mod imp {
             other => {
                 return not_enforced(
                     require_enforced,
-                    &format!("the sandbox probe did not run cleanly: {other:?}"),
+                    &format!("沙箱探测未能顺利运行: {other:?}"),
                 );
             }
         }
@@ -124,7 +124,7 @@ mod imp {
             );
         }
         println!(
-            "{RESULT_TAG} SKIP: this environment cannot enforce a WSL bwrap sandbox: {reason}"
+            "{RESULT_TAG} 跳过: 此环境无法强制执行 WSL bwrap 沙箱: {reason}"
         );
         Ok(())
     }
@@ -154,7 +154,7 @@ mod imp {
         ))?;
         ensure!(
             mkdir.status.success(),
-            "failed to create the WSL scratch tree{}",
+            "创建 WSL 临时目录树失败{}",
             failure_details(&mkdir)
         );
         let _root_cleanup = WslCleanup {
@@ -179,9 +179,9 @@ mod imp {
             &[PathBuf::from(writable_wsl)],
             default,
         )?;
-        checks.expect_succeeded("GRANT: write into a writable dir succeeds", &write_writable);
+        checks.expect_succeeded("授权: 写入可写目录成功", &write_writable);
         checks.expect(
-            "GRANT: write into a writable dir lands on the host",
+            "授权: 写入可写目录的内容已落盘到主机",
             wsl.exists(&writable_file)?,
         );
 
@@ -194,11 +194,11 @@ mod imp {
             default,
         )?;
         checks.expect_blocked(
-            "RESTRICT: write outside writable dirs is denied",
+            "限制: 禁止在可写目录之外进行写入",
             &write_forbidden,
         );
         checks.expect(
-            "RESTRICT: denied write did not leak to the host",
+            "限制: 被拒绝的写入未泄漏到主机",
             !wsl.exists(&forbidden_file)?,
         );
 
@@ -211,7 +211,7 @@ mod imp {
         ))?;
         ensure!(
             seed.status.success(),
-            "failed to seed the readable file{}",
+            "无法为可读文件写入初始数据{}",
             failure_details(&seed)
         );
         let read_host = run_in_sandbox(
@@ -220,7 +220,7 @@ mod imp {
             default,
         )?;
         checks.expect_succeeded(
-            "GRANT: host files outside writable dirs are still readable",
+            "授权: 可写目录之外的主机文件仍然可读",
             &read_host,
         );
 
@@ -232,9 +232,9 @@ mod imp {
             &[],
             default,
         )?;
-        checks.expect_succeeded("GRANT: writing to /tmp succeeds", &write_tmp);
+        checks.expect_succeeded("授权: 写入 /tmp 成功", &write_tmp);
         checks.expect(
-            "RESTRICT: /tmp writes are ephemeral (do not leak to the WSL host /tmp)",
+            "限制: /tmp 的写入是临时的(不会泄漏到 WSL 主机的 /tmp)",
             !wsl.exists(&tmp_path)?,
         );
 
@@ -247,24 +247,24 @@ mod imp {
                 let connect = connect_script(&peer);
                 let net_denied = run_in_sandbox(&connect, &[], default)?;
                 checks.expect_blocked(
-                    "RESTRICT: outbound TCP is blocked when network is denied",
+                    "限制: 当网络被禁用时,出站 TCP 被阻止",
                     &net_denied,
                 );
                 let net_allowed = run_in_sandbox(&connect, &[], network_allowed)?;
                 checks.expect_succeeded(
-                    "GRANT: outbound TCP works when network is allowed",
+                    "授权: 当网络被允许时,出站 TCP 正常工作",
                     &net_allowed,
                 );
                 // RESTRICT: permissions are independent — granting filesystem
                 // writes must not also grant network access.
                 let net_with_fs_write = run_in_sandbox(&connect, &[], fs_write_all)?;
                 checks.expect_blocked(
-                    "RESTRICT: allow_fs_write does not also grant network access",
+                    "限制: allow_fs_write 不会同时授予网络访问权限",
                     &net_with_fs_write,
                 );
             }
             None => println!(
-                "{RESULT_TAG} SKIP: no TCP peer reachable from WSL; skipping network checks"
+                "{RESULT_TAG} 跳过: 无法从 WSL 连接到 TCP 对端; 跳过网络检查"
             ),
         }
 
@@ -277,11 +277,11 @@ mod imp {
                 default,
             )?;
             checks.expect_succeeded(
-                "GRANT: AF_UNIX sockets still work while network is denied",
+                "授权: 当网络被禁用时,AF_UNIX 套接字仍然可以工作",
                 &unix_ok,
             );
         } else {
-            println!("{RESULT_TAG} SKIP: no python3 in WSL; skipping AF_UNIX check");
+            println!("{RESULT_TAG} 跳过: WSL 中没有 python3; 跳过 AF_UNIX 检查");
         }
 
         // GRANT (escape hatch): `allow_fs_write` lets the command write
@@ -293,11 +293,11 @@ mod imp {
             fs_write_all,
         )?;
         checks.expect_succeeded(
-            "GRANT: allow_fs_write lets the command write outside writable dirs",
+            "授权: allow_fs_write 允许命令在可写目录之外进行写入",
             &write_escape,
         );
         checks.expect(
-            "GRANT: allow_fs_write write lands on the host",
+            "授权: allow_fs_write 的写入已落盘到主机",
             wsl.exists(&escape_file)?,
         );
 
@@ -317,7 +317,7 @@ mod imp {
 
         // Degraded (bad request): a non-existent writable path is the model's
         // mistake, not a broken sandbox environment, so it must be reported
-        // *without* the "sandboxing is unavailable" marker (which would wrongly
+        // *without* the "沙箱功能不可用" marker (which would wrongly
         // prompt the user to disable sandboxing globally).
         let missing = std::env::temp_dir().join(format!("zed-wsl-missing-{pid}"));
         let bad_request = drive_sandbox(
@@ -328,11 +328,11 @@ mod imp {
             &HashMap::new(),
         )?;
         checks.expect(
-            "a non-existent writable path is a bad request, not an unavailable-environment error",
+            "不存在的可写路径属于错误请求,而非环境不可用错误",
             matches!(bad_request, Outcome::BadRequest(_)),
         );
         if !matches!(bad_request, Outcome::BadRequest(_)) {
-            println!("{RESULT_TAG}   (got {bad_request:?})");
+            println!("{RESULT_TAG}   (得到 {bad_request:?})");
         }
 
         checks.finish()
@@ -348,14 +348,14 @@ mod imp {
             std::env::temp_dir().join(format!("zed-wsl-sandbox-drive-{}", std::process::id()));
         let writable = base.join("writable");
         std::fs::create_dir_all(&writable)
-            .with_context(|| format!("failed to create scratch dir `{}`", writable.display()))?;
+            .with_context(|| format!("创建临时目录 `{}` 失败", writable.display()))?;
         let _cleanup = Cleanup(base);
 
         let mapped = wsl.wsl_paths(&[&writable]).context(
-            "failed to translate the scratch dir into a WSL path (is the C: drive automounted?)",
+            "无法将临时目录转换为 WSL 路径(C: 驱动器是否已自动挂载?)",
         )?;
         let Some(writable_wsl) = mapped.into_iter().next() else {
-            bail!("wslpath returned no result for the scratch dir");
+            bail!("wslpath 未返回临时目录的结果");
         };
 
         let write = run_in_sandbox(
@@ -390,7 +390,7 @@ mod imp {
             SandboxPermissions::default(),
         )?;
         checks.expect_succeeded(
-            "RESTRICT: $WSL_INTEROP is unset inside the sandbox",
+            "限制: $WSL_INTEROP 在沙箱内未被设置",
             &interop_env,
         );
 
@@ -402,7 +402,7 @@ mod imp {
         };
         let Some(cmd) = cmd else {
             println!(
-                "{RESULT_TAG} SKIP: could not resolve cmd.exe inside WSL; skipping interop exec check"
+                "{RESULT_TAG} 跳过: 无法在 WSL 内解析 cmd.exe; 跳过互操作执行检查"
             );
             return Ok(());
         };
@@ -427,7 +427,7 @@ mod imp {
             SandboxPermissions::default(),
         )?;
         checks.expect_blocked(
-            "RESTRICT: cannot exec a Windows binary via WSL interop (sandbox escape blocked)",
+            "限制: 无法通过 WSL 互操作执行 Windows 二进制文件(已阻止沙箱逃逸)",
             &escape,
         );
         Ok(())
@@ -456,7 +456,7 @@ mod imp {
             &env,
         )?;
         checks.expect_succeeded(
-            "GRANT: caller env is forwarded into the sandbox; RESTRICT: PATH is not overridden",
+            "授权: 调用方环境变量被转发到沙箱; 限制: PATH 未被覆盖",
             &outcome,
         );
         Ok(())
@@ -553,7 +553,7 @@ mod imp {
             .args(&prepared.args)
             .creation_flags(CREATE_NO_WINDOW)
             .output()
-            .context("failed to spawn the wrapped wsl.exe sandbox command")?;
+            .context("无法生成包装后的 wsl.exe 沙箱命令")?;
         Ok(Outcome::Ran {
             command_succeeded: output.status.success(),
             stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
@@ -579,10 +579,10 @@ mod imp {
         // connections, so an in-WSL connect succeeds. It lives for the rest of
         // the process (the thread owns it and never closes it).
         let listener =
-            TcpListener::bind(("0.0.0.0", 0)).context("failed to bind a TCP listener")?;
+            TcpListener::bind(("0.0.0.0", 0)).context("无法绑定 TCP 监听器")?;
         let port = listener
             .local_addr()
-            .context("local listener has no address")?
+            .context("本地监听器没有地址")?
             .port();
         std::thread::spawn(move || {
             for stream in listener.incoming() {
@@ -630,10 +630,10 @@ mod imp {
     fn ensure_host_port(address: &str) -> Result<()> {
         let (host, port) = address
             .rsplit_once(':')
-            .with_context(|| format!("ZED_TEST_ECHO_ADDR must be host:port, got {address:?}"))?;
+            .with_context(|| format!("ZED_TEST_ECHO_ADDR 必须是 host:port 格式,实际为 {address:?}"))?;
         ensure!(
             !host.is_empty() && port.parse::<u16>().is_ok(),
-            "ZED_TEST_ECHO_ADDR must be host:port, got {address:?}"
+            "ZED_TEST_ECHO_ADDR 必须是 host:port 格式,实际为 {address:?}"
         );
         Ok(())
     }
@@ -667,7 +667,7 @@ mod imp {
                 .args(args)
                 .creation_flags(CREATE_NO_WINDOW)
                 .output()
-                .with_context(|| format!("failed to run `wsl.exe --exec {program}`"))
+                .with_context(|| format!("运行 `wsl.exe --exec {program}` 失败"))
         }
 
         /// Run `/bin/sh -c <script>` unsandboxed.
@@ -703,7 +703,7 @@ mod imp {
             let output = self.run("/bin/sh", args)?;
             ensure!(
                 output.status.success(),
-                "wslpath translation failed{}",
+                "wslpath 转换失败{}",
                 failure_details(&output)
             );
             let stdout = String::from_utf8_lossy(&output.stdout);
@@ -713,7 +713,7 @@ mod imp {
                 .collect();
             ensure!(
                 resolved.len() == paths.len(),
-                "expected {} wslpath results, got {}: {stdout:?}",
+                "期望 {} 个 wslpath 结果,实际得到 {} 个: {stdout:?}",
                 paths.len(),
                 resolved.len()
             );
@@ -739,10 +739,10 @@ mod imp {
         fn expect(&mut self, description: &str, condition: bool) {
             if condition {
                 self.passed += 1;
-                println!("{RESULT_TAG} PASS: {description}");
+                println!("{RESULT_TAG} 通过: {description}");
             } else {
                 self.failed += 1;
-                println!("{RESULT_TAG} FAIL: {description}");
+                println!("{RESULT_TAG} 失败: {description}");
             }
         }
 
@@ -774,17 +774,17 @@ mod imp {
         fn report(&mut self, description: &str, ok: bool, outcome: &Outcome) {
             if ok {
                 self.passed += 1;
-                println!("{RESULT_TAG} PASS: {description}");
+                println!("{RESULT_TAG} 通过: {description}");
             } else {
                 self.failed += 1;
-                println!("{RESULT_TAG} FAIL: {description}");
+                println!("{RESULT_TAG} 失败: {description}");
                 match outcome {
                     Outcome::Ran {
                         command_succeeded,
                         stdout,
                         stderr,
                     } => println!(
-                        "{RESULT_TAG}   (command {}, stdout: {:?}, stderr: {:?})",
+                        "{RESULT_TAG}   (命令 {}, 标准输出: {:?}, 标准错误: {:?})",
                         if *command_succeeded {
                             "succeeded"
                         } else {
@@ -794,10 +794,10 @@ mod imp {
                         truncate(stderr),
                     ),
                     Outcome::Unavailable(message) => {
-                        println!("{RESULT_TAG}   (sandbox reported unavailable: {message})");
+                        println!("{RESULT_TAG}   (沙箱报告不可用: {message})");
                     }
                     Outcome::BadRequest(message) => {
-                        println!("{RESULT_TAG}   (sandbox reported bad request: {message})");
+                        println!("{RESULT_TAG}   (沙箱报告错误请求: {message})");
                     }
                 }
             }
@@ -805,11 +805,11 @@ mod imp {
 
         fn finish(self) -> Result<()> {
             println!(
-                "{RESULT_TAG} summary: {} passed, {} failed",
+                "{RESULT_TAG} 摘要: {} 通过, {} 失败",
                 self.passed, self.failed
             );
             if self.failed > 0 {
-                bail!("{} sandbox assertion(s) failed", self.failed);
+                bail!("{} 个沙箱断言失败", self.failed);
             }
             Ok(())
         }
@@ -819,8 +819,8 @@ mod imp {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
         let status = match output.status.code() {
-            Some(code) => format!("exit code {code}"),
-            None => "terminated by signal".to_string(),
+            Some(code) => format!("退出码 {code}"),
+            None => "被信号终止".to_string(),
         };
         if stderr.is_empty() {
             format!(" ({status})")

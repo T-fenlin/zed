@@ -63,7 +63,7 @@ pub fn into_open_ai(
         .any(|tool| matches!(tool.input, LanguageModelRequestToolInput::Custom { .. }))
     {
         return Err(anyhow!(
-            "OpenAI Chat Completions does not support custom tools; use Responses API instead"
+            "OpenAI Chat Completions 不支持自定义工具;请改用 Responses API"
         ));
     }
 
@@ -119,7 +119,7 @@ pub fn into_open_ai(
                 MessageContent::ToolUse(tool_use) => {
                     let LanguageModelToolUseInput::Json(input) = &tool_use.input else {
                         return Err(anyhow!(
-                            "OpenAI Chat Completions cannot replay custom tool call `{}`",
+                            "OpenAI Chat Completions 无法重放自定义工具调用 `{}`",
                             tool_use.name
                         ));
                     };
@@ -214,7 +214,7 @@ pub fn into_open_ai(
                     })
                 }
                 LanguageModelRequestToolInput::Custom { .. } => Err(anyhow!(
-                    "OpenAI Chat Completions does not support custom tools; use Responses API instead"
+                    "OpenAI Chat Completions 不支持自定义工具;请改用 Responses API"
                 )),
             })
             .collect::<Result<_>>()?,
@@ -638,7 +638,7 @@ fn push_response_image_part(
 ) {
     match role {
         Role::Assistant => parts.push(ResponseInputContent::OutputText {
-            text: "[image omitted]".to_string(),
+            text: "[图片已省略]".to_string(),
             annotations: Vec::new(),
         }),
         _ => parts.push(ResponseInputContent::Image {
@@ -839,7 +839,7 @@ impl OpenAiEventMapper {
                 events.push(Ok(LanguageModelCompletionEvent::Stop(StopReason::ToolUse)));
             }
             Some(stop_reason) => {
-                log::error!("Unexpected OpenAI stop_reason: {stop_reason:?}",);
+                log::error!("意外的 OpenAI stop_reason: {stop_reason:?}",);
                 events.push(Ok(LanguageModelCompletionEvent::Stop(StopReason::EndTurn)));
             }
             None => {}
@@ -1195,7 +1195,7 @@ impl OpenAiResponseEventMapper {
         // leave the conversation unable to continue coherently.
         if self.pending_compaction_items > 0 {
             return vec![Err(LanguageModelCompletionError::Other(anyhow!(
-                "response completed with an unfinished compaction item"
+                "响应完成时存在未完成的压缩项"
             )))];
         }
 
@@ -1236,7 +1236,7 @@ impl OpenAiResponseEventMapper {
                         .or_else(|| function_call.id.clone())
                     else {
                         log::error!(
-                            "Function call item missing both call_id and id: {:?}",
+                            "函数调用项缺少 call_id 和 id: {:?}",
                             function_call
                         );
                         continue;
@@ -1286,7 +1286,7 @@ impl OpenAiResponseEventMapper {
             .or_else(|| custom_tool_call.id.clone())
         else {
             log::error!(
-                "Custom tool call item missing both call_id and id: {:?}",
+                "自定义工具调用项缺少 call_id 和 id: {:?}",
                 custom_tool_call
             );
             return Vec::new();
@@ -1460,7 +1460,7 @@ fn response_error_message(error: &ResponseError) -> String {
         (Some(code), false) => format!("{code}: {message}"),
         (Some(code), true) => code.to_string(),
         (None, false) => message.to_string(),
-        (None, true) => "response error".to_string(),
+        (None, true) => "响应错误".to_string(),
     }
 }
 
@@ -1718,7 +1718,7 @@ mod tests {
         let tool_json = json!({
             "type": "custom",
             "name": "apply_patch",
-            "description": "Apply a patch",
+            "description": "应用补丁",
             "format": {
                 "type": "grammar",
                 "syntax": "lark",
@@ -1788,7 +1788,7 @@ mod tests {
             "output_index": 0,
             "item_id": "ctc_1",
             "sequence_number": 6,
-            "input": "full text"
+            "input": "完整文本"
         });
         let done: ResponsesStreamEvent = serde_json::from_value(done_json)?;
         assert!(matches!(
@@ -1798,7 +1798,7 @@ mod tests {
                 sequence_number: Some(6),
                 ref item_id,
                 ref input,
-            } if item_id == "ctc_1" && input == "full text"
+            } if item_id == "ctc_1" && input == "完整文本"
         ));
 
         Ok(())
@@ -1836,14 +1836,14 @@ mod tests {
             messages: vec![
                 LanguageModelRequestMessage {
                     role: Role::System,
-                    content: vec![MessageContent::Text("System context".into())],
+                    content: vec![MessageContent::Text("系统上下文".into())],
                     cache: false,
                     reasoning_details: None,
                 },
                 LanguageModelRequestMessage {
                     role: Role::User,
                     content: vec![
-                        MessageContent::Text("Please check the weather.".into()),
+                        MessageContent::Text("请检查天气。".into()),
                         MessageContent::Image(user_image),
                     ],
                     cache: false,
@@ -1852,7 +1852,7 @@ mod tests {
                 LanguageModelRequestMessage {
                     role: Role::Assistant,
                     content: vec![
-                        MessageContent::Text("Looking that up.".into()),
+                        MessageContent::Text("正在查找。".into()),
                         MessageContent::ToolUse(tool_use),
                     ],
                     cache: false,
@@ -1867,7 +1867,7 @@ mod tests {
             ],
             tools: vec![LanguageModelRequestTool::function(
                 "get_weather".into(),
-                "Fetches the weather".into(),
+                "获取天气".into(),
                 json!({ "type": "object" }),
                 false,
             )],
@@ -1895,13 +1895,13 @@ mod tests {
         let serialized = serde_json::to_value(&response).unwrap();
         let expected = json!({
             "model": "custom-model",
-            "instructions": "System context",
+            "instructions": "系统上下文",
             "input": [
                 {
                     "type": "message",
                     "role": "user",
                     "content": [
-                        { "type": "input_text", "text": "Please check the weather." },
+                        { "type": "input_text", "text": "请检查天气。" },
                         { "type": "input_image", "image_url": expected_image_url }
                     ]
                 },
@@ -1909,7 +1909,7 @@ mod tests {
                     "type": "message",
                     "role": "assistant",
                     "content": [
-                        { "type": "output_text", "text": "Looking that up.", "annotations": [] }
+                        { "type": "output_text", "text": "正在查找。", "annotations": [] }
                     ]
                 },
                 {
@@ -1934,7 +1934,7 @@ mod tests {
                 {
                     "type": "function",
                     "name": "get_weather",
-                    "description": "Fetches the weather",
+                    "description": "获取天气",
                     "parameters": { "type": "object" }
                 }
             ],
@@ -2049,7 +2049,7 @@ mod tests {
             }],
             tools: vec![LanguageModelRequestTool {
                 name: "apply_patch".into(),
-                description: "Apply a patch".into(),
+                description: "应用补丁".into(),
                 input: LanguageModelRequestToolInput::Custom {
                     format: Some(LanguageModelCustomToolFormat::Grammar {
                         syntax: LanguageModelCustomToolGrammarSyntax::Lark,
@@ -2102,7 +2102,7 @@ mod tests {
                     {
                         "type": "custom",
                         "name": "apply_patch",
-                        "description": "Apply a patch",
+                        "description": "应用补丁",
                         "format": {
                             "type": "grammar",
                             "syntax": "lark",
@@ -2142,13 +2142,13 @@ mod tests {
                             "summary": [
                                 {
                                     "type": "summary_text",
-                                    "text": "Checked what information is needed."
+                                    "text": "已检查需要哪些信息。"
                                 }
                             ],
                             "content": [
                                 {
                                     "type": "reasoning_text",
-                                    "text": "Internal reasoning text."
+                                    "text": "内部推理文本。"
                                 }
                             ],
                             "encrypted_content": "ENC",
@@ -2189,13 +2189,13 @@ mod tests {
                     "summary": [
                         {
                             "type": "summary_text",
-                            "text": "Checked what information is needed."
+                            "text": "已检查需要哪些信息。"
                         }
                     ],
                     "content": [
                         {
                             "type": "reasoning_text",
-                            "text": "Internal reasoning text."
+                            "text": "内部推理文本。"
                         }
                     ],
                     "encrypted_content": "ENC",
@@ -2224,7 +2224,7 @@ mod tests {
             intent: None,
             messages: vec![LanguageModelRequestMessage {
                 role: Role::Assistant,
-                content: vec![MessageContent::Text("Done.".into())],
+                content: vec![MessageContent::Text("完成。".into())],
                 cache: false,
                 reasoning_details: Some(Arc::new(json!({
                     "reasoning_items": [
@@ -2287,7 +2287,7 @@ mod tests {
                     "content": [
                         {
                             "type": "output_text",
-                            "text": "Done.",
+                            "text": "完成。",
                             "annotations": []
                         }
                     ]
@@ -2382,7 +2382,7 @@ mod tests {
                     .get("service_tier")
                     .and_then(|value| value.as_str()),
                 expected,
-                "speed = {speed:?} should produce service_tier = {expected:?}",
+                "speed = {speed:?} 应产生 service_tier = {expected:?}",
             );
         }
         Ok(())
@@ -2433,7 +2433,7 @@ mod tests {
                     .get("service_tier")
                     .and_then(|value| value.as_str()),
                 expected,
-                "speed = {speed:?} should produce service_tier = {expected:?}",
+                "speed = {speed:?} 应产生 service_tier = {expected:?}",
             );
         }
         Ok(())
@@ -2570,7 +2570,7 @@ mod tests {
             intent: None,
             messages: vec![LanguageModelRequestMessage {
                 role: Role::Assistant,
-                content: vec![MessageContent::Text("Done.".into())],
+                content: vec![MessageContent::Text("完成。".into())],
                 cache: false,
                 reasoning_details: Some(Arc::new(json!({
                     "phase": "final_answer",
@@ -2621,7 +2621,7 @@ mod tests {
                     "type": "message",
                     "role": "assistant",
                     "content": [
-                        { "type": "output_text", "text": "Done.", "annotations": [] }
+                        { "type": "output_text", "text": "完成。", "annotations": [] }
                     ],
                     "phase": "final_answer"
                 }
@@ -2650,7 +2650,7 @@ mod tests {
                     "summary": [
                         {
                             "type": "summary_text",
-                            "text": "Later metadata has the complete summary."
+                            "text": "后续元数据包含完整的摘要。"
                         }
                     ],
                     "encrypted_content": "ENC_NEW",
@@ -2665,13 +2665,13 @@ mod tests {
             messages: vec![
                 LanguageModelRequestMessage {
                     role: Role::Assistant,
-                    content: vec![MessageContent::Text("First.".into())],
+                    content: vec![MessageContent::Text("第一。".into())],
                     cache: false,
                     reasoning_details: Some(Arc::new(first_reasoning_details)),
                 },
                 LanguageModelRequestMessage {
                     role: Role::Assistant,
-                    content: vec![MessageContent::Text("Second.".into())],
+                    content: vec![MessageContent::Text("第二。".into())],
                     cache: false,
                     reasoning_details: Some(Arc::new(second_reasoning_details)),
                 },
@@ -2708,7 +2708,7 @@ mod tests {
                     "summary": [
                         {
                             "type": "summary_text",
-                            "text": "Later metadata has the complete summary."
+                            "text": "后续元数据包含完整的摘要。"
                         }
                     ],
                     "encrypted_content": "ENC_NEW",
@@ -2718,7 +2718,7 @@ mod tests {
                     "type": "message",
                     "role": "assistant",
                     "content": [
-                        { "type": "output_text", "text": "First.", "annotations": [] }
+                        { "type": "output_text", "text": "第一。", "annotations": [] }
                     ],
                     "phase": "final_answer"
                 },
@@ -2726,7 +2726,7 @@ mod tests {
                     "type": "message",
                     "role": "assistant",
                     "content": [
-                        { "type": "output_text", "text": "Second.", "annotations": [] }
+                        { "type": "output_text", "text": "第二。", "annotations": [] }
                     ],
                     "phase": "final_answer"
                 }
@@ -2744,10 +2744,10 @@ mod tests {
                 role: Role::Assistant,
                 content: vec![
                     MessageContent::Thinking {
-                        text: "This is a reasoning summary, not assistant output.".into(),
+                        text: "这是推理摘要,不是助手输出。".into(),
                         signature: None,
                     },
-                    MessageContent::Text("This is visible assistant output.".into()),
+                    MessageContent::Text("这是可见的助手输出。".into()),
                 ],
                 cache: false,
                 reasoning_details: Some(Arc::new(json!({
@@ -2757,7 +2757,7 @@ mod tests {
                             "summary": [
                                 {
                                     "type": "summary_text",
-                                    "text": "This is the reasoning summary to preserve."
+                                    "text": "这是需要保留的推理摘要。"
                                 }
                             ],
                             "encrypted_content": "ENC",
@@ -2798,7 +2798,7 @@ mod tests {
                     "summary": [
                         {
                             "type": "summary_text",
-                            "text": "This is the reasoning summary to preserve."
+                            "text": "这是需要保留的推理摘要。"
                         }
                     ],
                     "encrypted_content": "ENC",
@@ -2810,7 +2810,7 @@ mod tests {
                     "content": [
                         {
                             "type": "output_text",
-                            "text": "This is visible assistant output.",
+                            "text": "这是可见的助手输出。",
                             "annotations": []
                         }
                     ]
@@ -2915,7 +2915,7 @@ mod tests {
                 status: Some("failed".into()),
                 error: Some(ResponseError {
                     code: Some("server_error".into()),
-                    message: "The model failed to generate a response.".into(),
+                    message: "模型未能生成响应。".into(),
                     param: None,
                 }),
                 ..Default::default()
@@ -2926,7 +2926,7 @@ mod tests {
         let error = mapped.into_iter().next().unwrap().unwrap_err();
         assert_eq!(
             error.to_string(),
-            "server_error: The model failed to generate a response."
+            "服务器错误:模型未能生成响应。"
         );
     }
 
@@ -2935,18 +2935,18 @@ mod tests {
         let event = serde_json::from_value::<ResponsesStreamEvent>(json!({
             "type": "error",
             "code": "ERR_SOMETHING",
-            "message": "Something went wrong",
+            "message": "出了点问题",
             "param": null,
             "sequence_number": 1
         }))
-        .expect("documented error event");
+        .expect("已记录的错误事件");
 
         let mut mapper = OpenAiResponseEventMapper::new(OPEN_AI_PROVIDER_ID);
         let mapped = mapper.map_event(event);
 
         assert_eq!(mapped.len(), 1);
         let error = mapped.into_iter().next().unwrap().unwrap_err();
-        assert_eq!(error.to_string(), "ERR_SOMETHING: Something went wrong");
+        assert_eq!(error.to_string(), "ERR_SOMETHING: 出了点问题");
     }
 
     #[test]
@@ -2959,12 +2959,12 @@ mod tests {
             "error": {
                 "type": "invalid_request_error",
                 "code": "invalid_prompt",
-                "message": "Your prompt was flagged.",
+                "message": "您的提示词被标记。",
                 "param": "input"
             },
             "sequence_number": 2
         }))
-        .expect("nested error event");
+        .expect("嵌套错误事件");
 
         let mut mapper = OpenAiResponseEventMapper::new(OPEN_AI_PROVIDER_ID);
         let mapped = mapper.map_event(event);
@@ -2973,7 +2973,7 @@ mod tests {
         let error = mapped.into_iter().next().unwrap().unwrap_err();
         assert_eq!(
             error.to_string(),
-            "invalid_prompt: Your prompt was flagged."
+            "invalid_prompt: 您的提示词被标记。"
         );
     }
 
@@ -2984,12 +2984,12 @@ mod tests {
             "error": {
                 "type": "invalid_request_error",
                 "code": "context_length_exceeded",
-                "message": "Your input exceeds the context window of this model. Please adjust your input and try again.",
+                "message": "您的输入超出了此模型的上下文窗口。请调整输入后重试。",
                 "param": "input"
             },
             "sequence_number": 2
         }))
-        .expect("nested error event");
+        .expect("嵌套错误事件");
 
         let mut mapper = OpenAiResponseEventMapper::new(OPEN_AI_PROVIDER_ID);
         let mapped = mapper.map_event(event);
@@ -3010,7 +3010,7 @@ mod tests {
                 status: Some("failed".into()),
                 error: Some(ResponseError {
                     code: Some("context_length_exceeded".into()),
-                    message: "Your input exceeds the context window of this model.".into(),
+                    message: "您的输入超出了此模型的上下文窗口。".into(),
                     param: Some("input".into()),
                 }),
                 ..Default::default()
@@ -3031,17 +3031,17 @@ mod tests {
             "type": "response.error",
             "error": {
                 "code": "invalid_request_error",
-                "message": "Invalid request."
+                "message": "无效请求。"
             }
         }))
-        .expect("response error event");
+        .expect("响应错误事件");
 
         let mut mapper = OpenAiResponseEventMapper::new(OPEN_AI_PROVIDER_ID);
         let mapped = mapper.map_event(event);
 
         assert_eq!(mapped.len(), 1);
         let error = mapped.into_iter().next().unwrap().unwrap_err();
-        assert_eq!(error.to_string(), "invalid_request_error: Invalid request.");
+        assert_eq!(error.to_string(), "invalid_request_error: 无效的请求。");
     }
 
     #[test]
@@ -3051,19 +3051,19 @@ mod tests {
             "item_id": "msg_123",
             "output_index": 0,
             "content_index": 0,
-            "delta": "I can't help",
+            "delta": "我无法提供帮助",
             "sequence_number": 1
         }))
-        .expect("documented refusal delta event");
+        .expect("已记录的拒绝增量事件");
         let done = serde_json::from_value::<ResponsesStreamEvent>(json!({
             "type": "response.refusal.done",
             "item_id": "msg_123",
             "output_index": 0,
             "content_index": 0,
-            "refusal": "I can't help with that.",
+            "refusal": "我无法在这方面提供帮助。",
             "sequence_number": 2
         }))
-        .expect("documented refusal done event");
+        .expect("已记录的拒绝完成事件");
 
         let mapped = map_response_events(vec![
             delta,
@@ -3090,7 +3090,7 @@ mod tests {
                     status: Some("completed".into()),
                     content: vec![json!({
                         "type": "refusal",
-                        "refusal": "I can't help with that."
+                        "refusal": "我无法在这方面提供帮助。"
                     })],
                     phase: None,
                 })],
@@ -3165,7 +3165,7 @@ mod tests {
                 item_id: "msg_123".into(),
                 output_index: 0,
                 content_index: Some(0),
-                delta: "Let me check that".into(),
+                delta: "让我检查一下".into(),
             },
             ResponsesStreamEvent::OutputItemAdded {
                 output_index: 1,
@@ -3189,7 +3189,7 @@ mod tests {
             LanguageModelCompletionEvent::StartMessage { .. }
         ));
         assert!(
-            matches!(mapped[1], LanguageModelCompletionEvent::Text(ref text) if text == "Let me check that")
+            matches!(mapped[1], LanguageModelCompletionEvent::Text(ref text) if text == "让我检查一下")
         );
         assert!(
             matches!(mapped[2], LanguageModelCompletionEvent::ToolUse(LanguageModelToolUse { ref raw_input, .. }) if raw_input == "{\"query\":\"test\"}")
@@ -3401,7 +3401,7 @@ mod tests {
         });
         assert!(
             complete_tool_use.is_some(),
-            "should have a complete tool use event"
+            "应有一个完整的工具使用事件"
         );
 
         let tool_uses: Vec<_> = mapped
@@ -3410,7 +3410,7 @@ mod tests {
             .collect();
         assert!(
             tool_uses.len() >= 2,
-            "should have at least one partial and one complete event"
+            "应至少有一个部分事件和一个完整事件"
         );
         assert!(matches!(
             tool_uses.last().unwrap(),
@@ -3442,17 +3442,17 @@ mod tests {
             ResponsesStreamEvent::ReasoningSummaryTextDelta {
                 item_id: "rs_123".into(),
                 output_index: 0,
-                delta: "Thinking about".into(),
+                delta: "正在思考".into(),
             },
             ResponsesStreamEvent::ReasoningSummaryTextDelta {
                 item_id: "rs_123".into(),
                 output_index: 0,
-                delta: " the answer".into(),
+                delta: "答案".into(),
             },
             ResponsesStreamEvent::ReasoningSummaryTextDone {
                 item_id: "rs_123".into(),
                 output_index: 0,
-                text: "Thinking about the answer".into(),
+                text: "正在思考答案".into(),
             },
             ResponsesStreamEvent::ReasoningSummaryPartDone {
                 item_id: "rs_123".into(),
@@ -3467,12 +3467,12 @@ mod tests {
             ResponsesStreamEvent::ReasoningSummaryTextDelta {
                 item_id: "rs_123".into(),
                 output_index: 0,
-                delta: "Second part".into(),
+                delta: "第二部分".into(),
             },
             ResponsesStreamEvent::ReasoningSummaryTextDone {
                 item_id: "rs_123".into(),
                 output_index: 0,
-                text: "Second part".into(),
+                text: "第二部分".into(),
             },
             ResponsesStreamEvent::ReasoningSummaryPartDone {
                 item_id: "rs_123".into(),
@@ -3486,10 +3486,10 @@ mod tests {
                     "rs_123",
                     vec![
                         ReasoningSummaryPart::SummaryText {
-                            text: "Thinking about the answer".into(),
+                            text: "正在思考答案".into(),
                         },
                         ReasoningSummaryPart::SummaryText {
-                            text: "Second part".into(),
+                            text: "第二部分".into(),
                         },
                     ],
                     None,
@@ -3505,7 +3505,7 @@ mod tests {
                 item_id: "msg_456".into(),
                 output_index: 1,
                 content_index: Some(0),
-                delta: "The answer is 42".into(),
+                delta: "答案是 42".into(),
             },
             ResponsesStreamEvent::Completed {
                 response: ResponseSummary::default(),
@@ -3521,25 +3521,25 @@ mod tests {
         assert_eq!(
             thinking_events.len(),
             4,
-            "expected 4 thinking events, got {:?}",
+            "预期 4 个思考事件,实际为 {:?}",
             thinking_events
         );
         assert!(
-            matches!(&thinking_events[0], LanguageModelCompletionEvent::Thinking { text, .. } if text == "Thinking about")
+            matches!(&thinking_events[0], LanguageModelCompletionEvent::Thinking { text, .. } if text == "正在思考")
         );
         assert!(
-            matches!(&thinking_events[1], LanguageModelCompletionEvent::Thinking { text, .. } if text == " the answer")
+            matches!(&thinking_events[1], LanguageModelCompletionEvent::Thinking { text, .. } if text == "答案")
         );
         assert!(
             matches!(&thinking_events[2], LanguageModelCompletionEvent::Thinking { text, .. } if text == "\n\n"),
-            "expected separator between summary parts"
+            "预期摘要部分之间有分隔符"
         );
         assert!(
-            matches!(&thinking_events[3], LanguageModelCompletionEvent::Thinking { text, .. } if text == "Second part")
+            matches!(&thinking_events[3], LanguageModelCompletionEvent::Thinking { text, .. } if text == "第二部分")
         );
 
         assert!(mapped.iter().any(
-            |e| matches!(e, LanguageModelCompletionEvent::Text(t) if t == "The answer is 42")
+            |e| matches!(e, LanguageModelCompletionEvent::Text(t) if t == "答案是 42")
         ));
     }
 
@@ -3562,7 +3562,7 @@ mod tests {
                 item: ResponseOutputItem::Reasoning(response_reasoning_item(
                     "rs_789",
                     vec![ReasoningSummaryPart::SummaryText {
-                        text: "Summary without deltas".into(),
+                        text: "无增量的摘要".into(),
                     }],
                     None,
                     None,
@@ -3578,7 +3578,7 @@ mod tests {
             !mapped
                 .iter()
                 .any(|e| matches!(e, LanguageModelCompletionEvent::Thinking { .. })),
-            "OutputItemDone reasoning should not produce Thinking events"
+            "OutputItemDone 推理不应产生思考事件"
         );
     }
 
@@ -3587,14 +3587,14 @@ mod tests {
         let mut reasoning_item = response_reasoning_item(
             "rs_123",
             vec![ReasoningSummaryPart::SummaryText {
-                text: "Checked what information is needed.".into(),
+                text: "已检查需要哪些信息。".into(),
             }],
             Some("ENC"),
             Some("completed".into()),
         );
         reasoning_item.content = vec![json!({
             "type": "reasoning_text",
-            "text": "Internal reasoning text."
+            "text": "内部推理文本。"
         })];
 
         let events = vec![
@@ -3615,7 +3615,7 @@ mod tests {
                 LanguageModelCompletionEvent::ReasoningDetails(details) => Some(details),
                 _ => None,
             })
-            .expect("reasoning details");
+            .expect("推理详情");
 
         assert_eq!(
             details,
@@ -3626,13 +3626,13 @@ mod tests {
                         "summary": [
                             {
                                 "type": "summary_text",
-                                "text": "Checked what information is needed."
+                                "text": "已检查需要哪些信息。"
                             }
                         ],
                         "content": [
                             {
                                 "type": "reasoning_text",
-                                "text": "Internal reasoning text."
+                                "text": "内部推理文本。"
                             }
                         ],
                         "encrypted_content": "ENC",
@@ -3662,7 +3662,7 @@ mod tests {
                 item: ResponseOutputItem::Reasoning(response_reasoning_item(
                     "rs_123",
                     vec![ReasoningSummaryPart::SummaryText {
-                        text: "Finished reasoning.".into(),
+                        text: "推理完成。".into(),
                     }],
                     Some("ENC_NEW"),
                     Some("completed".into()),
@@ -3681,7 +3681,7 @@ mod tests {
                 _ => None,
             })
             .next_back()
-            .expect("reasoning details");
+            .expect("推理详情");
 
         assert_eq!(
             details,
@@ -3692,7 +3692,7 @@ mod tests {
                         "summary": [
                             {
                                 "type": "summary_text",
-                                "text": "Finished reasoning."
+                                "text": "推理完成。"
                             }
                         ],
                         "encrypted_content": "ENC_NEW",
@@ -3742,7 +3742,7 @@ mod tests {
         let start_message_index = mapped
             .iter()
             .position(|event| matches!(event, LanguageModelCompletionEvent::StartMessage { .. }))
-            .expect("start message");
+            .expect("开始消息");
         let details = mapped
             .iter()
             .skip(start_message_index + 1)
@@ -3750,7 +3750,7 @@ mod tests {
                 LanguageModelCompletionEvent::ReasoningDetails(details) => Some(details),
                 _ => None,
             })
-            .expect("reasoning details after start message");
+            .expect("开始消息后的推理详情");
 
         assert_eq!(
             details,
@@ -3785,7 +3785,7 @@ mod tests {
                 item_id: "msg_123".into(),
                 output_index: 0,
                 content_index: Some(0),
-                delta: "I will inspect the workspace.".into(),
+                delta: "我将检查工作区。".into(),
             },
             ResponsesStreamEvent::OutputItemDone {
                 output_index: 1,
@@ -3810,7 +3810,7 @@ mod tests {
                 _ => None,
             })
             .next_back()
-            .expect("reasoning details");
+            .expect("推理详情");
 
         assert_eq!(
             details,
@@ -3855,7 +3855,7 @@ mod tests {
             messages: vec![
                 LanguageModelRequestMessage {
                     role: Role::User,
-                    content: vec![MessageContent::Text("search for something".into())],
+                    content: vec![MessageContent::Text("搜索某些内容".into())],
                     cache: false,
                     reasoning_details: None,
                 },
@@ -3863,10 +3863,10 @@ mod tests {
                     role: Role::Assistant,
                     content: vec![
                         MessageContent::Thinking {
-                            text: "I should search".into(),
+                            text: "我应该搜索".into(),
                             signature: None,
                         },
-                        MessageContent::Text("Searching now.".into()),
+                        MessageContent::Text("正在搜索。".into()),
                         MessageContent::ToolUse(tool_use),
                     ],
                     cache: false,
@@ -3903,12 +3903,12 @@ mod tests {
         assert_eq!(
             serde_json::to_value(&result).unwrap()["messages"],
             json!([
-                {"role": "user", "content": "search for something"},
+                {"role": "user", "content": "搜索某些内容"},
                 {
                     "role": "assistant",
-                    "content": "Searching now.",
+                    "content": "正在搜索。",
                     "tool_calls": [{"id": "call-1", "type": "function", "function": {"name": "search", "arguments": tool_arguments}}],
-                    "reasoning_content": "I should search"
+                    "reasoning_content": "我应该搜索"
                 },
                 {"role": "tool", "content": "result", "tool_call_id": "call-1"}
             ])
@@ -3928,12 +3928,12 @@ mod tests {
         assert_eq!(
             serde_json::to_value(&result).unwrap()["messages"],
             json!([
-                {"role": "user", "content": "search for something"},
+                {"role": "user", "content": "搜索某些内容"},
                 {
                     "role": "assistant",
                     "content": [
-                        {"type": "text", "text": "I should search"},
-                        {"type": "text", "text": "Searching now."}
+                        {"type": "text", "text": "我应该搜索"},
+                        {"type": "text", "text": "正在搜索。"}
                     ],
                     "tool_calls": [{"id": "call-1", "type": "function", "function": {"name": "search", "arguments": tool_arguments}}]
                 },
@@ -4072,22 +4072,22 @@ mod tests {
         });
         assert!(
             complete_tool_use.is_some(),
-            "expected a completed ToolUse event"
+            "预期一个已完成的 ToolUse 事件"
         );
         let tool_use = complete_tool_use.unwrap();
         assert_eq!(
             tool_use.id.to_string(),
             "call_dashscope_test",
-            "id must survive empty-string overwrites"
+            "id 必须能在空字符串覆盖后保留"
         );
         assert_eq!(
             tool_use.name.as_ref(),
             "list_directory",
-            "name must survive empty-string overwrites"
+            "name 必须能在空字符串覆盖后保留"
         );
         assert_eq!(
             tool_use.raw_input, "{\"path\": \"blog-scraper\"}",
-            "arguments should accumulate across chunks"
+            "参数应在多个块之间累积"
         );
 
         // Verify the Stop event
@@ -4105,7 +4105,7 @@ mod tests {
             {
                 "type": "message",
                 "role": "user",
-                "content": "Retained user context.",
+                "content": "已保留用户上下文。",
                 "provider_extension": {"preserve": true}
             },
             {
@@ -4130,7 +4130,7 @@ mod tests {
                 },
                 LanguageModelRequestMessage {
                     role: Role::User,
-                    content: vec![MessageContent::Text("Continue.".into())],
+                    content: vec![MessageContent::Text("继续。".into())],
                     cache: false,
                     reasoning_details: None,
                 },
@@ -4156,7 +4156,7 @@ mod tests {
                 {
                     "type": "message",
                     "role": "user",
-                    "content": "Retained user context.",
+                    "content": "已保留用户上下文。",
                     "provider_extension": {"preserve": true}
                 },
                 {
@@ -4167,7 +4167,7 @@ mod tests {
                 {
                     "type": "message",
                     "role": "user",
-                    "content": [{"type": "input_text", "text": "Continue."}]
+                    "content": [{"type": "input_text", "text": "继续。"}]
                 }
             ])
         );
@@ -4179,7 +4179,7 @@ mod tests {
             thread_id: Some("thread-123".to_string()),
             messages: vec![LanguageModelRequestMessage {
                 role: Role::User,
-                content: vec![MessageContent::Text("Retain this context.".into())],
+                content: vec![MessageContent::Text("保留此上下文。".into())],
                 cache: false,
                 reasoning_details: None,
             }],
@@ -4199,20 +4199,20 @@ mod tests {
             &OPEN_AI_PROVIDER_ID,
         )
         .unwrap();
-        response_request.instructions = Some("Preserve implementation details.".to_string());
+        response_request.instructions = Some("保留实现细节。".to_string());
         let compact_request = response_request.into_compact_request();
 
         assert_eq!(
             serde_json::to_value(compact_request).unwrap(),
             json!({
                 "model": "gpt-5.4",
-                "instructions": "Preserve implementation details.",
+                "instructions": "保留实现细节。",
                 "input": [{
                     "type": "message",
                     "role": "user",
                     "content": [{
                         "type": "input_text",
-                        "text": "Retain this context."
+                        "text": "保留此上下文。"
                     }]
                 }],
                 "prompt_cache_key": "thread-123",
@@ -4332,7 +4332,7 @@ mod tests {
                     "type": "message",
                     "role": "assistant",
                     "content": [
-                        { "type": "output_text", "text": "Done.", "annotations": [] }
+                        { "type": "output_text", "text": "完成。", "annotations": [] }
                     ]
                 }
             ])
@@ -4345,19 +4345,19 @@ mod tests {
             messages: vec![
                 LanguageModelRequestMessage {
                     role: Role::System,
-                    content: vec![MessageContent::Text("You are a coding assistant.".into())],
+                    content: vec![MessageContent::Text("你是一个编码助手。".into())],
                     cache: false,
                     reasoning_details: None,
                 },
                 LanguageModelRequestMessage {
                     role: Role::User,
-                    content: vec![MessageContent::Text("Hello.".into())],
+                    content: vec![MessageContent::Text("你好。".into())],
                     cache: false,
                     reasoning_details: None,
                 },
                 LanguageModelRequestMessage {
                     role: Role::System,
-                    content: vec![MessageContent::Text("Prefer terse answers.".into())],
+                    content: vec![MessageContent::Text("偏好简洁的回答。".into())],
                     cache: false,
                     reasoning_details: None,
                 },
@@ -4380,7 +4380,7 @@ mod tests {
         let serialized = serde_json::to_value(&response).unwrap();
         assert_eq!(
             serialized["instructions"],
-            json!("You are a coding assistant.\n\nPrefer terse answers.")
+            json!("你是一个编码助手。\n\n偏好简洁的回答。")
         );
         assert_eq!(
             serialized["input"],
@@ -4389,7 +4389,7 @@ mod tests {
                     "type": "message",
                     "role": "user",
                     "content": [
-                        { "type": "input_text", "text": "Hello." }
+                        { "type": "input_text", "text": "你好。" }
                     ]
                 }
             ])
@@ -4422,7 +4422,7 @@ mod tests {
                 },
                 LanguageModelRequestMessage {
                     role: Role::User,
-                    content: vec![MessageContent::Text("Old context.".into())],
+                    content: vec![MessageContent::Text("旧上下文。".into())],
                     cache: false,
                     reasoning_details: None,
                 },
@@ -4436,7 +4436,7 @@ mod tests {
                 },
                 LanguageModelRequestMessage {
                     role: Role::User,
-                    content: vec![MessageContent::Text("Continue.".into())],
+                    content: vec![MessageContent::Text("继续。".into())],
                     cache: false,
                     reasoning_details: None,
                 },
@@ -4457,7 +4457,7 @@ mod tests {
         .unwrap();
 
         let serialized = serde_json::to_value(&response).unwrap();
-        assert_eq!(serialized["instructions"], json!("Current system prompt."));
+        assert_eq!(serialized["instructions"], json!("当前系统提示词。"));
         assert_eq!(
             serialized["input"],
             json!([
@@ -4470,7 +4470,7 @@ mod tests {
                     "type": "message",
                     "role": "user",
                     "content": [
-                        { "type": "input_text", "text": "Continue." }
+                        { "type": "input_text", "text": "继续。" }
                     ]
                 }
             ])
@@ -4486,7 +4486,7 @@ mod tests {
                     language_model_core::ProviderCompactionState::new(
                         language_model_core::OPEN_AI_PROVIDER_ID,
                         crate::responses::COMPACTION_STATE_FORMAT,
-                        "not valid JSON",
+                        "不是有效的 JSON",
                     ),
                 ))],
                 cache: false,
@@ -4510,7 +4510,7 @@ mod tests {
         assert!(
             error
                 .to_string()
-                .contains("malformed OpenAI compaction state payload")
+                .contains("OpenAI 压缩状态负载格式错误")
         );
     }
 
@@ -4544,14 +4544,14 @@ mod tests {
                     role: Role::Assistant,
                     content: vec![
                         MessageContent::Compaction(CompactedContext::ProviderState(state)),
-                        MessageContent::Text("Done.".into()),
+                        MessageContent::Text("完成。".into()),
                     ],
                     cache: false,
                     reasoning_details: None,
                 },
                 LanguageModelRequestMessage {
                     role: Role::User,
-                    content: vec![MessageContent::Text("Continue.".into())],
+                    content: vec![MessageContent::Text("继续。".into())],
                     cache: false,
                     reasoning_details: None,
                 },
@@ -4577,19 +4577,19 @@ mod tests {
                 {
                     "type": "message",
                     "role": "user",
-                    "content": [{ "type": "input_text", "text": "Set up the project." }]
+                    "content": [{ "type": "input_text", "text": "设置项目。" }]
                 },
                 {
                     "type": "message",
                     "role": "assistant",
                     "content": [
-                        { "type": "output_text", "text": "Done.", "annotations": [] }
+                        { "type": "output_text", "text": "完成。", "annotations": [] }
                     ]
                 },
                 {
                     "type": "message",
                     "role": "user",
-                    "content": [{ "type": "input_text", "text": "Continue." }]
+                    "content": [{ "type": "input_text", "text": "继续。" }]
                 }
             ])
         );

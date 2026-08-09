@@ -1394,7 +1394,7 @@ impl PlatformWindow for MacWindow {
     ) -> Option<oneshot::Receiver<usize>> {
         // NSAlert's first button keeps Return and Cancel keeps Escape, but the keyboard
         // focus (and therefore Space) defaults to Cancel, leaving the middle button of
-        // prompts like "Save / Don't Save / Cancel" unreachable from the keyboard. Move
+        // prompts like "保存 / 不保存 / 取消" unreachable from the keyboard. Move
         // the initial focus onto the last non-cancel, non-default button instead.
         let initial_focus_ix = answers
             .iter()
@@ -1810,21 +1810,21 @@ impl PlatformWindow for MacWindow {
                         };
 
                         match action_str.as_ref() {
-                            "None" => {
-                                // "Do Nothing" selected, so do no action
+                            "无" => {
+                                // "不执行任何操作" selected, so do no action
                             }
-                            "Minimize" => {
+                            "最小化" => {
                                 if is_minimizable {
                                     window.miniaturize_(nil);
                                 }
                             }
-                            "Maximize" => {
+                            "最大化" => {
                                 if is_resizable {
                                     window.zoom_(nil);
                                 }
                             }
-                            "Fill" => {
-                                // There is no documented API for "Fill" action, so we'll just zoom the window
+                            "填充" => {
+                                // There is no documented API for "填充" action, so we'll just zoom the window
                                 if is_resizable {
                                     window.zoom_(nil);
                                 }
@@ -1859,7 +1859,7 @@ impl PlatformWindow for MacWindow {
     fn start_external_drag(&self, payload: &ExternalDragPayload) -> bool {
         let ExternalDragPayload::Files(paths) = payload;
         if paths.entries().is_empty() {
-            log::warn!("start_external_drag declined: no paths");
+            log::warn!("start_external_drag 被拒绝:没有路径");
             return false;
         }
 
@@ -1873,7 +1873,7 @@ impl PlatformWindow for MacWindow {
         };
 
         let Some(last_left_mouse_down_event) = last_left_mouse_down_event else {
-            log::warn!("start_external_drag declined: no retained left mouse down event");
+            log::warn!("start_external_drag 被拒绝:没有保留的左键按下事件");
             return false;
         };
 
@@ -1896,7 +1896,7 @@ impl PlatformWindow for MacWindow {
             for (path, is_directory) in paths.entries() {
                 // Preserve non-UTF-8 paths
                 let Ok(path_bytes) = CString::new(path.as_os_str().as_bytes()) else {
-                    log::warn!("start_external_drag skipped path containing an interior nul byte");
+                    log::warn!("start_external_drag 跳过了包含内部空字节的路径");
                     continue;
                 };
 
@@ -1908,14 +1908,14 @@ impl PlatformWindow for MacWindow {
                 ];
 
                 if url.is_null() {
-                    log::warn!("start_external_drag skipped path with nil NSURL");
+                    log::warn!("start_external_drag 跳过了 NSURL 为 nil 的路径");
                     continue;
                 }
 
                 let item: id = msg_send![class!(NSDraggingItem), alloc];
                 let item: id = msg_send![item, initWithPasteboardWriter: url];
                 if item.is_null() {
-                    log::warn!("start_external_drag declined: NSDraggingItem allocation failed");
+                    log::warn!("start_external_drag 被拒绝:NSDraggingItem 分配失败");
                     continue;
                 }
 
@@ -1957,7 +1957,7 @@ impl PlatformWindow for MacWindow {
 
             let count: NSUInteger = msg_send![dragging_items, count];
             if count == 0 {
-                log::warn!("start_external_drag declined: no dragging items");
+                log::warn!("start_external_drag 被拒绝:没有拖拽项目");
                 return false;
             }
 
@@ -1973,7 +1973,7 @@ impl PlatformWindow for MacWindow {
                 self.0.lock().synthetic_drag_counter += 1;
             }
             log::debug!(
-                "start_external_drag completed: started={}, item_count={}",
+                "start_external_drag 完成:已开始={},项目数={}",
                 started,
                 count
             );
@@ -2274,10 +2274,10 @@ extern "C" fn handle_key_event(this: &Object, native_event: id, key_equivalent: 
 
     match event {
         PlatformInput::KeyDown(key_down_event) => {
-            // For certain keystrokes, macOS will first dispatch a "key equivalent" event.
-            // If that event isn't handled, it will then dispatch a "key down" event. GPUI
+            // For certain keystrokes, macOS will first dispatch a "按键等效" event.
+            // If that event isn't handled, it will then dispatch a "按键按下" event. GPUI
             // makes no distinction between these two types of events, so we need to ignore
-            // the "key down" event if we've already just processed its "key equivalent" version.
+            // the "按键按下" event if we've already just processed its "按键等效" version.
             if key_equivalent {
                 lock.last_key_equivalent = Some(key_down_event.clone());
             } else if lock.last_key_equivalent.take().as_ref() == Some(&key_down_event) {
@@ -3153,7 +3153,7 @@ extern "C" fn dragging_session_source_operation_mask(
         _ => NSDragOperationCopy | NSDragOperationMove,
     };
     log::debug!(
-        "dragging_session_source_operation_mask: context={}, operation={}",
+        "dragging_session_source_operation_mask:上下文={},操作={}",
         context,
         operation
     );
@@ -3167,7 +3167,7 @@ extern "C" fn dragging_session_ended(
     _: NSPoint,
     operation: NSDragOperation,
 ) {
-    log::debug!("dragging_session_ended operation={operation}");
+    log::debug!("dragging_session_ended 操作={operation}");
     // SAFETY: AppKit invokes this selector on the GPUIWindow instance registered in build_classes,
     // which always has WINDOW_STATE_IVAR initialized to the owning MacWindowState.
     let window_state = unsafe { get_window_state(this) };

@@ -31,12 +31,12 @@ pub async fn run_load_project(
 
     let project = setup_project(example, &app_state, &progress, &mut cx).await?;
 
-    progress.set_substatus("applying edit history");
+    progress.set_substatus("正在应用编辑历史");
     let open_buffers = apply_edit_history(example, &project, &mut cx).await?;
 
     let ep_store = cx
         .update(|cx| EditPredictionStore::try_global(cx))
-        .context("EditPredictionStore not initialized")?;
+        .context("EditPredictionStore 未初始化")?;
 
     let recent_paths: Vec<ProjectPath> = open_buffers
         .buffers()
@@ -53,7 +53,7 @@ pub async fn run_load_project(
         store.set_recent_paths_for_project(&project, recent_paths, cx);
     });
 
-    progress.set_substatus("resolving cursor");
+    progress.set_substatus("正在解析光标位置");
     let (buffer, cursor_position) =
         cursor_position(example, &project, &open_buffers, &mut cx).await?;
     buffer
@@ -79,7 +79,7 @@ pub async fn run_load_project(
         let language_name = buffer
             .language()
             .map(|l| l.name().to_string())
-            .unwrap_or_else(|| "Unknown".to_string());
+            .unwrap_or_else(|| "未知".to_string());
 
         let (excerpt_point_range, excerpt_offset_range, cursor_offset_in_excerpt) =
             compute_cursor_excerpt(&snapshot, cursor_offset);
@@ -169,7 +169,7 @@ async fn cursor_position(
             })
             .with_context(|| {
                 format!(
-                    "failed to find cursor path {}",
+                    "无法找到光标路径 {}",
                     example.spec.cursor_path.display()
                 )
             })?;
@@ -186,11 +186,11 @@ async fn cursor_position(
 
         let mut matches = text.match_indices(&cursor_excerpt);
         let (excerpt_offset, _) = matches.next().with_context(|| {
-            format!("Cursor excerpt did not exist in buffer:\n\n{cursor_excerpt}\n",)
+            format!("缓冲区中不存在光标摘录:\n\n{cursor_excerpt}\n",)
         })?;
         anyhow::ensure!(
             matches.next().is_none(),
-            "More than one cursor position match found",
+            "找到多个光标位置匹配",
         );
         Ok(excerpt_offset)
     })?;
@@ -210,7 +210,7 @@ async fn setup_project(
 ) -> Result<Entity<Project>> {
     let ep_store = cx
         .update(|cx| EditPredictionStore::try_global(cx))
-        .context("Store should be initialized at init")?;
+        .context("存储应在初始化时初始化")?;
 
     let worktree_path = setup_worktree(example, step_progress).await?;
 
@@ -259,7 +259,7 @@ async fn setup_project(
 }
 
 async fn setup_worktree(example: &Example, step_progress: &StepProgress) -> Result<PathBuf> {
-    let repo_name = example.repo_name().context("failed to get repo name")?;
+    let repo_name = example.repo_name().context("无法获取仓库名称")?;
     let repo_dir = git::repo_path_for_url(&example.spec.repository_url)?;
     let worktree_path = repo_name.worktree_path();
     let repo_lock = git::lock_repo(&repo_dir).await;
@@ -294,7 +294,7 @@ async fn setup_worktree(example: &Example, step_progress: &StepProgress) -> Resu
     }
 
     if !git_repo_exists {
-        step_progress.set_substatus(format!("cloning {}", repo_name.name));
+        step_progress.set_substatus(format!("正在克隆 {}", repo_name.name));
         fs::create_dir_all(&repo_dir)?;
         git::run_git(&repo_dir, &["init"]).await?;
         git::run_git(
@@ -312,7 +312,7 @@ async fn setup_worktree(example: &Example, step_progress: &StepProgress) -> Resu
     git::run_git(&repo_dir, &["worktree", "prune"]).await.ok();
 
     // Create the worktree for this example if needed.
-    step_progress.set_substatus("preparing worktree");
+    step_progress.set_substatus("正在准备工作树");
 
     // Check if worktree exists and is valid (not just a directory from a crashed run).
     let worktree_valid = worktree_path.is_dir()
@@ -353,7 +353,7 @@ async fn setup_worktree(example: &Example, step_progress: &StepProgress) -> Resu
     drop(repo_lock);
 
     if !example.spec.uncommitted_diff.is_empty() {
-        step_progress.set_substatus("applying diff");
+        step_progress.set_substatus("正在应用差异");
 
         // old examples had full paths in the uncommitted diff.
         let uncommitted_diff =
@@ -365,7 +365,7 @@ async fn setup_worktree(example: &Example, step_progress: &StepProgress) -> Resu
             .stdin(std::process::Stdio::piped())
             .spawn()?;
 
-        let mut stdin = apply_process.stdin.take().context("Failed to get stdin")?;
+        let mut stdin = apply_process.stdin.take().context("无法获取标准输入")?;
         stdin.write_all(uncommitted_diff.as_bytes()).await?;
         stdin.close().await?;
         drop(stdin);
@@ -373,7 +373,7 @@ async fn setup_worktree(example: &Example, step_progress: &StepProgress) -> Resu
         let apply_result = apply_process.output().await?;
         anyhow::ensure!(
             apply_result.status.success(),
-            "Failed to apply uncommitted diff patch with status: {}\nstderr:\n{}\nstdout:\n{}",
+            "应用未提交差异补丁失败,状态:{}\n标准错误:\n{}\n标准输出:\n{}",
             apply_result.status,
             String::from_utf8_lossy(&apply_result.stderr),
             String::from_utf8_lossy(&apply_result.stdout),

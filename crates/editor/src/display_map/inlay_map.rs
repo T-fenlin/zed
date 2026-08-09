@@ -831,7 +831,7 @@ impl InlayMap {
                 };
                 let inlay_id = next_inlay.id;
                 log::info!(
-                    "creating inlay {inlay_id:?} at buffer offset {position} with bias {bias:?} and text {text:?}"
+                    "在缓冲区偏移量 {position} 处创建内联提示 {inlay_id:?},偏差 {bias:?},文本 {text:?}"
                 );
                 to_insert.push(next_inlay);
             } else {
@@ -844,7 +844,7 @@ impl InlayMap {
                 );
             }
         }
-        log::info!("removing inlays: {:?}", to_remove);
+        log::info!("移除内联提示: {:?}", to_remove);
 
         let (snapshot, edits) = self.splice(&to_remove, to_insert);
         (snapshot, edits)
@@ -1307,7 +1307,7 @@ impl InlaySnapshot {
                         matches!(next_transform, Transform::Isomorphic(_));
                     assert!(
                         !transform_is_isomorphic || !next_transform_is_isomorphic,
-                        "two adjacent isomorphic transforms"
+                        "两个相邻的同构变换"
                     );
                 }
             }
@@ -1489,7 +1489,7 @@ mod tests {
             .text()
             .to_string(),
             "a",
-            "Should not pad label if not requested"
+            "未请求时不应填充标签"
         );
 
         assert_eq!(
@@ -1509,7 +1509,7 @@ mod tests {
             .text()
             .to_string(),
             " a ",
-            "Should pad label for every side requested"
+            "应为每个请求的边填充标签"
         );
 
         assert_eq!(
@@ -1529,7 +1529,7 @@ mod tests {
             .text()
             .to_string(),
             " a ",
-            "Should not change already padded label"
+            "不应更改已填充的标签"
         );
 
         assert_eq!(
@@ -1549,7 +1549,7 @@ mod tests {
             .text()
             .to_string(),
             " a ",
-            "Should not change already padded label"
+            "不应更改已填充的标签"
         );
     }
 
@@ -1572,7 +1572,7 @@ mod tests {
             .text()
             .to_string(),
             " 🎨 ",
-            "Should pad single emoji correctly"
+            "应正确填充单个表情符号"
         );
     }
 
@@ -1948,7 +1948,7 @@ mod tests {
         init_test(cx);
 
         let operations = env::var("OPERATIONS")
-            .map(|i| i.parse().expect("invalid `OPERATIONS` variable"))
+            .map(|i| i.parse().expect("无效的 `OPERATIONS` 变量"))
             .unwrap_or(10);
 
         let len = rng.random_range(0..30);
@@ -1962,7 +1962,7 @@ mod tests {
         };
         let mut buffer_snapshot = buffer.read(cx).snapshot(cx);
         let mut next_inlay_id = 0;
-        log::info!("buffer text: {:?}", buffer_snapshot.text());
+        log::info!("缓冲区文本: {:?}", buffer_snapshot.text());
         let (mut inlay_map, mut inlay_snapshot) = InlayMap::new(buffer_snapshot.clone());
         for _ in 0..operations {
             let mut inlay_edits = Patch::default();
@@ -1972,7 +1972,7 @@ mod tests {
             match rng.random_range(0..=100) {
                 0..=50 => {
                     let (snapshot, edits) = inlay_map.randomly_mutate(&mut next_inlay_id, &mut rng);
-                    log::info!("mutated text: {:?}", snapshot.text());
+                    log::info!("变更后的文本: {:?}", snapshot.text());
                     inlay_edits = Patch::new(edits);
                 }
                 _ => buffer.update(cx, |buffer, cx| {
@@ -1981,7 +1981,7 @@ mod tests {
                     buffer.randomly_mutate(&mut rng, edit_count, cx);
                     buffer_snapshot = buffer.snapshot(cx);
                     let edits = subscription.consume().into_inner();
-                    log::info!("editing {:?}", edits);
+                    log::info!("编辑 {:?}", edits);
                     buffer_edits.extend(edits);
                 }),
             };
@@ -1991,8 +1991,8 @@ mod tests {
             inlay_snapshot = new_inlay_snapshot;
             inlay_edits = inlay_edits.compose(new_inlay_edits);
 
-            log::info!("buffer text: {:?}", buffer_snapshot.text());
-            log::info!("inlay text: {:?}", inlay_snapshot.text());
+            log::info!("缓冲区文本: {:?}", buffer_snapshot.text());
+            log::info!("内联提示文本: {:?}", inlay_snapshot.text());
 
             let inlays = inlay_map
                 .inlays
@@ -2020,7 +2020,7 @@ mod tests {
                         .row_infos(row_start as u32)
                         .collect::<Vec<_>>(),
                     &expected_buffer_rows[row_start..],
-                    "incorrect buffer rows starting at {}",
+                    "从 {} 开始的缓冲区行不正确",
                     row_start
                 );
             }
@@ -2031,7 +2031,7 @@ mod tests {
                 .map(|_| buffer_snapshot.random_byte_range(MultiBufferOffset(0), &mut rng))
                 .collect::<Vec<_>>();
             text_highlight_ranges.sort_by_key(|range| (range.start, Reverse(range.end)));
-            log::info!("highlighting text ranges {text_highlight_ranges:?}");
+            log::info!("高亮文本范围 {text_highlight_ranges:?}");
             text_highlights.insert(
                 HighlightKey::ColorizeBracket(0),
                 Arc::new((
@@ -2087,7 +2087,7 @@ mod tests {
                         })
                         .map(|highlight| (highlight.inlay, (HighlightStyle::default(), highlight))),
                 );
-                log::info!("highlighting inlay ranges {new_highlights:?}");
+                log::info!("高亮内联提示范围 {new_highlights:?}");
                 inlay_highlights.insert(HighlightKey::Editor, new_highlights);
             }
 
@@ -2099,7 +2099,7 @@ mod tests {
 
                 let range =
                     InlayOffset(MultiBufferOffset(start))..InlayOffset(MultiBufferOffset(end));
-                log::info!("calling inlay_snapshot.chunks({range:?})");
+                log::info!("调用 inlay_snapshot.chunks({range:?})");
                 let actual_text = inlay_snapshot
                     .chunks(
                         range,
@@ -2118,7 +2118,7 @@ mod tests {
                 assert_eq!(
                     actual_text,
                     expected_text.slice(start..end).to_string(),
-                    "incorrect text in range {:?}",
+                    "范围 {:?} 内的文本不正确",
                     start..end
                 );
 
@@ -2158,13 +2158,13 @@ mod tests {
                 assert_eq!(
                     inlay_snapshot.clip_point(inlay_point, Bias::Left),
                     inlay_point,
-                    "invalid inlay point for buffer point {:?} when clipped left",
+                    "左裁剪时缓冲区点 {:?} 的内联提示点无效",
                     buffer_point
                 );
                 assert_eq!(
                     inlay_snapshot.clip_point(inlay_point, Bias::Right),
                     inlay_point,
-                    "invalid inlay point for buffer point {:?} when clipped right",
+                    "右裁剪时缓冲区点 {:?} 的内联提示点无效",
                     buffer_point
                 );
 
@@ -2190,13 +2190,13 @@ mod tests {
                 assert_eq!(
                     inlay_snapshot.to_offset(inlay_point),
                     inlay_offset,
-                    "invalid to_offset({:?})",
+                    "无效的 to_offset({:?})",
                     inlay_point
                 );
                 assert_eq!(
                     inlay_snapshot.to_point(inlay_offset),
                     inlay_point,
-                    "invalid to_point({:?})",
+                    "无效的 to_point({:?})",
                     inlay_offset
                 );
 
@@ -2213,7 +2213,7 @@ mod tests {
                     let clipped_right_point = inlay_snapshot.clip_point(inlay_point, Bias::Right);
                     assert!(
                         clipped_left_point <= clipped_right_point,
-                        "inlay point {:?} when clipped left is greater than when clipped right ({:?} > {:?})",
+                        "左裁剪时的内联提示点 {:?} 大于右裁剪时的 ({:?} > {:?})",
                         inlay_point,
                         clipped_left_point,
                         clipped_right_point
@@ -2301,16 +2301,16 @@ mod tests {
             if chunk_text.is_empty() {
                 assert_eq!(
                     chars_bitmap, 0,
-                    "Empty chunk should have empty chars bitmap"
+                    "空块应具有空的字符位图"
                 );
-                assert_eq!(tabs_bitmap, 0, "Empty chunk should have empty tabs bitmap");
+                assert_eq!(tabs_bitmap, 0, "空块应具有空的制表符位图");
                 continue;
             }
 
             // Verify that chunk text doesn't exceed 128 bytes
             assert!(
                 chunk_text.len() <= 128,
-                "Chunk text length {} exceeds 128 bytes",
+                "块文本长度 {} 超过 128 字节",
                 chunk_text.len()
             );
 
@@ -2325,12 +2325,12 @@ mod tests {
                 let has_bit = chars_bitmap & (1 << byte_idx) != 0;
 
                 if has_bit != should_have_bit {
-                    eprintln!("Chunk text bytes: {:?}", chunk_text.as_bytes());
-                    eprintln!("Char indices: {:?}", char_indices);
-                    eprintln!("Chars bitmap: {:#b}", chars_bitmap);
+                    eprintln!("块文本字节: {:?}", chunk_text.as_bytes());
+                    eprintln!("字符索引: {:?}", char_indices);
+                    eprintln!("字符位图: {:#b}", chars_bitmap);
                     assert_eq!(
                         has_bit, should_have_bit,
-                        "Chars bitmap mismatch at byte index {} in chunk {:?}. Expected bit: {}, Got bit: {}",
+                        "字节索引 {} 处块 {:?} 中的字符位图不匹配。预期位: {}, 实际位: {}",
                         byte_idx, chunk_text, should_have_bit, has_bit
                     );
                 }
@@ -2342,11 +2342,11 @@ mod tests {
                 let has_bit = tabs_bitmap & (1 << byte_idx) != 0;
 
                 if has_bit != is_tab {
-                    eprintln!("Chunk text bytes: {:?}", chunk_text.as_bytes());
-                    eprintln!("Tabs bitmap: {:#b}", tabs_bitmap);
+                    eprintln!("块文本字节: {:?}", chunk_text.as_bytes());
+                    eprintln!("制表符位图: {:#b}", tabs_bitmap);
                     assert_eq!(
                         has_bit, is_tab,
-                        "Tabs bitmap mismatch at byte index {} in chunk {:?}. Byte: {:?}, Expected bit: {}, Got bit: {}",
+                        "字节索引 {} 处块 {:?} 中的制表符位图不匹配。字节: {:?}, 预期位: {}, 实际位: {}",
                         byte_idx, chunk_text, byte as char, is_tab, has_bit
                     );
                 }
@@ -2461,55 +2461,55 @@ mod tests {
                 inlay_text: "Hello👋World",
                 highlight_range: 0..7,
                 expected_highlighted: "Hello👋",
-                description: "Emoji boundary - rounds up to include full emoji",
+                description: "表情符号边界 - 向上取整以包含完整表情符号",
             },
             TestCase {
                 inlay_text: "Test→End",
                 highlight_range: 0..5,
                 expected_highlighted: "Test→",
-                description: "Arrow boundary - rounds up to include full arrow",
+                description: "箭头边界 - 向上取整以包含完整箭头",
             },
             TestCase {
                 inlay_text: "café",
                 highlight_range: 0..4,
                 expected_highlighted: "café",
-                description: "Accented char boundary - rounds up to include full é",
+                description: "重音字符边界 - 向上取整以包含完整 é",
             },
             TestCase {
                 inlay_text: "🎨🎭🎪",
                 highlight_range: 0..5,
                 expected_highlighted: "🎨🎭",
-                description: "Multiple emojis - partial highlight",
+                description: "多个表情符号 - 部分高亮",
             },
             TestCase {
                 inlay_text: "普通话",
                 highlight_range: 0..4,
                 expected_highlighted: "普通",
-                description: "Chinese characters - partial highlight",
+                description: "中文字符 - 部分高亮",
             },
             TestCase {
                 inlay_text: "Hello",
                 highlight_range: 0..2,
                 expected_highlighted: "He",
-                description: "ASCII only - no adjustment needed",
+                description: "仅 ASCII - 无需调整",
             },
             TestCase {
                 inlay_text: "👋",
                 highlight_range: 0..1,
                 expected_highlighted: "👋",
-                description: "Single emoji - partial byte range includes whole char",
+                description: "单个表情符号 - 部分字节范围包含整个字符",
             },
             TestCase {
                 inlay_text: "Test",
                 highlight_range: 0..0,
                 expected_highlighted: "",
-                description: "Empty range",
+                description: "空范围",
             },
             TestCase {
                 inlay_text: "🎨ABC",
                 highlight_range: 2..5,
                 expected_highlighted: "A",
-                description: "Range starting mid-emoji skips the emoji",
+                description: "从表情符号中间开始的范围跳过该表情符号",
             },
         ];
 
@@ -2554,7 +2554,7 @@ mod tests {
             assert_eq!(
                 full_text,
                 format!("te{}st", test_case.inlay_text),
-                "Full text mismatch for case: {}",
+                "案例 {} 的完整文本不匹配",
                 test_case.description
             );
 
@@ -2566,7 +2566,7 @@ mod tests {
                 .collect();
             assert_eq!(
                 highlighted_text, test_case.expected_highlighted,
-                "Highlighted text mismatch for case: {} (text: '{}', range: {:?})",
+                "案例 {} 的高亮文本不匹配 (文本: '{}', 范围: {:?})",
                 test_case.description, test_case.inlay_text, test_case.highlight_range
             );
         }

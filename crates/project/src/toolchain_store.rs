@@ -251,7 +251,7 @@ impl ToolchainStore {
         this.update(&mut cx, |this, cx| {
             let language_name = LanguageName::from_proto(envelope.payload.language_name);
             let Some(toolchain) = envelope.payload.toolchain else {
-                bail!("Missing `toolchain` in payload");
+                bail!("负载中缺少 `toolchain`");
             };
             let toolchain = Toolchain {
                 name: toolchain.name.into(),
@@ -589,9 +589,9 @@ impl LocalToolchainStore {
             let language = cx
                 .background_spawn(registry.language_for_name(&language_name.0))
                 .await
-                .with_context(|| format!("Language {} not found", language_name.0))?;
+                .with_context(|| format!("未找到语言 {}", language_name.0))?;
             let toolchain_lister = language.toolchain_lister().with_context(|| {
-                format!("Language {} does not support toolchains", language_name.0)
+                format!("语言 {} 不支持工具链", language_name.0)
             })?;
 
             let project_env = environment
@@ -760,7 +760,7 @@ impl RemoteToolchainStore {
 
             let response = response
                 .response
-                .context("Failed to resolve toolchain via RPC")?;
+                .context("通过 RPC 解析工具链失败")?;
             use proto::resolve_toolchain_response::Response;
             match response {
                 Response::Toolchain(toolchain) => Ok(Toolchain {
@@ -768,7 +768,7 @@ impl RemoteToolchainStore {
                     name: toolchain.name.into(),
                     path: toolchain.path.into(),
                     as_json: serde_json::Value::from_str(&toolchain.raw_json)
-                        .context("Deserializing ResolveToolchain LSP response")?,
+                        .context("反序列化 ResolveToolchain LSP 响应时出错")?,
                 }),
                 Response::Error(error) => {
                     anyhow::bail!("{error}");

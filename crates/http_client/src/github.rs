@@ -49,19 +49,19 @@ pub async fn latest_github_release(
     let mut response = http
         .send(request)
         .await
-        .context("error fetching latest release")?;
+        .context("获取最新版本时出错")?;
 
     let mut body = Vec::new();
     response
         .body_mut()
         .read_to_end(&mut body)
         .await
-        .context("error reading latest release")?;
+        .context("读取最新版本时出错")?;
 
     if response.status().is_client_error() {
         let text = String::from_utf8_lossy(body.as_slice());
         bail!(
-            "status error {}, response: {text:?}",
+            "状态错误 {}, 响应: {text:?}",
             response.status().as_u16()
         );
     }
@@ -70,12 +70,12 @@ pub async fn latest_github_release(
         Ok(releases) => releases,
 
         Err(err) => {
-            log::error!("Error deserializing: {err:?}");
+            log::error!("反序列化错误: {err:?}");
             log::error!(
-                "GitHub API response text: {:?}",
+                "GitHub API 响应文本: {:?}",
                 String::from_utf8_lossy(body.as_slice())
             );
-            anyhow::bail!("error deserializing latest release: {err:?}");
+            anyhow::bail!("反序列化最新版本时出错: {err:?}");
         }
     };
 
@@ -83,7 +83,7 @@ pub async fn latest_github_release(
         .into_iter()
         .filter(|release| !require_assets || !release.assets.is_empty())
         .find(|release| release.pre_release == pre_release)
-        .context("finding a prerelease")?;
+        .context("查找预发布版本")?;
     release.assets.iter_mut().for_each(|asset| {
         if let Some(digest) = &mut asset.digest
             && let Some(stripped) = digest.strip_prefix("sha256:")
@@ -111,7 +111,7 @@ pub async fn get_release_by_tag_name(
     let mut response = http
         .send(request)
         .await
-        .context("error fetching latest release")?;
+        .context("获取最新版本时出错")?;
 
     let mut body = Vec::new();
     let status = response.status();
@@ -119,23 +119,23 @@ pub async fn get_release_by_tag_name(
         .body_mut()
         .read_to_end(&mut body)
         .await
-        .context("error reading latest release")?;
+        .context("读取最新版本时出错")?;
 
     if status.is_client_error() {
         let text = String::from_utf8_lossy(body.as_slice());
         bail!(
-            "status error {}, response: {text:?}",
+            "状态错误 {}, 响应: {text:?}",
             response.status().as_u16()
         );
     }
 
     let release = serde_json::from_slice::<GithubRelease>(body.as_slice()).map_err(|err| {
-        log::error!("Error deserializing: {err:?}");
+        log::error!("反序列化错误: {err:?}");
         log::error!(
-            "GitHub API response text: {:?}",
+            "GitHub API 响应文本: {:?}",
             String::from_utf8_lossy(body.as_slice())
         );
-        anyhow!("error deserializing GitHub release: {err:?}")
+        anyhow!("反序列化 GitHub 版本时出错: {err:?}")
     })?;
 
     Ok(release)
@@ -165,7 +165,7 @@ pub fn build_asset_url(repo_name_with_owner: &str, tag: &str, kind: AssetKind) -
         }
     );
     url.path_segments_mut()
-        .map_err(|()| anyhow!("cannot modify url path segments"))?
+        .map_err(|()| anyhow!("无法修改 URL 路径段"))?
         .push(&asset_filename);
     Ok(url.to_string())
 }

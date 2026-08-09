@@ -340,9 +340,9 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
     Vim::action(editor, cx, |_, _: &ArgumentRequired, window, cx| {
         let _ = window.prompt(
             gpui::PromptLevel::Critical,
-            "Argument required",
+            "需要参数",
             None,
-            &["Cancel"],
+            &["取消"],
             cx,
         );
     });
@@ -377,9 +377,9 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     else {
                         let _ = window.prompt(
                             gpui::PromptLevel::Warning,
-                            "No file name",
-                            Some("Partial buffer write requires file name."),
-                            &["Cancel"],
+                            "没有文件名",
+                            Some("部分缓冲区写入需要文件名。"),
+                            &["取消"],
                             cx,
                         );
                         return;
@@ -399,7 +399,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                                         window,
                                         cx,
                                     )
-                                    .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                                    .detach_and_prompt_err("保存失败", window, cx, |_, _, _| None);
                             });
                         }
                         return;
@@ -407,9 +407,9 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     if Some(SaveIntent::Overwrite) != action.save_intent {
                         let _ = window.prompt(
                             gpui::PromptLevel::Warning,
-                            "Use ! to write partial buffer",
-                            Some("Overwriting the current file with selected buffer content requires '!'."),
-                            &["Cancel"],
+                            "使用 ! 写入部分缓冲区",
+                            Some("使用选定的缓冲区内容覆盖当前文件需要 '!'。"),
+                            &["取消"],
                             cx,
                         );
                         return;
@@ -433,11 +433,11 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                         let rx = (worktree.entry_for_path(&path).is_some() && Some(SaveIntent::Overwrite) != action.save_intent).then(|| {
                             window.prompt(
                                 gpui::PromptLevel::Warning,
-                                &format!("{path:?} already exists. Do you want to replace it?"),
+                                &format!("{path:?} 已存在。是否要替换它?"),
                                 Some(
-                                    "A file or folder with the same name already exists. Replacing it will overwrite its current contents.",
+                                    "同名文件或文件夹已存在。替换将覆盖其当前内容。",
                                 ),
-                                &["Replace", "Cancel"],
+                                &["替换", "取消"],
                                 cx
                             )
                         });
@@ -455,7 +455,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                                 };
                                 worktree
                                     .write_file(path.into_arc(), text.clone(), line_ending, encoding, has_bom, cx)
-                                    .detach_and_prompt_err("Failed to write lines", window, cx, |_, _, _| None);
+                                    .detach_and_prompt_err("写入行失败", window, cx, |_, _, _| None);
                             });
                         })
                         .detach();
@@ -473,7 +473,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                             window,
                             cx,
                         )
-                        .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                        .detach_and_prompt_err("保存失败", window, cx, |_, _, _| None);
                 });
             }
             return;
@@ -494,10 +494,10 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
             else {
                 // TODO implement save_as with absolute path
                 Task::ready(Err::<(), _>(anyhow!(
-                    "Cannot save buffer with absolute path"
+                    "无法使用绝对路径保存缓冲区"
                 )))
                 .detach_and_prompt_err(
-                    "Failed to save",
+                    "保存失败",
                     window,
                     cx,
                     |_, _, _| None,
@@ -511,14 +511,14 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                 let answer = window.prompt(
                     gpui::PromptLevel::Critical,
                     &format!(
-                        "{} already exists. Do you want to replace it?",
+                        "{} 已存在。是否要替换它?",
                         project_path.path.display(path_style)
                     ),
                     Some(
                         "A file or folder with the same name already exists. \
                         Replacing it will overwrite its current contents.",
                     ),
-                    &["Replace", "Cancel"],
+                    &["替换", "取消"],
                     cx,
                 );
                 cx.spawn_in(window, async move |editor, cx| {
@@ -529,14 +529,14 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     let _ = editor.update_in(cx, |editor, window, cx| {
                         editor
                             .save_as(project, project_path, window, cx)
-                            .detach_and_prompt_err("Failed to :w", window, cx, |_, _, _| None);
+                            .detach_and_prompt_err("执行 :w 失败", window, cx, |_, _, _| None);
                     });
                 })
                 .detach();
             } else {
                 editor
                     .save_as(project, project_path, window, cx)
-                    .detach_and_prompt_err("Failed to :w", window, cx, |_, _, _| None);
+                    .detach_and_prompt_err("执行 :w 失败", window, cx, |_, _, _| None);
             }
         });
     });
@@ -576,9 +576,9 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
         fn err(s: String, window: &mut Window, cx: &mut Context<Editor>) {
             let _ = window.prompt(
                 gpui::PromptLevel::Critical,
-                &format!("Invalid argument: {}", s),
+                &format!("无效参数:{}", s),
                 None,
-                &["Cancel"],
+                &["取消"],
                 cx,
             );
         }
@@ -802,7 +802,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                 anyhow::Ok(())
             });
             if let Some(Err(err)) = result {
-                log::error!("Error selecting range: {}", err);
+                log::error!("选择范围时出错:{}", err);
                 return;
             }
         };
@@ -1359,10 +1359,10 @@ impl Position {
                 let Some(Mark::Local(anchors)) =
                     vim.get_mark(&name.to_string(), editor, window, cx)
                 else {
-                    anyhow::bail!("mark {name} not set");
+                    anyhow::bail!("标记 {name} 未设置");
                 };
                 let Some(mark) = anchors.last() else {
-                    anyhow::bail!("mark {name} contains empty anchors");
+                    anyhow::bail!("标记 {name} 包含空锚点");
                 };
                 mark.to_point(&snapshot.buffer_snapshot())
                     .row
@@ -2496,13 +2496,13 @@ impl ShellExec {
                     match task_status.await {
                         Some(Ok(status)) => {
                             if status.success() {
-                                log::debug!("Vim shell exec succeeded");
+                                log::debug!("Vim Shell 执行成功");
                             } else {
-                                log::debug!("Vim shell exec failed, code: {:?}", status.code());
+                                log::debug!("Vim Shell 执行失败,代码:{:?}", status.code());
                             }
                         }
-                        Some(Err(e)) => log::error!("Vim shell exec failed: {e}"),
-                        None => log::debug!("Vim shell exec got cancelled"),
+                        Some(Err(e)) => log::error!("Vim Shell 执行失败:{e}"),
+                        None => log::debug!("Vim Shell 执行已取消"),
                     }
                 })
                 .detach();
@@ -2760,7 +2760,7 @@ mod test {
         // conflict!
         cx.simulate_keystrokes("i @ escape");
         cx.simulate_keystrokes(": w enter");
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer("取消");
 
         assert_eq!(fs.load(path).await.unwrap().replace("\r\n", "\n"), "oops\n");
         assert!(!cx.has_pending_prompt());
@@ -2947,18 +2947,18 @@ mod test {
         fs.as_fake()
             .insert_file(
                 path!("/root/dir/file2.rs"),
-                "This is file2.rs".as_bytes().to_vec(),
+                "这是 file2.rs".as_bytes().to_vec(),
             )
             .await;
         fs.as_fake()
             .insert_file(
                 path!("/root/dir/file3.rs"),
-                "go to file3".as_bytes().to_vec(),
+                "转到 file3".as_bytes().to_vec(),
             )
             .await;
 
         // Put the path to the second file into the currently open buffer
-        cx.set_state(indoc! {"go to fiˇle2.rs"}, Mode::Normal);
+        cx.set_state(indoc! {"转到 fiˇle2.rs"}, Mode::Normal);
 
         // Go to file2.rs
         cx.simulate_keystrokes("g f");
@@ -2969,7 +2969,7 @@ mod test {
             assert_active_item(
                 workspace,
                 path!("/root/dir/file2.rs"),
-                "This is file2.rs",
+                "这是 file2.rs",
                 cx,
             );
         });
@@ -2980,7 +2980,7 @@ mod test {
 
         // Put the path to the third file into the currently open buffer,
         // but remove its suffix, because we want that lookup to happen automatically.
-        cx.set_state(indoc! {"go to fiˇle3"}, Mode::Normal);
+        cx.set_state(indoc! {"转到 fiˇle3"}, Mode::Normal);
 
         // Go to file3.rs
         cx.simulate_keystrokes("g f");
@@ -2988,7 +2988,7 @@ mod test {
         // We now have three items
         cx.workspace(|workspace, _, cx| assert_eq!(workspace.items(cx).count(), 3));
         cx.workspace(|workspace, _, cx| {
-            assert_active_item(workspace, path!("/root/dir/file3.rs"), "go to file3", cx);
+            assert_active_item(workspace, path!("/root/dir/file3.rs"), "转到 file3", cx);
         });
     }
 
@@ -3010,7 +3010,7 @@ mod test {
         cx.simulate_keystrokes(": w space dir/file.rs");
         cx.simulate_keystrokes("enter");
 
-        cx.simulate_prompt_answer("Replace");
+        cx.simulate_prompt_answer("替换");
         cx.run_until_parked();
 
         cx.workspace(|workspace, _, cx| {
@@ -3398,7 +3398,7 @@ mod test {
             assert_eq!(
                 EditorSettings::get_global(cx).search.case_sensitive,
                 false,
-                "The `case_sensitive` setting should be `false` by default."
+                "`case_sensitive` 设置默认应为 `false`。"
             );
         });
         cx.simulate_keystrokes(": set space noignorecase");
@@ -3407,7 +3407,7 @@ mod test {
             assert_eq!(
                 EditorSettings::get_global(cx).search.case_sensitive,
                 true,
-                "The `case_sensitive` setting should have been enabled with `:set noignorecase`."
+                "`case_sensitive` 设置应已通过 `:set noignorecase` 启用。"
             );
         });
         cx.simulate_keystrokes(": set space ignorecase");
@@ -3416,7 +3416,7 @@ mod test {
             assert_eq!(
                 EditorSettings::get_global(cx).search.case_sensitive,
                 false,
-                "The `case_sensitive` setting should have been disabled with `:set ignorecase`."
+                "`case_sensitive` 设置应已通过 `:set ignorecase` 禁用。"
             );
         });
         cx.simulate_keystrokes(": set space noic");
@@ -3425,7 +3425,7 @@ mod test {
             assert_eq!(
                 EditorSettings::get_global(cx).search.case_sensitive,
                 true,
-                "The `case_sensitive` setting should have been enabled with `:set noic`."
+                "`case_sensitive` 设置应已通过 `:set noic` 启用。"
             );
         });
         cx.simulate_keystrokes(": set space ic");
@@ -3434,7 +3434,7 @@ mod test {
             assert_eq!(
                 EditorSettings::get_global(cx).search.case_sensitive,
                 false,
-                "The `case_sensitive` setting should have been disabled with `:set ic`."
+                "`case_sensitive` 设置应已通过 `:set ic` 禁用。"
             );
         });
     }

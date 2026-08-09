@@ -100,14 +100,14 @@ async fn test_debug_session_substitutes_variables_and_relativizes_paths(
                         assert_eq!(
                             config["program"].as_str().unwrap(),
                             expected_path,
-                            "Program path was not correctly substituted for input: {}",
+                            "输入 {} 的程序路径未正确替换",
                             input_path
                         );
 
                         assert_eq!(
                             config["cwd"].as_str().unwrap(),
                             expected_path,
-                            "CWD path was not correctly substituted for input: {}",
+                            "输入 {} 的工作目录路径未正确替换",
                             input_path
                         );
 
@@ -120,7 +120,7 @@ async fn test_debug_session_substitutes_variables_and_relativizes_paths(
                         assert_eq!(
                             config["otherField"].as_str().unwrap(),
                             &expected_other_field,
-                            "Other field was incorrectly modified for input: {}",
+                            "输入 {} 的其他字段被错误修改",
                             input_path
                         );
 
@@ -199,7 +199,7 @@ async fn test_save_debug_scenario_to_file(executor: BackgroundExecutor, cx: &mut
             workspace.active_modal::<NewProcessModal>(cx)
         })
         .unwrap()
-        .expect("Modal should be active");
+        .expect("模态框应处于活动状态");
 
     modal.update_in(cx, |modal, window, cx| {
         modal.set_configure("/project/main", "/project", false, window, cx);
@@ -217,7 +217,7 @@ async fn test_save_debug_scenario_to_file(executor: BackgroundExecutor, cx: &mut
     let debug_json_content = fs
         .load(path!("/project/.zed/debug.json").as_ref())
         .await
-        .expect("debug.json should exist")
+        .expect("debug.json 应存在")
         .lines()
         .filter(|line| !line.starts_with("//"))
         .collect::<Vec<_>>()
@@ -280,7 +280,7 @@ async fn test_save_debug_scenario_to_file(executor: BackgroundExecutor, cx: &mut
     let debug_json_content = fs
         .load(path!("/project/.zed/debug.json").as_ref())
         .await
-        .expect("debug.json should exist")
+        .expect("debug.json 应存在")
         .lines()
         .filter(|line| !line.starts_with("//"))
         .collect::<Vec<_>>()
@@ -343,7 +343,7 @@ async fn test_debug_modal_subtitles_with_multiple_worktrees(
             workspace.active_modal::<NewProcessModal>(cx)
         })
         .unwrap()
-        .expect("Modal should be active");
+        .expect("模态框应处于活动状态");
 
     cx.executor().run_until_parked();
 
@@ -398,7 +398,7 @@ async fn test_dap_adapter_config_conversion_and_validation(cx: &mut TestAppConte
                 let registry = DapRegistry::global(cx);
                 registry.adapter(adapter_name.as_ref())
             })
-            .unwrap_or_else(|| panic!("Adapter {} should exist", adapter_name));
+            .unwrap_or_else(|| panic!("适配器 {} 应存在", adapter_name));
 
         let mut adapter_specific_config = zed_config.clone();
         adapter_specific_config.adapter = adapter_name.to_string().into();
@@ -408,14 +408,14 @@ async fn test_dap_adapter_config_conversion_and_validation(cx: &mut TestAppConte
             .await
             .unwrap_or_else(|_| {
                 panic!(
-                    "Adapter {} should successfully convert from Zed format",
+                    "适配器 {} 应能成功从 Zed 格式转换",
                     adapter_name
                 )
             });
 
         assert!(
             debug_scenario.config.is_object(),
-            "Adapter {} should produce a JSON object for config",
+            "适配器 {} 应为配置生成 JSON 对象",
             adapter_name
         );
 
@@ -424,7 +424,7 @@ async fn test_dap_adapter_config_conversion_and_validation(cx: &mut TestAppConte
             .await
             .unwrap_or_else(|_| {
                 panic!(
-                    "Adapter {} should validate the config successfully",
+                    "适配器 {} 应能成功验证配置",
                     adapter_name
                 )
             });
@@ -433,7 +433,7 @@ async fn test_dap_adapter_config_conversion_and_validation(cx: &mut TestAppConte
             dap::StartDebuggingRequestArgumentsRequest::Launch => {}
             dap::StartDebuggingRequestArgumentsRequest::Attach => {
                 panic!(
-                    "Expected Launch request but got Attach for adapter {}",
+                    "预期 Launch 请求,但适配器 {} 返回了 Attach",
                     adapter_name
                 );
             }
@@ -442,7 +442,7 @@ async fn test_dap_adapter_config_conversion_and_validation(cx: &mut TestAppConte
 
     assert!(
         expected_adapters.is_empty(),
-        "The following expected adapters were not found in the registry: {:?}",
+        "在注册表中未找到以下预期适配器:{:?}",
         expected_adapters
     );
 }

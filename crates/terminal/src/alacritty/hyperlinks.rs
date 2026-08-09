@@ -74,8 +74,8 @@ impl RegexSearches {
                     .inspect_err(|error| {
                         warn!(
                             concat!(
-                                "Ignoring path hyperlink regex specified in ",
-                                "`terminal.path_hyperlink_regexes`:\n\n\t{}\n\nError: {}",
+                                "忽略在 ",
+                                "`终端.path_hyperlink_regexes` 中指定的路径超链接正则表达式:\n\n\t{}\n\n错误: {}",
                             ),
                             regex.as_ref(),
                             error
@@ -471,8 +471,8 @@ fn path_match<T>(
         }
 
         if let Some((timed_out_ms, timeout_ms)) = timed_out() {
-            warn!("Timed out processing path hyperlink regexes after {timed_out_ms}ms");
-            info!("{timeout_ms}ms time out specified in `terminal.path_hyperlink_timeout_ms`");
+            warn!("处理路径超链接正则表达式超时,耗时 {timed_out_ms} 毫秒");
+            info!("在 `终端.path_hyperlink_timeout_ms` 中指定的超时时间为 {timeout_ms} 毫秒");
             return None;
         }
     }
@@ -560,7 +560,7 @@ mod tests {
             let dummy_match = Match::new(start_point, end_point);
 
             let (result, _) = sanitize_url_punctuation(input.to_string(), dummy_match, &term);
-            assert_eq!(result, expected, "Failed for input: {}", input);
+            assert_eq!(result, expected, "输入 {} 失败", input);
         }
     }
 
@@ -630,7 +630,7 @@ mod tests {
             let dummy_match = Match::new(start_point, end_point);
 
             let (result, _) = sanitize_url_punctuation(input.to_string(), dummy_match, &term);
-            assert_eq!(result, expected, "Failed for input: {}", input);
+            assert_eq!(result, expected, "输入 {} 失败", input);
         }
     }
 
@@ -719,8 +719,8 @@ mod tests {
             test_path!("‹«/test/cool.rs»:(«4»,«2»👉)›:");
             test_path!("‹«/👉test/cool.rs»:(«4»:«2»)›:");
             test_path!("‹«/test/cool.rs»:(«4»:«2»👉)›:");
-            test_path!("/test/cool.rs:4:2👉:", "What is this?");
-            test_path!("/test/cool.rs(4,2)👉:", "What is this?");
+            test_path!("/test/cool.rs:4:2👉:", "这是什么?");
+            test_path!("/test/cool.rs(4,2)👉:", "这是什么?");
 
             // path, line, column, and description
             test_path!("‹«/test/co👉ol.rs»:«4»:«2»›:Error!");
@@ -1180,7 +1180,7 @@ mod tests {
                             .map(|hyperlink| hyperlink.text)
                             .unwrap_or_default(),
                         "/Hyperlinks/Bench/Source/zed-hyperlinks/crates/terminal",
-                        "Hyperlink should have been found"
+                        "应找到超链接"
                     );
                 });
             }
@@ -1198,7 +1198,7 @@ mod tests {
                             .map(|hyperlink| hyperlink.text)
                             .unwrap_or_default(),
                         "/Hyperlinks/Bench/Source/zed-hyperlinks/crates/terminal/terminal.rs:1000:42",
-                        "Hyperlink should have been found"
+                        "应找到超链接"
                     );
                 });
             }
@@ -1216,7 +1216,7 @@ mod tests {
                             .map(|hyperlink| hyperlink.text)
                             .unwrap_or_default(),
                         "rust-toolchain.toml",
-                        "Hyperlink should have been found"
+                        "应找到超链接"
                     );
                 });
             }
@@ -1279,7 +1279,7 @@ mod tests {
                             .map(|hyperlink| hyperlink.text)
                             .unwrap_or_default(),
                         "392",
-                        "Hyperlink should have been found"
+                        "应找到超链接"
                     );
                 });
             }
@@ -1313,7 +1313,7 @@ mod tests {
                             .map(|hyperlink| hyperlink.text)
                             .unwrap_or_default(),
                         LINE.trim_end_matches(['.', '\r', '\n']),
-                        "Hyperlink should have been found"
+                        "应找到超链接"
                     );
                 });
             }
@@ -1620,7 +1620,7 @@ mod tests {
                         captures_state = match captures_state {
                             CapturesState::PathScan => CapturesState::PathNextChar,
                             CapturesState::PathNextChar => {
-                                panic!("Should have been handled by char input")
+                                panic!("应由字符输入处理")
                             }
                             CapturesState::Path(start_point) => {
                                 iri_or_path = term.bounds_to_string(
@@ -1640,7 +1640,7 @@ mod tests {
                                 CapturesState::Done
                             }
                             CapturesState::Done => {
-                                panic!("Extra '«', '»'")
+                                panic!("多余的 '«', '»'")
                             }
                         }
                     }
@@ -1648,7 +1648,7 @@ mod tests {
                         match_state = match match_state {
                             MatchState::MatchScan => MatchState::MatchNextChar,
                             MatchState::MatchNextChar => {
-                                panic!("Should have been handled by char input")
+                                panic!("应由字符输入处理")
                             }
                             MatchState::Match(start_point) => {
                                 hyperlink_match = start_point
@@ -1656,7 +1656,7 @@ mod tests {
                                 MatchState::Done
                             }
                             MatchState::Done => {
-                                panic!("Extra '‹', '›'")
+                                panic!("多余的 '‹', '›'")
                             }
                         }
                     }
@@ -1704,15 +1704,15 @@ mod tests {
 
         if hyperlink_kind == HyperlinkKind::FileIri {
             let Ok(url) = Url::parse(&iri_or_path) else {
-                panic!("Failed to parse file IRI `{iri_or_path}`");
+                panic!("无法解析文件 IRI `{iri_or_path}`");
             };
             let Ok(path) = url.to_file_path() else {
-                panic!("Failed to interpret file IRI `{iri_or_path}` as a path");
+                panic!("无法将文件 IRI `{iri_or_path}` 解释为路径");
             };
             iri_or_path = path.to_string_lossy().into_owned();
         }
 
-        let hovered_grid_point = hovered_grid_point.expect("Missing hovered point (👉 or 👈)");
+        let hovered_grid_point = hovered_grid_point.expect("缺少悬停点(👉 或 👈)");
         let hovered_char = term.grid().index(hovered_grid_point).c;
         (
             term,
@@ -1772,16 +1772,16 @@ mod tests {
             let format_path_with_position_and_match =
                 |path_with_position: &PathWithPosition, hyperlink_match: &Match| {
                     let mut result =
-                        format!("Path = «{}»", &path_with_position.path.to_string_lossy());
+                        format!("路径 = «{}»", &path_with_position.path.to_string_lossy());
                     if let Some(row) = path_with_position.row {
-                        result += &format!(", line = {row}");
+                        result += &format!(",行 = {row}");
                         if let Some(column) = path_with_position.column {
-                            result += &format!(", column = {column}");
+                            result += &format!(",列 = {column}");
                         }
                     }
 
                     result += &format!(
-                        ", at grid cells {}",
+                        ",位于网格单元格 {}",
                         Self::format_hyperlink_match(hyperlink_match)
                     );
                     result
@@ -1790,7 +1790,7 @@ mod tests {
             assert_ne!(
                 self.expected_hyperlink.hyperlink_kind,
                 HyperlinkKind::Iri,
-                "\n    at {}\nExpected a path, but was a iri:\n{}",
+                "\n    位于 {}\n预期为路径,但实际是 IRI:\n{}",
                 self.source_location,
                 self.format_renderable_content()
             );
@@ -1805,7 +1805,7 @@ mod tests {
                     &self.expected_hyperlink.hyperlink_match
                 ),
                 format_path_with_position_and_match(&path_with_position, hyperlink_match),
-                "\n    at {}:\n{}",
+                "\n    位于 {}:\n{}",
                 self.source_location,
                 self.format_renderable_content()
             );
@@ -1814,7 +1814,7 @@ mod tests {
         fn check_iri_and_match(&self, iri: String, hyperlink_match: &Match) {
             let format_iri_and_match = |iri: &String, hyperlink_match: &Match| {
                 format!(
-                    "Url = «{iri}», at grid cells {}",
+                    "URL = «{iri}»,位于网格单元格 {}",
                     Self::format_hyperlink_match(hyperlink_match)
                 )
             };
@@ -1822,7 +1822,7 @@ mod tests {
             assert_eq!(
                 self.expected_hyperlink.hyperlink_kind,
                 HyperlinkKind::Iri,
-                "\n    at {}\nExpected a iri, but was a path:\n{}",
+                "\n    位于 {}\n预期为 IRI,但实际是路径:\n{}",
                 self.source_location,
                 self.format_renderable_content()
             );
@@ -1833,7 +1833,7 @@ mod tests {
                     &self.expected_hyperlink.hyperlink_match
                 ),
                 format_iri_and_match(&iri, hyperlink_match),
-                "\n    at {}:\n{}",
+                "\n    位于 {}:\n{}",
                 self.source_location,
                 self.format_renderable_content()
             );
@@ -1850,7 +1850,7 @@ mod tests {
         }
 
         fn format_renderable_content(&self) -> String {
-            let mut result = format!("\nHovered on '{}'\n", self.expected_hyperlink.hovered_char);
+            let mut result = format!("\n悬停在 '{}' 上\n", self.expected_hyperlink.hovered_char);
 
             let mut first_header_row = String::new();
             let mut second_header_row = String::new();
@@ -1971,7 +1971,7 @@ mod tests {
                 {
                     assert!(
                         false,
-                        "No hyperlink found\n     at {source_location}:\n{}",
+                        "未找到超链接\n     位于 {source_location}:\n{}",
                         check_hyperlink_match.format_renderable_content()
                     )
                 }

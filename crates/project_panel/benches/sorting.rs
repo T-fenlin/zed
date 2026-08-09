@@ -10,7 +10,7 @@ fn load_linux_repo_snapshot() -> Vec<GitEntry> {
         env!("CARGO_MANIFEST_DIR"),
         "/benches/linux_repo_snapshot.txt"
     ))
-    .expect("Failed to read file");
+    .expect("读取文件失败");
     file.lines()
         .filter_map(|line| {
             let kind = match line.chars().next() {
@@ -60,7 +60,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     for (mode_name, mode) in &modes {
         for (order_name, order) in &orders {
             c.bench_function(
-                &format!("Sort linux worktree snapshot ({mode_name}, {order_name})"),
+                &format!("排序 Linux 工作树快照 ({mode_name}, {order_name})"),
                 |b| {
                     b.iter_batched(
                         || snapshot.clone(),

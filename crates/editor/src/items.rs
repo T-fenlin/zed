@@ -1222,14 +1222,14 @@ impl Item for Editor {
 
         if is_markdown {
             actions.push((
-                "Open Markdown Preview".into(),
+                "打开 Markdown 预览".into(),
                 Box::new(OpenMarkdownPreview) as Box<dyn gpui::Action>,
             ));
         }
 
         if is_svg {
             actions.push((
-                "Open SVG Preview".into(),
+                "打开 SVG 预览".into(),
                 Box::new(OpenSvgPreview) as Box<dyn gpui::Action>,
             ));
         }
@@ -1272,7 +1272,7 @@ impl SerializableItem for Editor {
     ) -> Task<Result<Entity<Self>>> {
         let serialized_editor = match EditorDb::global(cx)
             .get_serialized_editor(item_id, workspace_id)
-            .context("Failed to query editor state")
+            .context("查询编辑器状态失败")
         {
             Ok(Some(serialized_editor)) => {
                 if ProjectSettings::get_global(cx)
@@ -1291,7 +1291,7 @@ impl SerializableItem for Editor {
             }
             Ok(None) => {
                 return Task::ready(Err(anyhow!(
-                    "Unable to deserialize editor: No entry in database for item_id: {item_id} and workspace_id {workspace_id:?}"
+                    "无法反序列化编辑器:数据库中不存在 item_id: {item_id} 和 workspace_id {workspace_id:?} 的条目"
                 )));
             }
             Err(error) => {
@@ -1329,7 +1329,7 @@ impl SerializableItem for Editor {
                     let buffer = project
                         .update(cx, |project, cx| project.create_buffer(language, true, cx))
                         .await
-                        .context("Failed to create buffer while deserializing editor")?;
+                        .context("反序列化编辑器时创建缓冲区失败")?;
 
                     // Then set the text so that the dirty bit is set correctly
                     buffer.update(cx, |buffer, cx| {
@@ -1369,7 +1369,7 @@ impl SerializableItem for Editor {
                     Some(opened_buffer) => window.spawn(cx, async move |cx| {
                         let (_, buffer) = opened_buffer
                             .await
-                            .context("Failed to open path in project")?;
+                            .context("在项目中打开路径失败")?;
 
                         if let Some(contents) = contents {
                             buffer.update(cx, |buffer, cx| {
@@ -1398,7 +1398,7 @@ impl SerializableItem for Editor {
                                 .update(cx, |project, cx| project.open_local_buffer(&abs_path, cx))
                                 .await
                                 .with_context(|| {
-                                    format!("Failed to open buffer for {abs_path:?}")
+                                    format!("无法为 {abs_path:?} 打开缓冲区")
                                 })?;
 
                             if let Some(contents) = contents {
@@ -1427,7 +1427,7 @@ impl SerializableItem for Editor {
                 let buffer = project
                     .update(cx, |project, cx| project.create_buffer(None, true, cx))
                     .await
-                    .context("Failed to create buffer")?;
+                    .context("无法创建缓冲区")?;
 
                 cx.update(|window, cx| {
                     cx.new(|cx| {
@@ -1505,10 +1505,10 @@ impl SerializableItem for Editor {
                 log::debug!("Serializing editor {item_id:?} in workspace {workspace_id:?}");
                 db.save_serialized_editor(item_id, workspace_id, editor)
                     .await
-                    .context("failed to save serialized editor")
+                    .context("保存序列化编辑器失败")
             })
             .await
-            .context("failed to save contents of buffer")?;
+            .context("保存缓冲区内容失败")?;
 
             Ok(())
         }))
@@ -2126,11 +2126,11 @@ pub async fn open_resolved_target(
                 cx,
             )
         })
-        .context("workspace update")?
+        .context("工作区更新")?
         .await;
     if opened_items.len() != 1 {
         debug_panic!(
-            "Received {} items for one path {path_to_open:?}",
+            "为路径 {path_to_open:?} 接收了 {} 个项目",
             opened_items.len(),
         );
     }
@@ -2143,7 +2143,7 @@ pub async fn open_resolved_target(
             return Ok(false);
         };
         let opened_item =
-            opened_item.with_context(|| format!("opening {:?}", path_to_open.path))?;
+            opened_item.with_context(|| format!("正在打开 {:?}", path_to_open.path))?;
         if let Some(row) = path_to_open.row
             && let Some(editor) = opened_item.downcast::<Editor>()
         {
@@ -2494,14 +2494,14 @@ mod tests {
         assert_chunks_are_contiguous(&chunks, 0..text.len());
         assert!(
             chunks.len() <= 4,
-            "got {} chunks, expected <= num_cpus (4)",
+            "得到 {} 个块,预期 <= num_cpus (4)",
             chunks.len()
         );
         for chunk in &chunks {
             let end = chunk.end;
             assert!(
                 end == text.len() || text.as_bytes()[end - 1] == b'\n',
-                "chunk ending at {end} is not a line boundary",
+                "结束于 {end} 的块不是行边界",
             );
         }
     }
@@ -2567,26 +2567,26 @@ mod tests {
 
     #[track_caller]
     fn assert_chunks_are_contiguous(chunks: &[Range<usize>], expected: Range<usize>) {
-        assert!(!chunks.is_empty(), "expected at least one chunk");
+        assert!(!chunks.is_empty(), "预期至少有一个块");
         assert_eq!(
             chunks.first().unwrap().start,
             expected.start,
-            "first chunk does not start at {}",
+            "第一个块未从 {} 开始",
             expected.start
         );
         assert_eq!(
             chunks.last().unwrap().end,
             expected.end,
-            "last chunk does not end at {}",
+            "最后一个块未在 {} 结束",
             expected.end
         );
         for chunk in chunks {
-            assert!(chunk.start < chunk.end, "empty chunk: {:?}", chunk);
+            assert!(chunk.start < chunk.end, "空块:{:?}", chunk);
         }
         for window in chunks.windows(2) {
             assert_eq!(
                 window[0].end, window[1].start,
-                "gap or overlap between chunks {:?} and {:?}",
+                "块 {:?} 和 {:?} 之间存在间隙或重叠",
                 window[0], window[1],
             );
         }
@@ -2917,7 +2917,7 @@ mod tests {
         // and has unsaved changes that should be restored.
         {
             let fs = FakeFs::new(cx.executor());
-            fs.insert_file(path!("/standalone.rs"), "original content".into())
+            fs.insert_file(path!("/standalone.rs"), "原始内容".into())
                 .await;
 
             // Create an empty project with no worktrees
@@ -2942,7 +2942,7 @@ mod tests {
             // Simulate serialized state: file with unsaved changes
             let serialized_editor = SerializedEditor {
                 abs_path: Some(PathBuf::from(path!("/standalone.rs"))),
-                contents: Some("modified content".to_string()),
+                contents: Some("修改后的内容".to_string()),
                 language: Some("Rust".to_string()),
                 mtime: Some(mtime),
             };
@@ -2957,7 +2957,7 @@ mod tests {
 
             deserialized.update(cx, |editor, cx| {
                 // The editor should have the serialized contents, not the disk contents
-                assert_eq!(editor.text(cx), "modified content");
+                assert_eq!(editor.text(cx), "修改后的内容");
                 assert!(editor.is_dirty(cx));
                 assert!(!editor.has_conflict(cx));
 
@@ -3029,7 +3029,7 @@ mod tests {
 
         assert!(
             *received_file_handle_changed.borrow(),
-            "EditorEvent::FileHandleChanged must be emitted when the open file is renamed"
+            "当打开的文件被重命名时,必须发出 EditorEvent::FileHandleChanged 事件"
         );
 
         editor.update(cx, |editor, cx| {
@@ -3037,7 +3037,7 @@ mod tests {
             let path = buffer.read(cx).file().unwrap().path();
             assert!(
                 path.as_std_path().ends_with("renamed.rs"),
-                "buffer path must reflect the renamed file, got {path:?}"
+                "缓冲区路径必须反映重命名后的文件,实际为 {path:?}"
             );
         });
     }
@@ -3109,7 +3109,7 @@ mod tests {
 
         assert_eq!(
             pane_items_before, pane_items_after,
-            "Editor::deserialize should not add items to panes as a side effect"
+            "编辑器::deserialize 不应作为副作用向窗格添加项目"
         );
     }
 
@@ -3150,14 +3150,14 @@ mod tests {
                 })
             })
             .await
-            .expect("opening the target should succeed");
-        assert!(opened, "target should open as a file");
+            .expect("打开目标应该成功");
+        assert!(opened, "目标应以文件形式打开");
 
         let editor = workspace.read_with(cx, |workspace, cx| {
             workspace
                 .active_item(cx)
                 .and_then(|item| item.act_as::<Editor>(cx))
-                .expect("active item should be an editor")
+                .expect("活动项目应为编辑器")
         });
         let cursor = editor.update_in(cx, |editor, _, cx| {
             editor
@@ -3187,16 +3187,16 @@ mod tests {
             compute_modified_ranges(&buffer.snapshot(), &diff_snapshot)
         });
 
-        assert_eq!(ranges.len(), 2, "expected 2 non-adjacent ranges");
+        assert_eq!(ranges.len(), 2, "预期有 2 个不相邻的范围");
 
         buffer.update(cx, |buffer, _cx| {
             let text_snapshot: &text::BufferSnapshot = buffer;
             let r0 = ranges[0].start.to_point(text_snapshot)..ranges[0].end.to_point(text_snapshot);
             let r1 = ranges[1].start.to_point(text_snapshot)..ranges[1].end.to_point(text_snapshot);
-            assert_eq!(r0.start.row, 1, "first hunk should start at row 1");
-            assert_eq!(r0.end.row, 1, "first hunk should end at row 1");
-            assert_eq!(r1.start.row, 5, "second hunk should start at row 5");
-            assert_eq!(r1.end.row, 5, "second hunk should end at row 5");
+            assert_eq!(r0.start.row, 1, "第一个代码块应从第 1 行开始");
+            assert_eq!(r0.end.row, 1, "第一个代码块应在第 1 行结束");
+            assert_eq!(r1.start.row, 5, "第二个代码块应从第 5 行开始");
+            assert_eq!(r1.end.row, 5, "第二个代码块应在第 5 行结束");
         });
     }
 
@@ -3222,7 +3222,7 @@ mod tests {
         assert_eq!(
             ranges,
             Vec::new(),
-            "buffer that matches its diff base should produce no modified ranges"
+            "与差异基准匹配的缓冲区不应产生修改范围"
         );
     }
 
@@ -3245,7 +3245,7 @@ mod tests {
             let text_snapshot: &text::BufferSnapshot = buffer;
             diff_snapshot.hunks(text_snapshot).count()
         });
-        assert!(hunk_count > 0, "diff should have hunks");
+        assert!(hunk_count > 0, "差异应包含代码块");
 
         let ranges = buffer.update(cx, |buffer, _cx| {
             compute_modified_ranges(&buffer.snapshot(), &diff_snapshot)
@@ -3254,7 +3254,7 @@ mod tests {
         assert_eq!(
             ranges,
             Vec::new(),
-            "deletion-only hunks should be skipped, leaving no ranges"
+            "应跳过仅删除的代码块,不留下任何范围"
         );
     }
 
@@ -3279,19 +3279,19 @@ mod tests {
         assert_eq!(
             ranges.len(),
             1,
-            "adjacent hunks (rows 2 and 3) should be merged into one range"
+            "相邻的代码块(第 2 行和第 3 行)应合并为一个范围"
         );
         buffer.update(cx, |buffer, _cx| {
             let text_snapshot: &text::BufferSnapshot = buffer;
             let r = ranges[0].start.to_point(text_snapshot)..ranges[0].end.to_point(text_snapshot);
-            assert_eq!(r.start.row, 2, "merged range should start at row 2");
-            assert_eq!(r.end.row, 3, "merged range should end at row 3");
+            assert_eq!(r.start.row, 2, "合并后的范围应从第 2 行开始");
+            assert_eq!(r.end.row, 3, "合并后的范围应在第 3 行结束");
         });
     }
 
     // Regression test for a multi-buffer (e.g. project search results) that excerpts
     // an untitled buffer alongside a file-backed one. Saving used to error out with
-    // "buffer doesn't have a file", which aborted `workspace: reload` and quit flows.
+    // "缓冲区没有文件", which aborted `workspace: reload` and quit flows.
     #[gpui::test]
     async fn test_save_multi_buffer_with_untitled_buffer_skips_untitled(
         cx: &mut gpui::TestAppContext,
@@ -3364,7 +3364,7 @@ mod tests {
             )
         });
         save.await
-            .expect("saving a multi-buffer that excerpts an untitled buffer should not error");
+            .expect("保存包含未命名缓冲区摘录的多缓冲区不应出错");
         cx.run_until_parked();
 
         // The file-backed buffer is saved; the untitled buffer is skipped and stays dirty.

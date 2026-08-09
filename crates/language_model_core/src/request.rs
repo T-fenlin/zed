@@ -206,7 +206,7 @@ impl<'de> Deserialize<'de> for LanguageModelToolResultContent {
 
         Err(D::Error::custom(format!(
             "data did not match any variant of LanguageModelToolResultContent. Expected either a string, \
-             an object with 'type': 'text', a wrapped variant like {{\"Text\": \"...\"}}, or an image object. Got: {}",
+             an object with 'type': 'text', a wrapped variant like {{\"数据与 LanguageModelToolResultContent 的任何变体都不匹配。预期为字符串、带有 'type': 'text' 的对象、类似 {{\"Text\": \"...\"}} 的包装变体或图像对象。实际为: {}",
             serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
         )))
     }

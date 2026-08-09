@@ -13,7 +13,7 @@ use gpui::{HighlightStyle, StyleRefinement, StyledText};
 /// ```
 /// use ui::prelude::*;
 ///
-/// Label::new("Hello, World!");
+/// Label::new("你好,世界!");
 /// ```
 ///
 /// **A colored label**, for example labeling a dangerous action:
@@ -21,7 +21,7 @@ use gpui::{HighlightStyle, StyleRefinement, StyledText};
 /// ```
 /// use ui::prelude::*;
 ///
-/// let my_label = Label::new("Delete").color(Color::Error);
+/// let my_label = Label::new("删除").color(Color::Error);
 /// ```
 ///
 /// **A label with a strikethrough**, for example labeling something that has been deleted:
@@ -29,7 +29,7 @@ use gpui::{HighlightStyle, StyleRefinement, StyledText};
 /// ```
 /// use ui::prelude::*;
 ///
-/// let my_label = Label::new("Deleted").strikethrough();
+/// let my_label = Label::new("已删除").strikethrough();
 /// ```
 #[derive(IntoElement, RegisterComponent)]
 pub struct Label {
@@ -46,7 +46,7 @@ impl Label {
     /// ```
     /// use ui::prelude::*;
     ///
-    /// let my_label = Label::new("Hello, World!");
+    /// let my_label = Label::new("你好,世界!");
     /// ```
     pub fn new(label: impl Into<SharedString>) -> Self {
         Self {
@@ -135,7 +135,7 @@ impl LabelCommon for Label {
     /// ```
     /// use ui::prelude::*;
     ///
-    /// let my_label = Label::new("Hello, World!").size(LabelSize::Small);
+    /// let my_label = Label::new("你好,世界!").size(LabelSize::Small);
     /// ```
     fn size(mut self, size: LabelSize) -> Self {
         self.base = self.base.size(size);
@@ -150,7 +150,7 @@ impl LabelCommon for Label {
     /// use gpui::FontWeight;
     /// use ui::prelude::*;
     ///
-    /// let my_label = Label::new("Hello, World!").weight(FontWeight::BOLD);
+    /// let my_label = Label::new("你好,世界!").weight(FontWeight::BOLD);
     /// ```
     fn weight(mut self, weight: gpui::FontWeight) -> Self {
         self.base = self.base.weight(weight);
@@ -164,7 +164,7 @@ impl LabelCommon for Label {
     /// ```
     /// use ui::prelude::*;
     ///
-    /// let my_label = Label::new("Hello, World!").line_height_style(LineHeightStyle::UiLabel);
+    /// let my_label = Label::new("你好,世界!").line_height_style(LineHeightStyle::UiLabel);
     /// ```
     fn line_height_style(mut self, line_height_style: LineHeightStyle) -> Self {
         self.base = self.base.line_height_style(line_height_style);
@@ -178,7 +178,7 @@ impl LabelCommon for Label {
     /// ```
     /// use ui::prelude::*;
     ///
-    /// let my_label = Label::new("Hello, World!").color(Color::Accent);
+    /// let my_label = Label::new("你好,世界!").color(Color::Accent);
     /// ```
     fn color(mut self, color: Color) -> Self {
         self.base = self.base.color(color);
@@ -192,7 +192,7 @@ impl LabelCommon for Label {
     /// ```
     /// use ui::prelude::*;
     ///
-    /// let my_label = Label::new("Hello, World!").strikethrough();
+    /// let my_label = Label::new("你好,世界!").strikethrough();
     /// ```
     fn strikethrough(mut self) -> Self {
         self.base = self.base.strikethrough();
@@ -206,7 +206,7 @@ impl LabelCommon for Label {
     /// ```
     /// use ui::prelude::*;
     ///
-    /// let my_label = Label::new("Hello, World!").italic();
+    /// let my_label = Label::new("你好,世界!").italic();
     /// ```
     fn italic(mut self) -> Self {
         self.base = self.base.italic();
@@ -220,7 +220,7 @@ impl LabelCommon for Label {
     /// ```
     /// use ui::prelude::*;
     ///
-    /// let my_label = Label::new("Hello, World!").alpha(0.5);
+    /// let my_label = Label::new("你好,世界!").alpha(0.5);
     /// ```
     fn alpha(mut self, alpha: f32) -> Self {
         self.base = self.base.alpha(alpha);
@@ -375,45 +375,45 @@ impl Component for Label {
                 .gap_6()
                 .children(vec![
                     example_group_with_title(
-                        "Sizes",
+                        "尺寸",
                         vec![
-                            single_example("Default", Label::new("Project Explorer").into_any_element()),
-                            single_example("Small", Label::new("File: main.rs").size(LabelSize::Small).into_any_element()),
-                            single_example("Large", Label::new("Welcome to Zed").size(LabelSize::Large).into_any_element()),
+                            single_example("默认", Label::new("项目资源管理器").into_any_element()),
+                            single_example("小", Label::new("文件:main.rs").size(LabelSize::Small).into_any_element()),
+                            single_example("大", Label::new("欢迎使用 Zed").size(LabelSize::Large).into_any_element()),
                         ],
                     ),
                     example_group_with_title(
-                        "Colors",
+                        "颜色",
                         vec![
-                            single_example("Default", Label::new("Status: Ready").into_any_element()),
-                            single_example("Accent", Label::new("New Update Available").color(Color::Accent).into_any_element()),
-                            single_example("Error", Label::new("Build Failed").color(Color::Error).into_any_element()),
+                            single_example("默认", Label::new("状态:就绪").into_any_element()),
+                            single_example("强调色", Label::new("有新版本可用").color(Color::Accent).into_any_element()),
+                            single_example("错误", Label::new("构建失败").color(Color::Error).into_any_element()),
                         ],
                     ),
                     example_group_with_title(
-                        "Styles",
+                        "样式",
                         vec![
-                            single_example("Default", Label::new("Normal Text").into_any_element()),
-                            single_example("Bold", Label::new("Important Notice").weight(gpui::FontWeight::BOLD).into_any_element()),
-                            single_example("Italic", Label::new("Code Comment").italic().into_any_element()),
-                            single_example("Strikethrough", Label::new("Deprecated Feature").strikethrough().into_any_element()),
-                            single_example("Underline", Label::new("Clickable Link").underline().into_any_element()),
-                            single_example("Inline Code", Label::new("fn main() {}").inline_code(cx).into_any_element()),
+                            single_example("默认", Label::new("普通文本").into_any_element()),
+                            single_example("粗体", Label::new("重要通知").weight(gpui::FontWeight::BOLD).into_any_element()),
+                            single_example("斜体", Label::new("代码注释").italic().into_any_element()),
+                            single_example("删除线", Label::new("已弃用功能").strikethrough().into_any_element()),
+                            single_example("下划线", Label::new("可点击链接").underline().into_any_element()),
+                            single_example("内联代码", Label::new("fn main() {}").inline_code(cx).into_any_element()),
                         ],
                     ),
                     example_group_with_title(
-                        "Line Height Styles",
+                        "行高样式",
                         vec![
-                            single_example("Default", Label::new("Multi-line\nText\nExample").into_any_element()),
-                            single_example("UI Label", Label::new("Compact\nUI\nLabel").line_height_style(LineHeightStyle::UiLabel).into_any_element()),
+                            single_example("默认", Label::new("多行\n文本\n示例").into_any_element()),
+                            single_example("UI 标签", Label::new("紧凑\nUI\n标签").line_height_style(LineHeightStyle::UiLabel).into_any_element()),
                         ],
                     ),
                     example_group_with_title(
-                        "Special Cases",
+                        "特殊情况",
                         vec![
-                            single_example("Single Line", Label::new("Line 1\nLine 2\nLine 3").single_line().into_any_element()),
-                            single_example("Regular Truncation", div().max_w_24().child(Label::new("This is a very long file name that should be truncated: very_long_file_name_with_many_words.rs").truncate()).into_any_element()),
-                            single_example("Start Truncation", div().max_w_24().child(Label::new("zed/crates/ui/src/components/label/truncate/label/label.rs").truncate_start()).into_any_element()),
+                            single_example("单行", Label::new("第 1 行\n第 2 行\n第 3 行").single_line().into_any_element()),
+                            single_example("常规截断", div().max_w_24().child(Label::new("这是一个应被截断的超长文件名:very_long_file_name_with_many_words.rs").truncate()).into_any_element()),
+                            single_example("开头截断", div().max_w_24().child(Label::new("zed/crates/ui/src/components/label/truncate/label/label.rs").truncate_start()).into_any_element()),
                         ],
                     ),
                 ])

@@ -902,20 +902,20 @@ impl ProjectPanel {
                                     true,
                                     window, cx,
                                 )
-                                .detach_and_prompt_err("Failed to open file", window, cx, move |e, _, _| {
+                                .detach_and_prompt_err("无法打开文件", window, cx, move |e, _, _| {
                                     match e.error_code() {
                                         ErrorCode::Disconnected => if is_via_ssh {
-                                            Some("Disconnected from SSH host".to_string())
+                                            Some("已断开与 SSH 主机的连接".to_string())
                                         } else {
-                                            Some("Disconnected from remote project".to_string())
+                                            Some("已断开与远程项目的连接".to_string())
                                         },
                                         ErrorCode::UnsharedItem => Some(format!(
-                                            "{} is not shared by the host. This could be because it has been marked as `private`",
+                                            "{} 未被主机共享。这可能是因为它已被标记为 `private`",
                                             file_path.display(path_style)
                                         )),
                                         // See note in worktree.rs where this error originates. Returning Some in this case prevents
-                                        // the error popup from saying "Try Again", which is a red herring in this case
-                                        ErrorCode::Internal if e.to_string().contains("File is too large to load") => Some(e.to_string()),
+                                        // the error popup from saying "重试", which is a red herring in this case
+                                        ErrorCode::Internal if e.to_string().contains("文件过大,无法加载") => Some(e.to_string()),
                                         _ => None,
                                     }
                                 });
@@ -1114,14 +1114,14 @@ impl ProjectPanel {
                 menu.context(self.focus_handle.clone()).map(|menu| {
                     if is_read_only {
                         menu.when(is_markdown, |menu| {
-                            menu.action("Open Markdown Preview", Box::new(OpenMarkdownPreview))
+                            menu.action("打开 Markdown 预览", Box::new(OpenMarkdownPreview))
                         })
                         .when(is_dir, |menu| {
-                            menu.action("Search Inside", Box::new(NewSearchInDirectory))
+                            menu.action("在内部搜索", Box::new(NewSearchInDirectory))
                         })
                     } else {
-                        menu.action("New File", Box::new(NewFile))
-                            .action("New Folder", Box::new(NewDirectory))
+                        menu.action("新建文件", Box::new(NewFile))
+                            .action("新建文件夹", Box::new(NewDirectory))
                             .separator()
                             .when(is_local, |menu| {
                                 menu.action(
@@ -1130,94 +1130,94 @@ impl ProjectPanel {
                                 )
                             })
                             .when(is_local, |menu| {
-                                menu.action("Open in Default App", Box::new(OpenWithSystem))
+                                menu.action("用默认应用打开", Box::new(OpenWithSystem))
                             })
-                            .action("Open in Terminal", Box::new(OpenInTerminal))
+                            .action("在终端中打开", Box::new(OpenInTerminal))
                             .when(is_markdown, |menu| {
-                                menu.action("Open Markdown Preview", Box::new(OpenMarkdownPreview))
+                                menu.action("打开 Markdown 预览", Box::new(OpenMarkdownPreview))
                             })
                             .when(is_dir, |menu| {
                                 menu.separator()
-                                    .action("Find in Folder…", Box::new(NewSearchInDirectory))
+                                    .action("在文件夹中查找…", Box::new(NewSearchInDirectory))
                             })
                             .when(is_unfoldable, |menu| {
-                                menu.action("Unfold Directory", Box::new(UnfoldDirectory))
+                                menu.action("展开目录", Box::new(UnfoldDirectory))
                             })
                             .when(is_foldable, |menu| {
-                                menu.action("Fold Directory", Box::new(FoldDirectory))
+                                menu.action("折叠目录", Box::new(FoldDirectory))
                             })
                             .when(should_show_compare, |menu| {
                                 menu.separator()
-                                    .action("Compare Marked Files", Box::new(CompareMarkedFiles))
+                                    .action("比较已标记的文件", Box::new(CompareMarkedFiles))
                             })
                             .separator()
-                            .action("Cut", Box::new(Cut))
-                            .action("Copy", Box::new(Copy))
-                            .action("Duplicate", Box::new(Duplicate))
-                            .action_disabled_when(!has_pasteable_content, "Paste", Box::new(Paste))
+                            .action("剪切", Box::new(Cut))
+                            .action("复制", Box::new(Copy))
+                            .action("复制副本", Box::new(Duplicate))
+                            .action_disabled_when(!has_pasteable_content, "粘贴", Box::new(Paste))
                             .when(!is_collab, |menu| {
                                 let can_undo = self.undo_manager.can_undo();
                                 let can_redo = self.undo_manager.can_redo();
 
-                                menu.action_disabled_when(!can_undo, "Undo", Box::new(Undo))
-                                    .action_disabled_when(!can_redo, "Redo", Box::new(Redo))
+                                menu.action_disabled_when(!can_undo, "撤销", Box::new(Undo))
+                                    .action_disabled_when(!can_redo, "重做", Box::new(Redo))
                             })
                             .when(is_remote, |menu| {
                                 menu.separator()
-                                    .action("Download...", Box::new(DownloadFromRemote))
+                                    .action("下载...", Box::new(DownloadFromRemote))
                             })
                             .separator()
-                            .action("Copy Path", Box::new(zed_actions::workspace::CopyPath))
+                            .action("复制路径", Box::new(zed_actions::workspace::CopyPath))
                             .action(
-                                "Copy Relative Path",
+                                "复制相对路径",
                                 Box::new(zed_actions::workspace::CopyRelativePath),
                             )
                             .when(has_git_repo, |menu| {
                                 menu.separator()
                                     .when(!is_dir && self.has_git_changes(entry_id), |menu| {
                                         menu.action(
-                                            "Restore File",
+                                            "恢复文件",
                                             Box::new(git::RestoreFile { skip_prompt: false }),
                                         )
                                     })
-                                    .action("Add to .gitignore", Box::new(git::AddToGitignore))
+                                    .action("添加到 .gitignore", Box::new(git::AddToGitignore))
                                     .action(
-                                        "Add to .git/info/exclude",
+                                        "添加到 .git/info/exclude",
                                         Box::new(git::AddToGitInfoExclude),
                                     )
                                     .when(has_history, |menu| {
-                                        menu.action("View History", Box::new(git::FileHistory))
+                                        menu.action("查看历史", Box::new(git::FileHistory))
                                     })
                             })
                             .when(!should_hide_rename, |menu| {
-                                menu.separator().action("Rename", Box::new(Rename))
+                                menu.separator().action("重命名", Box::new(Rename))
                             })
                             .when(!is_root && !is_collab, |menu| {
-                                menu.action("Trash", Box::new(Trash { skip_prompt: false }))
+                                menu.action("移到废纸篓", Box::new(Trash { skip_prompt: false }))
                             })
                             .when(!is_root, |menu| {
-                                menu.action("Delete", Box::new(Delete { skip_prompt: false }))
+                                menu.action("删除", Box::new(Delete { skip_prompt: false }))
                             })
                             .when(!is_collab && is_root, |menu| {
                                 menu.separator()
                                     .action(
-                                        "Add Folders to Project…",
+                                        "将文件夹添加到项目…",
                                         Box::new(workspace::AddFolderToProject),
                                     )
-                                    .action("Remove from Project", Box::new(RemoveFromProject))
+                                    .action("从项目中移除", Box::new(RemoveFromProject))
                             })
                             .when(is_dir && !is_root, |menu| {
                                 menu.separator()
-                                    .action("Expand All", Box::new(ExpandSelectedEntryAndChildren))
+                                    .action("全部展开", Box::new(ExpandSelectedEntryAndChildren))
                                     .action(
-                                        "Collapse All",
+                                        "全部折叠",
                                         Box::new(CollapseSelectedEntryAndChildren),
                                     )
                             })
                             .when(is_dir && is_root, |menu| {
                                 menu.separator()
-                                    .action("Expand All", Box::new(ExpandAllEntries))
-                                    .action("Collapse All", Box::new(CollapseAllEntries))
+                                    .action("全部展开", Box::new(ExpandAllEntries))
+                                    .action("全部折叠", Box::new(CollapseAllEntries))
                             })
                     }
                 })
@@ -1822,7 +1822,7 @@ impl ProjectPanel {
         if !filename.is_empty() {
             if filename.is_empty() {
                 edit_state.validation_state =
-                    ValidationState::Error("File or directory name cannot be empty.".to_string());
+                    ValidationState::Error("文件或目录名称不能为空。".to_string());
                 cx.notify();
                 return;
             }
@@ -1830,7 +1830,7 @@ impl ProjectPanel {
             let trimmed_filename = filename.trim();
             if trimmed_filename != filename {
                 edit_state.validation_state = ValidationState::Warning(
-                    "File or directory name contains leading or trailing whitespace.".to_string(),
+                    "文件或目录名称包含前导或尾随空格。".to_string(),
                 );
                 cx.notify();
                 return;
@@ -1839,7 +1839,7 @@ impl ProjectPanel {
 
             let Ok(filename) = RelPath::from_unix_str(trimmed_filename) else {
                 edit_state.validation_state = ValidationState::Warning(
-                    "File or directory name contains leading or trailing whitespace.".to_string(),
+                    "文件或目录名称包含前导或尾随空格。".to_string(),
                 );
                 cx.notify();
                 return;
@@ -1871,7 +1871,7 @@ impl ProjectPanel {
                 };
                 if already_exists {
                     edit_state.validation_state = ValidationState::Error(format!(
-                        "File or directory '{}' already exists at location. Please choose a different name.",
+                        "文件或目录 '{}' 已存在于该位置。请选择其他名称。",
                         filename.as_unix_str()
                     ));
                     cx.notify();
@@ -2036,9 +2036,9 @@ impl ProjectPanel {
                                         notification_id: "excluded-directory".into(),
                                         message: format!(
                                             concat!(
-                                                "Created an excluded directory at {:?}.\n",
-                                                "Alter `file_scan_exclusions` in the settings ",
-                                                "to show it in the panel"
+                                                "已在 {:?} 创建排除目录。\n",
+                                                "修改设置中的 `file_scan_exclusions` ",
+                                                "以在面板中显示它"
                                             ),
                                             abs_path
                                         ),
@@ -2088,14 +2088,14 @@ impl ProjectPanel {
             RemoveEntryTask::Trash(task) => match task.await {
                 Ok(trash_id) => DeleteEntryOutcome::Trashed(Change::Trashed(worktree_id, trash_id)),
                 Err(err) => {
-                    log::error!("Failed to trash an entry: {err:#}",);
+                    log::error!("无法将条目移到废纸篓:{err:#}",);
                     DeleteEntryOutcome::Failed
                 }
             },
             RemoveEntryTask::Delete(task) => match task.await {
                 Ok(()) => DeleteEntryOutcome::Deleted,
                 Err(err) => {
-                    log::error!("Failed to delete an entry: {err:#}",);
+                    log::error!("无法删除条目:{err:#}",);
                     DeleteEntryOutcome::Failed
                 }
             },
@@ -2389,8 +2389,8 @@ impl ProjectPanel {
             let file_name = entry.path.file_name()?.to_string();
 
             let answer = if !action.skip_prompt {
-                let prompt = format!("Discard changes to {}?", MarkdownInlineCode(&file_name));
-                Some(window.prompt(PromptLevel::Info, &prompt, None, &["Restore", "Cancel"], cx))
+                let prompt = format!("放弃对 {} 的更改?", MarkdownInlineCode(&file_name));
+                Some(window.prompt(PromptLevel::Info, &prompt, None, &["还原", "取消"], cx))
             } else {
                 None
             };
@@ -2411,7 +2411,7 @@ impl ProjectPanel {
                 if let Err(e) = task.await {
                     panel
                         .update(cx, |panel, cx| {
-                            let message = format!("Failed to restore {}: {}", file_name, e);
+                            let message = format!("无法还原 {}:{}", file_name, e);
                             let toast = StatusToast::new(message, cx, |this, _| {
                                 this.icon(
                                     Icon::new(IconName::XCircle)
@@ -2483,7 +2483,7 @@ impl ProjectPanel {
                 if let Err(e) = receiver.await? {
                     if let Some(workspace) = workspace.upgrade() {
                         cx.update(|cx| {
-                            let message = format!("Failed to add to .gitignore: {}", e);
+                            let message = format!("无法添加到 .gitignore:{}", e);
                             let toast = StatusToast::new(message, cx, |this, _| {
                                 this.icon(Icon::new(IconName::XCircle).color(Color::Error))
                                     .dismiss_button(true)
@@ -2530,7 +2530,7 @@ impl ProjectPanel {
                 if let Err(e) = receiver.await? {
                     if let Some(workspace) = workspace.upgrade() {
                         cx.update(|cx| {
-                            let message = format!("Failed to add to .git/info/exclude: {}", e);
+                            let message = format!("无法添加到 .git/info/exclude:{}", e);
                             let toast = StatusToast::new(message, cx, |this, _| {
                                 this.icon(Icon::new(IconName::XCircle).color(Color::Error))
                                     .dismiss_button(true)
@@ -2587,16 +2587,16 @@ impl ProjectPanel {
                 return None;
             }
             let answer = if !skip_prompt {
-                let operation = if trash { "Trash" } else { "Delete" };
+                let operation = if trash { "移到废纸篓" } else { "删除" };
                 let message_start = if trash {
-                    "Do you want to trash"
+                    "是否要将"
                 } else {
-                    "Are you sure you want to permanently delete"
+                    "确定要永久删除"
                 };
                 let prompt = match file_paths.first() {
                     Some((_, _, path)) if file_paths.len() == 1 => {
                         let unsaved_warning = if dirty_buffers > 0 {
-                            "\n\nIt has unsaved changes, which will be lost."
+                            "\n\n它包含未保存的更改,这些更改将丢失。"
                         } else {
                             ""
                         };
@@ -2617,9 +2617,9 @@ impl ProjectPanel {
                                 .collect::<Vec<String>>();
                             paths.truncate(CUTOFF_POINT);
                             if truncated_path_counts == 1 {
-                                paths.push(".. 1 file not shown".into());
+                                paths.push(".. 未显示 1 个文件".into());
                             } else {
-                                paths.push(format!(".. {} files not shown", truncated_path_counts));
+                                paths.push(format!(".. 未显示 {} 个文件", truncated_path_counts));
                             }
                             paths
                         } else {
@@ -2631,26 +2631,26 @@ impl ProjectPanel {
                         let unsaved_warning = if dirty_buffers == 0 {
                             String::new()
                         } else if dirty_buffers == 1 {
-                            "\n\n1 of these has unsaved changes, which will be lost.".to_string()
+                            "\n\n其中 1 个包含未保存的更改,这些更改将丢失。".to_string()
                         } else {
                             format!(
-                                "\n\n{dirty_buffers} of these have unsaved changes, which will be lost."
+                                "\n\n其中 {dirty_buffers} 个包含未保存的更改,这些更改将丢失。"
                             )
                         };
 
                         format!(
-                            "{message_start} the following {} files?\n{}{unsaved_warning}",
+                            "{message_start}以下 {} 个文件?\n{}{unsaved_warning}",
                             file_paths.len(),
                             names.join("\n")
                         )
                     }
                 };
-                let detail = (!trash).then_some("This cannot be undone.");
+                let detail = (!trash).then_some("此操作无法撤销。");
                 Some(window.prompt(
                     PromptLevel::Info,
                     &prompt,
                     detail,
-                    &[operation, "Cancel"],
+                    &[operation, "取消"],
                     cx,
                 ))
             } else {
@@ -2736,10 +2736,10 @@ impl ProjectPanel {
         cx: &mut Context<Self>,
     ) {
         let message = match (trash, total_count) {
-            (true, 1) => format!("Failed to trash {failed_count} of {total_count} file."),
-            (true, _) => format!("Failed to trash {failed_count} of {total_count} files."),
-            (false, 1) => format!("Failed to delete {failed_count} of {total_count} file."),
-            (false, _) => format!("Failed to delete {failed_count} of {total_count} files."),
+            (true, 1) => format!("无法将 {total_count} 个文件中的 {failed_count} 个移到废纸篓。"),
+            (true, _) => format!("无法将 {total_count} 个文件中的 {failed_count} 个移到废纸篓。"),
+            (false, 1) => format!("无法删除 {total_count} 个文件中的 {failed_count} 个。"),
+            (false, _) => format!("无法删除 {total_count} 个文件中的 {failed_count} 个。"),
         };
 
         let toast = StatusToast::new(message, cx, |this, _| {
@@ -3342,7 +3342,7 @@ impl ProjectPanel {
 
                 let mut new_file_name = file_name_without_extension.to_string();
 
-                let disambiguation = " copy";
+                let disambiguation = " 副本";
                 let mut disambiguation_len = disambiguation.len();
 
                 new_file_name.push_str(disambiguation);
@@ -3603,7 +3603,7 @@ impl ProjectPanel {
             files: false,
             directories: true,
             multiple: false,
-            prompt: Some("Download".into()),
+            prompt: Some("下载".into()),
         });
 
         let fs = self.fs.clone();
@@ -3618,7 +3618,7 @@ impl ProjectPanel {
                             workspace.show_toast(
                                 workspace::Toast::new(
                                     notification_id.clone(),
-                                    format!("Downloading 0/{} files...", total_files),
+                                    format!("正在下载 0/{} 个文件...", total_files),
                                 ),
                                 cx,
                             );
@@ -3635,7 +3635,7 @@ impl ProjectPanel {
                                     workspace::Toast::new(
                                         notification_id.clone(),
                                         format!(
-                                            "Downloading {}/{} files...",
+                                            "正在下载 {}/{} 个文件...",
                                             index + 1,
                                             total_files
                                         ),
@@ -3671,7 +3671,7 @@ impl ProjectPanel {
                             workspace.show_toast(
                                 workspace::Toast::new(
                                     notification_id.clone(),
-                                    format!("Downloaded {} files", total_files),
+                                    format!("已下载 {} 个文件", total_files),
                                 ),
                                 cx,
                             );
@@ -4391,7 +4391,7 @@ impl ProjectPanel {
                                     .path
                                     .file_name()
                                     .with_context(|| {
-                                        format!("Non-root entry has no file name: {entry:?}")
+                                        format!("非根条目没有文件名:{entry:?}")
                                     })
                                     .log_err()
                                 else {
@@ -4514,7 +4514,7 @@ impl ProjectPanel {
                 let elapsed = now.elapsed();
                 if this.last_reported_update.elapsed() > Duration::from_secs(3600) {
                     telemetry::event!(
-                        "Project Panel Updated",
+                        "项目面板已更新",
                         elapsed_ms = elapsed.as_millis() as u64,
                         worktree_entries = this
                             .state
@@ -4624,9 +4624,9 @@ impl ProjectPanel {
                 for (filename, original_path) in &paths_to_replace {
                     let prompt_message = format!(
                         concat!(
-                            "A file or folder with name {} ",
-                            "already exists in the destination folder. ",
-                            "Do you want to replace it?"
+                            "名为 {} 的文件或文件夹 ",
+                            "已存在于目标文件夹中。 ",
+                            "是否要替换它?"
                         ),
                         MarkdownInlineCode(filename)
                     );
@@ -4636,7 +4636,7 @@ impl ProjectPanel {
                                 PromptLevel::Info,
                                 &prompt_message,
                                 None,
-                                &["Replace", "Cancel"],
+                                &["替换", "取消"],
                                 cx,
                             )
                         })?
@@ -4662,7 +4662,7 @@ impl ProjectPanel {
 
                 let opened_entries: Vec<_> = task
                     .await
-                    .with_context(|| "failed to copy external paths")?;
+                    .with_context(|| "无法复制外部路径")?;
                 this.update_in(cx, |this, window, cx| {
                     let mut did_open = false;
                     if open_file_after_drop && !opened_entries.is_empty() {
@@ -5198,7 +5198,7 @@ impl ProjectPanel {
                                     .leaf_entry_id
                                     .and_then(|entry| self.state.ancestors.get(&entry))
                                 {
-                                    let position = ancestors.ancestors.iter().position(|entry_id| *entry_id == edit_state.entry_id).expect("Edited sub-entry should be an ancestor of selected leaf entry") + 1;
+                                    let position = ancestors.ancestors.iter().position(|entry_id| *entry_id == edit_state.entry_id).expect("编辑的子条目应为所选叶条目的祖先") + 1;
                                     let all_components = ancestors.ancestors.len();
 
                                     let prefix_components = all_components - position;
@@ -6122,7 +6122,7 @@ impl ProjectPanel {
                                         Tooltip::with_meta(
                                             path.to_string_lossy().into_owned(),
                                             None,
-                                            "Symbolic Link",
+                                            "符号链接",
                                             cx,
                                         )
                                     })
@@ -6643,7 +6643,7 @@ impl ProjectPanel {
         let worktree = project
             .read(cx)
             .worktree_for_entry(entry_id, cx)
-            .context("can't reveal a non-existent entry in the project panel")?;
+            .context("无法在项目面板中显示不存在的条目")?;
         let worktree = worktree.read(cx);
         let worktree_id = worktree.id();
         let is_ignored = worktree
@@ -6651,7 +6651,7 @@ impl ProjectPanel {
             .is_none_or(|entry| entry.is_ignored && !entry.is_always_included);
         if skip_ignored && is_ignored {
             if self.index_for_entry(entry_id, worktree_id).is_none() {
-                anyhow::bail!("can't reveal an ignored entry in the project panel");
+                anyhow::bail!("无法在项目面板中显示被忽略的条目");
             }
 
             self.selection = Some(SelectedEntry {
@@ -7517,12 +7517,12 @@ impl Render for ProjectPanel {
                 .size_full()
                 .child(
                     ProjectEmptyState::new(
-                        "Project Panel",
+                        "项目面板",
                         focus_handle.clone(),
                         KeyBinding::for_action_in(&workspace::Open::default(), &focus_handle, cx),
                     )
                     .on_open_project(move |_, window, cx| {
-                        telemetry::event!("Project Panel Add Project Clicked");
+                        telemetry::event!("项目面板添加项目已点击");
                         workspace
                             .update(cx, |_, cx| {
                                 window
@@ -7531,7 +7531,7 @@ impl Render for ProjectPanel {
                             .log_err();
                     })
                     .on_clone_repo(move |_, window, cx| {
-                        telemetry::event!("Project Panel Clone Repo Clicked");
+                        telemetry::event!("项目面板克隆仓库已点击");
                         workspace_clone
                             .update(cx, |_, cx| {
                                 window.dispatch_action(git::Clone.boxed_clone(), cx);
@@ -7588,7 +7588,7 @@ impl Render for DraggedProjectEntryView {
                     .bg(cx.theme().colors().background)
                     .map(|this| {
                         if self.selections.len() > 1 && self.selections.contains(&self.selection) {
-                            this.child(Label::new(format!("{} entries", self.selections.len())))
+                            this.child(Label::new(format!("{} 个条目", self.selections.len())))
                         } else {
                             this.child(if let Some(icon) = &self.icon {
                                 div().child(Icon::from_path(icon.clone()))
@@ -7639,7 +7639,7 @@ impl Panel for ProjectPanel {
     }
 
     fn icon_tooltip(&self, _window: &Window, _cx: &App) -> Option<&'static str> {
-        Some("Project Panel")
+        Some("项目面板")
     }
 
     fn toggle_action(&self) -> Box<dyn Action> {
@@ -7647,7 +7647,7 @@ impl Panel for ProjectPanel {
     }
 
     fn persistent_name() -> &'static str {
-        "Project Panel"
+        "项目面板"
     }
 
     fn panel_key() -> &'static str {

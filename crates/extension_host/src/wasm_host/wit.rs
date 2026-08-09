@@ -85,7 +85,7 @@ pub fn authorize_access_to_unreleased_wasm_api_version(
 
     anyhow::ensure!(
         allow_unreleased_version,
-        "unreleased versions of the extension API can only be used on development builds of Zed"
+        "扩展 API 的未发布版本只能在 Zed 的开发版本中使用"
     );
 
     Ok(())
@@ -121,7 +121,7 @@ impl Extension {
             let extension =
                 latest::Extension::instantiate_async(store, component, latest::linker(executor))
                     .await
-                    .context("failed to instantiate wasm extension")?;
+                    .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_8_0(extension))
         } else if version >= since_v0_6_0::MIN_VERSION {
             let extension = since_v0_6_0::Extension::instantiate_async(
@@ -130,7 +130,7 @@ impl Extension {
                 since_v0_6_0::linker(executor),
             )
             .await
-            .context("failed to instantiate wasm extension")?;
+            .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_6_0(extension))
         } else if version >= since_v0_5_0::MIN_VERSION {
             let extension = since_v0_5_0::Extension::instantiate_async(
@@ -139,7 +139,7 @@ impl Extension {
                 since_v0_5_0::linker(executor),
             )
             .await
-            .context("failed to instantiate wasm extension")?;
+            .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_5_0(extension))
         } else if version >= since_v0_4_0::MIN_VERSION {
             let extension = since_v0_4_0::Extension::instantiate_async(
@@ -148,7 +148,7 @@ impl Extension {
                 since_v0_4_0::linker(executor),
             )
             .await
-            .context("failed to instantiate wasm extension")?;
+            .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_4_0(extension))
         } else if version >= since_v0_3_0::MIN_VERSION {
             let extension = since_v0_3_0::Extension::instantiate_async(
@@ -157,7 +157,7 @@ impl Extension {
                 since_v0_3_0::linker(executor),
             )
             .await
-            .context("failed to instantiate wasm extension")?;
+            .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_3_0(extension))
         } else if version >= since_v0_2_0::MIN_VERSION {
             let extension = since_v0_2_0::Extension::instantiate_async(
@@ -166,7 +166,7 @@ impl Extension {
                 since_v0_2_0::linker(executor),
             )
             .await
-            .context("failed to instantiate wasm extension")?;
+            .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_2_0(extension))
         } else if version >= since_v0_1_0::MIN_VERSION {
             let extension = since_v0_1_0::Extension::instantiate_async(
@@ -175,7 +175,7 @@ impl Extension {
                 since_v0_1_0::linker(executor),
             )
             .await
-            .context("failed to instantiate wasm extension")?;
+            .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_1_0(extension))
         } else if version >= since_v0_0_6::MIN_VERSION {
             let extension = since_v0_0_6::Extension::instantiate_async(
@@ -184,7 +184,7 @@ impl Extension {
                 since_v0_0_6::linker(executor),
             )
             .await
-            .context("failed to instantiate wasm extension")?;
+            .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_0_6(extension))
         } else if version >= since_v0_0_4::MIN_VERSION {
             let extension = since_v0_0_4::Extension::instantiate_async(
@@ -193,7 +193,7 @@ impl Extension {
                 since_v0_0_4::linker(executor),
             )
             .await
-            .context("failed to instantiate wasm extension")?;
+            .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_0_4(extension))
         } else {
             let extension = since_v0_0_1::Extension::instantiate_async(
@@ -202,7 +202,7 @@ impl Extension {
                 since_v0_0_1::linker(executor),
             )
             .await
-            .context("failed to instantiate wasm extension")?;
+            .context("无法实例化 wasm 扩展")?;
             Ok(Self::V0_0_1(extension))
         }
     }
@@ -911,7 +911,7 @@ impl Extension {
                     .await
             }
             Extension::V0_0_1(_) | Extension::V0_0_4(_) | Extension::V0_0_6(_) => {
-                anyhow::bail!("`run_slash_command` not available prior to v0.1.0");
+                anyhow::bail!("`run_slash_command` 在 v0.1.0 之前不可用");
             }
         }
     }
@@ -951,7 +951,7 @@ impl Extension {
             | Extension::V0_0_4(_)
             | Extension::V0_0_6(_)
             | Extension::V0_1_0(_) => {
-                anyhow::bail!("`context_server_command` not available prior to v0.2.0");
+                anyhow::bail!("`context_server_command` 在 v0.2.0 之前不可用");
             }
         }
     }
@@ -982,7 +982,7 @@ impl Extension {
             | Extension::V0_2_0(_)
             | Extension::V0_3_0(_)
             | Extension::V0_4_0(_) => {
-                anyhow::bail!("`context_server_configuration` not available prior to v0.5.0");
+                anyhow::bail!("`context_server_configuration` 在 v0.5.0 之前不可用");
             }
         }
     }
@@ -1001,7 +1001,7 @@ impl Extension {
             Extension::V0_2_0(ext) => ext.call_suggest_docs_packages(store, provider).await,
             Extension::V0_1_0(ext) => ext.call_suggest_docs_packages(store, provider).await,
             Extension::V0_0_1(_) | Extension::V0_0_4(_) | Extension::V0_0_6(_) => {
-                anyhow::bail!("`suggest_docs_packages` not available prior to v0.1.0");
+                anyhow::bail!("`suggest_docs_packages` 在 v0.1.0 之前不可用");
             }
         }
     }
@@ -1043,7 +1043,7 @@ impl Extension {
                     .await
             }
             Extension::V0_0_1(_) | Extension::V0_0_4(_) | Extension::V0_0_6(_) => {
-                anyhow::bail!("`index_docs` not available prior to v0.1.0");
+                anyhow::bail!("`index_docs` 在 v0.1.0 之前不可用");
             }
         }
     }
@@ -1094,7 +1094,7 @@ impl Extension {
             | Extension::V0_0_6(_)
             | Extension::V0_0_4(_)
             | Extension::V0_0_1(_) => {
-                anyhow::bail!("`get_dap_binary` not available prior to v0.6.0");
+                anyhow::bail!("`get_dap_binary` 在 v0.6.0 之前不可用");
             }
         }
     }
@@ -1108,7 +1108,7 @@ impl Extension {
         match self {
             Extension::V0_8_0(ext) => {
                 let config =
-                    serde_json::to_string(&config).context("Adapter config is not a valid JSON")?;
+                    serde_json::to_string(&config).context("适配器配置不是有效的 JSON")?;
                 let dap_binary = ext
                     .call_dap_request_kind(store, &adapter_name, &config)
                     .await?
@@ -1118,7 +1118,7 @@ impl Extension {
             }
             Extension::V0_6_0(ext) => {
                 let config =
-                    serde_json::to_string(&config).context("Adapter config is not a valid JSON")?;
+                    serde_json::to_string(&config).context("适配器配置不是有效的 JSON")?;
                 let dap_binary = ext
                     .call_dap_request_kind(store, &adapter_name, &config)
                     .await?
@@ -1134,7 +1134,7 @@ impl Extension {
             | Extension::V0_0_6(_)
             | Extension::V0_0_4(_)
             | Extension::V0_0_1(_) => {
-                anyhow::bail!("`dap_request_kind` not available prior to v0.6.0");
+                anyhow::bail!("`dap_request_kind` 在 v0.6.0 之前不可用");
             }
         }
     }
@@ -1172,7 +1172,7 @@ impl Extension {
             | Extension::V0_0_6(_)
             | Extension::V0_0_4(_)
             | Extension::V0_0_1(_) => {
-                anyhow::bail!("`dap_config_to_scenario` not available prior to v0.6.0");
+                anyhow::bail!("`dap_config_to_scenario` 在 v0.6.0 之前不可用");
             }
         }
     }
@@ -1224,7 +1224,7 @@ impl Extension {
             | Extension::V0_0_6(_)
             | Extension::V0_0_4(_)
             | Extension::V0_0_1(_) => {
-                anyhow::bail!("`dap_locator_create_scenario` not available prior to v0.6.0");
+                anyhow::bail!("`dap_locator_create_scenario` 在 v0.6.0 之前不可用");
             }
         }
     }
@@ -1264,7 +1264,7 @@ impl Extension {
             | Extension::V0_0_6(_)
             | Extension::V0_0_4(_)
             | Extension::V0_0_1(_) => {
-                anyhow::bail!("`run_dap_locator` not available prior to v0.6.0");
+                anyhow::bail!("`run_dap_locator` 在 v0.6.0 之前不可用");
             }
         }
     }

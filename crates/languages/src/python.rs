@@ -54,10 +54,10 @@ use util::{ResultExt, maybe};
 
 pub(crate) fn semantic_token_rules() -> SemanticTokenRules {
     let content = grammars::get_file("python/semantic_token_rules.json")
-        .expect("missing python/semantic_token_rules.json");
-    let json = std::str::from_utf8(&content.data).expect("invalid utf-8 in semantic_token_rules");
+        .expect("缺少 python/semantic_token_rules.json");
+    let json = std::str::from_utf8(&content.data).expect("semantic_token_rules 中的 UTF-8 编码无效");
     settings::parse_json_with_comments::<SemanticTokenRules>(json)
-        .expect("failed to parse python semantic_token_rules.json")
+        .expect("无法解析 python semantic_token_rules.json")
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -156,7 +156,7 @@ fn process_pyright_completions(items: &mut [lsp::CompletionItem]) {
         let is_external = item
             .detail
             .as_ref()
-            .is_some_and(|detail| detail == "Auto-import");
+            .is_some_and(|detail| detail == "自动导入");
 
         let source_priority = if is_external { '1' } else { '0' };
 
@@ -411,7 +411,7 @@ impl LspInstaller for TyLspAdapter {
             .assets
             .into_iter()
             .find(|asset| asset.name == asset_name)
-            .with_context(|| format!("no asset found matching `{asset_name:?}`"))?;
+            .with_context(|| format!("未找到与 `{asset_name:?}` 匹配的资源"))?;
         Ok(GitHubLspBinaryVersion {
             name: release.tag_name,
             url: asset.browser_download_url,
@@ -495,7 +495,7 @@ impl LspInstaller for TyLspAdapter {
                         .await
                         .inspect_err(|err| {
                             log::warn!(
-                                "Unable to run {server_path:?} asset, redownloading: {err:#}",
+                                "无法运行 {server_path:?} 资源,正在重新下载:{err:#}",
                             )
                         })
                 };
@@ -508,7 +508,7 @@ impl LspInstaller for TyLspAdapter {
                         }
                     } else {
                         log::info!(
-                            "SHA-256 mismatch for {destination_path:?} asset, downloading new asset. Expected: {expected_digest}, Got: {actual_digest}"
+                            "{destination_path:?} 资源的 SHA-256 不匹配,正在下载新资源。预期:{expected_digest},实际:{actual_digest}"
                         );
                     }
                 } else if validity_check().await.is_ok() {
@@ -559,7 +559,7 @@ impl LspInstaller for TyLspAdapter {
                 last = Some(path);
             }
 
-            let path = last.context("no cached binary")?;
+            let path = last.context("没有缓存的二进制文件")?;
             let path = match TyLspAdapter::GITHUB_ASSET_KIND {
                 AssetKind::TarGz | AssetKind::TarBz2 | AssetKind::Gz => {
                     path.join(Self::build_asset_name()?.0).join("ty")
@@ -603,7 +603,7 @@ impl PyrightLspAdapter {
                 arguments: vec![server_path.into(), "--stdio".into()],
             })
         } else {
-            log::error!("missing executable in directory {:?}", server_path);
+            log::error!("目录 {:?} 中缺少可执行文件", server_path);
             None
         }
     }
@@ -924,7 +924,7 @@ impl ContextProvider for PythonContextProvider {
         let mut tasks = vec![
             // Execute a selection
             TaskTemplate {
-                label: "execute selection".to_owned(),
+                label: "执行选中内容".to_owned(),
                 command: PYTHON_ACTIVE_TOOLCHAIN_PATH.template_value(),
                 args: vec![
                     "-c".to_owned(),
@@ -935,7 +935,7 @@ impl ContextProvider for PythonContextProvider {
             },
             // Execute an entire file
             TaskTemplate {
-                label: format!("run '{}'", VariableName::File.template_value()),
+                label: format!("运行 '{}'", VariableName::File.template_value()),
                 command: PYTHON_ACTIVE_TOOLCHAIN_PATH.template_value(),
                 args: vec![VariableName::File.template_value_with_whitespace()],
                 cwd: Some(VariableName::WorktreeRoot.template_value()),
@@ -943,7 +943,7 @@ impl ContextProvider for PythonContextProvider {
             },
             // Execute a file as module
             TaskTemplate {
-                label: format!("run module '{}'", VariableName::File.template_value()),
+                label: format!("运行模块 '{}'", VariableName::File.template_value()),
                 command: PYTHON_ACTIVE_TOOLCHAIN_PATH.template_value(),
                 args: vec![
                     "-m".to_owned(),
@@ -1143,23 +1143,23 @@ fn python_env_kind_display(k: &PythonEnvironmentKind) -> &'static str {
         PythonEnvironmentKind::Conda => "Conda",
         PythonEnvironmentKind::Pixi => "pixi",
         PythonEnvironmentKind::Homebrew => "Homebrew",
-        PythonEnvironmentKind::Pyenv => "global (Pyenv)",
+        PythonEnvironmentKind::Pyenv => "全局 (Pyenv)",
         PythonEnvironmentKind::GlobalPaths => "global",
         PythonEnvironmentKind::PyenvVirtualEnv => "Pyenv",
         PythonEnvironmentKind::Pipenv => "Pipenv",
         PythonEnvironmentKind::Poetry => "Poetry",
-        PythonEnvironmentKind::MacPythonOrg => "global (Python.org)",
-        PythonEnvironmentKind::MacCommandLineTools => "global (Command Line Tools for Xcode)",
+        PythonEnvironmentKind::MacPythonOrg => "全局 (Python.org)",
+        PythonEnvironmentKind::MacCommandLineTools => "全局 (Xcode 命令行工具)",
         PythonEnvironmentKind::LinuxGlobal => "global",
-        PythonEnvironmentKind::MacXCode => "global (Xcode)",
+        PythonEnvironmentKind::MacXCode => "全局 (Xcode)",
         PythonEnvironmentKind::Venv => "venv",
         PythonEnvironmentKind::VirtualEnv => "virtualenv",
         PythonEnvironmentKind::VirtualEnvWrapper => "virtualenvwrapper",
         PythonEnvironmentKind::WinPython => "WinPython",
-        PythonEnvironmentKind::WindowsStore => "global (Windows Store)",
-        PythonEnvironmentKind::WindowsRegistry => "global (Windows Registry)",
+        PythonEnvironmentKind::WindowsStore => "全局 (Windows 应用商店)",
+        PythonEnvironmentKind::WindowsRegistry => "全局 (Windows 注册表)",
         PythonEnvironmentKind::Uv => "uv",
-        PythonEnvironmentKind::UvWorkspace => "uv (Workspace)",
+        PythonEnvironmentKind::UvWorkspace => "uv(工作区)",
     }
 }
 
@@ -1406,9 +1406,9 @@ impl ToolchainLister for PythonToolchainProvider {
     }
     fn meta(&self) -> ToolchainMetadata {
         ToolchainMetadata {
-            term: SharedString::new_static("Virtual Environment"),
+            term: SharedString::new_static("虚拟环境"),
             new_toolchain_placeholder: SharedString::new_static(
-                "A path to the python3 executable within a virtual environment, or path to virtual environment itself",
+                "虚拟环境中 python3 可执行文件的路径,或虚拟环境本身的路径",
             ),
             manifest_name: ManifestName::from(SharedString::new_static("pyproject.toml")),
         }
@@ -1428,11 +1428,11 @@ impl ToolchainLister for PythonToolchainProvider {
             &environment,
         );
         let toolchain = pet::resolve::resolve_environment(&path, &locators, &environment)
-            .context("Could not find a virtual environment in provided path")?;
+            .context("在提供的路径中找不到虚拟环境")?;
         let venv = toolchain.resolved.unwrap_or(toolchain.discovered);
         venv_to_toolchain(venv, fs)
             .await
-            .context("Could not convert a venv into a toolchain")
+            .context("无法将虚拟环境转换为工具链")
     }
 
     fn activation_script(
@@ -1456,7 +1456,7 @@ impl ToolchainLister for PythonToolchainProvider {
                 return vec![];
             };
 
-            log::debug!("(Python) Composing activation script for toolchain {toolchain:?}");
+            log::debug!("(Python)正在为工具链 {toolchain:?} 编写激活脚本");
 
             let mut activation_script = vec![];
 
@@ -1512,7 +1512,7 @@ impl ToolchainLister for PythonToolchainProvider {
                             );
                         }
                     } else {
-                        log::warn!("Conda toolchain has no name; skipping terminal activation");
+                        log::warn!("Conda 工具链没有名称;跳过终端激活");
                     }
                 }
                 Some(
@@ -1612,7 +1612,7 @@ async fn resolve_venv_activation_scripts(
     fs: &dyn Fs,
     activation_scripts: &mut HashMap<ShellKind, PathBuf>,
 ) {
-    log::debug!("(Python) Resolving activation scripts for venv toolchain {venv:?}");
+    log::debug!("(Python)正在解析虚拟环境工具链 {venv:?} 的激活脚本");
     if let Some(prefix) = &venv.prefix {
         for (shell_kind, script_name) in &[
             (ShellKind::Posix, "activate"),
@@ -1628,7 +1628,7 @@ async fn resolve_venv_activation_scripts(
         ] {
             let path = prefix.join(BINARY_DIR).join(script_name);
 
-            log::debug!("Trying path: {}", path.display());
+            log::debug!("正在尝试路径:{}", path.display());
 
             if fs.is_file(&path).await {
                 activation_scripts.insert(*shell_kind, path);
@@ -1692,7 +1692,7 @@ impl pet_core::os_environment::Environment for EnvironmentApi<'_> {
             )
             .collect::<Vec<PathBuf>>();
 
-            log::trace!("Env PATH: {:?}", paths);
+            log::trace!("环境变量 PATH:{:?}", paths);
             for p in self.pet_env.get_know_global_search_locations() {
                 if !paths.contains(&p) {
                     paths.push(p);
@@ -1724,16 +1724,16 @@ impl PyLspAdapter {
         let python_path = Self::find_base_python(delegate)
             .await
             .with_context(|| {
-                let mut message = "Could not find Python installation for PyLSP".to_owned();
+                let mut message = "找不到 PyLSP 所需的 Python 安装".to_owned();
                 if cfg!(windows){
-                    message.push_str(". Install Python from the Microsoft Store, or manually from https://www.python.org/downloads/windows.")
+                    message.push_str("。请从 Microsoft Store 安装 Python,或从 https://www.python.org/downloads/windows 手动安装。")
                 }
                 message
             })?;
         let work_dir = delegate
             .language_server_download_dir(&Self::SERVER_NAME)
             .await
-            .context("Could not get working directory for PyLSP")?;
+            .context("无法获取 PyLSP 的工作目录")?;
         let mut path = PathBuf::from(work_dir.as_ref());
         path.push("pylsp-venv");
         if !path.exists() {
@@ -1919,7 +1919,7 @@ impl LspInstaller for PyLspAdapter {
                 })
                 .await
                 .inspect_err(|err| {
-                    log::warn!("failed to validate user-installed pylsp at {pylsp_bin:?}: {err:#}")
+                    log::warn!("无法验证用户安装的 pylsp(位于 {pylsp_bin:?}):{err:#}")
                 })
                 .ok()?;
             Some(LanguageServerBinary {
@@ -1941,7 +1941,7 @@ impl LspInstaller for PyLspAdapter {
                 })
                 .await
                 .inspect_err(|err| {
-                    log::warn!("failed to validate toolchain pylsp at {pylsp_path:?}: {err:#}")
+                    log::warn!("无法验证工具链 pylsp(位于 {pylsp_path:?}):{err:#}")
                 })
                 .ok()?;
             Some(LanguageServerBinary {
@@ -1981,7 +1981,7 @@ impl LspInstaller for PyLspAdapter {
                     .await?
                     .status
                     .success(),
-                "python-lsp-server[all] installation failed"
+                "python-lsp-server[all] 安装失败"
             );
             ensure!(
                 util::command::new_command(pip_path)
@@ -1992,12 +1992,12 @@ impl LspInstaller for PyLspAdapter {
                     .await?
                     .status
                     .success(),
-                "pylsp-mypy installation failed"
+                "pylsp-mypy 安装失败"
             );
             let pylsp = venv.join(BINARY_DIR).join("pylsp");
             ensure!(
                 delegate.which(pylsp.as_os_str()).await.is_some(),
-                "pylsp installation was incomplete"
+                "pylsp 安装不完整"
             );
             Ok(LanguageServerBinary {
                 path: pylsp,
@@ -2049,7 +2049,7 @@ impl BasedPyrightLspAdapter {
                 arguments: vec![server_path.into(), "--stdio".into()],
             })
         } else {
-            log::error!("missing executable in directory {:?}", server_path);
+            log::error!("目录 {:?} 中缺少可执行文件", server_path);
             None
         }
     }
@@ -2414,11 +2414,11 @@ impl RuffLspAdapter {
                             })
                         })
                         .as_object_mut()
-                        .expect("should be an object")
+                        .expect("应为对象")
                         .entry("properties")
                         .or_insert_with(|| serde_json::json!({}))
                         .as_object_mut()
-                        .expect("properties should be an object");
+                        .expect("属性应为对象");
 
                     current = next_current;
                 }
@@ -2514,19 +2514,19 @@ impl LspAdapter for RuffLspAdapter {
             .stderr(Stdio::piped());
         let cmd = command
             .spawn()
-            .map_err(|e| log::debug!("failed to spawn command {command:?}: {e}"))
+            .map_err(|e| log::debug!("无法启动命令 {command:?}:{e}"))
             .ok()?;
         let output = cmd
             .output()
             .await
-            .map_err(|e| log::debug!("failed to execute command {command:?}: {e}"))
+            .map_err(|e| log::debug!("无法执行命令 {command:?}:{e}"))
             .ok()?;
         if !output.status.success() {
             return None;
         }
 
         let raw_schema: serde_json::Value = serde_json::from_slice(output.stdout.as_slice())
-            .map_err(|e| log::debug!("failed to parse ruff's JSON schema output: {e}"))
+            .map_err(|e| log::debug!("无法解析 ruff 的 JSON 架构输出:{e}"))
             .ok()?;
 
         let converted_schema = Self::convert_ruff_schema(&raw_schema);
@@ -2579,7 +2579,7 @@ impl LspInstaller for RuffLspAdapter {
             .assets
             .into_iter()
             .find(|asset| asset.name == asset_name)
-            .with_context(|| format!("no asset found matching `{asset_name:?}`"))?;
+            .with_context(|| format!("未找到与 `{asset_name:?}` 匹配的资源"))?;
         Ok(GitHubLspBinaryVersion {
             name: release.tag_name,
             url: asset.browser_download_url,
@@ -2630,7 +2630,7 @@ impl LspInstaller for RuffLspAdapter {
                         .await
                         .inspect_err(|err| {
                             log::warn!(
-                                "Unable to run {server_path:?} asset, redownloading: {err:#}",
+                                "无法运行 {server_path:?} 资源,正在重新下载:{err:#}",
                             )
                         })
                 };
@@ -2643,7 +2643,7 @@ impl LspInstaller for RuffLspAdapter {
                         }
                     } else {
                         log::info!(
-                            "SHA-256 mismatch for {destination_path:?} asset, downloading new asset. Expected: {expected_digest}, Got: {actual_digest}"
+                            "{destination_path:?} 资源的 SHA-256 不匹配,正在下载新资源。预期:{expected_digest},实际:{actual_digest}"
                         );
                     }
                 } else if validity_check().await.is_ok() {
@@ -2694,7 +2694,7 @@ impl LspInstaller for RuffLspAdapter {
                 last = Some(path);
             }
 
-            let path = last.context("no cached binary")?;
+            let path = last.context("没有缓存的二进制文件")?;
             let path = match Self::GITHUB_ASSET_KIND {
                 AssetKind::TarGz | AssetKind::TarBz2 | AssetKind::Gz => {
                     path.join(Self::build_asset_name()?.0).join("ruff")
@@ -2788,7 +2788,7 @@ mod tests {
             script
                 .iter()
                 .any(|s| s.contains("conda activate 'foo; rm -rf /'")),
-            "Script should contain quoted malicious name, actual: {:?}",
+            "脚本应包含带引号的恶意名称,实际:{:?}",
             script
         );
     }
@@ -2855,7 +2855,7 @@ mod tests {
 
         assert!(
             script.is_empty(),
-            "Nameless conda toolchains must not fall back to `conda activate base`, actual: {:?}",
+            "无名称的 Conda 工具链不得回退到 `conda activate base`,实际:{:?}",
             script
         );
     }
@@ -2925,7 +2925,7 @@ mod tests {
 
         assert!(
             !script.iter().any(|s| s.contains("conda activate")),
-            "Unquotable conda env names must not emit any `conda activate` line, actual: {:?}",
+            "无法加引号的 Conda 环境名称不得生成任何 `conda activate` 行,实际:{:?}",
             script
         );
     }
@@ -3096,7 +3096,7 @@ mod tests {
 
         let raw_schema = serde_json::json!({
             "line-length": {
-                "doc": "The line length to use when enforcing long-lines violations",
+                "doc": "用于强制执行长行违规检查的行长度",
                 "default": "88",
                 "value_type": "int",
                 "scope": null,
@@ -3104,7 +3104,7 @@ mod tests {
                 "deprecated": null
             },
             "lint.select": {
-                "doc": "A list of rule codes or prefixes to enable",
+                "doc": "要启用的规则代码或前缀列表",
                 "default": "[\"E4\", \"E7\", \"E9\", \"F\"]",
                 "value_type": "list[RuleSelector]",
                 "scope": null,
@@ -3112,7 +3112,7 @@ mod tests {
                 "deprecated": null
             },
             "lint.isort.case-sensitive": {
-                "doc": "Sort imports taking into account case sensitivity.",
+                "doc": "排序导入时考虑大小写。",
                 "default": "false",
                 "value_type": "bool",
                 "scope": null,
@@ -3120,7 +3120,7 @@ mod tests {
                 "deprecated": null
             },
             "format.quote-style": {
-                "doc": "Configures the preferred quote character for strings.",
+                "doc": "配置字符串的首选引号字符。",
                 "default": "\"double\"",
                 "value_type": "\"double\" | \"single\" | \"preserve\"",
                 "scope": null,
@@ -3139,9 +3139,9 @@ mod tests {
 
         let properties = converted
             .get("properties")
-            .expect("should have properties")
+            .expect("应具有属性")
             .as_object()
-            .expect("properties should be an object");
+            .expect("属性应为对象");
 
         assert!(properties.contains_key("line-length"));
         assert!(properties.contains_key("lint"));
@@ -3149,9 +3149,9 @@ mod tests {
 
         let line_length = properties
             .get("line-length")
-            .expect("should have line-length")
+            .expect("应具有行长度")
             .as_object()
-            .expect("line-length should be an object");
+            .expect("行长度应为对象");
 
         assert_eq!(
             line_length.get("type").and_then(|v| v.as_str()),
@@ -3164,37 +3164,37 @@ mod tests {
 
         let lint = properties
             .get("lint")
-            .expect("should have lint")
+            .expect("应具有 lint")
             .as_object()
-            .expect("lint should be an object");
+            .expect("lint 应为对象");
 
         let lint_props = lint
             .get("properties")
-            .expect("lint should have properties")
+            .expect("lint 应具有属性")
             .as_object()
-            .expect("lint properties should be an object");
+            .expect("lint 属性应为对象");
 
         assert!(lint_props.contains_key("select"));
         assert!(lint_props.contains_key("isort"));
 
-        let select = lint_props.get("select").expect("should have select");
+        let select = lint_props.get("select").expect("应具有 select");
         assert_eq!(select.get("type").and_then(|v| v.as_str()), Some("array"));
 
         let isort = lint_props
             .get("isort")
-            .expect("should have isort")
+            .expect("应具有 isort")
             .as_object()
-            .expect("isort should be an object");
+            .expect("isort 应为对象");
 
         let isort_props = isort
             .get("properties")
-            .expect("isort should have properties")
+            .expect("isort 应具有属性")
             .as_object()
-            .expect("isort properties should be an object");
+            .expect("isort 属性应为对象");
 
         let case_sensitive = isort_props
             .get("case-sensitive")
-            .expect("should have case-sensitive");
+            .expect("应具有区分大小写");
 
         assert_eq!(
             case_sensitive.get("type").and_then(|v| v.as_str()),
@@ -3204,19 +3204,19 @@ mod tests {
 
         let format = properties
             .get("format")
-            .expect("should have format")
+            .expect("应具有 format")
             .as_object()
-            .expect("format should be an object");
+            .expect("format 应为对象");
 
         let format_props = format
             .get("properties")
-            .expect("format should have properties")
+            .expect("format 应具有属性")
             .as_object()
-            .expect("format properties should be an object");
+            .expect("format 属性应为对象");
 
         let quote_style = format_props
             .get("quote-style")
-            .expect("should have quote-style");
+            .expect("应具有引号样式");
 
         assert_eq!(
             quote_style.get("type").and_then(|v| v.as_str()),
@@ -3225,9 +3225,9 @@ mod tests {
 
         let enum_values = quote_style
             .get("enum")
-            .expect("should have enum")
+            .expect("应具有枚举")
             .as_array()
-            .expect("enum should be an array");
+            .expect("枚举应为数组");
 
         assert_eq!(enum_values.len(), 3);
         assert!(enum_values.contains(&serde_json::json!("double")));

@@ -83,7 +83,7 @@ impl DebugAdapter for GdbDebugAdapter {
                                 "request": {
                                     "type": "string",
                                     "enum": ["launch"],
-                                    "description": "Request to launch a new process"
+                                    "description": "请求启动新进程"
                                 }
                             }
                         },
@@ -92,44 +92,44 @@ impl DebugAdapter for GdbDebugAdapter {
                             "properties": {
                                 "program": {
                                     "type": "string",
-                                    "description": "The program to debug. This corresponds to the GDB 'file' command."
+                                    "description": "要调试的程序。这对应于 GDB 的 'file' 命令。"
                                 },
                                 "args": {
                                     "type": "array",
                                     "items": {
                                         "type": "string"
                                     },
-                                    "description": "Command line arguments passed to the program. These strings are provided as command-line arguments to the inferior.",
+                                    "description": "传递给程序的命令行参数。这些字符串将作为命令行参数提供给被调试程序。",
                                     "default": []
                                 },
                                 "cwd": {
                                     "type": "string",
-                                    "description": "Working directory for the debugged program. GDB will change its working directory to this directory."
+                                    "description": "被调试程序的工作目录。GDB 将把其工作目录更改为此目录。"
                                 },
                                 "gdb_path": {
                                     "type": "string",
-                                    "description": "Alternative path to the GDB executable, if the one in standard path is not desirable"
+                                    "description": "GDB 可执行文件的备用路径,如果标准路径中的文件不可用。"
                                 },
                                 "gdb_args": {
                                     "type": "array",
                                     "items": {
                                         "type":"string"
                                     },
-                                    "description": "additional arguments given to GDB at startup, not the program debugged",
+                                    "description": "启动时提供给 GDB 的附加参数,而非被调试程序。",
                                     "default": []
                                 },
                                 "env": {
                                     "type": "object",
-                                    "description": "Environment variables for the debugged program. Each key is the name of an environment variable; each value is the value of that variable."
+                                    "description": "被调试程序的环境变量。每个键是环境变量的名称;每个值是该变量的值。"
                                 },
                                 "stopAtBeginningOfMainSubprogram": {
                                     "type": "boolean",
-                                    "description": "When true, GDB will set a temporary breakpoint at the program's main procedure, like the 'start' command.",
+                                    "description": "为 true 时,GDB 将在程序的主过程设置临时断点,类似于 'start' 命令。",
                                     "default": false
                                 },
                                 "stopOnEntry": {
                                     "type": "boolean",
-                                    "description": "When true, GDB will set a temporary breakpoint at the program's first instruction, like the 'starti' command.",
+                                    "description": "为 true 时,GDB 将在程序的第一条指令设置临时断点,类似于 'starti' 命令。",
                                     "default": false
                                 }
                             },
@@ -146,7 +146,7 @@ impl DebugAdapter for GdbDebugAdapter {
                                 "request": {
                                     "type": "string",
                                     "enum": ["attach"],
-                                    "description": "Request to attach to an existing process"
+                                    "description": "请求附加到现有进程"
                                 }
                             }
                         },
@@ -155,15 +155,15 @@ impl DebugAdapter for GdbDebugAdapter {
                             "properties": {
                                 "pid": {
                                     "type": "number",
-                                    "description": "The process ID to which GDB should attach."
+                                    "description": "GDB 应附加到的进程 ID。"
                                 },
                                 "program": {
                                     "type": "string",
-                                    "description": "The program to debug (optional). This corresponds to the GDB 'file' command. In many cases, GDB can determine which program is running automatically."
+                                    "description": "要调试的程序(可选)。这对应于 GDB 的 'file' 命令。在许多情况下,GDB 可以自动确定正在运行的程序。"
                                 },
                                 "target": {
                                     "type": "string",
-                                    "description": "The target to which GDB should connect. This is passed to the 'target remote' command."
+                                    "description": "GDB 应连接的目标。这将传递给 'target remote' 命令。"
                                 }
                             },
                             "required": ["pid"]
@@ -205,7 +205,7 @@ impl DebugAdapter for GdbDebugAdapter {
                 .context("Could not find gdb in path");
 
             if gdb_path_result.is_err() && user_setting_path.is_none() {
-                bail!("Could not find gdb path or it's not installed");
+                bail!("找不到 gdb 路径或未安装 gdb");
             }
 
             user_setting_path.unwrap_or_else(|| gdb_path_result.unwrap())

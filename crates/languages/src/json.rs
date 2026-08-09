@@ -81,14 +81,14 @@ impl ContextProvider for JsonTaskProvider {
                     .scripts
                     .into_iter()
                     .map(|(_, key)| TaskTemplate {
-                        label: format!("run {key}"),
+                        label: format!("运行 {key}"),
                         command: command.clone(),
                         args: vec!["run".into(), key],
                         cwd: Some(VariableName::Dirname.template_value()),
                         ..TaskTemplate::default()
                     })
                     .chain([TaskTemplate {
-                        label: "package script $ZED_CUSTOM_script".to_owned(),
+                        label: "包脚本 $ZED_CUSTOM_script".to_owned(),
                         command: command.clone(),
                         args: vec![
                             "run".into(),
@@ -106,13 +106,13 @@ impl ContextProvider for JsonTaskProvider {
                     .as_object()?
                     .keys()
                     .map(|key| TaskTemplate {
-                        label: format!("run {key}"),
+                        label: format!("运行 {key}"),
                         command: "composer".to_owned(),
                         args: vec!["-d".into(), "$ZED_DIRNAME".into(), key.into()],
                         ..TaskTemplate::default()
                     })
                     .chain([TaskTemplate {
-                        label: "composer script $ZED_CUSTOM_script".to_owned(),
+                        label: "Composer 脚本 $ZED_CUSTOM_script".to_owned(),
                         command: "composer".to_owned(),
                         args: vec![
                             "-d".into(),
@@ -390,7 +390,7 @@ async fn get_cached_server_binary(
         let server_path = container_dir.join(SERVER_PATH);
         anyhow::ensure!(
             server_path.exists(),
-            "missing executable in directory {server_path:?}"
+            "目录 {server_path:?} 中缺少可执行文件"
         );
         Ok(LanguageServerBinary {
             path: node.binary_path().await?,
@@ -453,7 +453,7 @@ impl LspInstaller for NodeVersionAdapter {
             "macos" => "apple-darwin",
             "linux" => "unknown-linux-gnu",
             "windows" => "pc-windows-msvc",
-            other => bail!("Running on unsupported os: {other}"),
+            other => bail!("在不支持的操作系统上运行: {other}"),
         };
         let suffix = if consts::OS == "windows" {
             ".zip"
@@ -465,7 +465,7 @@ impl LspInstaller for NodeVersionAdapter {
             .assets
             .iter()
             .find(|asset| asset.name == asset_name)
-            .with_context(|| format!("no asset found matching `{asset_name:?}`"))?;
+            .with_context(|| format!("未找到与 `{asset_name:?}` 匹配的资源"))?;
         Ok(GitHubLspBinaryVersion {
             name: release.tag_name,
             url: asset.browser_download_url.clone(),
@@ -510,7 +510,7 @@ impl LspInstaller for NodeVersionAdapter {
                     .http_client()
                     .get(&version.url, Default::default(), true)
                     .await
-                    .context("downloading release")?;
+                    .context("正在下载发布版本")?;
                 if version.url.ends_with(".zip") {
                     extract_zip(&destination_container_path, response.body_mut()).await?;
                 } else if version.url.ends_with(".tar.gz") {
@@ -563,7 +563,7 @@ async fn get_cached_version_server_binary(container_dir: PathBuf) -> Option<Lang
         }
 
         anyhow::Ok(LanguageServerBinary {
-            path: last.context("no cached binary")?,
+            path: last.context("没有缓存的二进制文件")?,
             env: None,
             arguments: Default::default(),
         })

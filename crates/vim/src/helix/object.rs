@@ -90,7 +90,7 @@ impl Display for VimToHelixError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Not all vim text objects have an implemented helix equivalent"
+            "并非所有 Vim 文本对象都有对应的 Helix 实现"
         )
     }
 }

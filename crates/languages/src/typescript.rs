@@ -70,7 +70,7 @@ impl PackageJsonData {
     fn fill_task_templates(&self, task_templates: &mut TaskTemplates) {
         if self.jest_package_path.is_some() {
             task_templates.0.push(TaskTemplate {
-                label: "jest file test".to_owned(),
+                label: "Jest 文件测试".to_owned(),
                 command: TYPESCRIPT_RUNNER_VARIABLE.template_value(),
                 args: vec![
                     "exec".to_owned(),
@@ -83,7 +83,7 @@ impl PackageJsonData {
                 ..TaskTemplate::default()
             });
             task_templates.0.push(TaskTemplate {
-                label: format!("jest test {}", VariableName::Symbol.template_value()),
+                label: format!("Jest 测试 {}", VariableName::Symbol.template_value()),
                 command: TYPESCRIPT_RUNNER_VARIABLE.template_value(),
                 args: vec![
                     "exec".to_owned(),
@@ -109,7 +109,7 @@ impl PackageJsonData {
 
         if self.vitest_package_path.is_some() {
             task_templates.0.push(TaskTemplate {
-                label: format!("{} file test", "vitest".to_owned()),
+                label: format!("{} 文件测试", "vitest".to_owned()),
                 command: TYPESCRIPT_RUNNER_VARIABLE.template_value(),
                 args: vec![
                     "exec".to_owned(),
@@ -124,7 +124,7 @@ impl PackageJsonData {
             });
             task_templates.0.push(TaskTemplate {
                 label: format!(
-                    "{} test {}",
+                    "{} 测试 {}",
                     "vitest".to_owned(),
                     VariableName::Symbol.template_value(),
                 ),
@@ -154,7 +154,7 @@ impl PackageJsonData {
 
         if self.mocha_package_path.is_some() {
             task_templates.0.push(TaskTemplate {
-                label: format!("{} file test", "mocha".to_owned()),
+                label: format!("{} 文件测试", "mocha".to_owned()),
                 command: TYPESCRIPT_RUNNER_VARIABLE.template_value(),
                 args: vec![
                     "exec".to_owned(),
@@ -167,7 +167,7 @@ impl PackageJsonData {
             });
             task_templates.0.push(TaskTemplate {
                 label: format!(
-                    "{} test {}",
+                    "{} 测试 {}",
                     "mocha".to_owned(),
                     VariableName::Symbol.template_value(),
                 ),
@@ -192,7 +192,7 @@ impl PackageJsonData {
 
         if self.jasmine_package_path.is_some() {
             task_templates.0.push(TaskTemplate {
-                label: format!("{} file test", "jasmine".to_owned()),
+                label: format!("{} 文件测试", "jasmine".to_owned()),
                 command: TYPESCRIPT_RUNNER_VARIABLE.template_value(),
                 args: vec![
                     "exec".to_owned(),
@@ -205,7 +205,7 @@ impl PackageJsonData {
             });
             task_templates.0.push(TaskTemplate {
                 label: format!(
-                    "{} test {}",
+                    "{} 测试 {}",
                     "jasmine".to_owned(),
                     VariableName::Symbol.template_value(),
                 ),
@@ -229,14 +229,14 @@ impl PackageJsonData {
 
         if self.bun_package_path.is_some() {
             task_templates.0.push(TaskTemplate {
-                label: format!("{} file test", "bun test".to_owned()),
+                label: format!("{} 文件测试", "Bun 测试".to_owned()),
                 command: "bun".to_owned(),
                 args: vec!["test".to_owned(), VariableName::File.template_value()],
                 cwd: Some(TYPESCRIPT_BUN_PACKAGE_PATH_VARIABLE.template_value()),
                 ..TaskTemplate::default()
             });
             task_templates.0.push(TaskTemplate {
-                label: format!("bun test {}", VariableName::Symbol.template_value(),),
+                label: format!("Bun 测试 {}", VariableName::Symbol.template_value(),),
                 command: "bun".to_owned(),
                 args: vec![
                     "test".to_owned(),
@@ -256,7 +256,7 @@ impl PackageJsonData {
 
         if self.node_package_path.is_some() {
             task_templates.0.push(TaskTemplate {
-                label: format!("{} file test", "node test".to_owned()),
+                label: format!("{} 文件测试", "Node 测试".to_owned()),
                 command: "node".to_owned(),
                 args: vec!["--test".to_owned(), VariableName::File.template_value()],
                 tags: vec![
@@ -268,7 +268,7 @@ impl PackageJsonData {
                 ..TaskTemplate::default()
             });
             task_templates.0.push(TaskTemplate {
-                label: format!("node test {}", VariableName::Symbol.template_value()),
+                label: format!("Node 测试 {}", VariableName::Symbol.template_value()),
                 command: "node".to_owned(),
                 args: vec![
                     "--test".to_owned(),
@@ -364,8 +364,8 @@ impl TypeScriptContextProvider {
             let metadata = metadata_check_fs
                 .metadata(&package_json_path)
                 .await
-                .with_context(|| format!("getting metadata for {package_json_path:?}"))?
-                .with_context(|| format!("missing FS metadata for {package_json_path:?}"))?;
+                .with_context(|| format!("获取 {package_json_path:?} 的元数据"))?
+                .with_context(|| format!("缺少 {package_json_path:?} 的文件系统元数据"))?;
             let mtime = DateTime::<Local>::from(metadata.mtime.timestamp_for_user());
             let existing_data = {
                 let contents = existing_package_json.0.read().await;
@@ -379,11 +379,11 @@ impl TypeScriptContextProvider {
                 None => {
                     let package_json_string =
                         fs.load(&package_json_path).await.with_context(|| {
-                            format!("loading package.json from {package_json_path:?}")
+                            format!("从 {package_json_path:?} 加载 package.json")
                         })?;
                     let package_json: HashMap<String, serde_json_lenient::Value> =
                         serde_json_lenient::from_str(&package_json_string).with_context(|| {
-                            format!("parsing package.json from {package_json_path:?}")
+                            format!("解析来自 {package_json_path:?} 的 package.json")
                         })?;
                     let new_data =
                         PackageJsonData::new(package_json_path.as_path().into(), package_json);
@@ -448,7 +448,7 @@ impl ContextProvider for TypeScriptContextProvider {
             let mut task_templates = TaskTemplates(Vec::new());
             task_templates.0.push(TaskTemplate {
                 label: format!(
-                    "execute selection {}",
+                    "执行选中内容 {}",
                     VariableName::SelectedText.template_value()
                 ),
                 command: "node".to_owned(),
@@ -465,7 +465,7 @@ impl ContextProvider for TypeScriptContextProvider {
                 }
                 Err(e) => {
                     log::error!(
-                        "Failed to read package.json for worktree {file_relative_path:?}: {e:#}"
+                        "无法读取工作树 {file_relative_path:?} 的 package.json:{e:#}"
                     );
                 }
             }
@@ -602,7 +602,7 @@ fn replace_test_name_parameters(test_name: &str) -> String {
 }
 
 static TYPESCRIPT_VERSION_REQ: LazyLock<VersionReq> =
-    LazyLock::new(|| VersionReq::parse("^6").expect("Failed to parse TypeScript version req"));
+    LazyLock::new(|| VersionReq::parse("^6").expect("无法解析 TypeScript 版本要求"));
 
 pub struct TypeScriptLspAdapter {
     fs: Arc<dyn Fs>,
@@ -897,7 +897,7 @@ async fn get_cached_ts_server_binary(
                 arguments: typescript_server_binary_arguments(&old_server_path),
             })
         } else {
-            anyhow::bail!("missing executable in directory {container_dir:?}")
+            anyhow::bail!("目录 {container_dir:?} 中缺少可执行文件")
         }
     })
     .await
@@ -938,12 +938,12 @@ mod tests {
             let class_highlight = language
                 .grammar()
                 .and_then(|grammar| grammar.highlight_id_for_name("type.class"))
-                .expect("type.class highlight should be defined");
+                .expect("应定义 type.class 高亮");
 
             assert_eq!(
                 language.highlight_text(&source, 0..source.len()),
                 vec![(6..9, class_highlight), (29..32, class_highlight)],
-                "{} class instantiations should use the type.class highlight",
+                "{} 类实例化应使用 type.class 高亮",
                 language.name()
             );
         }
@@ -1494,89 +1494,89 @@ mod tests {
             crate::language("javascript", tree_sitter_typescript::LANGUAGE_TSX.into()),
         ] {
             let text = r#"
-                it.runIf(true)("runIf test", () => {
+                it.runIf(true)("runIf 测试", () => {
                     true;
                 });
 
-                it.skipIf(false)("skipIf test", () => {
+                it.skipIf(false)("skipIf 测试", () => {
                     true;
                 });
 
-                test.runIf(true)("runIf test 2", () => {
+                test.runIf(true)("runIf 测试 2", () => {
                     true;
                 });
 
-                test.skipIf(false)("skipIf test 2", () => {
+                test.skipIf(false)("skipIf 测试 2", () => {
                     true;
                 });
 
                 describe.runIf(true)("runIf describe", () => {
-                    it("inner test", () => {
+                    it("内部测试", () => {
                         true;
                     });
                 });
 
                 describe.skipIf(false)("skipIf describe", () => {
-                    it("inner test 2", () => {
+                    it("内部测试 2", () => {
                         true;
                     });
                 });
 
-                it.todoIf(false)("todoIf test", () => {
+                it.todoIf(false)("todoIf 测试", () => {
                     true;
                 });
 
-                it.if(true)("if test", () => {
+                it.if(true)("if 测试", () => {
                     true;
                 });
 
-                test.todoIf(false)("todoIf test 2", () => {
+                test.todoIf(false)("todoIf 测试 2", () => {
                     true;
                 });
 
-                test.if(true)("if test 2", () => {
+                test.if(true)("if 测试 2", () => {
                     true;
                 });
 
                 describe.todoIf(false)("todoIf describe", () => {
-                    it("inner todoIf", () => {
+                    it("内部 todoIf", () => {
                         true;
                     });
                 });
 
                 describe.if(true)("if describe", () => {
-                    it("inner if", () => {
+                    it("内部 if", () => {
                         true;
                     });
                 });
 
-                test.failing("failing test", () => {
+                test.failing("失败测试", () => {
                     true;
                 });
 
-                it.failing("failing it", () => {
+                it.failing("失败 it", () => {
                     true;
                 });
 
-                it.each([1, 2, 3])("each test", () => {
+                it.each([1, 2, 3])("each 测试", () => {
                     true;
                 });
 
                 describe.each([1, 2])("each describe", () => {
-                    it("inner each", () => {
+                    it("内部 each", () => {
                         true;
                     });
                 });
 
-                it.skip("skip test", () => {
+                it.skip("跳过测试", () => {
                     true;
                 });
 
-                it.only("only test", () => {
+                it.only("仅测试", () => {
                     true;
                 });
 
-                it.todo("todo test");
+                it.todo("待办测试");
             "#
             .unindent();
 
@@ -1593,28 +1593,28 @@ mod tests {
             assert_eq!(
                 outline_names,
                 [
-                    "runIf test",
-                    "skipIf test",
-                    "runIf test 2",
-                    "skipIf test 2",
+                    "runIf 测试",
+                    "skipIf 测试",
+                    "runIf 测试 2",
+                    "skipIf 测试 2",
                     "runIf describe",
-                    "it inner test",
+                    "it 内部测试",
                     "skipIf describe",
-                    "it inner test 2",
-                    "todoIf test",
-                    "if test",
-                    "todoIf test 2",
-                    "if test 2",
+                    "it 内部测试 2",
+                    "todoIf 测试",
+                    "if 测试",
+                    "todoIf 测试 2",
+                    "if 测试 2",
                     "todoIf describe",
-                    "it inner todoIf",
+                    "it 内部 todoIf",
                     "if describe",
-                    "it inner if",
-                    "test.failing failing test",
-                    "it.failing failing it",
-                    "each test",
+                    "it 内部 if",
+                    "test.failing 失败测试",
+                    "it.failing 失败 it",
+                    "each 测试",
                     "each describe",
-                    "it inner each",
-                    "it.skip skip test",
+                    "it 内部 each",
+                    "it.skip 跳过测试",
                     "it.only only test",
                     "it.todo todo test",
                 ]
@@ -1632,30 +1632,30 @@ mod tests {
             assert_eq!(
                 runnable_names,
                 [
-                    "runIf test",
-                    "skipIf test",
-                    "runIf test 2",
-                    "skipIf test 2",
+                    "runIf 测试",
+                    "skipIf 测试",
+                    "runIf 测试 2",
+                    "skipIf 测试 2",
                     "runIf describe",
-                    "inner test",
+                    "内部测试",
                     "skipIf describe",
-                    "inner test 2",
-                    "todoIf test",
-                    "if test",
-                    "todoIf test 2",
-                    "if test 2",
+                    "内部测试 2",
+                    "todoIf 测试",
+                    "if 测试",
+                    "todoIf 测试 2",
+                    "if 测试 2",
                     "todoIf describe",
-                    "inner todoIf",
+                    "内部 todoIf",
                     "if describe",
-                    "inner if",
-                    "failing test",
-                    "failing it",
-                    "each test",
+                    "内部 if",
+                    "失败测试",
+                    "失败 it",
+                    "each 测试",
                     "each describe",
-                    "inner each",
-                    "skip test",
-                    "only test",
-                    "todo test",
+                    "内部 each",
+                    "跳过测试",
+                    "仅测试",
+                    "待办测试",
                 ]
             );
         }
@@ -1749,19 +1749,19 @@ mod tests {
             task_templates,
             [
                 (
-                    "vitest file test".into(),
+                    "vitest 文件测试".into(),
                     Some("$ZED_CUSTOM_TYPESCRIPT_VITEST_PACKAGE_PATH".into()),
                 ),
                 (
-                    "vitest test $ZED_SYMBOL".into(),
+                    "vitest 测试 $ZED_SYMBOL".into(),
                     Some("$ZED_CUSTOM_TYPESCRIPT_VITEST_PACKAGE_PATH".into()),
                 ),
                 (
-                    "mocha file test".into(),
+                    "mocha 文件测试".into(),
                     Some("$ZED_CUSTOM_TYPESCRIPT_MOCHA_PACKAGE_PATH".into()),
                 ),
                 (
-                    "mocha test $ZED_SYMBOL".into(),
+                    "mocha 测试 $ZED_SYMBOL".into(),
                     Some("$ZED_CUSTOM_TYPESCRIPT_MOCHA_PACKAGE_PATH".into()),
                 ),
                 (
@@ -1888,29 +1888,29 @@ mod tests {
 
         let node_test_index = test_tasks
             .iter()
-            .position(|label| label.contains("node test"));
+            .position(|label| label.contains("Node 测试"));
         let jest_test_index = test_tasks.iter().position(|label| label.contains("jest"));
         let bun_test_index = test_tasks
             .iter()
-            .position(|label| label.contains("bun test"));
+            .position(|label| label.contains("Bun 测试"));
 
         assert!(
             node_test_index.is_some(),
-            "Node test tasks should be present"
+            "应存在 Node 测试任务"
         );
         assert!(
             jest_test_index.is_some(),
-            "Jest test tasks should be present"
+            "应存在 Jest 测试任务"
         );
-        assert!(bun_test_index.is_some(), "Bun test tasks should be present");
+        assert!(bun_test_index.is_some(), "应存在 Bun 测试任务");
 
         assert!(
             jest_test_index.unwrap() < bun_test_index.unwrap(),
-            "Jest should come before Bun"
+            "Jest 应排在 Bun 之前"
         );
         assert!(
             bun_test_index.unwrap() < node_test_index.unwrap(),
-            "Bun should come before Node"
+            "Bun 应排在 Node 之前"
         );
     }
 }

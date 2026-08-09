@@ -571,13 +571,13 @@ impl SelectionsCollection {
         let result = change(&mut mutable_collection);
         assert!(
             !mutable_collection.disjoint.is_empty() || mutable_collection.pending.is_some(),
-            "There must be at least one selection"
+            "必须至少有一个选择"
         );
         if cfg!(debug_assertions) {
             mutable_collection.disjoint.iter().for_each(|selection| {
                 assert!(
                      selection.start.cmp(&selection.end, &snapshot).is_le(),
-                    "disjoint selection has start > end: {:?}",
+                    "不相交选择中起始位置大于结束位置: {:?}",
                     mutable_collection.disjoint
                 );
                 assert!(
@@ -593,23 +593,23 @@ impl SelectionsCollection {
                 mutable_collection
                     .disjoint
                     .is_sorted_by(|first, second| first.end.cmp(&second.start, &snapshot).is_le()),
-                "disjoint selections are not sorted: {:?}",
+                "不相交选择未排序: {:?}",
                 mutable_collection.disjoint
             );
             if let Some(pending) = &mutable_collection.pending {
                 let selection = &pending.selection;
                 assert!(
                     selection.start.cmp(&selection.end, &snapshot).is_le(),
-                    "pending selection has start > end: {:?}",
+                    "待定选择中起始位置大于结束位置: {:?}",
                     selection
                 );
                 assert!(
                     snapshot.can_resolve(&selection.start),
-                    "pending selection start is not resolvable for the given snapshot: {pending:?}",
+                    "待定选择的起始位置无法在给定的快照中解析: {pending:?}",
                 );
                 assert!(
                     snapshot.can_resolve(&selection.end),
-                    "pending selection end is not resolvable for the given snapshot: {pending:?}",
+                    "待定选择的结束位置无法在给定的快照中解析: {pending:?}",
                 );
             }
         }
@@ -1150,7 +1150,7 @@ fn resolve_selections_point<'a>(
         let end = summaries.next().unwrap();
         assert!(
             start <= end,
-            "anchors: start: {:?}, end: {:?}; resolved to: start: {:?}, end: {:?}",
+            "锚点: 起始: {:?}, 结束: {:?}; 解析为: 起始: {:?}, 结束: {:?}",
             s.start,
             s.end,
             start,
@@ -1184,7 +1184,7 @@ fn resolve_selections_display<'a>(
         );
         assert!(
             display_start <= display_end,
-            "display_start: {:?}, display_end: {:?}",
+            "显示起始: {:?}, 显示结束: {:?}",
             display_start,
             display_end
         );
@@ -1266,13 +1266,13 @@ where
             .dimensions_from_points::<D>(to_convert.flat_map(|s| {
                 let start = map.display_point_to_point(s.start, Bias::Left);
                 let end = map.display_point_to_point(s.end, Bias::Right);
-                assert!(start <= end, "start: {:?}, end: {:?}", start, end);
+                assert!(start <= end, "起始: {:?}, 结束: {:?}", start, end);
                 [start, end]
             }));
     selections.map(move |s| {
         let start = converted_endpoints.next().unwrap();
         let end = converted_endpoints.next().unwrap();
-        assert!(start <= end, "start: {:?}, end: {:?}", start, end);
+        assert!(start <= end, "起始: {:?}, 结束: {:?}", start, end);
         Selection {
             id: s.id,
             start,
@@ -1310,7 +1310,7 @@ fn coalesce_selections<D: Ord + fmt::Debug + Copy>(
         }
         assert!(
             selection.start <= selection.end,
-            "selection.start: {:?}, selection.end: {:?}, selection.reversed: {:?}",
+            "选择起始: {:?}, 选择结束: {:?}, 选择反向: {:?}",
             selection.start,
             selection.end,
             selection.reversed
@@ -1433,7 +1433,7 @@ mod tests {
         assert_eq!(
             result.len(),
             1,
-            "row range should include the selection sharing the queried row"
+            "行范围应包含与查询行共享的选择"
         );
         assert_eq!(result[0].start, Point::new(1, 3));
         assert_eq!(result[0].end, Point::new(1, 5));
@@ -1456,7 +1456,7 @@ mod tests {
 
         assert!(
             result.is_empty(),
-            "row range should exclude a selection on a non-queried row"
+            "行范围应排除非查询行上的选择"
         );
     }
 
@@ -1478,7 +1478,7 @@ mod tests {
         assert_eq!(
             result.len(),
             1,
-            "row range should include a selection whose interior row is queried"
+            "行范围应包含其内部行被查询的选择"
         );
         assert_eq!(result[0].start, Point::new(1, 1));
         assert_eq!(result[0].end, Point::new(3, 2));

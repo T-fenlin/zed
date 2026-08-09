@@ -751,7 +751,7 @@ pub struct ChoiceDelta {
 
 #[derive(Error, Debug)]
 pub enum RequestError {
-    #[error("HTTP response error from {provider}'s API: status {status_code} - {body:?}")]
+    #[error("来自 {provider} 的 API 返回 HTTP 错误:状态码 {status_code} - {body:?}")]
     HttpResponseError {
         provider: String,
         status_code: StatusCode,
@@ -949,12 +949,12 @@ pub fn embed<'a>(
 
         anyhow::ensure!(
             response.status().is_success(),
-            "error during embedding, status: {:?}, body: {:?}",
+            "嵌入过程中出错,状态:{:?},响应体:{:?}",
             response.status(),
             body
         );
         let response: OpenAiEmbeddingResponse =
-            serde_json::from_str(&body).context("failed to parse OpenAI embedding response")?;
+            serde_json::from_str(&body).context("无法解析 OpenAI 嵌入响应")?;
         Ok(response)
     }
 }

@@ -100,7 +100,7 @@ impl ConnectionGuard {
         if current_connections >= MAX_CONCURRENT_CONNECTIONS {
             CONCURRENT_CONNECTIONS.fetch_sub(1, SeqCst);
             tracing::error!(
-                "too many concurrent connections: {}",
+                "并发连接数过多:{}",
                 current_connections + 1
             );
             return Err(());
@@ -143,7 +143,7 @@ impl<R: RequestMessage> StreamResponse<R> {
 
     fn end(self) -> Result<()> {
         // Always mark `ended` even if sending `EndStream` on the wire fails, so that
-        // `ended` reflects "the handler intended to end the stream". The caller still
+        // `ended` reflects "处理程序打算结束流". The caller still
         // gets the underlying error and routes through the Err arm of the handler,
         // which sends `respond_with_error` to terminate the client-side stream.
         let result = self.peer.end_stream(self.receipt);
@@ -192,7 +192,7 @@ impl MessageContext {
     ) -> impl Future<Output = anyhow::Result<T::Response>> {
         let request_start_time = Instant::now();
         let span = self.span.clone();
-        tracing::info!("start forwarding request");
+        tracing::info!("开始转发请求");
         self.peer
             .forward_request(self.connection_id, receiver_id, request)
             .inspect(move |_| {
@@ -201,8 +201,8 @@ impl MessageContext {
                     request_start_time.elapsed().as_micros() as f64 / 1000.0,
                 );
             })
-            .inspect_err(|_| tracing::error!("error forwarding request"))
-            .inspect_ok(|_| tracing::info!("finished forwarding request"))
+            .inspect_err(|_| tracing::error!("转发请求出错"))
+            .inspect_ok(|_| tracing::info!("转发请求完成"))
     }
 
     pub fn forward_request_stream<T: RequestMessage>(
@@ -215,7 +215,7 @@ impl MessageContext {
         let peer = self.peer.clone();
         let envelope = request.into_envelope(0, None, Some(self.connection_id.into()));
         async move {
-            tracing::info!("start forwarding stream request");
+            tracing::info!("开始转发流请求");
             let stream = peer
                 .request_stream_dynamic(receiver_id, envelope, T::NAME)
                 .await;
@@ -224,13 +224,13 @@ impl MessageContext {
                 request_start_time.elapsed().as_micros() as f64 / 1000.0,
             );
             let stream = stream
-                .inspect_err(|_| tracing::error!("error forwarding stream request"))?
+                .inspect_err(|_| tracing::error!("转发流请求出错"))?
                 .map(|response| {
                     T::Response::from_envelope(response?)
-                        .context("received response of the wrong type")
+                        .context("收到错误类型的响应")
                 })
                 .boxed();
-            tracing::info!("finished opening forwarded stream request");
+            tracing::info!("已打开转发的流请求");
             Ok(stream)
         }
     }
@@ -541,12 +541,12 @@ impl Server {
         let pool = self.connection_pool.clone();
         let livekit_client = self.app_state.livekit_client.clone();
 
-        let span = info_span!("start server");
+        let span = info_span!("启动服务器");
         self.app_state.executor.spawn_detached(
             async move {
-                tracing::info!("waiting for cleanup timeout");
+                tracing::info!("等待清理超时");
                 timeout.await;
-                tracing::info!("cleanup timeout expired, retrieving stale rooms");
+                tracing::info!("清理超时已过期,正在检索过期的房间");
 
                 app_state
                     .db
@@ -563,10 +563,10 @@ impl Server {
                     .await
                     .trace_err()
                 {
-                    tracing::info!(stale_room_count = room_ids.len(), "retrieved stale rooms");
+                    tracing::info!(stale_room_count = room_ids.len(), "已检索到过期的房间");
                     tracing::info!(
                         stale_channel_buffer_count = channel_ids.len(),
-                        "retrieved stale channel buffers"
+                        "已检索到过期的频道缓冲区"
                     );
 
                     for channel_id in channel_ids {
@@ -606,7 +606,7 @@ impl Server {
                             tracing::info!(
                                 room_id = room_id.0,
                                 new_participant_count = refreshed_room.room.participants.len(),
-                                "refreshed room"
+                                "已刷新房间"
                             );
                             room_updated(&refreshed_room.room, &peer);
                             if let Some(channel) = refreshed_room.channel.as_ref() {
@@ -734,7 +734,7 @@ impl Server {
             Box::new(move |envelope, session, span| {
                 let envelope = envelope.into_any().downcast::<TypedEnvelope<M>>().unwrap();
                 let received_at = envelope.received_at;
-                tracing::info!("message received");
+                tracing::info!("收到消息");
                 let start_time = Instant::now();
                 let future = (handler)(
                     *envelope,
@@ -753,16 +753,16 @@ impl Server {
                     span.record(QUEUE_DURATION_MS, queue_duration_ms);
                     match result {
                         Err(error) => {
-                            tracing::error!(?error, "error handling message")
+                            tracing::error!(?error, "处理消息出错")
                         }
-                        Ok(()) => tracing::info!("finished handling message"),
+                        Ok(()) => tracing::info!("消息处理完成"),
                     }
                 }
                 .boxed()
             }),
         );
         if prev_handler.is_some() {
-            panic!("registered a handler for the same message twice");
+            panic!("为同一条消息注册了两次处理程序");
         }
         self
     }
@@ -800,7 +800,7 @@ impl Server {
                         if responded.load(std::sync::atomic::Ordering::SeqCst) {
                             Ok(())
                         } else {
-                            let error = anyhow!("handler did not send a response");
+                            let error = anyhow!("处理程序未发送响应");
                             let proto_err =
                                 ErrorCode::Internal.message(format!("{error}")).to_proto();
                             peer.respond_with_error(receipt, proto_err)?;
@@ -843,7 +843,7 @@ impl Server {
                         if ended.load(std::sync::atomic::Ordering::SeqCst) {
                             Ok(())
                         } else {
-                            let error = anyhow!("handler did not end a response stream");
+                            let error = anyhow!("处理程序未结束响应流");
                             let proto_err =
                                 ErrorCode::Internal.message(format!("{error}")).to_proto();
                             peer.respond_with_error(receipt, proto_err)?;
@@ -878,7 +878,7 @@ impl Server {
         connection_guard: Option<ConnectionGuard>,
     ) -> impl Future<Output = ()> + use<> {
         let this = self.clone();
-        let span = info_span!("handle connection", %address,
+        let span = info_span!("处理连接", %address,
             connection_id=field::Empty,
             user_id=field::Empty,
             login=field::Empty,
@@ -901,7 +901,7 @@ impl Server {
         let mut teardown = self.teardown.subscribe();
         async move {
             if *teardown.borrow() {
-                tracing::error!("server is tearing down");
+                tracing::error!("服务器正在关闭");
                 return;
             }
 
@@ -912,7 +912,7 @@ impl Server {
                 });
             tracing::Span::current().record("connection_id", format!("{}", connection_id));
 
-            tracing::info!("connection opened");
+            tracing::info!("连接已打开");
 
             let session = Session {
                 principal: principal.clone(),
@@ -935,7 +935,7 @@ impl Server {
                 )
                 .await
             {
-                tracing::error!(?error, "failed to send initial client update");
+                tracing::error!(?error, "发送初始客户端更新失败");
                 return;
             }
             drop(connection_guard);
@@ -972,7 +972,7 @@ impl Server {
                     _ = teardown.changed().fuse() => return,
                     result = handle_io => {
                         if let Err(error) = result {
-                            tracing::error!(?error, "error handling I/O");
+                            tracing::error!(?error, "处理 I/O 出错");
                         }
                         break;
                     }
@@ -983,7 +983,7 @@ impl Server {
                             let type_name = message.payload_type_name();
                             // note: we copy all the fields from the parent span so we can query them in the logs.
                             // (https://github.com/tokio-rs/tracing/issues/2670).
-                            let span = tracing::info_span!("receive message",
+                            let span = tracing::info_span!("接收消息",
                                 %connection_id,
                                 %address,
                                 type_name,
@@ -1014,10 +1014,10 @@ impl Server {
                                     foreground_message_handlers.push(handle_message);
                                 }
                             } else {
-                                tracing::error!("no message handler");
+                                tracing::error!("没有消息处理程序");
                             }
                         } else {
-                            tracing::info!("connection closed");
+                            tracing::info!("连接已关闭");
                             break;
                         }
                     }
@@ -1026,9 +1026,9 @@ impl Server {
 
             drop(foreground_message_handlers);
             let concurrent_handlers = get_concurrent_handlers();
-            tracing::info!(concurrent_handlers, "signing out");
+            tracing::info!(concurrent_handlers, "正在退出登录");
             if let Err(error) = connection_lost(session, teardown, executor).await {
-                tracing::error!(?error, "error signing out");
+                tracing::error!(?error, "退出登录出错");
             }
         }
         .instrument(span)
@@ -1047,7 +1047,7 @@ impl Server {
                 peer_id: Some(connection_id.into()),
             },
         )?;
-        tracing::info!("sent hello message");
+        tracing::info!("已发送问候消息");
         if let Some(send_connection_id) = send_connection_id.take() {
             let _ = send_connection_id.send(connection_id);
         }
@@ -1119,7 +1119,7 @@ fn broadcast<F>(
         if Some(receiver_id) != sender_id
             && let Err(error) = f(receiver_id)
         {
-            tracing::error!("failed to send to {:?} {}", receiver_id, error);
+            tracing::error!("发送到 {:?} {} 失败", receiver_id, error);
         }
     }
 }
@@ -1235,7 +1235,7 @@ pub async fn handle_websocket_request(
     if protocol_version != rpc::PROTOCOL_VERSION {
         return (
             StatusCode::UPGRADE_REQUIRED,
-            "client must be upgraded".to_string(),
+            "客户端必须升级".to_string(),
         )
             .into_response();
     }
@@ -1243,7 +1243,7 @@ pub async fn handle_websocket_request(
     let Some(version) = app_version_header.map(|header| ZedVersion(header.0.0)) else {
         return (
             StatusCode::UPGRADE_REQUIRED,
-            "no version header found".to_string(),
+            "未找到版本头".to_string(),
         )
             .into_response();
     };
@@ -1253,7 +1253,7 @@ pub async fn handle_websocket_request(
     if !version.can_collaborate() {
         return (
             StatusCode::UPGRADE_REQUIRED,
-            "client must be upgraded".to_string(),
+            "客户端必须升级".to_string(),
         )
             .into_response();
     }
@@ -1266,7 +1266,7 @@ pub async fn handle_websocket_request(
         Err(()) => {
             return (
                 StatusCode::SERVICE_UNAVAILABLE,
-                "Too many concurrent connections",
+                "并发连接数过多",
             )
                 .into_response();
         }
@@ -1301,7 +1301,7 @@ pub async fn handle_websocket_request(
 pub async fn handle_metrics(Extension(server): Extension<Arc<Server>>) -> Result<String> {
     static CONNECTIONS_METRIC: OnceLock<IntGauge> = OnceLock::new();
     let connections_metric = CONNECTIONS_METRIC
-        .get_or_init(|| register_int_gauge!("connections", "number of connections").unwrap());
+        .get_or_init(|| register_int_gauge!("connections", "连接数量").unwrap());
 
     let connections = server
         .connection_pool
@@ -1315,7 +1315,7 @@ pub async fn handle_metrics(Extension(server): Extension<Arc<Server>>) -> Result
     let shared_projects_metric = SHARED_PROJECTS_METRIC.get_or_init(|| {
         register_int_gauge!(
             "shared_projects",
-            "number of open projects with one or more guests"
+            "包含一个或多个访客的已打开项目数量"
         )
         .unwrap()
     });
@@ -1353,7 +1353,7 @@ async fn connection_lost(
     futures::select_biased! {
         _ = executor.sleep(RECONNECT_TIMEOUT).fuse() => {
 
-            log::info!("connection lost, removing all resources for user:{}, connection:{:?}", session.user_id(), session.connection_id);
+            log::info!("连接丢失,正在移除用户:{},连接:{:?} 的所有资源", session.user_id(), session.connection_id);
             leave_room_for_session(&session, session.connection_id).await.trace_err();
             leave_channel_buffers_for_session(&session)
                 .await
@@ -1750,7 +1750,7 @@ async fn call(
         .has_contact(calling_user_id, called_user_id)
         .await?
     {
-        return Err(anyhow!("cannot call a user who isn't a contact"))?;
+        return Err(anyhow!("无法呼叫非联系人用户"))?;
     }
 
     let incoming_call = {
@@ -1799,7 +1799,7 @@ async fn call(
     }
     update_user_contacts(called_user_id, &session).await?;
 
-    Err(anyhow!("failed to ring user"))?
+    Err(anyhow!("呼叫用户失败"))?
 }
 
 /// Cancel an outgoing call.
@@ -1849,7 +1849,7 @@ async fn decline_call(message: proto::DeclineCall, session: MessageContext) -> R
             .await
             .decline_call(Some(room_id), session.user_id())
             .await?
-            .context("declining call")?;
+            .context("正在拒绝通话")?;
         room_updated(&room, &session.peer);
     }
 
@@ -1879,7 +1879,7 @@ async fn update_participant_location(
     session: MessageContext,
 ) -> Result<()> {
     let room_id = RoomId::from_proto(request.room_id);
-    let location = request.location.context("invalid location")?;
+    let location = request.location.context("无效位置")?;
 
     let db = session.db().await;
     let room = db
@@ -1969,7 +1969,7 @@ async fn join_project(
 ) -> Result<()> {
     let project_id = ProjectId::from_proto(request.project_id);
 
-    tracing::info!(%project_id, "join project");
+    tracing::info!(%project_id, "加入项目");
 
     let db = session.db().await;
     let project_model = db.get_project(project_id).await?;
@@ -1988,7 +1988,7 @@ async fn join_project(
             .map(|c| c.zed_version.to_string());
         drop(pool);
         Err(anyhow!(
-            "The host (v{}) and guest (v{}) are using incompatible versions of Zed. The peer with the older version must update to collaborate.",
+            "主机(v{})和访客(v{})使用的 Zed 版本不兼容。版本较旧的一方必须更新才能协作。",
             host_version.as_deref().unwrap_or("unknown"),
             guest_version.as_deref().unwrap_or("unknown"),
         ))?;
@@ -2005,7 +2005,7 @@ async fn join_project(
         .await?;
     drop(db);
 
-    tracing::info!(%project_id, "join remote project");
+    tracing::info!(%project_id, "加入远程项目");
     let collaborators = project
         .collaborators
         .iter()
@@ -2152,7 +2152,7 @@ async fn leave_project(request: proto::LeaveProject, session: MessageContext) ->
     let (room, project) = &*db.leave_project(project_id, sender_id).await?;
     tracing::info!(
         %project_id,
-        "leave project"
+        "离开项目"
     );
 
     project_left(project, &session);
@@ -2446,7 +2446,7 @@ where
     response.peer.respond_with_error(
         response.receipt,
         ErrorCode::Forbidden
-            .message("request is not allowed for guests".to_string())
+            .message("访客不允许发出此请求".to_string())
             .to_proto(),
     )?;
     response.responded.store(true, SeqCst);
@@ -2460,7 +2460,7 @@ async fn lsp_query(
 ) -> Result<()> {
     let (name, should_write) = request.query_name_and_write_permissions();
     tracing::Span::current().record("lsp_query_request", name);
-    tracing::info!("lsp_query message received");
+    tracing::info!("收到 lsp_query 消息");
     if should_write {
         forward_mutating_project_request(request, response, session).await
     } else {
@@ -2481,7 +2481,7 @@ async fn create_buffer_for_peer(
             session.connection_id,
         )
         .await?;
-    let peer_id = request.peer_id.context("invalid peer id")?;
+    let peer_id = request.peer_id.context("无效的对等 ID")?;
     session
         .peer
         .forward_send(session.connection_id, peer_id.into(), request)?;
@@ -2501,7 +2501,7 @@ async fn create_image_for_peer(
             session.connection_id,
         )
         .await?;
-    let peer_id = request.peer_id.context("invalid peer id")?;
+    let peer_id = request.peer_id.context("无效的对等 ID")?;
     session
         .peer
         .forward_send(session.connection_id, peer_id.into(), request)?;
@@ -2560,7 +2560,7 @@ async fn forward_project_search_chunk(
     response: Response<proto::FindSearchCandidatesChunk>,
     session: MessageContext,
 ) -> Result<()> {
-    let peer_id = message.peer_id.context("missing peer_id")?;
+    let peer_id = message.peer_id.context("缺少 peer_id")?;
     let payload = session
         .peer
         .forward_request(session.connection_id, peer_id.into(), message)
@@ -2601,7 +2601,7 @@ async fn follow(
 ) -> Result<()> {
     let room_id = RoomId::from_proto(request.room_id);
     let project_id = request.project_id.map(ProjectId::from_proto);
-    let leader_id = request.leader_id.context("invalid leader id")?.into();
+    let leader_id = request.leader_id.context("无效的领导者 ID")?.into();
     let follower_id = session.connection_id;
 
     session
@@ -2629,7 +2629,7 @@ async fn follow(
 async fn unfollow(request: proto::Unfollow, session: MessageContext) -> Result<()> {
     let room_id = RoomId::from_proto(request.room_id);
     let project_id = request.project_id.map(ProjectId::from_proto);
-    let leader_id = request.leader_id.context("invalid leader id")?.into();
+    let leader_id = request.leader_id.context("无效的领导者 ID")?.into();
     let follower_id = session.connection_id;
 
     session
@@ -2764,7 +2764,7 @@ async fn request_contact(
     let requester_id = session.user_id();
     let responder_id = UserId::from_proto(request.responder_id);
     if requester_id == responder_id {
-        return Err(anyhow!("cannot add yourself as a contact"))?;
+        return Err(anyhow!("不能将自己添加为联系人"))?;
     }
 
     let notifications = session
@@ -3418,7 +3418,7 @@ async fn join_channel_internal(
         if let Some(connection) = db.stale_room_connection(session.user_id()).await? {
             tracing::info!(
                 stale_connection_id = %connection,
-                "cleaning up stale connection",
+                "正在清理过期的连接",
             );
             drop(db);
             leave_room_for_session(&session, connection).await?;
@@ -3489,7 +3489,7 @@ async fn join_channel_internal(
     };
 
     channel_updated(
-        &joined_room.channel.context("channel not returned")?,
+        &joined_room.channel.context("未返回频道")?,
         &joined_room.room,
         &session.peer,
         &*session.connection_pool().await,
@@ -3670,7 +3670,7 @@ fn send_notifications(
                 },
             ) {
                 tracing::error!(
-                    "failed to send notification to {:?} {}",
+                    "发送通知到 {:?} {} 失败",
                     connection_id,
                     error
                 );
@@ -3685,7 +3685,7 @@ async fn send_channel_message(
     _response: Response<proto::SendChannelMessage>,
     _session: MessageContext,
 ) -> Result<()> {
-    Err(anyhow!("chat has been removed in the latest version of Zed").into())
+    Err(anyhow!("最新版本的 Zed 中已移除聊天功能").into())
 }
 
 /// Delete a channel message
@@ -3694,7 +3694,7 @@ async fn remove_channel_message(
     _response: Response<proto::RemoveChannelMessage>,
     _session: MessageContext,
 ) -> Result<()> {
-    Err(anyhow!("chat has been removed in the latest version of Zed").into())
+    Err(anyhow!("最新版本的 Zed 中已移除聊天功能").into())
 }
 
 async fn update_channel_message(
@@ -3702,7 +3702,7 @@ async fn update_channel_message(
     _response: Response<proto::UpdateChannelMessage>,
     _session: MessageContext,
 ) -> Result<()> {
-    Err(anyhow!("chat has been removed in the latest version of Zed").into())
+    Err(anyhow!("最新版本的 Zed 中已移除聊天功能").into())
 }
 
 /// Mark a channel message as read
@@ -3710,7 +3710,7 @@ async fn acknowledge_channel_message(
     _request: proto::AckChannelMessage,
     _session: MessageContext,
 ) -> Result<()> {
-    Err(anyhow!("chat has been removed in the latest version of Zed").into())
+    Err(anyhow!("最新版本的 Zed 中已移除聊天功能").into())
 }
 
 /// Mark a buffer version as synced
@@ -3738,7 +3738,7 @@ async fn join_channel_chat(
     _response: Response<proto::JoinChannelChat>,
     _session: MessageContext,
 ) -> Result<()> {
-    Err(anyhow!("chat has been removed in the latest version of Zed").into())
+    Err(anyhow!("最新版本的 Zed 中已移除聊天功能").into())
 }
 
 /// Stop receiving chat updates for a channel
@@ -3746,7 +3746,7 @@ async fn leave_channel_chat(
     _request: proto::LeaveChannelChat,
     _session: MessageContext,
 ) -> Result<()> {
-    Err(anyhow!("chat has been removed in the latest version of Zed").into())
+    Err(anyhow!("最新版本的 Zed 中已移除聊天功能").into())
 }
 
 /// Retrieve the chat history for a channel
@@ -3755,7 +3755,7 @@ async fn get_channel_messages(
     _response: Response<proto::GetChannelMessages>,
     _session: MessageContext,
 ) -> Result<()> {
-    Err(anyhow!("chat has been removed in the latest version of Zed").into())
+    Err(anyhow!("最新版本的 Zed 中已移除聊天功能").into())
 }
 
 /// Retrieve specific chat messages
@@ -3764,7 +3764,7 @@ async fn get_channel_messages_by_id(
     _response: Response<proto::GetChannelMessagesById>,
     _session: MessageContext,
 ) -> Result<()> {
-    Err(anyhow!("chat has been removed in the latest version of Zed").into())
+    Err(anyhow!("最新版本的 Zed 中已移除聊天功能").into())
 }
 
 /// Retrieve the current users notifications
@@ -3830,7 +3830,7 @@ fn to_axum_message(message: TungsteniteMessage) -> anyhow::Result<AxumMessage> {
         // >
         // > — https://github.com/snapview/tungstenite-rs/issues/268
         TungsteniteMessage::Frame(_) => {
-            bail!("received an unexpected frame while reading the message")
+            bail!("读取消息时收到意外帧")
         }
     };
 

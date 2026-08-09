@@ -50,7 +50,7 @@ pub async fn collect_bm25_context(
     match result {
         Ok(context) => context,
         Err(error) => {
-            log::debug!("failed to collect BM25 context: {error:#}");
+            log::debug!("收集 BM25 上下文失败: {error:#}");
             Vec::new()
         }
     }
@@ -146,7 +146,7 @@ async fn collect_bm25_context_from_disk(
     let index = Bm25Index::build(&query.worktree_abs_path).await?;
     let elapsed = started_at.elapsed();
     log::debug!(
-        "built BM25 context index: candidate_files:{}, indexed_files:{}, indexed_bytes:{}, chunks:{}, terms:{}, latency:{elapsed:?}",
+        "已构建 BM25 上下文索引: 候选文件:{}, 已索引文件:{}, 已索引字节:{}, 块:{}, 词项:{}, 延迟:{elapsed:?}",
         index.stats.candidate_file_count,
         index.stats.indexed_file_count,
         index.stats.indexed_bytes,
@@ -155,7 +155,7 @@ async fn collect_bm25_context_from_disk(
     );
 
     let candidates = index.search(&query_terms, &query.worktree_root_name, next_order);
-    log::debug!("selected {} BM25 context chunks", candidates.len());
+    log::debug!("已选择 {} 个 BM25 上下文块", candidates.len());
     Ok(candidates)
 }
 
@@ -369,7 +369,7 @@ async fn git_ls_files(worktree_abs_path: &Path) -> Result<Vec<PathBuf>> {
         .await
         .with_context(|| {
             format!(
-                "failed to run git ls-files in {}",
+                "在 {} 中运行 git ls-files 失败",
                 worktree_abs_path.display()
             )
         })?;
@@ -377,7 +377,7 @@ async fn git_ls_files(worktree_abs_path: &Path) -> Result<Vec<PathBuf>> {
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         bail!(
-            "git ls-files failed in {} with status {}: {}",
+            "git ls-files 在 {} 中失败,状态 {}: {}",
             worktree_abs_path.display(),
             output.status,
             stderr.trim()
@@ -385,7 +385,7 @@ async fn git_ls_files(worktree_abs_path: &Path) -> Result<Vec<PathBuf>> {
     }
 
     let output =
-        String::from_utf8(output.stdout).context("git ls-files output was not valid UTF-8")?;
+        String::from_utf8(output.stdout).context("git ls-files 输出不是有效的 UTF-8")?;
     Ok(output
         .split('\0')
         .filter(|path| !path.is_empty())

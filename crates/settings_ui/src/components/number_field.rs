@@ -584,7 +584,7 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                 this.child(
                     IconButton::new("reset", IconName::RotateCcw)
                         .icon_size(IconSize::Small)
-                        .aria_label("Reset to Default")
+                        .aria_label("重置为默认值")
                         .when_some(self.tab_index, |this, _| this.tab_index(0isize))
                         .on_click(on_reset),
                 )
@@ -609,7 +609,7 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                             base_button(IconName::Dash)
                                 .id((self.id.clone(), "decrement_button"))
                                 .role(Role::Button)
-                                .aria_label("Decrement")
+                                .aria_label("递减")
                                 .rounded_tl_sm()
                                 .rounded_bl_sm()
                                 .when_some(self.tab_index, |this, _| this.tab_index(0isize))
@@ -825,7 +825,7 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                             base_button(IconName::Plus)
                                 .id((self.id.clone(), "increment_button"))
                                 .role(Role::Button)
-                                .aria_label("Increment")
+                                .aria_label("递增")
                                 .rounded_tr_sm()
                                 .rounded_br_sm()
                                 .when_some(self.tab_index, |this, _| this.tab_index(0isize))
@@ -842,11 +842,11 @@ impl Component for NumberField<usize> {
     }
 
     fn name() -> &'static str {
-        "Number Field"
+        "数字字段"
     }
 
     fn description() -> &'static str {
-        "A numeric input element with increment and decrement buttons."
+        "带有递增和递减按钮的数字输入元素。"
     }
 
     fn preview(window: &mut Window, cx: &mut App) -> AnyElement {
@@ -857,7 +857,7 @@ impl Component for NumberField<usize> {
             .gap_6()
             .children(vec![
                 single_example(
-                    "Button-Only Number Field",
+                    "仅按钮数字字段",
                     NumberField::new("number-field", *default_ex.read(cx), window, cx)
                         .on_change({
                             let default_ex = default_ex.clone();
@@ -868,7 +868,7 @@ impl Component for NumberField<usize> {
                         .into_any_element(),
                 ),
                 single_example(
-                    "Editable Number Field",
+                    "可编辑数字字段",
                     NumberField::new("editable-number-field", *edit_ex.read(cx), window, cx)
                         .on_change({
                             let edit_ex = edit_ex.clone();

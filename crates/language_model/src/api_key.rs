@@ -78,7 +78,7 @@ impl ApiKeyState {
             Some(api_key.key.clone())
         } else if let ApiKeySource::EnvVar(var_name) = &api_key.source {
             log::warn!(
-                "{} is now being used with URL {}, when initially it was used with URL {}",
+                "{} 现在与 URL {} 一起使用,而最初它是与 URL {} 一起使用的",
                 var_name,
                 url,
                 self.url
@@ -87,7 +87,7 @@ impl ApiKeyState {
         } else {
             // bug case because load_if_needed should be called whenever the url may have changed
             log::error!(
-                "bug: Attempted to use API key associated with URL {} instead with URL {}",
+                "错误:尝试使用与 URL {} 关联的 API 密钥,而不是与 URL {} 关联的",
                 self.url,
                 url
             );
@@ -106,7 +106,7 @@ impl ApiKeyState {
     ) -> Task<Result<()>> {
         if self.is_from_env_var() {
             return Task::ready(Err(anyhow!(
-                "bug: attempted to store API key in system keychain when API key is from env var",
+                "错误:当 API 密钥来自环境变量时,尝试将其存储在系统钥匙串中",
             )));
         }
         cx.spawn(async move |ent, cx| {
@@ -263,7 +263,7 @@ impl ApiKey {
         };
         let key = match str::from_utf8(&api_key) {
             Ok(key) => key,
-            Err(_) => return LoadStatus::Error(format!("API key for URL {url} is not utf8")),
+            Err(_) => return LoadStatus::Error(format!("URL {url} 的 API 密钥不是 utf8 格式")),
         };
         LoadStatus::Loaded(Self {
             source: ApiKeySource::SystemKeychain,
@@ -291,8 +291,8 @@ enum ApiKeySource {
 impl Display for ApiKeySource {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ApiKeySource::EnvVar(var) => write!(f, "environment variable {}", var),
-            ApiKeySource::SystemKeychain => write!(f, "system keychain"),
+            ApiKeySource::EnvVar(var) => write!(f, "环境变量 {}", var),
+            ApiKeySource::SystemKeychain => write!(f, "系统钥匙串"),
         }
     }
 }

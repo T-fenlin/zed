@@ -252,7 +252,7 @@ impl Editor {
                             }
                         }
                     }
-                    Err(e) => log::error!("Failed to retrieve document colors: {e}"),
+                    Err(e) => log::error!("获取文档颜色失败: {e}"),
                 }
             }
 
@@ -532,7 +532,7 @@ mod tests {
 
         let _handle = fake_language_server_without_capabilities
             .set_request_handler::<lsp::request::DocumentColor, _, _>(move |_, _| async move {
-                panic!("Should not be called");
+                panic!("不应被调用");
             });
         cx.executor().advance_clock(LSP_REQUEST_DEBOUNCE_TIMEOUT);
         color_request_handle.next().await.unwrap();
@@ -540,13 +540,13 @@ mod tests {
         assert_eq!(
             1,
             requests_made.load(atomic::Ordering::Acquire),
-            "Should query for colors once per editor open"
+            "每次打开编辑器应查询一次颜色"
         );
         editor.update_in(cx, |editor, _, cx| {
             assert_eq!(
                 vec![expected_color],
                 extract_color_inlays(editor, cx),
-                "Should have an initial inlay"
+                "应有一个初始内联提示"
             );
         });
 
@@ -555,7 +555,7 @@ mod tests {
             assert_eq!(
                 workspace.panes().len(),
                 1,
-                "Should have one pane with one editor"
+                "应有一个包含一个编辑器的窗格"
             );
             workspace.move_item_to_pane_in_direction(
                 &MoveItemToPaneInDirection {
@@ -570,27 +570,27 @@ mod tests {
         cx.run_until_parked();
         workspace.update_in(cx, |workspace, _, cx| {
             let panes = workspace.panes();
-            assert_eq!(panes.len(), 2, "Should have two panes after splitting");
+            assert_eq!(panes.len(), 2, "拆分后应有两个窗格");
             for pane in panes {
                 let editor = pane
                     .read(cx)
                     .active_item()
                     .and_then(|item| item.downcast::<Editor>())
-                    .expect("Should have opened an editor in each split");
+                    .expect("每个拆分窗格中应打开一个编辑器");
                 let editor_file = editor
                     .read(cx)
                     .buffer()
                     .read(cx)
                     .as_singleton()
-                    .expect("test deals with singleton buffers")
+                    .expect("测试处理单例缓冲区")
                     .read(cx)
                     .file()
-                    .expect("test buffese should have a file")
+                    .expect("测试缓冲区应有一个文件")
                     .path();
                 assert_eq!(
                     editor_file.as_ref(),
                     rel_path("first.rs"),
-                    "Both editors should be opened for the same file"
+                    "两个编辑器应打开同一个文件"
                 )
             }
         });
@@ -617,7 +617,7 @@ mod tests {
         assert_eq!(
             2,
             requests_made.load(atomic::Ordering::Acquire),
-            "Should query for colors once per save (deduplicated) and once per formatting after save"
+            "每次保存应查询一次颜色(去重后),保存后格式化应再查询一次"
         );
 
         drop(editor);
@@ -636,12 +636,12 @@ mod tests {
         assert_eq!(
             2,
             requests_made.load(atomic::Ordering::Acquire),
-            "After saving and closing all editors, no extra requests should be made"
+            "保存并关闭所有编辑器后,不应再发出额外请求"
         );
         workspace.update_in(cx, |workspace, _, cx| {
             assert!(
                 workspace.active_item(cx).is_none(),
-                "Should close all editors"
+                "应关闭所有编辑器"
             )
         });
 
@@ -655,21 +655,21 @@ mod tests {
         let editor = workspace.update_in(cx, |workspace, _, cx| {
             workspace
                 .active_item(cx)
-                .expect("Should have reopened the editor again after navigating back")
+                .expect("向后导航后应重新打开编辑器")
                 .downcast::<Editor>()
-                .expect("Should be an editor")
+                .expect("应是一个编辑器")
         });
 
         assert_eq!(
             2,
             requests_made.load(atomic::Ordering::Acquire),
-            "Cache should be reused on buffer close and reopen"
+            "缓冲区关闭并重新打开时应复用缓存"
         );
         editor.update(cx, |editor, cx| {
             assert_eq!(
                 vec![expected_color],
                 extract_color_inlays(editor, cx),
-                "Should have an initial inlay"
+                "应有一个初始内联提示"
             );
         });
 
@@ -709,13 +709,13 @@ mod tests {
         assert_eq!(
             3,
             requests_made.load(atomic::Ordering::Acquire),
-            "Should query for colors once per save only, as formatting was not requested"
+            "由于未请求格式化,每次保存应仅查询一次颜色"
         );
         editor.update(cx, |editor, cx| {
             assert_eq!(
                 Vec::<Rgba>::new(),
                 extract_color_inlays(editor, cx),
-                "Should clear all colors when the server returns an empty response"
+                "当服务器返回空响应时,应清除所有颜色"
             );
         });
     }

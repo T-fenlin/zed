@@ -59,9 +59,9 @@ pub async fn get_buffer_content_or_outline(
                 let len = snapshot.len().min(snapshot.as_rope().floor_char_boundary(1024));
                 let content = snapshot.text_for_range(0..len).collect::<String>();
                 if let Some(path) = path {
-                    format!("# First 1KB of {path} (file too large to show full content, and no outline available)\n\n{content}")
+                    format!("# 文件 {path} 的前 1KB(文件过大,无法显示完整内容,且没有可用的大纲)\n\n{content}")
                 } else {
-                    format!("# First 1KB of file (file too large to show full content, and no outline available)\n\n{content}")
+                    format!("# 文件的前 1KB(文件过大,无法显示完整内容,且没有可用的大纲)\n\n{content}")
                 }
             });
 
@@ -74,9 +74,9 @@ pub async fn get_buffer_content_or_outline(
         let outline_text = render_outline(outline_items, None, 0, usize::MAX).await?;
 
         let text = if let Some(path) = path {
-            format!("# File outline for {path}\n\n{outline_text}",)
+            format!("# 文件 {path} 的大纲\n\n{outline_text}",)
         } else {
-            format!("# File outline\n\n{outline_text}",)
+            format!("# 文件大纲\n\n{outline_text}",)
         };
         Ok(BufferContent {
             text,
@@ -118,19 +118,19 @@ async fn render_outline(
     let page_start = offset + 1;
     let page_end = offset + entries_rendered;
     let total_symbols = if has_more {
-        format!("more than {}", page_end)
+        format!("超过 {}", page_end)
     } else {
         page_end.to_string()
     };
 
     // Add pagination information
     if has_more {
-        writeln!(&mut output, "\nShowing symbols {page_start}-{page_end} (there were more symbols found; use offset: {page_end} to see next page)",
+        writeln!(&mut output, "\n显示符号 {page_start}-{page_end}(找到更多符号;使用 offset: {page_end} 查看下一页)",
         )
     } else {
         writeln!(
             &mut output,
-            "\nShowing symbols {page_start}-{page_end} (total symbols: {total_symbols})",
+            "\n显示符号 {page_start}-{page_end}(符号总数:{total_symbols})",
         )
     }
     .ok();
@@ -189,7 +189,7 @@ mod tests {
         let buffer = project
             .update(cx, |project, cx| project.create_buffer(None, true, cx))
             .await
-            .expect("failed to create buffer");
+            .expect("创建缓冲区失败");
 
         buffer.update(cx, |buffer, cx| buffer.set_text(content, cx));
 
@@ -201,7 +201,7 @@ mod tests {
         // Should contain some of the actual file content
         assert!(
             result.text.contains("⚡⚡⚡⚡⚡⚡⚡"),
-            "Result did not contain content subset"
+            "结果未包含内容子集"
         );
 
         // Should be marked synthetic: the returned text is not the file's full
@@ -210,20 +210,20 @@ mod tests {
         // real-file line numbers to it.
         assert!(
             result.is_synthetic,
-            "Truncated fallback should be reported as synthetic so callers skip line numbering"
+            "截断的回退内容应标记为合成内容,以便调用方跳过行号编号"
         );
 
         // Should be reasonably sized (much smaller than original)
         assert!(
             result.text.len() < 50 * 1024,
-            "Result size {} should be smaller than 50KB",
+            "结果大小 {} 应小于 50KB",
             result.text.len()
         );
 
         // Should be significantly smaller than the original content
         assert!(
             result.text.len() < content_len / 10,
-            "Result should be much smaller than original content"
+            "结果应远小于原始内容"
         );
     }
 }

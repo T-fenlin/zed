@@ -80,7 +80,7 @@ impl CommandPaletteDB {
         let command_name = command_name.into();
         let user_query = user_query.into();
         log::debug!(
-            "Writing command invocation: command_name={command_name}, user_query={user_query}"
+            "正在写入命令调用:command_name={command_name}, user_query={user_query}"
         );
         self.write_command_invocation_internal(command_name, user_query)
             .await

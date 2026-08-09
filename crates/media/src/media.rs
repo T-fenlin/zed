@@ -71,7 +71,7 @@ pub mod core_media {
                 );
                 anyhow::ensure!(
                     result == 0,
-                    "error getting sample timing info, code {result}"
+                    "获取样本时间信息失败,代码 {result}"
                 );
                 Ok(timing_info)
             }
@@ -152,7 +152,7 @@ pub mod core_media {
                     ptr::null_mut(),
                     ptr::null_mut(),
                 );
-                anyhow::ensure!(result == 0, "error getting parameter set, code: {result}");
+                anyhow::ensure!(result == 0, "获取参数集失败,代码: {result}");
                 Ok(std::slice::from_raw_parts(bytes, len))
             }
         }
@@ -191,7 +191,7 @@ pub mod core_media {
                     &mut len,
                     &mut bytes,
                 );
-                assert!(result == 0, "could not get block buffer data");
+                assert!(result == 0, "无法获取块缓冲区数据");
                 std::slice::from_raw_parts(bytes, len)
             }
         }
@@ -265,7 +265,7 @@ pub mod core_video {
             };
             anyhow::ensure!(
                 result == kCVReturnSuccess,
-                "could not create texture cache, code: {result}"
+                "无法创建纹理缓存,代码: {result}"
             );
             unsafe { Ok(CVMetalTextureCache::wrap_under_create_rule(this)) }
         }
@@ -298,7 +298,7 @@ pub mod core_video {
             };
             anyhow::ensure!(
                 result == kCVReturnSuccess,
-                "could not create texture, code: {result}"
+                "无法创建纹理,代码: {result}"
             );
             unsafe { Ok(CVMetalTexture::wrap_under_create_rule(this)) }
         }

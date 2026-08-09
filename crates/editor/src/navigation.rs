@@ -1228,7 +1228,7 @@ impl Editor {
             if locations.is_empty() {
                 // totally normal - the cursor may be on something which is not
                 // a symbol (e.g. a keyword)
-                log::info!("no references found under cursor");
+                log::info!("光标下未找到引用");
                 return Ok(());
             }
 
@@ -1263,9 +1263,9 @@ impl Editor {
 
             let Some(current_location_index) = current_location_index else {
                 // This indicates something has gone wrong, because we already
-                // handle the "no references" case above
+                // handle the "无引用" case above
                 log::error!(
-                    "failed to find current reference under cursor. Total references: {}",
+                    "在光标下查找当前引用失败。引用总数:{}",
                     locations.len()
                 );
                 return Ok(());
@@ -1280,7 +1280,7 @@ impl Editor {
             };
 
             // TODO(cameron): is this needed?
-            // the thinking is to avoid "jumping to the current location" (avoid
+            // the thinking is to avoid "跳转到当前位置" (avoid
             // polluting "jumplist" in vim terms)
             if current_location_index == destination_location_index {
                 return Ok(());
@@ -1338,7 +1338,7 @@ impl Editor {
         }))
     }
 
-    /// Runs an LSP "find all references" query for the symbol under the cursor
+    /// Runs an LSP "查找所有引用" query for the symbol under the cursor
     /// and returns the raw [`Location`]s. Unlike [`Self::find_all_references`],
     /// this does not group the results or open any UI
     pub fn find_all_references_locations(
@@ -1389,7 +1389,7 @@ impl Editor {
         {
             Ok(_) => {
                 log::info!(
-                    "Ignoring repeated FindAllReferences invocation with the position of already running task"
+                    "忽略重复的查找所有引用调用,该位置已有正在运行的任务"
                 );
                 return None;
             }
@@ -1514,9 +1514,9 @@ impl Editor {
                     .take(3)
                     .join(", ");
                 let title = if target.is_empty() {
-                    "References".to_owned()
+                    "引用".to_owned()
                 } else {
-                    format!("References to {target}")
+                    format!("对 {target} 的引用")
                 };
                 let allow_preview = PreviewTabsSettings::get_global(cx)
                     .enable_preview_multibuffer_from_code_navigation;
@@ -1737,7 +1737,7 @@ impl Editor {
                 .into_iter()
                 .filter_map(|location| location.transpose())
                 .collect::<Result<_>>()
-                .context("location tasks")?;
+                .context("位置任务")?;
             let mut locations = cx.update(|_, cx| {
                 locations
                     .into_iter()
@@ -1774,10 +1774,10 @@ impl Editor {
 
             if num_locations > 1 {
                 let tab_kind = match kind {
-                    Some(GotoDefinitionKind::Implementation) => "Implementations",
-                    Some(GotoDefinitionKind::Symbol) | None => "Definitions",
-                    Some(GotoDefinitionKind::Declaration) => "Declarations",
-                    Some(GotoDefinitionKind::Type) => "Types",
+                    Some(GotoDefinitionKind::Implementation) => "实现",
+                    Some(GotoDefinitionKind::Symbol) | None => "定义",
+                    Some(GotoDefinitionKind::Declaration) => "声明",
+                    Some(GotoDefinitionKind::Type) => "类型",
                 };
                 let title = editor
                     .update_in(cx, |_, _, cx| {
@@ -1797,10 +1797,10 @@ impl Editor {
                         if target.is_empty() {
                             tab_kind.to_owned()
                         } else {
-                            format!("{tab_kind} for {target}")
+                            format!("{tab_kind}:{target}")
                         }
                     })
-                    .context("buffer title")?;
+                    .context("缓冲区标题")?;
 
                 let Some(workspace) = workspace else {
                     return Ok(Navigated::No);
@@ -2194,7 +2194,7 @@ impl Editor {
         cx: &mut Context<Workspace>,
     ) -> Option<(Entity<Editor>, Entity<Pane>)> {
         if locations.is_empty() {
-            log::error!("bug: open_locations_in_multibuffer called with empty list of locations");
+            log::error!("错误:open_locations_in_multibuffer 被调用时位置列表为空");
             return None;
         }
 
@@ -2440,7 +2440,7 @@ impl Editor {
                 })
             })?;
             let location = Some({
-                let target_buffer_handle = location_task.await.context("open local buffer")?;
+                let target_buffer_handle = location_task.await.context("打开本地缓冲区")?;
                 let range = target_buffer_handle.read_with(cx, |target_buffer, _| {
                     let target_start = target_buffer
                         .clip_point_utf16(point_from_lsp(lsp_location.range.start), Bias::Left);

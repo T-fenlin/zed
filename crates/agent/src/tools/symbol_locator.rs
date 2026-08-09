@@ -58,7 +58,7 @@ impl LocationDisplay {
             .read(cx)
             .file()
             .map(|f| f.full_path(cx).display().to_string())
-            .unwrap_or_else(|| "<untitled>".to_string());
+            .unwrap_or_else(|| "未命名".to_string());
 
         let start_line = range.start.row + 1;
         let end_line = range.end.row + 1;
@@ -85,7 +85,7 @@ impl LocationDisplay {
 
 impl fmt::Display for LocationDisplay {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let truncated_label = if self.truncated { " (truncated)" } else { "" };
+        let truncated_label = if self.truncated { "(已截断)" } else { "" };
         if self.start_line == self.end_line {
             writeln!(f, "{}#L{}{truncated_label}", self.path, self.start_line)?;
         } else {
@@ -156,14 +156,14 @@ impl SymbolLocator {
 
         let open_buffer_task = project.update(cx, |project, cx| {
             let Some(project_path) = project.find_project_path(file_path, cx) else {
-                return Err(format!("Could not find path '{file_path}' in project",));
+                return Err(format!("在项目中找不到路径 '{file_path}'",));
             };
             Ok(project.open_buffer(project_path, cx))
         })?;
 
         let buffer = open_buffer_task
             .await
-            .map_err(|e| format!("Failed to open '{}': {e}", self.file_path))?;
+            .map_err(|e| format!("无法打开 '{}': {e}", self.file_path))?;
 
         let (position, line_text, truncated) = buffer.read_with(cx, |buffer, _cx| {
             let snapshot = buffer.snapshot();
@@ -172,7 +172,7 @@ impl SymbolLocator {
             if row > snapshot.max_point().row {
                 let line_count = snapshot.max_point().row + 1;
                 return Err(format!(
-                    "Line {line} is beyond the end of '{file_path}' (file has {line_count} lines)",
+                    "第 {line} 行超出 '{file_path}' 的末尾(文件共有 {line_count} 行)",
                 ));
             }
 

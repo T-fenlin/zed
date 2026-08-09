@@ -388,7 +388,7 @@ impl EditorTestContext {
     #[track_caller]
     pub fn set_state(&mut self, marked_text: &str) -> ContextHandle {
         let state_context = self.add_assertion_context(format!(
-            "Initial Editor State: \"{}\"",
+            "初始编辑器状态:\"{}\"",
             marked_text.escape_debug()
         ));
         let (unmarked_text, selection_ranges) = marked_text_ranges(marked_text, true);
@@ -409,7 +409,7 @@ impl EditorTestContext {
     #[track_caller]
     pub fn set_selections_state(&mut self, marked_text: &str) -> ContextHandle {
         let state_context = self.add_assertion_context(format!(
-            "Initial Editor State: \"{}\"",
+            "初始编辑器状态:\"{}\"",
             marked_text.escape_debug()
         ));
         let (unmarked_text, selection_ranges) = marked_text_ranges(marked_text, true);
@@ -488,7 +488,7 @@ impl EditorTestContext {
 
         assert!(
             excerpts.len() == expected_excerpts.len(),
-            "should have {} excerpts, got {}{}",
+            "应有 {} 个摘录,实际有 {}{}",
             expected_excerpts.len(),
             excerpts.len(),
             fmt_additional_notes(),
@@ -500,7 +500,7 @@ impl EditorTestContext {
             let (expected_text, expected_selections) =
                 marked_text_ranges(expected_excerpts[ix], true);
             if expected_text == "[FOLDED]\n" {
-                assert!(is_folded, "excerpt {} should be folded", ix);
+                assert!(is_folded, "摘录 {} 应处于折叠状态", ix);
                 let is_selected = selections.iter().any(|s| {
                     multibuffer_range
                         .start
@@ -514,14 +514,14 @@ impl EditorTestContext {
                 if !expected_selections.is_empty() {
                     assert!(
                         is_selected,
-                        "excerpt {ix} should contain selections. got {:?}{}",
+                        "摘录 {ix} 应包含选区。当前状态:{:?}{}",
                         self.editor_state(),
                         fmt_additional_notes(),
                     );
                 } else {
                     assert!(
                         !is_selected,
-                        "excerpt {ix} should not contain selections, got: {selections:?}{}",
+                        "摘录 {ix} 不应包含选区,当前选区:{selections:?}{}",
                         fmt_additional_notes(),
                     );
                 }
@@ -529,7 +529,7 @@ impl EditorTestContext {
             }
             assert!(
                 !is_folded,
-                "excerpt {} should not be folded{}",
+                "摘录 {} 不应处于折叠状态{}",
                 ix,
                 fmt_additional_notes()
             );
@@ -568,7 +568,7 @@ impl EditorTestContext {
             assert_eq!(
                 selections,
                 expected_selections,
-                "excerpt {} has incorrect selections{}",
+                "摘录 {} 的选区不正确{}",
                 ix,
                 fmt_additional_notes()
             );
@@ -608,7 +608,7 @@ impl EditorTestContext {
     #[track_caller]
     pub fn assert_editor_state(&mut self, marked_text: &str) {
         let (expected_text, expected_selections) = marked_text_ranges(marked_text, true);
-        pretty_assertions::assert_eq!(self.buffer_text(), expected_text, "unexpected buffer text");
+        pretty_assertions::assert_eq!(self.buffer_text(), expected_text, "意外的缓冲区文本");
         self.assert_selections(expected_selections, marked_text.to_string())
     }
 
@@ -619,7 +619,7 @@ impl EditorTestContext {
     #[track_caller]
     pub fn assert_display_state(&mut self, marked_text: &str) {
         let (expected_text, expected_selections) = marked_text_ranges(marked_text, true);
-        pretty_assertions::assert_eq!(self.display_text(), expected_text, "unexpected buffer text");
+        pretty_assertions::assert_eq!(self.display_text(), expected_text, "意外的缓冲区文本");
         self.assert_selections(expected_selections, marked_text.to_string())
     }
 
@@ -702,7 +702,7 @@ impl EditorTestContext {
             pretty_assertions::assert_eq!(
                 actual_marked_text,
                 expected_marked_text,
-                "{}Editor has unexpected selections",
+                "{}编辑器存在意外选区",
                 self.assertion_context(),
             );
         }
@@ -825,7 +825,7 @@ pub fn assert_state_with_diff(
         .collect::<Vec<_>>()
         .join("\n");
 
-    pretty_assertions::assert_eq!(actual_diff, expected_diff_text, "unexpected diff state");
+    pretty_assertions::assert_eq!(actual_diff, expected_diff_text, "意外的差异状态");
 }
 
 impl Deref for EditorTestContext {

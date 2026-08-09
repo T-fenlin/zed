@@ -73,7 +73,7 @@ fn notify_release_notes_failed_to_show(
 
     impl WorkspaceError for ReleaseNotesError {
         fn primary_message(&self) -> SharedString {
-            "Couldn't load release notes".into()
+            "无法加载发布说明".into()
         }
         fn severity(&self) -> ErrorSeverity {
             ErrorSeverity::Error
@@ -81,7 +81,7 @@ fn notify_release_notes_failed_to_show(
         fn primary_action(&self) -> ErrorAction {
             self.url
                 .clone()
-                .map(|url| ErrorAction::link("View in Browser", url))
+                .map(|url| ErrorAction::link("在浏览器中查看", url))
                 .unwrap_or_else(ErrorAction::dismiss)
         }
     }
@@ -224,20 +224,20 @@ fn announcement_for_version(version: &Version, cx: &App) -> Option<AnnouncementC
 
         let mut bullet_items: Vec<SharedString> = Vec::with_capacity(3);
         bullet_items
-            .push(format!("Skills live in {GLOBAL_SKILLS_DIR_DISPLAY}/<name>/SKILL.md").into());
-        bullet_items.push("Type / to manually invoke a skill".into());
+            .push(format!("技能位于 {GLOBAL_SKILLS_DIR_DISPLAY}/<name>/SKILL.md").into());
+        bullet_items.push("输入 / 手动调用技能".into());
         if migrated_anything {
             bullet_items.push(
-                "The Rules Library is making way for skills: your default rules are now in a global AGENTS.md, and your other rules have been converted to skills".into(),
+                "规则库正在为技能让路:您的默认规则现在位于全局 AGENTS.md 中,其他规则已转换为技能".into(),
             );
         }
 
         Some(AnnouncementContent {
-            heading: "Introducing Skills Support".into(),
-            description: "Extend the agent with focused instructions and domain knowledge.".into(),
+            heading: "技能支持现已推出".into(),
+            description: "通过聚焦的指令和领域知识扩展助手。".into(),
             bullet_items,
-            primary_action_label: "Try Now".into(),
-            secondary_action_label: "Read Documentation".into(),
+            primary_action_label: "立即尝试".into(),
+            secondary_action_label: "阅读文档".into(),
             primary_action_url: None,
             primary_action_callback: Some(Arc::new(move |window, cx| {
                 window.dispatch_action(Box::new(zed_actions::assistant::FocusAgent), cx);
@@ -350,8 +350,8 @@ fn show_update_notification(cx: &mut App) {
             move |cx| {
                 let workspace_handle = cx.entity().downgrade();
                 cx.new(|cx| {
-                    MessageNotification::new(format!("Updated to {app_name} {}", version), cx)
-                        .primary_message("View Release Notes")
+                    MessageNotification::new(format!("已更新至 {app_name} {}", version), cx)
+                        .primary_message("查看发布说明")
                         .primary_on_click(move |window, cx| {
                             if let Some(workspace) = workspace_handle.upgrade() {
                                 workspace.update(cx, |workspace, cx| {

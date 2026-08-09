@@ -85,7 +85,7 @@ fn main() -> Result<()> {
         TerminalMode::Stderr,
         ColorChoice::Auto,
     )
-    .expect("could not initialize logger");
+    .expect("无法初始化日志记录器");
 
     let theme_file_path = args.theme_path;
 
@@ -93,13 +93,13 @@ fn main() -> Result<()> {
     match File::open(&theme_file_path).and_then(|mut file| file.read_to_end(&mut buffer)) {
         Ok(_) => {}
         Err(err) => {
-            log::info!("Failed to open file at path: {:?}", theme_file_path);
+            log::info!("无法打开路径为 {:?} 的文件", theme_file_path);
             return Err(err)?;
         }
     };
 
     let vscode_theme: VsCodeTheme = serde_json_lenient::from_slice(&buffer)
-        .context(format!("failed to parse theme {theme_file_path:?}"))?;
+        .context(format!("解析主题 {theme_file_path:?} 失败"))?;
 
     let theme_metadata = ThemeMetadata {
         name: vscode_theme.name.clone().unwrap_or("".to_string()),
@@ -124,7 +124,7 @@ fn main() -> Result<()> {
         println!("{}", theme_json);
     }
 
-    log::info!("Done!");
+    log::info!("完成!");
 
     Ok(())
 }

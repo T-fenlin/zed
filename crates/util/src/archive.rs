@@ -30,10 +30,10 @@ pub async fn extract_zip<R: AsyncRead + Unpin>(destination: &Path, reader: R) ->
         let filename = entry
             .filename()
             .as_str()
-            .context("reading zip entry file name")?;
+            .context("读取 ZIP 条目文件名")?;
 
         if !archive_path_is_normal(filename) {
-            reader = item.skip().await.context("reading next zip entry")?;
+            reader = item.skip().await.context("读取下一个 ZIP 条目")?;
             continue;
         }
 
@@ -41,25 +41,25 @@ pub async fn extract_zip<R: AsyncRead + Unpin>(destination: &Path, reader: R) ->
 
         if entry
             .dir()
-            .with_context(|| format!("reading zip entry metadata for path {path:?}"))?
+            .with_context(|| format!("读取路径 {path:?} 的 ZIP 条目元数据"))?
         {
             std::fs::create_dir_all(&path)
-                .with_context(|| format!("creating directory {path:?}"))?;
+                .with_context(|| format!("正在创建目录 {path:?}"))?;
         } else {
             let parent_dir = path
                 .parent()
-                .with_context(|| format!("no parent directory for {path:?}"))?;
+                .with_context(|| format!("路径 {path:?} 没有父目录"))?;
             std::fs::create_dir_all(parent_dir)
-                .with_context(|| format!("creating parent directory {parent_dir:?}"))?;
+                .with_context(|| format!("创建父目录 {parent_dir:?}"))?;
             let mut file = smol::fs::File::create(&path)
                 .await
-                .with_context(|| format!("creating file {path:?}"))?;
+                .with_context(|| format!("创建文件 {path:?}"))?;
             futures::io::copy(entry_reader, &mut file)
                 .await
-                .with_context(|| format!("extracting into file {path:?}"))?;
+                .with_context(|| format!("解压到文件 {path:?}"))?;
         }
 
-        reader = item.skip().await.context("reading next zip entry")?;
+        reader = item.skip().await.context("读取下一个 ZIP 条目")?;
     }
 
     Ok(())
@@ -75,10 +75,10 @@ pub async fn extract_zip<R: AsyncRead + Unpin>(destination: &Path, reader: R) ->
     // and reading the entire archive into the memory seems wasteful.
     //
     // So, save the stream into a temporary file first and then get it read with a seeking reader.
-    let mut file = async_fs::File::from(tempfile::tempfile().context("creating a temporary file")?);
+    let mut file = async_fs::File::from(tempfile::tempfile().context("创建临时文件")?);
     futures::io::copy(&mut BufReader::new(reader), &mut file)
         .await
-        .context("saving archive contents into the temporary file")?;
+        .context("将归档内容保存到临时文件")?;
     extract_seekable_zip(destination, file).await
 }
 
@@ -89,7 +89,7 @@ pub async fn extract_seekable_zip<R: AsyncRead + AsyncSeek + Unpin>(
 ) -> Result<()> {
     let mut reader = read::seek::ZipFileReader::new(BufReader::new(reader))
         .await
-        .context("reading the zip archive")?;
+        .context("读取 ZIP 归档")?;
     let destination = &destination
         .canonicalize()
         .unwrap_or_else(|_| destination.to_path_buf());
@@ -97,7 +97,7 @@ pub async fn extract_seekable_zip<R: AsyncRead + AsyncSeek + Unpin>(
         let filename = entry
             .filename()
             .as_str()
-            .context("reading zip entry file name")?;
+            .context("读取 ZIP 条目文件名")?;
 
         if !archive_path_is_normal(filename) {
             continue;
@@ -107,26 +107,26 @@ pub async fn extract_seekable_zip<R: AsyncRead + AsyncSeek + Unpin>(
 
         if entry
             .dir()
-            .with_context(|| format!("reading zip entry metadata for path {path:?}"))?
+            .with_context(|| format!("读取路径 {path:?} 的 ZIP 条目元数据"))?
         {
             std::fs::create_dir_all(&path)
-                .with_context(|| format!("creating directory {path:?}"))?;
+                .with_context(|| format!("正在创建目录 {path:?}"))?;
         } else {
             let parent_dir = path
                 .parent()
-                .with_context(|| format!("no parent directory for {path:?}"))?;
+                .with_context(|| format!("路径 {path:?} 没有父目录"))?;
             std::fs::create_dir_all(parent_dir)
-                .with_context(|| format!("creating parent directory {parent_dir:?}"))?;
+                .with_context(|| format!("创建父目录 {parent_dir:?}"))?;
             let mut file = smol::fs::File::create(&path)
                 .await
-                .with_context(|| format!("creating file {path:?}"))?;
+                .with_context(|| format!("创建文件 {path:?}"))?;
             let mut entry_reader = reader
                 .reader_with_entry(i)
                 .await
-                .with_context(|| format!("reading entry for path {path:?}"))?;
+                .with_context(|| format!("读取路径 {path:?} 的条目"))?;
             futures::io::copy(&mut entry_reader, &mut file)
                 .await
-                .with_context(|| format!("extracting into file {path:?}"))?;
+                .with_context(|| format!("解压到文件 {path:?}"))?;
 
             if let Some(perms) = entry.unix_permissions()
                 && perms != 0o000
@@ -135,7 +135,7 @@ pub async fn extract_seekable_zip<R: AsyncRead + AsyncSeek + Unpin>(
                 let permissions = std::fs::Permissions::from_mode(u32::from(perms));
                 file.set_permissions(permissions)
                     .await
-                    .with_context(|| format!("setting permissions for file {path:?}"))?;
+                    .with_context(|| format!("设置文件 {path:?} 的权限"))?;
             }
         }
     }
@@ -198,7 +198,7 @@ mod tests {
 
     #[track_caller]
     fn assert_file_content(path: &Path, content: &str) {
-        assert!(path.exists(), "file not found: {:?}", path);
+        assert!(path.exists(), "文件未找到: {:?}", path);
         let actual = std::fs::read_to_string(path).unwrap();
         assert_eq!(actual, content);
     }
@@ -311,11 +311,11 @@ mod tests {
             assert_eq!(
                 extracted_perms.mode(),
                 original_perms.mode(),
-                "Expected matching Unix file mode for unzipped file without keep_file_permissions"
+                "未保留文件权限时,解压文件的 Unix 文件模式应与预期一致"
             );
             assert_eq!(
                 extracted_perms, original_perms,
-                "Expected default set of permissions for unzipped file without keep_file_permissions"
+                "未保留文件权限时,解压文件应具有默认权限集"
             );
         });
     }
@@ -368,15 +368,15 @@ mod tests {
 
             assert!(
                 !base_dir.path().join("parent.txt").exists(),
-                "parent traversal entry should have been skipped"
+                "父目录遍历条目应被跳过"
             );
             assert!(
                 !base_dir.path().join("grandparent.txt").exists(),
-                "nested traversal entry should have been skipped"
+                "嵌套遍历条目应被跳过"
             );
             assert!(
                 !absolute_target.exists(),
-                "absolute path entry should have been skipped"
+                "绝对路径条目应被跳过"
             );
         });
     }

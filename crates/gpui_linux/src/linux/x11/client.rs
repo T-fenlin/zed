@@ -266,11 +266,11 @@ impl X11ClientStatePtr {
         }
 
         let Some(mut ximc) = state.ximc.take() else {
-            log::error!("bug: xim connection not set");
+            log::error!("错误:未设置 XIM 连接");
             return;
         };
         let Some(xim_handler) = state.xim_handler.take() else {
-            log::error!("bug: xim handler not set");
+            log::error!("错误:未设置 XIM 处理器");
             state.ximc = Some(ximc);
             return;
         };
@@ -331,7 +331,7 @@ impl X11Client {
                 }
             })
             .map_err(|err| {
-                anyhow!("Failed to initialize event loop handling of foreground tasks: {err:?}")
+                anyhow!("初始化前台任务的事件循环处理失败:{err:?}")
             })?;
 
         handle
@@ -341,7 +341,7 @@ impl X11Client {
                 }
             })
             .map_err(|err| {
-                anyhow!("Failed to initialize event loop handling of wake events: {err:?}")
+                anyhow!("初始化唤醒事件的事件循环处理失败:{err:?}")
             })?;
 
         let (xcb_connection, x_root_index) = XCBConnection::connect(None)?;
@@ -355,17 +355,17 @@ impl X11Client {
         // The server responds with the highest version it supports; if < 2.4,
         // we must not request gesture event masks in XISelectEvents.
         let xinput_version = get_reply(
-            || "XInput XiQueryVersion failed",
+            || "XInput XiQueryVersion 失败",
             xcb_connection.xinput_xi_query_version(2, 4),
         )?;
         assert!(
             xinput_version.major_version >= 2,
-            "XInput version >= 2 required."
+            "需要 XInput 版本 >= 2。"
         );
         let supports_xinput_gestures = xinput_version.major_version > 2
             || (xinput_version.major_version == 2 && xinput_version.minor_version >= 4);
         log::info!(
-            "XInput version: {}.{}, gesture support: {}",
+            "XInput 版本:{}.{},手势支持:{}",
             xinput_version.major_version,
             xinput_version.minor_version,
             supports_xinput_gestures,
@@ -375,9 +375,9 @@ impl X11Client {
             current_pointer_device_states(&xcb_connection, &BTreeMap::new()).unwrap_or_default();
 
         let atoms = XcbAtoms::new(&xcb_connection)
-            .context("Failed to get XCB atoms")?
+            .context("获取 XCB 原子失败")?
             .reply()
-            .context("Failed to get XCB atoms")?;
+            .context("获取 XCB 原子失败")?;
 
         let root = xcb_connection.setup().roots[0].root;
         let compositor_present = check_compositor_present(&xcb_connection, root);
@@ -385,13 +385,13 @@ impl X11Client {
             check_gtk_frame_extents_supported(&xcb_connection, &atoms, root);
         let client_side_decorations_supported = compositor_present && gtk_frame_extents_supported;
         log::info!(
-            "x11: compositor present: {}, gtk_frame_extents_supported: {}",
+            "x11:合成器存在:{},gtk_frame_extents 支持:{}",
             compositor_present,
             gtk_frame_extents_supported
         );
 
         let xkb = get_reply(
-            || "Failed to initialize XKB extension",
+            || "初始化 XKB 扩展失败",
             xcb_connection
                 .xkb_use_extension(XKB_X11_MIN_MAJOR_XKB_VERSION, XKB_X11_MIN_MINOR_XKB_VERSION),
         )?;
@@ -409,7 +409,7 @@ impl X11Client {
             | xkb::MapPart::VIRTUAL_MODS
             | xkb::MapPart::VIRTUAL_MOD_MAP;
         check_reply(
-            || "Failed to select XKB events",
+            || "选择 XKB 事件失败",
             xcb_connection.xkb_select_events(
                 xkb::ID::USE_CORE_KBD.into(),
                 0u8.into(),
@@ -440,14 +440,14 @@ impl X11Client {
         let keyboard_layout = LinuxKeyboardLayout::new(layout_name.into());
 
         let resource_database = x11rb::resource_manager::new_from_default(&xcb_connection)
-            .context("Failed to create resource database")?;
+            .context("创建资源数据库失败")?;
         let scale_factor = get_scale_factor(&xcb_connection, &resource_database, x_root_index);
         let cursor_handle = cursor::Handle::new(&xcb_connection, x_root_index, &resource_database)
-            .context("Failed to initialize cursor theme handler")?
+            .context("初始化光标主题处理器失败")?
             .reply()
-            .context("Failed to initialize cursor theme handler")?;
+            .context("初始化光标主题处理器失败")?;
 
-        let clipboard = Clipboard::new().context("Failed to initialize clipboard")?;
+        let clipboard = Clipboard::new().context("初始化剪贴板失败")?;
 
         let screen = &xcb_connection.setup().roots[x_root_index];
         let compositor_gpu = detect_compositor_gpu(&xcb_connection, screen);
@@ -479,7 +479,7 @@ impl X11Client {
                     }
                 },
             )
-            .map_err(|err| anyhow!("Failed to initialize X11 event source: {err:?}"))?;
+            .map_err(|err| anyhow!("初始化 X11 事件源失败:{err:?}"))?;
 
         handle
             .insert_source(XDPEventSource::new(&common.background_executor), {
@@ -504,7 +504,7 @@ impl X11Client {
                     }
                 }
             })
-            .map_err(|err| anyhow!("Failed to initialize XDP event source: {err:?}"))?;
+            .map_err(|err| anyhow!("初始化 XDP 事件源失败:{err:?}"))?;
 
         xcb_flush(&xcb_connection);
 
@@ -639,7 +639,7 @@ impl X11Client {
                     }
                     Err(err) => {
                         let err = handle_connection_error(err);
-                        log::warn!("error while polling for X11 events: {err:?}");
+                        log::warn!("轮询 X11 事件时出错:{err:?}");
                         break;
                     }
                 }
@@ -697,7 +697,7 @@ impl X11Client {
                         // we do lose 1-2 keys when crash happens since there is no reliable way to get that info
                         // luckily, x11 sends us window not found error when xim server crashes upon further key press
                         // hence we fall back to handle_event
-                        log::error!("XIMClientError: {}", err);
+                        log::error!("XIM 客户端错误:{}", err);
                         let mut state = self.0.borrow_mut();
                         state.take_xim();
                         drop(state);
@@ -743,7 +743,7 @@ impl X11Client {
         drop(state);
         if let Some(window_id) = window_id {
             let Some(window) = self.get_window(window_id) else {
-                log::error!("Failed to get window for IME positioning");
+                log::error!("获取用于 IME 定位的窗口失败");
                 let mut state = self.0.borrow_mut();
                 state.ximc = Some(ximc);
                 state.xim_handler = Some(xim_handler);
@@ -775,7 +775,7 @@ impl X11Client {
             if let Some(xim_handler) = state.xim_handler.as_ref() {
                 ximc.reset_ic(xim_handler.im_id, xim_handler.ic_id).ok();
             } else {
-                log::error!("bug: xim handler not set in reset_ime");
+                log::error!("错误:reset_ime 中未设置 XIM 处理器");
             }
             state.ximc = Some(ximc);
         }
@@ -857,7 +857,7 @@ impl X11Client {
                     self.0.borrow_mut().xdnd_state = Xdnd::default();
                 } else if event.type_ == state.atoms.XdndPosition {
                     if let Ok(pos) = get_reply(
-                        || "Failed to query pointer position",
+                        || "查询指针位置失败",
                         state.xcb_connection.query_pointer(event.window),
                     ) {
                         state.xdnd_state.position =
@@ -865,7 +865,7 @@ impl X11Client {
                     }
                     if !state.xdnd_state.retrieved {
                         check_reply(
-                            || "Failed to convert selection for drag and drop",
+                            || "转换拖放选择失败",
                             state.xcb_connection.convert_selection(
                                 event.window,
                                 state.atoms.XdndSelection,
@@ -905,7 +905,7 @@ impl X11Client {
                 let window = self.get_window(event.requestor)?;
                 let state = self.0.borrow_mut();
                 let reply = get_reply(
-                    || "Failed to get XDND_DATA",
+                    || "获取 XDND_DATA 失败",
                     state.xcb_connection.get_property(
                         false,
                         event.requestor,
@@ -926,7 +926,7 @@ impl X11Client {
                         .filter_map(|url| match url.to_file_path() {
                             Ok(url) => Some(url),
                             Err(()) => {
-                                log::error!("Failed turn {url:?} into a file path");
+                                log::error!("无法将 {url:?} 转换为文件路径");
                                 None
                             }
                         })
@@ -954,14 +954,14 @@ impl X11Client {
                 let window = self.get_window(event.window)?;
                 window
                     .set_bounds(bounds)
-                    .context("X11: Failed to set window bounds")
+                    .context("X11:设置窗口边界失败")
                     .log_err();
             }
             Event::PropertyNotify(event) => {
                 let window = self.get_window(event.window)?;
                 window
                     .property_notify(event)
-                    .context("X11: Failed to handle property notify")
+                    .context("X11:处理属性通知失败")
                     .log_err();
             }
             Event::FocusIn(event) => {
@@ -1208,7 +1208,7 @@ impl X11Client {
                         }
                     }
                     None => {
-                        log::error!("Unknown x11 button: {}", event.detail);
+                        log::error!("未知的 x11 按钮:{}", event.detail);
                     }
                 }
             }
@@ -1255,7 +1255,7 @@ impl X11Client {
                     {
                         state.cursor_styles.insert(window.x_window, style);
                         check_reply(
-                            || "Failed to set cursor style",
+                            || "设置光标样式失败",
                             state.xcb_connection.change_window_attributes(
                                 window.x_window,
                                 &ChangeWindowAttributesAux {
@@ -1446,7 +1446,7 @@ impl X11Client {
                     xim::ForwardEventFlag::empty(),
                     &event,
                 )
-                .context("X11: Failed to forward XIM event")
+                .context("X11:转发 XIM 事件失败")
                 .log_err();
                 let mut state = self.0.borrow_mut();
                 state.restore_xim(ximc, xim_handler);
@@ -1461,7 +1461,7 @@ impl X11Client {
 
     fn xim_handle_commit(&self, window: xproto::Window, text: String) -> Option<()> {
         let Some(window) = self.get_window(window) else {
-            log::error!("bug: Failed to get window for XIM commit");
+            log::error!("错误:获取用于 XIM 提交的窗口失败");
             return None;
         };
         let mut state = self.0.borrow_mut();
@@ -1473,7 +1473,7 @@ impl X11Client {
 
     fn xim_handle_preedit(&self, window: xproto::Window, text: String) -> Option<()> {
         let Some(window) = self.get_window(window) else {
-            log::error!("bug: Failed to get window for XIM preedit");
+            log::error!("错误:获取用于 XIM 预编辑的窗口失败");
             return None;
         };
 
@@ -1607,7 +1607,7 @@ impl LinuxClient for X11Client {
         let x_window = state
             .xcb_connection
             .generate_id()
-            .context("X11: Failed to generate window ID")?;
+            .context("X11:生成窗口 ID 失败")?;
 
         let xcb_connection = state.xcb_connection.clone();
         let client_side_decorations_supported = state.client_side_decorations_supported;
@@ -1640,7 +1640,7 @@ impl LinuxClient for X11Client {
             is_bgr,
         )?;
         check_reply(
-            || "Failed to set XdndAware property",
+            || "设置 XdndAware 属性失败",
             state.xcb_connection.change_property32(
                 xproto::PropMode::REPLACE,
                 x_window,
@@ -1696,7 +1696,7 @@ impl LinuxClient for X11Client {
         };
 
         check_reply(
-            || "Failed to set cursor style",
+            || "设置光标样式失败",
             state.xcb_connection.change_window_attributes(
                 focused_window,
                 &ChangeWindowAttributesAux {
@@ -1744,7 +1744,7 @@ impl LinuxClient for X11Client {
                 clipboard::ClipboardKind::Primary,
                 clipboard::WaitConfig::None,
             )
-            .context("X11 Failed to write to clipboard (primary)")
+            .context("X11 写入剪贴板失败(主选区)")
             .log_with_level(log::Level::Debug);
     }
 
@@ -1757,7 +1757,7 @@ impl LinuxClient for X11Client {
                 clipboard::ClipboardKind::Clipboard,
                 clipboard::WaitConfig::None,
             )
-            .context("X11: Failed to write to clipboard (clipboard)")
+            .context("X11:写入剪贴板失败(剪贴板)")
             .log_with_level(log::Level::Debug);
         state.clipboard_item.replace(item);
     }
@@ -1767,7 +1767,7 @@ impl LinuxClient for X11Client {
         state
             .clipboard
             .get_any(clipboard::ClipboardKind::Primary)
-            .context("X11: Failed to read from clipboard (primary)")
+            .context("X11:从剪贴板读取失败(主选区)")
             .log_with_level(log::Level::Debug)
     }
 
@@ -1784,7 +1784,7 @@ impl LinuxClient for X11Client {
         state
             .clipboard
             .get_any(clipboard::ClipboardKind::Clipboard)
-            .context("X11: Failed to read from clipboard (clipboard)")
+            .context("X11:从剪贴板读取失败(剪贴板)")
             .log_with_level(log::Level::Debug)
     }
 
@@ -1794,7 +1794,7 @@ impl LinuxClient for X11Client {
             .borrow_mut()
             .event_loop
             .take()
-            .context("X11Client::run called but it's already running")
+            .context("X11Client::run 被调用,但它已在运行")
             .log_err()
         else {
             return;
@@ -1875,13 +1875,13 @@ impl X11ClientState {
         let ximc = self
             .ximc
             .take()
-            .ok_or(anyhow!("bug: XIM connection not set"))
+            .ok_or(anyhow!("错误:未设置 XIM 连接"))
             .log_err()?;
         if let Some(xim_handler) = self.xim_handler.take() {
             Some((ximc, xim_handler))
         } else {
             self.ximc = Some(ximc);
-            log::error!("bug: XIM handler not set");
+            log::error!("错误:未设置 XIM 处理器");
             None
         }
     }
@@ -1925,7 +1925,7 @@ impl X11ClientState {
             }
             (true, None) => {
                 let Some(screen_resources) = get_reply(
-                    || "Failed to get screen resources",
+                    || "获取屏幕资源失败",
                     self.xcb_connection
                         .randr_get_screen_resources_current(x_window),
                 )
@@ -2007,7 +2007,7 @@ impl X11ClientState {
                     calloop::timer::TimeoutAction::ToInstant(instant)
                 }
             })
-            .expect("Failed to initialize window refresh timer")
+            .expect("初始化窗口刷新定时器失败")
     }
 
     fn get_cursor_icon(&mut self, style: CursorStyle) -> Option<xproto::Cursor> {
@@ -2041,7 +2041,7 @@ impl X11ClientState {
                     errors
                 ))
             } else {
-                Err(anyhow!("did not find cursor icons {:?}", cursor_icon_names))
+                Err(anyhow!("未找到光标图标 {:?}", cursor_icon_names))
             }
         };
 
@@ -2054,14 +2054,14 @@ impl X11ClientState {
                 {
                     Ok(default) => {
                         log_cursor_icon_warning(err.context(format!(
-                            "X11: error loading cursor icon, falling back on default icon '{}'",
+                            "X11:加载光标图标出错,回退到默认图标 '{}'",
                             DEFAULT_CURSOR_ICON_NAME
                         )));
                         Some(default)
                     }
                     Err(default_err) => {
                         log_cursor_icon_warning(err.context(default_err).context(format!(
-                            "X11: error loading default cursor fallback '{}'",
+                            "X11:加载默认光标回退 '{}' 出错",
                             DEFAULT_CURSOR_ICON_NAME
                         )));
                         None
@@ -2079,7 +2079,7 @@ impl X11ClientState {
             return Some(cursor);
         }
         let cursor = create_invisible_cursor(&self.xcb_connection)
-            .context("X11: error while creating invisible cursor")
+            .context("X11:创建隐形光标时出错")
             .log_err()?;
         self.invisible_cursor_cache = Some(cursor);
         Some(cursor)
@@ -2097,7 +2097,7 @@ impl X11ClientState {
             return;
         };
         check_reply(
-            || "Failed to hide cursor",
+            || "隐藏光标失败",
             self.xcb_connection.change_window_attributes(
                 focused_window,
                 &ChangeWindowAttributesAux {
@@ -2122,13 +2122,13 @@ impl X11ClientState {
             .unwrap_or(CursorStyle::Arrow);
         let Some(cursor) = self.get_cursor_icon(style) else {
             log::warn!(
-                "X11: no cursor icon available to restore {:?} after hide; cursor may stay invisible",
+                "X11:隐藏后没有可恢复的光标图标 {:?};光标可能保持不可见",
                 style
             );
             return;
         };
         check_reply(
-            || "Failed to restore cursor style after hide",
+            || "隐藏后恢复光标样式失败",
             self.xcb_connection.change_window_attributes(
                 hidden_window,
                 &ChangeWindowAttributesAux {
@@ -2151,7 +2151,7 @@ pub fn mode_refresh_rate(mode: &randr::ModeInfo) -> Duration {
 
     let millihertz = mode.dot_clock as u64 * 1_000 / (mode.htotal as u64 * mode.vtotal as u64);
     let micros = 1_000_000_000 / millihertz;
-    log::info!("Refreshing every {}ms", micros / 1_000);
+    log::info!("每 {} 毫秒刷新一次", micros / 1_000);
     Duration::from_micros(micros)
 }
 
@@ -2186,14 +2186,14 @@ fn check_compositor_present(xcb_connection: &XCBConnection, root: xproto::Window
     // Method 1: Check for _NET_WM_CM_S{root}
     let atom_name = format!("_NET_WM_CM_S{}", root);
     let atom1 = get_reply(
-        || format!("Failed to intern {atom_name}"),
+        || format!("内部化 {atom_name} 失败"),
         xcb_connection.intern_atom(false, atom_name.as_bytes()),
     );
     let method1 = match atom1.log_with_level(Level::Debug) {
         Some(reply) if reply.atom != x11rb::NONE => {
             let atom = reply.atom;
             get_reply(
-                || format!("Failed to get {atom_name} owner"),
+                || format!("获取 {atom_name} 所有者失败"),
                 xcb_connection.get_selection_owner(atom),
             )
             .map(|reply| reply.owner != 0)
@@ -2206,14 +2206,14 @@ fn check_compositor_present(xcb_connection: &XCBConnection, root: xproto::Window
     // Method 2: Check for _NET_WM_CM_OWNER
     let atom_name = "_NET_WM_CM_OWNER";
     let atom2 = get_reply(
-        || format!("Failed to intern {atom_name}"),
+        || format!("内部化 {atom_name} 失败"),
         xcb_connection.intern_atom(false, atom_name.as_bytes()),
     );
     let method2 = match atom2.log_with_level(Level::Debug) {
         Some(reply) if reply.atom != x11rb::NONE => {
             let atom = reply.atom;
             get_reply(
-                || format!("Failed to get {atom_name}"),
+                || format!("获取 {atom_name} 失败"),
                 xcb_connection.get_property(false, root, atom, xproto::AtomEnum::WINDOW, 0, 1),
             )
             .map(|reply| reply.value_len > 0)
@@ -2225,14 +2225,14 @@ fn check_compositor_present(xcb_connection: &XCBConnection, root: xproto::Window
     // Method 3: Check for _NET_SUPPORTING_WM_CHECK
     let atom_name = "_NET_SUPPORTING_WM_CHECK";
     let atom3 = get_reply(
-        || format!("Failed to intern {atom_name}"),
+        || format!("内部化 {atom_name} 失败"),
         xcb_connection.intern_atom(false, atom_name.as_bytes()),
     );
     let method3 = match atom3.log_with_level(Level::Debug) {
         Some(reply) if reply.atom != x11rb::NONE => {
             let atom = reply.atom;
             get_reply(
-                || format!("Failed to get {atom_name}"),
+                || format!("获取 {atom_name} 失败"),
                 xcb_connection.get_property(false, root, atom, xproto::AtomEnum::WINDOW, 0, 1),
             )
             .map(|reply| reply.value_len > 0)
@@ -2242,7 +2242,7 @@ fn check_compositor_present(xcb_connection: &XCBConnection, root: xproto::Window
     };
 
     log::debug!(
-        "Compositor detection: _NET_WM_CM_S?={}, _NET_WM_CM_OWNER={}, _NET_SUPPORTING_WM_CHECK={}",
+        "合成器检测:_NET_WM_CM_S?={},_NET_WM_CM_OWNER={},_NET_SUPPORTING_WM_CHECK={}",
         method1,
         method2,
         method3
@@ -2257,7 +2257,7 @@ fn check_gtk_frame_extents_supported(
     root: xproto::Window,
 ) -> bool {
     let Some(supported_atoms) = get_reply(
-        || "Failed to get _NET_SUPPORTED",
+        || "获取 _NET_SUPPORTED 失败",
         xcb_connection.get_property(
             false,
             root,
@@ -2295,7 +2295,7 @@ fn xdnd_get_supported_atom(
     target: xproto::Window,
 ) -> u32 {
     if let Some(reply) = get_reply(
-        || "Failed to get XDnD supported atoms",
+        || "获取 XDnD 支持的原子失败",
         xcb_connection.get_property(
             false,
             target,
@@ -2332,7 +2332,7 @@ fn xdnd_send_finished(
         response_type: xproto::CLIENT_MESSAGE_EVENT,
     };
     check_reply(
-        || "Failed to send XDnD finished event",
+        || "发送 XDnD 完成事件失败",
         xcb_connection.send_event(false, target, EventMask::default(), message),
     )
     .log_err();
@@ -2355,7 +2355,7 @@ fn xdnd_send_status(
         response_type: xproto::CLIENT_MESSAGE_EVENT,
     };
     check_reply(
-        || "Failed to send XDnD status event",
+        || "发送 XDnD 状态事件失败",
         xcb_connection.send_event(false, target, EventMask::default(), message),
     )
     .log_err();
@@ -2369,7 +2369,7 @@ fn current_pointer_device_states(
     scroll_values_to_preserve: &BTreeMap<xinput::DeviceId, PointerDeviceState>,
 ) -> Option<BTreeMap<xinput::DeviceId, PointerDeviceState>> {
     let devices_query_result = get_reply(
-        || "Failed to query XInput devices",
+        || "查询 XInput 设备失败",
         xcb_connection.xinput_xi_query_device(XINPUT_ALL_DEVICES),
     )
     .log_err()?;
@@ -2413,7 +2413,7 @@ fn current_pointer_device_states(
             }),
     );
     if pointer_device_states.is_empty() {
-        log::error!("Found no xinput mouse pointers.");
+        log::error!("未找到 xinput 鼠标指针。");
     }
     Some(pointer_device_states)
 }
@@ -2474,7 +2474,7 @@ fn get_axis_scroll_delta_and_update_state(
         axis.scroll_value = Some(new_scroll);
         delta_scroll
     } else {
-        log::error!("Encountered invalid XInput valuator_mask, scrolling may not work properly.");
+        log::error!("遇到无效的 XInput valuator_mask,滚动可能无法正常工作。");
         None
     }
 }
@@ -2538,7 +2538,7 @@ fn get_scale_factor(
                     DpiMode::Scale(scale)
                 } else {
                     panic!(
-                        "`{}` must be a positive normal number or `randr`. Got `{}`",
+                        "`{}` 必须是正普通数或 `randr`。得到 `{}`",
                         GPUI_X11_SCALE_FACTOR_ENV, var
                     );
                 }
@@ -2546,7 +2546,7 @@ fn get_scale_factor(
                 DpiMode::NotSet
             } else {
                 panic!(
-                    "`{}` must be a positive number or `randr`. Got `{}`",
+                    "`{}` 必须是正数或 `randr`。得到 `{}`",
                     GPUI_X11_SCALE_FACTOR_ENV, var
                 );
             }
@@ -2556,7 +2556,7 @@ fn get_scale_factor(
     match env_dpi {
         DpiMode::Scale(scale) => {
             log::info!(
-                "Using scale factor from {}: {}",
+                "使用来自 {} 的缩放因子:{}",
                 GPUI_X11_SCALE_FACTOR_ENV,
                 scale
             );
@@ -2565,13 +2565,13 @@ fn get_scale_factor(
         DpiMode::Randr => {
             if let Some(scale) = get_randr_scale_factor(connection, screen_index) {
                 log::info!(
-                    "Using RandR scale factor from {}=randr: {}",
+                    "使用来自 {}=randr 的 RandR 缩放因子:{}",
                     GPUI_X11_SCALE_FACTOR_ENV,
                     scale
                 );
                 return scale;
             }
-            log::warn!("Failed to calculate RandR scale factor, falling back to default");
+            log::warn!("计算 RandR 缩放因子失败,回退到默认值");
             return 1.0;
         }
         DpiMode::NotSet => {}
@@ -2585,16 +2585,16 @@ fn get_scale_factor(
         .flatten()
     {
         let scale = dpi / 96.0; // base dpi
-        log::info!("Using scale factor from Xft.dpi: {}", scale);
+        log::info!("使用来自 Xft.dpi 的缩放因子:{}", scale);
         return scale;
     }
 
     if let Some(scale) = get_randr_scale_factor(connection, screen_index) {
-        log::info!("Using RandR scale factor: {}", scale);
+        log::info!("使用 RandR 缩放因子:{}", scale);
         return scale;
     }
 
-    log::info!("Using default scale factor: 1.0");
+    log::info!("使用默认缩放因子:1.0");
     1.0
 }
 
@@ -2757,7 +2757,7 @@ fn get_dpi_factor((width_px, height_px): (u32, u32), (width_mm, height_mm): (u64
         validated_factor as f32
     } else {
         log::warn!(
-            "Calculated DPI factor {} is invalid, using 1.0",
+            "计算出的 DPI 因子 {} 无效,使用 1.0",
             validated_factor
         );
         1.0
@@ -2821,7 +2821,7 @@ mod tests {
             None,
             xkbc::COMPILE_NO_FLAGS,
         )
-        .expect("test keymap should compile")
+        .expect("测试键位映射应能编译")
     }
 
     // Returns a state where the second layout is active via a temporary
@@ -2839,7 +2839,7 @@ mod tests {
             return latched_layout_state;
         }
 
-        panic!("test keymap should support a non-locked secondary layout");
+        panic!("测试键位映射应支持非锁定的辅助布局");
     }
 
     #[test]
@@ -2849,7 +2849,7 @@ mod tests {
         // The "9" key on a US keyboard.
         let keycode = keymap
             .key_by_name("AE09")
-            .expect("test key should exist in the keymap");
+            .expect("测试键应存在于键位映射中");
 
         // Simulate pressing Shift+9 (which should produce "(").
         let key_event_state = xkb_state_for_key_event(&server_state, xproto::KeyButMask::SHIFT);
@@ -2873,7 +2873,7 @@ mod tests {
         // The "9" key on a US keyboard.
         let keycode = keymap
             .key_by_name("AE09")
-            .expect("test key should exist in the keymap");
+            .expect("测试键应存在于键位映射中");
 
         // Simulate Shift held down.
         let shifted_state = xkb_state_for_key_event(&server_state, xproto::KeyButMask::SHIFT);
@@ -2905,7 +2905,7 @@ mod tests {
         // The "Q" key position, which produces a Cyrillic character in Russian layout.
         let keycode = keymap
             .key_by_name("AD01")
-            .expect("test key should exist in the keymap");
+            .expect("测试键应存在于键位映射中");
 
         let expected_text = server_state.key_get_utf8(keycode);
         let key_event_state = xkb_state_for_key_event(&server_state, xproto::KeyButMask::default());
@@ -2928,7 +2928,7 @@ mod tests {
         // The "A" key position on a US keyboard.
         let keycode = keymap
             .key_by_name("AC01")
-            .expect("'a' key should exist in the keymap");
+            .expect("'a' 键应存在于键位映射中");
 
         // Simulate the user having toggled CapsLock on (it's now permanently
         // active until pressed again).
@@ -2959,7 +2959,7 @@ mod tests {
         // The key in the "Q" position, which produces "x" on Neo 2 base layer.
         let keycode = keymap
             .key_by_name("AD01")
-            .expect("test key should exist in the keymap");
+            .expect("测试键应存在于键位映射中");
 
         // Simulate holding CapsLock, which in Neo 2 activates the "level 3"
         // layer (mapped to the Mod5 modifier internally).
@@ -2979,7 +2979,7 @@ mod tests {
         let mut server_state = xkbc::State::new(&keymap);
         let keycode = keymap
             .key_by_name("AD01")
-            .expect("test key should exist in the keymap");
+            .expect("测试键应存在于键位映射中");
 
         // Simulate the level 3 modifier being latched (one-shot active).
         let mod5 = u16::from(xproto::KeyButMask::MOD5) as xkbc::ModMask;
@@ -3007,7 +3007,7 @@ mod tests {
         // The "7" key on the number row.
         let keycode = keymap
             .key_by_name("AE07")
-            .expect("'7' key should exist in the keymap");
+            .expect("'7' 键应存在于键位映射中");
 
         let key_event_state = xkb_state_for_key_event(&server_state, xproto::KeyButMask::default());
 
@@ -3024,7 +3024,7 @@ mod tests {
         let mut server_state = xkbc::State::new(&keymap);
         let space = keymap
             .key_by_name("SPCE")
-            .expect("space key should exist in the keymap");
+            .expect("空格键应存在于键位映射中");
 
         // Simulate the user having switched to the Russian layout
         // (e.g. via a keyboard shortcut like Super+Space).
@@ -3047,7 +3047,7 @@ mod tests {
         // The "]" key on a US keyboard.
         let bracket = keymap
             .key_by_name("AD12")
-            .expect("']' key should exist in the keymap");
+            .expect("']' 键应存在于键位映射中");
 
         // Simulate a keyboard macro (e.g. from a ZMK/QMK firmware keyboard)
         // that sends Shift + "]" very rapidly. The modifier state notification
@@ -3080,7 +3080,7 @@ mod tests {
         for &(key_name, expected_utf8) in keys {
             let keycode = keymap
                 .key_by_name(key_name)
-                .expect("test key should exist in the keymap");
+                .expect("测试键应存在于键位映射中");
 
             let key_event_state =
                 xkb_state_for_key_event(&server_state, xproto::KeyButMask::default());
@@ -3090,7 +3090,7 @@ mod tests {
             assert_eq!(
                 key_event_state.key_get_utf8(keycode),
                 expected_utf8,
-                "key {key_name} should produce {expected_utf8:?}",
+                "键 {key_name} 应产生 {expected_utf8:?}",
             );
         }
 
@@ -3108,7 +3108,7 @@ mod tests {
         let mut server_state = xkbc::State::new(&keymap);
         let space = keymap
             .key_by_name("SPCE")
-            .expect("space key should exist in the keymap");
+            .expect("空格键应存在于键位映射中");
 
         // Simulate the user having switched to the Czech layout.
         server_state.update_mask(0, 0, 0, 0, 0, 1);

@@ -90,7 +90,7 @@ fn query_render_extent(
     xcb: &Rc<XCBConnection>,
     x_window: xproto::Window,
 ) -> anyhow::Result<Size<DevicePixels>> {
-    let reply = get_reply(|| "X11 GetGeometry failed.", xcb.get_geometry(x_window))?;
+    let reply = get_reply(|| "X11 GetGeometry 失败。", xcb.get_geometry(x_window))?;
     Ok(Size {
         width: DevicePixels(reply.width as i32),
         height: DevicePixels(reply.height as i32),
@@ -190,7 +190,7 @@ fn find_visuals(xcb: &XCBConnection, screen_index: usize) -> VisualSet {
                 depth: depth_info.depth,
             };
             log::debug!(
-                "Visual id: {}, class: {:?}, depth: {}, bits_per_value: {}, masks: 0x{:x} 0x{:x} 0x{:x}",
+                "视觉 ID: {}, 类别: {:?}, 深度: {}, 每值位数: {}, 掩码: 0x{:x} 0x{:x} 0x{:x}",
                 visual_type.visual_id,
                 visual_type.class,
                 depth_info.depth,
@@ -305,7 +305,7 @@ pub(crate) struct X11WindowStatePtr {
 impl rwh::HasWindowHandle for RawWindow {
     fn window_handle(&self) -> Result<rwh::WindowHandle<'_>, rwh::HandleError> {
         let Some(non_zero) = NonZeroU32::new(self.window_id) else {
-            log::error!("RawWindow.window_id zero when getting window handle.");
+            log::error!("获取窗口句柄时 RawWindow.window_id 为零。");
             return Err(rwh::HandleError::Unavailable);
         };
         let mut handle = rwh::XcbWindowHandle::new(non_zero);
@@ -316,7 +316,7 @@ impl rwh::HasWindowHandle for RawWindow {
 impl rwh::HasDisplayHandle for RawWindow {
     fn display_handle(&self) -> Result<rwh::DisplayHandle<'_>, rwh::HandleError> {
         let Some(non_zero) = NonNull::new(self.connection) else {
-            log::error!("Null RawWindow.connection when getting display handle.");
+            log::error!("获取显示句柄时 RawWindow.connection 为空。");
             return Err(rwh::HandleError::Unavailable);
         };
         let handle = rwh::XcbDisplayHandle::new(Some(non_zero), self.screen_id as i32);
@@ -354,7 +354,7 @@ impl rwh::HasDisplayHandle for X11Window {
 pub(crate) fn xcb_flush(xcb: &XCBConnection) {
     xcb.flush()
         .map_err(handle_connection_error)
-        .context("X11 flush failed")
+        .context("X11 刷新失败")
         .log_err();
 }
 
@@ -392,19 +392,19 @@ where
 /// Convert X11 connection errors to `anyhow::Error` and panic for unrecoverable errors.
 pub(crate) fn handle_connection_error(err: ConnectionError) -> anyhow::Error {
     match err {
-        ConnectionError::UnknownError => anyhow!("X11 connection: Unknown error"),
-        ConnectionError::UnsupportedExtension => anyhow!("X11 connection: Unsupported extension"),
+        ConnectionError::UnknownError => anyhow!("X11 连接:未知错误"),
+        ConnectionError::UnsupportedExtension => anyhow!("X11 连接:不支持的扩展"),
         ConnectionError::MaximumRequestLengthExceeded => {
-            anyhow!("X11 connection: Maximum request length exceeded")
+            anyhow!("X11 连接:超出最大请求长度")
         }
         ConnectionError::FdPassingFailed => {
-            panic!("X11 connection: File descriptor passing failed")
+            panic!("X11 连接:文件描述符传递失败")
         }
         ConnectionError::ParseError(parse_error) => {
-            anyhow!(parse_error).context("Parse error in X11 response")
+            anyhow!(parse_error).context("X11 响应中的解析错误")
         }
-        ConnectionError::InsufficientMemory => panic!("X11 connection: Insufficient memory"),
-        ConnectionError::IoError(err) => anyhow!(err).context("X11 connection: IOError"),
+        ConnectionError::InsufficientMemory => panic!("X11 连接:内存不足"),
+        ConnectionError::IoError(err) => anyhow!(err).context("X11 连接:IO 错误"),
         _ => anyhow!(err),
     }
 }
@@ -443,19 +443,19 @@ impl X11WindowState {
         let visual = match visual_set.transparent {
             Some(visual) => visual,
             None => {
-                log::warn!("Unable to find a transparent visual",);
+                log::warn!("无法找到透明视觉",);
                 visual_set.inherit
             }
         };
-        log::info!("Using {:?}", visual);
+        log::info!("正在使用 {:?}", visual);
 
         let colormap = if visual.colormap != 0 {
             visual.colormap
         } else {
             let id = xcb.generate_id()?;
-            log::info!("Creating colormap {}", id);
+            log::info!("正在创建颜色映射 {}", id);
             check_reply(
-                || format!("X11 CreateColormap failed. id: {}", id),
+                || format!("X11 CreateColormap 失败。ID: {}", id),
                 xcb.create_colormap(xproto::ColormapAlloc::NONE, id, visual_set.root, visual.id),
             )?;
             id
@@ -479,7 +479,7 @@ impl X11WindowState {
         let mut bounds = params.bounds.to_device_pixels(scale_factor);
         if bounds.size.width.0 == 0 || bounds.size.height.0 == 0 {
             log::warn!(
-                "Window bounds contain a zero value. height={}, width={}. Falling back to defaults.",
+                "窗口边界包含零值。高度={},宽度={}。回退到默认值。",
                 bounds.size.height.0,
                 bounds.size.width.0
             );
@@ -490,7 +490,7 @@ impl X11WindowState {
         check_reply(
             || {
                 format!(
-                    "X11 CreateWindow failed. depth: {}, x_window: {}, visual_set.root: {}, bounds.origin.x.0: {}, bounds.origin.y.0: {}, bounds.size.width.0: {}, bounds.size.height.0: {}",
+                    "X11 CreateWindow 失败。深度: {}, 窗口: {}, 根窗口: {}, 原点 X: {}, 原点 Y: {}, 宽度: {}, 高度: {}",
                     visual.depth,
                     x_window,
                     visual_set.root,
@@ -519,7 +519,7 @@ impl X11WindowState {
         let setup_result = maybe!({
             let pid = std::process::id();
             check_reply(
-                || "X11 ChangeProperty for _NET_WM_PID failed.",
+                || "X11 设置 _NET_WM_PID 的 ChangeProperty 失败。",
                 xcb.change_property32(
                     xproto::PropMode::REPLACE,
                     x_window,
@@ -529,7 +529,7 @@ impl X11WindowState {
                 ),
             )?;
 
-            let reply = get_reply(|| "X11 GetGeometry failed.", xcb.get_geometry(x_window))?;
+            let reply = get_reply(|| "X11 GetGeometry 失败。", xcb.get_geometry(x_window))?;
             if reply.x == 0 && reply.y == 0 {
                 bounds.origin.x.0 += 2;
                 // Work around a bug where our rendered content appears
@@ -538,7 +538,7 @@ impl X11WindowState {
                 let x = bounds.origin.x.0;
                 let y = bounds.origin.y.0;
                 check_reply(
-                    || format!("X11 ConfigureWindow failed. x: {}, y: {}", x, y),
+                    || format!("X11 ConfigureWindow 失败。X: {}, Y: {}", x, y),
                     xcb.configure_window(x_window, &xproto::ConfigureWindowAux::new().x(x).y(y)),
                 )?;
             }
@@ -546,7 +546,7 @@ impl X11WindowState {
                 && let Some(title) = titlebar.title
             {
                 check_reply(
-                    || "X11 ChangeProperty8 on WM_NAME failed.",
+                    || "X11 设置 WM_NAME 的 ChangeProperty8 失败。",
                     xcb.change_property8(
                         xproto::PropMode::REPLACE,
                         x_window,
@@ -556,7 +556,7 @@ impl X11WindowState {
                     ),
                 )?;
                 check_reply(
-                    || "X11 ChangeProperty8 on _NET_WM_NAME failed.",
+                    || "X11 设置 _NET_WM_NAME 的 ChangeProperty8 失败。",
                     xcb.change_property8(
                         xproto::PropMode::REPLACE,
                         x_window,
@@ -569,7 +569,7 @@ impl X11WindowState {
 
             if params.kind == WindowKind::PopUp {
                 check_reply(
-                    || "X11 ChangeProperty32 setting window type for pop-up failed.",
+                    || "X11 为弹出窗口设置窗口类型的 ChangeProperty32 失败。",
                     xcb.change_property32(
                         xproto::PropMode::REPLACE,
                         x_window,
@@ -587,7 +587,7 @@ impl X11WindowState {
                     // place the floating window in relation to the main window.
                     // https://specifications.freedesktop.org/wm-spec/1.4/ar01s05.html
                     check_reply(
-                        || "X11 ChangeProperty32 setting WM_TRANSIENT_FOR for floating window failed.",
+                        || "X11 为浮动窗口设置 WM_TRANSIENT_FOR 的 ChangeProperty32 失败。",
                         xcb.change_property32(
                             xproto::PropMode::REPLACE,
                             x_window,
@@ -613,7 +613,7 @@ impl X11WindowState {
                 // _NET_WM_WINDOW_TYPE_DIALOG indicates that this is a dialog (floating) window
                 // https://specifications.freedesktop.org/wm-spec/1.4/ar01s05.html
                 check_reply(
-                    || "X11 ChangeProperty32 setting window type for dialog window failed.",
+                    || "X11 为对话框窗口设置窗口类型的 ChangeProperty32 失败。",
                     xcb.change_property32(
                         xproto::PropMode::REPLACE,
                         x_window,
@@ -627,7 +627,7 @@ impl X11WindowState {
                 // can handle it appropriately (e.g., prevent interaction with the parent window
                 // while the dialog is open).
                 check_reply(
-                    || "X11 ChangeProperty32 setting modal state for dialog window failed.",
+                    || "X11 为对话框窗口设置模态状态的 ChangeProperty32 失败。",
                     xcb.change_property32(
                         xproto::PropMode::REPLACE,
                         x_window,
@@ -639,7 +639,7 @@ impl X11WindowState {
             }
 
             check_reply(
-                || "X11 ChangeProperty32 setting protocols failed.",
+                || "X11 设置协议的 ChangeProperty32 失败。",
                 xcb.change_property32(
                     xproto::PropMode::REPLACE,
                     x_window,
@@ -650,17 +650,17 @@ impl X11WindowState {
             )?;
 
             get_reply(
-                || "X11 sync protocol initialize failed.",
+                || "X11 同步协议初始化失败。",
                 sync::initialize(xcb, 3, 1),
             )?;
             let sync_request_counter = xcb.generate_id()?;
             check_reply(
-                || "X11 sync CreateCounter failed.",
+                || "X11 同步 CreateCounter 失败。",
                 sync::create_counter(xcb, sync_request_counter, sync::Int64 { lo: 0, hi: 0 }),
             )?;
 
             check_reply(
-                || "X11 ChangeProperty32 setting sync request counter failed.",
+                || "X11 设置同步请求计数器的 ChangeProperty32 失败。",
                 xcb.change_property32(
                     xproto::PropMode::REPLACE,
                     x_window,
@@ -685,7 +685,7 @@ impl X11WindowState {
                         | xinput::XIEventMask::from(1u32 << xinput::GESTURE_PINCH_END_EVENT);
             }
             check_reply(
-                || "X11 XiSelectEvents failed.",
+                || "X11 XiSelectEvents 失败。",
                 xcb.xinput_xi_select_events(
                     x_window,
                     &[xinput::EventMask {
@@ -696,7 +696,7 @@ impl X11WindowState {
             )?;
 
             check_reply(
-                || "X11 XiSelectEvents for device changes failed.",
+                || "X11 设备变更的 XiSelectEvents 失败。",
                 xcb.xinput_xi_select_events(
                     x_window,
                     &[xinput::EventMask {
@@ -747,7 +747,7 @@ impl X11WindowState {
             check_reply(
                 || {
                     format!(
-                        "X11 change of WM_SIZE_HINTS failed. max_size: {:?}",
+                        "X11 更改 WM_SIZE_HINTS 失败。最大尺寸: {:?}",
                         max_texture_size
                     )
                 },
@@ -766,7 +766,7 @@ impl X11WindowState {
                 }));
 
                 check_reply(
-                    || "X11 ChangeProperty32 for _NET_ICON_NAME failed.",
+                    || "X11 设置 _NET_ICON_NAME 的 ChangeProperty32 失败。",
                     xcb.change_property32(
                         xproto::PropMode::REPLACE,
                         x_window,
@@ -816,7 +816,7 @@ impl X11WindowState {
 
         if setup_result.is_err() {
             check_reply(
-                || "X11 DestroyWindow failed while cleaning it up after setup failure.",
+                || "X11 在设置失败后清理窗口时 DestroyWindow 失败。",
                 xcb.destroy_window(x_window),
             )?;
             xcb_flush(xcb);
@@ -844,7 +844,7 @@ impl Drop for X11Window {
 
         let destroy_x_window = maybe!({
             check_reply(
-                || "X11 DestroyWindow failure.",
+                || "X11 DestroyWindow 失败。",
                 self.0.xcb.destroy_window(self.0.x_window),
             )?;
             xcb_flush(&self.0.xcb);
@@ -959,7 +959,7 @@ impl X11Window {
     ) -> anyhow::Result<TranslateCoordinatesReply> {
         let state = self.0.state.borrow();
         get_reply(
-            || "X11 TranslateCoordinates failed.",
+            || "X11 TranslateCoordinates 失败。",
             self.0.xcb.translate_coordinates(
                 self.0.x_window,
                 state.x_root_window,
@@ -973,12 +973,12 @@ impl X11Window {
         let state = self.0.state.borrow();
 
         check_reply(
-            || "X11 UngrabPointer before move/resize of window failed.",
+            || "X11 在移动/调整窗口大小前 UngrabPointer 失败。",
             self.0.xcb.ungrab_pointer(x11rb::CURRENT_TIME),
         )?;
 
         let pointer = get_reply(
-            || "X11 QueryPointer before move/resize of window failed.",
+            || "X11 在移动/调整窗口大小前 QueryPointer 失败。",
             self.0.xcb.query_pointer(self.0.x_window),
         )?;
         let message = ClientMessageEvent::new(
@@ -994,7 +994,7 @@ impl X11Window {
             ],
         );
         check_reply(
-            || "X11 SendEvent to move/resize window failed.",
+            || "X11 发送移动/调整窗口大小事件的 SendEvent 失败。",
             self.0.xcb.send_event(
                 false,
                 state.x_root_window,
@@ -1035,7 +1035,7 @@ impl X11WindowStatePtr {
         mut state: std::cell::RefMut<X11WindowState>,
     ) -> anyhow::Result<()> {
         let reply = get_reply(
-            || "X11 GetProperty for _GTK_EDGE_CONSTRAINTS failed.",
+            || "X11 获取 _GTK_EDGE_CONSTRAINTS 的 GetProperty 失败。",
             self.xcb.get_property(
                 false,
                 self.x_window,
@@ -1052,7 +1052,7 @@ impl X11WindowStatePtr {
                 let edge_constraints = EdgeConstraints::from_atom(atom);
                 state.edge_constraints.replace(edge_constraints);
             } else {
-                log::error!("Failed to parse GTK_EDGE_CONSTRAINTS");
+                log::error!("解析 GTK_EDGE_CONSTRAINTS 失败");
             }
         }
 
@@ -1064,7 +1064,7 @@ impl X11WindowStatePtr {
         mut state: std::cell::RefMut<X11WindowState>,
     ) -> anyhow::Result<()> {
         let reply = get_reply(
-            || "X11 GetProperty for _NET_WM_STATE failed.",
+            || "X11 获取 _NET_WM_STATE 的 GetProperty 失败。",
             self.xcb.get_property(
                 false,
                 self.x_window,
@@ -1260,7 +1260,7 @@ impl X11WindowStatePtr {
             let result = (is_resize, state.content_size(), state.scale_factor);
             if let Some(value) = state.last_sync_counter.take() {
                 check_reply(
-                    || "X11 sync SetCounter failed.",
+                    || "X11 同步 SetCounter 失败。",
                     sync::set_counter(&self.xcb, state.counter_id, value),
                 )?;
             }
@@ -1382,7 +1382,7 @@ impl PlatformWindow for X11Window {
         check_reply(
             || {
                 format!(
-                    "X11 ConfigureWindow failed. width: {}, height: {}",
+                    "X11 ConfigureWindow 失败。宽度: {}, 高度: {}",
                     width, height
                 )
             },
@@ -1411,7 +1411,7 @@ impl PlatformWindow for X11Window {
 
     fn mouse_position(&self) -> Point<Pixels> {
         get_reply(
-            || "X11 QueryPointer failed.",
+            || "X11 QueryPointer 失败。",
             self.0.xcb.query_pointer(self.0.x_window),
         )
         .log_err()
@@ -1503,16 +1503,16 @@ impl PlatformWindow for X11Window {
                 Ok(Some(existing_hints)) => hints = existing_hints,
                 Ok(None) => {}
                 Err(error) => {
-                    log::debug!("failed to read X11 WM_HINTS before setting urgency: {error}")
+                    log::debug!("设置紧急状态前读取 X11 WM_HINTS 失败: {error}")
                 }
             },
             Err(error) => {
-                log::debug!("failed to request X11 WM_HINTS before setting urgency: {error}")
+                log::debug!("设置紧急状态前请求 X11 WM_HINTS 失败: {error}")
             }
         }
         hints.urgent = true;
         check_reply(
-            || "X11 ChangeProperty for WM_HINTS urgency failed.",
+            || "X11 设置 WM_HINTS 紧急状态的 ChangeProperty 失败。",
             hints.set(&*self.0.xcb, self.0.x_window),
         )
         .log_err();
@@ -1529,7 +1529,7 @@ impl PlatformWindow for X11Window {
 
     fn set_title(&mut self, title: &str) {
         check_reply(
-            || "X11 ChangeProperty8 on WM_NAME failed.",
+            || "X11 设置 WM_NAME 的 ChangeProperty8 失败。",
             self.0.xcb.change_property8(
                 xproto::PropMode::REPLACE,
                 self.0.x_window,
@@ -1541,7 +1541,7 @@ impl PlatformWindow for X11Window {
         .log_err();
 
         check_reply(
-            || "X11 ChangeProperty8 on _NET_WM_NAME failed.",
+            || "X11 设置 _NET_WM_NAME 的 ChangeProperty8 失败。",
             self.0.xcb.change_property8(
                 xproto::PropMode::REPLACE,
                 self.0.x_window,
@@ -1561,7 +1561,7 @@ impl PlatformWindow for X11Window {
         data.extend(app_id.bytes()); // class
 
         check_reply(
-            || "X11 ChangeProperty8 for WM_CLASS failed.",
+            || "X11 设置 WM_CLASS 的 ChangeProperty8 失败。",
             self.0.xcb.change_property8(
                 xproto::PropMode::REPLACE,
                 self.0.x_window,
@@ -1575,7 +1575,7 @@ impl PlatformWindow for X11Window {
 
     fn map_window(&mut self) -> anyhow::Result<()> {
         check_reply(
-            || "X11 MapWindow failed.",
+            || "X11 MapWindow 失败。",
             self.0.xcb.map_window(self.0.x_window),
         )?;
         Ok(())
@@ -1620,7 +1620,7 @@ impl PlatformWindow for X11Window {
             [WINDOW_ICONIC_STATE, 0, 0, 0, 0],
         );
         check_reply(
-            || "X11 SendEvent to minimize window failed.",
+            || "X11 发送最小化窗口事件的 SendEvent 失败。",
             self.0.xcb.send_event(
                 false,
                 state.x_root_window,
@@ -1634,7 +1634,7 @@ impl PlatformWindow for X11Window {
     fn zoom(&self) {
         let state = self.0.state.borrow();
         self.set_wm_hints(
-            || "X11 SendEvent to maximize a window failed.",
+            || "X11 发送最大化窗口事件的 SendEvent 失败。",
             WmHintPropertyState::Toggle,
             state.atoms._NET_WM_STATE_MAXIMIZED_VERT,
             state.atoms._NET_WM_STATE_MAXIMIZED_HORZ,
@@ -1645,7 +1645,7 @@ impl PlatformWindow for X11Window {
     fn toggle_fullscreen(&self) {
         let state = self.0.state.borrow();
         self.set_wm_hints(
-            || "X11 SendEvent to fullscreen a window failed.",
+            || "X11 发送全屏窗口事件的 SendEvent 失败。",
             WmHintPropertyState::Toggle,
             state.atoms._NET_WM_STATE_FULLSCREEN,
             xproto::AtomEnum::NONE.into(),
@@ -1715,7 +1715,7 @@ impl PlatformWindow for X11Window {
             match inner.renderer.recover(&raw_window) {
                 Ok(()) => {}
                 Err(err) => {
-                    log::warn!("GPU recovery failed, will retry on next frame: {err}");
+                    log::warn!("GPU 恢复失败,将在下一帧重试: {err}");
                 }
             }
 
@@ -1739,7 +1739,7 @@ impl PlatformWindow for X11Window {
         let state = self.0.state.borrow();
 
         check_reply(
-            || "X11 UngrabPointer failed.",
+            || "X11 UngrabPointer 失败。",
             self.0.xcb.ungrab_pointer(x11rb::CURRENT_TIME),
         )
         .log_err();
@@ -1760,7 +1760,7 @@ impl PlatformWindow for X11Window {
             ],
         );
         check_reply(
-            || "X11 SendEvent to show window menu failed.",
+            || "X11 发送显示窗口菜单事件的 SendEvent 失败。",
             self.0.xcb.send_event(
                 false,
                 state.x_root_window,
@@ -1842,7 +1842,7 @@ impl PlatformWindow for X11Window {
             state.last_insets = insets;
 
             check_reply(
-                || "X11 ChangeProperty for _GTK_FRAME_EXTENTS failed.",
+                || "X11 设置 _GTK_FRAME_EXTENTS 的 ChangeProperty 失败。",
                 self.0.xcb.change_property(
                     xproto::PropMode::REPLACE,
                     self.0.x_window,
@@ -1864,7 +1864,7 @@ impl PlatformWindow for X11Window {
             && !state.client_side_decorations_supported
         {
             log::info!(
-                "x11: no compositor present, falling back to server-side window decorations"
+                "x11: 未检测到合成器,回退到服务器端窗口装饰"
             );
             decorations = gpui::WindowDecorations::Server;
         }
@@ -1876,7 +1876,7 @@ impl PlatformWindow for X11Window {
         };
 
         let success = check_reply(
-            || "X11 ChangeProperty for _MOTIF_WM_HINTS failed.",
+            || "X11 设置 _MOTIF_WM_HINTS 的 ChangeProperty 失败。",
             self.0.xcb.change_property(
                 xproto::PropMode::REPLACE,
                 self.0.x_window,

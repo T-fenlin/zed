@@ -555,7 +555,7 @@ impl KeymapEditor {
 
         let filter_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Filter action names…", window, cx);
+            editor.set_placeholder_text("筛选操作名称…", window, cx);
             editor
         });
 
@@ -1089,29 +1089,29 @@ impl KeymapEditor {
             let context_menu = ContextMenu::build(window, cx, |menu, _window, _cx| {
                 menu.context(self.focus_handle.clone())
                     .when(selected_binding_is_unmapped, |this| {
-                        this.action("Create", Box::new(CreateBinding))
+                        this.action("创建", Box::new(CreateBinding))
                     })
                     .action_disabled_when(
                         selected_binding_is_non_interactable,
-                        "Edit",
+                        "编辑",
                         Box::new(EditBinding),
                     )
                     .action_disabled_when(
                         selected_binding_is_non_interactable,
-                        "Delete",
+                        "删除",
                         Box::new(DeleteBinding),
                     )
                     .separator()
-                    .action("Copy Action", Box::new(CopyAction))
+                    .action("复制操作", Box::new(CopyAction))
                     .action_disabled_when(
                         selected_binding_has_no_context,
-                        "Copy Context",
+                        "复制上下文",
                         Box::new(CopyContext),
                     )
                     .separator()
                     .action_disabled_when(
                         selected_binding_has_no_context,
-                        "Show Matching Keybindings",
+                        "显示匹配的键位绑定",
                         Box::new(ShowMatchingKeybinds),
                     )
             });
@@ -1152,7 +1152,7 @@ impl KeymapEditor {
             base_button_style(index, IconName::Warning)
                 .icon_color(Color::Warning)
                 .disabled(true)
-                .tooltip(Tooltip::text("This action is unbound"))
+                .tooltip(Tooltip::text("此操作未绑定"))
         } else if self.filter_state != FilterState::Conflicts
             && let Some(conflict) = conflict
         {
@@ -1161,9 +1161,9 @@ impl KeymapEditor {
                     .icon_color(Color::Warning)
                     .tooltip(|_window, cx| {
                         Tooltip::with_meta(
-                            "View conflicts",
+                            "查看冲突",
                             Some(&ToggleConflictFilter),
-                            "Use alt+click to show all conflicts",
+                            "使用 alt+点击 显示所有冲突",
                             cx,
                         )
                     })
@@ -1180,9 +1180,9 @@ impl KeymapEditor {
                 base_button_style(index, IconName::Info)
                     .tooltip(|_window, cx| {
                         Tooltip::with_meta(
-                            "Edit this binding",
+                            "编辑此绑定",
                             Some(&ShowMatchingKeybinds),
-                            "This binding is overridden by other bindings.",
+                            "此绑定已被其他绑定覆盖。",
                             cx,
                         )
                     })
@@ -1195,9 +1195,9 @@ impl KeymapEditor {
                 base_button_style(index, IconName::Info)
                     .tooltip(|_window, cx|  {
                         Tooltip::with_meta(
-                            "Show matching keybinds",
+                            "显示匹配的键位绑定",
                             Some(&ShowMatchingKeybinds),
-                            "This binding is overridden by other bindings.\nUse alt+click to edit this binding",
+                            "此绑定已被其他绑定覆盖。\n使用 alt+点击 编辑此绑定",
                             cx,
                         )
                     })
@@ -1222,7 +1222,7 @@ impl KeymapEditor {
                 })
                 .when(
                     self.show_hover_menus && !self.context_menu_deployed(),
-                    |this| this.tooltip(Tooltip::for_action_title("Edit Keybinding", &EditBinding)),
+                    |this| this.tooltip(Tooltip::for_action_title("编辑键位绑定", &EditBinding)),
                 )
                 .on_click(cx.listener(move |this, _, window, cx| {
                     this.select_index(index, None, window, cx);
@@ -1236,15 +1236,15 @@ impl KeymapEditor {
         let hint = match (self.filter_state, &self.search_mode) {
             (FilterState::Conflicts, _) => {
                 if self.keybinding_conflict_state.any_user_binding_conflicts() {
-                    "No conflicting keybinds found that match the provided query"
+                    "未找到与提供的查询匹配的冲突键位绑定"
                 } else {
-                    "No conflicting keybinds found"
+                    "未找到冲突的键位绑定"
                 }
             }
             (FilterState::All, SearchMode::KeyStroke { .. }) => {
-                "No keybinds found matching the entered keystrokes"
+                "未找到与输入的按键序列匹配的键位绑定"
             }
-            (FilterState::All, SearchMode::Normal) => "No matches found for the provided query",
+            (FilterState::All, SearchMode::Normal) => "未找到与提供的查询匹配的结果",
         };
 
         Label::new(hint).color(Color::Muted).into_any_element()
@@ -1619,9 +1619,9 @@ impl KeymapEditor {
 
                         menu = menu
                             .context(focus_handle.clone())
-                            .header("Filters")
+                            .header("筛选器")
                             .map(add_filter(
-                                "Conflicts",
+                                "冲突",
                                 matches!(filter_state, FilterState::Conflicts),
                                 Some(ToggleConflictFilter.boxed_clone()),
                                 &focus_handle,
@@ -1629,7 +1629,7 @@ impl KeymapEditor {
                                 None,
                             ))
                             .map(add_filter(
-                                "No Action",
+                                "无操作",
                                 show_no_action_bindings,
                                 Some(ToggleNoActionBindings.boxed_clone()),
                                 &focus_handle,
@@ -1637,9 +1637,9 @@ impl KeymapEditor {
                                 None,
                             ))
                             .separator()
-                            .header("Categories")
+                            .header("类别")
                             .map(add_filter(
-                                "User",
+                                "用户",
                                 source_filters.user,
                                 None,
                                 &focus_handle,
@@ -1649,7 +1649,7 @@ impl KeymapEditor {
                                 }),
                             ))
                             .map(add_filter(
-                                "Default",
+                                "默认",
                                 source_filters.zed_defaults,
                                 None,
                                 &focus_handle,
@@ -1684,7 +1684,7 @@ impl KeymapEditor {
                         self.keybinding_conflict_state.any_user_binding_conflicts(),
                         |this| this.indicator(Indicator::dot().color(Color::Warning)),
                     ),
-                Tooltip::text("Filters"),
+                Tooltip::text("筛选器"),
             );
 
         fn add_filter(
@@ -1950,7 +1950,7 @@ impl Item for KeymapEditor {
     type Event = ();
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> ui::SharedString {
-        "Keymap Editor".into()
+        "键位映射编辑器".into()
     }
 }
 
@@ -1960,7 +1960,7 @@ impl Render for KeymapEditor {
             let button = IconButton::new("keystrokes-exact-match", IconName::CaseSensitive)
                 .tooltip(move |_window, cx| {
                     Tooltip::for_action(
-                        "Toggle Exact Match Mode",
+                        "切换精确匹配模式",
                         &ToggleExactKeystrokeMatching,
                         cx,
                     )
@@ -2055,7 +2055,7 @@ impl Render for KeymapEditor {
                                             let focus_handle = focus_handle.clone();
                                             move |_window, cx| {
                                                 Tooltip::for_action_in(
-                                                    "Search by Keystrokes",
+                                                    "按按键序列搜索",
                                                     &ToggleKeystrokeSearch,
                                                     &focus_handle,
                                                     cx,
@@ -2073,7 +2073,7 @@ impl Render for KeymapEditor {
                                         self.render_filter_dropdown(focus_handle, cx)
                                     )
                                     .child(
-                                        Button::new("edit-in-json", "Edit in JSON")
+                                        Button::new("edit-in-json", "在 JSON 中编辑")
                                             .key_binding(
                                                 ui::KeyBinding::for_action_in(&zed_actions::OpenKeymapFile, &focus_handle, cx)
                                                     .map(|kb| kb.size(rems_from_px(10_f32))),
@@ -2086,7 +2086,7 @@ impl Render for KeymapEditor {
                                             })
                                     )
                                     .child(
-                                        Button::new("create", "Create Keybinding")
+                                        Button::new("create", "创建键位绑定")
                                             .style(ButtonStyle::Outlined)
                                             .key_binding(
                                                 ui::KeyBinding::for_action_in(&OpenCreateKeybindingModal, &focus_handle, cx)
@@ -2124,7 +2124,7 @@ impl Render for KeymapEditor {
                     .width_config(ColumnWidthConfig::redistributable(
                         self.current_widths.clone(),
                     ))
-                    .header(vec!["", "Action", "Arguments", "Keystrokes", "Context", "Source"])
+                    .header(vec!["", "操作", "参数", "按键序列", "上下文", "来源"])
                     .uniform_list(
                         "keymap-editor-table",
                         row_count,
@@ -2320,21 +2320,21 @@ impl Render for KeymapEditor {
                                                 let overriding_binding = this.keybindings.get(conflict.index);
                                                 let context = overriding_binding.and_then(|binding| {
                                                     match conflict.override_source {
-                                                        KeybindSource::User  => Some("your keymap"),
-                                                        KeybindSource::Vim => Some("the vim keymap"),
-                                                        KeybindSource::Base => Some("your base keymap"),
+                                                        KeybindSource::User  => Some("你的键位映射"),
+                                                        KeybindSource::Vim => Some("Vim 键位映射"),
+                                                        KeybindSource::Base => Some("你的基础键位映射"),
                                                         _ => {
-                                                            log::error!("Unexpected override from the {} keymap", conflict.override_source.name());
+                                                            log::error!("来自 {} 键位映射的意外覆盖", conflict.override_source.name());
                                                             None
                                                         }
-                                                    }.map(|source| format!("This keybinding is overridden by the '{}' binding from {}.", binding.action().humanized_name, source))
-                                                }).unwrap_or_else(|| "This binding is overridden.".to_string());
+                                                    }.map(|source| format!("此键位绑定已被来自 {} 的 '{}' 绑定覆盖。", binding.action().humanized_name, source))
+                                                }).unwrap_or_else(|| "此绑定已被覆盖。".to_string());
 
                                                 row.tooltip(Tooltip::text(context))
                                             },
                                         )
                                         .when(is_unbound_by_unbind, |row| {
-                                            row.tooltip(Tooltip::text("This action is unbound"))
+                                            row.tooltip(Tooltip::text("此操作未绑定"))
                                         }),
                                 )
                                 .border_2()
@@ -2502,8 +2502,8 @@ impl KeybindingEditorModal {
             .new(|cx| KeystrokeInput::new(editing_keybind.keystrokes().map(Vec::from), window, cx));
 
         let context_editor: Entity<InputField> = cx.new(|cx| {
-            let input = InputField::new(window, cx, "Keybinding Context")
-                .label("Edit Context")
+            let input = InputField::new(window, cx, "键位绑定上下文")
+                .label("编辑上下文")
                 .label_size(LabelSize::Default);
 
             if let Some(context) = editing_keybind
@@ -2558,8 +2558,8 @@ impl KeybindingEditorModal {
                 .collect();
 
             let editor = cx.new(|cx| {
-                let input = InputField::new(window, cx, "Type an action name")
-                    .label("Action")
+                let input = InputField::new(window, cx, "输入操作名称")
+                    .label("操作")
                     .label_size(LabelSize::Default);
 
                 let editor_entity = input.editor();
@@ -2718,13 +2718,13 @@ impl KeybindingEditorModal {
             let action_name_str = selector.read(cx).text(cx);
 
             if action_name_str.is_empty() {
-                anyhow::bail!("Action name is required");
+                anyhow::bail!("操作名称必填");
             }
 
             self.action_name_to_static
                 .get(&action_name_str)
                 .copied()
-                .ok_or_else(|| anyhow::anyhow!("Action '{}' not found", action_name_str))
+                .ok_or_else(|| anyhow::anyhow!("未找到操作 '{}'", action_name_str))
         } else {
             Ok(self.editing_keybind.action().name)
         }
@@ -2741,12 +2741,12 @@ impl KeybindingEditorModal {
         let value = action_arguments
             .as_ref()
             .map(|args| {
-                serde_json::from_str(args).context("Failed to parse action arguments as JSON")
+                serde_json::from_str(args).context("无法将操作参数解析为 JSON")
             })
             .transpose()?;
 
         cx.build_action(action_name, value)
-            .context("Failed to validate action arguments")?;
+            .context("无法验证操作参数")?;
         Ok(action_arguments)
     }
 
@@ -2754,7 +2754,7 @@ impl KeybindingEditorModal {
         let new_keystrokes = self
             .keybind_editor
             .read_with(cx, |editor, _| editor.keystrokes().to_vec());
-        anyhow::ensure!(!new_keystrokes.is_empty(), "Keystrokes cannot be empty");
+        anyhow::ensure!(!new_keystrokes.is_empty(), "按键序列不能为空");
         Ok(new_keystrokes)
     }
 
@@ -2765,7 +2765,7 @@ impl KeybindingEditorModal {
         let Some(context) = new_context.is_empty().not().then_some(new_context) else {
             return Ok(None);
         };
-        gpui::KeyBindingContextPredicate::parse(&context).context("Failed to parse key context")?;
+        gpui::KeyBindingContextPredicate::parse(&context).context("无法解析键位上下文")?;
 
         Ok(Some(context))
     }
@@ -2818,19 +2818,19 @@ impl KeybindingEditorModal {
                 Some(name) => {
                      if remaining_conflict_amount > 0 {
                         format!(
-                            "Your keybind would conflict with the \"{}\" action and {} other bindings",
+                            "你的键位绑定将与 \"{}\" 操作及其他 {} 个绑定冲突",
                             name, remaining_conflict_amount
                         )
                     } else {
-                        format!("Your keybind would conflict with the \"{}\" action", name)
+                        format!("你的键位绑定将与 \"{}\" 操作冲突", name)
                     }
                 }
                 None => {
                     log::info!(
-                        "Could not find action in keybindings with index {}",
+                        "在索引为 {} 的键位绑定中找不到操作",
                         first_conflict_index
                     );
-                    "Your keybind would conflict with other actions".to_string()
+                    "你的键位绑定将与其他操作冲突".to_string()
                 }
             };
 
@@ -2888,7 +2888,7 @@ impl KeybindingEditorModal {
                                 fallback: keymap.table_interaction_state.read(cx).scroll_offset(),
                             });
                             let status_toast = StatusToast::new(
-                                format!("Saved edits to the {} action.", humanized_action_name),
+                                format!("已保存对 {} 操作的编辑。", humanized_action_name),
                                 cx,
                                 move |this, _cx| {
                                     this.icon(
@@ -2897,7 +2897,7 @@ impl KeybindingEditorModal {
                                             .color(Color::Success),
                                     )
                                     .dismiss_button(true)
-                                    // .action("Undo", f) todo: wire the undo functionality
+                                    // .action("撤销", f) todo: wire the undo functionality
                                 },
                             );
 
@@ -3098,7 +3098,7 @@ impl Render for KeybindingEditorModal {
                                     )
                                 })
                                 .when(self.creating, |this| {
-                                    this.child(Label::new("Create Keybinding"))
+                                    this.child(Label::new("创建键位绑定"))
                                 }),
                         ),
                     )
@@ -3115,13 +3115,13 @@ impl Render for KeybindingEditorModal {
                                 .child(
                                     v_flex()
                                         .gap_1()
-                                        .child(Label::new("Edit Keystroke"))
+                                        .child(Label::new("编辑按键序列"))
                                         .child(self.keybind_editor.clone())
                                         .child(h_flex().gap_px().when(
                                             matching_bindings_count > 0,
                                             |this| {
                                                 let label = format!(
-                                                    "There {} {} {} with the same keystrokes.",
+                                                    "有 {} {} {} 使用相同的按键序列。",
                                                     if matching_bindings_count == 1 {
                                                         "is"
                                                     } else {
@@ -3141,7 +3141,7 @@ impl Render for KeybindingEditorModal {
                                                         .color(Color::Muted),
                                                 )
                                                 .child(
-                                                    Button::new("show_matching", "View")
+                                                    Button::new("show_matching", "查看")
                                                         .label_size(LabelSize::Small)
                                                         .end_icon(
                                                             Icon::new(IconName::ArrowUpRight)
@@ -3163,7 +3163,7 @@ impl Render for KeybindingEditorModal {
                                     this.child(
                                         v_flex()
                                             .gap_1()
-                                            .child(Label::new("Edit Arguments"))
+                                            .child(Label::new("编辑参数"))
                                             .child(editor),
                                     )
                                 })
@@ -3182,10 +3182,10 @@ impl Render for KeybindingEditorModal {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Button::new("cancel", "Cancel")
+                                    Button::new("cancel", "取消")
                                         .on_click(cx.listener(|_, _, _, cx| cx.emit(DismissEvent))),
                                 )
-                                .child(Button::new("save-btn", "Save").on_click(cx.listener(
+                                .child(Button::new("save-btn", "保存").on_click(cx.listener(
                                     |this, _event, _window, cx| {
                                         this.save_or_display_error(cx);
                                     },
@@ -3313,8 +3313,8 @@ impl ActionArgumentsEditor {
                     Self::create_temp_buffer(temp_dir, file_name.clone(), project.clone(), fs, cx)
                         .await
                         .context(concat!(
-                            "Failed to create temporary buffer for action arguments. ",
-                            "Auto-complete will not work"
+                            "无法为操作参数创建临时缓冲区。",
+                            "自动补全将无法工作"
                         ))?;
 
                 let editor = cx.new_window_entity(|window, cx| {
@@ -3361,7 +3361,7 @@ impl ActionArgumentsEditor {
                             });
                         }
                     })
-                    // .context("Failed to load JSON language for editing keybinding action arguments input")
+                    // .context("无法加载用于编辑键位绑定操作参数输入的 JSON 语言")
                 })
                 .ok();
                 this.update(cx, |this, _cx| {
@@ -3390,7 +3390,7 @@ impl ActionArgumentsEditor {
             editor.set_text(arguments, window, cx);
         } else {
             // TODO: default value from schema?
-            editor.set_placeholder_text("Action Arguments", window, cx);
+            editor.set_placeholder_text("操作参数", window, cx);
         }
     }
 
@@ -3410,14 +3410,14 @@ impl ActionArgumentsEditor {
                         let temp_dir = paths::temp_dir();
                         let sub_temp_dir = tempfile::Builder::new()
                             .tempdir_in(temp_dir)
-                            .context("Failed to create temporary directory")?;
+                            .context("无法创建临时目录")?;
                         Some(sub_temp_dir)
                     }
                 };
                 let dir_path = temp_dir.as_deref().unwrap_or_else(|| {
                     temp_dir_backup
                         .as_ref()
-                        .expect("created backup tempdir")
+                        .expect("已创建备份临时目录")
                         .path()
                 });
                 let path = dir_path.join(file_name);
@@ -3429,19 +3429,19 @@ impl ActionArgumentsEditor {
                     },
                 )
                 .await
-                .context("Failed to create temporary file")?;
+                .context("无法创建临时文件")?;
                 anyhow::Ok((path, temp_dir_backup))
             }
         }
         .await
-        .context("Failed to create backing file")?;
+        .context("无法创建后备文件")?;
 
         project
             .update(cx, |project, cx| {
                 project.open_local_buffer(temp_file_path, cx)
             })?
             .await
-            .context("Failed to create buffer")
+            .context("无法创建缓冲区")
             .map(|buffer| (buffer, temp_dir))
     }
 }
@@ -3558,10 +3558,10 @@ async fn load_json_language(workspace: WeakEntity<Workspace>, cx: &mut AsyncApp)
                 .languages()
                 .language_for_name("JSON")
         })
-        .context("Failed to load JSON language")
+        .context("无法加载 JSON 语言")
         .log_err();
     let json_language = match json_language_task {
-        Some(task) => task.await.context("Failed to load JSON language").log_err(),
+        Some(task) => task.await.context("无法加载 JSON 语言").log_err(),
         None => None,
     };
     json_language.unwrap_or_else(|| {
@@ -3585,21 +3585,21 @@ async fn load_keybind_context_language(
                 .project()
                 .read(cx)
                 .languages()
-                .language_for_name("Zed Keybind Context")
+                .language_for_name("Zed 键位绑定上下文")
         })
-        .context("Failed to load Zed Keybind Context language")
+        .context("无法加载 Zed 键位绑定上下文语言")
         .log_err();
     let language = match language_task {
         Some(task) => task
             .await
-            .context("Failed to load Zed Keybind Context language")
+            .context("无法加载 Zed 键位绑定上下文语言")
             .log_err(),
         None => None,
     };
     language.unwrap_or_else(|| {
         Arc::new(Language::new(
             LanguageConfig {
-                name: "Zed Keybind Context".into(),
+                name: "Zed 键位绑定上下文".into(),
                 ..Default::default()
             },
             Some(tree_sitter_rust::LANGUAGE.into()),
@@ -3618,7 +3618,7 @@ async fn save_keybinding_update(
 ) -> anyhow::Result<()> {
     let keymap_contents = settings::KeymapFile::load_keymap_file(fs)
         .await
-        .context("Failed to load keymap file")?;
+        .context("无法加载键位映射文件")?;
 
     let tab_size = infer_json_indent_size(&keymap_contents);
 
@@ -3666,16 +3666,16 @@ async fn save_keybinding_update(
         keyboard_mapper,
         deprecated_aliases,
     )
-    .map_err(|err| err.context("Could not save updated keybinding"))?;
+    .map_err(|err| err.context("无法保存更新后的键位绑定"))?;
     fs.write(
         paths::keymap_file().as_path(),
         updated_keymap_contents.as_bytes(),
     )
     .await
-    .context("Failed to write keymap file")?;
+    .context("无法写入键位映射文件")?;
 
     telemetry::event!(
-        "Keybinding Updated",
+        "键位绑定已更新",
         new_keybinding = new_keybinding,
         removed_keybinding = removed_keybinding,
         source = source
@@ -3690,11 +3690,11 @@ async fn remove_keybinding(
     deprecated_aliases: &HashMap<&'static str, &'static str>,
 ) -> anyhow::Result<()> {
     let Some(keystrokes) = existing.keystrokes() else {
-        anyhow::bail!("Cannot remove a keybinding that does not exist");
+        anyhow::bail!("无法移除不存在的键位绑定");
     };
     let keymap_contents = settings::KeymapFile::load_keymap_file(fs)
         .await
-        .context("Failed to load keymap file")?;
+        .context("无法加载键位映射文件")?;
     let tab_size = infer_json_indent_size(&keymap_contents);
 
     let operation = settings::KeybindUpdateOperation::Remove {
@@ -3719,16 +3719,16 @@ async fn remove_keybinding(
         keyboard_mapper,
         deprecated_aliases,
     )
-    .context("Failed to update keybinding")?;
+    .context("无法更新键位绑定")?;
     fs.write(
         paths::keymap_file().as_path(),
         updated_keymap_contents.as_bytes(),
     )
     .await
-    .context("Failed to write keymap file")?;
+    .context("无法写入键位映射文件")?;
 
     telemetry::event!(
-        "Keybinding Removed",
+        "键位绑定已移除",
         new_keybinding = new_keybinding,
         removed_keybinding = removed_keybinding,
         source = source
@@ -3951,7 +3951,7 @@ impl SerializableItem for KeymapEditor {
             if db.get_keybinding_editor(item_id, workspace_id)?.is_some() {
                 cx.update(|window, cx| cx.new(|cx| KeymapEditor::new(workspace, window, cx)))
             } else {
-                Err(anyhow!("No keybinding editor to deserialize"))
+                Err(anyhow!("没有要反序列化的键位绑定编辑器"))
             }
         })
     }
@@ -4039,10 +4039,10 @@ mod tests {
             let mut key_bindings = match KeymapFile::load(&content, cx) {
                 KeymapFileLoadResult::Success { key_bindings } => key_bindings,
                 KeymapFileLoadResult::SomeFailedToLoad { error_message, .. } => {
-                    panic!("keymap failed to load: {error_message:?}")
+                    panic!("键位映射加载失败:{error_message:?}")
                 }
                 KeymapFileLoadResult::JsonParseFailure { error } => {
-                    panic!("keymap json parse failure: {error}")
+                    panic!("键位映射 JSON 解析失败:{error}")
                 }
             };
             cx.clear_key_bindings();
@@ -4122,7 +4122,7 @@ mod tests {
         assert_eq!(
             rows.len(),
             2,
-            "expected the two duplicate bindings to show as two rows"
+            "期望两个重复的绑定显示为两行"
         );
 
         keymap_editor.update_in(cx, |editor, window, cx| {
@@ -4135,7 +4135,7 @@ mod tests {
         assert_eq!(
             content.matches("alt-cmd-shift-c").count(),
             1,
-            "expected exactly one binding remaining in the keymap file, got:\n{content}"
+            "期望键位映射文件中恰好剩余一个绑定,实际为:\n{content}"
         );
 
         // Simulate the keymap file watcher reacting to the change.
@@ -4145,7 +4145,7 @@ mod tests {
         let rows = keymap_editor.read_with(cx, |editor, _| {
             visible_rows_for_action(editor, "zed::OpenKeymap")
         });
-        assert_eq!(rows.len(), 1, "expected one row remaining after deletion");
+        assert_eq!(rows.len(), 1, "期望删除后剩余一行");
     }
 
     // Regression test: one of the two entries in the keymap file uses a
@@ -4177,7 +4177,7 @@ mod tests {
         assert_eq!(
             rows.len(),
             2,
-            "both the alias and the canonical entry should show as (identical) rows"
+            "别名和规范条目都应显示为(相同的)行"
         );
 
         // Delete the first row. Both rows report the canonical action name, so
@@ -4192,7 +4192,7 @@ mod tests {
         assert_eq!(
             content.matches("alt-cmd-shift-c").count(),
             1,
-            "first deletion should remove one of the two entries, got:\n{content}"
+            "第一次删除应移除两个条目之一,实际为:\n{content}"
         );
 
         // Simulate the keymap file watcher reacting to the change.
@@ -4205,7 +4205,7 @@ mod tests {
         assert_eq!(
             rows.len(),
             1,
-            "one row should remain after the first deletion"
+            "第一次删除后应剩余一行"
         );
 
         // Delete the remaining row (the alias entry). `find_binding` must
@@ -4221,7 +4221,7 @@ mod tests {
         assert_eq!(
             content.matches("alt-cmd-shift-c").count(),
             0,
-            "second deletion should remove the remaining (alias) entry, got:\n{content}"
+            "第二次删除应移除剩余的(别名)条目,实际为:\n{content}"
         );
     }
 
@@ -4230,9 +4230,9 @@ mod tests {
         #[track_caller]
         fn cmp(a: &str, b: &str) -> bool {
             let a = gpui::KeyBindingContextPredicate::parse(a)
-                .expect("Failed to parse keybinding context a");
+                .expect("无法解析键位绑定上下文 a");
             let b = gpui::KeyBindingContextPredicate::parse(b)
-                .expect("Failed to parse keybinding context b");
+                .expect("无法解析键位绑定上下文 b");
             normalized_ctx_eq(&a, &b)
         }
 

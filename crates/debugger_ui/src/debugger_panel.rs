@@ -213,7 +213,7 @@ impl DebugPanel {
             .and_then(|id| self.project.read(cx).worktree_for_id(id, cx))
             .or_else(|| self.project.read(cx).visible_worktrees(cx).next())
         else {
-            log::debug!("Could not find a worktree to spawn the debug session in");
+            log::debug!("找不到用于启动调试会话的工作树");
             return;
         };
 
@@ -298,7 +298,7 @@ impl DebugPanel {
                 *state_task = Some(boot_task);
             }
             SessionState::Running(_) => {
-                debug_panic!("Session state should be in building because we are just starting it");
+                debug_panic!("会话状态应为构建中,因为我们刚刚启动它");
             }
         });
     }
@@ -376,7 +376,7 @@ impl DebugPanel {
         }
 
         let Some(worktree) = curr_session.read(cx).worktree() else {
-            log::error!("Attempted to restart a non-running session");
+            log::error!("尝试重启未运行的会话");
             return;
         };
 
@@ -413,7 +413,7 @@ impl DebugPanel {
                         session
                             .console_output(cx)
                             .unbounded_send(format!(
-                                "Session failed to restart with error: {}",
+                                "会话重启失败,错误:{}",
                                 error
                             ))
                             .ok();
@@ -437,7 +437,7 @@ impl DebugPanel {
         cx: &mut Context<Self>,
     ) {
         let Some(worktree) = parent_session.read(cx).worktree() else {
-            log::error!("Attempted to start a child-session from a non-running session");
+            log::error!("尝试从未运行的会话启动子会话");
             return;
         };
 
@@ -446,7 +446,7 @@ impl DebugPanel {
         let adapter = parent_session.read(cx).adapter();
         let quirks = parent_session.read(cx).quirks();
         let Some(mut binary) = parent_session.read(cx).binary().cloned() else {
-            log::error!("Attempted to start a child-session without a binary");
+            log::error!("尝试在没有二进制文件的情况下启动子会话");
             return;
         };
         let task_context = parent_session.read(cx).task_context().clone();
@@ -508,9 +508,9 @@ impl DebugPanel {
             if should_prompt {
                 let response = cx.prompt(
                     gpui::PromptLevel::Warning,
-                    "This Debug Session is still running. Are you sure you want to terminate it?",
+                    "此调试会话仍在运行。确定要终止它吗?",
                     None,
-                    &["Yes", "No"],
+                    &["是", "否"],
                 );
                 if response.await == Ok(1) {
                     return;
@@ -627,7 +627,7 @@ impl DebugPanel {
                     let focus_handle = focus_handle.clone();
                     move |_window, cx| {
                         Tooltip::for_action_in(
-                            "Start Debug Session",
+                            "启动调试会话",
                             &crate::Start,
                             &focus_handle,
                             cx,
@@ -642,14 +642,14 @@ impl DebugPanel {
                 .on_click(|_, window, cx| {
                     window.dispatch_action(zed_actions::OpenProjectDebugTasks.boxed_clone(), cx);
                 })
-                .tooltip(Tooltip::text("Edit debug.json"))
+                .tooltip(Tooltip::text("编辑 debug.json"))
         };
 
         let documentation_button = || {
             IconButton::new("debug-open-documentation", IconName::CircleHelp)
                 .icon_size(IconSize::Small)
                 .on_click(move |_, _, cx| cx.open_url("https://zed.dev/docs/debugger"))
-                .tooltip(Tooltip::text("Open Documentation"))
+                .tooltip(Tooltip::text("打开文档"))
         };
 
         let logs_button = || {
@@ -658,7 +658,7 @@ impl DebugPanel {
                 .on_click(move |_, window, cx| {
                     window.dispatch_action(debugger_tools::OpenDebugAdapterLogs.boxed_clone(), cx)
                 })
-                .tooltip(Tooltip::text("Open Debug Adapter Logs"))
+                .tooltip(Tooltip::text("打开调试适配器日志"))
         };
 
         let close_bottom_panel_button = {
@@ -668,7 +668,7 @@ impl DebugPanel {
                     .on_click(move |_, window, cx| {
                         window.dispatch_action(workspace::ToggleBottomDock.boxed_clone(), cx)
                     })
-                    .tooltip(Tooltip::text("Close Panel")),
+                    .tooltip(Tooltip::text("关闭面板")),
             )
         };
 
@@ -717,7 +717,7 @@ impl DebugPanel {
                                                     let focus_handle = focus_handle.clone();
                                                     move |_window, cx| {
                                                         Tooltip::for_action_in(
-                                                            "Pause Program",
+                                                            "暂停程序",
                                                             &Pause,
                                                             &focus_handle,
                                                             cx,
@@ -741,7 +741,7 @@ impl DebugPanel {
                                                     let focus_handle = focus_handle.clone();
                                                     move |_window, cx| {
                                                         Tooltip::for_action_in(
-                                                            "Continue Program",
+                                                            "继续程序",
                                                             &Continue,
                                                             &focus_handle,
                                                             cx,
@@ -765,7 +765,7 @@ impl DebugPanel {
                                                 let focus_handle = focus_handle.clone();
                                                 move |_window, cx| {
                                                     Tooltip::for_action_in(
-                                                        "Step Over",
+                                                        "单步跳过",
                                                         &StepOver,
                                                         &focus_handle,
                                                         cx,
@@ -787,7 +787,7 @@ impl DebugPanel {
                                                 let focus_handle = focus_handle.clone();
                                                 move |_window, cx| {
                                                     Tooltip::for_action_in(
-                                                        "Step In",
+                                                        "单步进入",
                                                         &StepInto,
                                                         &focus_handle,
                                                         cx,
@@ -809,7 +809,7 @@ impl DebugPanel {
                                                 let focus_handle = focus_handle.clone();
                                                 move |_window, cx| {
                                                     Tooltip::for_action_in(
-                                                        "Step Out",
+                                                        "单步跳出",
                                                         &StepOut,
                                                         &focus_handle,
                                                         cx,
@@ -831,7 +831,7 @@ impl DebugPanel {
                                                 let focus_handle = focus_handle.clone();
                                                 move |_window, cx| {
                                                     Tooltip::for_action_in(
-                                                        "Rerun Session",
+                                                        "重新运行会话",
                                                         &RerunSession,
                                                         &focus_handle,
                                                         cx,
@@ -869,9 +869,9 @@ impl DebugPanel {
                                                     .supports_terminate_threads_request
                                                     .unwrap_or_default()
                                                 {
-                                                    "Terminate Thread"
+                                                    "终止线程"
                                                 } else {
-                                                    "Terminate All Threads"
+                                                    "终止所有线程"
                                                 };
                                                 move |_window, cx| {
                                                     Tooltip::for_action_in(
@@ -904,7 +904,7 @@ impl DebugPanel {
                                                 let focus_handle = focus_handle.clone();
                                                 move |_window, cx| {
                                                     Tooltip::for_action_in(
-                                                        "Detach",
+                                                        "分离",
                                                         &Detach,
                                                         &focus_handle,
                                                         cx,
@@ -1110,7 +1110,7 @@ impl DebugPanel {
             let editor = editor.await?;
             let editor = cx
                 .update(|_, cx| editor.act_as::<Editor>(cx))?
-                .context("expected editor")?;
+                .context("预期编辑器")?;
 
             // unfortunately debug tasks don't have an easy way to globally
             // identify them. to jump to the one that you just created or an
@@ -1148,7 +1148,7 @@ impl DebugPanel {
         self.workspace
             .update(cx, |workspace, cx| {
                 let Some(mut path) = workspace.absolute_path_of_worktree(worktree_id, cx) else {
-                    return Task::ready(Err(anyhow!("Couldn't get worktree path")));
+                    return Task::ready(Err(anyhow!("无法获取工作树路径")));
                 };
 
                 let serialized_scenario = serde_json::to_value(scenario);
@@ -1183,7 +1183,7 @@ impl DebugPanel {
                             .read(cx)
                             .project_path_for_absolute_path(path, cx)
                             .context(
-                                "Couldn't get project path for .zed/debug.json in active worktree",
+                                "无法获取活动工作树中 .zed/debug.json 的项目路径",
                             )
                     })??;
 
@@ -1196,7 +1196,7 @@ impl DebugPanel {
                         .await?;
                     let editor = cx
                         .update(|_, cx| editor.act_as::<Editor>(cx))?
-                        .context("expected editor")?;
+                        .context("预期编辑器")?;
 
                     let new_scenario = serde_json_lenient::to_string_pretty(&serialized_scenario)?
                         .lines()
@@ -1288,7 +1288,7 @@ impl DebugPanel {
             .disabled(
                 thread_status == ThreadStatus::Running || thread_status == ThreadStatus::Stepping,
             )
-            .tooltip(Tooltip::text("Step Back in Session History"))
+            .tooltip(Tooltip::text("在会话历史中后退"))
             .on_click(window.listener_for(running_state, |this, _, _window, cx| {
                 this.session().update(cx, |session, cx| {
                     let ix = session
@@ -1342,7 +1342,7 @@ impl DebugPanel {
                                 .read(cx)
                                 .historic_snapshots();
 
-                            context_menu = context_menu.entry("Current State", None, {
+                            context_menu = context_menu.entry("当前状态", None, {
                                 let running_state = running_state.clone();
                                 move |_window, cx| {
                                     handler(None, running_state.clone(), cx);
@@ -1522,7 +1522,7 @@ impl Panel for DebugPanel {
 
     fn icon_tooltip(&self, _window: &Window, cx: &App) -> Option<&'static str> {
         if DebuggerSettings::get_global(cx).button {
-            Some("Debug Panel")
+            Some("调试面板")
         } else {
             None
         }
@@ -1754,7 +1754,7 @@ impl Render for DebugPanel {
                         .justify_center()
                         .gap_2()
                         .child(
-                            Button::new("spawn-new-session-empty-state", "New Session")
+                            Button::new("spawn-new-session-empty-state", "新建会话")
                                 .start_icon(
                                     Icon::new(IconName::Plus)
                                         .size(IconSize::Small)
@@ -1765,7 +1765,7 @@ impl Render for DebugPanel {
                                 }),
                         )
                         .child(
-                            Button::new("edit-debug-settings", "Edit debug.json")
+                            Button::new("edit-debug-settings", "编辑 debug.json")
                                 .start_icon(
                                     Icon::new(IconName::Code)
                                         .size(IconSize::Small)
@@ -1779,7 +1779,7 @@ impl Render for DebugPanel {
                                 }),
                         )
                         .child(
-                            Button::new("open-debugger-docs", "Debugger Docs")
+                            Button::new("open-debugger-docs", "调试器文档")
                                 .start_icon(
                                     Icon::new(IconName::Book)
                                         .size(IconSize::Small)
@@ -1790,7 +1790,7 @@ impl Render for DebugPanel {
                         .child(
                             Button::new(
                                 "spawn-new-session-install-extensions",
-                                "Debugger Extensions",
+                                "调试器扩展",
                             )
                             .start_icon(
                                 Icon::new(IconName::Blocks)
@@ -1836,7 +1836,7 @@ impl Render for DebugPanel {
                                 .justify_between()
                                 .border_b_1()
                                 .border_color(cx.theme().colors().border_variant)
-                                .child(Label::new("Breakpoints").size(LabelSize::Small))
+                                .child(Label::new("断点").size(LabelSize::Small))
                                 .child(
                                     h_flex().visible_on_hover("base-breakpoint-list").child(
                                         self.breakpoint_list.read(cx).render_control_strip(),
@@ -1849,7 +1849,7 @@ impl Render for DebugPanel {
                         .when(!has_breakpoints, |this| {
                             this.child(
                                 v_flex().size_full().items_center().justify_center().child(
-                                    Label::new("No Breakpoints Set")
+                                    Label::new("未设置断点")
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 ),
