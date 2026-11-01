@@ -38,3 +38,7 @@
 - ConfiguredApiCard::new(label) / button_label(&str) → 未译 "API Key Set in Environment Variable"/"API Key Configured"(L286/288)/"Reset Key"(L294)
 - display_name().unwrap_or("No provider set") → unwrap_or 需 &str → 未译(L133)
 
+
+## mcp_servers_page.rs 同类 new_static 限制（18 处未译）
+- Server Name/Command/Arguments/Environment Variables/Timeout/URL/Headers/OAuth Client ID 及其 description，均经 render_form_field→render_settings_item_layout(SharedString::new_static) 无法传 t()
+
