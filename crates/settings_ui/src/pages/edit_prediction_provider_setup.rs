@@ -6,6 +6,7 @@ use edit_prediction::{
 };
 use edit_prediction_ui::{get_available_providers, set_completion_provider};
 use gpui::{App, Entity, ScrollHandle, TaskExt, prelude::*};
+use i18n::{keys, t};
 use language::language_settings::AllLanguageSettings;
 
 use settings::Settings as _;
@@ -155,7 +156,10 @@ fn render_provider_dropdown(window: &mut Window, cx: &mut App) -> AnyElement {
         .id("provider-selector")
         .min_w_0()
         .gap_1p5()
-        .child(SettingsSectionHeader::new("Active Provider").no_padding(true))
+        .child(
+            SettingsSectionHeader::new(t(keys::settings_ui::SETTINGS_B_EP_ACTIVE_PROVIDER))
+                .no_padding(true),
+        )
         .child(
             h_flex()
                 .pt_2p5()
@@ -167,9 +171,9 @@ fn render_provider_dropdown(window: &mut Window, cx: &mut App) -> AnyElement {
                         .w_full()
                         .min_w_0()
                         .max_w_1_2()
-                        .child(Label::new("Provider"))
+                        .child(Label::new(t(keys::settings_ui::SETTINGS_B_EP_PROVIDER)))
                         .child(
-                            Label::new("Select which provider to use for edit predictions.")
+                            Label::new(t(keys::settings_ui::SETTINGS_B_EP_PROVIDER_DESC))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
                         ),
@@ -261,7 +265,7 @@ fn render_api_key_provider(
             .flex_wrap()
             .gap_0p5()
             .child(
-                Label::new("Visit the")
+                Label::new(t(keys::settings_ui::SETTINGS_B_API_KEY_VISIT_THE))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             )
@@ -272,7 +276,7 @@ fn render_api_key_provider(
                     .label_color(Color::Muted),
             )
             .child(
-                Label::new("to generate an API key.")
+                Label::new(t(keys::settings_ui::SETTINGS_B_API_KEY_TO_GENERATE))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             ),
@@ -377,8 +381,8 @@ fn render_ollama_provider(
 fn ollama_settings() -> Box<[SettingsPageItem]> {
     Box::new([
         SettingsPageItem::SettingItem(SettingItem {
-            title: "API URL",
-            description: "The base URL of your Ollama server.",
+            title: t(keys::misc::API_URL),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OLLAMA_BASE_URL),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -411,8 +415,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Model",
-            description: "The Ollama model to use for edit predictions.",
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OLLAMA_MODEL),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -445,8 +449,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Prompt Format",
-            description: "The prompt format to use when requesting predictions. Set to Infer to have the format inferred based on the model name.",
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT_DESCRIPTION),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -476,8 +480,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             metadata: None,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Max Output Tokens",
-            description: "The maximum number of tokens to generate.",
+            title: t(keys::misc::MAX_OUTPUT_TOKENS),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_OUTPUT_TOKENS_DESCRIPTION),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -507,8 +511,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Prediction Debounce",
-            description: "Delay in milliseconds before automatically requesting a prediction after typing stops. Set to 0 to request predictions immediately.",
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -543,8 +547,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
 fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
     Box::new([
         SettingsPageItem::SettingItem(SettingItem {
-            title: "API URL",
-            description: "The URL of your OpenAI-compatible server's completions API.",
+            title: t(keys::misc::API_URL),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OPENAI_COMPAT_URL),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -577,8 +581,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Model",
-            description: "The model string to pass to the OpenAI-compatible server.",
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OPENAI_COMPAT_MODEL),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -611,8 +615,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Prompt Format",
-            description: "The prompt format to use when requesting predictions. Set to Infer to have the format inferred based on the model name.",
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT_DESCRIPTION),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -642,8 +646,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             metadata: None,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Max Output Tokens",
-            description: "The maximum number of tokens to generate.",
+            title: t(keys::misc::MAX_OUTPUT_TOKENS),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_OUTPUT_TOKENS_DESCRIPTION),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -673,8 +677,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Prediction Debounce",
-            description: "Delay in milliseconds before automatically requesting a prediction after typing stops. Set to 0 to request predictions immediately.",
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -709,8 +713,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
 fn codestral_settings() -> Box<[SettingsPageItem]> {
     Box::new([
         SettingsPageItem::SettingItem(SettingItem {
-            title: "API URL",
-            description: "The API URL to use for Codestral.",
+            title: t(keys::misc::API_URL),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_CODESTRAL_URL),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -743,8 +747,8 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Max Tokens",
-            description: "The maximum number of tokens to generate.",
+            title: t(keys::misc::MAX_TOKENS),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_OUTPUT_TOKENS_DESCRIPTION),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -774,8 +778,8 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Model",
-            description: "The Codestral model id to use.",
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_CODESTRAL_MODEL),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -808,8 +812,8 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: "Prediction Debounce",
-            description: "Delay in milliseconds before automatically requesting a prediction after typing stops. Set to 0 to request predictions immediately.",
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -843,8 +847,8 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
 
 fn mercury_settings() -> Box<[SettingsPageItem]> {
     Box::new([SettingsPageItem::SettingItem(SettingItem {
-        title: "Prediction Debounce",
-        description: "Delay in milliseconds before automatically requesting a prediction after typing stops. Set to 0 to request predictions immediately.",
+        title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
+        description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
         field: Box::new(SettingField {
             organization_override: None,
             pick: |settings| {
@@ -877,8 +881,8 @@ fn mercury_settings() -> Box<[SettingsPageItem]> {
 
 fn zed_settings() -> Box<[SettingsPageItem]> {
     Box::new([SettingsPageItem::SettingItem(SettingItem {
-        title: "Prediction Debounce",
-        description: "Delay in milliseconds before automatically requesting a prediction after typing stops. Set to 0 to request predictions immediately.",
+        title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
+        description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
         field: Box::new(SettingField {
             organization_override: None,
             pick: |settings| {
@@ -925,7 +929,7 @@ fn render_zed_provider(
         .pt_8()
         .gap_1p5()
         .child(
-            SettingsSectionHeader::new("Zed Predictions")
+            SettingsSectionHeader::new(t(keys::settings_ui::SETTINGS_B_EP_ZED_PREDICTIONS))
                 .icon(IconName::ZedPredict)
                 .no_padding(true),
         )
@@ -934,8 +938,8 @@ fn render_zed_provider(
 
 fn copilot_settings() -> Box<[SettingsPageItem]> {
     Box::new([SettingsPageItem::SettingItem(SettingItem {
-        title: "Prediction Debounce",
-        description: "Delay in milliseconds before automatically requesting a prediction after typing stops. Set to 0 to request predictions immediately.",
+        title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
+        description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
         field: Box::new(SettingField {
             organization_override: None,
             pick: |settings| {
