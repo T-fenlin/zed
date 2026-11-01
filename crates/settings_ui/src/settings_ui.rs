@@ -3994,7 +3994,7 @@ impl SettingsWindow {
                         v_flex()
                             .my_0p5()
                             .gap_0p5()
-                            .child(Label::new("Restricted Mode"))
+                            .child(Label::new(t(keys::titlebar::TITLEBAR_RESTRICTED_MODE)))
                             .child(
                                 Label::new(
                                     "This project is in restricted mode. Some project settings may not apply.",
