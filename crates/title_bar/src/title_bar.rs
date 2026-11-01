@@ -608,8 +608,8 @@ impl TitleBar {
         let host: SharedString = options.display_name().into();
 
         let (tooltip_title, icon) = match options {
-            RemoteConnectionOptions::Ssh(_) => ("Remote Project", IconName::Server),
-            RemoteConnectionOptions::Wsl(_) => ("Remote Project", IconName::Linux),
+            RemoteConnectionOptions::Ssh(_) => (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Server),
+            RemoteConnectionOptions::Wsl(_) => (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Linux),
             RemoteConnectionOptions::Docker(_dev_container_connection) => {
                 ("Dev Container", IconName::Box)
             }
