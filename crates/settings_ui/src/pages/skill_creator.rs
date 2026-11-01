@@ -12,6 +12,7 @@ use gpui::{
     TextStyle, WeakEntity, WindowHandle, actions,
 };
 use http_client::{AsyncBody, HttpClient, HttpRequestExt, Request, StatusCode, Url};
+use i18n::{keys, t};
 use language::{Buffer, language_settings::SoftWrap};
 use project::{Project, Worktree};
 use settings::{ActionSequence, Settings};
@@ -181,7 +182,7 @@ impl SkillCreatorPage {
                 cx,
                 "e.g., Fill the PR description following this template.",
             )
-            .label("Description")
+            .label(t(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION))
             .tab_index(DESCRIPTION_FIELD_TAB_INDEX)
             .tab_stop(true)
         });
