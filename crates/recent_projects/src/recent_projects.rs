@@ -1534,10 +1534,10 @@ impl PickerDelegate for RecentProjectsDelegate {
                 let secondary_confirm_tooltip: SharedString = if self.create_new_window {
                     "Open Project in This Window".into()
                 } else {
-                    "Open Project in New Window"
+                    t(keys::sidebar::SIDEBAR_OPEN_PROJECT_NEW_WINDOW).into()
                 };
-                let primary_confirm_tooltip = if self.create_new_window {
-                    "Open Project in New Window"
+                let primary_confirm_tooltip: SharedString = if self.create_new_window {
+                    t(keys::sidebar::SIDEBAR_OPEN_PROJECT_NEW_WINDOW).into()
                 } else {
                     "Open Project in This Window".into()
                 };
