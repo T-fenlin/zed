@@ -85,7 +85,7 @@ pub(crate) fn render_add_llm_provider_popover(
 
     PopoverMenu::new("add-llm-provider-popover")
         .trigger(
-            Button::new("add-llm-provider", "Add Provider")
+            Button::new("add-llm-provider", t(keys::misc::ADD_PROVIDER))
                 .style(ButtonStyle::Outlined)
                 .track_focus(&focus_handle)
                 .label_size(LabelSize::Small)
@@ -223,14 +223,14 @@ fn render_api_key_providers_item(
 
     if has_key {
         let configured_label = if is_from_env_var {
-            "API Key Set in Environment Variable"
+            t(keys::misc::KEY_IN_ENV)
         } else {
-            "API Key Configured"
+            t(keys::misc::KEY_CONFIGURED)
         };
         let button_id = format!("reset-api-key-{}", provider_id.0);
 
         let card = ConfiguredApiCard::new(button_id, configured_label)
-            .button_label("Reset Key")
+            .button_label(t(keys::misc::RESET_KEY))
             .button_tab_index(0)
             .disabled(is_from_env_var)
             .when(is_from_env_var, |this| {
@@ -267,7 +267,7 @@ fn render_api_key_providers_item(
                         .min_w_0()
                         .max_w_1_2()
                         .gap_0p5()
-                        .child(Label::new("API Key"))
+                        .child(Label::new(t(keys::misc::API_KEY)))
                         .child(
                             h_flex()
                                 .w_full()
@@ -593,8 +593,20 @@ impl ModelInput {
                 cx,
             ),
             max_completion_tokens: new_input("200000", Some("200000"), false, window, cx),
-            max_output_tokens: new_input("Max Output Tokens", Some("32000"), false, window, cx),
-            max_tokens: new_input("Max Tokens", Some("200000"), false, window, cx),
+            max_output_tokens: new_input(
+                &t(keys::misc::MAX_OUTPUT_TOKENS),
+                Some("32000"),
+                false,
+                window,
+                cx,
+            ),
+            max_tokens: new_input(
+                &t(keys::misc::MAX_TOKENS),
+                Some("200000"),
+                false,
+                window,
+                cx,
+            ),
             reasoning_effort: OpenAiReasoningEffort::Medium,
             supports_tools: tools.into(),
             supports_images: images.into(),
@@ -683,14 +695,14 @@ fn render_llm_provider_form_page(
                     cx,
                 ))
                 .child(render_form_field(
-                    "API URL",
-                    "The base URL for the compatible API.",
+                    t(keys::misc::API_URL),
+                    t(keys::misc::API_URL_HINT),
                     &form.api_url,
                     cx,
                 ))
                 .child(render_form_field(
-                    "API Key",
-                    "Stored in the system keychain, not in settings.json.",
+                    t(keys::misc::API_KEY),
+                    t(keys::misc::API_KEY_HINT),
                     &form.api_key,
                     cx,
                 ))
@@ -767,9 +779,9 @@ fn render_models_section(
         .child(
             h_flex()
                 .justify_between()
-                .child(Label::new("Models"))
+                .child(Label::new(t(keys::misc::MODELS)))
                 .child(
-                    Button::new("add-model", "Add Model")
+                    Button::new("add-model", t(keys::misc::ADD_MODEL))
                         .start_icon(
                             Icon::new(IconName::Plus)
                                 .size(IconSize::XSmall)
@@ -807,35 +819,35 @@ fn render_model(
         .border_color(cx.theme().colors().border.opacity(0.6))
         .bg(cx.theme().colors().element_active.opacity(0.15))
         .child(render_form_field(
-            "Model Name",
-            "The model's name in the provider's API.",
+            t(keys::misc::MODEL_NAME),
+            t(keys::misc::MODEL_NAME_HINT),
             &model.name,
             cx,
         ))
         .when(matches!(kind, CompatibleProviderKind::OpenAi), |this| {
             this.child(render_form_field(
-                "Max Completion Tokens",
-                "Maximum completion tokens for OpenAI-compatible requests.",
+                t(keys::misc::MAX_COMPLETION_TOKENS),
+                t(keys::misc::MAX_COMPLETION_TOKENS_HINT),
                 &model.max_completion_tokens,
                 cx,
             ))
         })
         .child(render_form_field(
-            "Max Output Tokens",
-            "The maximum number of tokens the model can output.",
+            t(keys::misc::MAX_OUTPUT_TOKENS),
+            t(keys::misc::MAX_OUTPUT_TOKENS_HINT),
             &model.max_output_tokens,
             cx,
         ))
         .child(render_form_field(
-            "Max Tokens",
-            "The model context window size.",
+            t(keys::misc::MAX_TOKENS),
+            t(keys::misc::MAX_TOKENS_HINT),
             &model.max_tokens,
             cx,
         ))
         .child(render_model_capabilities(kind, model, index, window, cx))
         .when(model_count > 1, |this| {
             this.child(
-                Button::new(("remove-model", index), "Remove Model")
+                Button::new(("remove-model", index), t(keys::misc::REMOVE_MODEL))
                     .start_icon(
                         Icon::new(IconName::Trash)
                             .size(IconSize::XSmall)
@@ -869,7 +881,7 @@ fn render_model_capabilities(
         .child(render_capability_checkbox(
             "supports-tools",
             index,
-            "Supports tools",
+            t(keys::misc::SUPPORTS_TOOLS),
             model.supports_tools,
             |model, state| model.supports_tools = state,
             cx,
@@ -877,7 +889,7 @@ fn render_model_capabilities(
         .child(render_capability_checkbox(
             "supports-images",
             index,
-            "Supports images",
+            t(keys::misc::SUPPORTS_IMAGES),
             model.supports_images,
             |model, state| model.supports_images = state,
             cx,
@@ -886,7 +898,7 @@ fn render_model_capabilities(
             this.child(render_capability_checkbox(
                 "supports-parallel-tool-calls",
                 index,
-                "Supports parallel_tool_calls",
+                t(keys::misc::SUPPORTS_PARALLEL_TOOL_CALLS),
                 model.supports_parallel_tool_calls,
                 |model, state| model.supports_parallel_tool_calls = state,
                 cx,
@@ -894,7 +906,7 @@ fn render_model_capabilities(
             .child(render_capability_checkbox(
                 "supports-prompt-cache-key",
                 index,
-                "Supports prompt_cache_key",
+                t(keys::misc::SUPPORTS_PROMPT_CACHE_KEY),
                 model.supports_prompt_cache_key,
                 |model, state| model.supports_prompt_cache_key = state,
                 cx,
@@ -902,7 +914,7 @@ fn render_model_capabilities(
             .child(render_capability_checkbox(
                 "supports-chat-completions",
                 index,
-                "Supports /chat/completions",
+                t(keys::misc::SUPPORTS_CHAT_COMPLETIONS),
                 model.supports_chat_completions,
                 |model, state| model.supports_chat_completions = state,
                 cx,
@@ -911,7 +923,7 @@ fn render_model_capabilities(
                 this.child(render_capability_checkbox(
                     "max-tokens-parameter",
                     index,
-                    "Uses max_tokens for output limit",
+                    t(keys::misc::USES_MAX_TOKENS),
                     model.max_tokens_parameter,
                     |model, state| model.max_tokens_parameter = state,
                     cx,
@@ -920,7 +932,7 @@ fn render_model_capabilities(
             .child(render_capability_checkbox(
                 "supports-thinking",
                 index,
-                "Supports thinking",
+                t(keys::misc::SUPPORTS_THINKING),
                 model.supports_thinking,
                 |model, state| model.supports_thinking = state,
                 cx,
@@ -936,7 +948,7 @@ fn render_model_capabilities(
                     this.child(render_capability_checkbox(
                         "interleaved-reasoning",
                         index,
-                        "Preserves thinking in chat history",
+                        t(keys::misc::PRESERVES_THINKING),
                         model.interleaved_reasoning,
                         |model, state| model.interleaved_reasoning = state,
                         cx,
@@ -999,7 +1011,7 @@ fn render_reasoning_effort_selector(
 
     v_flex()
         .gap_1()
-        .child(Label::new("Default reasoning effort").size(LabelSize::Small))
+        .child(Label::new(t(keys::misc::REASONING_EFFORT)).size(LabelSize::Small))
         .child(
             DropdownMenu::new(
                 ElementId::Name(format!("reasoning-effort-selector-{index}").into()),
@@ -1009,7 +1021,7 @@ fn render_reasoning_effort_selector(
             .style(DropdownStyle::Outlined)
             .trigger_size(ButtonSize::Compact)
             .full_width(true)
-            .aria_label("Default reasoning effort"),
+            .aria_label(t(keys::misc::REASONING_EFFORT)),
         )
 }
 
@@ -1041,7 +1053,7 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
             })),
         )
         .child(
-            Button::new("llm-provider-form-save", "Save Provider")
+            Button::new("llm-provider-form-save", t(keys::misc::SAVE_PROVIDER))
                 .style(ButtonStyle::Filled)
                 .on_click(cx.listener(|this, _, window, cx| {
                     save_llm_provider_form(this, window, cx);
@@ -1279,13 +1291,13 @@ fn parse_open_ai_model(
         display_name: None,
         max_completion_tokens: Some(parse_u64_field(
             &model.max_completion_tokens,
-            "Max Completion Tokens",
+            &t(keys::misc::MAX_COMPLETION_TOKENS),
         )?),
         max_output_tokens: Some(parse_u64_field(
             &model.max_output_tokens,
-            "Max Output Tokens",
+            &t(keys::misc::MAX_OUTPUT_TOKENS),
         )?),
-        max_tokens: parse_u64_field(&model.max_tokens, "Max Tokens")?,
+        max_tokens: parse_u64_field(&model.max_tokens, &t(keys::misc::MAX_TOKENS))?,
         reasoning_effort: model.supports_thinking.then_some(model.reasoning_effort),
         capabilities: OpenAiCompatibleModelCapabilities {
             tools: model.supports_tools,
@@ -1307,11 +1319,11 @@ fn parse_anthropic_model(
     Ok(AnthropicCompatibleAvailableModel {
         name: parse_model_name(model)?,
         display_name: None,
-        max_tokens: parse_u64_field(&model.max_tokens, "Max Tokens")?,
+        max_tokens: parse_u64_field(&model.max_tokens, &t(keys::misc::MAX_TOKENS))?,
         tool_override: None,
         max_output_tokens: Some(parse_u64_field(
             &model.max_output_tokens,
-            "Max Output Tokens",
+            &t(keys::misc::MAX_OUTPUT_TOKENS),
         )?),
         default_temperature: None,
         extra_beta_headers: Vec::new(),
