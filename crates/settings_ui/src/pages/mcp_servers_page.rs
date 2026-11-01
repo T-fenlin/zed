@@ -281,7 +281,9 @@ fn render_configure_button(
     )
     .icon_size(IconSize::Small)
     .tab_index(0isize)
-    .tooltip(Tooltip::text("Configure MCP Server"))
+    .tooltip(Tooltip::text(t(
+        keys::agent::AGENT_A_CONTEXT_SERVER_CONFIGURE_MCP,
+    )))
     .on_click(move |_event, window, cx| {
         let transport = match &server_settings {
             Some(ContextServerSettings::Http { .. }) => McpTransport::Http,
@@ -408,7 +410,7 @@ fn render_status_details(
                     )
                     .when(should_show_logout, |this| {
                         this.child(
-                            Button::new("error-logout", "Log Out")
+                            Button::new("error-logout", t(keys::agent::AGENT_MENU_LOG_OUT))
                                 .style(ButtonStyle::Outlined)
                                 .label_size(LabelSize::Small)
                                 .on_click({
@@ -441,22 +443,27 @@ fn render_status_details(
                                     .color(Color::Muted),
                             )
                             .child(
-                                Label::new("Authenticate to connect this server")
-                                    .color(Color::Muted)
-                                    .size(LabelSize::Small),
+                                Label::new(t(
+                                    keys::agent::AGENT_A_CONTEXT_SERVER_AUTHENTICATE_HINT,
+                                ))
+                                .color(Color::Muted)
+                                .size(LabelSize::Small),
                             ),
                     )
                     .child(
-                        Button::new("authenticate-server", "Authenticate")
-                            .style(ButtonStyle::Outlined)
-                            .label_size(LabelSize::Small)
-                            .on_click({
-                                move |_event, _window, cx| {
-                                    store.update(cx, |s, cx| {
-                                        s.authenticate_server(&context_server_id, cx).log_err();
-                                    });
-                                }
-                            }),
+                        Button::new(
+                            "authenticate-server",
+                            t(keys::agent::AGENT_THREAD_AUTHENTICATE),
+                        )
+                        .style(ButtonStyle::Outlined)
+                        .label_size(LabelSize::Small)
+                        .on_click({
+                            move |_event, _window, cx| {
+                                store.update(cx, |s, cx| {
+                                    s.authenticate_server(&context_server_id, cx).log_err();
+                                });
+                            }
+                        }),
                     )
                     .into_any_element(),
             )
@@ -489,7 +496,7 @@ fn render_status_details(
                 .gap_2()
                 .child(div().size_3().flex_shrink_0())
                 .child(
-                    Label::new("Authenticating…")
+                    Label::new(t(keys::agent::AGENT_A_CONTEXT_SERVER_AUTHENTICATING))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                 )
@@ -504,7 +511,7 @@ fn render_status_details(
                     .w_full()
                     .justify_end()
                     .child(
-                        Button::new("running-logout", "Log Out")
+                        Button::new("running-logout", t(keys::agent::AGENT_MENU_LOG_OUT))
                             .style(ButtonStyle::Outlined)
                             .label_size(LabelSize::Small)
                             .on_click(move |_event, _window, cx| {
@@ -867,7 +874,7 @@ pub(crate) fn open_mcp_server_form(
     settings_window.mcp_server_form = Some(McpServerForm::new(transport, existing, window, cx));
 
     let title = if is_edit {
-        "Configure MCP Server"
+        t(keys::agent::AGENT_A_CONTEXT_SERVER_CONFIGURE_MCP)
     } else {
         match transport {
             McpTransport::Stdio => "Add Local MCP Server",
@@ -1050,7 +1057,7 @@ fn render_kv_section(
                             IconButton::new((kind.remove_id(), ix), IconName::Close)
                                 .icon_size(IconSize::Small)
                                 .icon_color(Color::Muted)
-                                .tooltip(Tooltip::text("Remove"))
+                                .tooltip(Tooltip::text(t(keys::agent::AGENT_A_REGISTRY_REMOVE)))
                                 .on_click(cx.listener(move |this, _, _window, cx| {
                                     if let Some(form) = this.mcp_server_form.as_mut() {
                                         let rows = kind.rows_mut(form);
@@ -1117,7 +1124,7 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
         .justify_end()
         .pt_2()
         .child(
-            Button::new("mcp-form-cancel", "Cancel")
+            Button::new("mcp-form-cancel", t(keys::agent::AGENT_THREAD_CANCEL))
                 .style(ButtonStyle::Subtle)
                 .on_click(cx.listener(|this, _, window, cx| {
                     this.mcp_server_form = None;
