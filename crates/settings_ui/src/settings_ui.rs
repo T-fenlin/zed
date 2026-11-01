@@ -3571,7 +3571,7 @@ impl SettingsWindow {
             .items_center()
             .justify_center()
             .gap_1()
-            .child(Label::new("No Results"))
+            .child(Label::new(t(keys::search::SEARCH_NO_RESULTS)))
             .child(
                 Label::new(format!("No settings match \"{}\"", search_query))
                     .size(LabelSize::Small)
