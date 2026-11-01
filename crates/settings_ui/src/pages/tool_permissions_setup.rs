@@ -1100,7 +1100,7 @@ fn render_global_default_mode_section(current_mode: ToolPermissionMode) -> AnyEl
                 )
                 .menu(move |window, cx| {
                     Some(ContextMenu::build(window, cx, move |menu, _, _| {
-                        menu.entry("Confirm", None, move |_, cx| {
+                        menu.entry(t(keys::git_ui::GIT_B_CONFIRM), None, move |_, cx| {
                             set_global_default_permission(ToolPermissionMode::Confirm, cx);
                         })
                         .entry(t(keys::agent::AGENT_THREAD_ALLOW), None, move |_, cx| {
@@ -1163,7 +1163,7 @@ fn render_default_mode_section(
                         let tool_id_allow = tool_id.clone();
                         let tool_id_deny = tool_id;
 
-                        menu.entry("Confirm", None, move |_, cx| {
+                        menu.entry(t(keys::git_ui::GIT_B_CONFIRM), None, move |_, cx| {
                             set_default_mode(&tool_id_confirm, ToolPermissionMode::Confirm, cx);
                         })
                         .entry(t(keys::agent::AGENT_THREAD_ALLOW), None, move |_, cx| {
