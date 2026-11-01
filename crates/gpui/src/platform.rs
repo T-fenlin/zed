@@ -3001,9 +3001,13 @@ impl PromptButton {
 
 impl From<&str> for PromptButton {
     fn from(value: &str) -> Self {
+        // Common prompt buttons are localized through the i18n runtime so that
+        // every `window.prompt(..., &["OK"], ...)` call site gets the localized
+        // label for free. Unknown labels are kept verbatim (and translated later
+        // once they gain a key).
         match value.to_lowercase().as_str() {
-            "ok" => PromptButton::Ok("OK".into()),
-            "cancel" => PromptButton::Cancel("Cancel".into()),
+            "ok" => PromptButton::Ok(i18n::t(i18n::keys::ui::UI_OK).into()),
+            "cancel" => PromptButton::Cancel(i18n::t(i18n::keys::ui::UI_CANCEL).into()),
             _ => PromptButton::Other(SharedString::from(value.to_owned())),
         }
     }

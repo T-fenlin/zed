@@ -65,5 +65,10 @@ crates/docs_preprocessor/actions.json
 /.i18n_enval2key.json
 /.i18n_key2const.json
 /.i18n_key2file.json
+/.i18n_*.py
+/.i18n_*.json
+/.i18n-headers/
+/i18n-env.ps1
+/webrtc_err.log
 /.dsh-ops
 /.dsh
