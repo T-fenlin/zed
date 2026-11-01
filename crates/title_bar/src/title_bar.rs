@@ -10,6 +10,7 @@ use crate::plan_chip::PlanChip;
 use agent_settings::{AgentSettings, WindowLayout};
 use arrayvec::ArrayVec;
 use git_ui_core::worktree_picker::WorktreePicker;
+use i18n::{keys, t};
 use path::PathStyle;
 pub use platform_title_bar::{
     self, DraggedWindowTab, MergeAllWindows, MoveTabToNewWindow, PlatformTitleBar,
@@ -379,7 +380,7 @@ impl Render for TitleBar {
                 )
                 .when(is_signing_in, |this| {
                     this.child(
-                        Label::new("Signing in…")
+                        Label::new(t(keys::collab::COLLAB_SIGNING_IN))
                             .size(LabelSize::Small)
                             .color(Color::Muted)
                             .with_animation(
@@ -764,7 +765,7 @@ impl TitleBar {
                         host_user.username
                     );
 
-                    Tooltip::with_meta(tooltip_title, None, "Click to Follow", cx)
+                    Tooltip::with_meta(tooltip_title, None, t(keys::collab::COLLAB_CLICK_TO_FOLLOW), cx)
                 })
                 .on_click({
                     let host_peer_id = host.peer_id;
@@ -1156,7 +1157,7 @@ impl TitleBar {
                     Some(AutoUpdateStatus::Updated { .. }) => "Please restart Zed to Collaborate",
                     Some(AutoUpdateStatus::Installing { .. })
                     | Some(AutoUpdateStatus::Downloading { .. })
-                    | Some(AutoUpdateStatus::Checking) => "Updating...",
+                    | Some(AutoUpdateStatus::Checking) => "Updating...".to_string(),
                     Some(AutoUpdateStatus::Idle)
                     | Some(AutoUpdateStatus::Errored { .. })
                     | None => "Please update Zed to Collaborate",
