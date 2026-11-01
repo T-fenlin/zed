@@ -699,7 +699,7 @@ fn render_form_actions(
                 .border_1()
                 .border_color(save_border)
                 .child(
-                    Button::new("custom-agent-form-save", "Save")
+                    Button::new("custom-agent-form-save", t(keys::menu::MENU_FILE_SAVE))
                         .style(ButtonStyle::Filled)
                         .track_focus(&save_handle)
                         .on_click(cx.listener(|this, _, window, cx| {
