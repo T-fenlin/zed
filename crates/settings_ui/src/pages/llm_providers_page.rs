@@ -1165,12 +1165,12 @@ fn save_llm_provider_form(
 
             settings_update
                 .await
-                .map_err(|_| anyhow::anyhow!("Settings update was canceled"))??;
+                .map_err(|_| anyhow::anyhow!(t(keys::errors::ERROR_CANCELED)))??;
 
             let set_api_key = cx.update(|_window, cx| {
                 let provider = LanguageModelRegistry::read_global(cx)
                     .provider(&provider_id)
-                    .ok_or_else(|| anyhow::anyhow!("Provider was not registered"))?;
+                    .ok_or_else(|| anyhow::anyhow!(t(keys::errors::ERROR_NOT_REGISTERED)))?;
                 anyhow::Ok(provider.set_api_key(Some(api_key), cx))
             })??;
             set_api_key.await?;
@@ -1207,7 +1207,7 @@ fn validate_llm_provider_form(
 ) -> Result<(String, String, String, ParsedModels), SharedString> {
     let provider_name = values.provider_name.clone();
     if provider_name.is_empty() {
-        return Err("Provider Name cannot be empty".into());
+        return Err(t(keys::errors::ERROR_NAME_EMPTY).into());
     }
 
     if LanguageModelRegistry::read_global(cx)
@@ -1218,17 +1218,17 @@ fn validate_llm_provider_form(
                 || provider.name().0.as_ref() == provider_name.as_str()
         })
     {
-        return Err("Provider Name is already taken by another provider".into());
+        return Err(t(keys::errors::ERROR_NAME_TAKEN).into());
     }
 
     let api_url = values.api_url.clone();
     if api_url.is_empty() {
-        return Err("API URL cannot be empty".into());
+        return Err(t(keys::errors::ERROR_URL_EMPTY).into());
     }
 
     let api_key = values.api_key.clone();
     if api_key.is_empty() {
-        return Err("API Key cannot be empty".into());
+        return Err(t(keys::errors::ERROR_KEY_EMPTY).into());
     }
 
     let models = match values.kind {
@@ -1258,7 +1258,7 @@ fn validate_llm_provider_form(
             .all(|model| model_names.insert(model.name.clone())),
     };
     if !model_names_are_unique {
-        return Err("Model Names must be unique".into());
+        return Err(t(keys::errors::ERROR_MODEL_NAMES_UNIQUE).into());
     }
 
     Ok((provider_name, api_url, api_key, models))
@@ -1266,7 +1266,7 @@ fn validate_llm_provider_form(
 
 fn parse_model_name(model: &ModelValues) -> Result<String, SharedString> {
     if model.name.is_empty() {
-        return Err("Model Name cannot be empty".into());
+        return Err(t(keys::errors::ERROR_MODEL_NAME_EMPTY).into());
     }
     Ok(model.name.clone())
 }
