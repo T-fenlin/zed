@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{collections::HashSet, sync::Arc};
 
 use editor::Editor;
@@ -275,7 +276,7 @@ fn render_api_key_providers_item(
                                 .flex_wrap()
                                 .gap_0p5()
                                 .child(
-                                    Label::new("Visit the")
+                                    Label::new(t(keys::settings_ui::SETTINGS_B_API_KEY_VISIT_THE))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -289,7 +290,7 @@ fn render_api_key_providers_item(
                                     .label_color(Color::Muted),
                                 )
                                 .child(
-                                    Label::new("to generate an API key.")
+                                    Label::new(t(keys::settings_ui::SETTINGS_B_API_KEY_TO_GENERATE))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 ),
@@ -418,7 +419,7 @@ fn render_inline_description(
         InlineDescription::ApiKeyUrl(url) => h_flex()
             .gap_0p5()
             .child(
-                Label::new("To find an API key, visit the")
+                Label::new(t(keys::settings_ui::SETTINGS_B_LLM_FIND_API_KEY))
                     .size(LabelSize::Small)
                     .color(Color::Muted),
             )
@@ -449,7 +450,7 @@ fn open_provider_configuration(
 
     settings_window.push_dynamic_sub_page(
         title,
-        "Agent Configuration",
+        t(keys::settings_ui::SETTINGS_EXT_AGENT_AGENT_CONFIGURATION),
         Some("llm_providers"),
         true,
         render_provider_config_sub_page,
@@ -586,7 +587,7 @@ impl ModelInput {
 
         Self {
             name: new_input(
-                "e.g. gpt-5, claude-opus-4, gemini-2.5-pro",
+                &t(keys::settings_ui::SETTINGS_B_LLM_MODEL_PLACEHOLDER),
                 None,
                 false,
                 window,
@@ -649,7 +650,7 @@ fn open_llm_provider_form(
     settings_window.llm_provider_form = Some(LlmProviderForm::new(kind, window, cx));
     settings_window.push_dynamic_sub_page(
         format!("Add {}-Compatible Provider", kind.label()),
-        "Agent Configuration",
+        t(keys::settings_ui::SETTINGS_EXT_AGENT_AGENT_CONFIGURATION),
         Some("llm_providers"),
         true,
         render_llm_provider_form_page,
@@ -681,16 +682,16 @@ fn render_llm_provider_form_page(
                 .overflow_y_scroll()
                 .child(Label::new(match form.kind {
                     CompatibleProviderKind::OpenAi => {
-                        "This provider will use an OpenAI-compatible API."
+                        t(keys::settings_ui::SETTINGS_B_LLM_OPENAI_INTRO)
                     }
                     CompatibleProviderKind::Anthropic => {
-                        "This provider will use an Anthropic Messages-compatible API."
+                        t(keys::settings_ui::SETTINGS_B_LLM_ANTHROPIC_INTRO)
                     }
                 }))
                 .child(Divider::horizontal().flex_shrink_0())
                 .child(render_form_field(
-                    "Provider Name",
-                    "A unique name used to identify this provider.",
+                    t(keys::settings_ui::SETTINGS_B_LLM_PROVIDER_NAME),
+                    t(keys::settings_ui::SETTINGS_B_LLM_PROVIDER_NAME_HINT),
                     &form.provider_name,
                     cx,
                 ))
@@ -724,8 +725,8 @@ fn render_llm_provider_form_page(
 }
 
 fn render_form_field(
-    title: &'static str,
-    description: &'static str,
+    title: impl Into<SharedString>,
+    description: impl Into<SharedString>,
     editor: &Entity<Editor>,
     cx: &mut Context<SettingsWindow>,
 ) -> AnyElement {
@@ -961,7 +962,7 @@ fn render_model_capabilities(
 fn render_capability_checkbox(
     id: &'static str,
     index: usize,
-    label: &'static str,
+    label: impl Into<SharedString>,
     state: ToggleState,
     update: fn(&mut ModelInput, ToggleState),
     cx: &mut Context<SettingsWindow>,
