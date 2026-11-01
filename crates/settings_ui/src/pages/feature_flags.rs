@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use feature_flags::{FeatureFlagDescriptor, FeatureFlagStore, FeatureFlagVariant};
 use fs::Fs;
 use gpui::{ScrollHandle, prelude::*};
@@ -59,7 +60,7 @@ fn render_flag_row(
                     ))
                     .when(forced_on, |this| {
                         this.child(
-                            Label::new("enabled for all")
+                            Label::new(t(keys::settings_ui::SETTINGS_B_FEATURE_FLAG_ENABLED_FOR_ALL))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
                         )
@@ -68,7 +69,7 @@ fn render_flag_row(
             .when(has_override && !forced_on, |this| {
                 let name = descriptor.name;
                 this.child(
-                    Button::new(SharedString::from(format!("reset-{}", name)), "Reset")
+                    Button::new(SharedString::from(format!("reset-{}", name)), t(keys::settings_ui::SETTINGS_B_FEATURE_FLAG_RESET))
                         .label_size(LabelSize::Small)
                         .on_click(cx.listener(move |_, _, _, cx| {
                             FeatureFlagStore::clear_override(name, <dyn Fs>::global(cx), cx);

@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::sync::Arc;
 
 use fuzzy::StringMatch;
@@ -128,14 +129,14 @@ impl PickerDelegate for OllamaModelPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Search models…".into()
+        t(keys::settings_ui::SETTINGS_B_OLLAMA_SEARCH_MODEL).into()
     }
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
         Some(if self.loading {
-            "Loading models…".into()
+            t(keys::settings_ui::SETTINGS_B_OLLAMA_LOADING).into()
         } else {
-            "No models found. Check your Ollama server URL.".into()
+            t(keys::settings_ui::SETTINGS_B_OLLAMA_NO_MODELS).into()
         })
     }
 
@@ -227,7 +228,7 @@ pub fn render_ollama_model_picker(
         .unwrap_or_else(|| DEFAULT_OLLAMA_API_URL.into());
 
     let trigger_value: SharedString = if current_value.is_empty() {
-        "Select a model…".into()
+        t(keys::settings_ui::SETTINGS_B_OLLAMA_SELECT_MODEL).into()
     } else {
         current_value.clone()
     };

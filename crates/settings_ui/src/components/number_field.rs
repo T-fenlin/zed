@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{
     fmt::Display,
     num::{NonZero, NonZeroU32, NonZeroU64},
@@ -585,7 +586,7 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                 this.child(
                     IconButton::new("reset", IconName::RotateCcw)
                         .icon_size(IconSize::Small)
-                        .aria_label("Reset to Default")
+                        .aria_label(t(keys::settings_ui::SETTINGS_B_NUMBER_RESET_DEFAULT))
                         .when_some(self.tab_index, |this, _| this.tab_index(0isize))
                         .on_click(on_reset),
                 )
@@ -610,7 +611,7 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                             base_button(IconName::Dash)
                                 .id((self.id.clone(), "decrement_button"))
                                 .role(Role::Button)
-                                .aria_label("Decrement")
+                                .aria_label(t(keys::settings_ui::SETTINGS_B_NUMBER_DECREMENT))
                                 .rounded_tl_sm()
                                 .rounded_bl_sm()
                                 .when_some(self.tab_index, |this, _| this.tab_index(0isize))
@@ -826,7 +827,7 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                             base_button(IconName::Plus)
                                 .id((self.id.clone(), "increment_button"))
                                 .role(Role::Button)
-                                .aria_label("Increment")
+                                .aria_label(t(keys::settings_ui::SETTINGS_B_NUMBER_INCREMENT))
                                 .rounded_tr_sm()
                                 .rounded_br_sm()
                                 .when_some(self.tab_index, |this, _| this.tab_index(0isize))
