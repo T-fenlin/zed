@@ -1409,7 +1409,7 @@ impl TitleBar {
                                 )
                                 .when(is_custom, |menu| {
                                     menu.item(
-                                        ContextMenuEntry::new("Custom")
+                                        ContextMenuEntry::new(t(keys::settings_ui::SETTINGS_ENUM_CUSTOM))
                                             .toggleable(IconPosition::Start, true)
                                             .disabled(true),
                                     )
