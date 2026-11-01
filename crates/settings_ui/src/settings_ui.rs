@@ -1244,7 +1244,7 @@ impl SettingsPageItem {
                         .child(
                             Button::new(
                                 ("sub-page".into(), sub_page_link.title.clone()),
-                                "Configure",
+                                t(keys::agent::AGENT_B_CONFIGURE),
                             )
                             .aria_label(format!("Configure {}", sub_page_link.title))
                             .tab_index(0_isize)
@@ -1575,8 +1575,8 @@ fn render_settings_item_link(
                 .icon_color(link_icon_color)
                 .icon_size(IconSize::Small)
                 .shape(IconButtonShape::Square)
-                .aria_label("Copy Link")
-                .tooltip(Tooltip::text("Copy Link"))
+                .aria_label(t(keys::agent::AGENT_THREAD_COPY_LINK))
+                .tooltip(Tooltip::text(t(keys::agent::AGENT_THREAD_COPY_LINK)))
                 .when_some(json_path, |this, path| {
                     this.on_click(cx.listener(move |this, _, _, cx| {
                         let link = format!("zed://settings/{}", path);
@@ -4500,7 +4500,7 @@ impl SettingsWindow {
                             .take(item_index)
                             .rev()
                             .find_map(|item| item.header_text().map(SharedString::new_static))
-                            .unwrap_or_else(|| "Settings".into());
+                            .unwrap_or_else(|| t(keys::agent::AGENT_MENU_SETTINGS).into());
 
                         self.push_sub_page(sub_page_link.clone(), section_header, window, cx);
                         return true;
