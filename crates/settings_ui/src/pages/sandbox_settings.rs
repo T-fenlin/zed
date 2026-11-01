@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::path::PathBuf;
 
 use agent_settings::AgentSettings;
@@ -61,11 +62,8 @@ pub(crate) fn render_sandbox_settings_page(
         .child(
             SwitchField::new(
                 "sandbox-enabled",
-                Some("Enable Sandbox"),
-                Some(
-                    "Wrap agent-run terminal commands in an OS-level sandbox. When off, commands run with Zed's own permissions."
-                        .into(),
-                ),
+                Some(t(keys::settings_ui::SETTINGS_B_SANDBOX_ENABLE)),
+                Some(t(keys::settings_ui::SETTINGS_B_SANDBOX_ENABLE_DESC).into()),
                 sandbox_enabled,
                 move |state, _window, cx| {
                     set_sandbox_enabled(*state == ToggleState::Selected, cx);
@@ -80,127 +78,144 @@ pub(crate) fn render_sandbox_settings_page(
             // Wrap in a row so the button shrinks to its content width instead
             // of stretching across the settings page.
             h_flex().child(
-                Button::new("sandbox-docs-link", "Learn more about sandboxing")
-                    .label_size(LabelSize::Small)
-                    .color(Color::Muted)
-                    .end_icon(
-                        Icon::new(IconName::ArrowUpRight)
-                            .color(Color::Muted)
-                            .size(IconSize::XSmall),
-                    )
-                    .tooltip(Tooltip::text(tooltip))
-                    .on_click(move |_, _, cx| cx.open_url(&docs_url)),
+                Button::new(
+                    "sandbox-docs-link",
+                    t(keys::settings_ui::SETTINGS_B_SANDBOX_LEARN_MORE),
+                )
+                .label_size(LabelSize::Small)
+                .color(Color::Muted)
+                .end_icon(
+                    Icon::new(IconName::ArrowUpRight)
+                        .color(Color::Muted)
+                        .size(IconSize::XSmall),
+                )
+                .tooltip(Tooltip::text(tooltip))
+                .on_click(move |_, _, cx| cx.open_url(&docs_url)),
             )
         })
-        .when(sandbox_enabled, |this| this
-        .when_some(validation_error, |this, error| {
-            this.child(
-                Banner::new()
-                    .severity(Severity::Warning)
-                    .child(Label::new(error).size(LabelSize::Small))
-                    .action_slot(
-                        Button::new("dismiss-sandbox-host-error", "Dismiss")
+        .when(sandbox_enabled, |this| {
+            this.when_some(validation_error, |this, error| {
+                this.child(
+                    Banner::new()
+                        .severity(Severity::Warning)
+                        .child(Label::new(error).size(LabelSize::Small))
+                        .action_slot(
+                            Button::new(
+                                "dismiss-sandbox-host-error",
+                                t(keys::settings_ui::SETTINGS_B_SANDBOX_DISMISS),
+                            )
                             .style(ButtonStyle::Tinted(ui::TintColor::Warning))
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.sandbox_host_validation_error = None;
                                 cx.notify();
                             })),
+                        ),
+                )
+            })
+            .child(
+                v_flex()
+                    .gap_4()
+                    .child(
+                        SettingsSectionHeader::new(t(
+                            keys::settings_ui::SETTINGS_B_SANDBOX_NETWORK,
+                        ))
+                        .no_padding(true),
+                    )
+                    .child(
+                        SwitchField::new(
+                            "sandbox-allow-all-hosts",
+                            Some(t(keys::settings_ui::SETTINGS_B_SANDBOX_ALLOW_ALL_DOMAINS)),
+                            Some(
+                                t(keys::settings_ui::SETTINGS_B_SANDBOX_ALLOW_ALL_DOMAINS_DESC)
+                                    .into(),
+                            ),
+                            permissions.allow_all_hosts,
+                            move |state, _window, cx| {
+                                set_allow_all_hosts(*state == ToggleState::Selected, cx);
+                            },
+                        )
+                        .tab_index(0),
+                    )
+                    .child(render_list_section(
+                        t(keys::settings_ui::SETTINGS_B_SANDBOX_ALLOWED_DOMAINS),
+                        DOMAINS_DESCRIPTION,
+                        host_rows,
+                        add_host_input,
+                        empty_border,
+                    )),
+            )
+            .child(Divider::horizontal())
+            .child(
+                v_flex()
+                    .gap_4()
+                    .child(
+                        SettingsSectionHeader::new(t(
+                            keys::settings_ui::SETTINGS_B_SANDBOX_FILE_SYSTEM,
+                        ))
+                        .no_padding(true),
+                    )
+                    .child(
+                        SwitchField::new(
+                            "sandbox-allow-fs-write-all",
+                            Some(t(keys::settings_ui::SETTINGS_B_SANDBOX_ALLOW_ALL_WRITES)),
+                            Some(
+                                t(keys::settings_ui::SETTINGS_B_SANDBOX_ALLOW_ALL_WRITES_DESC)
+                                    .into(),
+                            ),
+                            permissions.allow_fs_write_all,
+                            move |state, _window, cx| {
+                                set_allow_fs_write_all(*state == ToggleState::Selected, cx);
+                            },
+                        )
+                        .tab_index(0),
+                    )
+                    .child(render_list_section(
+                        t(keys::settings_ui::SETTINGS_B_SANDBOX_WRITABLE_PATHS),
+                        WRITE_PATHS_DESCRIPTION,
+                        path_rows,
+                        add_path_input,
+                        empty_border,
+                    )),
+            )
+            .child(Divider::horizontal())
+            .child(
+                v_flex()
+                    .gap_4()
+                    .child(
+                        SettingsSectionHeader::new(t(
+                            keys::settings_ui::SETTINGS_B_SANDBOX_ESCALATION,
+                        ))
+                        .no_padding(true),
+                    )
+                    .child(
+                        SwitchField::new(
+                            "sandbox-warn-confusable-unicode",
+                            Some(t(keys::settings_ui::SETTINGS_B_SANDBOX_WARN_CONFUSABLE)),
+                            Some(
+                                t(keys::settings_ui::SETTINGS_B_SANDBOX_WARN_CONFUSABLE_DESC)
+                                    .into(),
+                            ),
+                            permissions.warn_confusable_unicode,
+                            move |state, _window, cx| {
+                                set_warn_confusable_unicode(*state == ToggleState::Selected, cx);
+                            },
+                        )
+                        .tab_index(0),
+                    )
+                    .child(
+                        SwitchField::new(
+                            "sandbox-warn-ntfs-grants",
+                            Some(t(keys::settings_ui::SETTINGS_B_SANDBOX_WARN_NTFS)),
+                            Some(t(keys::settings_ui::SETTINGS_B_SANDBOX_WARN_NTFS_DESC).into()),
+                            permissions.warn_ntfs_grants,
+                            move |state, _window, cx| {
+                                set_warn_ntfs_grants(*state == ToggleState::Selected, cx);
+                            },
+                        )
+                        .tab_index(0),
                     ),
             )
         })
-        .child(
-            v_flex()
-                .gap_4()
-                .child(SettingsSectionHeader::new("Network").no_padding(true))
-                .child(
-                    SwitchField::new(
-                        "sandbox-allow-all-hosts",
-                        Some("Allow All Domains"),
-                        Some(
-                            "Let sandboxed commands reach any domain over the network without prompting."
-                                .into(),
-                        ),
-                        permissions.allow_all_hosts,
-                        move |state, _window, cx| {
-                            set_allow_all_hosts(*state == ToggleState::Selected, cx);
-                        },
-                    )
-                    .tab_index(0),
-                )
-                .child(render_list_section(
-                    "Allowed Domains",
-                    DOMAINS_DESCRIPTION,
-                    host_rows,
-                    add_host_input,
-                    empty_border,
-                )),
-        )
-
-        .child(Divider::horizontal())
-        .child(
-            v_flex()
-                .gap_4()
-                .child(SettingsSectionHeader::new("File System").no_padding(true))
-                .child(
-                    SwitchField::new(
-                        "sandbox-allow-fs-write-all",
-                        Some("Allow All File System Writes"),
-                        Some(
-                            "Let sandboxed commands write anywhere except protected Git metadata without prompting."
-                                .into(),
-                        ),
-                        permissions.allow_fs_write_all,
-                        move |state, _window, cx| {
-                            set_allow_fs_write_all(*state == ToggleState::Selected, cx);
-                        },
-                    )
-                    .tab_index(0),
-                )
-                .child(render_list_section(
-                    "Writable Paths",
-                    WRITE_PATHS_DESCRIPTION,
-                    path_rows,
-                    add_path_input,
-                    empty_border,
-                )),
-        )
-        .child(Divider::horizontal())
-        .child(
-            v_flex()
-                .gap_4()
-                .child(SettingsSectionHeader::new("Escalation Prompts").no_padding(true))
-                .child(
-                    SwitchField::new(
-                        "sandbox-warn-confusable-unicode",
-                        Some("Warn About Confusable Unicode"),
-                        Some(
-                            "Warn when an approval prompt requests a domain or write path that contains potentially confusable Unicode characters, such as homoglyphs (i.e. two symbols that look similar, such as a Cyrillic `а`)"
-                                .into(),
-                        ),
-                        permissions.warn_confusable_unicode,
-                        move |state, _window, cx| {
-                            set_warn_confusable_unicode(*state == ToggleState::Selected, cx);
-                        },
-                    )
-                    .tab_index(0),
-                )
-                .child(
-                    SwitchField::new(
-                        "sandbox-warn-ntfs-grants",
-                        Some("Warn About Windows-Drive Grants"),
-                        Some(
-                            "Windows only: warn when a sandbox grant targets a file on a Windows drive (accessed inside WSL via DrvFs). Such grants are enforced through a translated path and their sandbox-integrity guarantees are weaker than files on the Linux distro's own filesystem."
-                                .into(),
-                        ),
-                        permissions.warn_ntfs_grants,
-                        move |state, _window, cx| {
-                            set_warn_ntfs_grants(*state == ToggleState::Selected, cx);
-                        },
-                    )
-                    .tab_index(0),
-                ),
-        )
-        )
         .into_any_element()
 }
 
@@ -244,7 +259,7 @@ fn render_empty_state(border_color: gpui::Hsla) -> AnyElement {
         .border_dashed()
         .border_color(border_color)
         .child(
-            Label::new("Nothing configured")
+            Label::new(t(keys::settings_ui::SETTINGS_B_SANDBOX_NOTHING_CONFIGURED))
                 .size(LabelSize::Small)
                 .color(Color::Disabled),
         )
@@ -265,7 +280,9 @@ fn render_host_row(index: usize, host: String, cx: &mut Context<SettingsWindow>)
             IconButton::new(format!("sandbox-host-delete-{}", index), IconName::Trash)
                 .icon_size(IconSize::Small)
                 .icon_color(Color::Muted)
-                .tooltip(Tooltip::text("Remove Domain"))
+                .tooltip(Tooltip::text(t(
+                    keys::settings_ui::SETTINGS_B_SANDBOX_REMOVE_DOMAIN,
+                )))
                 .on_click(cx.listener(move |_, _, _, cx| {
                     remove_network_host(host_for_delete.clone(), cx);
                 })),
@@ -301,7 +318,9 @@ fn render_add_host_input(cx: &mut Context<SettingsWindow>) -> AnyElement {
     let settings_window = cx.entity().downgrade();
 
     SettingsInputField::new("sandbox-host-new")
-        .with_placeholder("Add domain (e.g. github.com or *.npmjs.org)…")
+        .with_placeholder(t(
+            keys::settings_ui::SETTINGS_B_SANDBOX_ADD_DOMAIN_PLACEHOLDER,
+        ))
         .tab_index(0)
         .with_buffer_font()
         .display_clear_button()
@@ -348,7 +367,9 @@ fn render_path_row(index: usize, path: PathBuf, cx: &mut Context<SettingsWindow>
             IconButton::new(format!("sandbox-path-delete-{}", index), IconName::Trash)
                 .icon_size(IconSize::Small)
                 .icon_color(Color::Muted)
-                .tooltip(Tooltip::text("Remove Path"))
+                .tooltip(Tooltip::text(t(
+                    keys::settings_ui::SETTINGS_B_SANDBOX_REMOVE_PATH,
+                )))
                 .on_click(cx.listener(move |_, _, _, cx| {
                     remove_write_path(path_for_delete.clone(), cx);
                 })),
@@ -375,7 +396,9 @@ fn render_add_path_input(cx: &mut Context<SettingsWindow>) -> AnyElement {
     let settings_window = cx.entity().downgrade();
 
     SettingsInputField::new("sandbox-path-new")
-        .with_placeholder("Add an absolute path (e.g. /path/to/directory)…")
+        .with_placeholder(t(
+            keys::settings_ui::SETTINGS_B_SANDBOX_ADD_PATH_PLACEHOLDER,
+        ))
         .tab_index(0)
         .with_buffer_font()
         .display_clear_button()
@@ -433,16 +456,15 @@ fn canonicalize_host(host: &str) -> Result<String, String> {
     HostPattern::parse(host)
         .map(|pattern| pattern.to_string())
         .map_err(|error| match error {
-            HostPatternError::Empty => "Domain cannot be empty.".to_string(),
+            HostPatternError::Empty => t(keys::settings_ui::SETTINGS_B_SANDBOX_ERROR_EMPTY),
             HostPatternError::IpLiteral(_) => {
-                "IP addresses and local domains aren't allowed; enter a domain like github.com."
-                    .to_string()
+                t(keys::settings_ui::SETTINGS_B_SANDBOX_ERROR_IP).to_string()
             }
             HostPatternError::InvalidWildcard(_) => {
-                "Wildcards are only allowed as a leading label, e.g. *.github.com.".to_string()
+                t(keys::settings_ui::SETTINGS_B_SANDBOX_ERROR_WILDCARD)
             }
             HostPatternError::Invalid { .. } => {
-                "Not a valid domain. Use a domain like github.com or *.npmjs.org.".to_string()
+                t(keys::settings_ui::SETTINGS_B_SANDBOX_ERROR_INVALID)
             }
         })
 }

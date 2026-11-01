@@ -197,9 +197,11 @@ pub(crate) fn render_skills_setup_page(
         .map(|this| {
             if skills.is_empty() {
                 let message = match &settings_window.current_file {
-                    SettingsUiFile::User => "No global skills installed.",
-                    SettingsUiFile::Project(_) => "No project skills found.",
-                    _ => "No skills available for this context.",
+                    SettingsUiFile::User => t(keys::settings_ui::SETTINGS_SKILLS_EMPTY_GLOBAL),
+                    SettingsUiFile::Project(_) => {
+                        t(keys::settings_ui::SETTINGS_SKILLS_EMPTY_PROJECT)
+                    }
+                    _ => t(keys::settings_ui::SETTINGS_SKILLS_EMPTY_CONTEXT),
                 };
 
                 this.px_8().items_center().justify_center().child(
@@ -258,8 +260,14 @@ fn render_skill_row(
     let skill_name = skill.name.clone();
 
     let (skill_scope, shared_scope) = match &skill.source {
-        SkillSource::ProjectLocal { .. } => ("project", "used in this project"),
-        _ => ("global", "on this machine"),
+        SkillSource::ProjectLocal { .. } => (
+            "project",
+            t(keys::settings_ui::SETTINGS_SKILLS_USED_IN_PROJECT),
+        ),
+        _ => (
+            "global",
+            t(keys::settings_ui::SETTINGS_SKILLS_ON_THIS_MACHINE),
+        ),
     };
 
     let delete_skill = skill.clone();
@@ -289,7 +297,9 @@ fn render_skill_row(
             .shape(ui::IconButtonShape::Square)
             .icon_size(IconSize::Small)
             .icon_color(share_icon_color)
-            .tooltip(Tooltip::text("Copy Share Link"))
+            .tooltip(Tooltip::text(t(
+                keys::settings_ui::SETTINGS_SKILLS_COPY_SHARE_LINK,
+            )))
             .visible_on_hover(&group)
             .on_click(cx.listener(move |settings_window, _event, _window, cx| {
                 copy_skill_share_link(&share_skill, settings_window, cx).detach();
@@ -334,7 +344,7 @@ fn render_skill_row(
                     )
                     .tab_index(0_isize)
                     .icon_size(IconSize::Small)
-                    .tooltip(Tooltip::text("Delete Skill"))
+                    .tooltip(Tooltip::text(t(keys::settings_ui::SETTINGS_SKILLS_DELETE)))
                     .on_click(cx.listener(
                         move |settings_window, _event, window, cx| {
                             let directory_path = directory_path.clone();

@@ -169,7 +169,7 @@ impl SkillCreatorPage {
 
         let name_editor = cx.new(|cx| {
             InputField::new(window, cx, "my-new-skill")
-                .label("Name")
+                .label(t(keys::settings_ui::SETTINGS_A_SKILL_NAME_LABEL))
                 .tab_index(NAME_FIELD_TAB_INDEX)
                 .tab_stop(true)
         });
@@ -180,7 +180,7 @@ impl SkillCreatorPage {
             InputField::new(
                 window,
                 cx,
-                "e.g., Fill the PR description following this template.",
+                t(keys::settings_ui::SETTINGS_A_SKILL_DESCRIPTION_PLACEHOLDER),
             )
             .label(t(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION))
             .tab_index(DESCRIPTION_FIELD_TAB_INDEX)
@@ -194,7 +194,11 @@ impl SkillCreatorPage {
                 buffer
             });
             let mut editor = Editor::for_buffer(buffer, None, window, cx);
-            editor.set_placeholder_text("Add skill content…", window, cx);
+            editor.set_placeholder_text(
+                t(keys::settings_ui::SETTINGS_A_SKILL_BODY_PLACEHOLDER),
+                window,
+                cx,
+            );
             editor.set_soft_wrap_mode(SoftWrap::EditorWidth, cx);
             editor.set_show_gutter(false, cx);
             editor.set_show_wrap_guides(false, cx);
@@ -398,7 +402,7 @@ impl SkillCreatorPage {
     fn recompute_body_error(&mut self, cx: &App) {
         let body = self.current_body(cx);
         self.body_error = if body.trim().is_empty() {
-            Some("Body is required.")
+            Some(t(keys::settings_ui::SETTINGS_A_SKILL_BODY_REQUIRED))
         } else {
             None
         };
@@ -705,8 +709,13 @@ impl SkillCreatorPage {
             .child(
                 h_flex()
                     .gap_1()
-                    .child(Label::new("Import from URL"))
-                    .child(Label::new("(optional)").color(Color::Muted)),
+                    .child(Label::new(t(
+                        keys::settings_ui::SETTINGS_A_SKILL_IMPORT_FROM_URL,
+                    )))
+                    .child(
+                        Label::new(t(keys::settings_ui::SETTINGS_A_SKILL_OPTIONAL))
+                            .color(Color::Muted),
+                    ),
             )
             .child(self.url_editor.clone())
             .child(match &self.url_import_status {
@@ -718,7 +727,8 @@ impl SkillCreatorPage {
                 .color(Color::Muted)
                 .into_any_element(),
                 UrlImportStatus::Fetching => {
-                    LoadingLabel::new("Fetching and parsing…").into_any_element()
+                    LoadingLabel::new(t(keys::settings_ui::SETTINGS_A_SKILL_FETCHING))
+                        .into_any_element()
                 }
                 UrlImportStatus::Error(error) => h_flex()
                     .gap_1()
@@ -745,7 +755,9 @@ impl SkillCreatorPage {
             .child(
                 v_flex()
                     .gap_2()
-                    .child(Label::new("Front-matter"))
+                    .child(Label::new(t(
+                        keys::settings_ui::SETTINGS_A_SKILL_FRONT_MATTER,
+                    )))
                     .child(self.name_editor.clone())
                     .child(self.description_editor.clone()),
             )
@@ -756,7 +768,9 @@ impl SkillCreatorPage {
                     .flex_grow_1()
                     .flex_shrink_0()
                     .gap_2()
-                    .child(Label::new("Skill Content"))
+                    .child(Label::new(t(
+                        keys::settings_ui::SETTINGS_A_SKILL_SKILL_CONTENT,
+                    )))
                     .child(self.render_body_field(window, cx))
                     .when_some(self.body_error, |this, error| {
                         this.child(Label::new(error).size(LabelSize::Small).color(Color::Error))
@@ -769,10 +783,11 @@ impl SkillCreatorPage {
 
         SwitchField::new(
             "disable-model-invocation",
-            Some("Disable model invocation"),
+            Some(t(
+                keys::settings_ui::SETTINGS_A_SKILL_DISABLE_MODEL_INVOCATION,
+            )),
             Some(
-                "Hide this skill from the model's catalog. It can still be invoked via slash command."
-                    .into(),
+                t(keys::settings_ui::SETTINGS_A_SKILL_DISABLE_MODEL_INVOCATION_DESCRIPTION).into(),
             ),
             toggle_state,
             cx.listener(|this, _state: &ToggleState, _window, cx| {
@@ -837,7 +852,11 @@ impl SkillCreatorPage {
 
     fn render_footer(&self, _window: &Window, cx: &mut Context<Self>) -> impl IntoElement {
         let saving = self.saving;
-        let main_action = if saving { "Saving…" } else { "Save Skill" };
+        let main_action = if saving {
+            t(keys::settings_ui::SETTINGS_A_SKILL_SAVING)
+        } else {
+            t(keys::settings_ui::SETTINGS_A_SKILL_SAVE_SKILL)
+        };
 
         v_flex()
             .w_full()
