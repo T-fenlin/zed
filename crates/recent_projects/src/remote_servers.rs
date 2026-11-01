@@ -1363,7 +1363,7 @@ impl PickerDelegate for RemoteServerPickerDelegate {
             h_flex()
                 .gap_1()
                 .child(
-                    Button::new("open_new_window", "New Window")
+                    Button::new("open_new_window", t(keys::menu::MENU_FILE_NEW_WINDOW))
                         .key_binding(KeyBinding::for_action(&menu::SecondaryConfirm, cx))
                         .on_click(|_, window, cx| {
                             window.dispatch_action(menu::SecondaryConfirm.boxed_clone(), cx)

@@ -193,7 +193,7 @@ impl Render for DisconnectedOverlay {
                             h_flex()
                                 .gap_2()
                                 .child(
-                                    Button::new("close-window", "Close Window")
+                                    Button::new("close-window", t(keys::menu::MENU_FILE_CLOSE_WINDOW))
                                         .style(ButtonStyle::Filled)
                                         .layer(ElevationIndex::ModalSurface)
                                         .on_click(cx.listener(move |_, _, window, _| {
