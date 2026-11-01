@@ -185,7 +185,7 @@ impl Render for DisconnectedOverlay {
                     .header(
                         ModalHeader::new()
                             .show_dismiss_button(true)
-                            .child(Headline::new("Disconnected").size(HeadlineSize::Small)),
+                            .child(Headline::new(t(keys::titlebar::TITLEBAR_DISCONNECTED)).size(HeadlineSize::Small)),
                     )
                     .section(Section::new().child(Label::new(message)))
                     .footer(

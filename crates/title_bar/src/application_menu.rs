@@ -1,4 +1,5 @@
 use gpui::{Action, Entity, OwnedMenu, OwnedMenuItem, Subscription, actions};
+use i18n::{keys, t};
 use project::DisableAiSettings;
 use settings::{Settings, SettingsStore};
 use workspace::AccessibleMode;
@@ -196,8 +197,8 @@ impl ApplicationMenu {
                         .style(ButtonStyle::Subtle)
                         .icon_size(IconSize::Small)
                         .tab_index(0isize)
-                        .aria_label("Application menu"),
-                        Tooltip::text("Open Application Menu"),
+                        .aria_label(t(keys::titlebar::TITLEBAR_APPLICATION_MENU)),
+                        Tooltip::text(t(keys::titlebar::TITLEBAR_OPEN_APPLICATION_MENU)),
                     )
                     .with_handle(handle),
             )
