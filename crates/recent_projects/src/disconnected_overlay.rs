@@ -1,4 +1,5 @@
 use gpui::{ClickEvent, DismissEvent, EventEmitter, FocusHandle, Focusable, Render, WeakEntity};
+use i18n::{keys, t};
 use project::project_settings::ProjectSettings;
 use remote::RemoteConnectionOptions;
 use settings::Settings;
@@ -201,7 +202,7 @@ impl Render for DisconnectedOverlay {
                                 )
                                 .when(can_reconnect, |el| {
                                     el.child(
-                                        Button::new("reconnect", "Reconnect")
+                                        Button::new("reconnect", t(keys::agent::AGENT_THREAD_RECONNECT))
                                             .style(ButtonStyle::Filled)
                                             .layer(ElevationIndex::ModalSurface)
                                             .start_icon(Icon::new(IconName::ArrowCircle))

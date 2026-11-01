@@ -19,6 +19,7 @@ use gpui::{
     Action, AnyElement, App, ClipboardItem, Context, DismissEvent, Entity, EventEmitter,
     FocusHandle, Focusable, PromptLevel, Subscription, Task, TaskExt, WeakEntity, Window,
 };
+use i18n::{keys, t};
 use log::{debug, info};
 use open_path_prompt::OpenPathDelegate;
 use paths::{global_ssh_config_file, user_ssh_config_file};
@@ -1048,7 +1049,7 @@ impl RemoteServerPickerDelegate {
         &self,
         ix: usize,
         icon: IconName,
-        label: &'static str,
+        label: impl Into<SharedString>,
         selected: bool,
     ) -> AnyElement {
         ListItem::new(("remote-action", ix))
@@ -1368,7 +1369,7 @@ impl PickerDelegate for RemoteServerPickerDelegate {
                             window.dispatch_action(menu::SecondaryConfirm.boxed_clone(), cx)
                         }),
                 )
-                .child(confirm_button("Open".into()))
+                .child(confirm_button(t(keys::agent::AGENT_A_ELICIT_OPEN).into()))
                 .into_any_element()
         } else {
             confirm_button("Select".into()).into_any_element()
@@ -2534,7 +2535,7 @@ impl RemoteServerProjects {
                                         .size(LabelSize::Small),
                                     )
                                     .child(
-                                        Button::new("learn-more", "Learn More")
+                                        Button::new("learn-more", t(keys::agent::AGENT_THREAD_LEARN_MORE))
                                             .label_size(LabelSize::Small)
                                             .end_icon(
                                                 Icon::new(IconName::ArrowUpRight)

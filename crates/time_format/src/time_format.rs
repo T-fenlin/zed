@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use time::{OffsetDateTime, UtcOffset};
 
 /// The formatting style for a timestamp.
@@ -79,9 +80,9 @@ fn format_absolute_date(
         let timestamp_date = timestamp.date();
         let reference_date = reference.date();
         if timestamp_date == reference_date {
-            "Today".to_string()
+            t(keys::agent::AGENT_TODAY)
         } else if reference_date.previous_day() == Some(timestamp_date) {
-            "Yesterday".to_string()
+            t(keys::agent::AGENT_YESTERDAY)
         } else {
             macos::format_date(&timestamp)
         }
@@ -95,9 +96,9 @@ fn format_absolute_date(
         let timestamp_date = timestamp.date();
         let reference_date = reference.date();
         if timestamp_date == reference_date {
-            "Today".to_string()
+            t(keys::agent::AGENT_TODAY)
         } else if reference_date.previous_day() == Some(timestamp_date) {
-            "Yesterday".to_string()
+            t(keys::agent::AGENT_YESTERDAY)
         } else {
             windows::format_date(&timestamp)
         }
@@ -186,9 +187,9 @@ fn format_absolute_date_medium(
         let timestamp_date = timestamp.date();
         let reference_date = reference.date();
         if timestamp_date == reference_date {
-            "Today".to_string()
+            t(keys::agent::AGENT_TODAY)
         } else if reference_date.previous_day() == Some(timestamp_date) {
-            "Yesterday".to_string()
+            t(keys::agent::AGENT_YESTERDAY)
         } else {
             macos::format_date_medium(&timestamp)
         }
@@ -202,9 +203,9 @@ fn format_absolute_date_medium(
         let timestamp_date = timestamp.date();
         let reference_date = reference.date();
         if timestamp_date == reference_date {
-            "Today".to_string()
+            t(keys::agent::AGENT_TODAY)
         } else if reference_date.previous_day() == Some(timestamp_date) {
-            "Yesterday".to_string()
+            t(keys::agent::AGENT_YESTERDAY)
         } else {
             windows::format_date_medium(&timestamp)
         }
@@ -224,9 +225,9 @@ fn format_absolute_date_medium(
         let timestamp_date = timestamp.date();
         let reference_date = reference.date();
         if timestamp_date == reference_date {
-            "Today".to_string()
+            t(keys::agent::AGENT_TODAY)
         } else if reference_date.previous_day() == Some(timestamp_date) {
-            "Yesterday".to_string()
+            t(keys::agent::AGENT_YESTERDAY)
         } else {
             format_timestamp_naive_date_medium(
                 timestamp,
@@ -280,8 +281,8 @@ fn format_relative_date(timestamp: OffsetDateTime, reference: OffsetDateTime) ->
     let difference = reference_date - timestamp_date;
     let days = difference.whole_days();
     match days {
-        0 => "Today".to_string(),
-        1 => "Yesterday".to_string(),
+        0 => t(keys::agent::AGENT_TODAY),
+        1 => t(keys::agent::AGENT_YESTERDAY),
         2..=6 => format!("{} days ago", days),
         _ => {
             let weeks = difference.whole_weeks();
@@ -389,9 +390,9 @@ fn format_timestamp_naive_date(
     let timestamp_local_date = timestamp_local.date();
 
     if timestamp_local_date == reference_local_date {
-        "Today".to_string()
+        t(keys::agent::AGENT_TODAY)
     } else if reference_local_date.previous_day() == Some(timestamp_local_date) {
-        "Yesterday".to_string()
+        t(keys::agent::AGENT_YESTERDAY)
     } else {
         match is_12_hour_time {
             true => format!(

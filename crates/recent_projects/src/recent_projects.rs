@@ -23,6 +23,7 @@ pub use remote_connections::{navigate_to_positions, open_remote_project};
 
 use disconnected_overlay::DisconnectedOverlay;
 use fuzzy_nucleo::{StringMatch, StringMatchCandidate, match_strings};
+use i18n::{keys, t};
 use gpui::{
     Action, AnyElement, App, Context, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable,
     Subscription, Task, TaskExt, WeakEntity, Window, actions, px,
@@ -1530,15 +1531,15 @@ impl PickerDelegate for RecentProjectsDelegate {
                 };
 
                 let focus_handle = self.focus_handle.clone();
-                let secondary_confirm_tooltip = if self.create_new_window {
-                    "Open Project in This Window"
+                let secondary_confirm_tooltip: SharedString = if self.create_new_window {
+                    "Open Project in This Window".into()
                 } else {
                     "Open Project in New Window"
                 };
                 let primary_confirm_tooltip = if self.create_new_window {
                     "Open Project in New Window"
                 } else {
-                    "Open Project in This Window"
+                    "Open Project in This Window".into()
                 };
                 let secondary_confirm_icon = if self.create_new_window {
                     IconName::ThisWindow
@@ -1793,7 +1794,7 @@ impl PickerDelegate for RecentProjectsDelegate {
                     .into_any_element(),
             ),
             Some(ProjectPickerEntry::RecentProject(_)) => Some(
-                Button::new("delete_recent", "Remove")
+                Button::new("delete_recent", t(keys::agent::AGENT_A_REGISTRY_REMOVE))
                     .key_binding(KeyBinding::for_action_in(
                         &RemoveSelected,
                         &focus_handle,
@@ -1868,7 +1869,7 @@ impl PickerDelegate for RecentProjectsDelegate {
                                 }),
                         )
                         .child(
-                            Button::new("open_new_window", "Open")
+                            Button::new("open_new_window", t(keys::agent::AGENT_A_ELICIT_OPEN))
                                 .key_binding(KeyBinding::for_action_in(
                                     &menu::Confirm,
                                     &focus_handle,
@@ -1891,7 +1892,7 @@ impl PickerDelegate for RecentProjectsDelegate {
                                 }),
                         )
                         .child(
-                            Button::new("open_here", "Open")
+                            Button::new("open_here", t(keys::agent::AGENT_A_ELICIT_OPEN))
                                 .key_binding(KeyBinding::for_action_in(
                                     &menu::Confirm,
                                     &focus_handle,
@@ -1913,7 +1914,7 @@ impl PickerDelegate for RecentProjectsDelegate {
                             y: px(-2.0),
                         })
                         .trigger(
-                            Button::new("actions-trigger", "Actions")
+                            Button::new("actions-trigger", t(keys::agent::AGENT_B_ACTIONS))
                                 .selected_style(ButtonStyle::Tinted(TintColor::Accent))
                                 .key_binding(KeyBinding::for_action_in(
                                     &ToggleActionsMenu,
