@@ -6,10 +6,8 @@
 
 pub mod keys;
 
-use std::collections::HashMap;
-use std::sync::OnceLock;
 
-use fluent_bundle::{FluentBundle, FluentResource};
+use fluent_bundle::{FluentArgs, FluentBundle, FluentResource, FluentValue};
 use unic_langid::LanguageIdentifier;
 
 /// Supported locales. `en-US` is authoritative; other locales fall back to it.
@@ -109,17 +107,21 @@ struct Registry {
     fallback_bundle: FluentBundle<FluentResource>,
 }
 
-static REGISTRY: OnceLock<Registry> = OnceLock::new();
-
-fn registry() -> &'static Registry {
-    REGISTRY.get_or_init(|| {
+thread_local! {
+    // FluentBundle is not Sync, so the registry is thread-local. Bundles are
+    // cheap to build per-thread and this keeps `t()` lock-free.
+    static REGISTRY: Registry = {
         let active = Locale::from_tag(&std::env::var("ZED_LANG").unwrap_or_else(|_| "zh-CN".into()));
         Registry {
             active,
             active_bundle: build_bundle(active),
             fallback_bundle: build_bundle(Locale::EnUs),
         }
-    })
+    };
+}
+
+fn with_registry<R>(f: impl FnOnce(&Registry) -> R) -> R {
+    REGISTRY.with(|r| f(r))
 }
 
 /// Resolve a message id in the active locale, falling back to English, then the id.
@@ -129,10 +131,10 @@ pub fn t(key: &str) -> String {
 
 /// Resolve with arguments, e.g. `t_with_args("ui-choose_option_for", &[("name", "X")])`.
 pub fn t_with_args(key: &str, args: &[(&str, &str)]) -> String {
-    let reg = registry();
-    let mut fluent_args: HashMap<&str, fluent_bundle::FluentValue> = HashMap::new();
+    with_registry(|reg| {
+    let mut fluent_args = FluentArgs::new();
     for (k, v) in args {
-        fluent_args.insert(k, fluent_bundle::FluentValue::from(v.to_string()));
+        fluent_args.set(*k, FluentValue::from(v.to_string()));
     }
     let try_bundle = |bundle: &FluentBundle<FluentResource>| -> Option<String> {
         let msg = bundle.get_message(key)?;
@@ -150,9 +152,10 @@ pub fn t_with_args(key: &str, args: &[(&str, &str)]) -> String {
         }
     }
     key.to_string()
+    })
 }
 
 /// Convenience: current active locale.
 pub fn active_locale() -> Locale {
-    registry().active
+    with_registry(|r| r.active)
 }
