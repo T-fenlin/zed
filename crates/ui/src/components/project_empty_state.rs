@@ -1,5 +1,6 @@
 use crate::{Divider, DividerColor, KeyBinding, prelude::*};
 use gpui::{ClickEvent, FocusHandle};
+use i18n::{keys, t};
 
 type ClickHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
 
@@ -68,7 +69,7 @@ impl RenderOnce for ProjectEmptyState {
                             .child(Label::new(label).size(LabelSize::Small).color(Color::Muted)),
                     )
                     .child(
-                        Button::new("open_project", "Open Project")
+                        Button::new("open_project", t(keys::ui::UI_OPEN_PROJECT))
                             .full_width()
                             .key_binding(self.open_project_key_binding)
                             .wrap_key_binding(true)
@@ -80,11 +81,11 @@ impl RenderOnce for ProjectEmptyState {
                         h_flex()
                             .gap_2()
                             .child(Divider::horizontal().color(DividerColor::Border))
-                            .child(Label::new("or").size(LabelSize::XSmall).color(Color::Muted))
+                            .child(Label::new(t(keys::ui::UI_OR)).size(LabelSize::XSmall).color(Color::Muted))
                             .child(Divider::horizontal().color(DividerColor::Border)),
                     )
                     .child(
-                        Button::new("clone_repo", "Clone Repository")
+                        Button::new("clone_repo", t(keys::ui::UI_CLONE_REPOSITORY))
                             .full_width()
                             .when_some(self.on_clone_repo, |button, handler| {
                                 button.on_click(handler)

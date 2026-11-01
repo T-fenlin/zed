@@ -1,5 +1,6 @@
 use crate::{IconDecoration, IconDecorationKind, Tooltip, prelude::*};
 use gpui::{Animation, AnimationExt, SharedString, pulsating_between};
+use i18n::{keys, t};
 use std::time::Duration;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -15,15 +16,15 @@ pub enum AiSettingItemStatus {
 }
 
 impl AiSettingItemStatus {
-    fn tooltip_text(&self) -> &'static str {
+    fn tooltip_text(&self) -> SharedString {
         match self {
-            Self::Stopped => "Server is stopped.",
-            Self::Starting => "Server is starting.",
-            Self::Running => "Server is active.",
-            Self::Error => "Server has an error.",
-            Self::AuthRequired => "Authentication Required.",
-            Self::ClientSecretRequired => "Client Secret Required.",
-            Self::Authenticating => "Waiting for Authorization…",
+            Self::Stopped => t(keys::ui::UI_AI_STATUS_STOPPED),
+            Self::Starting => t(keys::ui::UI_AI_STATUS_STARTING),
+            Self::Running => t(keys::ui::UI_AI_STATUS_RUNNING),
+            Self::Error => t(keys::ui::UI_AI_STATUS_ERROR),
+            Self::AuthRequired => t(keys::ui::UI_AI_STATUS_AUTH_REQUIRED),
+            Self::ClientSecretRequired => t(keys::ui::UI_AI_STATUS_CLIENT_SECRET_REQUIRED),
+            Self::Authenticating => t(keys::ui::UI_AI_STATUS_AUTHENTICATING),
         }
     }
 
