@@ -32,3 +32,9 @@
 - 该函数 title/description 用 SharedString::new_static(title)（要求 &'static str），无法直接传运行时 t()
 - 受影响未译项：external_agents_page.rs 的 Agent Name/Command/Arguments/Environment Variables 及其 hint（共 8 处）；mcp_servers_page.rs 同类（2 处）
 
+
+## edit_prediction_provider_setup.rs 参数类型限制（需改 &'static str→SharedString 的辅助函数）
+- render_api_key_provider 的 title 参数是 &'static str → 未译 "OpenAI Compatible API"(L90)
+- ConfiguredApiCard::new(label) / button_label(&str) → 未译 "API Key Set in Environment Variable"/"API Key Configured"(L286/288)/"Reset Key"(L294)
+- display_name().unwrap_or("No provider set") → unwrap_or 需 &str → 未译(L133)
+
