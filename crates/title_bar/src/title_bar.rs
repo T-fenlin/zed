@@ -1185,7 +1185,7 @@ impl TitleBar {
     pub fn render_sign_in_button(&mut self, _: &mut Context<Self>) -> Button {
         let client = self.client.clone();
         let workspace = self.workspace.clone();
-        Button::new("sign_in", "Sign In")
+        Button::new("sign_in", t(keys::edit_prediction::EDIT_PREDICTION_SIGN_IN))
             .label_size(LabelSize::Small)
             .tab_index(0isize)
             .on_click(move |_, window, cx| {
@@ -1418,7 +1418,7 @@ impl TitleBar {
                     })
                     .when(is_signed_in, |this| {
                         this.separator()
-                            .action("Sign Out", client::SignOut.boxed_clone())
+                            .action(t(keys::edit_prediction::EDIT_PREDICTION_SIGN_OUT), client::SignOut.boxed_clone())
                     })
                 })
                 .into()
