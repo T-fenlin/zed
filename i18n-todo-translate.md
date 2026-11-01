@@ -20,3 +20,10 @@
 | Overwrite | crates/workspace/src/pane.rs | prompt 按钮 |
 | Discard Edits | crates/workspace/src/pane.rs | prompt 按钮 |
 | Don't Save | crates/workspace/src/pane.rs | prompt 按钮 |
+
+## 结构性待补译（代码结构限制，无法直接用 t()，需改逻辑/API 后补）
+- crates/settings_ui/src/pages/sandbox_settings.rs: const DOMAINS_DESCRIPTION / WRITE_PATHS_DESCRIPTION（const &str 不能调 t()，需改使用处）
+- crates/settings_ui/src/pages/audio_input_output_setup.rs: const SYSTEM_DEFAULT（同上）
+- crates/settings_ui/src/pages/skills_setup.rs: window.prompt(... &["Delete","Cancel"] ...)（&[&str] 类型，需改 prompt API 才能本地化）
+- 有意不译（逻辑/遥测，非遗漏）：settings_ui.rs setting_type() 返回值(telemetry type)、banner() label(telemetry label)、title.as_ref()=="LLM Providers" 比较
+
