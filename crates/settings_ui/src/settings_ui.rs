@@ -895,7 +895,7 @@ fn open_settings_editor_with(
         cx.open_window(
             WindowOptions {
                 titlebar: Some(TitlebarOptions {
-                    title: Some("Zed — Settings".into()),
+                    title: Some(t(keys::settings_ui::SETTINGS_UI_WINDOW_TITLE).into()),
                     appears_transparent: true,
                     traffic_light_position: Some(point(px(12.0), px(12.0))),
                 }),
@@ -1443,8 +1443,8 @@ fn render_settings_item_layout(
                                 IconButton::new("reset-to-default-btn", IconName::Undo)
                                     .icon_color(Color::Muted)
                                     .icon_size(IconSize::Small)
-                                    .aria_label("Reset to Default")
-                                    .tooltip(Tooltip::text("Reset to Default"))
+                                    .aria_label(t(keys::settings_ui::SETTINGS_B_NUMBER_RESET_DEFAULT))
+                                    .tooltip(Tooltip::text(t(keys::settings_ui::SETTINGS_B_NUMBER_RESET_DEFAULT)))
                                     .on_click(move |_, window, cx| {
                                         reset_to_default(window, cx);
                                     }),
@@ -2876,7 +2876,7 @@ impl SettingsWindow {
         h_flex()
             .id("settings-ui-files-header")
             .role(Role::Group)
-            .aria_label("Settings File")
+            .aria_label(t(keys::settings_ui::SETTINGS_UI_FILE_ARIA))
             .w_full()
             .gap_1()
             .justify_between()
@@ -3026,7 +3026,7 @@ impl SettingsWindow {
         h_flex()
             .id("settings-ui-search")
             .role(Role::SearchInput)
-            .aria_label("Search Settings")
+            .aria_label(t(keys::settings_ui::SETTINGS_UI_SEARCH_ARIA))
             .aria_value(a11y_value)
             .track_focus(&self.search_bar.focus_handle(cx))
             .a11y_synthetic_children(a11y_text_runs)
@@ -3047,7 +3047,7 @@ impl SettingsWindow {
                     IconButton::new("clear-btn", IconName::Close)
                         .icon_color(Color::Muted)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text("Clear"))
+                        .tooltip(Tooltip::text(t(keys::settings_ui::SETTINGS_UI_CLEAR)))
                         .on_click(cx.listener(|settings_window, _, window, cx| {
                             settings_window.clear_search(window, cx);
                         })),
@@ -3071,9 +3071,9 @@ impl SettingsWindow {
                 .visible_navbar_entries()
                 .any(|(_, entry)| entry.focus_handle.is_focused(window))
         {
-            "Focus Content"
+            t(keys::settings_ui::SETTINGS_UI_FOCUS_CONTENT)
         } else {
-            "Focus Navbar"
+            t(keys::settings_ui::SETTINGS_UI_FOCUS_NAVBAR)
         };
 
         let mut key_context = KeyContext::new_with_defaults(cx.platform_info().os);
@@ -3214,7 +3214,7 @@ impl SettingsWindow {
                 v_flex()
                     .id("settings-ui-nav")
                     .role(Role::Tree)
-                    .aria_label("Settings Navigation")
+                    .aria_label(t(keys::settings_ui::SETTINGS_UI_NAVIGATION_ARIA))
                     .flex_1()
                     .overflow_hidden()
                     .track_focus(&self.navbar_focus_handle.focus_handle(cx))
@@ -3595,7 +3595,7 @@ impl SettingsWindow {
             }))
             .id("settings-ui-page")
             .role(Role::Group)
-            .aria_label("Settings Content")
+            .aria_label(t(keys::settings_ui::SETTINGS_UI_CONTENT_ARIA))
             .size_full();
 
         let has_active_search = !self.search_bar.read(cx).is_empty(cx);
@@ -3869,7 +3869,7 @@ impl SettingsWindow {
                         })
                         .when(is_skills_page, |this| {
                             this.child(
-                                Button::new("open-skill-creator", "Create Skill")
+                                Button::new("open-skill-creator", t(keys::settings_ui::SETTINGS_UI_CREATE_SKILL))
                                     .tab_index(0_isize)
                                     .style(ButtonStyle::OutlinedGhost)
                                     .on_click(cx.listener(|this, _, window, cx| {
@@ -3927,7 +3927,7 @@ impl SettingsWindow {
                     )
                     .action_slot(
                         div().pr_1().pb_1().child(
-                            Button::new("fix-in-json", "Fix in settings.json")
+                            Button::new("fix-in-json", t(keys::settings_ui::SETTINGS_UI_FIX_IN_JSON))
                                 .tab_index(0_isize)
                                 .style(ButtonStyle::Tinted(ui::TintColor::Warning))
                                 .on_click(cx.listener(|this, _, window, cx| {
@@ -3954,8 +3954,8 @@ impl SettingsWindow {
                     settings::MigrationStatus::Succeeded => this.child(banner(
                         "Your settings are out of date, and need to be updated.",
                         match &self.current_file {
-                            SettingsUiFile::User => "They can be automatically migrated to the latest version.",
-                            SettingsUiFile::Server(_) | SettingsUiFile::Project(_)  => "They must be manually migrated to the latest version."
+                            SettingsUiFile::User => t(keys::settings_ui::SETTINGS_UI_OUTDATED_AUTO),
+                            SettingsUiFile::Server(_) | SettingsUiFile::Project(_)  => t(keys::settings_ui::SETTINGS_UI_OUTDATED_MANUAL)
                         }.to_string(),
                         &mut self.shown_errors,
                         cx,
@@ -3997,7 +3997,7 @@ impl SettingsWindow {
                             .child(Label::new(t(keys::titlebar::TITLEBAR_RESTRICTED_MODE)))
                             .child(
                                 Label::new(
-                                    "This project is in restricted mode. Some project settings may not apply.",
+                                    t(keys::settings_ui::SETTINGS_UI_RESTRICTED_HINT),
                                 )
                                 .size(LabelSize::Small)
                                 .color(Color::Muted),
@@ -4005,7 +4005,7 @@ impl SettingsWindow {
                     )
                     .action_slot(
                         div().pr_2().pb_1().child(
-                            Button::new("manage-trust", "Manage Trust")
+                            Button::new("manage-trust", t(keys::settings_ui::SETTINGS_UI_MANAGE_TRUST))
                                 .style(ButtonStyle::Tinted(ui::TintColor::Warning))
                                 .on_click(cx.listener(move |_this, _, window, cx| {
                                     if let Some(original_window) = original_window {
@@ -4432,7 +4432,7 @@ impl SettingsWindow {
         self.skill_creator_page = Some((page.clone(), subscription));
 
         let sub_page_link = SubPageLink {
-            title: "Create Skill".into(),
+            title: t(keys::settings_ui::SETTINGS_UI_CREATE_SKILL).into(),
             r#type: SubPageType::SkillCreator,
             description: None,
             search_aliases: &[],

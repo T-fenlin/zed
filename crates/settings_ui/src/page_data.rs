@@ -1696,8 +1696,8 @@ fn keymap_page() -> SettingsPage {
             SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_KEYMAP_SECTION_KEYBINDINGS).into()),
             SettingsPageItem::ActionLink(ActionLink {
                 title: t(keys::settings_ui::SETTINGS_KEYMAP_EDIT_KEYBINDINGS),
-                description: Some("Customize keybindings in the keymap editor.".into()),
-                button_text: "Open Keymap".into(),
+                description: Some(t(keys::settings_ui::SETTINGS_KEYMAP_EDITOR_HINT).into()),
+                button_text: t(keys::app_menu::MENU_ZED_OPEN_KEYMAP).into(),
                 on_click: Arc::new(|settings_window, window, cx| {
                     let Some(original_window) = settings_window.original_window else {
                         return;
@@ -4096,7 +4096,7 @@ fn search_and_files_page() -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_SEARCH_FILE_SCAN_DEPTH),
-                description: "Maximum directory depth to eagerly index outside of git repositories; contents of directories at this depth or deeper are indexed on demand. Repositories rooted shallower than this depth are always indexed fully. In projects that are not rooted at a git repository, repositories directly inside a root folder activate their git features immediately; deeper ones activate on first use. 0 means no limit and activates all git repositories immediately",
+                description: t(keys::settings_ui::SETTINGS_SEARCH_MAXIMUM_DIRECTORY_DEPTH_TO_EAGERLY_INDEX),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("file_scan_depth"),
@@ -4681,7 +4681,7 @@ fn window_and_layout_page() -> SettingsPage {
                                 files: USER,
                                 title: t(keys::settings_ui::SETTINGS_WINDOW_CUSTOM_BUTTON_LAYOUT),
                                 description:
-                                    "GNOME-style layout string such as \"close:minimize,maximize\".",
+                                    t(keys::settings_ui::SETTINGS_TITLE_BAR_BUTTON_LAYOUT_EXAMPLE),
                                 field: Box::new(SettingField {
                                     organization_override: None,
                                     json_path: Some("title_bar.button_layout"),
@@ -8749,8 +8749,8 @@ fn collaboration_page() -> SettingsPage {
         [
             SettingsPageItem::ActionLink(ActionLink {
                 title: t(keys::settings_ui::SETTINGS_COLLABORATION_TEST_AUDIO),
-                description: Some("Test your microphone and speaker setup".into()),
-                button_text: "Test Audio".into(),
+                description: Some(t(keys::settings_ui::SETTINGS_AUDIO_TEST_DESCRIPTION).into()),
+                button_text: t(keys::settings_ui::SETTINGS_COLLABORATION_TEST_AUDIO).into(),
                 on_click: Arc::new(|_settings_window, window, cx| {
                     open_audio_test_window(window, cx);
                 }),
@@ -8910,7 +8910,7 @@ fn ai_page(cx: &App) -> SettingsPage {
                 title: t(keys::settings_ui::SETTINGS_AI_LLM_PROVIDERS),
                 r#type: Default::default(),
                 json_path: Some("llm_providers"),
-                description: Some("Configure natively-included model providers.".into()),
+                description: Some(t(keys::settings_ui::SETTINGS_LLM_NATIVE_PROVIDERS_DESCRIPTION).into()),
                 search_aliases: &[
                     "ai",
                     "amazon",
@@ -8946,7 +8946,7 @@ fn ai_page(cx: &App) -> SettingsPage {
                 r#type: Default::default(),
                 json_path: Some("agent_servers"),
                 description: Some(
-                    "View, add, and remove agents connected through the Agent Client Protocol."
+                    t(keys::settings_ui::SETTINGS_EXTERNAL_AGENTS_DESCRIPTION)
                         .into(),
                 ),
                 search_aliases: &[
@@ -8974,7 +8974,7 @@ fn ai_page(cx: &App) -> SettingsPage {
                 r#type: Default::default(),
                 json_path: Some("context_servers"),
                 description: Some(
-                    "View, add, configure, and remove Model Context Protocol servers.".into(),
+                    t(keys::settings_ui::SETTINGS_MCP_DESCRIPTION).into(),
                 ),
                 search_aliases: &["context server", "mcp", "model context protocol"],
                 in_json: false,
@@ -8992,7 +8992,7 @@ fn ai_page(cx: &App) -> SettingsPage {
                 title: t(keys::agent::AGENT_MENU_SKILLS),
                 r#type: Default::default(),
                 json_path: Some(zed_actions::AGENT_SKILLS_SETTINGS_PATH),
-                description: Some("View and manage agent skills installed globally or in project worktrees.".into()),
+                description: Some(t(keys::settings_ui::SETTINGS_SKILLS_DESCRIPTION).into()),
                 search_aliases: &["agent skill", "agent skills", "custom instructions", "skill", "skills"],
                 in_json: false,
                 files: USER | PROJECT,
@@ -9003,7 +9003,7 @@ fn ai_page(cx: &App) -> SettingsPage {
                 r#type: Default::default(),
                 json_path: Some(zed_actions::AGENT_SANDBOX_SETTINGS_PATH),
                 description: Some(
-                    "Review and change the elevated terminal sandbox permissions that are always allowed without prompting."
+                    t(keys::settings_ui::SETTINGS_TOOL_PERMISSIONS_DESCRIPTION)
                         .into(),
                 ),
                 search_aliases: &[
@@ -9023,7 +9023,7 @@ fn ai_page(cx: &App) -> SettingsPage {
                 title: t(keys::settings_ui::SETTINGS_AI_TOOL_PERMISSIONS),
                 r#type: Default::default(),
                 json_path: Some("agent.tool_permissions"),
-                description: Some("Set up regex patterns to auto-allow, auto-deny, or always request confirmation, for specific tool inputs.".into()),
+                description: Some(t(keys::settings_ui::SETTINGS_TOOL_PERMISSIONS_PATTERNS_DESCRIPTION).into()),
                 search_aliases: &[],
                 in_json: true,
                 files: USER,
@@ -9225,7 +9225,7 @@ fn ai_page(cx: &App) -> SettingsPage {
                     },
                 }),
                 metadata: Some(Box::new(SettingsFieldMetadata {
-                    placeholder: Some("e.g. claude"),
+                    placeholder: Some(t(keys::settings_ui::SETTINGS_AGENT_TERMINAL_INIT_EXAMPLE)),
                     display_confirm_button: true,
                     display_clear_button: true,
                     confirm_on_focus_out: true,
@@ -11402,7 +11402,7 @@ fn edit_prediction_language_settings_section() -> [SettingsPageItem; 5] {
             title: t(keys::edit_prediction::EDIT_PREDICTION_CONFIGURE_PROVIDERS),
             r#type: Default::default(),
             json_path: Some("edit_predictions.providers"),
-            description: Some("Set up different edit prediction providers in complement to Zed's built-in Zeta model.".into()),
+            description: Some(t(keys::settings_ui::SETTINGS_EDIT_PREDICTION_PROVIDERS_DESCRIPTION).into()),
             search_aliases: &[],
             in_json: false,
             files: USER,
