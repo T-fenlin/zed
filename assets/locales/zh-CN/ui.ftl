@@ -1,0 +1,42 @@
+# ui.ftl — Zed zh-CN 汉化语言包（从 10 月版 Zed.exe 抢救重建）
+# 英文目录 en-US/ 为唯一事实来源（source of truth）；本文件为简体中文译文。
+
+ui-ok = 确定
+ui-cancel = 取消
+ui-dismiss = 忽略
+ui-close = 关闭
+ui-learn_more = 了解更多
+ui-try_now = 立即试用
+ui-choose_option_for = 从下面的选项中选择一项以使用 { $name }
+ui-open_project = 打开项目
+ui-clone_repository = 克隆仓库
+ui-or = 或
+ui-collapse = 折叠
+ui-expand = 展开
+ui-checking_for_updates = 正在检查 Zed 更新…
+ui-downloading_update = 正在下载 Zed 更新…
+ui-installing_update = 正在安装 Zed 更新…
+ui-up_to_date = 已是最新版本
+ui-restart_to_update = 重启以更新
+ui-failed_to_update = 更新失败
+ui-update_to_version = 更新至版本：{ $version }
+ui-update_progress = { $message }（已下载 { $percent }%）
+ui-ai_status_stopped = 服务已停止。
+ui-ai_status_starting = 服务正在启动。
+ui-ai_status_running = 服务运行中。
+ui-ai_status_error = 服务出错。
+ui-ai_status_auth_required = 需要身份验证。
+ui-ai_status_client_secret_required = 需要客户端密钥。
+ui-ai_status_authenticating = 正在等待授权…
+ui-ai_source_extension = { $label } 来自扩展安装。
+ui-ai_source_registry = { $label } 来自 ACP 注册表。
+ui-ai_source_custom = { $label } 为手动配置。
+ui-reset_key = 重置密钥
+ui-thread_has_error = 线程出错
+ui-waiting_for_confirmation = 等待确认
+ui-copy = 复制
+ui-copied = 已复制！
+ui-no_items = 无条目
+ui-reveal_in_finder = 在访达中显示
+ui-reveal_in_file_explorer = 在文件资源管理器中显示
+ui-reveal_in_file_manager = 在文件管理器中显示

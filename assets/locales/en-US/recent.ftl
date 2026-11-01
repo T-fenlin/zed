@@ -1,0 +1,36 @@
+# recent.ftl — English source strings (rebuilt).
+
+recent-select_dev_container_config = Select Dev Container Configuration
+recent-start_dev_container = Start Dev Container
+recent-open_devcontainer_json = Open devcontainer.json
+recent-add_nickname_placeholder = Add a nickname for this server
+recent-search_remote_projects = Search remote projects…
+recent-no_matching_remote_projects = No matching remote projects.
+recent-connect_ssh_server = Connect SSH Server
+recent-connect_dev_container = Connect Dev Container
+recent-add_wsl_distro = Add WSL Distro
+recent-open_folder = Open Folder
+recent-view_server_options = View Server Options
+recent-delete_remote_project = Delete Remote Project
+recent-select = Select
+recent-ssh_parse_error = could not parse: { $error }
+recent-failed_to_start_dev_container = Failed to start Dev Container. See logs for details
+recent-error_creating_dev_container = Error Creating Dev Container:
+recent-open_zed_log = Open Zed Log
+recent-exit = Exit
+recent-dev_containers = Dev Containers
+recent-creating_dev_container = Creating Dev Container
+recent-ssh_command_placeholder = ssh user@example -p 2222
+recent-enter_ssh_command = Enter the command you use to SSH into this server.
+recent-learn_more = Learn More
+recent-go_back = Go Back
+recent-remove_wsl_distro_prompt = Remove WSL distro `{ $name }`?
+recent-yes_remove_it = Yes, remove it
+recent-no_keep_it = No, keep it
+recent-remove_distro = Remove Distro
+recent-edit_nickname = Edit Nickname
+recent-add_nickname_to_server = Add Nickname to Server
+recent-copied_server_address = Copied server address ({ $address }) to clipboard
+recent-copy_server_address = Copy Server Address
+recent-remove_server_prompt = Remove server `{ $name }`?
+recent-remove_server = Remove Server

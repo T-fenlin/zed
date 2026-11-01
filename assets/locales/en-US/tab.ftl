@@ -1,0 +1,29 @@
+# tab.ftl — English source strings (rebuilt).
+
+tab-close = Close
+tab-close_others = Close Others
+tab-close_multibuffers = Close Multibuffers
+tab-close_left = Close Left
+tab-close_right = Close Right
+tab-close_clean = Close Clean
+tab-close_all = Close All
+tab-unpin = Unpin Tab
+tab-pin = Pin Tab
+tab-make_read_only = Make Tab Read-Only
+tab-make_editable = Make Tab Editable
+tab-copy_path = Copy Path
+tab-copy_relative_path = Copy Relative Path
+tab-open_permalink = Open File Permalink
+tab-copy_permalink = Copy File Permalink
+tab-reveal_in_project_panel = Reveal In Project Panel
+tab-open_in_terminal = Open in Terminal
+tab-go_back = Go Back
+tab-go_forward = Go Forward
+tab-rename = Rename
+tab-unlock = Unlock Tab
+tab-unlock_hint = This will make this tab editable
+tab-locked = Locked Tab
+tab-locked_hint = This tab is read-only
+tab-read_only = Read-Only Tab
+compatible_apis = Compatible APIs
+tab-close_tab = Close Tab

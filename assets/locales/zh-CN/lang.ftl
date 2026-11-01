@@ -1,0 +1,30 @@
+# lang.ftl — Zed zh-CN 汉化语言包（从 10 月版 Zed.exe 抢救重建）
+# 英文目录 en-US/ 为唯一事实来源（source of truth）；本文件为简体中文译文。
+
+lang-tools-highlight_text_label = 文本：{ $key }
+lang-tools-highlight_syntax_label = 语法：{ $capture_name } → { $theme_key }
+lang-tools-highlight_syntax = 语法：{ $capture_name }
+lang-tools-highlight_semantic_token_modifiers = 语义标记：{ $token_type } [{ $modifiers }]
+lang-tools-highlight_semantic_token = 语义标记：{ $token_type }
+lang-tools-highlight_semantic_modifiers = 语义标记 [{ $modifiers }]
+lang-tools-highlight_semantic = 语义标记
+lang-tools-highlights_filtered_out_title = 所有高亮均已被筛选
+lang-tools-highlights_filtered_out_detail = 在工具栏中启用文本、语法或语义高亮
+lang-tools-no_highlights_title = 未找到高亮
+lang-tools-no_highlights_detail = 编辑器没有文本、语法或语义标记高亮
+lang-tools-not_attached_to_editor = 未关联到编辑器
+lang-tools-focus_editor_for_highlights = 聚焦一个编辑器以显示高亮
+lang-tools-highlights_tab = 高亮
+lang-tools-highlights_count = { $count } 个高亮
+lang-tools-highlights_count_filtered = { $filtered } / { $total } 个高亮
+lang-tools-highlights_settings = 高亮设置
+lang-tools-text_highlights = 文本高亮
+lang-tools-syntax_tokens = 语法标记
+lang-tools-semantic_tokens = 语义标记
+lang-tools-untitled = 未命名
+lang-tools-unknown = 未知
+lang-tools-style_bold = 粗体
+lang-tools-style_italic = 斜体
+lang-tools-style_strike = 删除线
+lang-tools-style_underline = 下划线
+lang-tools-style_none = 无

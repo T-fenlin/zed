@@ -1,0 +1,34 @@
+# misc.ftl — English source strings (rebuilt).
+
+drop-remote = Cannot drop files on a remote project
+drop-remote_local = Cannot drop local files on a remote SSH/Docker project
+add_provider = Add Provider
+key_in_env = API Key Set in Environment Variable
+key_configured = API Key Configured
+reset_key = Reset Key
+api_key = API Key
+api_url = API URL
+api_url_hint = The base URL for the compatible API.
+api_key_hint = Stored in the system keychain, not in settings.json.
+models = Models
+add_model = Add Model
+model_name = Model Name
+model_name_hint = The model's name in the provider's API.
+max_completion_tokens = Max Completion Tokens
+max_completion_tokens_hint = Maximum completion tokens for OpenAI-compatible requests.
+max_output_tokens = Max Output Tokens
+max_output_tokens_hint = The maximum number of tokens the model can output.
+max_tokens = Max Tokens
+max_tokens_hint = The model context window size.
+remove_model = Remove Model
+supports_tools = Supports tools
+supports_images = Supports images
+supports_parallel_tool_calls = Supports parallel_tool_calls
+supports_prompt_cache_key = Supports prompt_cache_key
+supports_chat_completions = Supports /chat/completions
+uses_max_tokens = Uses max_tokens for output limit
+supports_thinking = Supports thinking
+preserves_thinking = Preserves thinking in chat history
+reasoning_effort = Default reasoning effort
+save_provider = Save Provider
+cancel = Cancel

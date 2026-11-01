@@ -1,0 +1,37 @@
+# recent.ftl — Zed zh-CN 汉化语言包（从 10 月版 Zed.exe 抢救重建）
+# 英文目录 en-US/ 为唯一事实来源（source of truth）；本文件为简体中文译文。
+
+recent-select_dev_container_config = 选择开发容器配置
+recent-start_dev_container = 启动开发容器
+recent-open_devcontainer_json = 打开 devcontainer.json
+recent-add_nickname_placeholder = 为此服务器添加昵称
+recent-search_remote_projects = 搜索远程项目…
+recent-no_matching_remote_projects = 没有匹配的远程项目。
+recent-connect_ssh_server = 连接 SSH 服务器
+recent-connect_dev_container = 连接开发容器
+recent-add_wsl_distro = 添加 WSL 发行版
+recent-open_folder = 打开文件夹
+recent-view_server_options = 查看服务器选项
+recent-delete_remote_project = 删除远程项目
+recent-select = 选择
+recent-ssh_parse_error = 无法解析：{ $error }
+recent-failed_to_start_dev_container = 开发容器启动失败，请查看日志了解详情。
+recent-error_creating_dev_container = 创建开发容器时出错：
+recent-open_zed_log = 打开 Zed 日志
+recent-exit = 退出
+recent-dev_containers = 开发容器
+recent-creating_dev_container = 正在创建开发容器
+recent-ssh_command_placeholder = 例如：ssh user@example -p 2222
+recent-enter_ssh_command = 输入你用来 SSH 连接此服务器的命令。
+recent-learn_more = 了解更多
+recent-go_back = 返回
+recent-remove_wsl_distro_prompt = 要移除 WSL 发行版 `{ $name }` 吗？
+recent-yes_remove_it = 是，移除
+recent-no_keep_it = 否，保留
+recent-remove_distro = 移除发行版
+recent-edit_nickname = 编辑昵称
+recent-add_nickname_to_server = 为服务器添加昵称
+recent-copied_server_address = 已将服务器地址（{ $address }）复制到剪贴板
+recent-copy_server_address = 复制服务器地址
+recent-remove_server_prompt = 要移除服务器 `{ $name }` 吗？
+recent-remove_server = 移除服务器

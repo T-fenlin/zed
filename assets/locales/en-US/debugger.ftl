@@ -1,0 +1,30 @@
+# debugger.ftl — English source strings (rebuilt).
+
+debugger-attach_placeholder = Select the process you want to attach the debugger to
+debugger-attach_new_session = Attach New Session Setup
+debugger-select_debugger = Select Debugger
+debugger-mode_run = Run
+debugger-mode_debug = Debug
+debugger-mode_attach = Attach
+debugger-mode_launch = Launch
+debugger-mode_run_desc = Run predefined task
+debugger-mode_debug_desc = Start a predefined debug scenario
+debugger-mode_attach_desc = Attach the debugger to a running process
+debugger-mode_launch_desc = Launch a new process with a debugger
+debugger-edit_in_debug_json = Edit in debug.json
+debugger-start = Start
+debugger-program = Program
+debugger-program_placeholder = Ex: $ZED_WORKTREE_ROOT
+debugger-working_directory = Working Directory
+debugger-debugger_label = Debugger:
+debugger-stop_on_entry = Stop on Entry
+debugger-source_language = Language: { $language }
+debugger-source_in_file = in { $file }
+debugger-source_in_dir = in { $dir }/
+debugger-find_debug_task = Find a debug task, or debug a command
+debugger-one_off = one-off
+debugger-launch_custom = Launch Custom
+debugger-rerun = Rerun
+debugger-spawn = Spawn
+debugger-failed_edit_debug_json = Failed to edit debug.json
+debugger-debug_terminal = 调试终端

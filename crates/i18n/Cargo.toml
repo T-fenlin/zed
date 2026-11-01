@@ -1,0 +1,9 @@
+[package]
+name = "i18n"
+version = "0.1.0"
+edition = "2021"
+description = "Fluent-based i18n runtime for Zed zh-CN localization"
+
+[dependencies]
+fluent-bundle = "0.15"
+unic-langid = "0.9"

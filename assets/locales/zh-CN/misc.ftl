@@ -1,0 +1,35 @@
+# misc.ftl — Zed zh-CN 汉化语言包（从 10 月版 Zed.exe 抢救重建）
+# 英文目录 en-US/ 为唯一事实来源（source of truth）；本文件为简体中文译文。
+
+drop-remote = 无法把文件拖放到远程项目
+drop-remote_local = 无法把本地文件拖放到远程 SSH/Docker 项目
+add_provider = 添加服务商
+key_in_env = API 密钥已由环境变量提供
+key_configured = API 密钥已配置
+reset_key = 重置密钥
+api_key = API 密钥
+api_url = API 地址
+api_url_hint = 兼容 API 的基础地址。
+api_key_hint = 保存在系统钥匙串中,不写入 settings.json。
+models = 模型
+add_model = 添加模型
+model_name = 模型名称
+model_name_hint = 该模型在服务商 API 中的名称。
+max_completion_tokens = 最大补全 token 数
+max_completion_tokens_hint = OpenAI 兼容请求允许的最大补全 token 数。
+max_output_tokens = 最大输出 token 数
+max_output_tokens_hint = 模型单次可输出的最大 token 数。
+max_tokens = 最大 token 数
+max_tokens_hint = 模型的上下文窗口大小。
+remove_model = 移除模型
+supports_tools = 支持工具调用
+supports_images = 支持图片
+supports_parallel_tool_calls = 支持 parallel_tool_calls
+supports_prompt_cache_key = 支持 prompt_cache_key
+supports_chat_completions = 支持 /chat/completions
+uses_max_tokens = 用 max_tokens 表示输出上限
+supports_thinking = 支持思考
+preserves_thinking = 在历史中保留思考内容
+reasoning_effort = 默认推理强度
+save_provider = 保存服务商
+cancel = 取消

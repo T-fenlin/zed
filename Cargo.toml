@@ -113,6 +113,7 @@ members = [
     "crates/http_client",
     "crates/http_client_tls",
     "crates/http_proxy",
+    "crates/i18n",
     "crates/icons",
     "crates/image_viewer",
     "crates/input_latency_ui",
@@ -358,6 +359,7 @@ feedback = { path = "crates/feedback" }
 file_content = { path = "crates/file_content" }
 file_finder = { path = "crates/file_finder" }
 file_icons = { path = "crates/file_icons" }
+fluent-bundle = "0.15"
 fs = { path = "crates/fs" }
 fuzzy = { path = "crates/fuzzy" }
 fuzzy_nucleo = { path = "crates/fuzzy_nucleo" }
@@ -387,6 +389,7 @@ html_to_markdown = { path = "crates/html_to_markdown" }
 http_client = { path = "crates/http_client" }
 http_client_tls = { path = "crates/http_client_tls" }
 http_proxy = { path = "crates/http_proxy" }
+i18n = { path = "crates/i18n" }
 icons = { path = "crates/icons" }
 image_viewer = { path = "crates/image_viewer" }
 input_latency_ui = { path = "crates/input_latency_ui" }
@@ -973,6 +976,7 @@ unicode-script = "0.5.7"
 unicode-segmentation = "1.10"
 unicode-width = "0.2"
 unindent = "0.2.0"
+unic-langid = "0.9"
 url = "2.2"
 urlencoding = "2.1.2"
 usvg = { version = "0.46.0", default-features = false }

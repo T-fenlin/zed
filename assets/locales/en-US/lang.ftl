@@ -1,0 +1,29 @@
+# lang.ftl — English source strings (rebuilt).
+
+lang-tools-highlight_text_label = text: { $key }
+lang-tools-highlight_syntax_label = syntax: { $capture_name } → { $theme_key }
+lang-tools-highlight_syntax = syntax: { $capture_name }
+lang-tools-highlight_semantic_token_modifiers = semantic token: { $token_type } [{ $modifiers }]
+lang-tools-highlight_semantic_token = semantic token: { $token_type }
+lang-tools-highlight_semantic_modifiers = semantic token [{ $modifiers }]
+lang-tools-highlight_semantic = semantic token
+lang-tools-highlights_filtered_out_title = All highlights are filtered out
+lang-tools-highlights_filtered_out_detail = Enable text, syntax, or semantic highlights in the toolbar
+lang-tools-no_highlights_title = No highlights found
+lang-tools-no_highlights_detail = The editor has no text, syntax, or semantic token highlights
+lang-tools-not_attached_to_editor = Not attached to an editor
+lang-tools-focus_editor_for_highlights = Focus an editor to show highlights
+lang-tools-highlights_tab = Highlights
+lang-tools-highlights_count = { $count } highlights
+lang-tools-highlights_count_filtered = { $filtered } / { $total } highlights
+lang-tools-highlights_settings = Highlights Settings
+lang-tools-text_highlights = Text Highlights
+lang-tools-syntax_tokens = Syntax Tokens
+lang-tools-semantic_tokens = Semantic Tokens
+lang-tools-untitled = untitled
+lang-tools-unknown = unknown
+lang-tools-style_bold = bold
+lang-tools-style_italic = italic
+lang-tools-style_strike = strike
+lang-tools-style_underline = underline
+lang-tools-style_none = none
