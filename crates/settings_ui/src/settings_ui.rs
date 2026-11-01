@@ -2970,7 +2970,7 @@ impl SettingsWindow {
 
     pub(crate) fn display_name(&self, file: &SettingsUiFile) -> Option<String> {
         match file {
-            SettingsUiFile::User => Some("User".to_string()),
+            SettingsUiFile::User => Some(t(keys::keymap::KEYMAP_USER)),
             SettingsUiFile::Project((worktree_id, path)) => self
                 .worktree_root_dirs
                 .get(&worktree_id)
