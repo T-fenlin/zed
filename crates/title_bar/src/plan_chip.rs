@@ -1,4 +1,5 @@
 use cloud_api_types::Plan;
+use i18n::{keys, t};
 use ui::{Chip, prelude::*};
 
 /// A [`Chip`] that displays a [`Plan`].
@@ -30,12 +31,12 @@ impl RenderOnce for PlanChip {
             .blend(cx.theme().colors().text_accent.opacity(0.2));
 
         let (plan_name, label_color, bg_color) = match self.plan {
-            Plan::ZedFree => ("Free", Color::Default, free_chip_bg),
-            Plan::ZedProTrial => ("Pro Trial", Color::Accent, pro_chip_bg),
-            Plan::ZedPro => ("Pro", Color::Accent, pro_chip_bg),
-            Plan::ZedBusiness => ("Business", Color::Accent, pro_chip_bg),
-            Plan::ZedVip => ("VIP", Color::Accent, pro_chip_bg),
-            Plan::ZedStudent => ("Student", Color::Accent, pro_chip_bg),
+            Plan::ZedFree => (t(keys::titlebar::TITLEBAR_PLAN_FREE), Color::Default, free_chip_bg),
+            Plan::ZedProTrial => (t(keys::titlebar::TITLEBAR_PLAN_PRO_TRIAL), Color::Accent, pro_chip_bg),
+            Plan::ZedPro => (t(keys::titlebar::TITLEBAR_PLAN_PRO), Color::Accent, pro_chip_bg),
+            Plan::ZedBusiness => (t(keys::titlebar::TITLEBAR_PLAN_BUSINESS), Color::Accent, pro_chip_bg),
+            Plan::ZedVip => ("VIP".to_string(), Color::Accent, pro_chip_bg),
+            Plan::ZedStudent => (t(keys::titlebar::TITLEBAR_PLAN_STUDENT), Color::Accent, pro_chip_bg),
         };
 
         Chip::new(plan_name.to_string())

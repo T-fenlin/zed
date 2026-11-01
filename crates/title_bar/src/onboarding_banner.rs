@@ -5,6 +5,7 @@
 
 use gpui::{Action, Entity, Global, Render, SharedString, TaskExt};
 use ui::{ButtonLike, Tooltip, prelude::*};
+use i18n::{keys, t};
 use util::ResultExt;
 
 /// Prompts the user to try newly released Zed's features
@@ -46,7 +47,7 @@ impl OnboardingBanner {
                 action,
                 icon_name,
                 label: label.into(),
-                subtitle: subtitle.or(Some(SharedString::from("Introducing:"))),
+                subtitle: subtitle.or(Some(t(keys::titlebar::TITLEBAR_INTRODUCING).into())),
             },
             visible_when: None,
             dismissed: get_dismissed(source, cx),
@@ -164,9 +165,9 @@ impl Render for OnboardingBanner {
                         }))
                         .tooltip(|_window, cx| {
                             Tooltip::with_meta(
-                                "Close Announcement Banner",
+                                t(keys::titlebar::TITLEBAR_CLOSE_BANNER),
                                 None,
-                                "It won't show again for this feature",
+                                t(keys::titlebar::TITLEBAR_CLOSE_BANNER_META),
                                 cx,
                             )
                         }),
