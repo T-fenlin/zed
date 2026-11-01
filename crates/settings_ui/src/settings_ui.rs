@@ -1,3 +1,4 @@
+use gpui::SharedString;
 mod components;
 mod page_data;
 pub mod pages;
@@ -1085,7 +1086,7 @@ struct SettingsPage {
 
 #[derive(PartialEq)]
 enum SettingsPageItem {
-    SectionHeader(&'static str),
+    SectionHeader(SharedString),
     SettingItem(SettingItem),
     SubPageLink(SubPageLink),
     DynamicItem(DynamicItem),
@@ -1588,8 +1589,8 @@ fn render_settings_item_link(
 }
 
 struct SettingItem {
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     field: Box<dyn AnySettingField>,
     metadata: Option<Box<SettingsFieldMetadata>>,
     files: FileMask,

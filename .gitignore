@@ -62,3 +62,8 @@ crates/docs_preprocessor/actions.json
 
 .local*
 .cache
+/.i18n_enval2key.json
+/.i18n_key2const.json
+/.i18n_key2file.json
+/.dsh-ops
+/.dsh
