@@ -315,7 +315,7 @@ fn render_api_key_provider(
                         .min_w_0()
                         .max_w_1_2()
                         .gap_0p5()
-                        .child(Label::new("API Key"))
+                        .child(Label::new(t(keys::misc::API_KEY)))
                         .child(description)
                         .when_some(env_var_name, |this, env_var_name| {
                             this.child({
