@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::ops::Range;
 
 use anyhow::Result;
@@ -50,7 +51,7 @@ pub(crate) fn render_external_agents_page(
         .overflow_y_scroll()
         .child(Label::new(t(keys::agent::AGENT_MENU_EXTERNAL_AGENTS)))
         .child(
-            Label::new("Agents connected through the Agent Client Protocol.")
+            Label::new(t(keys::settings_ui::SETTINGS_EXT_AGENT_DESCRIPTION))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )
@@ -117,7 +118,7 @@ fn render_empty_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new("No external agents added yet. Click \"Add Agent\" to get started.")
+            Label::new(t(keys::settings_ui::SETTINGS_EXT_AGENT_EMPTY))
                 .color(Color::Muted)
                 .size(LabelSize::Small),
         )
@@ -133,7 +134,7 @@ fn render_no_project_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new("No active project found. Open a workspace to manage external agents.")
+            Label::new(t(keys::settings_ui::SETTINGS_EXT_AGENT_NO_PROJECT))
                 .color(Color::Muted)
                 .size(LabelSize::Small),
         )
@@ -182,7 +183,9 @@ fn render_agent(
             .icon_size(IconSize::Small)
             .size(ButtonSize::Medium)
             .tab_index(0isize)
-            .tooltip(Tooltip::text("Configure Agent"))
+            .tooltip(Tooltip::text(t(
+                keys::settings_ui::SETTINGS_EXT_AGENT_CONFIGURE_AGENT,
+            )))
             .on_click(cx.listener({
                 let id = id.clone();
                 move |this, _event, window, cx| {
@@ -194,8 +197,10 @@ fn render_agent(
     });
 
     let remove_tooltip = match source {
-        ExternalAgentSource::Registry => "Remove Registry Agent",
-        ExternalAgentSource::Custom => "Remove Custom Agent",
+        ExternalAgentSource::Registry => {
+            t(keys::settings_ui::SETTINGS_EXT_AGENT_REMOVE_REGISTRY_AGENT)
+        }
+        ExternalAgentSource::Custom => t(keys::settings_ui::SETTINGS_EXT_AGENT_REMOVE_CUSTOM_AGENT),
     };
 
     let remove_button = IconButton::new(format!("uninstall-{}", id_string), IconName::Trash)
@@ -267,42 +272,53 @@ pub(crate) fn render_add_agent_popover(
 
     let popover = PopoverMenu::new("add-agent-server-popover")
         .trigger(
-            Button::new("add-agent", "Add Agent")
-                .style(ButtonStyle::Outlined)
-                .track_focus(&focus_handle)
-                .start_icon(
-                    Icon::new(IconName::Plus)
-                        .size(IconSize::Small)
-                        .color(Color::Muted),
-                )
-                .label_size(LabelSize::Small),
+            Button::new(
+                "add-agent",
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_ADD_AGENT),
+            )
+            .style(ButtonStyle::Outlined)
+            .track_focus(&focus_handle)
+            .start_icon(
+                Icon::new(IconName::Plus)
+                    .size(IconSize::Small)
+                    .color(Color::Muted),
+            )
+            .label_size(LabelSize::Small),
         )
         .anchor(gpui::Anchor::TopRight)
         .menu(move |window, cx| {
             let settings_window = settings_window.clone();
             Some(ContextMenu::build(window, cx, move |menu, _window, _cx| {
-                menu.entry("Install from Registry", None, move |_window, cx| {
-                    if let Some(original_window) = original_window {
-                        cx.activate(true);
-                        original_window
-                            .update(cx, |_, window, cx| {
-                                window.activate_window();
-                                window.dispatch_action(Box::new(zed_actions::AcpRegistry), cx);
+                menu.entry(
+                    t(keys::settings_ui::SETTINGS_EXT_AGENT_INSTALL_FROM_REGISTRY),
+                    None,
+                    move |_window, cx| {
+                        if let Some(original_window) = original_window {
+                            cx.activate(true);
+                            original_window
+                                .update(cx, |_, window, cx| {
+                                    window.activate_window();
+                                    window.dispatch_action(Box::new(zed_actions::AcpRegistry), cx);
+                                })
+                                .log_err();
+                        }
+                    },
+                )
+                .entry(
+                    t(keys::settings_ui::SETTINGS_EXT_AGENT_ADD_CUSTOM_AGENT),
+                    None,
+                    move |window, cx| {
+                        settings_window
+                            .update(cx, |this, cx| {
+                                open_custom_agent_form(this, None, window, cx);
                             })
                             .log_err();
-                    }
-                })
-                .entry("Add Custom Agent", None, move |window, cx| {
-                    settings_window
-                        .update(cx, |this, cx| {
-                            open_custom_agent_form(this, None, window, cx);
-                        })
-                        .log_err();
-                })
+                    },
+                )
                 .separator()
                 .header(t(keys::agent::AGENT_THREAD_LEARN_MORE))
                 .item(
-                    ContextMenuEntry::new("ACP Docs")
+                    ContextMenuEntry::new(t(keys::settings_ui::SETTINGS_EXT_AGENT_ACP_DOCS))
                         .icon(IconName::ArrowUpRight)
                         .icon_color(Color::Muted)
                         .icon_position(IconPosition::End)
@@ -451,8 +467,13 @@ fn new_kv_row(
     cx: &mut Context<SettingsWindow>,
 ) -> KeyValueRow {
     KeyValueRow {
-        key: new_input("Key", key, window, cx),
-        value: new_input("Value", value, window, cx),
+        key: new_input(
+            &t(keys::settings_ui::SETTINGS_EXT_AGENT_KEY),
+            key,
+            window,
+            cx,
+        ),
+        value: new_input(&t(keys::editor::EDITOR_KIND_VALUE), value, window, cx),
     }
 }
 
@@ -467,14 +488,14 @@ pub(crate) fn open_custom_agent_form(
     settings_window.custom_agent_form = Some(CustomAgentForm::new(existing, window, cx));
 
     let title = if is_edit {
-        "Configure External Agent"
+        t(keys::settings_ui::SETTINGS_EXT_AGENT_CONFIGURE_TITLE)
     } else {
-        "Add Custom Agent"
+        t(keys::settings_ui::SETTINGS_EXT_AGENT_ADD_CUSTOM_AGENT)
     };
 
     settings_window.push_dynamic_sub_page(
         title,
-        "Agent Configuration",
+        t(keys::settings_ui::SETTINGS_EXT_AGENT_AGENT_CONFIGURATION),
         Some("agent_servers"),
         false,
         render_custom_agent_form_page,
@@ -597,7 +618,9 @@ fn render_env_section(
                             .icon_size(IconSize::Small)
                             .icon_color(Color::Muted)
                             .tab_index(0isize)
-                            .tooltip(Tooltip::text("Remove"))
+                            .tooltip(Tooltip::text(t(
+                                keys::settings_ui::SETTINGS_EXT_AGENT_REMOVE,
+                            )))
                             .on_click(cx.listener(move |this, _, _window, cx| {
                                 if let Some(form) = this.custom_agent_form.as_mut()
                                     && ix < form.env.len()
@@ -610,26 +633,29 @@ fn render_env_section(
             )
         }))
         .child(
-            Button::new("custom-agent-env-add", "Add")
-                .style(ButtonStyle::Outlined)
-                .label_size(LabelSize::Small)
-                .tab_index(0isize)
-                .start_icon(
-                    Icon::new(IconName::Plus)
-                        .size(IconSize::Small)
-                        .color(Color::Muted),
-                )
-                .on_click(cx.listener(move |this, _, window, cx| {
-                    let row = new_kv_row(None, None, window, cx);
-                    // Focus the new key so the user can type immediately and tab
-                    // through the new row (key -> value -> ... -> Add button).
-                    let key_handle = row.key.focus_handle(cx);
-                    if let Some(form) = this.custom_agent_form.as_mut() {
-                        form.env.push(row);
-                    }
-                    key_handle.focus(window, cx);
-                    cx.notify();
-                })),
+            Button::new(
+                "custom-agent-env-add",
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_ADD),
+            )
+            .style(ButtonStyle::Outlined)
+            .label_size(LabelSize::Small)
+            .tab_index(0isize)
+            .start_icon(
+                Icon::new(IconName::Plus)
+                    .size(IconSize::Small)
+                    .color(Color::Muted),
+            )
+            .on_click(cx.listener(move |this, _, window, cx| {
+                let row = new_kv_row(None, None, window, cx);
+                // Focus the new key so the user can type immediately and tab
+                // through the new row (key -> value -> ... -> Add button).
+                let key_handle = row.key.focus_handle(cx);
+                if let Some(form) = this.custom_agent_form.as_mut() {
+                    form.env.push(row);
+                }
+                key_handle.focus(window, cx);
+                cx.notify();
+            })),
         )
         .into_any_element();
 
@@ -817,12 +843,12 @@ fn build_settings_from_values(
 ) -> Result<(AgentId, Option<AgentId>, CustomAgentServerSettings), SharedString> {
     let name = values.name.trim().to_string();
     if name.is_empty() {
-        return Err("Agent name is required.".into());
+        return Err(t(keys::settings_ui::SETTINGS_EXT_AGENT_ERROR_NAME_REQUIRED).into());
     }
 
     let command = values.command.trim().to_string();
     if command.is_empty() {
-        return Err("Command is required.".into());
+        return Err(t(keys::settings_ui::SETTINGS_EXT_AGENT_ERROR_COMMAND_REQUIRED).into());
     }
 
     let args = values
@@ -830,7 +856,7 @@ fn build_settings_from_values(
         .split_whitespace()
         .map(|arg| arg.to_string())
         .collect::<Vec<_>>();
-    let env = collect_kv(&values.env, "environment variable")?;
+    let env = collect_kv(&values.env, &t(keys::settings_ui::SETTINGS_A_MCP_ENV_LABEL))?;
 
     let content = CustomAgentServerSettings::Custom {
         path: command.into(),
