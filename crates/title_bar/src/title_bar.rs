@@ -1383,7 +1383,7 @@ impl TitleBar {
                         zed_actions::icon_theme_selector::Toggle::default().boxed_clone(),
                     )
                     .action(
-                        "Extensions",
+                        t(keys::app_menu::MENU_ZED_EXTENSIONS),
                         zed_actions::Extensions::default().boxed_clone(),
                     )
                     .when(ai_enabled, |menu| {
