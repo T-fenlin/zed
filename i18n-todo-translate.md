@@ -27,3 +27,8 @@
 - crates/settings_ui/src/pages/skills_setup.rs: window.prompt(... &["Delete","Cancel"] ...)（&[&str] 类型，需改 prompt API 才能本地化）
 - 有意不译（逻辑/遥测，非遗漏）：settings_ui.rs setting_type() 返回值(telemetry type)、banner() label(telemetry label)、title.as_ref()=="LLM Providers" 比较
 
+
+## render_settings_item_layout 参数限制（需把 SharedString::new_static 改成 owned 才能本地化）
+- 该函数 title/description 用 SharedString::new_static(title)（要求 &'static str），无法直接传运行时 t()
+- 受影响未译项：external_agents_page.rs 的 Agent Name/Command/Arguments/Environment Variables 及其 hint（共 8 处）；mcp_servers_page.rs 同类（2 处）
+
