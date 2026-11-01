@@ -48,7 +48,7 @@ pub(crate) fn render_external_agents_page(
         .pb_16()
         .track_scroll(scroll_handle)
         .overflow_y_scroll()
-        .child(Label::new("External Agents"))
+        .child(Label::new(t(keys::agent::AGENT_MENU_EXTERNAL_AGENTS)))
         .child(
             Label::new("Agents connected through the Agent Client Protocol.")
                 .size(LabelSize::Small)
@@ -300,7 +300,7 @@ pub(crate) fn render_add_agent_popover(
                         .log_err();
                 })
                 .separator()
-                .header("Learn More")
+                .header(t(keys::agent::AGENT_THREAD_LEARN_MORE))
                 .item(
                     ContextMenuEntry::new("ACP Docs")
                         .icon(IconName::ArrowUpRight)
@@ -681,13 +681,16 @@ fn render_form_actions(
                 .border_1()
                 .border_color(cancel_border)
                 .child(
-                    Button::new("custom-agent-form-cancel", "Cancel")
-                        .style(ButtonStyle::Subtle)
-                        .track_focus(&cancel_handle)
-                        .on_click(cx.listener(|this, _, window, cx| {
-                            this.custom_agent_form = None;
-                            this.pop_sub_page(window, cx);
-                        })),
+                    Button::new(
+                        "custom-agent-form-cancel",
+                        t(keys::agent::AGENT_THREAD_CANCEL),
+                    )
+                    .style(ButtonStyle::Subtle)
+                    .track_focus(&cancel_handle)
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        this.custom_agent_form = None;
+                        this.pop_sub_page(window, cx);
+                    })),
                 ),
         )
         .child(
