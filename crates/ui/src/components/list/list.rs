@@ -3,6 +3,7 @@ use gpui::AnyElement;
 use smallvec::SmallVec;
 
 use crate::{Label, ListHeader, ListItem, prelude::*};
+use i18n::{keys, t};
 
 pub enum EmptyMessage {
     Text(SharedString),
@@ -28,7 +29,7 @@ impl Default for List {
 impl List {
     pub fn new() -> Self {
         Self {
-            empty_message: EmptyMessage::Text("No items".into()),
+            empty_message: EmptyMessage::Text(t(keys::ui::UI_NO_ITEMS).into()),
             header: None,
             toggle: None,
             children: SmallVec::new(),

@@ -1,6 +1,7 @@
 use gpui::{AnyElement, AnyView, ClickEvent, prelude::*};
 
 use crate::{ButtonLike, CircularProgress, CommonAnimationExt, Tooltip, prelude::*};
+use i18n::{keys, t};
 
 const LOAD_CIRCLE_GLYPH_VIEWBOX: f32 = 16.0;
 const LOAD_CIRCLE_GLYPH_STROKE_WIDTH: f32 = 1.2;
@@ -100,36 +101,36 @@ impl UpdateButton {
     }
 
     pub fn checking() -> Self {
-        Self::new(IconName::LoadCircle, "Checking for Zed Updates…")
+        Self::new(IconName::LoadCircle, t(keys::ui::UI_CHECKING_FOR_UPDATES))
             .icon_animate(true)
             .disabled(true)
     }
 
     pub fn downloading(progress: Option<f32>) -> Self {
-        Self::new(IconName::Download, "Downloading Zed Update…")
+        Self::new(IconName::Download, t(keys::ui::UI_DOWNLOADING_UPDATE))
             .progress(progress)
             .disabled(true)
     }
 
     pub fn installing(version: impl Into<SharedString>) -> Self {
-        Self::new(IconName::LoadCircle, "Installing Zed Update…")
+        Self::new(IconName::LoadCircle, t(keys::ui::UI_INSTALLING_UPDATE))
             .icon_animate(true)
             .tooltip(version)
             .disabled(true)
     }
 
     pub fn up_to_date() -> Self {
-        Self::new(IconName::Check, "Up to Date").disabled(true)
+        Self::new(IconName::Check, t(keys::ui::UI_UP_TO_DATE)).disabled(true)
     }
 
     pub fn updated(version: impl Into<SharedString>) -> Self {
-        Self::new(IconName::Download, "Restart to Update")
+        Self::new(IconName::Download, t(keys::ui::UI_RESTART_TO_UPDATE))
             .tooltip(version)
             .with_dismiss()
     }
 
     pub fn errored(error: impl Into<SharedString>) -> Self {
-        Self::new(IconName::Warning, "Failed to Update")
+        Self::new(IconName::Warning, t(keys::ui::UI_FAILED_TO_UPDATE))
             .icon_color(Color::Warning)
             .tooltip(error)
             .with_dismiss()
@@ -214,7 +215,7 @@ impl RenderOnce for UpdateButton {
                         IconButton::new(dismiss_button_id, IconName::Close)
                             .icon_size(IconSize::Indicator)
                             .when_some(self.on_dismiss, |this, handler| this.on_click(handler))
-                            .tooltip(Tooltip::text("Dismiss")),
+                            .tooltip(Tooltip::text(t(keys::ui::UI_DISMISS))),
                     ),
                 )
             })

@@ -2,6 +2,7 @@ use crate::component_prelude::*;
 use crate::prelude::*;
 use crate::{Checkbox, ListBulletItem, ToggleState};
 use gpui::Action;
+use i18n::{keys, t};
 use gpui::FocusHandle;
 use gpui::IntoElement;
 use gpui::Stateful;
@@ -141,8 +142,8 @@ impl RenderOnce for AlertModal {
         if let Some(footer) = self.footer {
             modal = modal.child(footer);
         } else if has_default_footer {
-            let primary_action = self.primary_action.unwrap_or_else(|| "OK".into());
-            let dismiss_label = self.dismiss_label.unwrap_or_else(|| "Cancel".into());
+            let primary_action = self.primary_action.unwrap_or_else(|| t(keys::ui::UI_OK).into());
+            let dismiss_label = self.dismiss_label.unwrap_or_else(|| t(keys::ui::UI_CANCEL).into());
 
             modal = modal.child(
                 h_flex()
