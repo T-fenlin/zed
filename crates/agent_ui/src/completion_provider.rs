@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::cmp::Reverse;
 use std::ops::Range;
 use std::path::PathBuf;
@@ -177,9 +178,9 @@ impl PromptContextAction {
         }
     }
 
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self) -> String {
         match self {
-            Self::AddSelections => "Selection",
+            Self::AddSelections => t(keys::agent::AGENT_THREAD_SELECTION),
         }
     }
 
@@ -209,21 +210,17 @@ impl PromptLocalCommand {
         }
     }
 
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self) -> String {
         match self {
-            Self::ThumbsUp => "Positive Feedback",
-            Self::ThumbsDown => "Negative Feedback",
+            Self::ThumbsUp => t(keys::agent::AGENT_B_POSITIVE_FEEDBACK),
+            Self::ThumbsDown => t(keys::agent::AGENT_B_NEGATIVE_FEEDBACK),
         }
     }
 
-    pub fn description(&self) -> &'static str {
+    pub fn description(&self) -> String {
         match self {
-            Self::ThumbsUp => {
-                "Rate this response as helpful. Sends the current conversation to the Zed team."
-            }
-            Self::ThumbsDown => {
-                "Rate this response as not helpful. Sends the current conversation to the Zed team."
-            }
+            Self::ThumbsUp => t(keys::agent::AGENT_B_POSITIVE_FEEDBACK_DESCRIPTION),
+            Self::ThumbsDown => t(keys::agent::AGENT_B_NEGATIVE_FEEDBACK_DESCRIPTION),
         }
     }
 
@@ -265,15 +262,15 @@ impl PromptContextType {
         }
     }
 
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self) -> String {
         match self {
-            Self::File => "Files & Directories",
-            Self::Symbol => "Symbols",
-            Self::Fetch => "Fetch",
-            Self::Thread => "Threads",
-            Self::Skill => "Skills",
-            Self::Diagnostics => "Diagnostics",
-            Self::BranchDiff => "Branch Diff",
+            Self::File => t(keys::agent::AGENT_THREAD_FILES_DIRS),
+            Self::Symbol => t(keys::agent::AGENT_THREAD_SYMBOLS),
+            Self::Fetch => t(keys::agent::AGENT_B_FETCH),
+            Self::Thread => t(keys::agent::AGENT_THREAD_THREADS),
+            Self::Skill => t(keys::agent::AGENT_MENU_SKILLS),
+            Self::Diagnostics => t(keys::agent::AGENT_B_DIAGNOSTICS),
+            Self::BranchDiff => t(keys::agent::AGENT_THREAD_BRANCH_DIFF),
         }
     }
 
@@ -396,9 +393,13 @@ impl AvailableCommand {
     /// Completion group key and header label for this command's category.
     fn group(&self) -> CompletionGroup {
         let (key, label) = match self.category {
-            Some(acp_thread::CommandCategory::Native) => ("commands", "Commands"),
-            Some(acp_thread::CommandCategory::Mcp) => ("mcp-commands", "MCP Server Commands"),
-            None => ("acp-commands", "Commands"),
+            Some(acp_thread::CommandCategory::Native) => {
+                ("commands", t(keys::agent::AGENT_B_COMMANDS))
+            }
+            Some(acp_thread::CommandCategory::Mcp) => {
+                ("mcp-commands", t(keys::agent::AGENT_B_MCP_SERVER_COMMANDS))
+            }
+            None => ("acp-commands", t(keys::agent::AGENT_B_COMMANDS)),
         };
         CompletionGroup {
             key: key.into(),
@@ -1549,7 +1550,7 @@ impl<T: PromptCompletionProviderDelegate> CompletionProvider for PromptCompletio
                                     confirm: Some(confirm),
                                     group: show_section_headers.then(|| CompletionGroup {
                                         key: "skills".into(),
-                                        label: Some("Skills".into()),
+                                        label: Some(t(keys::agent::AGENT_MENU_SKILLS).into()),
                                     }),
                                 }
                             }
@@ -1618,7 +1619,7 @@ impl<T: PromptCompletionProviderDelegate> CompletionProvider for PromptCompletio
                             SlashCompletionCandidate::LocalCommand(command) => {
                                 let group = show_section_headers.then(|| CompletionGroup {
                                     key: "local-commands".into(),
-                                    label: Some("Actions".into()),
+                                    label: Some(t(keys::agent::AGENT_B_ACTIONS).into()),
                                 });
 
                                 Completion {
@@ -2183,7 +2184,7 @@ fn diagnostics_label(
     }
 
     if parts.is_empty() {
-        return "Diagnostics".into();
+        return t(keys::agent::AGENT_B_DIAGNOSTICS).into();
     }
 
     let body = if parts.len() == 2 {
@@ -2220,7 +2221,7 @@ fn diagnostics_submenu_label(
             summary.warning_count,
             pluralize("warning", summary.warning_count)
         ),
-        _ => "Diagnostics".into(),
+        _ => t(keys::agent::AGENT_B_DIAGNOSTICS).into(),
     }
 }
 
