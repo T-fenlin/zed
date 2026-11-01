@@ -2,6 +2,7 @@ use agent_skills::{Skill, SkillIndex, SkillSource, encode_skill_share_link};
 use anyhow::Context as _;
 use fs::RemoveOptions;
 use gpui::{App, ClipboardItem, Entity, PromptLevel, ScrollHandle, SharedString, Task, prelude::*};
+use i18n::{keys, t};
 use project::{Project, WorktreeId};
 
 use ui::{Divider, Tooltip, prelude::*};
@@ -379,16 +380,20 @@ fn render_skill_row(
                     )),
                 )
                 .child(
-                    Button::new(SharedString::from(format!("open-{}", skill.name)), "Open")
-                        .tab_index(0_isize)
-                        .style(ButtonStyle::OutlinedGhost)
-                        .size(ButtonSize::Medium)
-                        .end_icon(
-                            Icon::new(IconName::ArrowUpRight)
-                                .size(IconSize::Small)
-                                .color(Color::Muted),
-                        )
-                        .on_click(cx.listener(move |settings_window, _event, window, cx| {
+                    Button::new(
+                        SharedString::from(format!("open-{}", skill.name)),
+                        t(keys::agent::AGENT_A_ELICIT_OPEN),
+                    )
+                    .tab_index(0_isize)
+                    .style(ButtonStyle::OutlinedGhost)
+                    .size(ButtonSize::Medium)
+                    .end_icon(
+                        Icon::new(IconName::ArrowUpRight)
+                            .size(IconSize::Small)
+                            .color(Color::Muted),
+                    )
+                    .on_click(cx.listener(
+                        move |settings_window, _event, window, cx| {
                             let skill_file_path = skill_file_path.clone();
                             let Some(original_window) = settings_window.original_window else {
                                 return;
@@ -409,7 +414,8 @@ fn render_skill_row(
                                 })
                                 .log_err();
                             window.remove_window();
-                        })),
+                        },
+                    )),
                 ),
         )
         .into_any_element()
