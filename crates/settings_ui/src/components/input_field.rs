@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::rc::Rc;
 
 use editor::{Editor, MultiBufferOffset};
