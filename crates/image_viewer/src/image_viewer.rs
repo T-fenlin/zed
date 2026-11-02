@@ -1,6 +1,7 @@
 mod image_info;
 mod image_viewer_settings;
 
+use i18n::{keys, t};
 use std::{path::Path, sync::Arc};
 
 use anyhow::Context as _;
@@ -944,7 +945,9 @@ impl Render for ImageViewToolbarControls {
             .child(
                 IconButton::new("zoom-out", IconName::Dash)
                     .icon_size(IconSize::Small)
-                    .tooltip(|_window, cx| Tooltip::for_action("Zoom Out", &ZoomOut, cx))
+                    .tooltip(|_window, cx| {
+                        Tooltip::for_action(t(keys::app_menu::MENU_VIEW_ZOOM_OUT), &ZoomOut, cx)
+                    })
                     .on_click({
                         let image_view = image_view.downgrade();
                         move |_, window, cx| {
@@ -1021,7 +1024,9 @@ impl Render for ImageViewToolbarControls {
             .child(
                 IconButton::new("zoom-in", IconName::Plus)
                     .icon_size(IconSize::Small)
-                    .tooltip(|_, cx| Tooltip::for_action("Zoom In", &ZoomIn, cx))
+                    .tooltip(|_, cx| {
+                        Tooltip::for_action(t(keys::app_menu::MENU_VIEW_ZOOM_IN), &ZoomIn, cx)
+                    })
                     .on_click({
                         let image_view = image_view.downgrade();
                         move |_, window, cx| {

@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{cmp, path::PathBuf, process::ExitStatus, sync::Arc, time::Duration};
 
 use crate::{
@@ -182,7 +183,7 @@ impl TerminalPanel {
                             .trigger_with_tooltip(
                                 IconButton::new("terminal-pane-split", IconName::Split)
                                     .icon_size(IconSize::Small),
-                                Tooltip::text("Split Pane"),
+                                Tooltip::text(t(keys::pane::PANE_SPLIT)),
                             )
                             .anchor(Anchor::TopRight)
                             .with_handle(pane.split_item_context_menu_handle.clone())
@@ -1867,7 +1868,12 @@ impl RenderOnce for InlineAssistTabBarButton {
                 }
             })
             .tooltip(move |_window, cx| {
-                Tooltip::for_action_in("Inline Assist", &InlineAssist::default(), &focus_handle, cx)
+                Tooltip::for_action_in(
+                    t(keys::zed::ZED_B_INLINE_ASSIST),
+                    &InlineAssist::default(),
+                    &focus_handle,
+                    cx,
+                )
             })
     }
 }

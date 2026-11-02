@@ -68,6 +68,7 @@ use gpui::{
     transparent_black,
 };
 pub use history_manager::*;
+use i18n::{keys, t};
 pub use item::{
     FollowableItem, FollowableItemHandle, Item, ItemHandle, ItemSettings, PreviewTabsSettings,
     ProjectItem, SerializableItem, SerializableItemHandle, WeakItemHandle,
@@ -9092,7 +9093,7 @@ impl Workspace {
         div()
             .id("editor-region")
             .role(gpui::Role::Main)
-            .aria_label("Editor")
+            .aria_label(t(keys::settings_ui::SETTINGS_EDITOR_EDITOR))
             .when(window.is_a11y_active(), |this| {
                 this.track_focus(&self.region_focus_handles.editor)
             })

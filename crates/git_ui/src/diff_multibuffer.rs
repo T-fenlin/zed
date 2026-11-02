@@ -17,6 +17,7 @@ use gpui::{
     App, AppContext as _, AsyncWindowContext, Entity, EventEmitter, FocusHandle, Focusable, Render,
     SharedString, Subscription, Task, WeakEntity,
 };
+use i18n::{keys, t};
 use language::{Anchor, Buffer, BufferId, Capability, OffsetRangeExt};
 use multi_buffer::{MultiBuffer, PathKey};
 use project::{
@@ -949,19 +950,20 @@ impl Render for DiffMultibuffer {
                         })
                         .child(
                             h_flex().justify_around().mt_1().child(
-                                Button::new("project-diff-close-button", "Close")
-                                    .key_binding(KeyBinding::for_action_in(
-                                        &CloseActiveItem::default(),
-                                        &keybinding_focus_handle,
-                                        cx,
-                                    ))
-                                    .on_click(move |_, window, cx| {
-                                        window.focus(&keybinding_focus_handle, cx);
-                                        window.dispatch_action(
-                                            Box::new(CloseActiveItem::default()),
-                                            cx,
-                                        );
-                                    }),
+                                Button::new(
+                                    "project-diff-close-button",
+                                    t(keys::collab::COLLAB_CLOSE),
+                                )
+                                .key_binding(KeyBinding::for_action_in(
+                                    &CloseActiveItem::default(),
+                                    &keybinding_focus_handle,
+                                    cx,
+                                ))
+                                .on_click(move |_, window, cx| {
+                                    window.focus(&keybinding_focus_handle, cx);
+                                    window
+                                        .dispatch_action(Box::new(CloseActiveItem::default()), cx);
+                                }),
                             ),
                         ),
                 )

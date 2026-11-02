@@ -5,6 +5,7 @@ use gpui::{
     Anchor, App, Context, Entity, EventEmitter, FocusHandle, Focusable, IntoElement, ParentElement,
     Render, Styled, Subscription, Task, WeakEntity, Window, actions, div,
 };
+use i18n::{keys, t};
 use itertools::Itertools as _;
 use language::{LanguageServerId, language_settings::SoftWrap};
 use lsp::{
@@ -1403,8 +1404,8 @@ impl Render for LspLogToolbarItemView {
                     ),
             )
             .child(
-                Button::new("clear_log_button", "Clear").on_click(cx.listener(
-                    |this, _, window, cx| {
+                Button::new("clear_log_button", t(keys::settings_ui::SETTINGS_UI_CLEAR)).on_click(
+                    cx.listener(|this, _, window, cx| {
                         if let Some(log_view) = this.log_view.as_ref() {
                             log_view.update(cx, |log_view, cx| {
                                 log_view.editor.update(cx, |editor, cx| {
@@ -1414,8 +1415,8 @@ impl Render for LspLogToolbarItemView {
                                 });
                             })
                         }
-                    },
-                )),
+                    }),
+                ),
             )
     }
 }

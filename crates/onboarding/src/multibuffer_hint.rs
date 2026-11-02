@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::collections::HashSet;
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -159,7 +160,7 @@ impl Render for MultibufferHint {
                             )),
                     )
                     .child(
-                        Button::new("open_docs", "Learn More")
+                        Button::new("open_docs", t(keys::agent::AGENT_THREAD_LEARN_MORE))
                             .end_icon(
                                 Icon::new(IconName::ArrowUpRight)
                                     .size(IconSize::Small)

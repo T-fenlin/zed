@@ -20,6 +20,7 @@ use agent_ui::AgentDiffToolbar;
 use anyhow::Context as _;
 pub use app_menus::*;
 use assets::Assets;
+use i18n::{keys, t};
 
 use breadcrumbs::Breadcrumbs;
 use client::zed_urls;
@@ -1626,14 +1627,14 @@ fn open_about_window(cx: &mut App) {
                             .child(Headline::new(self.message.clone()))
                             .when_some(self.commit.clone(), |this, commit| {
                                 this.child(
-                                    Label::new("Commit")
+                                    Label::new(t(keys::git_ui::GIT_COMMIT))
                                         .color(Color::Muted)
                                         .size(LabelSize::XSmall),
                                 )
                                 .child(Label::new(commit).size(LabelSize::Small))
                             })
                             .child(
-                                Label::new("Version")
+                                Label::new(t(keys::extensions::EXTENSIONS_VERSION))
                                     .color(Color::Muted)
                                     .size(LabelSize::XSmall),
                             )
@@ -1651,7 +1652,7 @@ fn open_about_window(cx: &mut App) {
                                         window.remove_window();
                                     }))
                                     .child(
-                                        Button::new("ok", "OK")
+                                        Button::new("ok", t(keys::ui::UI_OK))
                                             .full_width()
                                             .style(ButtonStyle::OutlinedGhost)
                                             .toggle_state(ok_is_focused)
@@ -1671,14 +1672,19 @@ fn open_about_window(cx: &mut App) {
                                         },
                                     ))
                                     .child(
-                                        Button::new("copy", "Copy")
-                                            .full_width()
-                                            .style(ButtonStyle::Tinted(TintColor::Accent))
-                                            .toggle_state(copy_is_focused)
-                                            .selected_style(ButtonStyle::Tinted(TintColor::Accent))
-                                            .on_click(cx.listener(|this, _event, window, cx| {
+                                        Button::new(
+                                            t(keys::panel::PANEL_DUPLICATE_SUFFIX),
+                                            t(keys::app_menu::MENU_EDIT_COPY),
+                                        )
+                                        .full_width()
+                                        .style(ButtonStyle::Tinted(TintColor::Accent))
+                                        .toggle_state(copy_is_focused)
+                                        .selected_style(ButtonStyle::Tinted(TintColor::Accent))
+                                        .on_click(
+                                            cx.listener(|this, _event, window, cx| {
                                                 this.copy_details(window, cx);
-                                            })),
+                                            }),
+                                        ),
                                     ),
                             ),
                     )

@@ -5,6 +5,7 @@ use component::{Component, ComponentScope, example_group_with_title, single_exam
 use editor::Editor;
 use futures::channel::oneshot;
 use gpui::{AnyElement, App, Div, Empty, Entity, Focusable, Role, SharedString, Window, div};
+use i18n::{keys, t};
 use std::collections::BTreeMap;
 use std::rc::Rc;
 use ui::{
@@ -2334,7 +2335,7 @@ impl<'a> ElicitationCard<'a> {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Label::new("Destination")
+                                    Label::new(t(keys::agent::AGENT_A_ELICIT_DESTINATION))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -2447,35 +2448,44 @@ impl<'a> ElicitationCard<'a> {
             )
             .when(!is_accepted_url, |this| {
                 this.child(
-                    Button::new(("elicitation-decline", self.entry_ix), "Decline")
-                        .tab_index(0_isize)
-                        .start_icon(
-                            Icon::new(IconName::Close)
-                                .size(IconSize::XSmall)
-                                .color(Color::Error),
-                        )
-                        .label_size(LabelSize::Small)
-                        .on_click(move |_, window, cx| {
-                            on_decline(decline_id.clone(), window, cx);
-                        }),
+                    Button::new(
+                        ("elicitation-decline", self.entry_ix),
+                        t(keys::agent::AGENT_A_ELICIT_DECLINE),
+                    )
+                    .tab_index(0_isize)
+                    .start_icon(
+                        Icon::new(IconName::Close)
+                            .size(IconSize::XSmall)
+                            .color(Color::Error),
+                    )
+                    .label_size(LabelSize::Small)
+                    .on_click(move |_, window, cx| {
+                        on_decline(decline_id.clone(), window, cx);
+                    }),
                 )
                 .child(
-                    Button::new(("elicitation-cancel", self.entry_ix), "Cancel")
-                        .tab_index(0_isize)
-                        .label_size(LabelSize::Small)
-                        .on_click(move |_, window, cx| {
-                            on_cancel(cancel_id.clone(), window, cx);
-                        }),
+                    Button::new(
+                        ("elicitation-cancel", self.entry_ix),
+                        t(keys::agent::AGENT_THREAD_CANCEL),
+                    )
+                    .tab_index(0_isize)
+                    .label_size(LabelSize::Small)
+                    .on_click(move |_, window, cx| {
+                        on_cancel(cancel_id.clone(), window, cx);
+                    }),
                 )
             })
             .when(is_accepted_url, |this| {
                 this.child(
-                    Button::new(("elicitation-dismiss-url", self.entry_ix), "Cancel")
-                        .tab_index(0_isize)
-                        .label_size(LabelSize::Small)
-                        .on_click(move |_, window, cx| {
-                            on_dismiss_url(dismiss_id.clone(), window, cx);
-                        }),
+                    Button::new(
+                        ("elicitation-dismiss-url", self.entry_ix),
+                        t(keys::agent::AGENT_THREAD_CANCEL),
+                    )
+                    .tab_index(0_isize)
+                    .label_size(LabelSize::Small)
+                    .on_click(move |_, window, cx| {
+                        on_dismiss_url(dismiss_id.clone(), window, cx);
+                    }),
                 )
             })
             .into_any_element()

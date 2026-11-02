@@ -15,6 +15,7 @@ use gpui::{
     Action, App, AppContext as _, Context, Empty, Entity, EventEmitter, FocusHandle, Focusable,
     HighlightStyle, IntoElement, Render, Subscription, Task, WeakEntity, Window,
 };
+use i18n::{keys, t};
 use language::{Anchor, Buffer, HighlightedText, OffsetRangeExt as _, Point};
 use multi_buffer::{MultiBuffer, PathKey, excerpt_context_lines};
 use project::{
@@ -828,7 +829,7 @@ impl Render for SoloDiffGitToolbar {
                     })
                     .when(!button_states.selection, |el| {
                         el.child(
-                            Button::new("stage", "Stage")
+                            Button::new("stage", t(keys::git_ui::GIT_STAGE))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Stage and Go to Next Hunk",
@@ -840,7 +841,7 @@ impl Render for SoloDiffGitToolbar {
                                 })),
                         )
                         .child(
-                            Button::new("unstage", "Unstage")
+                            Button::new("unstage", t(keys::git_ui::GIT_UNSTAGE))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Unstage and Go to Next Hunk",
@@ -853,7 +854,7 @@ impl Render for SoloDiffGitToolbar {
                         )
                     })
                     .child(
-                        Button::new("restore", "Restore")
+                        Button::new("restore", t(keys::agent::AGENT_THREAD_RESTORE))
                             .tooltip(Tooltip::for_action_title_in(
                                 "Restore selected hunk",
                                 &Restore,
@@ -867,7 +868,7 @@ impl Render for SoloDiffGitToolbar {
             )
             .child(Divider::vertical())
             .child(h_group_sm().child(if button_states.stage_file {
-                Button::new("stage-file", "Stage All")
+                Button::new("stage-file", t(keys::git_ui::GIT_STAGE_ALL))
                     .width(rems_from_px(80_f32))
                     .disabled(!button_states.stage_file)
                     .tooltip(Tooltip::for_action_title_in(
@@ -877,7 +878,7 @@ impl Render for SoloDiffGitToolbar {
                     ))
                     .on_click(cx.listener(|this, _, window, cx| this.stage_file(window, cx)))
             } else {
-                Button::new("unstage-file", "Unstage All")
+                Button::new("unstage-file", t(keys::git_ui::GIT_UNSTAGE_ALL))
                     .width(rems_from_px(80_f32))
                     .disabled(!button_states.unstage_file)
                     .tooltip(Tooltip::for_action_title_in(
@@ -889,7 +890,7 @@ impl Render for SoloDiffGitToolbar {
             }))
             .child(Divider::vertical())
             .child(
-                Button::new("commit", "Commit")
+                Button::new("commit", t(keys::git_ui::GIT_COMMIT))
                     .tooltip(Tooltip::for_action_title_in(
                         "Commit",
                         &Commit,

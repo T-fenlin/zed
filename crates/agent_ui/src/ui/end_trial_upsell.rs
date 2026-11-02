@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::sync::Arc;
 
 use ai_onboarding::{AgentPanelOnboardingCard, PlanDefinitions};
@@ -24,7 +25,7 @@ impl RenderOnce for EndTrialUpsell {
                 h_flex()
                     .gap_2()
                     .child(
-                        Label::new("Pro")
+                        Label::new(t(keys::titlebar::TITLEBAR_PLAN_PRO))
                             .size(LabelSize::Small)
                             .color(Color::Accent)
                             .buffer_font(cx),
@@ -49,7 +50,7 @@ impl RenderOnce for EndTrialUpsell {
                 h_flex()
                     .gap_2()
                     .child(
-                        Label::new("Free")
+                        Label::new(t(keys::titlebar::TITLEBAR_PLAN_FREE))
                             .size(LabelSize::Small)
                             .color(Color::Muted)
                             .buffer_font(cx),
@@ -77,7 +78,7 @@ impl RenderOnce for EndTrialUpsell {
                 h_flex().absolute().top_4().right_4().child(
                     IconButton::new("dismiss_onboarding", IconName::Close)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text("Dismiss"))
+                        .tooltip(Tooltip::text(t(keys::agent::AGENT_DISMISS)))
                         .on_click({
                             let callback = self.dismiss_upsell.clone();
                             move |_, window, cx| {

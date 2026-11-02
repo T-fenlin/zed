@@ -2,6 +2,7 @@ mod components;
 mod extension_suggestions;
 mod extension_version_selector;
 
+use i18n::{keys, t};
 use std::sync::OnceLock;
 use std::time::Duration;
 use std::{any::TypeId, ops::Range, sync::Arc};
@@ -810,15 +811,19 @@ impl ExtensionsPage {
                         }
                     }),
                 )
-                .entry("Copy Extension ID", None, {
+                .entry(t(keys::extensions::EXTENSIONS_COPY_EXTENSION_ID), None, {
                     let extension_id = extension_id.clone();
                     move |_, cx| {
                         cx.write_to_clipboard(ClipboardItem::new_string(extension_id.to_string()));
                     }
                 })
-                .entry("Copy Author Info", None, move |_, cx| {
-                    cx.write_to_clipboard(ClipboardItem::new_string(authors.to_string()));
-                })
+                .entry(
+                    t(keys::extensions::EXTENSIONS_COPY_AUTHOR_INFO),
+                    None,
+                    move |_, cx| {
+                        cx.write_to_clipboard(ClipboardItem::new_string(authors.to_string()));
+                    },
+                )
         })
     }
 
@@ -897,7 +902,7 @@ impl ExtensionsPage {
     }
 
     fn retry_button(&self, cx: &mut Context<Self>) -> Button {
-        Button::new("retry-fetch-extensions", "Retry")
+        Button::new("retry-fetch-extensions", t(keys::agent::AGENT_RETRY))
             .style(ButtonStyle::Outlined)
             .on_click(cx.listener(|this, _, _, cx| {
                 this.fetch_extensions(FetchDebounce::Immediate, None, cx);
@@ -1123,18 +1128,21 @@ impl ExtensionsPage {
         vim: bool,
         cx: &Context<Self>,
     ) -> impl IntoElement {
-        let docs_url_button = Button::new("open_docs", "View Documentation")
-            .end_icon(Icon::new(IconName::ArrowUpRight).size(IconSize::Small))
-            .on_click({
-                move |_event, _window, cx| {
-                    telemetry::event!(
-                        "Documentation Viewed",
-                        source = "Feature Upsell",
-                        url = docs_url,
-                    );
-                    cx.open_url(docs_url)
-                }
-            });
+        let docs_url_button = Button::new(
+            "open_docs",
+            t(keys::extensions::EXTENSIONS_VIEW_DOCUMENTATION),
+        )
+        .end_icon(Icon::new(IconName::ArrowUpRight).size(IconSize::Small))
+        .on_click({
+            move |_event, _window, cx| {
+                telemetry::event!(
+                    "Documentation Viewed",
+                    source = "Feature Upsell",
+                    url = docs_url,
+                );
+                cx.open_url(docs_url)
+            }
+        });
 
         div()
             .pt_4()
@@ -1154,7 +1162,9 @@ impl ExtensionsPage {
                                         h_flex()
                                             .pl_1()
                                             .gap_1()
-                                            .child(Label::new("Enable Vim mode"))
+                                            .child(Label::new(t(
+                                                keys::extensions::EXTENSIONS_ENABLE_VIM_MODE,
+                                            )))
                                             .child(
                                                 Switch::new(
                                                     "enable-vim",
@@ -1485,9 +1495,9 @@ impl Render for ExtensionsPage {
                             .w_full()
                             .gap_1p5()
                             .justify_between()
-                            .child(Headline::new("Extensions").size(HeadlineSize::Large))
+                            .child(Headline::new(t(keys::app_menu::MENU_ZED_EXTENSIONS)).size(HeadlineSize::Large))
                             .child(
-                                Button::new("install-dev-extension", "Install Dev Extension")
+                                Button::new("install-dev-extension", t(keys::extensions::EXTENSIONS_INSTALL_DEV_EXTENSION))
                                     .style(ButtonStyle::Outlined)
                                     .size(ButtonSize::Medium)
                                     .on_click(|_event, window, cx| {
@@ -1556,7 +1566,7 @@ impl Render for ExtensionsPage {
                     .border_color(cx.theme().colors().border_variant)
                     .overflow_x_scroll()
                     .child(
-                        Button::new("filter-all-categories", "All")
+                        Button::new("filter-all-categories", t(keys::agent::AGENT_ALL_MODELS))
                             .when(self.provides_filter.is_none(), |button| {
                                 button.style(ButtonStyle::Filled)
                             })

@@ -1,6 +1,7 @@
 use gpui::ElementId;
 use gpui::TaskExt;
 use gpui::{AnyElement, Entity};
+use i18n::{keys, t};
 use picker::Picker;
 use repl::{
     ExecutionState, JupyterSettings, Kernel, KernelSpecification, KernelStatus, Session,
@@ -150,7 +151,7 @@ impl QuickActionBar {
                     )
                     .custom_entry(
                         move |_window, _cx| {
-                            Label::new("Interrupt")
+                            Label::new(t(keys::zed::ZED_B_REPL_INTERRUPT))
                                 .size(LabelSize::Small)
                                 .color(Color::Error)
                                 .into_any_element()
@@ -164,7 +165,7 @@ impl QuickActionBar {
                     )
                     .custom_entry(
                         move |_window, _cx| {
-                            Label::new("Clear Outputs")
+                            Label::new(t(keys::zed::ZED_B_REPL_CLEAR_OUTPUTS))
                                 .size(LabelSize::Small)
                                 .color(Color::Muted)
                                 .into_any_element()
@@ -179,7 +180,7 @@ impl QuickActionBar {
                     .separator()
                     .custom_entry(
                         move |_window, _cx| {
-                            Label::new("Shut Down Kernel")
+                            Label::new(t(keys::zed::ZED_B_REPL_SHUT_DOWN_KERNEL))
                                 .size(LabelSize::Small)
                                 .color(Color::Error)
                                 .into_any_element()
@@ -193,7 +194,7 @@ impl QuickActionBar {
                     )
                     .custom_entry(
                         move |_window, _cx| {
-                            Label::new("Restart Kernel")
+                            Label::new(t(keys::repl::REPL_NOTEBOOK_RESTART_KERNEL))
                                 .size(LabelSize::Small)
                                 .color(Color::Error)
                                 .into_any_element()
@@ -220,7 +221,7 @@ impl QuickActionBar {
                     )
                     .width(rems(1.))
                     .disabled(menu_state.popover_disabled),
-                Tooltip::text("REPL Menu"),
+                Tooltip::text(t(keys::zed::ZED_B_REPL_MENU_TOOLTIP)),
             );
 
         let button = ButtonLike::new_rounded_left("toggle_repl_icon")
@@ -367,7 +368,7 @@ impl QuickActionBar {
                                 .size(IconSize::XSmall),
                         ),
                 ),
-            Tooltip::text("Select Kernel"),
+            Tooltip::text(t(keys::repl::REPL_NOTEBOOK_SELECT_KERNEL)),
         )
         .with_handle(menu_handle)
         .into_any_element()

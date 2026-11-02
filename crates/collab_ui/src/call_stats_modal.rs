@@ -8,6 +8,7 @@ use gpui::{
     ClipboardItem, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, Render,
     Subscription, Task, TaskExt as _, Window,
 };
+use i18n::{keys, t};
 use livekit_client::ConnectionQuality;
 use release_channel::{AppVersion, ReleaseChannel};
 use serde::Serialize;
@@ -296,7 +297,7 @@ impl Render for CallStatsModal {
             .child(
                 h_flex()
                     .justify_between()
-                    .child(Label::new("Call Diagnostics").size(LabelSize::Large))
+                    .child(Label::new(t(keys::collab::COLLAB_CALL_DIAGNOSTICS)).size(LabelSize::Large))
                     .child(
                         Label::new(quality_text)
                             .size(LabelSize::Large)
@@ -307,7 +308,7 @@ impl Render for CallStatsModal {
                 this.child(
                     h_flex()
                         .justify_center()
-                        .child(Label::new("Showing diagnostics from the most recent call").color(Color::Muted)),
+                        .child(Label::new(t(keys::collab::COLLAB_SHOWING_RECENT_DIAGNOSTICS)).color(Color::Muted)),
                 )
             })
             .when(!has_diagnostics, |this| {
@@ -315,7 +316,7 @@ impl Render for CallStatsModal {
                     h_flex()
                         .justify_center()
                         .py_4()
-                        .child(Label::new("No call diagnostics available").color(Color::Muted)),
+                        .child(Label::new(t(keys::collab::COLLAB_NO_CALL_DIAGNOSTICS)).color(Color::Muted)),
                 )
             })
             .when(has_diagnostics, |this| {
@@ -336,7 +337,7 @@ impl Render for CallStatsModal {
                         .child(
                             v_flex()
                                 .gap_1()
-                                .child(Label::new("Network").weight(FontWeight::SEMIBOLD))
+                                .child(Label::new(t(keys::collab::COLLAB_NETWORK)).weight(FontWeight::SEMIBOLD))
                                 .child(self.render_metric_row(
                                     "Latency",
                                     "Time for data to travel to the server",
@@ -369,10 +370,10 @@ impl Render for CallStatsModal {
                         .child(
                             v_flex()
                                 .gap_1()
-                                .child(Label::new("Inbound audio").weight(FontWeight::SEMIBOLD))
+                                .child(Label::new(t(keys::collab::COLLAB_INBOUND_AUDIO)).weight(FontWeight::SEMIBOLD))
                                 .when(remote_audio.is_empty(), |this| {
                                     this.child(
-                                        Label::new("Waiting for inbound audio statistics")
+                                        Label::new(t(keys::collab::COLLAB_WAITING_INBOUND_AUDIO))
                                             .color(Color::Muted),
                                     )
                                 })
@@ -390,11 +391,11 @@ impl Render for CallStatsModal {
                         .justify_end()
                         .gap_2()
                         .child(
-                            Button::new("copy-call-diagnostics", "Copy Report")
+                            Button::new("copy-call-diagnostics", t(keys::collab::COLLAB_COPY_REPORT))
                                 .on_click(cx.listener(|this, _, _, cx| this.copy_report(cx))),
                         )
                         .child(
-                            Button::new("save-call-diagnostics", "Save Report…")
+                            Button::new("save-call-diagnostics", t(keys::collab::COLLAB_SAVE_REPORT))
                                 .on_click(cx.listener(|this, _, _, cx| this.save_report(cx))),
                         ),
                 )

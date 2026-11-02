@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -236,7 +237,10 @@ impl PickerDelegate for ExtensionVersionSelectorDelegate {
                     h_flex()
                         .gap_2()
                         .when(!is_version_compatible, |this| {
-                            this.child(Label::new("Incompatible").color(Color::Muted))
+                            this.child(
+                                Label::new(t(keys::extensions::EXTENSIONS_INCOMPATIBLE))
+                                    .color(Color::Muted),
+                            )
                         })
                         .child(
                             Label::new(

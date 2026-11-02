@@ -10,6 +10,7 @@ use gpui::{
     Action, AnyElement, AnyView, App, BackgroundExecutor, Context, DismissEvent, Empty, Entity,
     FocusHandle, Focusable, ForegroundExecutor, SharedString, Subscription, Task, Window,
 };
+use i18n::{keys, t};
 use picker::{Picker, PickerDelegate, popover_menu::PickerPopoverMenu};
 use settings::{Settings as _, SettingsStore, update_settings_file};
 use std::{
@@ -181,12 +182,15 @@ impl Render for ProfileSelector {
         }
 
         if !self.provider.profiles_supported(cx) {
-            return Button::new("tools-not-supported-button", "Tools Unsupported")
-                .disabled(true)
-                .label_size(LabelSize::Small)
-                .color(Color::Muted)
-                .tooltip(Tooltip::text("This model does not support tools."))
-                .into_any_element();
+            return Button::new(
+                "tools-not-supported-button",
+                t(keys::agent::AGENT_TOOLS_UNSUPPORTED),
+            )
+            .disabled(true)
+            .label_size(LabelSize::Small)
+            .color(Color::Muted)
+            .tooltip(Tooltip::text(t(keys::agent::AGENT_TOOLS_UNSUPPORTED_HINT)))
+            .into_any_element();
         }
 
         let picker = self.ensure_picker(window, cx);
@@ -231,7 +235,7 @@ impl Render for ProfileSelector {
                     .gap_1()
                     .child(
                         container()
-                            .child(Label::new("Change Profile"))
+                            .child(Label::new(t(keys::agent::AGENT_CHANGE_PROFILE)))
                             .child(KeyBinding::for_action(&ToggleProfileSelector, cx)),
                     )
                     .child(
@@ -239,7 +243,7 @@ impl Render for ProfileSelector {
                             .pt_1()
                             .border_t_1()
                             .border_color(cx.theme().colors().border_variant)
-                            .child(Label::new("Cycle Through Profiles"))
+                            .child(Label::new(t(keys::agent::AGENT_CYCLE_PROFILES)))
                             .child(KeyBinding::for_action(&CycleModeSelector, cx)),
                     )
                     .into_any()
@@ -790,7 +794,7 @@ impl PickerDelegate for ProfilePickerDelegate {
                         .border_color(cx.theme().colors().border_variant)
                         .p_1p5()
                         .child(
-                            Button::new("configure", "Configure")
+                            Button::new("configure", t(keys::agent::AGENT_B_CONFIGURE))
                                 .full_width()
                                 .style(ButtonStyle::Outlined)
                                 .key_binding(
@@ -817,24 +821,25 @@ impl PickerDelegate for ProfilePickerDelegate {
                             .border_color(cx.theme().colors().border_variant)
                             .p_1p5()
                             .child(
-                                Button::new("restricted-mode", "Restricted Mode")
-                                    .full_width()
-                                    .style(ButtonStyle::Tinted(TintColor::Warning))
-                                    .color(Color::Warning)
-                                    .start_icon(
-                                        Icon::new(IconName::Warning)
-                                            .size(IconSize::Small)
-                                            .color(Color::Warning),
-                                    )
-                                    .tooltip(Tooltip::text(
-                                        "Some tools are disabled. Click to review trust settings.",
-                                    ))
-                                    .on_click(|_, window, cx| {
-                                        window.dispatch_action(
-                                            ToggleWorktreeSecurity.boxed_clone(),
-                                            cx,
-                                        );
-                                    }),
+                                Button::new(
+                                    "restricted-mode",
+                                    t(keys::titlebar::TITLEBAR_RESTRICTED_MODE),
+                                )
+                                .full_width()
+                                .style(ButtonStyle::Tinted(TintColor::Warning))
+                                .color(Color::Warning)
+                                .start_icon(
+                                    Icon::new(IconName::Warning)
+                                        .size(IconSize::Small)
+                                        .color(Color::Warning),
+                                )
+                                .tooltip(Tooltip::text(
+                                    "Some tools are disabled. Click to review trust settings.",
+                                ))
+                                .on_click(|_, window, cx| {
+                                    window
+                                        .dispatch_action(ToggleWorktreeSecurity.boxed_clone(), cx);
+                                }),
                             ),
                     )
                 })

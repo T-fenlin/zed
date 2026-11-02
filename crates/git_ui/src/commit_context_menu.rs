@@ -1,6 +1,7 @@
 use crate::{commit_view::CommitView, create_tag_at_commit};
 use git::Oid;
 use gpui::{Action, ClipboardItem, Entity, FocusHandle, SharedString, WeakEntity, Window, actions};
+use i18n::{keys, t};
 use project::{GIT_COMMAND_TASK_TAG, git_store::Repository};
 
 use task::{TaskContext, TaskVariables, VariableName};
@@ -86,9 +87,13 @@ pub(crate) fn commit_context_menu(
                 },
             )
             .when_some(ref_name.clone(), |menu, ref_name| {
-                menu.entry("Copy Ref Name", None, move |_window, cx| {
-                    cx.write_to_clipboard(ClipboardItem::new_string(ref_name.to_string()));
-                })
+                menu.entry(
+                    t(keys::git_ui::GIT_GRAPH_COPY_REF_NAME),
+                    None,
+                    move |_window, cx| {
+                        cx.write_to_clipboard(ClipboardItem::new_string(ref_name.to_string()));
+                    },
+                )
             })
             .when(ref_name.is_none(), |menu| {
                 menu.map(|menu| {
@@ -155,11 +160,13 @@ pub(crate) fn commit_context_menu(
                 })
             })
             .map(|mut menu| {
-                menu = menu.separator().header("Custom Commands");
+                menu = menu
+                    .separator()
+                    .header(t(keys::git_ui::GIT_GRAPH_CUSTOM_COMMANDS));
 
                 if git_tasks.is_empty() {
                     return menu.item(
-                        ContextMenuEntry::new("Learn More")
+                        ContextMenuEntry::new(t(keys::agent::AGENT_THREAD_LEARN_MORE))
                             .icon(IconName::ArrowUpRight)
                             .icon_color(Color::Muted)
                             .icon_position(IconPosition::End)

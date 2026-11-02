@@ -12,6 +12,7 @@ use editor::{
     multibuffer_context_lines,
     scroll::Autoscroll,
 };
+use i18n::{keys, t};
 
 use gpui::{
     Action, AnyElement, App, AppContext, Empty, Entity, EventEmitter, FocusHandle, Focusable,
@@ -815,7 +816,7 @@ fn render_diff_hunk_controls(
         .block_mouse_except_scroll()
         .when(opaque_window, |this| this.shadow_md())
         .children(vec![
-            Button::new(("reject", row as u64), "Reject")
+            Button::new(("reject", row as u64), t(keys::agent::AGENT_THREAD_REJECT))
                 .disabled(is_created_file)
                 .key_binding(
                     KeyBinding::for_action_in(&Reject, &editor.read(cx).focus_handle(cx), cx)
@@ -839,7 +840,7 @@ fn render_diff_hunk_controls(
                         })
                     }
                 }),
-            Button::new(("keep", row as u64), "Keep")
+            Button::new(("keep", row as u64), t(keys::agent::AGENT_THREAD_KEEP))
                 .key_binding(
                     KeyBinding::for_action_in(&Keep, &editor.read(cx).focus_handle(cx), cx)
                         .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -873,7 +874,12 @@ fn render_diff_hunk_controls(
                         .tooltip({
                             let focus_handle = editor.focus_handle(cx);
                             move |_window, cx| {
-                                Tooltip::for_action_in("Next Hunk", &GoToHunk, &focus_handle, cx)
+                                Tooltip::for_action_in(
+                                    t(keys::zed::ZED_B_NEXT_HUNK),
+                                    &GoToHunk,
+                                    &focus_handle,
+                                    cx,
+                                )
                             }
                         })
                         .on_click({
@@ -1140,7 +1146,7 @@ impl Render for AgentDiffToolbar {
                         h_flex()
                             .gap_0p5()
                             .child(
-                                Button::new("reject-all", "Reject All")
+                                Button::new("reject-all", t(keys::agent::AGENT_THREAD_REJECT_ALL))
                                     .key_binding({
                                         KeyBinding::for_action_in(
                                             &RejectAll,
@@ -1154,7 +1160,7 @@ impl Render for AgentDiffToolbar {
                                     })),
                             )
                             .child(
-                                Button::new("keep-all", "Keep All")
+                                Button::new("keep-all", t(keys::agent::AGENT_THREAD_KEEP_ALL))
                                     .key_binding({
                                         KeyBinding::for_action_in(
                                             &KeepAll,
@@ -1236,7 +1242,7 @@ impl Render for AgentDiffToolbar {
                     .child(
                         h_group_sm()
                             .child(
-                                Button::new("reject-all", "Reject All")
+                                Button::new("reject-all", t(keys::agent::AGENT_THREAD_REJECT_ALL))
                                     .key_binding({
                                         KeyBinding::for_action_in(&RejectAll, &focus_handle, cx)
                                             .map(|kb| kb.size(rems_from_px(12_f32)))
@@ -1246,7 +1252,7 @@ impl Render for AgentDiffToolbar {
                                     })),
                             )
                             .child(
-                                Button::new("keep-all", "Keep All")
+                                Button::new("keep-all", t(keys::agent::AGENT_THREAD_KEEP_ALL))
                                     .key_binding({
                                         KeyBinding::for_action_in(&KeepAll, &focus_handle, cx)
                                             .map(|kb| kb.size(rems_from_px(12_f32)))

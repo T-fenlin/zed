@@ -2,6 +2,7 @@ use anyhow::{Context as _, Result};
 use editor::Editor;
 use fs::Fs;
 use gpui::WeakEntity;
+use i18n::{keys, t};
 use migrator::{migrate_keymap, migrate_settings};
 use settings::{KeymapFile, Settings, SettingsStore};
 use util::ResultExt;
@@ -238,7 +239,11 @@ impl Render for MigrationBanner {
                     ),
             )
             .child(
-                Button::new("backup-and-migrate", "Backup and Update").on_click({
+                Button::new(
+                    "backup-and-migrate",
+                    t(keys::zed::ZED_A_MIGRATION_BACKUP_AND_UPDATE),
+                )
+                .on_click({
                     let workspace = self.workspace.clone();
                     move |_, window, cx| {
                         let fs = <dyn Fs>::global(cx);

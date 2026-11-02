@@ -9,6 +9,7 @@ use gpui::{
     App, BorderStyle, DismissEvent, EdgesRefinement, Entity, EventEmitter, FocusHandle, Focusable,
     Length, StyleRefinement, Task, TextStyleRefinement, Window, actions, prelude::*,
 };
+use i18n::{keys, t};
 use language::{
     Bias, Buffer, BufferSnapshot, CodeLabel, LanguageRegistry, Point, ToOffset, ToPoint,
     language_settings::{self, InlayHintKind},
@@ -882,7 +883,12 @@ impl RatePredictionsModal {
                                 .px_2()
                                 .border_b_1()
                                 .border_color(border_color)
-                                .child(Label::new("Predicted Patch").size(LabelSize::Small)),
+                                .child(
+                                    Label::new(t(
+                                        keys::edit_prediction::EDIT_PREDICTION_PREDICTED_PATCH,
+                                    ))
+                                    .size(LabelSize::Small),
+                                ),
                         )
                         .child(
                             div()
@@ -908,7 +914,12 @@ impl RatePredictionsModal {
                                 .gap_2()
                                 .border_b_1()
                                 .border_color(border_color)
-                                .child(Label::new("Expected Patch").size(LabelSize::Small)),
+                                .child(
+                                    Label::new(t(
+                                        keys::edit_prediction::EDIT_PREDICTION_EXPECTED_PATCH,
+                                    ))
+                                    .size(LabelSize::Small),
+                                ),
                         )
                         .child(
                             div()
@@ -1146,7 +1157,7 @@ impl RatePredictionsModal {
                                             .size(IconSize::Small)
                                             .color(Color::Success),
                                     )
-                                    .child(Label::new("Rated completion.").color(Color::Muted)),
+                                    .child(Label::new(t(keys::edit_prediction::EDIT_PREDICTION_RATED_COMPLETION)).color(Color::Muted)),
                             )
                         } else if active_prediction.prediction.edits.is_empty() {
                             Some(
@@ -1156,7 +1167,7 @@ impl RatePredictionsModal {
                                             .size(IconSize::Small)
                                             .color(Color::Warning),
                                     )
-                                    .child(Label::new("No edits produced.").color(Color::Muted)),
+                                    .child(Label::new(t(keys::edit_prediction::EDIT_PREDICTION_NO_EDITS_PRODUCED)).color(Color::Muted)),
                             )
                         } else {
                             Some(label_container)
@@ -1165,7 +1176,7 @@ impl RatePredictionsModal {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Button::new("bad", "Bad Prediction")
+                                    Button::new("bad", t(keys::edit_prediction::EDIT_PREDICTION_BAD_PREDICTION))
                                         .start_icon(Icon::new(IconName::ThumbsDown).size(IconSize::Small))
                                         .disabled(rated || feedback_empty)
                                         .when(feedback_empty, |this| {
@@ -1189,7 +1200,7 @@ impl RatePredictionsModal {
                                         })),
                                 )
                                 .child(
-                                    Button::new("good", "Good Prediction")
+                                    Button::new("good", t(keys::edit_prediction::EDIT_PREDICTION_GOOD_PREDICTION))
                                         .start_icon(Icon::new(IconName::ThumbsUp).size(IconSize::Small))
                                         .disabled(rated)
                                         .key_binding(KeyBinding::for_action_in(
@@ -1358,9 +1369,11 @@ impl Render for RatePredictionsModal {
                             .border_color(border_color)
                             .child(Icon::new(icons.base).size(IconSize::Small))
                             .child(
-                                Label::new("From most recent to oldest")
-                                    .color(Color::Muted)
-                                    .size(LabelSize::Small),
+                                Label::new(t(
+                                    keys::edit_prediction::EDIT_PREDICTION_FROM_MOST_RECENT,
+                                ))
+                                .color(Color::Muted)
+                                .size(LabelSize::Small),
                             )
                     })
                     .child(

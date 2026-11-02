@@ -4,6 +4,7 @@ use gpui::{
     App, AsyncWindowContext, Context, DismissEvent, EventEmitter, FocusHandle, Focusable,
     PromptButton, PromptLevel, Render, WeakEntity, Window,
 };
+use i18n::{keys, t};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -80,7 +81,7 @@ impl MoveToApplicationsRequest {
                 &[
                     PromptButton::ok("Yes"),
                     PromptButton::cancel("No"),
-                    PromptButton::new("Don't ask me again"),
+                    PromptButton::new(t(keys::zed::ZED_B_MOVE_DONT_ASK)),
                 ],
             )
             .await?;
@@ -178,7 +179,7 @@ impl Render for InstallingZedModal {
                     .py_3()
                     .border_b_1()
                     .border_color(theme.colors().border_variant)
-                    .child(Label::new("Installing Zed…")),
+                    .child(Label::new(t(keys::zed::ZED_B_INSTALLING))),
             )
             .child(
                 h_flex()
@@ -196,9 +197,9 @@ impl Render for InstallingZedModal {
                     .child(
                         v_flex()
                             .gap_1()
-                            .child(Label::new("Moving Zed to Applications"))
+                            .child(Label::new(t(keys::zed::ZED_B_MOVING)))
                             .child(
-                                Label::new("Zed will reopen when installation is complete.")
+                                Label::new(t(keys::zed::ZED_B_REOPEN))
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             ),

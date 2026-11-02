@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::time::Duration;
 
 use acp_thread::AgentSessionListRequest;
@@ -622,7 +623,7 @@ impl Render for ThreadImportModal {
                                 )
                             })
                             .end_slot(
-                                Button::new("import-threads", "Import Threads")
+                                Button::new("import-threads", t(keys::agent::AGENT_IMPORT_THREADS))
                                     .loading(self.is_importing)
                                     .disabled(disabled_import_thread)
                                     .key_binding(

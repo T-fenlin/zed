@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::ffi::OsStr;
 use std::path::Path;
 use std::rc::Rc;
@@ -944,19 +945,23 @@ pub(crate) fn render_buffer_header(
                                 })
                                 .when(show_open_file_button, |this| {
                                     this.child(
-                                        Button::new("open-file-button", "Open File")
-                                            .style(ButtonStyle::OutlinedCustom(
-                                                cx.theme().colors().border.opacity(0.6),
+                                        Button::new(
+                                            "open-file-button",
+                                            t(keys::agent::AGENT_THREAD_OPEN_FILE),
+                                        )
+                                        .style(ButtonStyle::OutlinedCustom(
+                                            cx.theme().colors().border.opacity(0.6),
+                                        ))
+                                        .layer(ui::ElevationIndex::ElevatedSurface)
+                                        .when(is_selected, |this| {
+                                            this.key_binding(KeyBinding::for_action_in(
+                                                &OpenExcerpts,
+                                                &focus_handle,
+                                                cx,
                                             ))
-                                            .layer(ui::ElevationIndex::ElevatedSurface)
-                                            .when(is_selected, |this| {
-                                                this.key_binding(KeyBinding::for_action_in(
-                                                    &OpenExcerpts,
-                                                    &focus_handle,
-                                                    cx,
-                                                ))
-                                            })
-                                            .on_click(window.listener_for(editor, {
+                                        })
+                                        .on_click(
+                                            window.listener_for(editor, {
                                                 let jump_data = jump_data.clone();
                                                 move |editor, e: &ClickEvent, window, cx| {
                                                     editor.open_excerpts_common(
@@ -966,7 +971,8 @@ pub(crate) fn render_buffer_header(
                                                         cx,
                                                     );
                                                 }
-                                            })),
+                                            }),
+                                        ),
                                     )
                                 }),
                         )

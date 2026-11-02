@@ -1,4 +1,5 @@
 use gpui::{Action, IntoElement, ParentElement, RenderOnce};
+use i18n::{keys, t};
 use language_model::{IconOrSvg, LanguageModelRegistry, ZED_CLOUD_PROVIDER_ID};
 use ui::{Divider, List, ListBulletItem, prelude::*};
 
@@ -135,12 +136,15 @@ impl RenderOnce for ApiKeysWithoutProviders {
                 "Add your own keys to use AI without signing in.",
             )))
             .child(
-                Button::new("configure-providers", "Configure Providers")
-                    .full_width()
-                    .style(ButtonStyle::Outlined)
-                    .on_click(move |_, window, cx| {
-                        window.dispatch_action(zed_actions::agent::OpenSettings.boxed_clone(), cx);
-                    }),
+                Button::new(
+                    "configure-providers",
+                    t(keys::edit_prediction::EDIT_PREDICTION_CONFIGURE_PROVIDERS),
+                )
+                .full_width()
+                .style(ButtonStyle::Outlined)
+                .on_click(move |_, window, cx| {
+                    window.dispatch_action(zed_actions::agent::OpenSettings.boxed_clone(), cx);
+                }),
             )
     }
 }

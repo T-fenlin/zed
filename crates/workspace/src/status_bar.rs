@@ -6,6 +6,7 @@ use gpui::{
     Anchor, AnyView, App, Context, Decorations, Entity, FocusHandle, Focusable, IntoElement,
     ParentElement, Render, Role, SharedString, Styled, Subscription, WeakEntity, Window,
 };
+use i18n::{keys, t};
 use settings::{SettingsContent, update_settings_file};
 use std::{any::TypeId, sync::Arc};
 use theme::CLIENT_SIDE_DECORATION_ROUNDING;
@@ -127,7 +128,7 @@ impl Render for StatusBar {
             // steps through them, and arrow keys move between them once focus is
             // inside.
             .role(Role::Toolbar)
-            .aria_label("Status bar")
+            .aria_label(t(keys::workspace::WS_STATUS_BAR_ARIA))
             .tab_group()
             .on_key_down(
                 cx.listener(|status_bar, event: &gpui::KeyDownEvent, window, cx| {
@@ -260,13 +261,17 @@ impl StatusBar {
                 )
                 .icon_size(IconSize::Small)
                 .tab_index(0isize)
-                .aria_label("Open threads sidebar")
+                .aria_label(t(keys::workspace::WS_STATUS_OPEN_THREADS_ARIA))
                 .when(has_notifications, |this| {
                     this.indicator(Indicator::dot().color(Color::Accent))
                         .indicator_border_color(Some(indicator_border))
                 })
                 .tooltip(move |_, cx| {
-                    Tooltip::for_action("Open Threads Sidebar", &ToggleWorkspaceSidebar, cx)
+                    Tooltip::for_action(
+                        t(keys::workspace::WS_STATUS_OPEN_THREADS_TOOLTIP),
+                        &ToggleWorkspaceSidebar,
+                        cx,
+                    )
                 })
                 .on_click(move |_, window, cx| {
                     if let Some(multi_workspace) = window.root::<MultiWorkspace>().flatten() {

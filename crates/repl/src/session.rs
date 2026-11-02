@@ -23,6 +23,7 @@ use editor::{
     },
     scroll::Autoscroll,
 };
+use i18n::{keys, t};
 use project::InlayId;
 
 /// Marker types
@@ -928,7 +929,7 @@ impl Render for Session {
                     .as_ref()
                     .map(|info| info.language_info.name.clone()),
                 Some(
-                    Button::new("interrupt", "Interrupt")
+                    Button::new("interrupt", t(keys::zed::ZED_B_REPL_INTERRUPT))
                         .style(ButtonStyle::Subtle)
                         .on_click(cx.listener(move |session, _, _, cx| {
                             session.interrupt(cx);

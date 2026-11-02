@@ -3,6 +3,7 @@ use gpui::{
     App, Context, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, ParentElement as _,
     Render, Styled, Task, WeakEntity, Window,
 };
+use i18n::{keys, t};
 use picker::{Picker, PickerDelegate};
 use std::sync::Arc;
 use ui::{Avatar, ListItem, ListItemSpacing, prelude::*};
@@ -38,8 +39,8 @@ impl Render for ContactFinder {
                     .bg(cx.theme().colors().element_background)
                     // HACK: Prevent the background color from overflowing the parent container.
                     .rounded_t(px(8.))
-                    .child(Label::new("Contacts"))
-                    .child(h_flex().child(Label::new("Invite new contacts"))),
+                    .child(Label::new(t(keys::collab::COLLAB_CONTACTS)))
+                    .child(h_flex().child(Label::new(t(keys::collab::COLLAB_INVITE_NEW_CONTACTS)))),
             )
             .child(self.picker.clone())
     }

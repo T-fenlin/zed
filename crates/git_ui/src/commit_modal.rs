@@ -4,6 +4,7 @@ use crate::git_panel::{
 };
 use crate::git_panel_settings::GitPanelSettings;
 use git::{Amend, Commit, GenerateCommitMessage, Signoff, SkipHooks};
+use i18n::{keys, t};
 use project::DisableAiSettings;
 use settings::Settings;
 use ui::{
@@ -327,7 +328,7 @@ impl CommitModal {
                                 },
                             )
                             .item(
-                                ContextMenuEntry::new("Skip Hooks")
+                                ContextMenuEntry::new(t(keys::git_ui::GIT_SKIP_HOOKS))
                                     .toggleable(IconPosition::Start, skip_hooks_enabled)
                                     .action(Box::new(SkipHooks))
                                     .handler(move |window, cx| {

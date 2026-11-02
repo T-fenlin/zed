@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{path::Path, sync::Arc};
 
 use gpui::{EventEmitter, FocusHandle, Focusable};
@@ -99,12 +100,15 @@ impl Render for InvalidItemView {
                         .when(self.is_local, |contents| {
                             contents.child(
                                 h_flex().justify_center().child(
-                                    Button::new("open-with-system", "Open in Default App")
-                                        .on_click(move |_, _, cx| {
-                                            cx.open_with_system(&abs_path);
-                                        })
-                                        .style(ButtonStyle::Outlined)
-                                        .key_binding(KeyBinding::for_action(&OpenWithSystem, cx)),
+                                    Button::new(
+                                        "open-with-system",
+                                        t(keys::panel::PANEL_OPEN_IN_DEFAULT_APP),
+                                    )
+                                    .on_click(move |_, _, cx| {
+                                        cx.open_with_system(&abs_path);
+                                    })
+                                    .style(ButtonStyle::Outlined)
+                                    .key_binding(KeyBinding::for_action(&OpenWithSystem, cx)),
                                 ),
                             )
                         }),

@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::path::Path;
 
 use fs::Fs;
@@ -429,7 +430,7 @@ impl PickerDelegate for TemplatePickerDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("run-action", "Continue")
+                    Button::new("run-action", t(keys::app_menu::MENU_RUN_CONTINUE))
                         .key_binding(
                             KeyBinding::for_action(&menu::Confirm, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -845,7 +846,7 @@ impl DevContainerModal {
                                     this.accept_message(DevContainerMessage::GoBack, window, cx);
                                     cx.notify();
                                 }))
-                                .child(Label::new("Go Back")),
+                                .child(Label::new(t(keys::recent::RECENT_GO_BACK))),
                         ),
                 )
                 .into_any_element(),
@@ -923,7 +924,7 @@ impl DevContainerModal {
                                     );
                                     cx.notify();
                                 }))
-                                .child(Label::new("Overwrite")),
+                                .child(Label::new(t(keys::prompt::PROMPT_OVERWRITE))),
                         ),
                 )
                 .child(
@@ -944,7 +945,7 @@ impl DevContainerModal {
                                     this.dismiss(&menu::Cancel, window, cx);
                                     cx.notify();
                                 }))
-                                .child(Label::new("Cancel")),
+                                .child(Label::new(t(keys::agent::AGENT_THREAD_CANCEL))),
                         ),
                 )
                 .into_any_element(),
@@ -998,7 +999,7 @@ impl DevContainerModal {
                                     this.accept_message(DevContainerMessage::GoBack, window, cx);
                                     cx.notify();
                                 }))
-                                .child(Label::new("Go Back")),
+                                .child(Label::new(t(keys::recent::RECENT_GO_BACK))),
                         ),
                 )
                 .into_any_element(),
@@ -1050,7 +1051,7 @@ impl DevContainerModal {
                                     this.accept_message(DevContainerMessage::GoBack, window, cx);
                                     cx.notify();
                                 }))
-                                .child(Label::new("Go Back")),
+                                .child(Label::new(t(keys::recent::RECENT_GO_BACK))),
                         ),
                 )
                 .into_any_element(),

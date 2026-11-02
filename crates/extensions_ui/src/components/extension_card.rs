@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{collections::BTreeSet, sync::Arc};
 
 use cloud_api_types::{ExtensionApiManifest, ExtensionMetadata, ExtensionProvides};
@@ -768,7 +769,9 @@ impl RenderOnce for ExtensionCard {
                             .size_full()
                             .justify_center()
                             .bg(cx.theme().colors().elevated_surface_background.alpha(0.8))
-                            .child(Label::new("Overridden by dev extension.")),
+                            .child(Label::new(t(
+                                keys::extensions::EXTENSIONS_OVERRIDDEN_BY_DEV,
+                            ))),
                     )
                 }),
         )

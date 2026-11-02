@@ -120,6 +120,7 @@ pub(crate) use git::{DiffHunkKey, StoredReviewComment};
 use git::{DiffReviewDragState, DiffReviewOverlay, InlineBlamePopover};
 pub(crate) use git::{DisplayDiffHunk, PhantomDiffReviewIndicator};
 pub use hover_popover::hover_markdown_style;
+use i18n::{keys, t};
 pub use inlays::Inlay;
 pub use inline_input::InlineInputState;
 pub(crate) use inline_input::{InlineInputHistoryDirection, InlineInputPreview};
@@ -13353,7 +13354,12 @@ impl PromptEditor {
             .icon_color(Color::Muted)
             .shape(IconButtonShape::Square)
             .tooltip(move |_window, cx| {
-                Tooltip::for_action_in("Cancel", &menu::Cancel, &focus_handle, cx)
+                Tooltip::for_action_in(
+                    t(keys::agent::AGENT_THREAD_CANCEL),
+                    &menu::Cancel,
+                    &focus_handle,
+                    cx,
+                )
             })
             .on_click(cx.listener(|this, _, window, cx| {
                 this.cancel(&menu::Cancel, window, cx);
@@ -13366,7 +13372,12 @@ impl PromptEditor {
             .icon_color(Color::Muted)
             .shape(IconButtonShape::Square)
             .tooltip(move |_window, cx| {
-                Tooltip::for_action_in("Confirm", &menu::Confirm, &focus_handle, cx)
+                Tooltip::for_action_in(
+                    t(keys::git_ui::GIT_B_CONFIRM),
+                    &menu::Confirm,
+                    &focus_handle,
+                    cx,
+                )
             })
             .on_click(cx.listener(|this, _, window, cx| {
                 this.confirm(&menu::Confirm, window, cx);

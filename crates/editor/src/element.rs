@@ -52,6 +52,7 @@ use gpui::{
     TextStyleRefinement, UnderlineStyle, WeakEntity, Window, div, fill, outline, pattern_slash,
     point, px, quad, relative, size, solid_background, transparent_black, underline_y_offset,
 };
+use i18n::{keys, t};
 use itertools::Itertools;
 use language::{
     Diagnostic, HighlightedText, IndentGuideSettings, LanguageAwareStyling,
@@ -7225,7 +7226,9 @@ pub fn render_breadcrumb_text(
                                     h_flex()
                                         .gap_1()
                                         .justify_between()
-                                        .child(Label::new("Show Symbol Outline"))
+                                        .child(Label::new(t(
+                                            keys::editor::EDITOR_SHOW_SYMBOL_OUTLINE,
+                                        )))
                                         .child(ui::KeyBinding::for_action_in(
                                             &zed_actions::outline::ToggleOutline,
                                             &focus_handle,
@@ -7240,7 +7243,9 @@ pub fn render_breadcrumb_text(
                                             .pt_1()
                                             .border_t_1()
                                             .border_color(cx.theme().colors().border_variant)
-                                            .child(Label::new("Right-Click to Copy Path")),
+                                            .child(Label::new(t(
+                                                keys::editor::EDITOR_RIGHT_CLICK_COPY_PATH,
+                                            ))),
                                     )
                                 })
                                 .into_any_element()

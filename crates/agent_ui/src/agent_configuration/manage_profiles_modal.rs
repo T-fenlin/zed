@@ -1,5 +1,6 @@
 mod profile_modal_header;
 
+use i18n::{keys, t};
 use std::sync::Arc;
 
 use agent::ContextServerRegistry;
@@ -587,7 +588,7 @@ impl ManageProfilesModal {
                             this.child(ListSeparator)
                                 .child(
                                     div().pl_2().pb_1().child(
-                                        Label::new("Custom Profiles")
+                                        Label::new(t(keys::agent::AGENT_CUSTOM_PROFILES))
                                             .size(LabelSize::Small)
                                             .color(Color::Muted),
                                     ),
@@ -916,7 +917,7 @@ impl ManageProfilesModal {
                                                 .size(IconSize::Small)
                                                 .color(Color::Muted),
                                         )
-                                        .child(Label::new("Go Back"))
+                                        .child(Label::new(t(keys::recent::RECENT_GO_BACK)))
                                         .end_slot(
                                             div().child(
                                                 KeyBinding::for_action_in(
@@ -968,7 +969,7 @@ impl Render for ManageProfilesModal {
                             .size(IconSize::Small)
                             .color(Color::Muted),
                     )
-                    .child(Label::new("Go Back"))
+                    .child(Label::new(t(keys::recent::RECENT_GO_BACK)))
                     .end_slot(
                         div().child(
                             KeyBinding::for_action_in(&menu::Cancel, &self.focus_handle, cx)

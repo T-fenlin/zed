@@ -27,6 +27,7 @@ use gpui::{
     ParentElement, Point, Render, SharedString, Styled, Subscription, Task, TaskExt, UpdateGlobal,
     WeakEntity, Window, actions, div,
 };
+use i18n::{keys, t};
 use itertools::Itertools;
 use language::{Buffer, Language};
 use menu::Confirm;
@@ -1091,7 +1092,7 @@ impl Render for ProjectSearchView {
             let page_content: Option<AnyElement> = match model.search_state {
                 SearchState::Idle => Some(self.landing_text_minor(cx).into_any_element()),
                 _ if model.search_state.no_results_so_far() => Some(
-                    Label::new("No results found in this project for the provided query")
+                    Label::new(t(keys::search::SEARCH_PROJECT_NO_RESULTS))
                         .size(LabelSize::Small)
                         .into_any_element(),
                 ),
@@ -3194,7 +3195,11 @@ impl Render for ProjectSearchBar {
                 IconButton::new("project-search-filter-button", IconName::Filter)
                     .shape(IconButtonShape::Square)
                     .tooltip(|_window, cx| {
-                        Tooltip::for_action("Toggle Filters", &ToggleFilters, cx)
+                        Tooltip::for_action(
+                            t(keys::search::SEARCH_TOGGLE_FILTERS),
+                            &ToggleFilters,
+                            cx,
+                        )
                     })
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.toggle_filters(window, cx);
@@ -3332,7 +3337,7 @@ impl Render for ProjectSearchBar {
                     IconButton::new("project-search-opened-only", IconName::FolderSearch)
                         .shape(IconButtonShape::Square)
                         .toggle_state(self.is_opened_only_enabled(cx))
-                        .tooltip(Tooltip::text("Only Search Open Files"))
+                        .tooltip(Tooltip::text(t(keys::search::SEARCH_ONLY_OPEN_FILES)))
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.toggle_opened_only(window, cx);
                         })),

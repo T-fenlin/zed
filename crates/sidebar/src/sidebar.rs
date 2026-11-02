@@ -33,6 +33,7 @@ use gpui::{
     TaskExt, WeakEntity, Window, WindowBackgroundAppearance, WindowHandle, linear_color_stop,
     linear_gradient, list, prelude::*, px,
 };
+use i18n::{keys, t};
 use itertools::Itertools;
 use language_model::LanguageModelRegistry;
 use menu::{
@@ -2323,7 +2324,7 @@ impl Sidebar {
                         .size(IconSize::XSmall)
                         .color(Color::Muted),
                 )
-                .tooltip(Tooltip::text("Remote Project"))
+                .tooltip(Tooltip::text(t(keys::sidebar::SIDEBAR_REMOTE_PROJECT)))
                 .into_any_element(),
         )
     }
@@ -2551,7 +2552,7 @@ impl Sidebar {
                             Color::Custom(cx.theme().colors().icon_placeholder.opacity(0.1)),
                         ))
                         .child(
-                            Label::new("No threads yet")
+                            Label::new(t(keys::sidebar::SIDEBAR_NO_THREADS))
                                 .size(LabelSize::Small)
                                 .color(Color::Placeholder),
                         ),
@@ -2608,7 +2609,12 @@ impl Sidebar {
             let key = key.clone();
             return button
                 .tooltip(move |_, cx| {
-                    Tooltip::for_action_in("Start New Agent Thread", &NewThread, &focus_handle, cx)
+                    Tooltip::for_action_in(
+                        t(keys::agent::AGENT_START_NEW_THREAD),
+                        &NewThread,
+                        &focus_handle,
+                        cx,
+                    )
                 })
                 .on_click(cx.listener(move |this, _, window, cx| {
                     this.set_group_expanded(&key, true, cx);
@@ -2635,7 +2641,12 @@ impl Sidebar {
         )))
         .with_handle(menu_handle)
         .trigger_with_tooltip(button, move |_, cx| {
-            Tooltip::for_action_in("Start New Agent Thread", &NewThread, &focus_handle, cx)
+            Tooltip::for_action_in(
+                t(keys::agent::AGENT_START_NEW_THREAD),
+                &NewThread,
+                &focus_handle,
+                cx,
+            )
         })
         .anchor(gpui::Anchor::TopLeft)
         .on_open(Rc::new({
@@ -2666,7 +2677,7 @@ impl Sidebar {
                 window,
                 cx,
                 move |mut menu, _window, cx| {
-                    menu = menu.header("New Thread In…");
+                    menu = menu.header(t(keys::sidebar::SIDEBAR_NEW_THREAD_IN));
 
                     for (workspace, labels) in open_workspaces
                         .iter()
@@ -3001,7 +3012,12 @@ impl Sidebar {
                                                 Some(TextSize::Default.rems(cx).into()),
                                                 false,
                                             ))
-                                            .child(Label::new("-click").color(Color::Muted));
+                                            .child(
+                                                Label::new(t(
+                                                    keys::sidebar::SIDEBAR_MODIFIER_CLICK,
+                                                ))
+                                                .color(Color::Muted),
+                                            );
 
                                         let label = if has_threads {
                                             "Focus Last Project"
@@ -3044,7 +3060,9 @@ impl Sidebar {
                         let menu = if open_workspaces.is_empty() {
                             menu
                         } else {
-                            let mut menu = menu.separator().header("Open Worktrees");
+                            let mut menu = menu
+                                .separator()
+                                .header(t(keys::sidebar::SIDEBAR_OPEN_WORKTREES));
 
                             for (
                                 workspace_index,
@@ -3112,7 +3130,9 @@ impl Sidebar {
                                                     )
                                                     .icon_size(IconSize::Small)
                                                     .visible_on_hover(&row_group_name)
-                                                    .tooltip(Tooltip::text("Close Worktree"))
+                                                    .tooltip(Tooltip::text(t(
+                                                        keys::sidebar::SIDEBAR_CLOSE_WORKTREE,
+                                                    )))
                                                     .on_click(move |_, window, cx| {
                                                         cx.stop_propagation();
                                                         window.prevent_default();
@@ -3169,7 +3189,7 @@ impl Sidebar {
 
                             this.separator()
                                 .item(
-                                    ContextMenuEntry::new("Move Up")
+                                    ContextMenuEntry::new(t(keys::sidebar::SIDEBAR_MOVE_UP))
                                         .action(Box::new(MoveProjectUp))
                                         .disabled(!can_move_up)
                                         .handler(move |_window, cx| {
@@ -3184,7 +3204,7 @@ impl Sidebar {
                                         }),
                                 )
                                 .item(
-                                    ContextMenuEntry::new("Move Down")
+                                    ContextMenuEntry::new(t(keys::sidebar::SIDEBAR_MOVE_DOWN))
                                         .action(Box::new(MoveProjectDown))
                                         .disabled(!can_move_down)
                                         .handler(move |_window, cx| {
@@ -3202,16 +3222,20 @@ impl Sidebar {
 
                         let project_group_key = project_group_key.clone();
                         let remove_multi_workspace = multi_workspace.clone();
-                        menu.separator().entry("Remove", None, move |window, cx| {
-                            remove_multi_workspace
-                                .update(cx, |multi_workspace, cx| {
-                                    multi_workspace
-                                        .remove_project_group(&project_group_key, window, cx)
-                                        .detach_and_log_err(cx);
-                                })
-                                .ok();
-                            weak_menu.update(cx, |_, cx| cx.emit(DismissEvent)).ok();
-                        })
+                        menu.separator().entry(
+                            t(keys::agent::AGENT_A_REGISTRY_REMOVE),
+                            None,
+                            move |window, cx| {
+                                remove_multi_workspace
+                                    .update(cx, |multi_workspace, cx| {
+                                        multi_workspace
+                                            .remove_project_group(&project_group_key, window, cx)
+                                            .detach_and_log_err(cx);
+                                    })
+                                    .ok();
+                                weak_menu.update(cx, |_, cx| cx.emit(DismissEvent)).ok();
+                            },
+                        )
                     });
 
                 let this = this.clone();
@@ -6395,7 +6419,7 @@ impl Sidebar {
                                 .hover_background(button_hover_bg)
                                 .active_background(button_active_bg)
                                 .icon_size(IconSize::Small)
-                                .tooltip(Tooltip::text("Discard Draft"))
+                                .tooltip(Tooltip::text(t(keys::sidebar::SIDEBAR_DISCARD_DRAFT)))
                                 .on_click({
                                     let thread_workspace = thread_workspace.clone();
                                     cx.listener(move |this, _, window, cx| {
@@ -6505,7 +6529,7 @@ impl Sidebar {
                     let rename_title = rename_title.clone();
                     let folder_paths = folder_paths.clone();
                     ContextMenu::build(_window, cx, move |mut menu, _window, _cx| {
-                        menu = menu.entry("Rename Title", None, {
+                        menu = menu.entry(t(keys::sidebar::SIDEBAR_RENAME_TITLE), None, {
                             let sidebar = sidebar.clone();
                             let rename_title = rename_title.clone();
                             move |window, cx| {
@@ -6524,7 +6548,7 @@ impl Sidebar {
                         });
 
                         if is_zed_thread {
-                            menu = menu.entry("Regenerate Thread Title", None, {
+                            menu = menu.entry(t(keys::agent::AGENT_MENU_REGENERATE_TITLE), None, {
                                 let session_id = session_id.clone();
                                 let sidebar = sidebar.clone();
                                 let thread_workspace = thread_workspace.clone();
@@ -6546,7 +6570,7 @@ impl Sidebar {
                         }
 
                         if can_open_as_markdown {
-                            menu = menu.entry("Open Thread as Markdown", None, {
+                            menu = menu.entry(t(keys::agent::AGENT_MENU_OPEN_MARKDOWN), None, {
                                 let session_id = session_id.clone();
                                 let markdown_title = markdown_title.clone();
                                 let thread_workspace = thread_workspace.clone();
@@ -6583,16 +6607,17 @@ impl Sidebar {
                             });
                         }
 
-                        menu.separator().entry("Archive Thread", None, {
-                            let session_id = session_id.clone();
-                            move |window, cx| {
-                                sidebar
-                                    .update(cx, |sidebar, cx| {
-                                        sidebar.archive_thread(&session_id, window, cx);
-                                    })
-                                    .ok();
-                            }
-                        })
+                        menu.separator()
+                            .entry(t(keys::agent::AGENT_ARCHIVE_THREAD), None, {
+                                let session_id = session_id.clone();
+                                move |window, cx| {
+                                    sidebar
+                                        .update(cx, |sidebar, cx| {
+                                            sidebar.archive_thread(&session_id, window, cx);
+                                        })
+                                        .ok();
+                                }
+                            })
                     })
                 }
             })
@@ -6705,19 +6730,23 @@ impl Sidebar {
                 let sidebar = sidebar.clone();
                 let rename_title = rename_title.clone();
                 ContextMenu::build(window, cx, move |menu, _window, _cx| {
-                    menu.entry("Rename Title", None, move |window, cx| {
-                        sidebar
-                            .update(cx, |sidebar, cx| {
-                                sidebar.start_renaming_entry(
-                                    ix,
-                                    RenameTarget::Terminal(terminal_id),
-                                    rename_title.clone(),
-                                    window,
-                                    cx,
-                                );
-                            })
-                            .ok();
-                    })
+                    menu.entry(
+                        t(keys::sidebar::SIDEBAR_RENAME_TITLE),
+                        None,
+                        move |window, cx| {
+                            sidebar
+                                .update(cx, |sidebar, cx| {
+                                    sidebar.start_renaming_entry(
+                                        ix,
+                                        RenameTarget::Terminal(terminal_id),
+                                        rename_title.clone(),
+                                        window,
+                                        cx,
+                                    );
+                                })
+                                .ok();
+                        },
+                    )
                 })
             })
             .into_any_element()
@@ -6772,7 +6801,13 @@ impl Sidebar {
                 IconButton::new("open-project", IconName::FolderAdd)
                     .icon_size(IconSize::Small)
                     .selected_style(ButtonStyle::Tinted(TintColor::Accent)),
-                |_window, cx| Tooltip::for_action("Add Project", &OpenRecent::default(), cx),
+                |_window, cx| {
+                    Tooltip::for_action(
+                        t(keys::sidebar::SIDEBAR_ADD_PROJECT),
+                        &OpenRecent::default(),
+                        cx,
+                    )
+                },
             )
             .offset(gpui::Point {
                 x: px(-2.0),
@@ -7438,7 +7473,7 @@ impl Sidebar {
                                 this.child(
                                     IconButton::new("clear_filter", IconName::Close)
                                         .icon_size(IconSize::Small)
-                                        .tooltip(Tooltip::text("Clear Search"))
+                                        .tooltip(Tooltip::text(t(keys::agent::AGENT_CLEAR_SEARCH)))
                                         .on_click(cx.listener(|this, _, window, cx| {
                                             this.reset_filter_editor_text(window, cx);
                                             this.update_entries(cx);
@@ -7501,7 +7536,7 @@ impl Sidebar {
                                 h_flex()
                                     .gap_2()
                                     .justify_between()
-                                    .child(Label::new("Toggle Sidebar"))
+                                    .child(Label::new(t(keys::sidebar::SIDEBAR_TOGGLE_SIDEBAR)))
                                     .child(KeyBinding::for_action(&ToggleWorkspaceSidebar, cx)),
                             )
                             .child(
@@ -7511,7 +7546,7 @@ impl Sidebar {
                                     .border_t_1()
                                     .border_color(cx.theme().colors().border_variant)
                                     .justify_between()
-                                    .child(Label::new("Focus Sidebar"))
+                                    .child(Label::new(t(keys::sidebar::SIDEBAR_FOCUS_SIDEBAR)))
                                     .child(KeyBinding::for_action(&FocusWorkspaceSidebar, cx)),
                             )
                             .into_any_element()

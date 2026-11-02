@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::path::PathBuf;
 
 use file_icons::FileIcons;
@@ -167,7 +168,7 @@ impl RenderOnce for SandboxStatusTooltip {
         let content = match self {
             SandboxStatusTooltip::DisabledInSettings => v_flex()
                 .child(
-                    Label::new("You have sandboxing disabled in settings.")
+                    Label::new(t(keys::agent::AGENT_SANDBOX_DISABLED_SETTINGS))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -176,7 +177,10 @@ impl RenderOnce for SandboxStatusTooltip {
                 .gap_1()
                 .child(div().opacity(0.5).child(settings.render(cx)))
                 .child(Divider::horizontal())
-                .child(Label::new("Sandboxing is disabled for this thread").size(LabelSize::Small))
+                .child(
+                    Label::new(t(keys::agent::AGENT_SANDBOX_DISABLED_THREAD))
+                        .size(LabelSize::Small),
+                )
                 .into_any_element(),
             SandboxStatusTooltip::Enabled { settings, thread } => v_flex()
                 .gap_2()
@@ -193,7 +197,7 @@ impl RenderOnce for SandboxStatusTooltip {
         v_flex()
             .w(rems_from_px(280_f32))
             .gap_1()
-            .child(Label::new("Sandboxing"))
+            .child(Label::new(t(keys::agent::AGENT_SANDBOXING)))
             .child(content)
     }
 }

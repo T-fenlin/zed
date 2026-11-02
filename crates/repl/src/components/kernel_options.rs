@@ -1,6 +1,7 @@
 use crate::KERNEL_DOCS_URL;
 use crate::kernels::KernelSpecification;
 use crate::repl_store::ReplStore;
+use i18n::{keys, t};
 
 use gpui::{AnyView, DismissEvent, FontWeight, SharedString, Task};
 use picker::{Picker, PickerDelegate};
@@ -385,9 +386,11 @@ impl PickerDelegate for KernelPickerDelegate {
                                                 )
                                                 .when(*is_recommended, |flex| {
                                                     flex.child(
-                                                        Label::new("Recommended")
-                                                            .size(LabelSize::XSmall)
-                                                            .color(Color::Accent),
+                                                        Label::new(t(
+                                                            keys::agent::AGENT_RECOMMENDED,
+                                                        ))
+                                                        .size(LabelSize::XSmall)
+                                                        .color(Color::Accent),
                                                     )
                                                 })
                                                 .when(!has_ipykernel, |flex| {

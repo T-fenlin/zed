@@ -1,4 +1,5 @@
 use fuzzy::StringMatchCandidate;
+use i18n::{keys, t};
 
 use git::stash::StashEntry;
 use gpui::{
@@ -537,7 +538,12 @@ impl PickerDelegate for StashListDelegate {
             IconButton::new(("view-stash", ix), IconName::Eye)
                 .icon_size(IconSize::Small)
                 .tooltip(move |_, cx| {
-                    Tooltip::for_action_in("View Stash", &ShowStashItem, &focus_handle, cx)
+                    Tooltip::for_action_in(
+                        t(keys::git_ui::GIT_VIEW_STASH),
+                        &ShowStashItem,
+                        &focus_handle,
+                        cx,
+                    )
                 })
                 .on_click(cx.listener(move |this, _, window, cx| {
                     this.delegate.show_stash_at(ix, window, cx);
@@ -657,7 +663,7 @@ impl PickerDelegate for StashListDelegate {
                         }),
                 )
                 .child(
-                    Button::new("view-stash", "View")
+                    Button::new("view-stash", t(keys::agent::AGENT_VIEW))
                         .key_binding(
                             KeyBinding::for_action_in(
                                 &stash_picker::ShowStashItem,
@@ -683,7 +689,7 @@ impl PickerDelegate for StashListDelegate {
                         }),
                 )
                 .child(
-                    Button::new("apply-stash", "Apply")
+                    Button::new("apply-stash", t(keys::agent::AGENT_THREAD_APPLY))
                         .key_binding(
                             KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),

@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{
     cell::Cell,
     fmt,
@@ -5553,7 +5554,7 @@ impl AgentPanel {
                             .into_any_element()
                     }
                 } else {
-                    Label::new("Terminal").into_any_element()
+                    Label::new(t(keys::settings_ui::SETTINGS_TERMINAL_TERMINAL)).into_any_element()
                 }
             }
 
@@ -5591,7 +5592,7 @@ impl AgentPanel {
                             .child(
                                 IconButton::new("edit_tile", IconName::Pencil)
                                     .icon_size(IconSize::Small)
-                                    .tooltip(Tooltip::text("Edit Thread Title")),
+                                    .tooltip(Tooltip::text(t(keys::agent::AGENT_EDIT_TITLE))),
                             ),
                     )
             })
@@ -5708,40 +5709,48 @@ impl AgentPanel {
                         menu = menu.context(menu_action_context.clone());
 
                         if has_thread_messages {
-                            menu = menu.header("Current Thread");
+                            menu = menu.header(t(keys::agent::AGENT_MENU_CURRENT_THREAD));
 
                             if let Some(conversation_view) = conversation_view.as_ref() {
                                 if can_regenerate_thread_title {
-                                    menu = menu.entry("Regenerate Thread Title", None, {
-                                        let conversation_view = conversation_view.clone();
-                                        let workspace = workspace.clone();
-                                        move |_, cx| {
-                                            Self::handle_regenerate_thread_title(
-                                                conversation_view.clone(),
-                                                workspace.clone(),
-                                                cx,
-                                            );
-                                        }
-                                    });
+                                    menu = menu.entry(
+                                        t(keys::agent::AGENT_MENU_REGENERATE_TITLE),
+                                        None,
+                                        {
+                                            let conversation_view = conversation_view.clone();
+                                            let workspace = workspace.clone();
+                                            move |_, cx| {
+                                                Self::handle_regenerate_thread_title(
+                                                    conversation_view.clone(),
+                                                    workspace.clone(),
+                                                    cx,
+                                                );
+                                            }
+                                        },
+                                    );
                                 }
 
                                 let root_thread_view =
                                     conversation_view.read(cx).root_thread_view();
                                 if let Some(thread_view) = root_thread_view {
                                     let workspace = workspace.clone();
-                                    menu = menu.entry("Open Thread as Markdown", None, {
-                                        move |window, cx| {
-                                            if let Some(workspace) = workspace.upgrade() {
-                                                thread_view.update(cx, |thread_view, cx| {
-                                                    thread_view
-                                                        .open_thread_as_markdown(
-                                                            workspace, window, cx,
-                                                        )
-                                                        .detach_and_log_err(cx);
-                                                });
+                                    menu = menu.entry(
+                                        t(keys::agent::AGENT_MENU_OPEN_MARKDOWN),
+                                        None,
+                                        {
+                                            move |window, cx| {
+                                                if let Some(workspace) = workspace.upgrade() {
+                                                    thread_view.update(cx, |thread_view, cx| {
+                                                        thread_view
+                                                            .open_thread_as_markdown(
+                                                                workspace, window, cx,
+                                                            )
+                                                            .detach_and_log_err(cx);
+                                                    });
+                                                }
                                             }
-                                        }
-                                    });
+                                        },
+                                    );
                                 }
 
                                 menu = menu.separator();
@@ -5750,7 +5759,7 @@ impl AgentPanel {
 
                         if !showing_terminal {
                             menu = menu
-                                .header("MCP Servers")
+                                .header(t(keys::agent::AGENT_MENU_MCP_SERVERS))
                                 .action(
                                     "Add Server…",
                                     Box::new(zed_actions::OpenSettingsAt {
@@ -5768,7 +5777,7 @@ impl AgentPanel {
                                     }),
                                 )
                                 .separator()
-                                .header("Context")
+                                .header(t(keys::agent::AGENT_MENU_CONTEXT))
                                 .action("Skills", Box::new(ManageSkills));
 
                             if project_agents_md_path.is_some() || global_agents_md_loaded {
@@ -5780,7 +5789,9 @@ impl AgentPanel {
                                             h_flex()
                                                 .w_full()
                                                 .gap_1()
-                                                .child(Label::new("Open Global Rules"))
+                                                .child(Label::new(t(
+                                                    keys::agent::AGENT_MENU_OPEN_GLOBAL_RULES,
+                                                )))
                                                 .child(
                                                     Label::new("(AGENTS.md)")
                                                         .color(Color::Muted)
@@ -5805,7 +5816,9 @@ impl AgentPanel {
                                             h_flex()
                                                 .w_full()
                                                 .gap_1()
-                                                .child(Label::new("Open Project Rules"))
+                                                .child(Label::new(t(
+                                                    keys::agent::AGENT_MENU_OPEN_PROJECT_RULES,
+                                                )))
                                                 .child(
                                                     Label::new("(AGENTS.md)")
                                                         .color(Color::Muted)
@@ -5845,7 +5858,7 @@ impl AgentPanel {
                         }
 
                         if let Some(conversation_view) = conversation_view.as_ref() {
-                            menu = menu.entry("Reload Agent", None, {
+                            menu = menu.entry(t(keys::agent::AGENT_MENU_RELOAD_AGENT), None, {
                                 let conversation_view = conversation_view.clone();
                                 move |window, cx| {
                                     conversation_view.update(cx, |conversation_view, cx| {
@@ -5954,34 +5967,36 @@ impl AgentPanel {
                         )
                         .when(supports_terminal, |menu| {
                             menu.item(
-                                ContextMenuEntry::new("Terminal")
-                                    .when(showing_terminal, |this| this.action(Box::new(NewThread)))
-                                    .when(!showing_terminal, |this| {
-                                        this.action(Box::new(NewTerminalThread))
-                                    })
-                                    .icon(IconName::Terminal)
-                                    .icon_color(Color::Muted)
-                                    .handler({
-                                        let workspace = workspace.clone();
-                                        move |window, cx| {
-                                            if let Some(workspace) = workspace.upgrade() {
-                                                workspace.update(cx, |workspace, cx| {
-                                                    if let Some(panel) =
-                                                        workspace.panel::<AgentPanel>(cx)
-                                                    {
-                                                        panel.update(cx, |panel, cx| {
-                                                            panel.new_terminal(
-                                                                Some(workspace),
-                                                                AgentThreadSource::AgentPanel,
-                                                                window,
-                                                                cx,
-                                                            );
-                                                        });
-                                                    }
-                                                });
-                                            }
+                                ContextMenuEntry::new(t(
+                                    keys::settings_ui::SETTINGS_TERMINAL_TERMINAL,
+                                ))
+                                .when(showing_terminal, |this| this.action(Box::new(NewThread)))
+                                .when(!showing_terminal, |this| {
+                                    this.action(Box::new(NewTerminalThread))
+                                })
+                                .icon(IconName::Terminal)
+                                .icon_color(Color::Muted)
+                                .handler({
+                                    let workspace = workspace.clone();
+                                    move |window, cx| {
+                                        if let Some(workspace) = workspace.upgrade() {
+                                            workspace.update(cx, |workspace, cx| {
+                                                if let Some(panel) =
+                                                    workspace.panel::<AgentPanel>(cx)
+                                                {
+                                                    panel.update(cx, |panel, cx| {
+                                                        panel.new_terminal(
+                                                            Some(workspace),
+                                                            AgentThreadSource::AgentPanel,
+                                                            window,
+                                                            cx,
+                                                        );
+                                                    });
+                                                }
+                                            });
                                         }
-                                    }),
+                                    }
+                                }),
                             )
                         })
                         .map(|mut menu| {
@@ -6015,7 +6030,9 @@ impl AgentPanel {
                                 .collect::<Vec<_>>();
 
                             if !agent_items.is_empty() {
-                                menu = menu.separator().header("External Agents");
+                                menu = menu
+                                    .separator()
+                                    .header(t(keys::agent::AGENT_MENU_EXTERNAL_AGENTS));
                             }
                             for item in &agent_items {
                                 let mut entry = ContextMenuEntry::new(item.display_name.clone());
@@ -6075,7 +6092,7 @@ impl AgentPanel {
                         })
                         .separator()
                         .item(
-                            ContextMenuEntry::new("Add More Agents")
+                            ContextMenuEntry::new(t(keys::agent::AGENT_MENU_ADD_AGENTS))
                                 .icon(IconName::Plus)
                                 .icon_color(Color::Muted)
                                 .handler({

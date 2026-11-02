@@ -33,6 +33,7 @@ use gpui::{
     TextStyle, WeakEntity, Window, WindowHandle, div, ease_in_out, img, linear_color_stop,
     linear_gradient, list, pulsating_between,
 };
+use i18n::{keys, t};
 use language::{Buffer, Language};
 use language_model::{
     LanguageModelCompletionError, ProviderErrorCategory, ZED_CLOUD_PROVIDER_NAME,
@@ -2871,7 +2872,7 @@ impl ConversationView {
                     .map(|this| {
                         if show_fallback_description {
                             this.child(
-                                Label::new("Choose one of the following authentication options:")
+                                Label::new(t(keys::agent::AGENT_CHOOSE_AUTH_OPTION))
                                     .size(LabelSize::Small)
                                     .color(Color::Muted),
                             )
@@ -3256,28 +3257,29 @@ impl ConversationView {
         div()
             .debug_selector(|| "copy-saved-agent-input".into())
             .child(
-                Button::new("copy-saved-agent-input", "Copy Saved Input")
-                    .tooltip(Tooltip::text(
-                        "Copy the original content and receipt evidence as JSON",
-                    ))
-                    .on_click(cx.listener(|this, _, window, cx| {
-                        match ThreadRecovery::to_json(
-                            this.root_session_id.as_ref(),
-                            this.recovery.as_ref(),
-                            &this.saved_submissions,
-                        ) {
-                            Ok(saved) => {
-                                cx.write_to_clipboard(ClipboardItem::new_string(saved));
-                            }
-                            Err(error) => this.handle_load_error(
-                                LoadError::Other(
-                                    format!("Failed to copy saved input: {error}").into(),
-                                ),
-                                window,
-                                cx,
-                            ),
+                Button::new(
+                    "copy-saved-agent-input",
+                    t(keys::agent::AGENT_COPY_SAVED_INPUT),
+                )
+                .tooltip(Tooltip::text(
+                    "Copy the original content and receipt evidence as JSON",
+                ))
+                .on_click(cx.listener(|this, _, window, cx| {
+                    match ThreadRecovery::to_json(
+                        this.root_session_id.as_ref(),
+                        this.recovery.as_ref(),
+                        &this.saved_submissions,
+                    ) {
+                        Ok(saved) => {
+                            cx.write_to_clipboard(ClipboardItem::new_string(saved));
                         }
-                    })),
+                        Err(error) => this.handle_load_error(
+                            LoadError::Other(format!("Failed to copy saved input: {error}").into()),
+                            window,
+                            cx,
+                        ),
+                    }
+                })),
             )
     }
 
@@ -3310,8 +3312,8 @@ impl ConversationView {
         let action_slot = h_flex()
             .gap_1()
             .child(
-                Button::new("retry-agent-launch", "Retry")
-                    .tooltip(Tooltip::text("Try to restart the agent"))
+                Button::new("retry-agent-launch", t(keys::agent::AGENT_RETRY))
+                    .tooltip(Tooltip::text(t(keys::agent::AGENT_RESTART_HINT)))
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.retry_connection(window, cx);
                     })),
@@ -3805,7 +3807,8 @@ impl ConversationView {
     fn create_copy_button(&self, message: impl Into<String>) -> impl IntoElement {
         let message = message.into();
 
-        CopyButton::new("copy-error-message", message).tooltip_label("Copy Error Message")
+        CopyButton::new("copy-error-message", message)
+            .tooltip_label(t(keys::agent::AGENT_COPY_ERROR_MESSAGE))
     }
 
     pub(crate) fn reauthenticate(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -4039,21 +4042,31 @@ impl Render for ConversationView {
                         .child(self.copy_saved_input_button(cx))
                         .when(
                             !self.saved_submissions.is_empty()
-                                || self.recovery.as_ref().is_some_and(|recovery| !recovery.submissions.is_empty()),
+                                || self
+                                    .recovery
+                                    .as_ref()
+                                    .is_some_and(|recovery| !recovery.submissions.is_empty()),
                             |this| {
                                 this.child(
                                     div()
                                         .debug_selector(|| "discard-saved-agent-submissions".into())
                                         .child(
-                                            Button::new("discard-saved-agent-submissions", "Discard Saved Submissions")
-                                                .tooltip(Tooltip::text("Discard local copies only; does not cancel agent work"))
-                                                .on_click(cx.listener(|this, _, _, cx| {
+                                            Button::new(
+                                                "discard-saved-agent-submissions",
+                                                t(keys::agent::AGENT_DISCARD_SAVED_SUBMISSIONS),
+                                            )
+                                            .tooltip(Tooltip::text(t(
+                                                keys::agent::AGENT_DISCARD_SAVED_SUBMISSIONS_HINT,
+                                            )))
+                                            .on_click(
+                                                cx.listener(|this, _, _, cx| {
                                                     this.saved_submissions.clear();
                                                     if let Some(recovery) = &mut this.recovery {
                                                         recovery.submissions.clear();
                                                     }
                                                     cx.notify();
-                                                })),
+                                                }),
+                                            ),
                                         ),
                                 )
                             },

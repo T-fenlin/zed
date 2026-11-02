@@ -2,6 +2,7 @@ use anyhow::{Context as _, Result};
 use collections::HashMap;
 use context_server::{ContextServerCommand, ContextServerId};
 use editor::{Editor, EditorElement, EditorStyle};
+use i18n::{keys, t};
 
 use extension_host::ExtensionStore;
 use gpui::{
@@ -878,27 +879,30 @@ impl ConfigureContextServerModal {
                 } = &self.source
                 {
                     Some(
-                        Button::new("open-repository", "Open Repository")
-                            .end_icon(
-                                Icon::new(IconName::ArrowUpRight)
-                                    .size(IconSize::Small)
-                                    .color(Color::Muted),
-                            )
-                            .tooltip({
-                                let repository_url = repository_url.clone();
-                                move |_window, cx| {
-                                    Tooltip::with_meta(
-                                        "Open Repository",
-                                        None,
-                                        repository_url.clone(),
-                                        cx,
-                                    )
-                                }
-                            })
-                            .on_click({
-                                let repository_url = repository_url.clone();
-                                move |_, _, cx| cx.open_url(&repository_url)
-                            }),
+                        Button::new(
+                            "open-repository",
+                            t(keys::agent::AGENT_A_CONTEXT_SERVER_OPEN_REPOSITORY),
+                        )
+                        .end_icon(
+                            Icon::new(IconName::ArrowUpRight)
+                                .size(IconSize::Small)
+                                .color(Color::Muted),
+                        )
+                        .tooltip({
+                            let repository_url = repository_url.clone();
+                            move |_window, cx| {
+                                Tooltip::with_meta(
+                                    "Open Repository",
+                                    None,
+                                    repository_url.clone(),
+                                    cx,
+                                )
+                            }
+                        })
+                        .on_click({
+                            let repository_url = repository_url.clone();
+                            move |_, _, cx| cx.open_url(&repository_url)
+                        }),
                     )
                 } else {
                     None
@@ -925,15 +929,20 @@ impl ConfigureContextServerModal {
                         ),
                     )
                     .children(self.source.has_configuration_options().then(|| {
-                        Button::new("configure-server", "Configure Server")
-                            .disabled(is_busy)
-                            .key_binding(
-                                KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
-                                    .map(|kb| kb.size(rems_from_px(12_f32))),
-                            )
-                            .on_click(cx.listener(|this, _event, _window, cx| {
+                        Button::new(
+                            "configure-server",
+                            t(keys::agent::AGENT_A_CONTEXT_SERVER_CONFIGURE),
+                        )
+                        .disabled(is_busy)
+                        .key_binding(
+                            KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
+                                .map(|kb| kb.size(rems_from_px(12_f32))),
+                        )
+                        .on_click(
+                            cx.listener(|this, _event, _window, cx| {
                                 this.confirm(&menu::Confirm, cx)
-                            }))
+                            }),
+                        )
                     })),
             )
     }
@@ -968,21 +977,24 @@ impl ConfigureContextServerModal {
                             .color(Color::Muted),
                     )
                     .child(
-                        Label::new("Authenticate to connect this server")
+                        Label::new(t(keys::agent::AGENT_A_CONTEXT_SERVER_AUTHENTICATE_HINT))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),
             )
             .child(
-                Button::new("authenticate-server", "Authenticate")
-                    .style(ButtonStyle::Outlined)
-                    .label_size(LabelSize::Small)
-                    .on_click({
-                        let server_id = server_id.clone();
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.authenticate(server_id.clone(), cx);
-                        })
-                    }),
+                Button::new(
+                    "authenticate-server",
+                    t(keys::agent::AGENT_THREAD_AUTHENTICATE),
+                )
+                .style(ButtonStyle::Outlined)
+                .label_size(LabelSize::Small)
+                .on_click({
+                    let server_id = server_id.clone();
+                    cx.listener(move |this, _event, _window, cx| {
+                        this.authenticate(server_id.clone(), cx);
+                    })
+                }),
             )
     }
 
@@ -1046,15 +1058,18 @@ impl ConfigureContextServerModal {
                         },
                     )))
                     .child(
-                        Button::new("submit-client-secret", "Submit")
-                            .style(ButtonStyle::Outlined)
-                            .label_size(LabelSize::Small)
-                            .on_click({
-                                let server_id = server_id.clone();
-                                cx.listener(move |this, _event, _window, cx| {
-                                    this.submit_client_secret(server_id.clone(), cx);
-                                })
-                            }),
+                        Button::new(
+                            "submit-client-secret",
+                            t(keys::agent::AGENT_A_ELICIT_SUBMIT),
+                        )
+                        .style(ButtonStyle::Outlined)
+                        .label_size(LabelSize::Small)
+                        .on_click({
+                            let server_id = server_id.clone();
+                            cx.listener(move |this, _event, _window, cx| {
+                                this.submit_client_secret(server_id.clone(), cx);
+                            })
+                        }),
                     ),
             )
     }
@@ -1074,13 +1089,13 @@ impl ConfigureContextServerModal {
                             .with_rotate_animation(3),
                     )
                     .child(
-                        Label::new("Authenticating…")
+                        Label::new(t(keys::agent::AGENT_A_CONTEXT_SERVER_AUTHENTICATING))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),
             )
             .child(
-                Button::new("cancel-authentication", "Cancel")
+                Button::new("cancel-authentication", t(keys::agent::AGENT_THREAD_CANCEL))
                     .style(ButtonStyle::Outlined)
                     .label_size(LabelSize::Small)
                     .on_click({

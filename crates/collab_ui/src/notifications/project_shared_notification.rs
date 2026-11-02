@@ -3,6 +3,7 @@ use call::{ActiveCall, room};
 use client::User;
 use collections::HashMap;
 use gpui::{App, Size, TaskExt};
+use i18n::{keys, t};
 use std::sync::{Arc, Weak};
 
 use ui::{CollabNotification, prelude::*};
@@ -133,10 +134,12 @@ impl Render for ProjectSharedNotification {
         div().size_full().font(ui_font).child(
             CollabNotification::new(
                 self.owner.avatar_uri.clone(),
-                Button::new("open", "Open").on_click(cx.listener(move |this, _event, _, cx| {
-                    this.join(cx);
-                })),
-                Button::new("dismiss", "Dismiss").on_click(cx.listener(
+                Button::new("open", t(keys::agent::AGENT_A_ELICIT_OPEN)).on_click(cx.listener(
+                    move |this, _event, _, cx| {
+                        this.join(cx);
+                    },
+                )),
+                Button::new("dismiss", t(keys::agent::AGENT_DISMISS)).on_click(cx.listener(
                     move |this, _event, _, cx| {
                         this.dismiss(cx);
                     },

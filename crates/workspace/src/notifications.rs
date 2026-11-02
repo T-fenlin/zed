@@ -7,6 +7,7 @@ use gpui::{
     DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, PromptLevel, Render, ScrollHandle,
     Task, TextStyleRefinement, UnderlineStyle, WeakEntity,
 };
+use i18n::{keys, t};
 use markdown::{CopyButtonVisibility, Markdown, MarkdownElement, MarkdownStyle};
 use parking_lot::Mutex;
 use project::project_settings::ProjectSettings;
@@ -847,7 +848,7 @@ pub mod simple_message_notification {
                     )
                     .icon_size(IconSize::XSmall)
                     .icon_color(Color::Muted),
-                    Tooltip::text("More Options"),
+                    Tooltip::text(t(keys::workspace::WS_B_MORE_OPTIONS)),
                 )
                 .menu(move |window, cx| {
                     let entries = entries.clone();
@@ -1080,7 +1081,11 @@ pub mod simple_message_notification {
                                         cx,
                                     )
                                 } else {
-                                    Tooltip::for_action("Close", &menu::Cancel, cx)
+                                    Tooltip::for_action(
+                                        t(keys::collab::COLLAB_CLOSE),
+                                        &menu::Cancel,
+                                        cx,
+                                    )
                                 }
                             })
                             .on_click(cx.listener(move |_, _, _, cx| {

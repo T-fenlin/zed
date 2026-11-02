@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{
     cell::RefCell,
     cmp::{self},
@@ -1171,7 +1172,7 @@ impl KeymapEditor {
             base_button_style(index, IconName::Warning)
                 .icon_color(Color::Warning)
                 .disabled(true)
-                .tooltip(Tooltip::text("This action is unbound"))
+                .tooltip(Tooltip::text(t(keys::keymap::KEYMAP_ACTION_UNBOUND)))
         } else if self.filter_state != FilterState::Conflicts
             && let Some(conflict) = conflict
         {
@@ -1644,7 +1645,7 @@ impl KeymapEditor {
 
                         menu = menu
                             .context(focus_handle.clone())
-                            .header("Filters")
+                            .header(t(keys::keymap::KEYMAP_FILTERS))
                             .map(add_filter(
                                 "Conflicts",
                                 matches!(filter_state, FilterState::Conflicts),
@@ -1662,7 +1663,7 @@ impl KeymapEditor {
                                 None,
                             ))
                             .separator()
-                            .header("Categories")
+                            .header(t(keys::keymap::KEYMAP_CATEGORIES))
                             .map(add_filter(
                                 "User",
                                 source_filters.user,
@@ -1709,7 +1710,7 @@ impl KeymapEditor {
                         self.keybinding_conflict_state.any_user_binding_conflicts(),
                         |this| this.indicator(Indicator::dot().color(Color::Warning)),
                     ),
-                Tooltip::text("Filters"),
+                Tooltip::text(t(keys::keymap::KEYMAP_FILTERS)),
             );
 
         fn add_filter(
@@ -2098,7 +2099,7 @@ impl Render for KeymapEditor {
                                         self.render_filter_dropdown(focus_handle, cx)
                                     )
                                     .child(
-                                        Button::new("edit-in-json", "Edit in JSON")
+                                        Button::new("edit-in-json", t(keys::keymap::KEYMAP_EDIT_IN_JSON))
                                             .key_binding(
                                                 ui::KeyBinding::for_action_in(&zed_actions::OpenKeymapFile, &focus_handle, cx)
                                                     .map(|kb| kb.size(rems_from_px(10_f32))),
@@ -2111,7 +2112,7 @@ impl Render for KeymapEditor {
                                             })
                                     )
                                     .child(
-                                        Button::new("create", "Create Keybinding")
+                                        Button::new("create", t(keys::keymap::KEYMAP_CREATE_KEYBINDING))
                                             .style(ButtonStyle::Outlined)
                                             .key_binding(
                                                 ui::KeyBinding::for_action_in(&OpenCreateKeybindingModal, &focus_handle, cx)
@@ -2149,7 +2150,7 @@ impl Render for KeymapEditor {
                     .width_config(ColumnWidthConfig::redistributable(
                         self.current_widths.clone(),
                     ))
-                    .header(vec!["", "Action", "Arguments", "Keystrokes", "Context", "Source"])
+                    .header(vec!["", t(keys::keymap::KEYMAP_ACTION), t(keys::keymap::KEYMAP_ARGUMENTS), t(keys::keymap::KEYMAP_KEYSTROKES), t(keys::agent::AGENT_MENU_CONTEXT), t(keys::agent::AGENT_THREAD_SOURCE)])
                     .uniform_list(
                         "keymap-editor-table",
                         row_count,
@@ -2359,7 +2360,7 @@ impl Render for KeymapEditor {
                                             },
                                         )
                                         .when(is_unbound_by_unbind, |row| {
-                                            row.tooltip(Tooltip::text("This action is unbound"))
+                                            row.tooltip(Tooltip::text(t(keys::keymap::KEYMAP_ACTION_UNBOUND)))
                                         }),
                                 )
                                 .border_2()
@@ -2527,7 +2528,7 @@ impl KeybindingEditorModal {
 
         let context_editor: Entity<InputField> = cx.new(|cx| {
             let input = InputField::new(window, cx, "Keybinding Context")
-                .label("Edit Context")
+                .label(t(keys::keymap::KEYMAP_EDIT_CONTEXT))
                 .label_size(LabelSize::Default);
 
             if let Some(context) = editing_keybind
@@ -2583,7 +2584,7 @@ impl KeybindingEditorModal {
 
             let editor = cx.new(|cx| {
                 let input = InputField::new(window, cx, "Type an action name")
-                    .label("Action")
+                    .label(t(keys::keymap::KEYMAP_ACTION))
                     .label_size(LabelSize::Default);
 
                 let editor_entity = input.editor();
@@ -3124,7 +3125,9 @@ impl Render for KeybindingEditorModal {
                                     )
                                 })
                                 .when(self.creating, |this| {
-                                    this.child(Label::new("Create Keybinding"))
+                                    this.child(Label::new(t(
+                                        keys::keymap::KEYMAP_CREATE_KEYBINDING,
+                                    )))
                                 }),
                         ),
                     )
@@ -3141,7 +3144,7 @@ impl Render for KeybindingEditorModal {
                                 .child(
                                     v_flex()
                                         .gap_1()
-                                        .child(Label::new("Edit Keystroke"))
+                                        .child(Label::new(t(keys::keymap::KEYMAP_EDIT_KEYSTROKE)))
                                         .child(self.keybind_editor.clone())
                                         .child(h_flex().gap_px().when(
                                             matching_bindings_count > 0,
@@ -3167,20 +3170,19 @@ impl Render for KeybindingEditorModal {
                                                         .color(Color::Muted),
                                                 )
                                                 .child(
-                                                    Button::new("show_matching", "View")
-                                                        .label_size(LabelSize::Small)
-                                                        .end_icon(
-                                                            Icon::new(IconName::ArrowUpRight)
-                                                                .size(IconSize::Small)
-                                                                .color(Color::Muted),
-                                                        )
-                                                        .on_click(cx.listener(
-                                                            |this, _, window, cx| {
-                                                                this.show_matching_bindings(
-                                                                    window, cx,
-                                                                );
-                                                            },
-                                                        )),
+                                                    Button::new(
+                                                        "show_matching",
+                                                        t(keys::agent::AGENT_VIEW),
+                                                    )
+                                                    .label_size(LabelSize::Small)
+                                                    .end_icon(
+                                                        Icon::new(IconName::ArrowUpRight)
+                                                            .size(IconSize::Small)
+                                                            .color(Color::Muted),
+                                                    )
+                                                    .on_click(cx.listener(|this, _, window, cx| {
+                                                        this.show_matching_bindings(window, cx);
+                                                    })),
                                                 )
                                             },
                                         )),
@@ -3208,14 +3210,15 @@ impl Render for KeybindingEditorModal {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Button::new("cancel", "Cancel")
+                                    Button::new("cancel", t(keys::agent::AGENT_THREAD_CANCEL))
                                         .on_click(cx.listener(|_, _, _, cx| cx.emit(DismissEvent))),
                                 )
-                                .child(Button::new("save-btn", "Save").on_click(cx.listener(
-                                    |this, _event, _window, cx| {
-                                        this.save_or_display_error(cx);
-                                    },
-                                ))),
+                                .child(
+                                    Button::new("save-btn", t(keys::app_menu::MENU_FILE_SAVE))
+                                        .on_click(cx.listener(|this, _event, _window, cx| {
+                                            this.save_or_display_error(cx);
+                                        })),
+                                ),
                         ),
                     ),
             )

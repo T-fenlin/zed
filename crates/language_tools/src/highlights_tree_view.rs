@@ -8,6 +8,7 @@ use gpui::{
     MouseMoveEvent, ParentElement, Render, ScrollStrategy, SharedString, Styled, Task,
     UniformListScrollHandle, WeakEntity, Window, actions, div, rems, uniform_list,
 };
+use i18n::{keys, t};
 use language::{BufferId, Point, ToOffset};
 use menu::{SelectNext, SelectPrevious};
 use std::{mem, ops::Range, sync::Arc, time::Duration};
@@ -846,7 +847,7 @@ impl Render for HighlightsTreeView {
                             if self.editor.is_some() {
                                 let has_any = !self.cached_entries.is_empty();
                                 if has_any {
-                                    this.child(Label::new("All highlights are filtered out"))
+                                    this.child(Label::new(t(keys::lang::LANG_TOOLS_HIGHLIGHTS_FILTERED_OUT_TITLE)))
                                         .child(
                                             Label::new(
                                                 "Enable text, syntax, or semantic highlights in the toolbar",
@@ -854,7 +855,7 @@ impl Render for HighlightsTreeView {
                                             .size(LabelSize::Small),
                                         )
                                 } else {
-                                    this.child(Label::new("No highlights found")).child(
+                                    this.child(Label::new(t(keys::lang::LANG_TOOLS_NO_HIGHLIGHTS_TITLE))).child(
                                         Label::new(
                                             "The editor has no text, syntax, or semantic token highlights",
                                         )
@@ -862,8 +863,8 @@ impl Render for HighlightsTreeView {
                                     )
                                 }
                             } else {
-                                this.child(Label::new("Not attached to an editor")).child(
-                                    Label::new("Focus an editor to show highlights")
+                                this.child(Label::new(t(keys::lang::LANG_TOOLS_NOT_ATTACHED_TO_EDITOR))).child(
+                                    Label::new(t(keys::lang::LANG_TOOLS_FOCUS_EDITOR_FOR_HIGHLIGHTS))
                                         .size(LabelSize::Small),
                                 )
                             }
@@ -985,7 +986,7 @@ impl HighlightsTreeToolbarItemView {
                 IconButton::new("toggle-highlights-settings-icon", IconName::Filter)
                     .icon_size(IconSize::Small)
                     .toggle_state(self.toggle_settings_handle.is_deployed()),
-                Tooltip::text("Highlights Settings"),
+                Tooltip::text(t(keys::lang::LANG_TOOLS_HIGHLIGHTS_SETTINGS)),
             )
             .anchor(gpui::Anchor::TopRight)
             .with_handle(self.toggle_settings_handle.clone())

@@ -19,6 +19,7 @@ use gpui::{
     TextStyle, UniformListScrollHandle, WeakEntity, Window, actions, anchored, canvas, deferred,
     div, fill, point, prelude::*, px, size, uniform_list,
 };
+use i18n::{keys, t};
 
 use menu::{Cancel, Confirm, SecondaryConfirm, SelectNext, SelectPrevious};
 use notifications::{NotificationEntry, NotificationEvent, NotificationStore};
@@ -1194,17 +1195,21 @@ impl CollabPanel {
         });
 
         let end_slot = if is_pending {
-            Label::new("Calling").color(Color::Muted).into_any_element()
+            Label::new(t(keys::collab::COLLAB_CALLING))
+                .color(Color::Muted)
+                .into_any_element()
         } else if is_current_user {
             IconButton::new("leave-call", IconName::Exit)
                 .icon_size(IconSize::Small)
-                .tooltip(Tooltip::text("Leave Call"))
+                .tooltip(Tooltip::text(t(keys::collab::COLLAB_LEAVE_CALL)))
                 .on_click(move |_, window, cx| Self::leave_call(window, cx))
                 .into_any_element()
         } else if role == proto::ChannelRole::Guest {
-            Label::new("Guest").color(Color::Muted).into_any_element()
+            Label::new(t(keys::collab::COLLAB_GUEST))
+                .color(Color::Muted)
+                .into_any_element()
         } else if role == proto::ChannelRole::Talker {
-            Label::new("Mic only")
+            Label::new(t(keys::collab::COLLAB_MIC_ONLY))
                 .color(Color::Muted)
                 .into_any_element()
         } else {
@@ -1217,7 +1222,7 @@ impl CollabPanel {
             .focused(is_selected)
             .dock(self.dock_side(cx))
             .end_slot(end_slot)
-            .tooltip(Tooltip::text("Click to Follow"))
+            .tooltip(Tooltip::text(t(keys::collab::COLLAB_CLICK_TO_FOLLOW)))
             .when_some(peer_id, |el, peer_id| {
                 if role == proto::ChannelRole::Guest {
                     return el;
@@ -1317,7 +1322,7 @@ impl CollabPanel {
                             .color(Color::Muted),
                     ),
             )
-            .child(Label::new("Screen"))
+            .child(Label::new(t(keys::collab::COLLAB_SCREEN)))
             .when_some(peer_id, |this, _| {
                 this.on_click(cx.listener(move |this, _, window, cx| {
                     this.workspace
@@ -1326,7 +1331,7 @@ impl CollabPanel {
                         })
                         .ok();
                 }))
-                .tooltip(Tooltip::text("Open Shared Screen"))
+                .tooltip(Tooltip::text(t(keys::collab::COLLAB_OPEN_SHARED_SCREEN)))
             })
     }
 
@@ -1381,8 +1386,8 @@ impl CollabPanel {
                             }),
                     ),
             )
-            .child(Label::new("notes"))
-            .tooltip(Tooltip::text("Open Channel Notes"))
+            .child(Label::new(t(keys::collab::COLLAB_NOTES)))
+            .tooltip(Tooltip::text(t(keys::collab::COLLAB_OPEN_CHANNEL_NOTES)))
     }
 
     fn has_subchannels(&self, ix: usize) -> bool {
@@ -1739,7 +1744,7 @@ impl CollabPanel {
                 });
             }
 
-            context_menu.entry("Remove Contact", None, {
+            context_menu.entry(t(keys::collab::COLLAB_REMOVE_CONTACT), None, {
                 let this = this.clone();
                 move |window, cx| {
                     this.update(cx, |this, cx| {
@@ -2874,7 +2879,7 @@ impl CollabPanel {
                         this.pr_2p5().child(
                             IconButton::new("clear_filter", IconName::Close)
                                 .shape(IconButtonShape::Square)
-                                .tooltip(Tooltip::text("Clear Filter"))
+                                .tooltip(Tooltip::text(t(keys::collab::COLLAB_CLEAR_FILTER)))
                                 .on_click(cx.listener(|this, _, window, cx| {
                                     this.reset_filter_editor_text(window, cx);
                                     cx.notify();
@@ -3053,7 +3058,9 @@ impl CollabPanel {
                     .on_click(
                         cx.listener(|this, _, window, cx| this.toggle_contact_finder(window, cx)),
                     )
-                    .tooltip(Tooltip::text("Search for New Contact"))
+                    .tooltip(Tooltip::text(t(
+                        keys::collab::COLLAB_SEARCH_FOR_NEW_CONTACT,
+                    )))
                     .into_any_element(),
             ),
             Section::Channels => {
@@ -3081,7 +3088,7 @@ impl CollabPanel {
                                 .on_click(cx.listener(|this, _, window, cx| {
                                     this.new_root_channel(window, cx)
                                 }))
-                                .tooltip(Tooltip::text("Create Channel")),
+                                .tooltip(Tooltip::text(t(keys::collab::COLLAB_CREATE_CHANNEL))),
                         )
                         .into_any_element(),
                 )
@@ -3175,7 +3182,10 @@ impl CollabPanel {
                             .child(render_participant_name_and_handle(&contact.user)),
                     )
                     .when(calling, |el| {
-                        el.child(Label::new("Calling…").color(Color::Muted))
+                        el.child(
+                            Label::new(t(keys::collab::COLLAB_CALLING_ELLIPSIS))
+                                .color(Color::Muted),
+                        )
                     })
                     .when(!calling, |el| {
                         el.child(
@@ -3259,13 +3269,13 @@ impl CollabPanel {
                         this.respond_to_contact_request(user_id, false, window, cx);
                     }))
                     .icon_color(color)
-                    .tooltip(Tooltip::text("Decline invite")),
+                    .tooltip(Tooltip::text(t(keys::collab::COLLAB_DECLINE_INVITE))),
                 IconButton::new("accept-contact", IconName::Check)
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.respond_to_contact_request(user_id, true, window, cx);
                     }))
                     .icon_color(color)
-                    .tooltip(Tooltip::text("Accept invite")),
+                    .tooltip(Tooltip::text(t(keys::collab::COLLAB_ACCEPT_INVITE))),
             ]
         } else {
             let github_login = username.clone();
@@ -3275,7 +3285,7 @@ impl CollabPanel {
                         this.remove_contact(user_id, &github_login, window, cx);
                     }))
                     .icon_color(color)
-                    .tooltip(Tooltip::text("Cancel invite")),
+                    .tooltip(Tooltip::text(t(keys::collab::COLLAB_CANCEL_INVITE))),
             ]
         };
 
@@ -3317,13 +3327,13 @@ impl CollabPanel {
                     this.respond_to_channel_invite(channel_id, false, cx);
                 }))
                 .icon_color(color)
-                .tooltip(Tooltip::text("Decline invite")),
+                .tooltip(Tooltip::text(t(keys::collab::COLLAB_DECLINE_INVITE))),
             IconButton::new("accept-invite", IconName::Check)
                 .on_click(cx.listener(move |this, _, _, cx| {
                     this.respond_to_channel_invite(channel_id, true, cx);
                 }))
                 .icon_color(color)
-                .tooltip(Tooltip::text("Accept invite")),
+                .tooltip(Tooltip::text(t(keys::collab::COLLAB_ACCEPT_INVITE))),
         ];
 
         ListItem::new(("channel-invite", channel.id.0 as usize))
@@ -3346,7 +3356,7 @@ impl CollabPanel {
     fn render_contact_placeholder(&self, is_selected: bool, cx: &mut Context<Self>) -> ListItem {
         ListItem::new("contact-placeholder")
             .child(Icon::new(IconName::Plus))
-            .child(Label::new("Add a Contact"))
+            .child(Label::new(t(keys::collab::COLLAB_ADD_A_CONTACT)))
             .focused(is_selected)
             .dock(self.dock_side(cx))
             .on_click(cx.listener(|this, _, window, cx| this.toggle_contact_finder(window, cx)))
@@ -4163,7 +4173,7 @@ impl Render for JoinChannelTooltip {
                 .channel_participants(self.channel_id);
 
             container
-                .child(Label::new("Join Channel"))
+                .child(Label::new(t(keys::collab::COLLAB_JOIN_CHANNEL)))
                 .children(participants.iter().map(|participant| {
                     h_flex()
                         .gap_2()
@@ -4226,25 +4236,33 @@ impl Render for CollabNotificationToast {
         let needs_response = self.notification.is_some();
 
         let accept_button = if needs_response {
-            Button::new("accept", "Accept").on_click(cx.listener(|this, _, window, cx| {
-                this.respond(true, window, cx);
-                cx.stop_propagation();
-            }))
+            Button::new("accept", t(keys::agent::AGENT_THREAD_ACCEPT)).on_click(cx.listener(
+                |this, _, window, cx| {
+                    this.respond(true, window, cx);
+                    cx.stop_propagation();
+                },
+            ))
         } else {
-            Button::new("dismiss", "Dismiss").on_click(cx.listener(|_, _, _, cx| {
-                cx.emit(DismissEvent);
-            }))
+            Button::new("dismiss", t(keys::agent::AGENT_DISMISS)).on_click(cx.listener(
+                |_, _, _, cx| {
+                    cx.emit(DismissEvent);
+                },
+            ))
         };
 
         let decline_button = if needs_response {
-            Button::new("decline", "Decline").on_click(cx.listener(|this, _, window, cx| {
-                this.respond(false, window, cx);
-                cx.stop_propagation();
-            }))
+            Button::new("decline", t(keys::agent::AGENT_A_ELICIT_DECLINE)).on_click(cx.listener(
+                |this, _, window, cx| {
+                    this.respond(false, window, cx);
+                    cx.stop_propagation();
+                },
+            ))
         } else {
-            Button::new("close", "Close").on_click(cx.listener(|_, _, _, cx| {
-                cx.emit(DismissEvent);
-            }))
+            Button::new("close", t(keys::collab::COLLAB_CLOSE)).on_click(cx.listener(
+                |_, _, _, cx| {
+                    cx.emit(DismissEvent);
+                },
+            ))
         };
 
         let avatar_uri = self

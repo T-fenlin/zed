@@ -17,6 +17,7 @@ default = []
 test-support = ["gpui/test-support"]
 
 [dependencies]
+i18n.workspace = true
 anthropic.workspace = true
 anyhow.workspace = true
 collections.workspace = true

@@ -14,6 +14,7 @@ use gpui::{
     App, ClipboardItem, Context, Entity, EventEmitter, Focusable, Pixels, Point, Render,
     Subscription, Task, VisualContext as _, WeakEntity, Window, actions,
 };
+use i18n::{keys, t};
 use project::Project;
 use rpc::proto::ChannelVisibility;
 use std::{
@@ -208,12 +209,16 @@ impl ChannelView {
             editor.set_custom_context_menu(move |_, position, window, cx| {
                 let this = this.clone();
                 Some(ui::ContextMenu::build(window, cx, move |menu, _, _| {
-                    menu.entry("Copy Link to Section", None, move |window, cx| {
-                        this.update(cx, |this, cx| {
-                            this.copy_link_for_position(position, window, cx)
-                        })
-                        .ok();
-                    })
+                    menu.entry(
+                        t(keys::collab::COLLAB_COPY_LINK_TO_SECTION),
+                        None,
+                        move |window, cx| {
+                            this.update(cx, |this, cx| {
+                                this.copy_link_for_position(position, window, cx)
+                            })
+                            .ok();
+                        },
+                    )
                 }))
             });
             editor.set_show_bookmarks(false, cx);

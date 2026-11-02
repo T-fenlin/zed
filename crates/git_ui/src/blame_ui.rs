@@ -14,6 +14,7 @@ use gpui::{
     ClipboardItem, Entity, Hsla, MouseButton, Pixels, Rems, ScrollHandle, Subscription, TextStyle,
     TextStyleRefinement, UnderlineStyle, WeakEntity, prelude::*,
 };
+use i18n::{keys, t};
 use markdown::{Markdown, MarkdownElement};
 use project::{
     git_store::Repository,
@@ -564,9 +565,13 @@ fn deploy_blame_entry_context_menu(
         let blame_previous_revision = blame_entry.previous_revision_target();
         let has_blame_targets = blame_revision.is_some() || blame_previous_revision.is_some();
         menu.on_blur_subscription(Subscription::new(|| {}))
-            .entry("Copy Commit SHA", None, move |_, cx| {
-                cx.write_to_clipboard(ClipboardItem::new_string(sha.clone()));
-            })
+            .entry(
+                t(keys::git_ui::GIT_GRAPH_COPY_COMMIT_SHA),
+                None,
+                move |_, cx| {
+                    cx.write_to_clipboard(ClipboardItem::new_string(sha.clone()));
+                },
+            )
             .when_some(
                 details.and_then(|details| details.permalink.clone()),
                 |this, url| {

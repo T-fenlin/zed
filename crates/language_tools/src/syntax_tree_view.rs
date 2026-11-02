@@ -8,6 +8,7 @@ use gpui::{
     ParentElement, Render, ScrollStrategy, SharedString, Styled, Task, UniformListScrollHandle,
     WeakEntity, Window, actions, div, rems, uniform_list,
 };
+use i18n::{keys, t};
 use language::{Buffer, OwnedSyntaxLayer};
 use std::{any::TypeId, mem, ops::Range};
 use theme::ActiveTheme;
@@ -540,7 +541,10 @@ impl Render for SyntaxTreeView {
                                         .size(LabelSize::Small),
                                     )
                             } else {
-                                this.child(Label::new("Not attached to an editor")).child(
+                                this.child(Label::new(t(
+                                    keys::lang::LANG_TOOLS_NOT_ATTACHED_TO_EDITOR,
+                                )))
+                                .child(
                                     Label::new("Focus an editor to show a new tree view")
                                         .size(LabelSize::Small),
                                 )

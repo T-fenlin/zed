@@ -1,4 +1,5 @@
 use gpui::{Action, ClickEvent, FocusHandle, prelude::*};
+use i18n::{keys, t};
 use language_model::DisabledReason;
 use ui::{Chip, ElevationIndex, KeyBinding, ListItem, ListItemSpacing, Tooltip, prelude::*};
 use zed_actions::agent::ToggleModelSelector;
@@ -238,7 +239,7 @@ impl RenderOnce for ModelSelectorFooter {
             .border_t_1()
             .border_color(cx.theme().colors().border_variant)
             .child(
-                Button::new("configure", "Configure")
+                Button::new("configure", t(keys::agent::AGENT_B_CONFIGURE))
                     .full_width()
                     .style(ButtonStyle::Outlined)
                     .key_binding(
@@ -278,7 +279,7 @@ impl RenderOnce for ModelSelectorTooltip {
                 h_flex()
                     .gap_2()
                     .justify_between()
-                    .child(Label::new("Change Model"))
+                    .child(Label::new(t(keys::agent::AGENT_CHANGE_MODEL)))
                     .child(KeyBinding::for_action(&ToggleModelSelector, cx)),
             )
             .when(self.show_cycle_row, |this| {
@@ -289,7 +290,7 @@ impl RenderOnce for ModelSelectorTooltip {
                         .border_t_1()
                         .border_color(cx.theme().colors().border_variant)
                         .justify_between()
-                        .child(Label::new("Cycle Favorite Models"))
+                        .child(Label::new(t(keys::agent::AGENT_CYCLE_FAVORITE_MODELS)))
                         .child(KeyBinding::for_action(&CycleFavoriteModels, cx)),
                 )
             })

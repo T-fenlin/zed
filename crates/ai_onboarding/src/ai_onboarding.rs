@@ -10,6 +10,7 @@ pub use agent_panel_onboarding_card::AgentPanelOnboardingCard;
 pub use agent_panel_onboarding_content::AgentPanelOnboarding;
 use cloud_api_types::Plan;
 pub use edit_prediction_onboarding_content::EditPredictionOnboarding;
+use i18n::{keys, t};
 pub use plan_definitions::PlanDefinitions;
 pub use young_account_banner::YoungAccountBanner;
 
@@ -148,7 +149,7 @@ impl ZedAiOnboarding {
                 .child(
                     IconButton::new("dismiss_onboarding", IconName::Close)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text("Dismiss"))
+                        .tooltip(Tooltip::text(t(keys::agent::AGENT_DISMISS)))
                         .on_click(move |_, window, cx| {
                             telemetry::event!("Banner Dismissed", source = "AI Onboarding",);
                             callback(window, cx)
@@ -205,7 +206,7 @@ impl ZedAiOnboarding {
                             h_flex()
                                 .gap_2()
                                 .child(
-                                    Label::new("Pro")
+                                    Label::new(t(keys::titlebar::TITLEBAR_PLAN_PRO))
                                         .size(LabelSize::Small)
                                         .color(Color::Accent)
                                         .buffer_font(cx),
@@ -241,7 +242,7 @@ impl ZedAiOnboarding {
                             h_flex()
                                 .gap_2()
                                 .child(
-                                    Label::new("Free")
+                                    Label::new(t(keys::titlebar::TITLEBAR_PLAN_FREE))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted)
                                         .buffer_font(cx),
@@ -267,7 +268,7 @@ impl ZedAiOnboarding {
                             h_flex()
                                 .gap_2()
                                 .child(
-                                    Label::new("Pro Trial")
+                                    Label::new(t(keys::titlebar::TITLEBAR_PLAN_PRO_TRIAL))
                                         .size(LabelSize::Small)
                                         .color(Color::Accent)
                                         .buffer_font(cx),

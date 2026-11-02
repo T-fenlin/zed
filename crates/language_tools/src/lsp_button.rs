@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{
     cell::RefCell,
     collections::{BTreeMap, HashMap},
@@ -1468,11 +1469,16 @@ impl Render for LspButton {
                         .when_some(indicator, IconButton::indicator)
                         .icon_size(IconSize::Small)
                         .tab_index(0isize)
-                        .aria_label("Language Servers")
+                        .aria_label(t(keys::extensions::EXTENSIONS_PROVIDES_LANGUAGE_SERVERS))
                         .when(is_restricted, |s| s.icon_color(Color::Warning))
                         .indicator_border_color(Some(cx.theme().colors().status_bar_background)),
                     move |_window, cx| {
-                        Tooltip::with_meta("Language Servers", Some(&ToggleMenu), description, cx)
+                        Tooltip::with_meta(
+                            t(keys::extensions::EXTENSIONS_PROVIDES_LANGUAGE_SERVERS),
+                            Some(&ToggleMenu),
+                            description,
+                            cx,
+                        )
                     },
                 ),
         )

@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -698,7 +699,7 @@ impl ThreadsArchiveView {
                                 .hover_background(button_hover_bg)
                                 .icon_size(IconSize::Small)
                                 .icon_color(Color::Muted)
-                                .tooltip(Tooltip::text("Cancel Restore"))
+                                .tooltip(Tooltip::text(t(keys::agent::AGENT_CANCEL_RESTORE)))
                                 .on_click({
                                     let thread_id = thread.thread_id;
                                     cx.listener(move |this, _, _, cx| {
@@ -924,7 +925,7 @@ impl ThreadsArchiveView {
                 this.child(
                     IconButton::new("clear-filter", IconName::Close)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text("Clear Search"))
+                        .tooltip(Tooltip::text(t(keys::agent::AGENT_CLEAR_SEARCH)))
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.reset_filter_editor_text(window, cx);
                             this.update_items(cx);
@@ -989,7 +990,7 @@ impl ThreadsArchiveView {
                     .child(
                         IconButton::new("new-thread", IconName::Plus)
                             .icon_size(IconSize::Small)
-                            .tooltip(Tooltip::text("Start New Agent Thread"))
+                            .tooltip(Tooltip::text(t(keys::agent::AGENT_START_NEW_THREAD)))
                             .on_click(cx.listener(|_this, _, _, cx| {
                                 cx.emit(ThreadsArchiveViewEvent::NewThread);
                             })),
@@ -997,7 +998,7 @@ impl ThreadsArchiveView {
                     .child(
                         IconButton::new("thread-import", IconName::Download)
                             .icon_size(IconSize::Small)
-                            .tooltip(Tooltip::text("Import Threads"))
+                            .tooltip(Tooltip::text(t(keys::agent::AGENT_IMPORT_THREADS)))
                             .on_click(cx.listener(|_this, _, _, cx| {
                                 cx.emit(ThreadsArchiveViewEvent::Import);
                             })),
@@ -1634,7 +1635,7 @@ impl PickerDelegate for ProjectPickerDelegate {
                         })),
                 )
                 .child(
-                    Button::new("select_project", "Select")
+                    Button::new("select_project", t(keys::recent::RECENT_SELECT))
                         .disabled(!has_selection)
                         .key_binding(KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx))
                         .on_click(cx.listener(move |picker, _, window, cx| {
