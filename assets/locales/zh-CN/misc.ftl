@@ -1,4 +1,3 @@
-# misc.ftl — Zed zh-CN 汉化语言包（从 10 月版 Zed.exe 抢救重建）
 # 英文目录 en-US/ 为唯一事实来源（source of truth）；本文件为简体中文译文。
 
 drop-remote = 无法把文件拖放到远程项目
