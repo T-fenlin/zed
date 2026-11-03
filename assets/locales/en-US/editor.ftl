@@ -75,5 +75,5 @@ editor-a-paste = Paste
 editor-a-open_in_terminal = Open in Terminal
 editor-a-copy_permalink_to_line = Copy Permalink to Line
 editor-a-view_file_history = View File History
-editor-b-previous_signature = 上一个签名
-editor-b-next_signature = 下一个签名
+editor-b-previous_signature = Previous signature
+editor-b-next_signature = Next signature
