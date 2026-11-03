@@ -3336,6 +3336,12 @@ pub mod recent {
         RECENT_COPY_SERVER_ADDRESS = "recent-copy_server_address",
         RECENT_REMOVE_SERVER_PROMPT = "recent-remove_server_prompt",
         RECENT_REMOVE_SERVER = "recent-remove_server",
+        RECENT_OPEN_PROJECT_THIS_WINDOW = "recent-open_project_this_window",
+        RECENT_CURRENT_FOLDERS = "recent-current_folders",
+        RECENT_FAILED_CONNECT_SSH = "recent-failed_connect_ssh",
+        RECENT_FAILED_CONNECT_WSL = "recent-failed_connect_wsl",
+        RECENT_FAILED_CONNECT_DEV_CONTAINER = "recent-failed_connect_dev_container",
+        RECENT_FAILED_CONNECT_MOCK = "recent-failed_connect_mock",
     }
 }
 
