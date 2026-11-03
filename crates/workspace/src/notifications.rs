@@ -7,7 +7,6 @@ use gpui::{
     DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, PromptLevel, Render, ScrollHandle,
     Task, TextStyleRefinement, UnderlineStyle, WeakEntity,
 };
-use i18n::{keys, t};
 use markdown::{CopyButtonVisibility, Markdown, MarkdownElement, MarkdownStyle};
 use parking_lot::Mutex;
 use project::project_settings::ProjectSettings;
@@ -492,6 +491,8 @@ pub mod simple_message_notification {
         WithScrollbar, prelude::*,
     };
     use util::ResultExt as _;
+
+    use i18n::{keys, t};
 
     use crate::SuppressNotification;
     use crate::workspace_error::{

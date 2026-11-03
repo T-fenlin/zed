@@ -18,13 +18,13 @@ pub enum AiSettingItemStatus {
 impl AiSettingItemStatus {
     fn tooltip_text(&self) -> SharedString {
         match self {
-            Self::Stopped => t(keys::ui::UI_AI_STATUS_STOPPED),
-            Self::Starting => t(keys::ui::UI_AI_STATUS_STARTING),
-            Self::Running => t(keys::ui::UI_AI_STATUS_RUNNING),
-            Self::Error => t(keys::ui::UI_AI_STATUS_ERROR),
-            Self::AuthRequired => t(keys::ui::UI_AI_STATUS_AUTH_REQUIRED),
-            Self::ClientSecretRequired => t(keys::ui::UI_AI_STATUS_CLIENT_SECRET_REQUIRED),
-            Self::Authenticating => t(keys::ui::UI_AI_STATUS_AUTHENTICATING),
+            Self::Stopped => t(keys::ui::UI_AI_STATUS_STOPPED).into(),
+            Self::Starting => t(keys::ui::UI_AI_STATUS_STARTING).into(),
+            Self::Running => t(keys::ui::UI_AI_STATUS_RUNNING).into(),
+            Self::Error => t(keys::ui::UI_AI_STATUS_ERROR).into(),
+            Self::AuthRequired => t(keys::ui::UI_AI_STATUS_AUTH_REQUIRED).into(),
+            Self::ClientSecretRequired => t(keys::ui::UI_AI_STATUS_CLIENT_SECRET_REQUIRED).into(),
+            Self::Authenticating => t(keys::ui::UI_AI_STATUS_AUTHENTICATING).into(),
         }
     }
 

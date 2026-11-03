@@ -2150,7 +2150,7 @@ impl Render for KeymapEditor {
                     .width_config(ColumnWidthConfig::redistributable(
                         self.current_widths.clone(),
                     ))
-                    .header(vec!["", t(keys::keymap::KEYMAP_ACTION), t(keys::keymap::KEYMAP_ARGUMENTS), t(keys::keymap::KEYMAP_KEYSTROKES), t(keys::agent::AGENT_MENU_CONTEXT), t(keys::agent::AGENT_THREAD_SOURCE)])
+                    .header(vec!["".to_string(), t(keys::keymap::KEYMAP_ACTION), t(keys::keymap::KEYMAP_ARGUMENTS), t(keys::keymap::KEYMAP_KEYSTROKES), t(keys::agent::AGENT_MENU_CONTEXT), t(keys::agent::AGENT_THREAD_SOURCE)])
                     .uniform_list(
                         "keymap-editor-table",
                         row_count,

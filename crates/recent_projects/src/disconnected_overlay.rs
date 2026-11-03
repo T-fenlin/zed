@@ -183,9 +183,10 @@ impl Render for DisconnectedOverlay {
             .child(
                 Modal::new("disconnected", None)
                     .header(
-                        ModalHeader::new()
-                            .show_dismiss_button(true)
-                            .child(Headline::new(t(keys::titlebar::TITLEBAR_DISCONNECTED)).size(HeadlineSize::Small)),
+                        ModalHeader::new().show_dismiss_button(true).child(
+                            Headline::new(t(keys::titlebar::TITLEBAR_DISCONNECTED))
+                                .size(HeadlineSize::Small),
+                        ),
                     )
                     .section(Section::new().child(Label::new(message)))
                     .footer(
@@ -193,20 +194,28 @@ impl Render for DisconnectedOverlay {
                             h_flex()
                                 .gap_2()
                                 .child(
-                                    Button::new("close-window", t(keys::menu::MENU_FILE_CLOSE_WINDOW))
-                                        .style(ButtonStyle::Filled)
-                                        .layer(ElevationIndex::ModalSurface)
-                                        .on_click(cx.listener(move |_, _, window, _| {
+                                    Button::new(
+                                        "close-window",
+                                        t(keys::app_menu::MENU_FILE_CLOSE_WINDOW),
+                                    )
+                                    .style(ButtonStyle::Filled)
+                                    .layer(ElevationIndex::ModalSurface)
+                                    .on_click(cx.listener(
+                                        move |_, _, window, _| {
                                             window.remove_window();
-                                        })),
+                                        },
+                                    )),
                                 )
                                 .when(can_reconnect, |el| {
                                     el.child(
-                                        Button::new("reconnect", t(keys::agent::AGENT_THREAD_RECONNECT))
-                                            .style(ButtonStyle::Filled)
-                                            .layer(ElevationIndex::ModalSurface)
-                                            .start_icon(Icon::new(IconName::ArrowCircle))
-                                            .on_click(cx.listener(Self::handle_reconnect)),
+                                        Button::new(
+                                            "reconnect",
+                                            t(keys::agent::AGENT_THREAD_RECONNECT),
+                                        )
+                                        .style(ButtonStyle::Filled)
+                                        .layer(ElevationIndex::ModalSurface)
+                                        .start_icon(Icon::new(IconName::ArrowCircle))
+                                        .on_click(cx.listener(Self::handle_reconnect)),
                                     )
                                 }),
                         ),
