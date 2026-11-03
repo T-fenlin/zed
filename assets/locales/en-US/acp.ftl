@@ -1,7 +1,7 @@
 # acp.ftl — English source strings (rebuilt).
 
-acp-mention_diagnostics = 诊断
-acp-mention_terminal = 终端（{ $count } 行）
+acp-mention_diagnostics = Diagnostics
+acp-mention_terminal = Terminal ({ $count } lines)
 acp-mention_branch_diff = Branch Diff ({ $base_ref })
 acp-mention_merge_conflict = Merge Conflict ({ $name })
 acp-mention_skill_global = { $name } (global)
