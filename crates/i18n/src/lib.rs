@@ -25,6 +25,14 @@ impl Locale {
         }
     }
 
+    /// The BCP-47 tag for this locale, as written into settings files.
+    pub fn as_tag(self) -> &'static str {
+        self.langid()
+    }
+
+    /// Every locale the UI offers in the language picker.
+    pub const ALL: &'static [Locale] = &[Locale::EnUs, Locale::ZhCn];
+
     /// Pick a locale from an environment-style tag (e.g. "zh-CN", "zh", "en").
     pub fn from_tag(tag: &str) -> Locale {
         if tag.to_ascii_lowercase().starts_with("zh") {
@@ -110,18 +118,33 @@ struct Registry {
 thread_local! {
     // FluentBundle is not Sync, so the registry is thread-local. Bundles are
     // cheap to build per-thread and this keeps `t()` lock-free.
-    static REGISTRY: Registry = {
+    static REGISTRY: std::cell::RefCell<Registry> = std::cell::RefCell::new({
         let active = Locale::from_tag(&std::env::var("ZED_LANG").unwrap_or_else(|_| "zh-CN".into()));
         Registry {
             active,
             active_bundle: build_bundle(active),
             fallback_bundle: build_bundle(Locale::EnUs),
         }
-    };
+    });
 }
 
 fn with_registry<R>(f: impl FnOnce(&Registry) -> R) -> R {
-    REGISTRY.with(|r| f(r))
+    REGISTRY.with(|r| f(&r.borrow()))
+}
+
+/// Switch the active locale for the current thread.
+///
+/// Most UI text is resolved once at startup, so callers should restart Zed
+/// after changing the persisted interface-language setting; this setter exists
+/// so the startup path (and tests) can pick the locale explicitly.
+pub fn set_locale(locale: Locale) {
+    REGISTRY.with(|r| {
+        let mut reg = r.borrow_mut();
+        if reg.active != locale {
+            reg.active = locale;
+            reg.active_bundle = build_bundle(locale);
+        }
+    });
 }
 
 /// Resolve a message id in the active locale, falling back to English, then the id.
