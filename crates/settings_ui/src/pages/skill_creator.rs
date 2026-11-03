@@ -131,7 +131,7 @@ pub struct SkillCreatorPage {
     disable_model_invocation: bool,
     name_error: Option<&'static str>,
     description_error: Option<&'static str>,
-    body_error: Option<&'static str>,
+    body_error: Option<SharedString>,
     save_error: Option<SharedString>,
     url_import_status: UrlImportStatus,
     saving: bool,
@@ -180,7 +180,7 @@ impl SkillCreatorPage {
             InputField::new(
                 window,
                 cx,
-                t(keys::settings_ui::SETTINGS_A_SKILL_DESCRIPTION_PLACEHOLDER),
+                &t(keys::settings_ui::SETTINGS_A_SKILL_DESCRIPTION_PLACEHOLDER),
             )
             .label(t(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION))
             .tab_index(DESCRIPTION_FIELD_TAB_INDEX)
@@ -195,7 +195,7 @@ impl SkillCreatorPage {
             });
             let mut editor = Editor::for_buffer(buffer, None, window, cx);
             editor.set_placeholder_text(
-                t(keys::settings_ui::SETTINGS_A_SKILL_BODY_PLACEHOLDER),
+                &t(keys::settings_ui::SETTINGS_A_SKILL_BODY_PLACEHOLDER),
                 window,
                 cx,
             );
@@ -402,7 +402,7 @@ impl SkillCreatorPage {
     fn recompute_body_error(&mut self, cx: &App) {
         let body = self.current_body(cx);
         self.body_error = if body.trim().is_empty() {
-            Some(t(keys::settings_ui::SETTINGS_A_SKILL_BODY_REQUIRED))
+            Some(t(keys::settings_ui::SETTINGS_A_SKILL_BODY_REQUIRED).into())
         } else {
             None
         };
@@ -772,7 +772,7 @@ impl SkillCreatorPage {
                         keys::settings_ui::SETTINGS_A_SKILL_SKILL_CONTENT,
                     )))
                     .child(self.render_body_field(window, cx))
-                    .when_some(self.body_error, |this, error| {
+                    .when_some(self.body_error.clone(), |this, error| {
                         this.child(Label::new(error).size(LabelSize::Small).color(Color::Error))
                     }),
             )

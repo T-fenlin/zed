@@ -16,6 +16,7 @@ use gpui::{
     WeakEntity, Window, WindowBounds, WindowHandle, WindowOptions, actions, container_query, div,
     list, point, prelude::*, px, uniform_list,
 };
+use i18n::{keys, t};
 
 use language::Buffer;
 use platform_title_bar::PlatformTitleBar;
@@ -312,8 +313,8 @@ impl SettingFieldRenderer {
             SettingField<T>,
             SettingsUiFile,
             Option<&SettingsFieldMetadata>,
-            &'static str,
-            &'static str,
+            SharedString,
+            SharedString,
             &mut Window,
             &mut App,
         ) -> AnyElement
@@ -332,8 +333,8 @@ impl SettingFieldRenderer {
                     field,
                     settings_file.clone(),
                     metadata,
-                    item.title,
-                    item.description,
+                    item.title.clone(),
+                    item.description.clone(),
                     window,
                     cx,
                 );
@@ -441,7 +442,7 @@ impl Focusable for NonFocusableHandle {
 
 #[derive(Default)]
 struct SettingsFieldMetadata {
-    placeholder: Option<&'static str>,
+    placeholder: Option<SharedString>,
     should_do_titlecase: Option<bool>,
     display_confirm_button: bool,
     display_clear_button: bool,
@@ -815,7 +816,7 @@ fn open_settings_editor_at_target(
 
             if settings_window.filter_table[page_index][item_index]
                 && let SettingsPageItem::SubPageLink(link) = item
-                && let SettingsPageItem::SectionHeader(header) = page.items[header_index]
+                && let SettingsPageItem::SectionHeader(ref header) = page.items[header_index]
             {
                 settings_window.push_sub_page(link.clone(), SharedString::from(header), window, cx);
             }
@@ -1071,7 +1072,7 @@ impl Drop for SubPage {
 
 #[derive(Debug)]
 struct NavBarEntry {
-    title: &'static str,
+    title: SharedString,
     is_root: bool,
     expanded: bool,
     page_index: usize,
@@ -1080,7 +1081,7 @@ struct NavBarEntry {
 }
 
 struct SettingsPage {
-    title: &'static str,
+    title: SharedString,
     items: Box<[SettingsPageItem]>,
 }
 
@@ -1114,9 +1115,9 @@ impl std::fmt::Debug for SettingsPageItem {
 }
 
 impl SettingsPageItem {
-    fn header_text(&self) -> Option<&'static str> {
+    fn header_text(&self) -> Option<SharedString> {
         match self {
-            SettingsPageItem::SectionHeader(header) => Some(header),
+            SettingsPageItem::SectionHeader(header) => Some(header.clone()),
             _ => None,
         }
     }
@@ -1201,7 +1202,7 @@ impl SettingsPageItem {
 
         match self {
             SettingsPageItem::SectionHeader(header) => {
-                SettingsSectionHeader::new(SharedString::new_static(header)).into_any_element()
+                SettingsSectionHeader::new(header.clone()).into_any_element()
             }
             SettingsPageItem::SettingItem(setting_item) => {
                 let (field_with_padding, _) =
@@ -1268,9 +1269,7 @@ impl SettingsPageItem {
                                                 .iter()
                                                 .take(item_index)
                                                 .rev()
-                                                .find_map(|item| {
-                                                    item.header_text().map(SharedString::new_static)
-                                                })
+                                                .find_map(|item| item.header_text())
                                         });
 
                                     let Some(header) = header_text else {
@@ -1410,8 +1409,8 @@ impl SettingsPageItem {
 /// optional reset button and copy-link icon.
 fn render_settings_item_layout(
     settings_window: &SettingsWindow,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     control: AnyElement,
     reset_fn: Option<Box<dyn Fn(&mut Window, &mut App)>>,
     modified_in: Option<String>,
@@ -1424,7 +1423,7 @@ fn render_settings_item_layout(
     // description), so adding a group with the same label here would make
     // screen readers announce the setting name twice.
     h_flex()
-        .id(title)
+        .id(title.clone())
         .min_w_0()
         .justify_between()
         .child(
@@ -1437,14 +1436,18 @@ fn render_settings_item_layout(
                     h_flex()
                         .w_full()
                         .gap_1()
-                        .child(Label::new(SharedString::new_static(title)))
+                        .child(Label::new(title.clone()))
                         .when_some(reset_fn, |this, reset_to_default| {
                             this.child(
                                 IconButton::new("reset-to-default-btn", IconName::Undo)
                                     .icon_color(Color::Muted)
                                     .icon_size(IconSize::Small)
-                                    .aria_label(t(keys::settings_ui::SETTINGS_B_NUMBER_RESET_DEFAULT))
-                                    .tooltip(Tooltip::text(t(keys::settings_ui::SETTINGS_B_NUMBER_RESET_DEFAULT)))
+                                    .aria_label(t(
+                                        keys::settings_ui::SETTINGS_B_NUMBER_RESET_DEFAULT,
+                                    ))
+                                    .tooltip(Tooltip::text(t(
+                                        keys::settings_ui::SETTINGS_B_NUMBER_RESET_DEFAULT,
+                                    )))
                                     .on_click(move |_, window, cx| {
                                         reset_to_default(window, cx);
                                     }),
@@ -1459,7 +1462,7 @@ fn render_settings_item_layout(
                         }),
                 )
                 .child(
-                    Label::new(SharedString::new_static(description))
+                    Label::new(description.clone())
                         .size(LabelSize::Small)
                         .color(Color::Muted)
                         .render_code_spans(),
@@ -1468,7 +1471,7 @@ fn render_settings_item_layout(
         .child(control)
         .when(settings_window.sub_page_stack.is_empty(), |this| {
             this.child(render_settings_item_link(
-                description,
+                description.clone(),
                 json_path,
                 sub_field,
                 settings_window,
@@ -1531,8 +1534,8 @@ fn render_settings_item(
 
     render_settings_item_layout(
         settings_window,
-        setting_item.title,
-        setting_item.description,
+        setting_item.title.clone(),
+        setting_item.description.clone(),
         control,
         reset_fn,
         modified_in,
@@ -2120,7 +2123,7 @@ impl SettingsWindow {
 
         for (page_index, page) in self.pages.iter().enumerate() {
             navbar_entries.push(NavBarEntry {
-                title: page.title,
+                title: page.title.clone(),
                 is_root: true,
                 expanded: false,
                 page_index,
@@ -2133,7 +2136,7 @@ impl SettingsWindow {
                     continue;
                 };
                 navbar_entries.push(NavBarEntry {
-                    title,
+                    title: title.clone(),
                     is_root: false,
                     expanded: false,
                     page_index,
@@ -2444,14 +2447,14 @@ impl SettingsWindow {
                         documents.push(SearchDocument {
                             id: key_index,
                             words: split_into_words(&[
-                                page.title,
+                                page.title.as_ref(),
                                 header_str,
-                                item.title,
-                                item.description,
+                                item.title.as_ref(),
+                                item.description.as_ref(),
                             ]),
                         });
-                        push_candidates(&mut fuzzy_match_candidates, key_index, item.title);
-                        push_candidates(&mut fuzzy_match_candidates, key_index, item.description);
+                        push_candidates(&mut fuzzy_match_candidates, key_index, &item.title);
+                        push_candidates(&mut fuzzy_match_candidates, key_index, &item.description);
                     }
                     SettingsPageItem::SectionHeader(header) => {
                         documents.push(SearchDocument {
@@ -2460,11 +2463,15 @@ impl SettingsWindow {
                         });
                         push_candidates(&mut fuzzy_match_candidates, key_index, header);
                         header_index = item_index;
-                        header_str = *header;
+                        header_str = &*header;
                     }
                     SettingsPageItem::SubPageLink(sub_page_link) => {
                         json_path = sub_page_link.json_path;
-                        let mut parts = vec![page.title, header_str, sub_page_link.title.as_ref()];
+                        let mut parts = vec![
+                            page.title.as_ref(),
+                            header_str,
+                            sub_page_link.title.as_ref(),
+                        ];
                         parts.extend(sub_page_link.search_aliases);
                         documents.push(SearchDocument {
                             id: key_index,
@@ -2483,7 +2490,7 @@ impl SettingsWindow {
                         documents.push(SearchDocument {
                             id: key_index,
                             words: split_into_words(&[
-                                page.title,
+                                page.title.as_ref(),
                                 header_str,
                                 action_link.title.as_ref(),
                             ]),
@@ -2495,7 +2502,7 @@ impl SettingsWindow {
                         );
                     }
                 }
-                push_candidates(&mut fuzzy_match_candidates, key_index, page.title);
+                push_candidates(&mut fuzzy_match_candidates, key_index, page.title.as_ref());
                 push_candidates(&mut fuzzy_match_candidates, key_index, header_str);
 
                 key_lut.push(SearchKeyLUTEntry {
@@ -3231,7 +3238,7 @@ impl SettingsWindow {
                                     .map(|(entry_index, entry)| {
                                         TreeViewItem::new(
                                             ("settings-ui-navbar-entry", entry_index),
-                                            entry.title,
+                                            entry.title.clone(),
                                         )
                                         .track_focus(&entry.focus_handle)
                                         .root_item(entry.is_root)
@@ -3249,9 +3256,9 @@ impl SettingsWindow {
                                                 ))
                                         })
                                         .on_click({
-                                            let category = this.pages[entry.page_index].title;
+                                            let category = this.pages[entry.page_index].title.clone();
                                             let subcategory =
-                                                (!entry.is_root).then_some(entry.title);
+                                                (!entry.is_root).then(|| entry.title.clone());
 
                                             cx.listener(move |this, event: &gpui::ClickEvent, window, cx| {
                                                 if this.toggle_navbar_entry_on_double_click(
@@ -3546,7 +3553,7 @@ impl SettingsWindow {
             .child(Label::new("/").color(Color::Muted))
             .children(
                 itertools::intersperse(
-                    std::iter::once(self.current_page().title.into()).chain(
+                    std::iter::once(self.current_page().title.clone().into()).chain(
                         self.sub_page_stack
                             .iter()
                             .enumerate()
@@ -3615,14 +3622,14 @@ impl SettingsWindow {
                 .navbar_entries
                 .iter()
                 .find(|entry| entry.is_root && entry.page_index == self.current_page_index())
-                .map(|entry| entry.title);
+                .map(|entry| entry.title.clone());
 
             let render_item = cx.processor(move |settings_window, index, window, cx| {
                 if index == 0 {
                     return div()
                         .px_8()
                         .when(settings_window.sub_page_stack.is_empty(), |element| {
-                            element.when_some(root_nav_label, |element, title| {
+                            element.when_some(root_nav_label.clone(), |element, title| {
                                 element
                                     .child(Label::new(title).size(LabelSize::Large).mt_2().mb_3())
                             })
@@ -3775,7 +3782,7 @@ impl SettingsWindow {
                 .navbar_entries
                 .iter()
                 .find(|entry| entry.is_root && entry.page_index == self.current_page_index())
-                .map(|entry| entry.title);
+                .map(|entry| entry.title.clone());
 
             page_content
                 .when(self.sub_page_stack.is_empty(), |this| {
@@ -3869,16 +3876,21 @@ impl SettingsWindow {
                         })
                         .when(is_skills_page, |this| {
                             this.child(
-                                Button::new("open-skill-creator", t(keys::settings_ui::SETTINGS_UI_CREATE_SKILL))
-                                    .tab_index(0_isize)
-                                    .style(ButtonStyle::OutlinedGhost)
-                                    .on_click(cx.listener(|this, _, window, cx| {
+                                Button::new(
+                                    "open-skill-creator",
+                                    t(keys::settings_ui::SETTINGS_UI_CREATE_SKILL),
+                                )
+                                .tab_index(0_isize)
+                                .style(ButtonStyle::OutlinedGhost)
+                                .on_click(cx.listener(
+                                    |this, _, window, cx| {
                                         this.open_skill_creator_sub_page(
                                             pages::SkillCreatorOpenMode::Form,
                                             window,
                                             cx,
                                         );
-                                    })),
+                                    },
+                                )),
                             )
                         })
                         .when(is_external_agents_page, |this| {
@@ -3927,12 +3939,17 @@ impl SettingsWindow {
                     )
                     .action_slot(
                         div().pr_1().pb_1().child(
-                            Button::new("fix-in-json", t(keys::settings_ui::SETTINGS_UI_FIX_IN_JSON))
-                                .tab_index(0_isize)
-                                .style(ButtonStyle::Tinted(ui::TintColor::Warning))
-                                .on_click(cx.listener(|this, _, window, cx| {
+                            Button::new(
+                                "fix-in-json",
+                                t(keys::settings_ui::SETTINGS_UI_FIX_IN_JSON),
+                            )
+                            .tab_index(0_isize)
+                            .style(ButtonStyle::Tinted(ui::TintColor::Warning))
+                            .on_click(cx.listener(
+                                |this, _, window, cx| {
                                     this.open_current_settings_file(window, cx);
-                                })),
+                                },
+                            )),
                         ),
                     )
             }
@@ -3996,35 +4013,39 @@ impl SettingsWindow {
                             .gap_0p5()
                             .child(Label::new(t(keys::titlebar::TITLEBAR_RESTRICTED_MODE)))
                             .child(
-                                Label::new(
-                                    t(keys::settings_ui::SETTINGS_UI_RESTRICTED_HINT),
-                                )
-                                .size(LabelSize::Small)
-                                .color(Color::Muted),
+                                Label::new(t(keys::settings_ui::SETTINGS_UI_RESTRICTED_HINT))
+                                    .size(LabelSize::Small)
+                                    .color(Color::Muted),
                             ),
                     )
                     .action_slot(
                         div().pr_2().pb_1().child(
-                            Button::new("manage-trust", t(keys::settings_ui::SETTINGS_UI_MANAGE_TRUST))
-                                .style(ButtonStyle::Tinted(ui::TintColor::Warning))
-                                .on_click(cx.listener(move |_this, _, window, cx| {
+                            Button::new(
+                                "manage-trust",
+                                t(keys::settings_ui::SETTINGS_UI_MANAGE_TRUST),
+                            )
+                            .style(ButtonStyle::Tinted(ui::TintColor::Warning))
+                            .on_click(cx.listener(
+                                move |_this, _, window, cx| {
                                     if let Some(original_window) = original_window {
                                         original_window
                                             .update(cx, |multi_workspace, window, cx| {
-                                                multi_workspace
-                                                    .workspace()
-                                                    .update(cx, |workspace, cx| {
+                                                multi_workspace.workspace().update(
+                                                    cx,
+                                                    |workspace, cx| {
                                                         workspace
                                                             .show_worktree_trust_security_modal(
                                                                 true, window, cx,
                                                             );
-                                                    });
+                                                    },
+                                                );
                                             })
                                             .log_err();
                                     }
                                     // Close the settings window
                                     window.remove_window();
-                                })),
+                                },
+                            )),
                         ),
                     )
                     .into_any_element();
@@ -4499,7 +4520,7 @@ impl SettingsWindow {
                             .iter()
                             .take(item_index)
                             .rev()
-                            .find_map(|item| item.header_text().map(SharedString::new_static))
+                            .find_map(|item| item.header_text())
                             .unwrap_or_else(|| t(keys::agent::AGENT_MENU_SETTINGS).into());
 
                         self.push_sub_page(sub_page_link.clone(), section_header, window, cx);
@@ -5029,8 +5050,8 @@ fn render_text_field<T: From<String> + Into<String> + AsRef<str> + Clone>(
     field: SettingField<T>,
     file: SettingsUiFile,
     metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -5052,13 +5073,13 @@ fn render_text_field<T: From<String> + Into<String> + AsRef<str> + Clone>(
     // it a stable, collision-free element ID within the page.
     SettingsInputField::new(field.json_path.unwrap_or("settings-text-field"))
         .tab_index(0)
-        .aria_label(title)
+        .aria_label(title.clone())
         .when(!description.is_empty(), |editor| {
-            editor.aria_description(description)
+            editor.aria_description(description.clone())
         })
         .when_some(initial_text, |editor, text| editor.with_initial_text(text))
         .when_some(
-            metadata.and_then(|metadata| metadata.placeholder),
+            metadata.and_then(|metadata| metadata.placeholder.clone()),
             |editor, placeholder| editor.with_placeholder(placeholder),
         )
         .when(
@@ -5094,8 +5115,8 @@ fn render_toggle_button<B: Into<bool> + From<bool> + Copy>(
     field: SettingField<B>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -5112,9 +5133,9 @@ fn render_toggle_button<B: Into<bool> + From<bool> + Copy>(
 
     Switch::new("toggle_button", toggle_state)
         .tab_index(0_isize)
-        .aria_label(title)
+        .aria_label(title.clone())
         .when(!description.is_empty(), |this| {
-            this.aria_description(description)
+            this.aria_description(description.clone())
         })
         .disabled(disabled)
         .on_click({
@@ -5135,8 +5156,8 @@ fn render_editable_number_field<T: NumberFieldType + Send + Sync>(
     field: SettingField<T>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -5151,9 +5172,9 @@ fn render_editable_number_field<T: NumberFieldType + Send + Sync>(
     NumberField::new(id, value, window, cx)
         .mode(NumberFieldMode::Edit, cx)
         .tab_index(0_isize)
-        .aria_label(title)
+        .aria_label(title.clone())
         .when(!description.is_empty(), |this| {
-            this.aria_description(description)
+            this.aria_description(description.clone())
         })
         .on_change({
             move |value, window, cx| {
@@ -5177,8 +5198,8 @@ fn render_dropdown<T>(
     field: SettingField<T>,
     file: SettingsUiFile,
     metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement
@@ -5213,9 +5234,9 @@ where
             .log_err(); // todo(settings_ui) don't log err
         }
     })
-    .aria_label(title)
+    .aria_label(title.clone())
     .when(!description.is_empty(), |this| {
-        this.aria_description(description)
+        this.aria_description(description.clone())
     })
     .disabled(disabled)
     .tab_index(0)
@@ -5258,8 +5279,8 @@ fn render_font_picker(
     field: SettingField<settings::FontFamilyName>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -5276,9 +5297,9 @@ fn render_font_picker(
                 "font_family_picker_trigger".into(),
                 current_value.clone(),
             )
-            .aria_label(title)
+            .aria_label(title.clone())
             .when(!description.is_empty(), |this| {
-                this.aria_description(description)
+                this.aria_description(description.clone())
             }),
             handle.clone(),
         ))
@@ -5319,8 +5340,8 @@ fn render_theme_picker(
     field: SettingField<settings::ThemeName>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -5334,9 +5355,9 @@ fn render_theme_picker(
     PopoverMenu::new("theme-picker")
         .trigger(wire_picker_trigger_a11y(
             render_picker_trigger_button("theme_picker_trigger".into(), current_value.clone())
-                .aria_label(title)
+                .aria_label(title.clone())
                 .when(!description.is_empty(), |this| {
-                    this.aria_description(description)
+                    this.aria_description(description.clone())
                 }),
             handle.clone(),
         ))
@@ -5380,8 +5401,8 @@ fn render_icon_theme_picker(
     field: SettingField<settings::IconThemeName>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -5395,9 +5416,9 @@ fn render_icon_theme_picker(
     PopoverMenu::new("icon-theme-picker")
         .trigger(wire_picker_trigger_a11y(
             render_picker_trigger_button("icon_theme_picker_trigger".into(), current_value.clone())
-                .aria_label(title)
+                .aria_label(title.clone())
                 .when(!description.is_empty(), |this| {
-                    this.aria_description(description)
+                    this.aria_description(description.clone())
                 }),
             handle.clone(),
         ))

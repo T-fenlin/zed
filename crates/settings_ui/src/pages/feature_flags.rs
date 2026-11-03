@@ -1,7 +1,7 @@
-use i18n::{keys, t};
 use feature_flags::{FeatureFlagDescriptor, FeatureFlagStore, FeatureFlagVariant};
 use fs::Fs;
 use gpui::{ScrollHandle, prelude::*};
+use i18n::{keys, t};
 use ui::{Checkbox, ToggleState, prelude::*};
 
 use crate::SettingsWindow;
@@ -60,20 +60,25 @@ fn render_flag_row(
                     ))
                     .when(forced_on, |this| {
                         this.child(
-                            Label::new(t(keys::settings_ui::SETTINGS_B_FEATURE_FLAG_ENABLED_FOR_ALL))
-                                .size(LabelSize::Small)
-                                .color(Color::Muted),
+                            Label::new(t(
+                                keys::settings_ui::SETTINGS_B_FEATURE_FLAG_ENABLED_FOR_ALL,
+                            ))
+                            .size(LabelSize::Small)
+                            .color(Color::Muted),
                         )
                     }),
             )
             .when(has_override && !forced_on, |this| {
                 let name = descriptor.name;
                 this.child(
-                    Button::new(SharedString::from(format!("reset-{}", name)), t(keys::settings_ui::SETTINGS_B_FEATURE_FLAG_RESET))
-                        .label_size(LabelSize::Small)
-                        .on_click(cx.listener(move |_, _, _, cx| {
-                            FeatureFlagStore::clear_override(name, <dyn Fs>::global(cx), cx);
-                        })),
+                    Button::new(
+                        SharedString::from(format!("reset-{}", name)),
+                        t(keys::settings_ui::SETTINGS_B_FEATURE_FLAG_RESET),
+                    )
+                    .label_size(LabelSize::Small)
+                    .on_click(cx.listener(move |_, _, _, cx| {
+                        FeatureFlagStore::clear_override(name, <dyn Fs>::global(cx), cx);
+                    })),
                 )
             });
 

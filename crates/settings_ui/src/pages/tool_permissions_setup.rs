@@ -466,7 +466,7 @@ fn render_verification_section(
     let editor = window.use_keyed_state(input_id, cx, |window, cx| {
         let mut editor = editor::Editor::single_line(window, cx);
         editor.set_placeholder_text(
-            t(keys::settings_ui::SETTINGS_A_TOOLS_VERIFICATION_PLACEHOLDER),
+            &t(keys::settings_ui::SETTINGS_A_TOOLS_VERIFICATION_PLACEHOLDER),
             window,
             cx,
         );

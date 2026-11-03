@@ -381,8 +381,8 @@ fn render_ollama_provider(
 fn ollama_settings() -> Box<[SettingsPageItem]> {
     Box::new([
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::misc::API_URL),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OLLAMA_BASE_URL),
+            title: t(keys::misc::API_URL).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OLLAMA_BASE_URL).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -409,14 +409,14 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
                 json_path: Some("edit_predictions.ollama.api_url"),
             }),
             metadata: Some(Box::new(SettingsFieldMetadata {
-                placeholder: Some(OLLAMA_API_URL_PLACEHOLDER),
+                placeholder: Some(OLLAMA_API_URL_PLACEHOLDER.into()),
                 ..Default::default()
             })),
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OLLAMA_MODEL),
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OLLAMA_MODEL).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -443,14 +443,14 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
                 json_path: Some("edit_predictions.ollama.model"),
             }),
             metadata: Some(Box::new(SettingsFieldMetadata {
-                placeholder: Some(OLLAMA_MODEL_PLACEHOLDER),
+                placeholder: Some(OLLAMA_MODEL_PLACEHOLDER.into()),
                 ..Default::default()
             })),
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT_DESCRIPTION),
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT_DESCRIPTION).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -480,8 +480,9 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             metadata: None,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::misc::MAX_OUTPUT_TOKENS),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_OUTPUT_TOKENS_DESCRIPTION),
+            title: t(keys::misc::MAX_OUTPUT_TOKENS).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_OUTPUT_TOKENS_DESCRIPTION)
+                .into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -511,8 +512,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -547,8 +548,8 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
 fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
     Box::new([
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::misc::API_URL),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OPENAI_COMPAT_URL),
+            title: t(keys::misc::API_URL).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OPENAI_COMPAT_URL).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -575,14 +576,14 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
                 json_path: Some("edit_predictions.open_ai_compatible_api.api_url"),
             }),
             metadata: Some(Box::new(SettingsFieldMetadata {
-                placeholder: Some(OPEN_AI_COMPATIBLE_API_URL_PLACEHOLDER),
+                placeholder: Some(OPEN_AI_COMPATIBLE_API_URL_PLACEHOLDER.into()),
                 ..Default::default()
             })),
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OPENAI_COMPAT_MODEL),
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OPENAI_COMPAT_MODEL).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -609,14 +610,14 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
                 json_path: Some("edit_predictions.open_ai_compatible_api.model"),
             }),
             metadata: Some(Box::new(SettingsFieldMetadata {
-                placeholder: Some(OPEN_AI_COMPATIBLE_MODEL_PLACEHOLDER),
+                placeholder: Some(OPEN_AI_COMPATIBLE_MODEL_PLACEHOLDER.into()),
                 ..Default::default()
             })),
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT_DESCRIPTION),
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_PROMPT_FORMAT_DESCRIPTION).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -646,8 +647,9 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             metadata: None,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::misc::MAX_OUTPUT_TOKENS),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_OUTPUT_TOKENS_DESCRIPTION),
+            title: t(keys::misc::MAX_OUTPUT_TOKENS).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_OUTPUT_TOKENS_DESCRIPTION)
+                .into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -677,8 +679,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -713,8 +715,8 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
 fn codestral_settings() -> Box<[SettingsPageItem]> {
     Box::new([
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::misc::API_URL),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_CODESTRAL_URL),
+            title: t(keys::misc::API_URL).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_CODESTRAL_URL).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -741,14 +743,15 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
                 json_path: Some("edit_predictions.codestral.api_url"),
             }),
             metadata: Some(Box::new(SettingsFieldMetadata {
-                placeholder: Some(CODESTRAL_API_URL),
+                placeholder: Some(CODESTRAL_API_URL.into()),
                 ..Default::default()
             })),
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::misc::MAX_TOKENS),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_OUTPUT_TOKENS_DESCRIPTION),
+            title: t(keys::misc::MAX_TOKENS).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_OUTPUT_TOKENS_DESCRIPTION)
+                .into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -778,8 +781,8 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_CODESTRAL_MODEL),
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_CODESTRAL_MODEL).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -806,14 +809,14 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
                 json_path: Some("edit_predictions.codestral.model"),
             }),
             metadata: Some(Box::new(SettingsFieldMetadata {
-                placeholder: Some("codestral-latest"),
+                placeholder: Some("codestral-latest".into()),
                 ..Default::default()
             })),
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
-            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
+            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE).into(),
+            description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION).into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 pick: |settings| {
@@ -847,8 +850,8 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
 
 fn mercury_settings() -> Box<[SettingsPageItem]> {
     Box::new([SettingsPageItem::SettingItem(SettingItem {
-        title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
-        description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
+        title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE).into(),
+        description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION).into(),
         field: Box::new(SettingField {
             organization_override: None,
             pick: |settings| {
@@ -881,8 +884,8 @@ fn mercury_settings() -> Box<[SettingsPageItem]> {
 
 fn zed_settings() -> Box<[SettingsPageItem]> {
     Box::new([SettingsPageItem::SettingItem(SettingItem {
-        title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
-        description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
+        title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE).into(),
+        description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION).into(),
         field: Box::new(SettingField {
             organization_override: None,
             pick: |settings| {
@@ -938,8 +941,8 @@ fn render_zed_provider(
 
 fn copilot_settings() -> Box<[SettingsPageItem]> {
     Box::new([SettingsPageItem::SettingItem(SettingItem {
-        title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE),
-        description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION),
+        title: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE).into(),
+        description: t(keys::settings_ui::SETTINGS_EDIT_PRED_DEBOUNCE_DESCRIPTION).into(),
         field: Box::new(SettingField {
             organization_override: None,
             pick: |settings| {

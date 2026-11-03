@@ -75,8 +75,8 @@ fn render_context_server_timeout(
     cx: &mut Context<SettingsWindow>,
 ) -> AnyElement {
     let item = SettingsPageItem::SettingItem(SettingItem {
-        title: t(keys::settings_ui::SETTINGS_MCP_SERVER_TIMEOUT),
-        description: t(keys::settings_ui::SETTINGS_MCP_SERVER_TIMEOUT_DESCRIPTION),
+        title: t(keys::settings_ui::SETTINGS_MCP_SERVER_TIMEOUT).into(),
+        description: t(keys::settings_ui::SETTINGS_MCP_SERVER_TIMEOUT_DESCRIPTION).into(),
         field: Box::new(SettingField {
             organization_override: None,
             json_path: Some("context_server_timeout"),
@@ -933,8 +933,8 @@ fn render_mcp_server_form_page(
         .gap_4()
         .child(render_form_field(
             settings_window,
-            "Server Name",
-            "Required. A unique name used to identify this MCP server.",
+            t(keys::settings_ui::SETTINGS_A_MCP_SERVER_NAME).into(),
+            t(keys::settings_ui::SETTINGS_A_MCP_SERVER_NAME_DESCRIPTION).into(),
             &form.name,
             cx,
         ))
@@ -942,60 +942,60 @@ fn render_mcp_server_form_page(
             McpTransport::Stdio => this
                 .child(render_form_field(
                     settings_window,
-                    "Command",
-                    "Required. Path to the executable that launches the server.",
+                    t(keys::settings_ui::SETTINGS_A_MCP_COMMAND).into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_COMMAND_DESCRIPTION).into(),
                     &form.command,
                     cx,
                 ))
                 .child(render_form_field(
                     settings_window,
-                    "Arguments",
-                    "Space-separated arguments passed to the command.",
+                    t(keys::settings_ui::SETTINGS_A_MCP_ARGUMENTS).into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_ARGUMENTS_DESCRIPTION).into(),
                     &form.args,
                     cx,
                 ))
                 .child(render_kv_section(
                     settings_window,
-                    "Environment Variables",
-                    "Environment variables provided to the server process.",
+                    t(keys::settings_ui::SETTINGS_A_MCP_ENV_VARS).into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_ENV_VARS_DESCRIPTION).into(),
                     &form.env,
                     McpKvKind::Env,
                     cx,
                 ))
                 .child(render_form_field(
                     settings_window,
-                    "Timeout (seconds)",
-                    "How long to wait for the server to respond before timing out.",
+                    t(keys::settings_ui::SETTINGS_A_MCP_TIMEOUT).into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_TIMEOUT_DESCRIPTION).into(),
                     &form.timeout,
                     cx,
                 )),
             McpTransport::Http => this
                 .child(render_form_field(
                     settings_window,
-                    "URL",
-                    "Required. The base URL of the remote MCP server.",
+                    t(keys::settings_ui::SETTINGS_A_MCP_URL).into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_URL_DESCRIPTION).into(),
                     &form.url,
                     cx,
                 ))
                 .child(render_kv_section(
                     settings_window,
-                    "Headers",
-                    "HTTP headers sent with each request to the server.",
+                    t(keys::settings_ui::SETTINGS_A_MCP_HEADERS).into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_HEADERS_DESCRIPTION).into(),
                     &form.headers,
                     McpKvKind::Header,
                     cx,
                 ))
                 .child(render_form_field(
                     settings_window,
-                    "Timeout (seconds)",
-                    "How long to wait for the server to respond before timing out.",
+                    t(keys::settings_ui::SETTINGS_A_MCP_TIMEOUT).into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_TIMEOUT_DESCRIPTION).into(),
                     &form.timeout,
                     cx,
                 ))
                 .child(render_form_field(
                     settings_window,
-                    "OAuth Client ID",
-                    "Optional OAuth client ID used to authenticate with the server.",
+                    t(keys::settings_ui::SETTINGS_A_MCP_OAUTH_CLIENT_ID).into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_OAUTH_CLIENT_ID_DESCRIPTION).into(),
                     &form.oauth_client_id,
                     cx,
                 )),
@@ -1037,8 +1037,8 @@ fn input_box(editor: &Entity<Editor>, cx: &App) -> impl IntoElement {
 
 fn render_form_field(
     settings_window: &SettingsWindow,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     editor: &Entity<Editor>,
     cx: &mut Context<SettingsWindow>,
 ) -> AnyElement {
@@ -1059,8 +1059,8 @@ fn render_form_field(
 
 fn render_kv_section(
     settings_window: &SettingsWindow,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     rows: &[KeyValueRow],
     kind: McpKvKind,
     cx: &mut Context<SettingsWindow>,
@@ -1155,7 +1155,7 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
                 })),
         )
         .child(
-            Button::new("mcp-form-save", t(keys::menu::MENU_FILE_SAVE))
+            Button::new("mcp-form-save", t(keys::app_menu::MENU_FILE_SAVE))
                 .style(ButtonStyle::Filled)
                 .on_click(cx.listener(|this, _, window, cx| {
                     save_mcp_server_form(this, window, cx);

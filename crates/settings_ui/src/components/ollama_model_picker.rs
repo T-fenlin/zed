@@ -198,8 +198,8 @@ pub fn render_ollama_model_picker(
     field: SettingField<settings::OllamaModelName>,
     file: SettingsUiFile,
     _metadata: Option<&SettingsFieldMetadata>,
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     _window: &mut Window,
     cx: &mut App,
 ) -> AnyElement {
@@ -236,9 +236,9 @@ pub fn render_ollama_model_picker(
     PopoverMenu::new("ollama-model-picker")
         .trigger(
             render_picker_trigger_button("ollama_model_picker_trigger".into(), trigger_value)
-                .aria_label(title)
+                .aria_label(title.clone())
                 .when(!description.is_empty(), |this| {
-                    this.aria_description(description)
+                    this.aria_description(description.clone())
                 }),
         )
         .menu(move |window, cx| {

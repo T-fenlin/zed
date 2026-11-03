@@ -137,8 +137,8 @@ pub(crate) fn render_sandbox_settings_page(
                         .tab_index(0),
                     )
                     .child(render_list_section(
-                        t(keys::settings_ui::SETTINGS_B_SANDBOX_ALLOWED_DOMAINS),
-                        DOMAINS_DESCRIPTION,
+                        t(keys::settings_ui::SETTINGS_B_SANDBOX_ALLOWED_DOMAINS).into(),
+                        DOMAINS_DESCRIPTION.into(),
                         host_rows,
                         add_host_input,
                         empty_border,
@@ -170,8 +170,8 @@ pub(crate) fn render_sandbox_settings_page(
                         .tab_index(0),
                     )
                     .child(render_list_section(
-                        t(keys::settings_ui::SETTINGS_B_SANDBOX_WRITABLE_PATHS),
-                        WRITE_PATHS_DESCRIPTION,
+                        t(keys::settings_ui::SETTINGS_B_SANDBOX_WRITABLE_PATHS).into(),
+                        WRITE_PATHS_DESCRIPTION.into(),
                         path_rows,
                         add_path_input,
                         empty_border,
@@ -220,8 +220,8 @@ pub(crate) fn render_sandbox_settings_page(
 }
 
 fn render_list_section(
-    title: &'static str,
-    description: &'static str,
+    title: SharedString,
+    description: SharedString,
     rows: Vec<AnyElement>,
     add_input: AnyElement,
     empty_border: gpui::Hsla,

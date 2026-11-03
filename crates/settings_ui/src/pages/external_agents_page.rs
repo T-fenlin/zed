@@ -521,8 +521,8 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                "Agent Name",
-                "Required. A unique name used to identify this agent.",
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_AGENT_NAME).into(),
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_AGENT_NAME_HINT).into(),
                 input_box(&form.name, cx).into_any_element(),
                 None,
                 None,
@@ -535,8 +535,8 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                "Command",
-                "Required. Path to the executable that launches the agent.",
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_COMMAND).into(),
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_COMMAND_HINT).into(),
                 input_box(&form.command, cx).into_any_element(),
                 None,
                 None,
@@ -549,8 +549,8 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                "Arguments",
-                "Space-separated arguments passed to the command.",
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_ARGUMENTS).into(),
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_ARGUMENTS_HINT).into(),
                 input_box(&form.args, cx).into_any_element(),
                 None,
                 None,
@@ -661,8 +661,8 @@ fn render_env_section(
 
     crate::render_settings_item_layout(
         settings_window,
-        "Environment Variables",
-        "Environment variables provided to the agent process.",
+        t(keys::settings_ui::SETTINGS_EXT_AGENT_ENV_VARS).into(),
+        t(keys::settings_ui::SETTINGS_EXT_AGENT_ENV_VARS_HINT).into(),
         control,
         None,
         None,
@@ -725,7 +725,7 @@ fn render_form_actions(
                 .border_1()
                 .border_color(save_border)
                 .child(
-                    Button::new("custom-agent-form-save", t(keys::menu::MENU_FILE_SAVE))
+                    Button::new("custom-agent-form-save", t(keys::app_menu::MENU_FILE_SAVE))
                         .style(ButtonStyle::Filled)
                         .track_focus(&save_handle)
                         .on_click(cx.listener(|this, _, window, cx| {

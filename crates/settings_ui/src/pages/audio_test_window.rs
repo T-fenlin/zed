@@ -1,10 +1,10 @@
-use i18n::{keys, t};
 use audio::{AudioSettings, CHANNEL_COUNT, RodioExt, SAMPLE_RATE};
 use cpal::DeviceId;
 use gpui::{
     App, Context, Entity, FocusHandle, Focusable, Render, Size, Window, WindowBounds, WindowKind,
     WindowOptions, prelude::*, px,
 };
+use i18n::{keys, t};
 use platform_title_bar::PlatformTitleBar;
 use release_channel::ReleaseChannel;
 use rodio::Source;
@@ -220,13 +220,17 @@ impl Render for AudioTestWindow {
             .child(
                 v_flex()
                     .gap_1()
-                    .child(Label::new(t(keys::settings_ui::SETTINGS_B_AUDIO_TEST_OUTPUT_DEVICE)))
+                    .child(Label::new(t(
+                        keys::settings_ui::SETTINGS_B_AUDIO_TEST_OUTPUT_DEVICE,
+                    )))
                     .child(output_dropdown),
             )
             .child(
                 v_flex()
                     .gap_1()
-                    .child(Label::new(t(keys::settings_ui::SETTINGS_B_AUDIO_TEST_INPUT_DEVICE)))
+                    .child(Label::new(t(
+                        keys::settings_ui::SETTINGS_B_AUDIO_TEST_INPUT_DEVICE,
+                    )))
                     .child(input_dropdown),
             )
             .child(
