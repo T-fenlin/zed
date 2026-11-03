@@ -1,6 +1,6 @@
 # settings-ui.ftl — English source strings (rebuilt).
 
-settings-ui_locale_zh_hans = 简体中文
+settings-ui_locale_zh_hans = Simplified Chinese
 settings-developer-section-feature_flags = Feature Flags
 settings-developer-feature_flags = Feature Flags
 settings-developer-section-instrumentation = Instrumentation
@@ -1198,11 +1198,11 @@ settings-ui-outdated_migration_failed = Your settings file is out of date, autom
 settings-ui-restricted_hint = This project is in restricted mode. Some project settings may not apply.
 settings-ui-manage_trust = Manage Trust
 settings-ext_agent-empty = No external agents added yet. Click "Add Agent" to get started.
-settings-a-mcp-page_title = 已配置的服务器
-settings-a-mcp-page_description = 管理直接连接或通过扩展连接的服务器。
-settings-a-mcp-empty_state = 尚未添加 MCP 服务器。点击“添加服务器”开始。
-settings-a-mcp-no_project = 未找到活动项目。打开一个工作区以管理 MCP 服务器。
-settings-a-mcp-tool_count = { $count } 个工具
+settings-a-mcp-page_title = Configured Servers
+settings-a-mcp-page_description = Manage servers connected directly or through extensions.
+settings-a-mcp-empty_state = No MCP servers added yet. Click "Add Server" to get started.
+settings-a-mcp-no_project = No active project found. Open a workspace to manage MCP servers.
+settings-a-mcp-tool_count = { $count } tools
 settings-a-mcp-configure_tooltip = Configure MCP Server
 settings-a-mcp-uninstall_tooltip = Uninstall MCP Server
 settings-a-mcp-log_out = Log Out
@@ -1253,7 +1253,7 @@ settings-a-mcp-header_label = header
 settings-a-mcp-duplicate_kv = Duplicate { $label } "{ $key }".
 settings-a-tools-disclaimer = Note: custom tool permissions only apply to the Zed native agent and don’t extend to external agents connected through the Agent Client Protocol (ACP).
 settings-a-tools-hardcoded_rules = `rm -rf` commands are always blocked when run on `$HOME`, `~`, `.`, `..`, or `/`
-settings-a-tools-rule_count = { $count } 条规则
+settings-a-tools-rule_count = { $count } rules
 settings-a-tools-invalid_count = { $count } invalid
 settings-a-tools-regex_deny_description = If any of these regexes match, the tool action will be denied.
 settings-a-tools-regex_allow_description = If any of these regexes match, the action will be approved—unless an Always Confirm or Always Deny matches.
