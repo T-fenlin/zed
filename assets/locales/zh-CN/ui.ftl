@@ -39,3 +39,4 @@ ui-no_items = 无条目
 ui-reveal_in_finder = 在访达中显示
 ui-reveal_in_file_explorer = 在文件资源管理器中显示
 ui-reveal_in_file_manager = 在文件管理器中显示
+ui-remove_key = 移除密钥

@@ -1836,6 +1836,7 @@ pub mod ui {
         UI_REVEAL_IN_FINDER = "ui-reveal_in_finder",
         UI_REVEAL_IN_FILE_EXPLORER = "ui-reveal_in_file_explorer",
         UI_REVEAL_IN_FILE_MANAGER = "ui-reveal_in_file_manager",
+        UI_REMOVE_KEY = "ui-remove_key",
     }
 }
 

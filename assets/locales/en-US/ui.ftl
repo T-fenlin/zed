@@ -39,3 +39,4 @@ ui-no_items = No items
 ui-reveal_in_finder = Reveal in Finder
 ui-reveal_in_file_explorer = Reveal in File Explorer
 ui-reveal_in_file_manager = Reveal in File Manager
+ui-remove_key = Remove Key
