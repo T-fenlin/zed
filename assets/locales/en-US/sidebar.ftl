@@ -44,4 +44,4 @@ sidebar-channel-separator = {" "}and{" "}
 sidebar-cross-channel-description = Import threads from { $channels } to continue where you left off.
 sidebar-cross-channel-title = Threads found from other channels
 sidebar-import-other-channels = Import Threads from Other Channels
-sidebar-waiting-threads = { $count } 个会话正在等待确认
+sidebar-waiting-threads = { $count } threads waiting for confirmation
