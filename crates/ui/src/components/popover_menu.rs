@@ -201,6 +201,7 @@ impl<M: ManagedView> PopoverMenu<M> {
         tooltip_builder: impl Fn(&mut Window, &mut App) -> AnyView + 'static,
     ) -> Self {
         let on_open = self.on_open.clone();
+        let tooltip_builder = Rc::new(tooltip_builder);
         self.child_builder = Some(Box::new(move |menu, builder| {
             let open = menu.borrow().is_some();
             t.toggle_state(open)
@@ -209,6 +210,7 @@ impl<M: ManagedView> PopoverMenu<M> {
                         show_menu(&builder, &menu, on_open.clone(), window, cx)
                     })
                     .when(!open, |t| {
+                        let tooltip_builder = tooltip_builder.clone();
                         t.tooltip(move |window, cx| tooltip_builder(window, cx))
                     })
                 })
