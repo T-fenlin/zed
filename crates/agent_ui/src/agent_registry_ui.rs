@@ -95,7 +95,11 @@ impl AgentRegistryPage {
             let registry_store = AgentRegistryStore::global(cx);
             let query_editor = cx.new(|cx| {
                 let mut input = Editor::single_line(window, cx);
-                input.set_placeholder_text(&t(keys::agent::AGENT_A_REGISTRY_SEARCH_PLACEHOLDER), window, cx);
+                input.set_placeholder_text(
+                    &t(keys::agent::AGENT_A_REGISTRY_SEARCH_PLACEHOLDER),
+                    window,
+                    cx,
+                );
                 input
             });
             cx.subscribe(&query_editor, Self::on_query_change).detach();
@@ -293,30 +297,30 @@ impl AgentRegistryPage {
         let fetch_error = registry_store.fetch_error();
 
         let message = if is_fetching {
-            t(keys::agent::AGENT_A_REGISTRY_LOADING),
+            t(keys::agent::AGENT_A_REGISTRY_LOADING)
         } else if fetch_error.is_some() {
-            t(keys::agent::AGENT_A_REGISTRY_LOAD_FAILED),
+            t(keys::agent::AGENT_A_REGISTRY_LOAD_FAILED)
         } else {
             match self.filter {
                 RegistryFilter::All => {
                     if has_search {
-                        t(keys::agent::AGENT_A_REGISTRY_NO_MATCH_ALL),
+                        t(keys::agent::AGENT_A_REGISTRY_NO_MATCH_ALL)
                     } else {
-                        t(keys::agent::AGENT_A_REGISTRY_EMPTY_ALL),
+                        t(keys::agent::AGENT_A_REGISTRY_EMPTY_ALL)
                     }
                 }
                 RegistryFilter::Installed => {
                     if has_search {
-                        t(keys::agent::AGENT_A_REGISTRY_NO_MATCH_INSTALLED),
+                        t(keys::agent::AGENT_A_REGISTRY_NO_MATCH_INSTALLED)
                     } else {
-                        t(keys::agent::AGENT_A_REGISTRY_EMPTY_INSTALLED),
+                        t(keys::agent::AGENT_A_REGISTRY_EMPTY_INSTALLED)
                     }
                 }
                 RegistryFilter::NotInstalled => {
                     if has_search {
-                        t(keys::agent::AGENT_A_REGISTRY_NO_MATCH_UNINSTALLED),
+                        t(keys::agent::AGENT_A_REGISTRY_NO_MATCH_UNINSTALLED)
                     } else {
-                        t(keys::agent::AGENT_A_REGISTRY_EMPTY_UNINSTALLED),
+                        t(keys::agent::AGENT_A_REGISTRY_EMPTY_UNINSTALLED)
                     }
                 }
             }
@@ -438,7 +442,12 @@ impl AgentRegistryPage {
             )
             .icon_size(IconSize::Small)
             .tooltip(move |_, cx| {
-                Tooltip::with_meta(t(keys::agent::AGENT_A_REGISTRY_VISIT_WEBSITE), None, website.clone(), cx)
+                Tooltip::with_meta(
+                    t(keys::agent::AGENT_A_REGISTRY_VISIT_WEBSITE),
+                    None,
+                    website.clone(),
+                    cx,
+                )
             })
             .on_click(move |_, _, cx| {
                 cx.open_url(&website_for_click);
@@ -478,9 +487,11 @@ impl AgentRegistryPage {
                             .child(Label::new(format!("v{}", agent.version())).color(Color::Muted))
                             .when(!supports_current_platform, |this| {
                                 this.child(
-                                    Label::new(t(keys::agent::AGENT_A_REGISTRY_UNSUPPORTED_PLATFORM))
-                                        .size(LabelSize::Small)
-                                        .color(Color::Warning),
+                                    Label::new(t(
+                                        keys::agent::AGENT_A_REGISTRY_UNSUPPORTED_PLATFORM,
+                                    ))
+                                    .size(LabelSize::Small)
+                                    .color(Color::Warning),
                                 )
                             }),
                     )
@@ -582,9 +593,11 @@ impl AgentRegistryPage {
                         });
                     })
             }
-            RegistryInstallStatus::InstalledCustom => Button::new(button_id, t(keys::agent::AGENT_A_REGISTRY_INSTALLED))
-                .style(ButtonStyle::OutlinedGhost)
-                .disabled(true),
+            RegistryInstallStatus::InstalledCustom => {
+                Button::new(button_id, t(keys::agent::AGENT_A_REGISTRY_INSTALLED))
+                    .style(ButtonStyle::OutlinedGhost)
+                    .disabled(true)
+            }
         }
     }
 }
