@@ -379,12 +379,26 @@ impl TitleBar {
             .map(|inner| inner.0)
             .unwrap_or(ConnectionQuality::Lost);
         let (signal_icon, signal_color, quality_label) = match effective_quality {
-            ConnectionQuality::Excellent => {
-                (IconName::SignalHigh, Some(Color::Success), t(keys::collab::COLLAB_QUALITY_EXCELLENT))
-            }
-            ConnectionQuality::Good => (IconName::SignalHigh, None, t(keys::collab::COLLAB_QUALITY_GOOD)),
-            ConnectionQuality::Poor => (IconName::SignalMedium, Some(Color::Warning), t(keys::collab::COLLAB_QUALITY_POOR)),
-            ConnectionQuality::Lost => (IconName::SignalLow, Some(Color::Error), t(keys::collab::COLLAB_QUALITY_LOST)),
+            ConnectionQuality::Excellent => (
+                IconName::SignalHigh,
+                Some(Color::Success),
+                t(keys::collab::COLLAB_QUALITY_EXCELLENT),
+            ),
+            ConnectionQuality::Good => (
+                IconName::SignalHigh,
+                None,
+                t(keys::collab::COLLAB_QUALITY_GOOD),
+            ),
+            ConnectionQuality::Poor => (
+                IconName::SignalMedium,
+                Some(Color::Warning),
+                t(keys::collab::COLLAB_QUALITY_POOR),
+            ),
+            ConnectionQuality::Lost => (
+                IconName::SignalLow,
+                Some(Color::Error),
+                t(keys::collab::COLLAB_QUALITY_LOST),
+            ),
         };
 
         let quality_label: SharedString = quality_label.into();
@@ -444,10 +458,22 @@ impl TitleBar {
                             .child(
                                 v_flex()
                                     .gap_0p5()
-                                    .child(stat_row(t(keys::collab::COLLAB_STAT_LATENCY), latency))
-                                    .child(stat_row(t(keys::collab::COLLAB_STAT_JITTER), jitter))
-                                    .child(stat_row(t(keys::collab::COLLAB_STAT_PACKET_LOSS), packet_loss))
-                                    .child(stat_row(t(keys::collab::COLLAB_STAT_INPUT_LAG), input_lag)),
+                                    .child(stat_row(
+                                        t(keys::collab::COLLAB_STAT_LATENCY).into(),
+                                        latency,
+                                    ))
+                                    .child(stat_row(
+                                        t(keys::collab::COLLAB_STAT_JITTER).into(),
+                                        jitter,
+                                    ))
+                                    .child(stat_row(
+                                        t(keys::collab::COLLAB_STAT_PACKET_LOSS).into(),
+                                        packet_loss,
+                                    ))
+                                    .child(stat_row(
+                                        t(keys::collab::COLLAB_STAT_INPUT_LAG).into(),
+                                        input_lag,
+                                    )),
                             )
                             .into_any_element()
                     }))
@@ -504,7 +530,12 @@ impl TitleBar {
                         let label = t(keys::collab::COLLAB_UNMUTE_AUDIO);
 
                         if !muted_by_user {
-                            Tooltip::with_meta(label, None, t(keys::collab::COLLAB_MICROPHONE_WILL_BE_UNMUTED), cx)
+                            Tooltip::with_meta(
+                                label,
+                                None,
+                                t(keys::collab::COLLAB_MICROPHONE_WILL_BE_UNMUTED),
+                                cx,
+                            )
                         } else {
                             Tooltip::simple(label, cx)
                         }
@@ -512,7 +543,12 @@ impl TitleBar {
                         let label = t(keys::collab::COLLAB_MUTE_AUDIO);
 
                         if !muted_by_user {
-                            Tooltip::with_meta(label, None, t(keys::collab::COLLAB_MICROPHONE_WILL_BE_MUTED), cx)
+                            Tooltip::with_meta(
+                                label,
+                                None,
+                                t(keys::collab::COLLAB_MICROPHONE_WILL_BE_MUTED),
+                                cx,
+                            )
                         } else {
                             Tooltip::simple(label, cx)
                         }
@@ -591,9 +627,9 @@ impl TitleBar {
                                         },
                                     ))
                                 } else if is_sharing_disabled {
-                                    this.disabled(true).tooltip(Tooltip::text(
-                                        t(keys::collab::COLLAB_CANNOT_SHARE_PUBLIC_CHANNEL),
-                                    ))
+                                    this.disabled(true).tooltip(Tooltip::text(t(
+                                        keys::collab::COLLAB_CANNOT_SHARE_PUBLIC_CHANNEL,
+                                    )))
                                 } else {
                                     this.tooltip(move |_, cx| {
                                         Tooltip::with_meta(
@@ -719,10 +755,9 @@ impl TitleBar {
                                     continue;
                                 };
 
-                                let label = meta
-                                    .label
-                                    .clone()
-                                    .unwrap_or_else(|| t(keys::collab::COLLAB_UNKNOWN_SCREEN).into());
+                                let label = meta.label.clone().unwrap_or_else(|| {
+                                    t(keys::collab::COLLAB_UNKNOWN_SCREEN).into()
+                                });
                                 let resolution = SharedString::from(format!(
                                     "{} × {}",
                                     meta.resolution.width.0, meta.resolution.height.0

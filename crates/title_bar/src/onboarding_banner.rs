@@ -4,8 +4,8 @@
 #![allow(dead_code)]
 
 use gpui::{Action, Entity, Global, Render, SharedString, TaskExt};
-use ui::{ButtonLike, Tooltip, prelude::*};
 use i18n::{keys, t};
+use ui::{ButtonLike, Tooltip, prelude::*};
 use util::ResultExt;
 
 /// Prompts the user to try newly released Zed's features

@@ -608,13 +608,20 @@ impl TitleBar {
         let host: SharedString = options.display_name().into();
 
         let (tooltip_title, icon) = match options {
-            RemoteConnectionOptions::Ssh(_) => (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Server),
-            RemoteConnectionOptions::Wsl(_) => (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Linux),
+            RemoteConnectionOptions::Ssh(_) => {
+                (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Server)
+            }
+            RemoteConnectionOptions::Wsl(_) => {
+                (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Linux)
+            }
             RemoteConnectionOptions::Docker(_dev_container_connection) => {
                 (t(keys::titlebar::TITLEBAR_DEV_CONTAINER), IconName::Box)
             }
             #[cfg(any(test, feature = "test-support"))]
-            RemoteConnectionOptions::Mock(_) => (t(keys::titlebar::TITLEBAR_MOCK_REMOTE_PROJECT), IconName::Server),
+            RemoteConnectionOptions::Mock(_) => (
+                t(keys::titlebar::TITLEBAR_MOCK_REMOTE_PROJECT),
+                IconName::Server,
+            ),
         };
 
         let (indicator_color, meta) = match self.project.read(cx).remote_connection_state(cx)? {
@@ -677,7 +684,7 @@ impl TitleBar {
                         ),
                     move |_window, cx| {
                         Tooltip::with_meta(
-                            tooltip_title,
+                            tooltip_title.clone(),
                             Some(&OpenRemote::default()),
                             meta.clone(),
                             cx,
@@ -696,32 +703,35 @@ impl TitleBar {
             return None;
         }
 
-        let button = Button::new("restricted_mode_trigger", t(keys::titlebar::TITLEBAR_RESTRICTED_MODE))
-            .style(ButtonStyle::Tinted(TintColor::Warning))
-            .label_size(LabelSize::Small)
-            .color(Color::Warning)
-            .start_icon(
-                Icon::new(IconName::Warning)
-                    .size(IconSize::Small)
-                    .color(Color::Warning),
+        let button = Button::new(
+            "restricted_mode_trigger",
+            t(keys::titlebar::TITLEBAR_RESTRICTED_MODE),
+        )
+        .style(ButtonStyle::Tinted(TintColor::Warning))
+        .label_size(LabelSize::Small)
+        .color(Color::Warning)
+        .start_icon(
+            Icon::new(IconName::Warning)
+                .size(IconSize::Small)
+                .color(Color::Warning),
+        )
+        .tooltip(|_, cx| {
+            Tooltip::with_meta(
+                t(keys::titlebar::TITLEBAR_RESTRICTED_MODE_TITLE),
+                Some(&ToggleWorktreeSecurity),
+                t(keys::titlebar::TITLEBAR_RESTRICTED_MODE_BODY),
+                cx,
             )
-            .tooltip(|_, cx| {
-                Tooltip::with_meta(
-                    t(keys::titlebar::TITLEBAR_RESTRICTED_MODE_TITLE),
-                    Some(&ToggleWorktreeSecurity),
-                    t(keys::titlebar::TITLEBAR_RESTRICTED_MODE_BODY),
-                    cx,
-                )
+        })
+        .on_click({
+            cx.listener(move |this, _, window, cx| {
+                this.workspace
+                    .update(cx, |workspace, cx| {
+                        workspace.show_worktree_trust_security_modal(true, window, cx)
+                    })
+                    .log_err();
             })
-            .on_click({
-                cx.listener(move |this, _, window, cx| {
-                    this.workspace
-                        .update(cx, |workspace, cx| {
-                            workspace.show_worktree_trust_security_modal(true, window, cx)
-                        })
-                        .log_err();
-                })
-            });
+        });
 
         if ui::utils::MACOS_SDK_26_OR_LATER {
             // Make up for Tahoe's traffic light buttons having less spacing around them
@@ -765,7 +775,12 @@ impl TitleBar {
                         host_user.username
                     );
 
-                    Tooltip::with_meta(tooltip_title, None, t(keys::collab::COLLAB_CLICK_TO_FOLLOW), cx)
+                    Tooltip::with_meta(
+                        tooltip_title,
+                        None,
+                        t(keys::collab::COLLAB_CLICK_TO_FOLLOW),
+                        cx,
+                    )
                 })
                 .on_click({
                     let host_peer_id = host.peer_id;
@@ -855,7 +870,11 @@ impl TitleBar {
                     .selected_style(ButtonStyle::Tinted(TintColor::Accent))
                     .when(!is_project_selected, |s| s.color(Color::Muted)),
                 move |_window, cx| {
-                    Tooltip::for_action(t(keys::titlebar::TITLEBAR_RECENT_PROJECTS), &zed_actions::OpenRecent::default(), cx)
+                    Tooltip::for_action(
+                        t(keys::titlebar::TITLEBAR_RECENT_PROJECTS),
+                        &zed_actions::OpenRecent::default(),
+                        cx,
+                    )
                 },
             )
             .anchor(gpui::Anchor::TopLeft)
@@ -907,7 +926,11 @@ impl TitleBar {
                     .selected_style(ButtonStyle::Tinted(TintColor::Accent))
                     .when(!is_project_selected, |s| s.color(Color::Muted)),
                 move |_window, cx| {
-                    Tooltip::for_action(t(keys::titlebar::TITLEBAR_RECENT_PROJECTS), &zed_actions::OpenRecent::default(), cx)
+                    Tooltip::for_action(
+                        t(keys::titlebar::TITLEBAR_RECENT_PROJECTS),
+                        &zed_actions::OpenRecent::default(),
+                        cx,
+                    )
                 },
             )
             .anchor(gpui::Anchor::TopLeft)
@@ -1029,15 +1052,18 @@ impl TitleBar {
                 };
 
                 let trigger = if is_detached_head {
-                    Button::new("project_branch_trigger", t(keys::titlebar::TITLEBAR_CREATE_BRANCH))
-                        .selected_style(ButtonStyle::Tinted(TintColor::Accent))
-                        .label_size(LabelSize::Small)
-                        .tab_index(0isize)
-                        .start_icon(
-                            Icon::new(IconName::GitBranchPlus)
-                                .size(IconSize::XSmall)
-                                .color(Color::Muted),
-                        )
+                    Button::new(
+                        "project_branch_trigger",
+                        t(keys::titlebar::TITLEBAR_CREATE_BRANCH),
+                    )
+                    .selected_style(ButtonStyle::Tinted(TintColor::Accent))
+                    .label_size(LabelSize::Small)
+                    .tab_index(0isize)
+                    .start_icon(
+                        Icon::new(IconName::GitBranchPlus)
+                            .size(IconSize::XSmall)
+                            .color(Color::Muted),
+                    )
                 } else {
                     Button::new("project_branch_trigger", branch_name)
                         .selected_style(ButtonStyle::Tinted(TintColor::Accent))
@@ -1154,7 +1180,9 @@ impl TitleBar {
             client::Status::UpgradeRequired => {
                 let auto_updater = auto_update::AutoUpdater::get(cx);
                 let label = match auto_updater.map(|auto_update| auto_update.read(cx).status()) {
-                    Some(AutoUpdateStatus::Updated { .. }) => t(keys::titlebar::TITLEBAR_RESTART_TO_COLLABORATE),
+                    Some(AutoUpdateStatus::Updated { .. }) => {
+                        t(keys::titlebar::TITLEBAR_RESTART_TO_COLLABORATE)
+                    }
                     Some(AutoUpdateStatus::Installing { .. })
                     | Some(AutoUpdateStatus::Downloading { .. })
                     | Some(AutoUpdateStatus::Checking) => "Updating...".to_string(),
@@ -1304,7 +1332,10 @@ impl TitleBar {
                                     .w_full()
                                     .gap_1()
                                     .justify_between()
-                                    .child(Label::new(t(keys::titlebar::TITLEBAR_RESTART_TO_UPDATE)).color(Color::Accent))
+                                    .child(
+                                        Label::new(t(keys::titlebar::TITLEBAR_RESTART_TO_UPDATE))
+                                            .color(Color::Accent),
+                                    )
                                     .child(
                                         Icon::new(IconName::Download)
                                             .size(IconSize::Small)
@@ -1372,8 +1403,14 @@ impl TitleBar {
 
                         this.separator()
                     })
-                    .action(t(keys::agent::AGENT_MENU_SETTINGS), zed_actions::OpenSettings.boxed_clone())
-                    .action(t(keys::settings_ui::SETTINGS_KEYMAP_KEYMAP), Box::new(zed_actions::OpenKeymap))
+                    .action(
+                        t(keys::agent::AGENT_MENU_SETTINGS),
+                        zed_actions::OpenSettings.boxed_clone(),
+                    )
+                    .action(
+                        t(keys::settings_ui::SETTINGS_KEYMAP_KEYMAP),
+                        Box::new(zed_actions::OpenKeymap),
+                    )
                     .action(
                         t(keys::titlebar::TITLEBAR_MENU_THEMES),
                         zed_actions::theme_selector::Toggle::default().boxed_clone(),
@@ -1387,8 +1424,9 @@ impl TitleBar {
                         zed_actions::Extensions::default().boxed_clone(),
                     )
                     .when(ai_enabled, |menu| {
-                        menu.separator()
-                            .submenu(t(keys::titlebar::TITLEBAR_MENU_PANEL_LAYOUT), move |menu, _window, _cx| {
+                        menu.separator().submenu(
+                            t(keys::titlebar::TITLEBAR_MENU_PANEL_LAYOUT),
+                            move |menu, _window, _cx| {
                                 menu.toggleable_entry(
                                     t(keys::titlebar::TITLEBAR_MENU_LAYOUT_CLASSIC),
                                     is_editor,
@@ -1409,16 +1447,21 @@ impl TitleBar {
                                 )
                                 .when(is_custom, |menu| {
                                     menu.item(
-                                        ContextMenuEntry::new(t(keys::settings_ui::SETTINGS_ENUM_CUSTOM))
-                                            .toggleable(IconPosition::Start, true)
-                                            .disabled(true),
+                                        ContextMenuEntry::new(t(
+                                            keys::settings_ui::SETTINGS_ENUM_CUSTOM,
+                                        ))
+                                        .toggleable(IconPosition::Start, true)
+                                        .disabled(true),
                                     )
                                 })
-                            })
+                            },
+                        )
                     })
                     .when(is_signed_in, |this| {
-                        this.separator()
-                            .action(t(keys::edit_prediction::EDIT_PREDICTION_SIGN_OUT), client::SignOut.boxed_clone())
+                        this.separator().action(
+                            t(keys::edit_prediction::EDIT_PREDICTION_SIGN_OUT),
+                            client::SignOut.boxed_clone(),
+                        )
                     })
                 })
                 .into()

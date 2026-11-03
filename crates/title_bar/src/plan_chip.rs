@@ -31,12 +31,32 @@ impl RenderOnce for PlanChip {
             .blend(cx.theme().colors().text_accent.opacity(0.2));
 
         let (plan_name, label_color, bg_color) = match self.plan {
-            Plan::ZedFree => (t(keys::titlebar::TITLEBAR_PLAN_FREE), Color::Default, free_chip_bg),
-            Plan::ZedProTrial => (t(keys::titlebar::TITLEBAR_PLAN_PRO_TRIAL), Color::Accent, pro_chip_bg),
-            Plan::ZedPro => (t(keys::titlebar::TITLEBAR_PLAN_PRO), Color::Accent, pro_chip_bg),
-            Plan::ZedBusiness => (t(keys::titlebar::TITLEBAR_PLAN_BUSINESS), Color::Accent, pro_chip_bg),
+            Plan::ZedFree => (
+                t(keys::titlebar::TITLEBAR_PLAN_FREE),
+                Color::Default,
+                free_chip_bg,
+            ),
+            Plan::ZedProTrial => (
+                t(keys::titlebar::TITLEBAR_PLAN_PRO_TRIAL),
+                Color::Accent,
+                pro_chip_bg,
+            ),
+            Plan::ZedPro => (
+                t(keys::titlebar::TITLEBAR_PLAN_PRO),
+                Color::Accent,
+                pro_chip_bg,
+            ),
+            Plan::ZedBusiness => (
+                t(keys::titlebar::TITLEBAR_PLAN_BUSINESS),
+                Color::Accent,
+                pro_chip_bg,
+            ),
             Plan::ZedVip => ("VIP".to_string(), Color::Accent, pro_chip_bg),
-            Plan::ZedStudent => (t(keys::titlebar::TITLEBAR_PLAN_STUDENT), Color::Accent, pro_chip_bg),
+            Plan::ZedStudent => (
+                t(keys::titlebar::TITLEBAR_PLAN_STUDENT),
+                Color::Accent,
+                pro_chip_bg,
+            ),
         };
 
         Chip::new(plan_name.to_string())
