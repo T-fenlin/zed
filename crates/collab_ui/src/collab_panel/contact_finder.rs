@@ -3,7 +3,7 @@ use gpui::{
     App, Context, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, ParentElement as _,
     Render, Styled, Task, WeakEntity, Window,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use picker::{Picker, PickerDelegate};
 use std::sync::Arc;
 use ui::{Avatar, ListItem, ListItemSpacing, prelude::*};
@@ -87,7 +87,7 @@ impl PickerDelegate for ContactFinderDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Search collaborator by username...".into()
+        t_static(keys::collab::COLLAB_SEARCH_COLLABORATOR).into()
     }
 
     fn update_matches(

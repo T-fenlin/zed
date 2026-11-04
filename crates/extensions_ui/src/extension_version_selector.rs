@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -98,7 +98,7 @@ impl PickerDelegate for ExtensionVersionSelectorDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Select extension version...".into()
+        t_static(keys::extensions::EXTENSIONS_SELECT_VERSION).into()
     }
 
     fn match_count(&self) -> usize {

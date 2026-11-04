@@ -10,7 +10,7 @@ use crate::plan_chip::PlanChip;
 use agent_settings::{AgentSettings, WindowLayout};
 use arrayvec::ArrayVec;
 use git_ui_core::worktree_picker::WorktreePicker;
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use path::PathStyle;
 pub use platform_title_bar::{
     self, DraggedWindowTab, MergeAllWindows, MoveTabToNewWindow, PlatformTitleBar,
@@ -1211,7 +1211,9 @@ impl TitleBar {
                     }
                     Some(AutoUpdateStatus::Installing { .. })
                     | Some(AutoUpdateStatus::Downloading { .. })
-                    | Some(AutoUpdateStatus::Checking) => "Updating...".to_string(),
+                    | Some(AutoUpdateStatus::Checking) => {
+                        t_static(keys::titlebar::TITLEBAR_UPDATING).to_string()
+                    }
                     Some(AutoUpdateStatus::Idle)
                     | Some(AutoUpdateStatus::Errored { .. })
                     | None => t(keys::titlebar::TITLEBAR_UPDATE_TO_COLLABORATE),

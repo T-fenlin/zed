@@ -1,4 +1,4 @@
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -965,11 +965,10 @@ impl ThreadsArchiveView {
             store.archived_entries().next().is_some()
         };
 
-        let count_label = if entry_count == 1 {
-            "1 thread".to_string()
-        } else {
-            format!("{} threads", entry_count)
-        };
+        let count_label = t_with_args(
+            keys::agent::AGENT_ARCHIVE_THREAD_COUNT,
+            &[("count", &entry_count.to_string())],
+        );
 
         h_flex()
             .mt_px()

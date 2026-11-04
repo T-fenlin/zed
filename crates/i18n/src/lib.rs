@@ -7,11 +7,11 @@
 pub mod keys;
 
 use fluent_bundle::{FluentArgs, FluentBundle, FluentResource, FluentValue};
-use i18n::{keys, t_static};
+use i18n::{keys, t_static, t_with_args};
 use unic_langid::LanguageIdentifier;
 
 /// Supported locales. `en-US` is authoritative; other locales fall back to it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Locale {
     EnUs,
     ZhCn,

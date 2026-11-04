@@ -1,6 +1,6 @@
 # extensions.ftl — English source strings (rebuilt).
 
-extensions-search_placeholder = Search extensions…
+extensions-search_placeholder = Search extensions...
 extensions-filter_all = All
 extensions-filter_installed = Installed
 extensions-filter_not_installed = Not Installed
@@ -25,7 +25,7 @@ extensions-installed = Installed
 extensions-work_in_progress = Work In Progress
 extensions-upgrade = Upgrade
 extensions-downgrade = Downgrade
-extensions-install_another_version = Install Another Version…
+extensions-install_another_version = Install Another Version...
 extensions-copy_extension_id = Copy Extension ID
 extensions-copy_author_info = Copy Author Info
 extensions-install_dev_extension = Install Dev Extension
@@ -73,7 +73,7 @@ extensions-upsell_github_links = Zed supports linking to a source line on GitHub
 extensions-rebuild_dev_placeholder = Rebuild dev extension…
 extensions-no_dev_found = No dev extensions found
 extensions-load_failed_installed_only = Failed to load extensions. Showing installed extensions only.
-extensions-select_version = Select extension version…
+extensions-select_version = Select extension version...
 extensions-incompatible = Incompatible
 extensions-downloads = Downloads: { $count }
 extensions-visit_repository = Visit Extension Repository
