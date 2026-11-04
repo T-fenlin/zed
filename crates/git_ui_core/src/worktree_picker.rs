@@ -1600,7 +1600,12 @@ pub async fn open_remote_worktree(
             window,
             cx,
         )
-        .prompt_err("Failed to connect", window, cx, |_, _, _| None)
+        .prompt_err(
+            &t(keys::recent::RECENT_FAILED_CONNECT),
+            window,
+            cx,
+            |_, _, _| None,
+        )
     })?;
 
     let session = connect_task.await;

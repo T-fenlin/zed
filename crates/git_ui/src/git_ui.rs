@@ -499,7 +499,12 @@ impl RenameBranchModal {
                 Err(_) => Err(anyhow!("Operation was canceled")),
             }
         })
-        .detach_and_prompt_err("Failed to rename branch", window, cx, |_, _, _| None);
+        .detach_and_prompt_err(
+            &t(keys::git_ui::GIT_A_FAILED_TO_RENAME_BRANCH),
+            window,
+            cx,
+            |_, _, _| None,
+        );
         cx.emit(DismissEvent);
     }
 }
@@ -607,9 +612,12 @@ impl CreateTagModal {
                 .log_err();
             Ok(())
         })
-        .detach_and_prompt_err("Failed to create tag", window, cx, |error, _, _| {
-            Some(error.to_string())
-        });
+        .detach_and_prompt_err(
+            &t(keys::git_ui::GIT_A_FAILED_TO_CREATE_TAG),
+            window,
+            cx,
+            |error, _, _| Some(error.to_string()),
+        );
         cx.emit(DismissEvent);
     }
 }

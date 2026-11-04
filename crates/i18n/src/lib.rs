@@ -182,3 +182,44 @@ pub fn t_with_args(key: &str, args: &[(&str, &str)]) -> String {
 pub fn active_locale() -> Locale {
     with_registry(|r| r.active)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Every embedded `.ftl` file must parse without errors.
+    ///
+    /// Parse errors are swallowed at runtime (see `build_bundle`), so a typo such
+    /// as `\n` inside a plain-text value would silently surface to users as a
+    /// literal backslash. This test turns those into build failures instead.
+    #[test]
+    fn ftl_resources_parse_cleanly() {
+        for locale in Locale::ALL {
+            for (domain, text) in sources(*locale) {
+                let result = FluentResource::try_new(text.to_string());
+                assert!(
+                    result.is_ok(),
+                    "{} / {domain}.ftl has parse errors: {:?}",
+                    locale.as_tag(),
+                    result.err().map(|(_, errors)| errors)
+                );
+            }
+        }
+    }
+
+    /// Multi-line values are the supported way to embed newlines; make sure one
+    /// renders the way its callers expect.
+    #[test]
+    fn multiline_value_keeps_blank_line() {
+        let bundle = build_bundle(Locale::EnUs);
+        let message = bundle
+            .get_message("collab-join-error_try_again")
+            .expect("message exists");
+        let mut errors = vec![];
+        let mut args = FluentArgs::new();
+        args.set("error", FluentValue::from("boom".to_string()));
+        let rendered = bundle.format_pattern(message.value().unwrap(), Some(&args), &mut errors);
+        assert!(errors.is_empty(), "format errors: {errors:?}");
+        assert_eq!(rendered, "boom\n\nPlease try again.");
+    }
+}

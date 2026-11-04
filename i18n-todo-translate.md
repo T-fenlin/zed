@@ -49,13 +49,21 @@
 - settings_ui 单测断言改为对照 `t()` 结果：external_agents_page.rs（3 处）、mcp_servers_page.rs（7 处）
 - agent_ui/profile_selector.rs、git_ui_core/worktree_picker.rs 的 Header 标签断言改为对照 `t()` 结果（git_ui_core 新增 i18n 依赖）
 
+### 4. 失败提示 / 确认框收尾（第二批）
+
+- `git_ui/src/git_panel.rs`：单文件与批量放弃确认框、上下文菜单全部标签、git init 提示、`No changes to commit`、提交流误「still conflicts」、`already pushed to` 详情
+- `git_ui/src/branch_picker.rs`：未合并分支强制删除确认框与 `Force Delete`/`Cancel` 按钮、`Failed to create branch`/`create remote`/`change branch`
+- `git_ui/src/stash_picker.rs`：`Failed to drop/pop/apply stash`
+- `git_ui/src/git_ui.rs`：`Failed to rename branch`、`Failed to create tag`
+- `git_ui/src/commit_view.rs`：stash 三动作（Apply/Pop/Drop）名称与 `{ $action } stash@{ $index }?` 确认框
+- `git_ui_core/src/notifications.rs`：错误 toast 标题（`git { $action } failed`、`Push rejected…`）、`View Log`、`Output from git { $operation }`
+- `git_ui_core/src/worktree_picker.rs`：`Failed to connect`
+- `workspace/src/workspace.rs` + `collab_ui/src/collab_panel.rs`：`Failed to join channel` 及 6 条错误码明细
+- `i18n/src/lib.rs`：新增 `ftl_resources_parse_cleanly`（全量 ftl 解析校验）与 `multiline_value_keeps_blank_line` 两个测试 —— 顺带修掉 `collab-screen_permission_hint` / `collab-join-error_try_again` 里无效的 `\n` 转义（Fluent 普通文本不处理转义，会原样显示反斜杠），改为多行值
+
 ## 二、仍待处理（后续）
 
 > 以下为超出原清单范围、本轮未改的新发现项，需先补 key 或先引入 i18n 依赖。
-
-### git_ui（已依赖 i18n，可直接补）
-- `git_panel.rs`：`"Are you sure you want to discard changes to \`{path}\`?"`、`"Discard changes to these files?"`、`"Unable to initialize a git repository"` 等 discard/revert 提示（注意测试 `pending_prompt()` 会对消息文本做断言）
-- `worktree_picker.rs`：其它提示消息
 
 ### project_panel（i18n 目前仅为 dev-dependency）
 - `project_panel.rs`：`"Do you want to trash"`、`"Replace"` 等删除/重命名提示
@@ -66,7 +74,7 @@
 - `open_path_prompt.rs`：`"Replace"`
 
 ### workspace
-- `workspace.rs`：`"Failed to join channel"`（尚无对应 key）
+- 已无遗留项（`Failed to join channel` 已在第 4 批完成）
 
 ### 其它 crate（无 i18n 依赖，需逐个引入）
 - `auto_update.rs`：`"Zed was installed via a package manager."`、`"Could not check for updates"`

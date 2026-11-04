@@ -26,7 +26,10 @@ collab-cannot_share_public_channel = This project may not be shared in a public 
 collab-stop_sharing_screen = Stop Sharing Screen
 collab-share_screen = Share Screen
 collab-sharing_screen_failed = Sharing Screen Failed
-collab-screen_permission_hint = { $error }\n\nPlease check that you have given Zed permissions to record your screen in Settings.
+collab-screen_permission_hint =
+    { $error }
+
+    Please check that you have given Zed permissions to record your screen in Settings.
 collab-unknown_screen = Unknown screen
 collab-panel = Collab Panel
 collab-room_id_copied = Room ID copied to clipboard
@@ -188,3 +191,12 @@ collab-repair_event_count = { $count } events
 collab-loss_jitter = Loss { $loss } · Jitter { $jitter } · Jitter buffer { $buffer }
 collab-webrtc_repaired = WebRTC repaired in { $duration } over { $events }
 collab-local_playback = Local playback starved { $starved } · dropped { $dropped } · buffered { $buffered } (peak { $peak })
+collab-join-error_signed_out = Please sign in to continue.
+collab-join-error_upgrade_required = Your are running an unsupported version of Zed. Please update to continue.
+collab-join-error_no_such_channel = No matching channel was found. Please check the link and try again.
+collab-join-error_forbidden = This channel is private, and you do not have access. Please ask someone to add you and try again.
+collab-join-error_disconnected = Please check your internet connection and try again.
+collab-join-error_try_again =
+    { $error }
+
+    Please try again.

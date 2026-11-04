@@ -2680,7 +2680,12 @@ impl CollabPanel {
             Some(self.workspace.clone()),
             cx,
         )
-        .detach_and_prompt_err("Failed to join channel", window, cx, |_, _, _| None)
+        .detach_and_prompt_err(
+            &t(keys::collab::COLLAB_FAILED_TO_JOIN_CHANNEL),
+            window,
+            cx,
+            |_, _, _| None,
+        )
     }
 
     fn copy_channel_link(&mut self, channel_id: ChannelId, cx: &mut Context<Self>) {

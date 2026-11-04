@@ -26,7 +26,10 @@ collab-cannot_share_public_channel = 此项目无法在公开频道中共享。
 collab-stop_sharing_screen = 停止共享屏幕
 collab-share_screen = 共享屏幕
 collab-sharing_screen_failed = 共享屏幕失败
-collab-screen_permission_hint = { $error }\n\n请检查你是否已在系统设置中授予 Zed 录制屏幕的权限。
+collab-screen_permission_hint =
+    { $error }
+
+    请检查你是否已在系统设置中授予 Zed 录制屏幕的权限。
 collab-unknown_screen = 未知屏幕
 collab-panel = 协作面板
 collab-room_id_copied = 房间 ID 已复制到剪贴板
@@ -188,3 +191,12 @@ collab-repair_event_count = { $count } 次事件
 collab-loss_jitter = 丢包 { $loss } · 抖动 { $jitter } · 抖动缓冲 { $buffer }
 collab-webrtc_repaired = WebRTC 修复了 { $duration }，共 { $events }
 collab-local_playback = 本地播放中断 { $starved } · 丢弃 { $dropped } · 缓冲 { $buffered }（峰值 { $peak }）
+collab-join-error_signed_out = 请先登录再继续。
+collab-join-error_upgrade_required = 你正在运行的 Zed 版本不受支持。请更新后再继续。
+collab-join-error_no_such_channel = 未找到匹配的频道。请检查链接后重试。
+collab-join-error_forbidden = 该频道是私有的，你无权访问。请联系他人将你加入后重试。
+collab-join-error_disconnected = 请检查网络连接后重试。
+collab-join-error_try_again =
+    { $error }
+
+    请重试。

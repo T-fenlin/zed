@@ -5877,20 +5877,22 @@ pub mod test {
                 .add_basic_renderer::<bool>({
                     let control_handles = control_handles.clone();
                     move |field, file, metadata, title, description, window, cx| {
+                        let title_for_handles = title.clone();
+                        let title_for_debug = title.clone();
                         let focus_handle = control_handles
                             .borrow_mut()
-                            .entry(title)
+                            .entry(title_for_handles)
                             .or_insert_with(|| cx.focus_handle())
                             .clone();
                         div()
                             .id("test-switch-bounds")
                             .track_focus(&focus_handle)
-                            .debug_selector(move || title.to_string())
+                            .debug_selector(move || title_for_debug.to_string())
                             .child(render_toggle_button(
                                 field,
                                 file,
                                 metadata,
-                                title,
+                                title.clone(),
                                 description,
                                 window,
                                 cx,

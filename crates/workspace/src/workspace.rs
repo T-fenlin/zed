@@ -68,7 +68,7 @@ use gpui::{
     transparent_black,
 };
 pub use history_manager::*;
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 pub use item::{
     FollowableItem, FollowableItemHandle, Item, ItemHandle, ItemSettings, PreviewTabsSettings,
     ProjectItem, SerializableItem, SerializableItemHandle, WeakItemHandle,
@@ -10952,30 +10952,30 @@ pub fn join_channel(
                 active_window
                     .update(cx, |_, window, cx| {
                         let detail: SharedString = match err.error_code() {
-                            ErrorCode::SignedOut => "Please sign in to continue.".into(),
-                            ErrorCode::UpgradeRequired => concat!(
-                                "Your are running an unsupported version of Zed. ",
-                                "Please update to continue."
-                            )
-                            .into(),
-                            ErrorCode::NoSuchChannel => concat!(
-                                "No matching channel was found. ",
-                                "Please check the link and try again."
-                            )
-                            .into(),
-                            ErrorCode::Forbidden => concat!(
-                                "This channel is private, and you do not have access. ",
-                                "Please ask someone to add you and try again."
-                            )
-                            .into(),
-                            ErrorCode::Disconnected => {
-                                "Please check your internet connection and try again.".into()
+                            ErrorCode::SignedOut => {
+                                t(keys::collab::COLLAB_JOIN_ERROR_SIGNED_OUT).into()
                             }
-                            _ => format!("{}\n\nPlease try again.", err).into(),
+                            ErrorCode::UpgradeRequired => {
+                                t(keys::collab::COLLAB_JOIN_ERROR_UPGRADE_REQUIRED).into()
+                            }
+                            ErrorCode::NoSuchChannel => {
+                                t(keys::collab::COLLAB_JOIN_ERROR_NO_SUCH_CHANNEL).into()
+                            }
+                            ErrorCode::Forbidden => {
+                                t(keys::collab::COLLAB_JOIN_ERROR_FORBIDDEN).into()
+                            }
+                            ErrorCode::Disconnected => {
+                                t(keys::collab::COLLAB_JOIN_ERROR_DISCONNECTED).into()
+                            }
+                            _ => t_with_args(
+                                keys::collab::COLLAB_JOIN_ERROR_TRY_AGAIN,
+                                &[("error", &err.to_string())],
+                            )
+                            .into(),
                         };
                         window.prompt(
                             PromptLevel::Critical,
-                            "Failed to join channel",
+                            &t(keys::collab::COLLAB_FAILED_TO_JOIN_CHANNEL),
                             Some(&detail),
                             &["OK"],
                             cx,

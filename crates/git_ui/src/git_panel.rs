@@ -4136,7 +4136,7 @@ impl GitPanel {
                 .collect::<Vec<_>>();
 
             if changed_files.is_empty() && !options.amend {
-                error_spawn("No changes to commit", window, cx);
+                error_spawn(&t(keys::git_ui::GIT_NO_CHANGES_TO_COMMIT), window, cx);
                 return;
             }
 

@@ -1,7 +1,7 @@
 use anyhow::Context as _;
 use editor::Editor;
 use fuzzy_nucleo::StringMatchCandidate;
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 
 use collections::{HashMap, HashSet};
 use git::repository::{Branch, delete_branch_flag};
@@ -822,7 +822,10 @@ const BRANCH_DELETE_FORCE_DELETE_PROMPTS: &[BranchDeleteForceDeletePrompt] =
     }];
 
 fn unmerged_branch_force_delete_prompt(branch_name: &str) -> String {
-    format!("Branch \"{branch_name}\" is not fully merged. Force delete it?")
+    t_with_args(
+        keys::git_ui::GIT_B_UNMERGED_BRANCH_PROMPT,
+        &[("branch_name", branch_name)],
+    )
 }
 
 // Git only reports these cases via localized stderr, so this best-effort check
@@ -890,7 +893,7 @@ impl Render for DeleteBranchTooltip {
             .unwrap_or(false);
         if force_delete {
             Tooltip::for_action_in(
-                "Force Delete Branch",
+                t(keys::git_ui::GIT_B_FORCE_DELETE_BRANCH),
                 &branch_picker::ForceDeleteBranch,
                 &self.focus_handle,
                 cx,
@@ -1083,9 +1086,12 @@ impl BranchListDelegate {
 
             Ok(())
         })
-        .detach_and_prompt_err("Failed to create branch", window, cx, |e, _, _| {
-            Some(e.to_string())
-        });
+        .detach_and_prompt_err(
+            &t(keys::git_ui::GIT_B_FAILED_CREATE_BRANCH),
+            window,
+            cx,
+            |e, _, _| Some(e.to_string()),
+        );
         cx.emit(DismissEvent);
     }
 
@@ -1103,9 +1109,12 @@ impl BranchListDelegate {
         let receiver = repo.update(cx, |repo, _| repo.create_remote(remote_name, remote_url));
 
         cx.background_spawn(async move { receiver.await? })
-            .detach_and_prompt_err("Failed to create remote", window, cx, |e, _, _cx| {
-                Some(e.to_string())
-            });
+            .detach_and_prompt_err(
+                &t(keys::git_ui::GIT_B_FAILED_CREATE_REMOTE),
+                window,
+                cx,
+                |e, _, _cx| Some(e.to_string()),
+            );
         cx.emit(DismissEvent);
     }
 
@@ -1157,12 +1166,14 @@ impl BranchListDelegate {
                         .flatten();
 
                     if let Some(prompt_message) = force_delete_prompt {
+                        let force_delete = t(keys::git_ui::GIT_B_FORCE_DELETE);
+                        let cancel = t(keys::git_ui::GIT_B_CANCEL);
                         let answer = cx.update(|window, cx| {
                             window.prompt(
                                 PromptLevel::Warning,
                                 &prompt_message,
                                 None,
-                                &["Force Delete", "Cancel"],
+                                &[force_delete.as_str(), cancel.as_str()],
                                 cx,
                             )
                         })?;
@@ -1590,7 +1601,7 @@ impl PickerDelegate for BranchListDelegate {
                     anyhow::Ok(())
                 })
                 .detach_and_prompt_err(
-                    "Failed to change branch",
+                    &t(keys::git_ui::GIT_B_FAILED_CHANGE_BRANCH),
                     window,
                     cx,
                     |_, _, _| None,
@@ -2659,7 +2670,7 @@ mod tests {
         cx.run_until_parked();
         assert!(cx.has_pending_prompt());
 
-        cx.simulate_prompt_answer("Force Delete");
+        cx.simulate_prompt_answer(&t(keys::git_ui::GIT_B_FORCE_DELETE));
         cx.run_until_parked();
 
         let repo_branches = branch_list

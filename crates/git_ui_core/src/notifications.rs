@@ -1,5 +1,6 @@
 use editor::Editor;
 use gpui::{App, Context, Entity, SharedString};
+use i18n::{keys, t, t_with_args};
 use language::Buffer;
 use notifications::status_toast::StatusToast;
 use proto::RpcError;
@@ -24,7 +25,13 @@ pub fn open_output(
     let editor = cx.new(|cx| {
         let mut editor = Editor::for_buffer(buffer, None, window, cx);
         editor.buffer().update(cx, |buffer, cx| {
-            buffer.set_title(format!("Output from git {operation}"), cx);
+            buffer.set_title(
+                t_with_args(
+                    keys::git_ui::GIT_TOAST_OUTPUT_TITLE,
+                    &[("operation", operation.as_str())],
+                ),
+                cx,
+            );
         });
         editor.set_read_only(true);
         editor
@@ -43,9 +50,9 @@ fn is_non_fast_forward_error(error_message: &str) -> bool {
 
 fn git_error_toast_title(action: &str, message: &str) -> String {
     if action == "push" && is_non_fast_forward_error(message) {
-        "Push rejected: fetch and integrate remote changes before pushing again".to_string()
+        t(keys::git_ui::GIT_TOAST_PUSH_REJECTED)
     } else {
-        format!("git {action} failed")
+        t_with_args(keys::git_ui::GIT_TOAST_FAILED, &[("action", action)])
     }
 }
 
@@ -73,7 +80,7 @@ pub fn show_error_toast(
                             .size(IconSize::Small)
                             .color(Color::Error),
                     )
-                    .action("View Log", move |window, cx| {
+                    .action(t(keys::git_ui::GIT_TOAST_VIEW_LOG), move |window, cx| {
                         let message = message.clone();
                         let action = action.clone();
                         workspace_weak
