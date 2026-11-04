@@ -11,7 +11,7 @@ use gpui::{
     Along, AnyView, AnyWeakView, Axis, Bounds, Entity, Hsla, IntoElement, MouseButton, Pixels,
     Point, StyleRefinement, WeakEntity, Window, point, size,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use parking_lot::Mutex;
 use project::Project;
 use schemars::JsonSchema;
@@ -408,9 +408,9 @@ impl PaneLeaderDecorator for PaneRenderContext<'_> {
                     } => {
                         if Some(leader_project_id) == self.project.read(cx).remote_id() {
                             is_in_unshared_view.then(|| {
-                                Label::new(format!(
-                                    "{} is in an unshared pane",
-                                    leader.user.username
+                                Label::new(t_with_args(
+                                    keys::workspace::WS_PANE_GROUP_UNSHARED_PANE,
+                                    &[("user", &(leader.user.username).to_string())],
                                 ))
                             })
                         } else {
@@ -421,13 +421,13 @@ impl PaneLeaderDecorator for PaneRenderContext<'_> {
                             )))
                         }
                     }
-                    ParticipantLocation::UnsharedProject => Some(Label::new(format!(
-                        "{} is viewing an unshared Zed project",
-                        leader.user.username
+                    ParticipantLocation::UnsharedProject => Some(Label::new(t_with_args(
+                        keys::workspace::WS_PANE_GROUP_VIEWING_UNSHARED,
+                        &[("user", &(leader.user.username).to_string())],
                     ))),
-                    ParticipantLocation::External => Some(Label::new(format!(
-                        "{} is viewing a window outside of Zed",
-                        leader.user.username
+                    ParticipantLocation::External => Some(Label::new(t_with_args(
+                        keys::workspace::WS_PANE_GROUP_VIEWING_OUTSIDE,
+                        &[("user", &(leader.user.username).to_string())],
                     ))),
                 };
                 status_box = leader_status_box.map(|status| {

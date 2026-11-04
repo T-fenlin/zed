@@ -343,7 +343,10 @@ fn render_api_key_provider(
                     SettingsInputField::new(format!("{}-api-key-input", title))
                         .tab_index(0)
                         .with_placeholder("xxxxxxxxxxxxxxxxxxxx")
-                        .aria_label(format!("{} API Key", title))
+                        .aria_label(t_with_args(
+                            keys::settings_ui::SETTINGS_B_API_KEY_ARIA,
+                            &[("provider", &(title).to_string())],
+                        ))
                         .on_confirm(move |api_key, _window, cx| {
                             write_key(api_key.filter(|key| !key.is_empty()), cx);
                         }),

@@ -4,7 +4,7 @@ use gpui::{
     Focusable, HighlightStyle, ReadGlobal, ScrollHandle, StyledText, TextStyleRefinement, point,
     prelude::*,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use settings::{Settings as _, SettingsStore, ToolPermissionMode};
 use shell_command_parser::extract_commands;
 use std::sync::Arc;
@@ -235,11 +235,17 @@ fn render_tool_list_item(
             if rule_count == 1 {
                 parts.push(t(keys::settings_ui::SETTINGS_TOOL_PERM_ONE_RULE));
             } else {
-                parts.push(format!("{} rules", rule_count));
+                parts.push(t_with_args(
+                    keys::settings_ui::SETTINGS_A_TOOLS_RULE_COUNT,
+                    &[("count", &(rule_count).to_string())],
+                ));
             }
         }
         if invalid_count > 0 {
-            parts.push(format!("{} invalid", invalid_count));
+            parts.push(t_with_args(
+                keys::settings_ui::SETTINGS_A_TOOLS_INVALID_COUNT,
+                &[("count", &(invalid_count).to_string())],
+            ));
         }
         Some(parts.join(", "))
     } else {
@@ -577,9 +583,12 @@ fn render_verification_section(
                             this.child(render_hardcoded_rules(true, cx))
                         } else if let Some(reason) = &denial_reason {
                             this.child(
-                                Label::new(format!("Denied: {}", reason))
-                                    .size(LabelSize::XSmall)
-                                    .color(Color::Warning),
+                                Label::new(t_with_args(
+                                    keys::settings_ui::SETTINGS_A_TOOLS_DENIED,
+                                    &[("reason", &(reason).to_string())],
+                                ))
+                                .size(LabelSize::XSmall)
+                                .color(Color::Warning),
                             )
                         } else {
                             this.child(
@@ -597,9 +606,12 @@ fn render_verification_section(
                         denial_reason.filter(|_| patterns_agree && !is_hardcoded_denial),
                         |this, reason| {
                             this.child(
-                                Label::new(format!("Reason: {}", reason))
-                                    .size(LabelSize::XSmall)
-                                    .color(Color::Error),
+                                Label::new(t_with_args(
+                                    keys::settings_ui::SETTINGS_A_TOOLS_REASON,
+                                    &[("reason", &(reason).to_string())],
+                                ))
+                                .size(LabelSize::XSmall)
+                                .color(Color::Error),
                             )
                         },
                     )
@@ -913,9 +925,12 @@ fn render_invalid_patterns_section(
                             ),
                     )
                     .child(
-                        Label::new(format!("Error: {}", invalid.error))
-                            .size(LabelSize::XSmall)
-                            .color(Color::Muted),
+                        Label::new(t_with_args(
+                            keys::settings_ui::SETTINGS_A_TOOLS_INVALID_PATTERN_ERROR,
+                            &[("error", &(invalid.error).to_string())],
+                        ))
+                        .size(LabelSize::XSmall)
+                        .color(Color::Muted),
                     )
                 })),
         )

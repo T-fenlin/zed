@@ -16,7 +16,7 @@ use gpui::{
     WeakEntity, Window, WindowBounds, WindowHandle, WindowOptions, actions, container_query, div,
     list, point, prelude::*, px, uniform_list,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 
 use language::Buffer;
 use platform_title_bar::PlatformTitleBar;
@@ -1247,7 +1247,10 @@ impl SettingsPageItem {
                                 ("sub-page".into(), sub_page_link.title.clone()),
                                 t(keys::agent::AGENT_B_CONFIGURE),
                             )
-                            .aria_label(format!("Configure {}", sub_page_link.title))
+                            .aria_label(t_with_args(
+                                keys::settings_ui::SETTINGS_UI_CONFIGURE_ARIA,
+                                &[("title", &(sub_page_link.title).to_string())],
+                            ))
                             .tab_index(0_isize)
                             .end_icon(
                                 Icon::new(IconName::ChevronRight)

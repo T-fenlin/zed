@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use std::cmp::Reverse;
 use std::ops::Range;
 use std::path::PathBuf;
@@ -978,7 +978,11 @@ impl<T: PromptCompletionProviderDelegate> PromptCompletionProvider<T> {
         let uri = MentionUri::GitDiff {
             base_ref: base_ref.to_string(),
         };
-        let crease_text: SharedString = format!("Branch Diff (vs {})", base_ref).into();
+        let crease_text: SharedString = t_with_args(
+            keys::agent::AGENT_B_BRANCH_DIFF_VS,
+            &[("base_ref", &(base_ref).to_string())],
+        )
+        .into();
         let display_text = format!("@{}", crease_text);
         let new_text = format!("[{}]({}) ", display_text, uri.to_uri());
         let new_text_len = new_text.len();

@@ -2,7 +2,7 @@ mod components;
 mod extension_suggestions;
 mod extension_version_selector;
 
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::sync::OnceLock;
 use std::time::Duration;
 use std::{any::TypeId, ops::Range, sync::Arc};
@@ -223,7 +223,10 @@ pub fn init(cx: &mut App) {
                                         // NOTE: using `anyhow::context` here ends up not printing
                                         // the error
                                         workspace.show_error(
-                                            format!("Failed to install dev extension: {}", err),
+                                            t_with_args(
+                                                keys::extensions::EXTENSIONS_INSTALL_DEV_FAILED,
+                                                &[("error", &(err).to_string())],
+                                            ),
                                             cx,
                                         );
                                     })

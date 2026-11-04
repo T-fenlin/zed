@@ -8,7 +8,7 @@ use gpui::{
     MouseMoveEvent, ParentElement, Render, ScrollStrategy, SharedString, Styled, Task,
     UniformListScrollHandle, WeakEntity, Window, actions, div, rems, uniform_list,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use language::{BufferId, Point, ToOffset};
 use menu::{SelectNext, SelectPrevious};
 use std::{mem, ops::Range, sync::Arc, time::Duration};
@@ -957,7 +957,10 @@ impl HighlightsTreeToolbarItemView {
         let filtered = tree_view.entry_count();
 
         let label = if filtered == total {
-            format!("{} highlights", total)
+            t_with_args(
+                keys::lang::LANG_TOOLS_HIGHLIGHTS_COUNT,
+                &[("count", &(total).to_string())],
+            )
         } else {
             format!("{} / {} highlights", filtered, total)
         };

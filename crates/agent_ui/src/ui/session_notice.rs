@@ -1,7 +1,7 @@
 use agent_client_protocol::schema::v2 as acp;
 use component::{Component, ComponentScope, example_group_with_title, single_example};
 use gpui::{AnyElement, App, ClickEvent, ElementId, Stateful, Window, px};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use ui::{Callout, Color, IconButton, IconName, IconSize, Severity, Tooltip, prelude::*};
 
 #[derive(IntoElement)]
@@ -40,7 +40,10 @@ impl SessionNotice {
                             IconButton::new("dismiss", IconName::Close)
                                 .icon_size(IconSize::Small)
                                 .icon_color(Color::Muted)
-                                .aria_label(format!("Dismiss notice: {}", notice.title))
+                                .aria_label(t_with_args(
+                                    keys::agent::AGENT_DISMISS_NOTICE_ARIA,
+                                    &[("title", &(notice.title).to_string())],
+                                ))
                                 .tab_index(0_isize)
                                 .tooltip(Tooltip::text(t(keys::agent::AGENT_DISMISS_NOTICE)))
                                 .on_click(on_dismiss),

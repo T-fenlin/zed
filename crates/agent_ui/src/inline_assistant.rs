@@ -1,3 +1,4 @@
+use i18n::{keys, t_with_args};
 use language_models::provider::anthropic::telemetry::{
     AnthropicCompletionType, AnthropicEventData, AnthropicEventType, report_anthropic_event,
 };
@@ -1725,7 +1726,10 @@ impl InlineAssist {
                                         .ok();
                                 }
 
-                                let error = format!("Inline assistant error: {}", error);
+                                let error = t_with_args(
+                                    keys::agent::AGENT_B_INLINE_ASSISTANT_ERROR,
+                                    &[("error", &(error).to_string())],
+                                );
                                 workspace.update(cx, |workspace, cx| {
                                     struct InlineAssistantError;
 

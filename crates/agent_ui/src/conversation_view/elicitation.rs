@@ -5,7 +5,7 @@ use component::{Component, ComponentScope, example_group_with_title, single_exam
 use editor::Editor;
 use futures::channel::oneshot;
 use gpui::{AnyElement, App, Div, Empty, Entity, Focusable, Role, SharedString, Window, div};
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::collections::BTreeMap;
 use std::rc::Rc;
 use ui::{
@@ -2063,9 +2063,12 @@ impl<'a> ElicitationCard<'a> {
                                     .color(status_color),
                             )
                             .child(
-                                Label::new(format!("Input Requested by {}", self.requester_name))
-                                    .size(LabelSize::Custom(tool_name_font_size))
-                                    .truncate(),
+                                Label::new(t_with_args(
+                                    keys::agent::AGENT_A_ELICIT_INPUT_REQUESTED_BY,
+                                    &[("requester", &(self.requester_name).to_string())],
+                                ))
+                                .size(LabelSize::Custom(tool_name_font_size))
+                                .truncate(),
                             ),
                     )
                     .child(

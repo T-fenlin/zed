@@ -4479,7 +4479,7 @@ fn default_render_tab_bar_buttons(
                         if zoomed {
                             t_static(keys::pane::PANE_ZOOM_OUT)
                         } else {
-                            "Zoom In"
+                            t_static(keys::pane::PANE_ZOOM_IN)
                         },
                         &ToggleZoom,
                         cx,

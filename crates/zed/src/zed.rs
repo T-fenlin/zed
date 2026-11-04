@@ -1286,10 +1286,7 @@ fn register_actions(
                     workspace.show_toast(
                         Toast::new(
                             NotificationId::unique::<RegisterZedScheme>(),
-                            format!(
-                                "zed:// links will now open in {}.",
-                                ReleaseChannel::global(cx).display_name()
-                            ),
+                            t_with_args(keys::zed::ZED_A_ZED_SCHEME_REGISTERED, &[("channel", &(ReleaseChannel::global(cx).display_name()).to_string())]),
                         ),
                         cx,
                     )

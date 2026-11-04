@@ -33,7 +33,7 @@ use gpui::{
     TextStyle, WeakEntity, Window, WindowHandle, div, ease_in_out, img, linear_color_stop,
     linear_gradient, list, pulsating_between,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use language::{Buffer, Language};
 use language_model::{
     LanguageModelCompletionError, ProviderErrorCategory, ZED_CLOUD_PROVIDER_NAME,
@@ -3340,7 +3340,10 @@ impl ConversationView {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let (heading_label, description_label) = (
-            format!("Upgrade {} to work with Zed", self.agent.agent_id()),
+            t_with_args(
+                keys::agent::AGENT_UPGRADE_TO_WORK,
+                &[("agent", &(self.agent.agent_id()).to_string())],
+            ),
             if version.is_empty() {
                 format!(
                     "Currently using {}, which does not report a valid --version",
@@ -3906,17 +3909,20 @@ fn native_available_skills(
 
 fn placeholder_text(agent_name: &str, has_commands: bool) -> String {
     if agent_name == agent::ZED_AGENT_ID.as_ref() {
-        format!(
-            "Message the {}, @ to include context, / for commands",
-            agent_name
+        t_with_args(
+            keys::agent::AGENT_PLACEHOLDER_ZED,
+            &[("agent", &(agent_name).to_string())],
         )
     } else if has_commands {
-        format!(
-            "Message {} — @ to include context, / for commands",
-            agent_name
+        t_with_args(
+            keys::agent::AGENT_PLACEHOLDER_COMMANDS,
+            &[("agent", &(agent_name).to_string())],
         )
     } else {
-        format!("Message {} — @ to include context", agent_name)
+        t_with_args(
+            keys::agent::AGENT_PLACEHOLDER_CONTEXT,
+            &[("agent", &(agent_name).to_string())],
+        )
     }
 }
 

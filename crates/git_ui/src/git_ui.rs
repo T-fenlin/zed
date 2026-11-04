@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use commit_modal::CommitModal;
 use editor::{Editor, actions::DiffClipboardWithSelectionData};
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 
 use workspace::{Toast, notifications::NotificationId};
 
@@ -534,8 +534,11 @@ impl Render for RenameBranchModal {
                     .gap_1p5()
                     .child(Icon::new(IconName::GitBranch).size(IconSize::XSmall))
                     .child(
-                        Headline::new(format!("Rename Branch ({})", self.current_branch))
-                            .size(HeadlineSize::XSmall),
+                        Headline::new(t_with_args(
+                            keys::git_ui::GIT_A_RENAME_BRANCH_TITLE,
+                            &[("branch", &(self.current_branch).to_string())],
+                        ))
+                        .size(HeadlineSize::XSmall),
                     ),
             )
             .child(div().px_3().pb_3().w_full().child(self.editor.clone()))
@@ -632,7 +635,10 @@ impl Focusable for CreateTagModal {
 
 impl Render for CreateTagModal {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let title = format!("Create Tag at {}", self.tag_target_commit_label());
+        let title = t_with_args(
+            keys::git_ui::GIT_A_CREATE_TAG_TITLE,
+            &[("target", &(self.tag_target_commit_label()).to_string())],
+        );
         v_flex()
             .key_context("CreateTagModal")
             .on_action(cx.listener(Self::cancel))

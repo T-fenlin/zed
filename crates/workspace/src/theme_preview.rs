@@ -2,7 +2,7 @@
 use gpui::{
     AnyElement, App, Entity, EventEmitter, FocusHandle, Focusable, Hsla, Task, actions, hsla,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use strum::IntoEnumIterator;
 use theme::all_theme_colors;
 use ui::{
@@ -91,7 +91,11 @@ impl Item for ThemePreview {
 
     fn tab_content_text(&self, _detail: usize, cx: &App) -> SharedString {
         let name = cx.theme().name.clone();
-        format!("{} Preview", name).into()
+        t_with_args(
+            keys::workspace::WS_B_THEME_PREVIEW_TAB,
+            &[("theme", &(name).to_string())],
+        )
+        .into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {

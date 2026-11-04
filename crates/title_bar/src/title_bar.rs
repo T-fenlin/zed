@@ -779,9 +779,9 @@ impl TitleBar {
                 .label_size(LabelSize::Small)
                 .tab_index(0isize)
                 .tooltip(move |_, cx| {
-                    let tooltip_title = format!(
-                        "{} is sharing this project. Click to follow.",
-                        host_user.username
+                    let tooltip_title = t_with_args(
+                        keys::titlebar::TITLEBAR_SHARING_CLICK_TO_FOLLOW,
+                        &[("user", &(host_user.username).to_string())],
                     );
 
                     Tooltip::with_meta(
@@ -1007,9 +1007,17 @@ impl TitleBar {
 
         let display_label: SharedString = if let Some(ref name) = creation_in_progress {
             if is_switch {
-                format!("Loading {}…", name).into()
+                t_with_args(
+                    keys::titlebar::TITLEBAR_LOADING,
+                    &[("name", &(name).to_string())],
+                )
+                .into()
             } else {
-                format!("Creating {}…", name).into()
+                t_with_args(
+                    keys::titlebar::TITLEBAR_CREATING,
+                    &[("name", &(name).to_string())],
+                )
+                .into()
             }
         } else {
             worktree_label.clone()
@@ -1043,7 +1051,10 @@ impl TitleBar {
                         Tooltip::with_meta(
                             t(keys::titlebar::TITLEBAR_WORKTREE),
                             Some(&zed_actions::git::Worktree),
-                            format!("Currently In Use: {}", worktree_label),
+                            t_with_args(
+                                keys::titlebar::TITLEBAR_CURRENTLY_IN_USE,
+                                &[("name", &(worktree_label).to_string())],
+                            ),
                             cx,
                         )
                     },
@@ -1097,9 +1108,15 @@ impl TitleBar {
                     })
                     .trigger_with_tooltip(trigger, move |_window, cx| {
                         let meta = if is_detached_head {
-                            format!("Detached HEAD: {}", branch_tooltip_label)
+                            t_with_args(
+                                keys::titlebar::TITLEBAR_DETACHED_HEAD,
+                                &[("reference", &(branch_tooltip_label).to_string())],
+                            )
                         } else {
-                            format!("Currently Checked Out: {}", branch_tooltip_label)
+                            t_with_args(
+                                keys::titlebar::TITLEBAR_CURRENTLY_CHECKED_OUT,
+                                &[("reference", &(branch_tooltip_label).to_string())],
+                            )
                         };
                         Tooltip::with_meta(
                             t(keys::titlebar::TITLEBAR_BRANCH_AND_STASH),

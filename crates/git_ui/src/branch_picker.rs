@@ -1841,7 +1841,10 @@ impl PickerDelegate for BranchListDelegate {
                                                 repo.read(cx).branch.as_ref().map(|b| b.name())
                                             })
                                         {
-                                            format!("Based off {}", current_branch)
+                                            t_with_args(
+                                                keys::git_ui::GIT_B_BASED_OFF,
+                                                &[("value", &(current_branch).to_string())],
+                                            )
                                         } else {
                                             t(keys::git_ui::GIT_B_BASED_OFF_CURRENT_BRANCH)
                                                 .to_string()

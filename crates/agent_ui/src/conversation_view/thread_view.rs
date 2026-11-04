@@ -7,7 +7,7 @@ use crate::{
     thread_metadata_store::{ThreadId, ThreadMetadataStore},
 };
 use agent_client_protocol::schema::v2 as acp_v2;
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::{cell::RefCell, path::Path};
 
 use acp_thread::{
@@ -6933,7 +6933,10 @@ impl ThreadView {
             if self.agent_id.as_ref() == agent::ZED_AGENT_ID.as_ref() {
                 format!("Follow the {}", self.agent_id)
             } else {
-                format!("Follow {}", self.agent_id)
+                t_with_args(
+                    keys::collab::COLLAB_FOLLOW,
+                    &[("user", &(self.agent_id).to_string())],
+                )
             }
         };
 

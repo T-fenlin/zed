@@ -1,7 +1,7 @@
 use gpui::ElementId;
 use gpui::TaskExt;
 use gpui::{AnyElement, Entity};
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use picker::Picker;
 use repl::{
     ExecutionState, JupyterSettings, Kernel, KernelSpecification, KernelStatus, Session,
@@ -260,8 +260,10 @@ impl QuickActionBar {
         kernel_specification: KernelSpecification,
         cx: &mut Context<Self>,
     ) -> Option<AnyElement> {
-        let tooltip: SharedString =
-            SharedString::from(format!("Start REPL for {}", kernel_specification.name()));
+        let tooltip: SharedString = SharedString::from(t_with_args(
+            keys::zed::ZED_B_REPL_START,
+            &[("kernel", &(kernel_specification.name()).to_string())],
+        ));
 
         Some(
             h_flex()
@@ -380,7 +382,10 @@ impl QuickActionBar {
     }
 
     pub fn render_repl_setup(&self, language: &str, cx: &mut Context<Self>) -> Option<AnyElement> {
-        let tooltip: SharedString = SharedString::from(format!("Setup Zed REPL for {}", language));
+        let tooltip: SharedString = SharedString::from(t_with_args(
+            keys::zed::ZED_B_REPL_SETUP,
+            &[("language", &(language).to_string())],
+        ));
         Some(
             h_flex()
                 .gap(DynamicSpacing::Base06.rems(cx))
@@ -434,23 +439,61 @@ fn session_state(session: Entity<Session>, cx: &mut App) -> ReplMenuState {
             ..fill_fields()
         };
 
-    let starting = || transitional(format!("{} is starting", kernel_name).into(), true, true);
-    let restarting = || transitional(format!("Restarting {}", kernel_name).into(), true, true);
+    let starting = || {
+        transitional(
+            t_with_args(
+                keys::zed::ZED_B_REPL_KERNEL_STARTING,
+                &[("kernel", &(kernel_name).to_string())],
+            )
+            .into(),
+            true,
+            true,
+        )
+    };
+    let restarting = || {
+        transitional(
+            t_with_args(
+                keys::zed::ZED_B_REPL_KERNEL_RESTARTING,
+                &[("kernel", &(kernel_name).to_string())],
+            )
+            .into(),
+            true,
+            true,
+        )
+    };
     let shutting_down = || {
         transitional(
-            format!("{} is shutting down", kernel_name).into(),
+            t_with_args(
+                keys::zed::ZED_B_REPL_KERNEL_SHUTTING_DOWN,
+                &[("kernel", &(kernel_name).to_string())],
+            )
+            .into(),
             false,
             true,
         )
     };
     let auto_restarting = || {
         transitional(
-            format!("Auto-restarting {}", kernel_name).into(),
+            t_with_args(
+                keys::zed::ZED_B_REPL_KERNEL_AUTO_RESTARTING,
+                &[("kernel", &(kernel_name).to_string())],
+            )
+            .into(),
             true,
             true,
         )
     };
-    let unknown = || transitional(format!("{} state unknown", kernel_name).into(), false, true);
+    let unknown = || {
+        transitional(
+            t_with_args(
+                keys::zed::ZED_B_REPL_KERNEL_STATE_UNKNOWN,
+                &[("kernel", &(kernel_name).to_string())],
+            )
+            .into(),
+            false,
+            true,
+        )
+    };
     let other = |state: &str| {
         transitional(
             format!("{} state: {}", kernel_name, state).into(),

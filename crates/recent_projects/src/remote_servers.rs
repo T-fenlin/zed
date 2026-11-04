@@ -19,7 +19,7 @@ use gpui::{
     Action, AnyElement, App, ClipboardItem, Context, DismissEvent, Entity, EventEmitter,
     FocusHandle, Focusable, PromptLevel, Subscription, Task, TaskExt, WeakEntity, Window,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use log::{debug, info};
 use open_path_prompt::OpenPathDelegate;
 use paths::{global_ssh_config_file, user_ssh_config_file};
@@ -2749,7 +2749,10 @@ impl RemoteServerProjects {
                 window: &mut Window,
                 cx: &mut App,
             ) {
-                let prompt_message = format!("Remove WSL distro `{}`?", distro_name);
+                let prompt_message = t_with_args(
+                    keys::recent::RECENT_REMOVE_WSL_DISTRO_PROMPT,
+                    &[("name", &(distro_name).to_string())],
+                );
 
                 let confirmation = window.prompt(
                     PromptLevel::Warning,
@@ -2847,9 +2850,9 @@ impl RemoteServerProjects {
                     workspace
                         .update(cx, |this, cx| {
                             struct SshServerAddressCopiedToClipboard;
-                            let notification = format!(
-                                "Copied server address ({}) to clipboard",
-                                connection_string
+                            let notification = t_with_args(
+                                keys::recent::RECENT_COPIED_SERVER_ADDRESS,
+                                &[("address", &(connection_string).to_string())],
                             );
 
                             this.show_toast(
@@ -2900,7 +2903,10 @@ impl RemoteServerProjects {
                     window: &mut Window,
                     cx: &mut App,
                 ) {
-                    let prompt_message = format!("Remove server `{}`?", connection_string);
+                    let prompt_message = t_with_args(
+                        keys::recent::RECENT_REMOVE_SERVER_PROMPT,
+                        &[("name", &(connection_string).to_string())],
+                    );
 
                     let confirmation = window.prompt(
                         PromptLevel::Warning,

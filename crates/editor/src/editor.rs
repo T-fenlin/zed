@@ -120,7 +120,7 @@ pub(crate) use git::{DiffHunkKey, StoredReviewComment};
 use git::{DiffReviewDragState, DiffReviewOverlay, InlineBlamePopover};
 pub(crate) use git::{DisplayDiffHunk, PhantomDiffReviewIndicator};
 pub use hover_popover::hover_markdown_style;
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 pub use inlays::Inlay;
 pub use inline_input::InlineInputState;
 pub(crate) use inline_input::{InlineInputHistoryDirection, InlineInputPreview};
@@ -3006,10 +3006,13 @@ impl Editor {
             window,
             cx,
             |e, _, _| match e.error_code() {
-                ErrorCode::RemoteUpgradeRequired => Some(format!(
-                "The remote instance of Zed does not support this yet. It must be upgraded to {}",
-                e.error_tag("required").unwrap_or("the latest version")
-            )),
+                ErrorCode::RemoteUpgradeRequired => Some(t_with_args(
+                    keys::editor::EDITOR_REMOTE_TOO_OLD,
+                    &[(
+                        "version",
+                        &(e.error_tag("required").unwrap_or("the latest version")).to_string(),
+                    )],
+                )),
                 _ => None,
             },
         );
@@ -3090,15 +3093,21 @@ impl Editor {
             })?;
             anyhow::Ok(())
         })
-        .detach_and_prompt_err(&t(keys::editor::EDITOR_FAILED_TO_CREATE_BUFFER), window, cx, |e, _, _| {
-            match e.error_code() {
-                ErrorCode::RemoteUpgradeRequired => Some(format!(
-                "The remote instance of Zed does not support this yet. It must be upgraded to {}",
-                e.error_tag("required").unwrap_or("the latest version")
-            )),
+        .detach_and_prompt_err(
+            &t(keys::editor::EDITOR_FAILED_TO_CREATE_BUFFER),
+            window,
+            cx,
+            |e, _, _| match e.error_code() {
+                ErrorCode::RemoteUpgradeRequired => Some(t_with_args(
+                    keys::editor::EDITOR_REMOTE_TOO_OLD,
+                    &[(
+                        "version",
+                        &(e.error_tag("required").unwrap_or("the latest version")).to_string(),
+                    )],
+                )),
                 _ => None,
-            }
-        });
+            },
+        );
     }
 
     pub fn leader_id(&self) -> Option<CollaboratorId> {

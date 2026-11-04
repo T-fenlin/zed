@@ -2218,9 +2218,9 @@ impl ProjectPanel {
                     }
                 };
                 if already_exists {
-                    edit_state.validation_state = ValidationState::Error(format!(
-                        "File or directory '{}' already exists at location. Please choose a different name.",
-                        filename.as_unix_str()
+                    edit_state.validation_state = ValidationState::Error(t_with_args(
+                        keys::panel::PANEL_NAME_EXISTS,
+                        &[("name", &(filename.as_unix_str()).to_string())],
                     ));
                     cx.notify();
                     return;
@@ -4109,7 +4109,10 @@ impl ProjectPanel {
                             workspace.show_toast(
                                 workspace::Toast::new(
                                     notification_id.clone(),
-                                    format!("Downloaded {} files", total_files),
+                                    t_with_args(
+                                        keys::panel::PANEL_DOWNLOADED_FILES,
+                                        &[("count", &(total_files).to_string())],
+                                    ),
                                 ),
                                 cx,
                             );
@@ -8334,7 +8337,10 @@ impl Render for DraggedProjectEntryView {
                     .bg(cx.theme().colors().background)
                     .map(|this| {
                         if self.selections.len() > 1 && self.selections.contains(&self.selection) {
-                            this.child(Label::new(format!("{} entries", self.selections.len())))
+                            this.child(Label::new(t_with_args(
+                                keys::panel::PANEL_ENTRIES_DRAGGED,
+                                &[("count", &(self.selections.len()).to_string())],
+                            )))
                         } else {
                             this.child(
                                 h_flex()

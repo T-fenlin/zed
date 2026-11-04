@@ -2,7 +2,7 @@ use anyhow::{Context as _, Result};
 use collections::HashMap;
 use context_server::{ContextServerCommand, ContextServerId};
 use editor::{Editor, EditorElement, EditorStyle};
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 
 use extension_host::ExtensionStore;
 use gpui::{
@@ -748,7 +748,10 @@ impl ConfigureContextServerModal {
             .update(cx, {
                 |workspace, cx| {
                     let status_toast = StatusToast::new(
-                        format!("{} configured successfully.", id.0),
+                        t_with_args(
+                            keys::agent::AGENT_A_CONTEXT_SERVER_CONFIGURED,
+                            &[("server", &(id.0).to_string())],
+                        ),
                         cx,
                         |this, _cx| {
                             this.icon(
@@ -798,7 +801,11 @@ impl ConfigureContextServerModal {
             ConfigurationSource::Existing { .. } => {
                 t(keys::agent::AGENT_A_CONTEXT_SERVER_CONFIGURE_MCP).into()
             }
-            ConfigurationSource::Extension { id, .. } => format!("Configure {}", id.0).into(),
+            ConfigurationSource::Extension { id, .. } => t_with_args(
+                keys::agent::AGENT_A_CONTEXT_SERVER_CONFIGURE_EXTENSION,
+                &[("server", &(id.0).to_string())],
+            )
+            .into(),
         };
         ModalHeader::new().headline(text)
     }
@@ -1238,9 +1245,9 @@ fn wait_for_context_server(
             futures::future::Either::Left((Err(_), _)) => {
                 Err(Arc::from("Context server store was dropped"))
             }
-            futures::future::Either::Right(_) => Err(Arc::from(format!(
-                "Timed out waiting for context server `{}` to start. Check the Zed log for details.",
-                context_server_id_for_timeout
+            futures::future::Either::Right(_) => Err(Arc::from(t_with_args(
+                keys::agent::AGENT_A_CONTEXT_SERVER_START_TIMEOUT,
+                &[("server", &(context_server_id_for_timeout).to_string())],
             ))),
         }
     })

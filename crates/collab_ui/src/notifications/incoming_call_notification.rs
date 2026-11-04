@@ -2,7 +2,7 @@ use crate::notification_window_options;
 use call::{ActiveCall, IncomingCall};
 use futures::StreamExt;
 use gpui::{App, TaskExt, WindowHandle, prelude::*};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 
 use std::sync::{Arc, Weak};
 use ui::{CollabNotification, prelude::*};
@@ -126,9 +126,9 @@ impl Render for IncomingCallNotification {
                     move |_, _, cx| state.respond(false, cx)
                 }),
             )
-            .child(Label::new(format!(
-                "{} is sharing a project in Zed",
-                self.state.call.calling_user.username
+            .child(Label::new(t_with_args(
+                keys::collab::COLLAB_SHARING_PROJECT_IN_ZED,
+                &[("name", &(self.state.call.calling_user.username).to_string())],
             ))),
         )
     }

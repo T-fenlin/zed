@@ -1,6 +1,6 @@
 use editor::Editor;
 use gpui::{AppContext as _, DismissEvent, Entity, EventEmitter, Focusable, ReadGlobal, Styled};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use ui::{
     ActiveTheme, App, Color, Context, FluentBuilder, InteractiveElement, IntoElement, Label,
     LabelCommon, LabelSize, ParentElement, Render, SharedString, StyledExt, Window, div, h_flex,
@@ -70,7 +70,10 @@ impl OpenUrlModal {
                 cx.emit(DismissEvent);
             }
             Err(e) => {
-                self.last_error = Some(format!("Invalid URL: {}", e).into());
+                self.last_error = Some(
+                    t_with_args(keys::zed::ZED_A_INVALID_URL, &[("error", &(e).to_string())])
+                        .into(),
+                );
                 cx.notify();
             }
         }

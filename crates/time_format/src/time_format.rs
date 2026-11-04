@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use time::{OffsetDateTime, UtcOffset};
 
 /// The formatting style for a timestamp.
@@ -263,12 +263,18 @@ fn format_relative_time(timestamp: OffsetDateTime, reference: OffsetDateTime) ->
     match minutes {
         0 => Some("Just now".to_string()),
         1 => Some("1 minute ago".to_string()),
-        2..=59 => Some(format!("{} minutes ago", minutes)),
+        2..=59 => Some(t_with_args(
+            keys::agent::AGENT_TIME_MINUTES_AGO,
+            &[("count", &(minutes).to_string())],
+        )),
         _ => {
             let hours = difference.whole_hours();
             match hours {
                 1 => Some("1 hour ago".to_string()),
-                2..=23 => Some(format!("{} hours ago", hours)),
+                2..=23 => Some(t_with_args(
+                    keys::agent::AGENT_TIME_HOURS_AGO,
+                    &[("count", &(hours).to_string())],
+                )),
                 _ => None,
             }
         }
@@ -283,7 +289,10 @@ fn format_relative_date(timestamp: OffsetDateTime, reference: OffsetDateTime) ->
     match days {
         0 => t(keys::agent::AGENT_TODAY),
         1 => t(keys::agent::AGENT_YESTERDAY),
-        2..=6 => format!("{} days ago", days),
+        2..=6 => t_with_args(
+            keys::agent::AGENT_TIME_DAYS_AGO,
+            &[("count", &(days).to_string())],
+        ),
         _ => {
             let weeks = difference.whole_weeks();
             match weeks {
@@ -874,7 +883,10 @@ mod tests {
         for i in 2..=59 {
             assert_eq!(
                 format_relative_time(next_minute(), reference),
-                Some(format!("{} minutes ago", i))
+                Some(t_with_args(
+                    keys::agent::AGENT_TIME_MINUTES_AGO,
+                    &[("count", &(i).to_string())]
+                ))
             );
         }
 
@@ -909,7 +921,10 @@ mod tests {
         for i in 2..=23 {
             assert_eq!(
                 format_relative_time(next_hour(), reference),
-                Some(format!("{} hours ago", i))
+                Some(t_with_args(
+                    keys::agent::AGENT_TIME_HOURS_AGO,
+                    &[("count", &(i).to_string())]
+                ))
             );
         }
 
@@ -940,7 +955,10 @@ mod tests {
         for i in 2..=6 {
             assert_eq!(
                 format_relative_date(next_day(), reference),
-                format!("{} days ago", i)
+                t_with_args(
+                    keys::agent::AGENT_TIME_DAYS_AGO,
+                    &[("count", &(i).to_string())]
+                )
             );
         }
 

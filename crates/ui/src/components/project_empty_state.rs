@@ -1,6 +1,6 @@
 use crate::{Divider, DividerColor, KeyBinding, prelude::*};
 use gpui::{ClickEvent, FocusHandle};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 
 type ClickHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
 
@@ -48,7 +48,10 @@ impl ProjectEmptyState {
 impl RenderOnce for ProjectEmptyState {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         let id = format!("empty-state-{}", self.label);
-        let label = format!("Choose one of the options below to use the {}", self.label);
+        let label = t_with_args(
+            keys::ui::UI_CHOOSE_OPTION_FOR,
+            &[("name", &(self.label).to_string())],
+        );
 
         v_flex()
             .id(id)
@@ -81,7 +84,11 @@ impl RenderOnce for ProjectEmptyState {
                         h_flex()
                             .gap_2()
                             .child(Divider::horizontal().color(DividerColor::Border))
-                            .child(Label::new(t(keys::ui::UI_OR)).size(LabelSize::XSmall).color(Color::Muted))
+                            .child(
+                                Label::new(t(keys::ui::UI_OR))
+                                    .size(LabelSize::XSmall)
+                                    .color(Color::Muted),
+                            )
                             .child(Divider::horizontal().color(DividerColor::Border)),
                     )
                     .child(

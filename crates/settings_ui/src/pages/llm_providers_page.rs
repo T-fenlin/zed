@@ -653,7 +653,10 @@ fn open_llm_provider_form(
 ) {
     settings_window.llm_provider_form = Some(LlmProviderForm::new(kind, window, cx));
     settings_window.push_dynamic_sub_page(
-        format!("Add {}-Compatible Provider", kind.label()),
+        t_with_args(
+            keys::settings_ui::SETTINGS_B_LLM_ADD_COMPATIBLE_TITLE,
+            &[("provider", &(kind.label()).to_string())],
+        ),
         t(keys::settings_ui::SETTINGS_EXT_AGENT_AGENT_CONFIGURATION),
         Some("llm_providers"),
         true,

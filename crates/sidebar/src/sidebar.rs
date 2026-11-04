@@ -33,7 +33,7 @@ use gpui::{
     TaskExt, WeakEntity, Window, WindowBackgroundAppearance, WindowHandle, linear_color_stop,
     linear_gradient, list, prelude::*, px,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use itertools::Itertools;
 use language_model::LanguageModelRegistry;
 use menu::{
@@ -7705,9 +7705,9 @@ impl Sidebar {
             .map(SharedString::as_str)
             .join(" and ");
 
-        let description = format!(
-            "Import threads from {} to continue where you left off.",
-            channel_names
+        let description = t_with_args(
+            keys::sidebar::SIDEBAR_CROSS_CHANNEL_DESCRIPTION,
+            &[("channels", &(channel_names).to_string())],
         );
 
         let on_import = cx.listener(|this, _, _window, cx| {

@@ -1,4 +1,4 @@
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::{collections::BTreeSet, sync::Arc};
 
 use cloud_api_types::{ExtensionApiManifest, ExtensionMetadata, ExtensionProvides};
@@ -695,10 +695,7 @@ impl RenderOnce for ExtensionCard {
                                 .truncate()
                         }))
                         .children(download_count.map(|download_count| {
-                            Label::new(format!(
-                                "Downloads: {}",
-                                format_number_with_commas(u128::from(download_count))
-                            ))
+                            Label::new(t_with_args(keys::extensions::EXTENSIONS_DOWNLOADS, &[("count", &(format_number_with_commas(u128::from(download_count))).to_string())]))
                             .size(LabelSize::Small)
                         })),
                 )

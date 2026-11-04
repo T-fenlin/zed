@@ -1188,7 +1188,10 @@ impl CollabPanel {
             .current_user()
             .map(|user| user.legacy_id)
             == Some(user_id);
-        let tooltip = format!("Follow {}", user.username);
+        let tooltip = t_with_args(
+            keys::collab::COLLAB_FOLLOW,
+            &[("user", &(user.username).to_string())],
+        );
 
         let is_call_admin = ActiveCall::global(cx).read(cx).room().is_some_and(|room| {
             room.read(cx).local_participant().role == proto::ChannelRole::Admin
@@ -1295,7 +1298,10 @@ impl CollabPanel {
                     ),
             )
             .child(Label::new(project_name.clone()))
-            .tooltip(Tooltip::text(format!("Open {}", project_name)))
+            .tooltip(Tooltip::text(t_with_args(
+                keys::collab::COLLAB_OPEN_NAMED,
+                &[("name", &(project_name).to_string())],
+            )))
     }
 
     fn render_participant_screen(
@@ -1618,7 +1624,10 @@ impl CollabPanel {
 
                 if let Some(channel_name) = clipboard_channel_name {
                     context_menu = context_menu.separator().entry(
-                        format!("Move '#{}' here", channel_name),
+                        t_with_args(
+                            keys::collab::COLLAB_MOVE_CHANNEL_HERE,
+                            &[("name", &(channel_name).to_string())],
+                        ),
                         None,
                         window.handler_for(&this, move |this, window, cx| {
                             this.move_channel_on_clipboard(channel_id, window, cx)
@@ -1735,9 +1744,15 @@ impl CollabPanel {
 
             if contact.online && !contact.busy {
                 let label = if in_room {
-                    format!("Invite {} to join", contact.user.username)
+                    t_with_args(
+                        keys::collab::COLLAB_INVITE_NAMED_TO_JOIN,
+                        &[("name", &(contact.user.username).to_string())],
+                    )
                 } else {
-                    format!("Call {}", contact.user.username)
+                    t_with_args(
+                        keys::collab::COLLAB_CALL_NAMED,
+                        &[("name", &(contact.user.username).to_string())],
+                    )
                 };
                 context_menu = context_menu.entry(label, None, {
                     let this = this.clone();
@@ -3780,14 +3795,20 @@ impl CollabPanel {
                 let requester = user_store.get_cached_user(*sender_id)?;
                 Some((
                     Some(requester.clone()),
-                    format!("{} wants to add you as a contact", requester.username),
+                    t_with_args(
+                        keys::collab::COLLAB_NOTIFY_CONTACT_REQUEST,
+                        &[("name", &(requester.username).to_string())],
+                    ),
                 ))
             }
             Notification::ContactRequestAccepted { responder_id } => {
                 let responder = user_store.get_cached_user(*responder_id)?;
                 Some((
                     Some(responder.clone()),
-                    format!("{} accepted your contact request", responder.username),
+                    t_with_args(
+                        keys::collab::COLLAB_NOTIFY_CONTACT_ACCEPTED,
+                        &[("name", &(responder.username).to_string())],
+                    ),
                 ))
             }
             Notification::ChannelInvitation {

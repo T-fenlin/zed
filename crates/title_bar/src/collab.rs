@@ -9,7 +9,7 @@ use gpui::{
     WeakEntity, canvas, point,
 };
 use gpui::{App, Task, Window};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use icons::IconName;
 use livekit_client::ConnectionQuality;
 use project::WorktreeSettings;
@@ -297,7 +297,10 @@ impl TitleBar {
                                         AvatarAudioStatusIndicator::new(ui::AudioStatus::Muted)
                                             .tooltip({
                                                 let username = user.username.clone();
-                                                Tooltip::text(format!("{} is muted", username))
+                                                Tooltip::text(t_with_args(
+                                                    keys::collab::COLLAB_USER_MUTED,
+                                                    &[("user", &(username).to_string())],
+                                                ))
                                             }),
                                     )
                                 }),

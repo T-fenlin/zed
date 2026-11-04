@@ -14,7 +14,7 @@ use gpui::{
     Focusable, IntoElement, ParentElement, Render, Subscription, TaskExt, WeakEntity, actions, div,
     ease_in_out, pulsating_between,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use indoc::indoc;
 use language::{
     EditPredictionsMode, File, Language,
@@ -115,10 +115,7 @@ impl Render for EditPredictionButton {
                                         workspace.show_toast(
                                             Toast::new(
                                                 NotificationId::unique::<CopilotErrorToast>(),
-                                                format!(
-                                                    "Copilot Edit Predictions can't be started: {}",
-                                                    e
-                                                ),
+                                                t_with_args(keys::edit_prediction::EDIT_PREDICTION_COPILOT_START_FAILED, &[("error", &(e).to_string())]),
                                             )
                                             .on_click(
                                                 t_static(keys::edit_prediction::EDIT_PREDICTION_REINSTALL_COPILOT),
@@ -331,7 +328,7 @@ impl Render for EditPredictionButton {
                                 let settings = all_language_settings(None, cx);
                                 let tooltip_meta = match settings.edit_predictions.ollama.as_ref() {
                                     Some(settings) if !settings.model.trim().is_empty() => {
-                                        format!("Powered by Ollama ({})", settings.model)
+                                        t_with_args(keys::edit_prediction::EDIT_PREDICTION_POWERED_BY_OLLAMA, &[("model", &(settings.model).to_string())])
                                     }
                                     _ => t_static(
                                         keys::edit_prediction::EDIT_PREDICTION_OLLAMA_MODEL_MISSING,
@@ -811,9 +808,9 @@ impl EditPredictionButton {
                     menu = menu.item(entry.disabled(true).documentation_aside(
                         DocumentationSide::Left,
                         move |_cx| {
-                            Label::new(format!(
-                                "Edit predictions are disabled for {}",
-                                language.name()
+                            Label::new(t_with_args(
+                                keys::edit_prediction::EDIT_PREDICTION_DISABLED_FOR_LANGUAGE,
+                                &[("language", &(language.name()).to_string())],
                             ))
                             .into_any_element()
                         },

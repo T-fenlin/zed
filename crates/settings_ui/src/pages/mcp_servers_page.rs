@@ -202,7 +202,10 @@ fn render_context_server(
         Some(if tool_count == 1 {
             SharedString::from("1 tool")
         } else {
-            SharedString::from(format!("{} tools", tool_count))
+            SharedString::from(t_with_args(
+                keys::settings_ui::SETTINGS_A_MCP_TOOL_COUNT,
+                &[("count", &(tool_count).to_string())],
+            ))
         })
     } else {
         None

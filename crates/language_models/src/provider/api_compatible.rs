@@ -1,3 +1,4 @@
+use i18n::{keys, t_with_args};
 use std::sync::Arc;
 
 use ::util::ResultExt;
@@ -241,15 +242,13 @@ impl<S: ApiCompatibleProviderSettings> Render for ApiCompatibleProviderConfigura
                         .min_w_0()
                         .gap_1()
                         .child(Icon::new(IconName::Check).color(Color::Success))
-                        .child(
-                            div().w_full().overflow_x_hidden().text_ellipsis().child(Label::new(
-                                if env_var_set {
-                                    format!("API key set in {env_var_name} environment variable")
-                                } else {
-                                    format!("API key configured for {}", state.settings.api_url())
-                                },
-                            )),
-                        ),
+                        .child(div().w_full().overflow_x_hidden().text_ellipsis().child(
+                            Label::new(if env_var_set {
+                                format!("API key set in {env_var_name} environment variable")
+                            } else {
+                                format!("API key configured for {}", state.settings.api_url())
+                            }),
+                        )),
                 )
                 .child(
                     h_flex().flex_shrink_0().child(
@@ -258,13 +257,14 @@ impl<S: ApiCompatibleProviderSettings> Render for ApiCompatibleProviderConfigura
                             .start_icon(Icon::new(IconName::Undo).size(IconSize::Small))
                             .layer(ElevationIndex::ModalSurface)
                             .when(env_var_set, |this| {
-                                this.tooltip(Tooltip::text(format!(
-                                    "To reset your API key, unset the {env_var_name} environment variable.",
+                                this.tooltip(Tooltip::text(t_with_args(
+                                    keys::settings_ui::SETTINGS_B_API_KEY_RESET_TOOLTIP,
+                                    &[("env_var", &().to_string())],
                                 )))
                             })
-                            .on_click(cx.listener(|this, _, window, cx| {
-                                this.reset_api_key(window, cx)
-                            })),
+                            .on_click(
+                                cx.listener(|this, _, window, cx| this.reset_api_key(window, cx)),
+                            ),
                     ),
                 )
                 .into_any()
