@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::ops::Range;
 use std::sync::Arc;
 use std::time::Duration;
@@ -170,7 +171,7 @@ impl ThreadSearchBar {
     ) -> Self {
         let query_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Search this thread…", window, cx);
+            editor.set_placeholder_text(t(keys::agent::AGENT_SEARCH_THREAD), window, cx);
             editor
         });
         let editor_subscription = cx.subscribe_in(
@@ -845,7 +846,7 @@ impl Render for ThreadSearchBar {
                         "thread-search-prev",
                         IconName::ChevronLeft,
                         !has_matches,
-                        "Previous Match",
+                        t(keys::agent::AGENT_PREVIOUS_MATCH),
                         &SelectPreviousThreadMatch,
                         focus_handle.clone(),
                     ))
@@ -853,7 +854,7 @@ impl Render for ThreadSearchBar {
                         "thread-search-next",
                         IconName::ChevronRight,
                         !has_matches,
-                        "Next Match",
+                        t(keys::agent::AGENT_NEXT_MATCH),
                         &SelectNextThreadMatch,
                         focus_handle.clone(),
                     ))
@@ -868,7 +869,7 @@ impl Render for ThreadSearchBar {
                         "thread-search-dismiss",
                         IconName::Close,
                         false,
-                        "Close Search",
+                        t(keys::agent::AGENT_CLOSE_SEARCH),
                         &DismissThreadSearch,
                         focus_handle,
                     )),

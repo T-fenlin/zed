@@ -6228,7 +6228,7 @@ async fn test_focused_thread_tracks_user_intent(cx: &mut TestAppContext) {
 
     let connection_b2 = StubAgentConnection::new();
     connection_b2.set_next_prompt_updates(vec![acp_v1::SessionUpdate::AgentMessageChunk(
-        acp_v1::ContentChunk::new(DEFAULT_THREAD_TITLE.into()),
+        acp_v1::ContentChunk::new(default_thread_title().into()),
     )]);
     open_thread_with_connection(&panel_b, connection_b2, cx);
     send_message(&panel_b, cx);
@@ -11316,7 +11316,7 @@ async fn test_unarchive_does_not_create_duplicate_real_thread_metadata(cx: &mut 
         .filter(|entry| !entry.starts_with("v ") && !entry.starts_with("> "))
         .filter(|entry| !entry.contains("Draft"))
         // Parked drafts render with the default title until the user types.
-        .filter(|entry| !entry.contains(DEFAULT_THREAD_TITLE))
+        .filter(|entry| !entry.contains(default_thread_title()))
         .count();
     assert_eq!(
         real_thread_rows, 1,
@@ -11932,7 +11932,7 @@ async fn test_unarchive_linked_worktree_thread_into_project_group_shows_only_res
         assert!(
             !entries
                 .iter()
-                .any(|entry| entry.contains(DEFAULT_THREAD_TITLE)),
+                .any(|entry| entry.contains(default_thread_title())),
             "expected no default-titled real placeholder row after linked-worktree unarchive, got entries: {entries:?}"
         );
         assert!(

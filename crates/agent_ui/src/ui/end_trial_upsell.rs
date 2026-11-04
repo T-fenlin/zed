@@ -34,7 +34,7 @@ impl RenderOnce for EndTrialUpsell {
             )
             .child(PlanDefinitions.pro_plan())
             .child(
-                Button::new("cta-button", "Upgrade to Zed Pro")
+                Button::new("cta-button", t(keys::agent::AGENT_TRIAL_UPGRADE))
                     .full_width()
                     .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                     .on_click(move |_, _window, cx| {
@@ -68,7 +68,7 @@ impl RenderOnce for EndTrialUpsell {
         AgentPanelOnboardingCard::new()
             .child(Headline::new("Your Zed Pro Trial has expired"))
             .child(
-                Label::new("You've been automatically reset to the Free plan.")
+                Label::new(t(keys::agent::AGENT_TRIAL_RESET))
                     .color(Color::Muted)
                     .mb_2(),
             )

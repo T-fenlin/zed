@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{borrow::Cow, path::PathBuf, time::Duration};
 
 use acp_thread::MentionUri;
@@ -232,9 +233,9 @@ pub(crate) fn open_migrated_rule(
     workspace.show_toast(
         workspace::Toast::new(
             workspace::notifications::NotificationId::unique::<RulesMigratedToSkillsToast>(),
-            "Rules have been migrated to Skills.",
+            t(keys::agent::AGENT_RULES_MIGRATED),
         )
-        .on_click("View docs", |_, cx| {
+        .on_click(t(keys::agent::AGENT_VIEW_DOCS), |_, cx| {
             cx.open_url("https://zed.dev/docs/ai/skills");
         })
         .autohide(),

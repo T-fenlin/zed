@@ -8,7 +8,7 @@ use crate::agent_connection_store::AgentConnectionStore;
 use crate::thread_metadata_store::{
     ThreadId, ThreadMetadata, ThreadMetadataStore, worktree_info_from_thread_paths,
 };
-use crate::{Agent, ArchiveSelectedThread, DEFAULT_THREAD_TITLE, RemoveSelectedThread};
+use crate::{Agent, ArchiveSelectedThread, RemoveSelectedThread, default_thread_title};
 
 use agent::ThreadStore;
 use agent_client_protocol::schema::v2 as acp;
@@ -92,13 +92,13 @@ impl TimeBucket {
         TimeBucket::Older
     }
 
-    fn label(&self) -> &'static str {
+    fn label(&self) -> ui::SharedString {
         match self {
-            TimeBucket::Today => "Today",
-            TimeBucket::Yesterday => "Yesterday",
-            TimeBucket::ThisWeek => "This Week",
-            TimeBucket::PastWeek => "Past Week",
-            TimeBucket::Older => "Older",
+            TimeBucket::Today => t(keys::agent::AGENT_TODAY).into(),
+            TimeBucket::Yesterday => t(keys::agent::AGENT_YESTERDAY).into(),
+            TimeBucket::ThisWeek => t(keys::agent::AGENT_THIS_WEEK).into(),
+            TimeBucket::PastWeek => t(keys::agent::AGENT_PAST_WEEK).into(),
+            TimeBucket::Older => t(keys::agent::AGENT_OLDER).into(),
         }
     }
 }
@@ -172,7 +172,7 @@ impl ThreadsArchiveView {
 
         let filter_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Search all threads…", window, cx);
+            editor.set_placeholder_text(t(keys::agent::AGENT_SEARCH_THREADS), window, cx);
             editor
         });
 
@@ -305,7 +305,7 @@ impl ThreadsArchiveView {
                     .title
                     .as_ref()
                     .map(|t| t.as_ref())
-                    .unwrap_or(DEFAULT_THREAD_TITLE);
+                    .unwrap_or(default_thread_title().as_str());
                 if let Some(positions) = fuzzy_match_positions(&query, title) {
                     positions
                 } else {
@@ -721,7 +721,7 @@ impl ThreadsArchiveView {
                             .tooltip({
                                 move |_window, cx| {
                                     Tooltip::for_action_in(
-                                        "Delete Thread",
+                                        t(keys::agent::AGENT_DELETE_THREAD),
                                         &RemoveSelectedThread,
                                         &focus_handle,
                                         cx,
@@ -1010,9 +1010,9 @@ impl ThreadsArchiveView {
                             .toggle_state(self.thread_filter == ThreadFilter::ArchivedOnly)
                             .tooltip(Tooltip::text(
                                 if self.thread_filter == ThreadFilter::ArchivedOnly {
-                                    "Show All Threads"
+                                    t(keys::agent::AGENT_SHOW_ALL_THREADS)
                                 } else {
-                                    "Show Only Archived Threads"
+                                    t(keys::agent::AGENT_SHOW_ONLY_ARCHIVED)
                                 },
                             ))
                             .on_click(cx.listener(|this, _, _, cx| {
@@ -1065,9 +1065,9 @@ impl Render for ThreadsArchiveView {
 
         let content = if is_empty {
             let message = if has_query {
-                "No threads match your search."
+                t(keys::agent::AGENT_NO_THREADS_MATCH)
             } else {
-                "No threads yet."
+                t(keys::agent::AGENT_NO_THREADS)
             };
 
             v_flex()
@@ -1311,7 +1311,7 @@ impl PickerDelegate for ProjectPickerDelegate {
                 .title
                 .as_ref()
                 .map(|t| t.as_ref())
-                .unwrap_or(DEFAULT_THREAD_TITLE)
+                .unwrap_or(default_thread_title().as_str())
         )
         .into()
     }

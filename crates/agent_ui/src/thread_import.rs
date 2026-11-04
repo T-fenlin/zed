@@ -390,7 +390,7 @@ impl ThreadImportModal {
 
     fn show_imported_threads_toast(&self, imported_count: usize, cx: &mut App) {
         let status_toast = if imported_count == 0 {
-            StatusToast::new("No threads found to import.", cx, |this, _cx| {
+            StatusToast::new(t(keys::agent::AGENT_IMPORT_NO_THREADS), cx, |this, _cx| {
                 this.icon(
                     Icon::new(IconName::Info)
                         .size(IconSize::Small)
@@ -571,7 +571,7 @@ impl Render for ThreadImportModal {
                 Modal::new("import-threads", None)
                     .header(
                         ModalHeader::new()
-                            .headline("Import External Agent Threads")
+                            .headline(t(keys::agent::AGENT_IMPORT_TITLE))
                             .description(
                                 "Import threads from agents like Claude Agent, Codex, and more, whether started in Zed or another client. \
                                 Choose which agents to include, and their threads will appear in your thread history."
@@ -589,7 +589,7 @@ impl Render for ThreadImportModal {
                                 .when(has_agents, |this| this.children(agent_rows))
                                 .when(!has_agents, |this| {
                                     this.child(
-                                        Label::new("No external agents available.")
+                                        Label::new(t(keys::agent::AGENT_IMPORT_NO_AGENTS))
                                             .color(Color::Muted)
                                             .size(LabelSize::Small),
                                     )
@@ -962,7 +962,7 @@ fn show_cross_channel_import_toast(
     cx: &mut App,
 ) {
     let status_toast = if imported_count == 0 {
-        StatusToast::new("No new threads found to import.", cx, |this, _cx| {
+        StatusToast::new(t(keys::agent::AGENT_IMPORT_NO_NEW_THREADS), cx, |this, _cx| {
             this.icon(Icon::new(IconName::Info).color(Color::Muted))
                 .dismiss_button(true)
         })

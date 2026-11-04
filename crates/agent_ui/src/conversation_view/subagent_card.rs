@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use acp_thread::{
     AcpThread, AgentThreadEntry, MessageIdentity, SessionMessage, SessionMessageSide, ToolCall,
     ToolCallContent, ToolCallStatus,
@@ -9,7 +10,7 @@ use std::{fmt, ops::Range};
 use super::thread_view::subagent_label;
 
 /// Native subagent tool calls report a user cancellation as output with this text.
-const USER_CANCELED_OUTPUT: &str = "User canceled";
+
 
 /// The transcript entry a subagent card stands for. It keys the card's expansion state
 /// and element IDs, since the same subagent can have more than one card.
@@ -283,10 +284,10 @@ impl SubagentCardState {
             thread_title.or(label)
         };
         title.unwrap_or_else(|| match self.status {
-            SubagentStatus::Canceled => "Subagent Canceled".into(),
+            SubagentStatus::Canceled => t(keys::agent::AGENT_THREAD_SUBAGENT_CANCELED).into(),
             SubagentStatus::Failed => "Subagent Failed".into(),
             SubagentStatus::Running | SubagentStatus::Completed | SubagentStatus::Unknown => {
-                "Spawning Agent…".into()
+                t(keys::agent::AGENT_THREAD_SPAWNING_AGENT).into()
             }
         })
     }
@@ -319,7 +320,7 @@ impl SubagentCardState {
 fn has_user_canceled_output(tool_call: &ToolCall, cx: &App) -> bool {
     tool_call.content().iter().any(|content| match content {
         ToolCallContent::ContentBlock { block, .. } => {
-            block.text_content(cx) == Some(USER_CANCELED_OUTPUT)
+            block.text_content(cx) == Some(t(keys::agent::AGENT_THREAD_USER_CANCELED).as_str())
         }
         _ => false,
     })
@@ -335,7 +336,7 @@ fn tool_call_error(tool_call: &ToolCall, cx: &App) -> Option<SharedString> {
         };
         block
             .text_content(cx)
-            .filter(|text| !text.is_empty() && *text != USER_CANCELED_OUTPUT)
+            .filter(|text| !text.is_empty() && *text != t(keys::agent::AGENT_THREAD_USER_CANCELED).as_str())
             .map(SharedString::from)
     })
 }
@@ -368,10 +369,10 @@ mod tests {
         );
         assert_eq!(labeled.title(None).as_ref(), "Explore");
         for (status, title) in [
-            (SubagentStatus::Running, "Spawning Agent…"),
-            (SubagentStatus::Completed, "Spawning Agent…"),
+            (SubagentStatus::Running, t(keys::agent::AGENT_THREAD_SPAWNING_AGENT)),
+            (SubagentStatus::Completed, t(keys::agent::AGENT_THREAD_SPAWNING_AGENT)),
             (SubagentStatus::Failed, "Subagent Failed"),
-            (SubagentStatus::Canceled, "Subagent Canceled"),
+            (SubagentStatus::Canceled, t(keys::agent::AGENT_THREAD_SUBAGENT_CANCELED)),
         ] {
             assert_eq!(card(None, status, None).title(None).as_ref(), title);
         }

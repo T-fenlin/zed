@@ -1,4 +1,4 @@
-use crate::DEFAULT_THREAD_TITLE;
+use crate::default_thread_title;
 use crate::SendImmediately;
 use crate::{
     ChatWithFollow,
@@ -708,7 +708,7 @@ impl MessageEditor {
         };
         let thread_title = title
             .filter(|title| !title.is_empty())
-            .unwrap_or_else(|| SharedString::new_static(DEFAULT_THREAD_TITLE));
+            .unwrap_or_else(|| default_thread_title().into());
         let uri = MentionUri::Thread {
             id: session_id,
             name: thread_title.to_string(),

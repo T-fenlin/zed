@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::path::{Path, PathBuf};
 
 use anyhow::Context as _;
@@ -670,7 +671,7 @@ mod tests {
         assert_eq!(terminal_title_prefix("⠋ Running"), Some("⠋ "));
         assert_eq!(terminal_title_prefix("* Claude"), Some("* "));
         assert_eq!(terminal_title_prefix("✳Thinking"), None);
-        assert_eq!(terminal_title_prefix("Thinking"), None);
+        assert_eq!(terminal_title_prefix(t(keys::agent::AGENT_THREAD_THINKING)), None);
         assert_eq!(terminal_title_prefix(" Thinking"), None);
         assert_eq!(terminal_title_prefix("✳"), None);
         assert_eq!(terminal_title_prefix("v1 Running"), None);
@@ -685,7 +686,7 @@ mod tests {
         metadata.custom_title = Some("Fix bug".into());
         assert_eq!(metadata.display_title().as_ref(), "⠋ Fix bug");
 
-        metadata.title = "Thinking".into();
+        metadata.title = t(keys::agent::AGENT_THREAD_THINKING).into();
         assert_eq!(metadata.display_title().as_ref(), "Fix bug");
     }
 

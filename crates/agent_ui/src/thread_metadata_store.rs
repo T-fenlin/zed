@@ -28,7 +28,7 @@ use ui::{App, Context, SharedString, ThreadItemWorktreeInfo, WorktreeKind};
 use util::{ResultExt as _, paths::PathStyle};
 use workspace::{PathList, SerializedWorkspaceLocation, WorkspaceDb};
 
-use crate::DEFAULT_THREAD_TITLE;
+use crate::default_thread_title;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, serde::Serialize, serde::Deserialize)]
 pub struct ThreadId(uuid::Uuid);
@@ -129,7 +129,7 @@ fn migrate_thread_metadata(cx: &mut App) -> Task<anyhow::Result<()>> {
                         session_id: Some(entry.id),
                         agent_id: ZED_AGENT_ID.clone(),
                         title: if entry.title.is_empty()
-                            || entry.title.as_ref() == DEFAULT_THREAD_TITLE
+                            || entry.title.as_ref() == default_thread_title().as_str()
                         {
                             None
                         } else {
@@ -334,7 +334,7 @@ impl ThreadMetadata {
 
     pub fn display_title(&self) -> SharedString {
         self.title()
-            .unwrap_or_else(|| crate::DEFAULT_THREAD_TITLE.into())
+            .unwrap_or_else(|| default_thread_title().into())
     }
 
     pub fn title(&self) -> Option<SharedString> {
@@ -1771,7 +1771,7 @@ impl Column for ThreadMetadata {
                 thread_id,
                 session_id: id.map(acp::SessionId::new),
                 agent_id,
-                title: if title.is_empty() || title == DEFAULT_THREAD_TITLE {
+                title: if title.is_empty() || title == default_thread_title() {
                     None
                 } else {
                     Some(title.into())

@@ -38,6 +38,7 @@ pub mod threads_archive_view;
 mod ui;
 mod unicode_confusables;
 
+use i18n::{keys, t};
 use std::rc::Rc;
 use std::sync::Arc;
 
@@ -264,7 +265,9 @@ pub(crate) fn open_abs_path_at_point(
         .detach_and_log_err(cx);
 }
 
-pub const DEFAULT_THREAD_TITLE: &str = "New Agent Thread";
+pub fn default_thread_title() -> String {
+    t(keys::agent::AGENT_NEW_THREAD)
+}
 const PARALLEL_AGENT_LAYOUT_BACKFILL_KEY: &str = "parallel_agent_layout_backfilled";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

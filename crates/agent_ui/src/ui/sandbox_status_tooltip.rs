@@ -218,29 +218,29 @@ impl Component for SandboxStatusTooltip {
     }
 
     fn preview(_window: &mut Window, cx: &mut App) -> AnyElement {
-        let settings_section = SandboxSection::new("Defined in your settings:")
+        let settings_section = SandboxSection::new(t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS))
             .group(SandboxGroup::new("Write Access").rows([
                 SandboxRow::path("/Users/you/project"),
                 SandboxRow::path("/tmp (isolated)"),
             ]))
-            .group(SandboxGroup::new("Network Access").rows([
+            .group(SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS)).rows([
                 SandboxRow::domain("github.com"),
                 SandboxRow::domain("*.npmjs.org"),
             ]));
 
-        let thread_section = SandboxSection::new("Allowed for this thread:")
+        let thread_section = SandboxSection::new(t(keys::agent::AGENT_THREAD_ALLOWED_FOR_THREAD))
             .group(
                 SandboxGroup::new("Write Access").row(SandboxRow::path("/Users/you/project/build")),
             )
-            .group(SandboxGroup::new("Network Access").row(SandboxRow::message("None")));
+            .group(SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS)).row(SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))));
 
-        let unrestricted_section = SandboxSection::new("Defined in your settings:")
+        let unrestricted_section = SandboxSection::new(t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS))
             .group(SandboxGroup::new("Write Access").row(SandboxRow::message(
-                "All paths except protected Git metadata",
+                t(keys::agent::AGENT_THREAD_ALL_PATHS_EXCEPT_GIT),
             )))
             .group(
-                SandboxGroup::new("Network Access")
-                    .row(SandboxRow::message("All domains (unrestricted)")),
+                SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS))
+                    .row(SandboxRow::message(t(keys::agent::AGENT_THREAD_ALL_DOMAINS))),
             );
 
         let container = || div().p_2().elevation_2(cx).max_w_112();

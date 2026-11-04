@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::rc::Rc;
 
 use acp_thread::{AgentModelIcon, AgentModelInfo, AgentModelSelector};
@@ -50,7 +51,7 @@ impl Render for ModelSelectorPopover {
         let model_name = model
             .as_ref()
             .map(|model| model.name.clone())
-            .unwrap_or_else(|| SharedString::from("Select a Model"));
+            .unwrap_or_else(|| SharedString::from(t(keys::agent::AGENT_SELECT_MODEL)));
 
         let model_icon = model.as_ref().and_then(|model| model.icon.clone());
 

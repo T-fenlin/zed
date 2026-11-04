@@ -185,7 +185,7 @@ impl ManageProfilesModal {
     ) {
         let name_editor = cx.new(|cx| Editor::single_line(window, cx));
         name_editor.update(cx, |editor, cx| {
-            editor.set_placeholder_text("Profile name", window, cx);
+            editor.set_placeholder_text(t(keys::agent::AGENT_PROFILES_NAME_PLACEHOLDER), window, cx);
         });
 
         self.mode = Mode::NewProfile(NewProfileMode {
@@ -544,7 +544,7 @@ impl ManageProfilesModal {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Label::new("Customize")
+                                    Label::new(t(keys::agent::AGENT_PROFILES_CUSTOMIZE))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -574,7 +574,7 @@ impl ManageProfilesModal {
             div()
                 .track_focus(&self.focus_handle(cx))
                 .size_full()
-                .child(ProfileModalHeader::new("Agent Profiles", None))
+                .child(ProfileModalHeader::new(t(keys::agent::AGENT_PROFILES_TITLE), None))
                 .child(
                     v_flex()
                         .pb_1()
@@ -663,7 +663,7 @@ impl ManageProfilesModal {
             .child(ProfileModalHeader::new(
                 match &base_profile_name {
                     Some(base_profile) => format!("Fork {base_profile}"),
-                    None => "New Profile".into(),
+                    None => t(keys::agent::AGENT_PROFILES_NEW).into(),
                 },
                 match base_profile_name {
                     Some(_) => Some(IconName::Scissors),
@@ -883,7 +883,7 @@ impl ManageProfilesModal {
                                                 .size(IconSize::Small)
                                                 .color(Color::Error),
                                         )
-                                        .child(Label::new("Delete Profile").color(Color::Error))
+                                        .child(Label::new(t(keys::agent::AGENT_PROFILES_DELETE)).color(Color::Error))
                                         .disabled(builtin_profiles::is_builtin(&mode.profile_id))
                                         .on_click({
                                             let profile_id = mode.profile_id.clone();

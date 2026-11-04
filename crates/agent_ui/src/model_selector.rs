@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{rc::Rc, sync::Arc};
 
 use acp_thread::{
@@ -404,7 +405,7 @@ fn info_list_to_picker_entries(
 
     let has_favorites = !favorite_models.is_empty();
     if has_favorites {
-        entries.push(ModelPickerEntry::Separator("Favorite".into()));
+        entries.push(ModelPickerEntry::Separator(t(keys::agent::AGENT_FAVORITE_MODELS).into()));
         for model in favorite_models {
             entries.push(ModelPickerEntry::Model((*model).clone(), true));
         }
@@ -749,7 +750,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(ModelPickerEntry::Separator(s)) if s == "Favorite"
+            Some(ModelPickerEntry::Separator(s)) if s == t(keys::agent::AGENT_FAVORITE_MODELS)
         ));
 
         let model_ids = get_entry_model_ids(&entries);
@@ -825,7 +826,7 @@ mod tests {
         assert_eq!(
             labels,
             vec![
-                "Favorite",
+                t(keys::agent::AGENT_FAVORITE_MODELS),
                 "zed/claude",
                 "Recommended",
                 "zed/claude",
@@ -869,7 +870,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(ModelPickerEntry::Separator(s)) if s == "Favorite"
+            Some(ModelPickerEntry::Separator(s)) if s == t(keys::agent::AGENT_FAVORITE_MODELS)
         ));
 
         assert!(entries.iter().any(|e| matches!(
@@ -898,7 +899,7 @@ mod tests {
         let models = AgentModelList::Flat(vec![
             acp_thread::AgentModelInfo {
                 id: AgentModelId::new("favorite-model"),
-                name: "Favorite".into(),
+                name: t(keys::agent::AGENT_FAVORITE_MODELS).into(),
                 description: None,
                 icon: None,
                 is_latest: false,

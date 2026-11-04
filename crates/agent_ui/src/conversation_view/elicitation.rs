@@ -1390,12 +1390,12 @@ impl Component for ElicitationCardPreview {
                     "Terminal States",
                     vec![
                         single_example(
-                            "Declined",
+                            t(keys::agent::AGENT_A_ELICIT_STATUS_DECLINED),
                             render_form_preview(6, ElicitationStatus::Declined, &[], window, cx),
                         )
                         .width(px(640.)),
                         single_example(
-                            "Canceled",
+                            t(keys::agent::AGENT_A_ELICIT_STATUS_CANCELED),
                             render_form_preview(7, ElicitationStatus::Canceled, &[], window, cx),
                         )
                         .width(px(640.)),
@@ -1803,12 +1803,12 @@ fn string_format_json_name(format: &acp::StringFormat) -> Option<&'static str> {
     }
 }
 
-fn string_format_label(format: &acp::StringFormat) -> Option<&'static str> {
+fn string_format_label(format: &acp::StringFormat) -> Option<String> {
     match format {
-        acp::StringFormat::Email => Some("an email address"),
+        acp::StringFormat::Email => Some(t(keys::agent::AGENT_A_ELICIT_FORMAT_EMAIL)),
         acp::StringFormat::Uri => Some("a URI"),
-        acp::StringFormat::Date => Some("a date"),
-        acp::StringFormat::DateTime => Some("a date and time"),
+        acp::StringFormat::Date => Some(t(keys::agent::AGENT_A_ELICIT_FORMAT_DATE)),
+        acp::StringFormat::DateTime => Some(t(keys::agent::AGENT_A_ELICIT_FORMAT_DATETIME)),
         _ => None,
     }
 }
@@ -1994,12 +1994,12 @@ impl<'a> ElicitationCard<'a> {
         let (status_label, status_icon, status_color) = match &self.elicitation.status {
             ElicitationStatus::Pending { .. } => ("Waiting for input", IconName::Info, Color::Info),
             ElicitationStatus::Accepted if is_accepted_url => {
-                ("Waiting for completion", IconName::Info, Color::Info)
+                (t(keys::agent::AGENT_A_ELICIT_STATUS_WAITING_COMPLETION), IconName::Info, Color::Info)
             }
-            ElicitationStatus::Accepted => ("Submitted", IconName::Check, Color::Success),
-            ElicitationStatus::Declined => ("Declined", IconName::Close, Color::Muted),
-            ElicitationStatus::Canceled => ("Canceled", IconName::Circle, Color::Muted),
-            ElicitationStatus::Completed => ("Completed", IconName::Check, Color::Success),
+            ElicitationStatus::Accepted => (t(keys::agent::AGENT_A_ELICIT_STATUS_SUBMITTED), IconName::Check, Color::Success),
+            ElicitationStatus::Declined => (t(keys::agent::AGENT_A_ELICIT_STATUS_DECLINED), IconName::Close, Color::Muted),
+            ElicitationStatus::Canceled => (t(keys::agent::AGENT_A_ELICIT_STATUS_CANCELED), IconName::Circle, Color::Muted),
+            ElicitationStatus::Completed => (t(keys::agent::AGENT_A_ELICIT_STATUS_COMPLETED), IconName::Check, Color::Success),
         };
 
         let body = v_flex()
@@ -2401,7 +2401,7 @@ impl<'a> ElicitationCard<'a> {
             open_url.is_some() && matches!(self.elicitation.status, ElicitationStatus::Accepted);
         let is_submitting = self.form_state.is_some_and(|state| state.is_submitting);
         let (accept_label, accept_icon, accept_icon_color) = if is_accepted_url {
-            ("Open Again", IconName::ArrowUpRight, Color::Muted)
+            (t(keys::agent::AGENT_A_ELICIT_OPEN_AGAIN), IconName::ArrowUpRight, Color::Muted)
         } else if open_url.is_some() {
             ("Open", IconName::ArrowUpRight, Color::Muted)
         } else {

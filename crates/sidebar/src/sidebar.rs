@@ -17,7 +17,7 @@ use agent_ui::threads_archive_view::{
 };
 use agent_ui::{
     AcpThreadImportOnboarding, Agent, AgentPanel, AgentPanelEvent, AgentThreadSource,
-    ArchiveSelectedThread, CrossChannelImportOnboarding, DEFAULT_THREAD_TITLE, NewTerminalThread,
+    ArchiveSelectedThread, CrossChannelImportOnboarding, NewTerminalThread, default_thread_title,
     NewThread, RenameSelectedThread, TerminalId, ThreadId, ThreadImportModal,
     ThreadTitleRegenerationResult, channels_with_threads, import_threads_from_other_channels,
 };
@@ -3801,7 +3801,7 @@ impl Sidebar {
 
         let thread_title = title
             .map(|t| t.to_string())
-            .unwrap_or_else(|| DEFAULT_THREAD_TITLE.to_string());
+            .unwrap_or_else(|| default_thread_title());
 
         let workspace = workspace.clone();
 
@@ -8156,7 +8156,7 @@ fn all_thread_infos_for_workspace(
             let icon_from_external_svg = thread_view_ref.agent_icon_from_external_svg.clone();
             let title = thread
                 .title()
-                .unwrap_or_else(|| DEFAULT_THREAD_TITLE.into());
+                .unwrap_or_else(|| default_thread_title().into());
             let is_title_generating = thread_view_ref
                 .as_native_thread(cx)
                 .is_some_and(|native_thread| native_thread.read(cx).is_generating_title());

@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use crate::{
     ModelUsageContext,
     language_model_selector::{LanguageModelSelector, language_model_selector},
@@ -91,7 +92,7 @@ impl Render for AgentModelSelector {
         let model_name = model
             .as_ref()
             .map(|model| model.name().0)
-            .unwrap_or_else(|| SharedString::from("Select a Model"));
+            .unwrap_or_else(|| SharedString::from(t(keys::agent::AGENT_SELECT_MODEL)));
 
         let provider_icon = model.as_ref().and_then(|model| {
             LanguageModelRegistry::read_global(cx)

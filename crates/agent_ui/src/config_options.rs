@@ -898,7 +898,7 @@ impl PickerDelegate for ConfigOptionPickerDelegate {
                                     let (icon, color, tooltip) = if is_favorite {
                                         (IconName::StarFilled, Color::Accent, "Unfavorite")
                                     } else {
-                                        (IconName::Star, Color::Default, "Favorite")
+                                        (IconName::Star, Color::Default, t(keys::agent::AGENT_FAVORITE_MODELS))
                                     };
 
                                     let config_id = self.config_id.clone();
@@ -1073,7 +1073,7 @@ fn options_to_picker_entries(
     }
 
     if !favorite_options.is_empty() {
-        entries.push(ConfigOptionPickerEntry::Separator("Favorites".into()));
+        entries.push(ConfigOptionPickerEntry::Separator(t(keys::agent::AGENT_FAVORITES).into()));
         for option in favorite_options {
             entries.push(ConfigOptionPickerEntry::Option(option));
         }
@@ -1083,7 +1083,7 @@ fn options_to_picker_entries(
         if let Some(option) = options.first()
             && option.group.is_none()
         {
-            entries.push(ConfigOptionPickerEntry::Separator("All Options".into()));
+            entries.push(ConfigOptionPickerEntry::Separator(t(keys::agent::AGENT_ALL_OPTIONS).into()));
         }
     }
 

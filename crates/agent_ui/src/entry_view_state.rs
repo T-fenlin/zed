@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::{ops::Range, sync::Arc};
 
 use acp_thread::{AcpThread, AgentThreadEntry, AssistantMessageChunk, ToolCall};
@@ -350,7 +351,7 @@ impl EntryViewState {
                             self.thread_store.clone(),
                             self.session_capabilities.clone(),
                             self.agent_id.clone(),
-                            "Edit message － @ to include context",
+                            t(keys::agent::AGENT_EDIT_MESSAGE_HINT),
                             editor::EditorMode::AutoHeight {
                                 min_lines: 1,
                                 max_lines: None,

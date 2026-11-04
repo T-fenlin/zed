@@ -554,7 +554,7 @@ impl Item for AgentDiffPane {
                         title.clone().unwrap_or_else(|| "Review".to_string()),
                     ))
                     .child(
-                        Label::new("Agent Diff")
+                        Label::new(t(keys::agent::AGENT_DIFF_TITLE))
                             .color(Color::Muted)
                             .size(LabelSize::Small),
                     )
@@ -715,7 +715,7 @@ impl Render for AgentDiffPane {
                     v_flex()
                         .items_center()
                         .gap_2()
-                        .child("No changes to review")
+                        .child(t(keys::agent::AGENT_DIFF_NO_CHANGES))
                         .child(
                             Button::new("continue-iterating", "Continue Iterating")
                                 .style(ButtonStyle::Filled)

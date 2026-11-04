@@ -390,11 +390,11 @@ impl ProfilePickerDelegate {
             .collect()
     }
 
-    fn documentation(candidate: &ProfileCandidate) -> Option<&'static str> {
+    fn documentation(candidate: &ProfileCandidate) -> Option<String> {
         match candidate.id.as_str() {
-            builtin_profiles::WRITE => Some("Get help to write anything."),
-            builtin_profiles::ASK => Some("Chat about your codebase."),
-            builtin_profiles::MINIMAL => Some("Chat about anything with no tools."),
+            builtin_profiles::WRITE => Some(t(keys::agent::AGENT_PROFILE_HELP_WRITE)),
+            builtin_profiles::ASK => Some(t(keys::agent::AGENT_PROFILE_CHAT_CODEBASE)),
+            builtin_profiles::MINIMAL => Some(t(keys::agent::AGENT_PROFILE_CHAT_PLAIN)),
             _ => None,
         }
     }
@@ -485,14 +485,14 @@ impl PickerDelegate for ProfilePickerDelegate {
     }
 
     fn placeholder_text(&self, _: &mut Window, _: &mut App) -> Arc<str> {
-        "Search profiles…".into()
+        t(keys::agent::AGENT_SEARCH_PROFILES).into()
     }
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
         let text = if self.candidates.is_empty() {
-            "No profiles.".into()
+            t(keys::agent::AGENT_NO_PROFILES).into()
         } else {
-            "No profiles match your search.".into()
+            t(keys::agent::AGENT_NO_PROFILES_MATCH).into()
         };
         Some(text)
     }
@@ -714,7 +714,7 @@ impl PickerDelegate for ProfilePickerDelegate {
         };
 
         let candidate = self.candidates.get(entry.candidate_index)?;
-        let description = Self::documentation(candidate).map(|docs| docs.to_string());
+        let description = Self::documentation(candidate);
         let forbidden_tools = if self.provider.is_restricted(cx) {
             Self::restricted_forbidden_tools(&candidate.id, cx)
         } else {

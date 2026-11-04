@@ -1,5 +1,5 @@
 use crate::{
-    DEFAULT_THREAD_TITLE, SelectPermissionGranularity,
+    SelectPermissionGranularity, default_thread_title,
     conversation_view::thread_search_bar::{ThreadSearchBar, ThreadSearchBarEvent},
     entry_view_state::TERMINAL_CONTENT_TOP_PADDING,
     open_abs_path_at_point, project_path_for_file_link,
@@ -69,7 +69,7 @@ pub(super) fn subagent_label(thread: &AcpThread) -> SharedString {
         .subagent_association()
         .and_then(|association| association.title.clone())
         .or_else(|| thread.title())
-        .unwrap_or_else(|| "Subagent".into())
+        .unwrap_or_else(|| t(keys::agent::AGENT_THREAD_SUBAGENT).into())
 }
 
 /// Most agents echo an accepted prompt almost immediately, so the in-flight status row
@@ -271,7 +271,7 @@ impl ThreadFeedbackState {
                 cx,
             );
             editor.set_placeholder_text(
-                "What went wrong? Share your feedback so we can improve.",
+                t(keys::agent::AGENT_THREAD_FEEDBACK_PLACEHOLDER),
                 window,
                 cx,
             );
@@ -687,10 +687,10 @@ mod numbered_code_block_tests {
 /// Tracks the user's permission dropdown selection state for a specific request.
 ///
 /// Default (no entry in the map) means the last dropdown choice is selected,
-/// which is typically "Only this time".
+/// which is typically t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME).
 #[derive(Clone)]
 pub(crate) enum PermissionSelection {
-    /// A specific choice from the dropdown (e.g., "Always for terminal", "Only this time").
+    /// A specific choice from the dropdown (e.g., "Always for terminal", t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)).
     /// The index corresponds to the position in the `choices` list from `PermissionOptions`.
     Choice(usize),
     /// "Select options…" mode where individual command patterns can be toggled.
@@ -1145,7 +1145,7 @@ impl ThreadView {
                 None
             }
             .or_else(|| thread.read(cx).title())
-            .unwrap_or_else(|| DEFAULT_THREAD_TITLE.into());
+            .unwrap_or_else(|| default_thread_title().into());
             let editor = cx.new(|cx| {
                 let mut editor = Editor::single_line(window, cx);
                 editor.set_text(initial_title, window, cx);
@@ -1488,7 +1488,7 @@ impl ThreadView {
     ) -> Task<Result<(Vec<acp_v2::ContentBlock>, Vec<Entity<Buffer>>)>> {
         if message_editor.read(cx).editor().read(cx).read_only(cx) {
             return Task::ready(Err(anyhow!(
-                "This draft contains unsupported content and cannot be edited or sent. Discard the draft to write a new message."
+                t(keys::agent::AGENT_THREAD_DRAFT_UNSUPPORTED)
             )));
         }
         let expand = self.as_native_thread(cx).is_some_and(|thread| {
@@ -1842,11 +1842,11 @@ impl ThreadView {
                 acp_v2::EmbeddedResourceResource::BlobResourceContents(resource) => {
                     resource.uri.as_str()
                 }
-                _ => "[Resource attachment]",
+                _ => t(keys::agent::AGENT_THREAD_ATTACHMENT_RESOURCE),
             },
-            acp_v2::ContentBlock::Image(_) => "[Image attachment]",
-            acp_v2::ContentBlock::Audio(_) => "[Audio attachment]",
-            _ => "[Unsupported attachment]",
+            acp_v2::ContentBlock::Image(_) => t(keys::agent::AGENT_THREAD_ATTACHMENT_IMAGE),
+            acp_v2::ContentBlock::Audio(_) => t(keys::agent::AGENT_THREAD_ATTACHMENT_AUDIO),
+            _ => t(keys::agent::AGENT_THREAD_ATTACHMENT_UNSUPPORTED),
         })
     }
 
@@ -1874,7 +1874,7 @@ impl ThreadView {
             if !content.iter().all(acp_thread::content::can_convert_to_v1) {
                 self.handle_thread_error(
                     anyhow!(
-                        "This saved submission contains unsupported content and cannot be restored. The original submission has been kept."
+                        t(keys::agent::AGENT_THREAD_SAVED_UNSUPPORTED)
                     ),
                     cx,
                 );
@@ -1965,7 +1965,7 @@ impl ThreadView {
                                 Some(util::truncate_and_trailoff(error, 500).into()),
                                 true,
                             ),
-                            SubmissionState::Cancelled => ("Cancelled".into(), None, true),
+                            SubmissionState::Cancelled => (t(keys::agent::AGENT_PLAN_CANCELLED).into(), None, true),
                             _ => ("Message".into(), None, false),
                         };
                     let preview: String =
@@ -2199,7 +2199,7 @@ impl ThreadView {
         if self.message_editor.read(cx).editor().read(cx).read_only(cx) {
             self.handle_thread_error(
                 anyhow!(
-                    "This draft contains unsupported content and cannot be edited or sent. Discard the draft to write a new message."
+                    t(keys::agent::AGENT_THREAD_DRAFT_UNSUPPORTED)
                 ),
                 cx,
             );
@@ -2564,7 +2564,7 @@ impl ThreadView {
         if self.message_editor.read(cx).editor().read(cx).read_only(cx) {
             self.handle_thread_error(
                 anyhow!(
-                    "This draft contains unsupported content and cannot be edited or sent. Discard the draft to write a new message."
+                    t(keys::agent::AGENT_THREAD_DRAFT_UNSUPPORTED)
                 ),
                 cx,
             );
@@ -2845,7 +2845,7 @@ impl ThreadView {
                 if message_editor.read(cx).editor().read(cx).read_only(cx) {
                     thread.handle_thread_error(
                         anyhow!(
-                            "The conversation was rewound, but the message became read-only and was not resent."
+                            t(keys::agent::AGENT_THREAD_REWOUND_READONLY)
                         ),
                         cx,
                     );
@@ -3176,7 +3176,7 @@ impl ThreadView {
     ) -> bool {
         if self.message_editor.read(cx).editor().read(cx).read_only(cx) {
             self.handle_thread_error(
-                anyhow!("Discard the unsupported draft before moving a queued message into the composer."),
+                anyhow!(t(keys::agent::AGENT_THREAD_DISCARD_UNSUPPORTED_DRAFT)),
                 cx,
             );
             return false;
@@ -3188,7 +3188,7 @@ impl ThreadView {
                 .all(acp_thread::content::can_convert_to_v1)
         }) {
             self.handle_thread_error(
-                anyhow!("This queued message contains unsupported content and cannot be edited."),
+                anyhow!(t(keys::agent::AGENT_THREAD_QUEUED_UNSUPPORTED)),
                 cx,
             );
             return false;
@@ -3322,7 +3322,7 @@ impl ThreadView {
             }
             EditorEvent::Blurred => {
                 if title_editor.read(cx).text(cx).is_empty() {
-                    self.sync_title_editor(DEFAULT_THREAD_TITLE.into(), window, cx);
+                    self.sync_title_editor(default_thread_title().into(), window, cx);
                 }
             }
             _ => {}
@@ -3947,7 +3947,7 @@ impl ThreadView {
 
         let retry_message = if state.max_attempts == 1 {
             if next_attempt_in_secs == 1 {
-                "Retrying. Next attempt in 1 second.".to_string()
+                t(keys::agent::AGENT_THREAD_RETRY_1S).to_string()
             } else {
                 format!("Retrying. Next attempt in {next_attempt_in_secs} seconds.")
             }
@@ -4345,7 +4345,7 @@ impl ThreadView {
                 let info = tool_call.subagent_session_info.as_ref()?;
                 let summary_text = tool_call.label.read(cx).source().to_string();
                 let subagent_summary = if summary_text.is_empty() {
-                    SharedString::from("Subagent")
+                    SharedString::from(t(keys::agent::AGENT_THREAD_SUBAGENT))
                 } else {
                     SharedString::from(summary_text)
                 };
@@ -4496,7 +4496,7 @@ impl ThreadView {
                     .debug_selector(|| format!("generic-permission-unknown-{}", subject.type_))
                     .child(format!("Unknown permission subject: {}", subject.type_)),
             ),
-            Some(_) => Some(v_flex().child("Unknown permission subject")),
+            Some(_) => Some(v_flex().child(t(keys::agent::AGENT_THREAD_UNKNOWN_PERMISSION_SUBJECT))),
             None => None,
         };
         v_flex()
@@ -4859,7 +4859,7 @@ impl ThreadView {
                 .gap_1()
                 .truncate()
                 .child(
-                    Label::new("Current:")
+                    Label::new(t(keys::agent::AGENT_THREAD_CURRENT))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -4903,7 +4903,7 @@ impl ThreadView {
                 .gap_1()
                 .justify_between()
                 .child(
-                    Label::new("Plan")
+                    Label::new(t(keys::agent::AGENT_THREAD_PLAN))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -5274,7 +5274,7 @@ impl ThreadView {
                                 let focus_handle = focus_handle.clone();
                                 move |_window, cx| {
                                     Tooltip::for_action_in(
-                                        "Review Changes",
+                                        t(keys::agent::AGENT_THREAD_REVIEW_CHANGES),
                                         &OpenAgentDiff,
                                         &focus_handle,
                                         cx,
@@ -5476,9 +5476,9 @@ impl ThreadView {
 
         let editor_expanded = self.editor_expanded;
         let (expand_icon, expand_tooltip) = if editor_expanded {
-            (IconName::Minimize, "Minimize Message Editor")
+            (IconName::Minimize, t(keys::agent::AGENT_THREAD_MINIMIZE_EDITOR))
         } else {
-            (IconName::Maximize, "Expand Message Editor")
+            (IconName::Maximize, t(keys::agent::AGENT_THREAD_EXPAND_EDITOR))
         };
 
         let max_content_width = AgentSettings::get_global(cx).max_content_width;
@@ -5616,8 +5616,8 @@ impl ThreadView {
         let (id, label, tooltip) = match self.thread.read(cx).foreground_activity() {
             ForegroundActivity::Unconfirmed => (
                 "activity-unconfirmed",
-                "Activity unconfirmed",
-                "The session is attached, but the agent has not reported its activity. You can send manually; automatic sends wait for confirmed Idle.",
+                t(keys::agent::AGENT_THREAD_ACTIVITY_UNCONFIRMED),
+                t(keys::agent::AGENT_THREAD_ACTIVITY_UNCONFIRMED_HINT),
             ),
             ForegroundActivity::Unknown => (
                 "activity-unknown",
@@ -5692,9 +5692,9 @@ impl ThreadView {
                 let editor = &entry.editor;
                 let is_next = index == 0;
                 let (icon_color, tooltip_text) = if is_next {
-                    (Color::Accent, "Next in Queue")
+                    (Color::Accent, t(keys::agent::AGENT_THREAD_NEXT_IN_QUEUE))
                 } else {
-                    (Color::Muted, "In Queue")
+                    (Color::Muted, t(keys::agent::AGENT_THREAD_IN_QUEUE))
                 };
 
                 let editor_focused = editor.focus_handle(cx).is_focused(_window);
@@ -5739,9 +5739,9 @@ impl ThreadView {
                                     .icon_size(IconSize::Small)
                                     .tooltip(|_window, cx| {
                                         Tooltip::with_meta(
-                                            "Edit Queued Message",
+                                            t(keys::agent::AGENT_THREAD_EDIT_QUEUED),
                                             None,
-                                            "Type anything to edit",
+                                            t(keys::agent::AGENT_THREAD_TYPE_TO_EDIT),
                                             cx,
                                         )
                                     })
@@ -5791,13 +5791,13 @@ impl ThreadView {
                                         move |_window, cx| {
                                             if is_next {
                                                 Tooltip::for_action_in(
-                                                    "Remove Message from Queue",
+                                                    t(keys::agent::AGENT_THREAD_REMOVE_FROM_QUEUE),
                                                     &RemoveFirstQueuedMessage,
                                                     &focus_handle,
                                                     cx,
                                                 )
                                             } else {
-                                                Tooltip::simple("Remove Message from Queue", cx)
+                                                Tooltip::simple(t(keys::agent::AGENT_THREAD_REMOVE_FROM_QUEUE), cx)
                                             }
                                         }
                                     })
@@ -5814,13 +5814,13 @@ impl ThreadView {
                                         move |_window, cx| {
                                             if is_next {
                                                 Tooltip::for_action_in(
-                                                    "Edit",
+                                                    t(keys::agent::AGENT_THREAD_EDIT),
                                                     &EditFirstQueuedMessage,
                                                     &focus_handle,
                                                     cx,
                                                 )
                                             } else {
-                                                Tooltip::simple("Edit", cx)
+                                                Tooltip::simple(t(keys::agent::AGENT_THREAD_EDIT), cx)
                                             }
                                         }
                                     })
@@ -6142,7 +6142,7 @@ impl ThreadView {
             (ThreadSandbox::Sandboxed(settings_policy), ThreadSandbox::Unsandboxed) => {
                 let settings = augment_settings_sandbox_policy(&settings_policy, baseline);
                 SandboxStatusTooltip::disabled_for_thread(sandbox_section(
-                    "Defined in your settings:",
+                    t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS),
                     &settings,
                     true,
                 ))
@@ -6155,9 +6155,9 @@ impl ThreadView {
                 let thread = SandboxPolicyDisplay::from_policy(&thread_policy);
                 // Omit the per-thread section when it grants nothing extra.
                 let thread = (!sandbox_policy_grants_nothing(&thread))
-                    .then(|| sandbox_section("Allowed for this thread:", &thread, false));
+                    .then(|| sandbox_section(t(keys::agent::AGENT_THREAD_ALLOWED_FOR_THREAD), &thread, false));
                 SandboxStatusTooltip::enabled(
-                    sandbox_section("Defined in your settings:", &settings, true),
+                    sandbox_section(t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS), &settings, true),
                     thread,
                 )
             }
@@ -6202,14 +6202,14 @@ impl ThreadView {
 
         let (tooltip_label, color, icon, new_speed) = if is_fast {
             (
-                "Disable Fast Mode",
+                t(keys::agent::AGENT_THREAD_DISABLE_FAST),
                 Color::Accent,
                 IconName::FastForward,
                 Speed::Standard,
             )
         } else {
             (
-                "Enable Fast Mode",
+                t(keys::agent::AGENT_THREAD_ENABLE_FAST),
                 Color::Custom(cx.theme().colors().icon_disabled.opacity(0.8)),
                 IconName::FastForwardOff,
                 Speed::Fast,
@@ -6367,13 +6367,13 @@ impl ThreadView {
             (None, IconName::ThinkingMode, Color::Accent)
         } else if thinking {
             (
-                Some("Disable Thinking Mode"),
+                Some(t(keys::agent::AGENT_THREAD_DISABLE_THINKING)),
                 IconName::ThinkingMode,
                 Color::Accent,
             )
         } else {
             (
-                Some("Enable Thinking Mode"),
+                Some(t(keys::agent::AGENT_THREAD_ENABLE_THINKING)),
                 IconName::ThinkingModeOff,
                 Color::Custom(cx.theme().colors().icon_disabled.opacity(0.8)),
             )
@@ -6396,7 +6396,7 @@ impl ThreadView {
                     })
                 } else {
                     this.tooltip(Tooltip::text(
-                        "Thinking is always on at this effort level. Select a lower effort level to make it optional.",
+                        t(keys::agent::AGENT_THREAD_THINKING_ALWAYS_ON),
                     ))
                 }
             });
@@ -6474,7 +6474,7 @@ impl ThreadView {
         let label = selected
             .clone()
             .or(default_effort_level)
-            .map_or("Select Effort".into(), |effort| effort.name);
+            .map_or(t(keys::agent::AGENT_THREAD_SELECT_EFFORT).into(), |effort| effort.name);
 
         let (label_color, icon) = if self.thinking_effort_menu_handle.is_deployed() {
             (Color::Accent, IconName::ChevronUp)
@@ -6640,9 +6640,9 @@ impl ThreadView {
                 .tooltip(move |_window, cx| {
                     Tooltip::for_action(
                         if is_unconfirmed {
-                            "Request Stop (Activity Unconfirmed)"
+                            t(keys::agent::AGENT_THREAD_REQUEST_STOP_UNCONFIRMED)
                         } else {
-                            "Stop Generation"
+                            t(keys::agent::AGENT_THREAD_STOP_GENERATION)
                         },
                         &editor::actions::Cancel,
                         cx,
@@ -6934,7 +6934,7 @@ impl ThreadView {
                     Tooltip::with_meta(
                         tooltip_label.clone(),
                         Some(&Follow),
-                        "Track the agent's location as it reads and edits files.",
+                        t(keys::agent::AGENT_THREAD_TRACK_HINT),
                         cx,
                     )
                 }
@@ -7069,7 +7069,7 @@ impl Render for TokenUsageTooltip {
                                                 this.child(
                                                     Button::new(
                                                         "open-global-agents-md",
-                                                        "1 global rule",
+                                                        t(keys::agent::AGENT_THREAD_GLOBAL_RULE),
                                                     )
                                                     .end_icon(
                                                         Icon::new(IconName::ArrowUpRight)
@@ -7264,7 +7264,7 @@ fn sandbox_section(title: &str, policy: &SandboxPolicyDisplay, show_empty: bool)
 
     if show_empty || !network_empty {
         section = section
-            .group(SandboxGroup::new("Network Access").rows(sandbox_network_rows(&policy.network)));
+            .group(SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS)).rows(sandbox_network_rows(&policy.network)));
     }
 
     section
@@ -7293,10 +7293,10 @@ fn network_grants_nothing(network: &SandboxNetPolicy) -> bool {
 fn sandbox_fs_rows(fs: &SandboxFsDisplay) -> Vec<SandboxRow> {
     match fs {
         SandboxFsDisplay::Unrestricted => vec![SandboxRow::message(
-            "All paths except protected Git metadata",
+            t(keys::agent::AGENT_THREAD_ALL_PATHS_EXCEPT_GIT),
         )],
         SandboxFsDisplay::Restricted(entries) if entries.is_empty() => {
-            vec![SandboxRow::message("None")]
+            vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))]
         }
         SandboxFsDisplay::Restricted(entries) => entries
             .iter()
@@ -7316,10 +7316,10 @@ fn sandbox_fs_rows(fs: &SandboxFsDisplay) -> Vec<SandboxRow> {
 /// one row per allowed domain.
 fn sandbox_network_rows(network: &SandboxNetPolicy) -> Vec<SandboxRow> {
     match network {
-        SandboxNetPolicy::Unrestricted => vec![SandboxRow::message("All domains (unrestricted)")],
-        SandboxNetPolicy::Blocked => vec![SandboxRow::message("None")],
+        SandboxNetPolicy::Unrestricted => vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_ALL_DOMAINS))],
+        SandboxNetPolicy::Blocked => vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))],
         SandboxNetPolicy::Restricted { allowed_domains } if allowed_domains.is_empty() => {
-            vec![SandboxRow::message("None")]
+            vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))]
         }
         SandboxNetPolicy::Restricted { allowed_domains } => allowed_domains
             .iter()
@@ -7504,7 +7504,7 @@ impl ThreadView {
                                                         .icon_color(Color::Muted)
                                                         .icon_size(IconSize::XSmall)
                                                         .tooltip(Tooltip::text(
-                                                            "Editing will restart the thread from this point."
+                                                            t(keys::agent::AGENT_THREAD_EDIT_RESTARTS)
                                                         ))
                                                         .on_click(cx.listener({
                                                             let editor = editor.clone();
@@ -7539,7 +7539,7 @@ impl ThreadView {
                                                                             agent_name
                                                                         )
                                                                     } else {
-                                                                        "This message contains unsupported content and cannot be edited or resent.".to_string()
+                                                                        t(keys::agent::AGENT_THREAD_MESSAGE_UNSUPPORTED).to_string()
                                                                     })
                                                                     .size(LabelSize::Small)
                                                                     .color(Color::Muted),
@@ -7618,7 +7618,7 @@ impl ThreadView {
             AgentThreadEntry::ToolCall(tool_call) => {
                 // A canceled tool call that produced visible output is still worth
                 // showing, but one that was canceled before producing anything just
-                // renders as a useless "Canceled" card — hide those entirely.
+                // renders as a useless t(keys::agent::AGENT_A_ELICIT_STATUS_CANCELED) card — hide those entirely.
                 if matches!(tool_call.status(), ToolCallStatus::Canceled) {
                     let has_visible_content =
                         tool_call.content().iter().any(|content| match content {
@@ -8108,7 +8108,7 @@ impl ThreadView {
                 (self.is_subagent() && self.is_thread_feedback_enabled(cx)).then(|| {
                     let feedback = self.thread_feedback.feedback;
                     let tooltip_meta =
-                        "Rating the thread sends all of your current conversation to the Zed team.";
+                        t(keys::agent::AGENT_THREAD_RATING_HINT);
 
                     h_flex()
                         .child(
@@ -8123,7 +8123,7 @@ impl ThreadView {
                                         Tooltip::text(t(keys::agent::AGENT_THREAD_FEEDBACK_THANKS))(window, cx)
                                     }
                                     _ => Tooltip::with_meta(
-                                        "Helpful Response",
+                                        t(keys::agent::AGENT_THREAD_HELPFUL),
                                         None,
                                         tooltip_meta,
                                         cx,
@@ -8142,12 +8142,12 @@ impl ThreadView {
                                 })
                                 .tooltip(move |window, cx| match feedback {
                                     Some(ThreadFeedback::Negative) => Tooltip::text(
-                                        "We appreciate your feedback and will use it to improve in the future.",
+                                        t(keys::agent::AGENT_THREAD_FEEDBACK_THANKS_HINT),
                                     )(
                                         window, cx
                                     ),
                                     _ => Tooltip::with_meta(
-                                        "Not Helpful Response",
+                                        t(keys::agent::AGENT_THREAD_NOT_HELPFUL),
                                         None,
                                         tooltip_meta,
                                         cx,
@@ -8523,7 +8523,7 @@ impl ThreadView {
         let thread = self.thread.read(cx);
         let thread_title = thread
             .title()
-            .unwrap_or_else(|| DEFAULT_THREAD_TITLE.into())
+            .unwrap_or_else(|| default_thread_title().into())
             .to_string();
         let markdown = thread.to_markdown(cx);
 
@@ -8786,7 +8786,7 @@ impl ThreadView {
                                 div()
                                     .text_size(self.tool_name_font_size())
                                     .text_color(cx.theme().colors().text_muted)
-                                    .child("Thinking"),
+                                    .child(t(keys::agent::AGENT_THREAD_THINKING)),
                             ),
                     )
                     .child(
@@ -8946,7 +8946,7 @@ impl ThreadView {
                         })
                         .when_some(selected_markdown, |menu, selected_markdown| {
                             menu.entry(
-                                "Copy as Markdown",
+                                t(keys::agent::AGENT_THREAD_COPY_MARKDOWN),
                                 Some(Box::new(markdown::CopyAsMarkdown)),
                                 move |_, cx| {
                                     cx.write_to_clipboard(ClipboardItem::new_string(
@@ -9258,7 +9258,7 @@ impl ThreadView {
             });
         let copy_button_id = SharedString::from(format!("{group}-copy-command"));
         let copy_button = CopyButton::new(copy_button_id, command_text)
-            .tooltip_label("Copy Command")
+            .tooltip_label(t(keys::agent::AGENT_THREAD_COPY_COMMAND))
             .visible_on_hover(group.clone());
 
         v_flex()
@@ -9331,7 +9331,7 @@ impl ThreadView {
         let working_dir = working_dir
             .as_ref()
             .map(|path| path.display().to_string())
-            .unwrap_or_else(|| "current directory".to_string());
+            .unwrap_or_else(|| t(keys::agent::AGENT_THREAD_CURRENT_DIR).to_string());
 
         let command_element = self.render_collapsible_command(
             header_group.clone(),
@@ -9363,7 +9363,7 @@ impl ThreadView {
                     )
                 }
             } else {
-                "Output was truncated".to_string()
+                t(keys::agent::AGENT_THREAD_OUTPUT_TRUNCATED).to_string()
             }
         });
 
@@ -9509,10 +9509,10 @@ impl ThreadView {
                             ))
                         })
                         .unwrap_or_else(|| {
-                            "Unsandboxed execution is allowed for the rest of this thread.".into()
+                            t(keys::agent::AGENT_THREAD_UNSANDBOXED_ALLOWED).into()
                         });
                     let docs_section = thread_error.as_ref().map(|error| error.docs_section());
-                    ("Ran without sandbox".into(), detail, docs_section)
+                    (t(keys::agent::AGENT_THREAD_RAN_WITHOUT_SANDBOX).into(), detail, docs_section)
                 }
             };
 
@@ -9753,9 +9753,9 @@ impl ThreadView {
                                 self.expanded_tool_call_raw_inputs.contains(&tool_call.id);
 
                             let input_header = if is_raw_input_expanded {
-                                "Raw Input:"
+                                t(keys::agent::AGENT_THREAD_RAW_INPUT)
                             } else {
-                                "View Raw Input"
+                                t(keys::agent::AGENT_THREAD_VIEW_RAW_INPUT)
                             };
 
                             this.child(
@@ -9840,7 +9840,7 @@ impl ThreadView {
                                 .gap_1()
                                 .border_l_1()
                                 .border_color(self.tool_card_border_color(cx))
-                                .child(input_output_header("Raw Input:".into()))
+                                .child(input_output_header(t(keys::agent::AGENT_THREAD_RAW_INPUT).into()))
                                 .children(tool_call.raw_input_markdown.clone().map(|input| {
                                     div().id(("tool-call-raw-input-markdown", entry_ix)).child(
                                         self.render_markdown(
@@ -10019,7 +10019,7 @@ impl ThreadView {
                                                             div()
                                                                 .id(entry_ix)
                                                                 .tooltip(Tooltip::text(
-                                                                    "Interrupted Edit",
+                                                                    t(keys::agent::AGENT_THREAD_INTERRUPTED_EDIT),
                                                                 ))
                                                                 .child(
                                                                     Icon::new(IconName::XCircle)
@@ -10052,9 +10052,9 @@ impl ThreadView {
                                                             .icon_size(IconSize::Small)
                                                             .tooltip(move |_, cx| {
                                                                 Tooltip::with_meta(
-                                                                    "Discard Interrupted Edit",
+                                                                    t(keys::agent::AGENT_THREAD_DISCARD_INTERRUPTED),
                                                                     None,
-                                                                    "You can discard this interrupted partial edit and restore the original file content.",
+                                                                    t(keys::agent::AGENT_THREAD_INTERRUPTED_HINT),
                                                                     cx,
                                                                 )
                                                             })
@@ -10211,7 +10211,7 @@ impl ThreadView {
 
         let network_section = has_network.then(|| {
             let summary = if details.network_all_hosts {
-                "any host".to_string()
+                t(keys::agent::AGENT_THREAD_ANY_HOST).to_string()
             } else {
                 format!(
                     "{} {}",
@@ -10309,7 +10309,7 @@ impl ThreadView {
 
         let write_section = has_write.then(|| {
             let summary = if details.allow_fs_write_all {
-                "unrestricted except Git metadata".to_string()
+                t(keys::agent::AGENT_THREAD_UNRESTRICTED_GIT).to_string()
             } else {
                 format!(
                     "{} {}",
@@ -10828,11 +10828,11 @@ impl ThreadView {
                                 .color(Color::Muted)
                                 .size(IconSize::Small),
                         )
-                        .child(captioned_path("Target".into(), granted_display, cx))
+                        .child(captioned_path(t(keys::agent::AGENT_THREAD_TARGET).into(), granted_display, cx))
                 } else {
                     // Not a genuine redirect: show what the user asked for (e.g.
                     // the `C:\...` path), not the internal Linux canonical.
-                    this.child(captioned_path("Write Path".into(), requested_display, cx))
+                    this.child(captioned_path(t(keys::agent::AGENT_THREAD_WRITE_PATH).into(), requested_display, cx))
                 }
             })
             .child(Divider::horizontal())
@@ -10922,13 +10922,13 @@ impl ThreadView {
 
         let dropdown_label: SharedString =
             if matches!(selection, Some(PermissionSelection::SelectedPatterns(_))) {
-                "Always for selected commands".into()
+                t(keys::agent::AGENT_THREAD_ALWAYS_SELECTED).into()
             } else {
                 choices
                     .get(selected_index)
                     .or(choices.last())
                     .map(|choice| choice.label())
-                    .unwrap_or_else(|| "Only this time".into())
+                    .unwrap_or_else(|| t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME).into())
             };
         let permission_buttons_selector = {
             let session_id = session_id.clone();
@@ -11198,7 +11198,7 @@ impl ThreadView {
                         let is_pattern_mode =
                             matches!(selection, Some(PermissionSelection::SelectedPatterns(_)));
 
-                        // Granularity choices: "Always for terminal", "Only this time"
+                        // Granularity choices: "Always for terminal", t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)
                         for (index, display_name) in options.iter() {
                             let display_name = display_name.clone();
                             let index = *index;
@@ -11463,9 +11463,11 @@ impl ThreadView {
     ) -> Option<SharedString> {
         let tool_name = tool_name.filter(|name| !name.trim().is_empty());
         match (tool_name, interrupted_edit) {
-            (Some(name), true) => Some(format!("Interrupted Edit\nTool: {name}").into()),
+            (Some(name), true) => Some(
+                format!("{}\nTool: {name}", t(keys::agent::AGENT_THREAD_INTERRUPTED_EDIT)).into(),
+            ),
             (Some(name), false) => Some(format!("Tool: {name}").into()),
-            (None, true) => Some("Interrupted Edit".into()),
+            (None, true) => Some(t(keys::agent::AGENT_THREAD_INTERRUPTED_EDIT).into()),
             (None, false) => None,
         }
     }
@@ -12275,9 +12277,9 @@ impl ThreadView {
             .map_or(false, |thread| !thread.read(cx).entries().is_empty());
 
         let tooltip_meta_description = if is_expanded {
-            "Click to Collapse"
+            t(keys::agent::AGENT_THREAD_CLICK_COLLAPSE)
         } else {
-            "Click to Preview"
+            t(keys::agent::AGENT_THREAD_CLICK_PREVIEW)
         };
 
         let error_message = state.error.clone();
@@ -12663,7 +12665,7 @@ impl ThreadView {
             }
             ThreadError::ZedPaymentRequired => self.render_zed_payment_required_error(cx),
             ThreadError::RateLimitExceeded { provider } => self.render_error_callout(
-                "Rate Limit Reached",
+                t(keys::agent::AGENT_THREAD_ERROR_RATE_LIMIT),
                 format!(
                     "{provider}'s rate limit was reached. Zed will retry automatically. \
                     You can also wait a moment and try again."
@@ -12674,7 +12676,7 @@ impl ThreadView {
                 cx,
             ),
             ThreadError::ServerOverloaded { provider } => self.render_error_callout(
-                "Provider Unavailable",
+                t(keys::agent::AGENT_THREAD_ERROR_PROVIDER_UNAVAILABLE),
                 format!(
                     "{provider}'s servers are temporarily unavailable. Zed will retry \
                     automatically. If the problem persists, check the provider's status page."
@@ -12691,10 +12693,10 @@ impl ThreadView {
                     .unwrap_or_else(|| {
                         format!("No credentials are configured for {provider}.").into()
                     });
-                self.render_error_callout("Credentials Missing", message, false, true, cx)
+                self.render_error_callout(t(keys::agent::AGENT_THREAD_ERROR_CREDENTIALS), message, false, true, cx)
             }
             ThreadError::StreamError { provider } => self.render_error_callout(
-                "Connection Interrupted",
+                t(keys::agent::AGENT_THREAD_ERROR_CONNECTION),
                 format!(
                     "The connection to {provider}'s API was interrupted. Zed will retry \
                     automatically. If the problem persists, check your network connection."
@@ -12708,7 +12710,7 @@ impl ThreadView {
                 let message = Self::provider_by_name(provider, cx)
                     .map(|provider| provider.authentication_error_message())
                     .unwrap_or_else(|| format!("Could not authenticate with {provider}.").into());
-                self.render_error_callout("Authentication Failed", message, false, false, cx)
+                self.render_error_callout(t(keys::agent::AGENT_THREAD_ERROR_AUTHENTICATION), message, false, false, cx)
             }
             ThreadError::PermissionDenied { provider, message } => {
                 let message: SharedString = message.clone().unwrap_or_else(|| {
@@ -12716,13 +12718,13 @@ impl ThreadView {
                         .into()
                 });
 
-                self.render_error_callout("Permission Denied", message, false, false, cx)
+                self.render_error_callout(t(keys::agent::AGENT_THREAD_ERROR_PERMISSION), message, false, false, cx)
             }
             ThreadError::ProviderRejection { message } => {
-                self.render_error_callout("Request Failed", message.clone(), true, false, cx)
+                self.render_error_callout(t(keys::agent::AGENT_THREAD_ERROR_REQUEST), message.clone(), true, false, cx)
             }
             ThreadError::MaxOutputTokens => self.render_error_callout(
-                "Output Limit Reached",
+                t(keys::agent::AGENT_THREAD_ERROR_OUTPUT_LIMIT),
                 "The model stopped because it reached its maximum output length. \
                 You can ask it to continue where it left off."
                     .into(),
@@ -12734,15 +12736,15 @@ impl ThreadView {
                 .render_model_not_available_error(cx)
                 .unwrap_or_else(|| {
                     self.render_error_callout(
-                        "No Model Selected",
-                        "Select a model from the model picker below to get started.".into(),
+                        t(keys::agent::AGENT_THREAD_ERROR_NO_MODEL),
+                        t(keys::agent::AGENT_THREAD_HINT_SELECT_MODEL).into(),
                         false,
                         false,
                         cx,
                     )
                 }),
             ThreadError::ApiError { provider } => self.render_error_callout(
-                "API Error",
+                t(keys::agent::AGENT_THREAD_ERROR_API),
                 format!(
                     "{provider}'s API returned an unexpected error. \
                     If the problem persists, try switching models or restarting Zed."
@@ -12768,7 +12770,7 @@ impl ThreadView {
 
         Callout::new()
             .severity(Severity::Error)
-            .title("Request Refused")
+            .title(t(keys::agent::AGENT_THREAD_ERROR_REFUSED))
             .icon(IconName::XCircle)
             .description(refusal_message.clone())
             .actions_slot(self.create_copy_button(&refusal_message))
@@ -12782,7 +12784,7 @@ impl ThreadView {
     ) -> Callout {
         Callout::new()
             .severity(Severity::Error)
-            .title("Authentication Required")
+            .title(t(keys::agent::AGENT_THREAD_ERROR_AUTH_REQUIRED))
             .icon(IconName::XCircle)
             .description(error.clone())
             .actions_slot(
@@ -12801,7 +12803,7 @@ impl ThreadView {
         Callout::new()
             .severity(Severity::Error)
             .icon(IconName::XCircle)
-            .title("Free Usage Exceeded")
+            .title(t(keys::agent::AGENT_THREAD_ERROR_FREE_USAGE))
             .description(ERROR_MESSAGE)
             .actions_slot(
                 h_flex()
@@ -12859,33 +12861,33 @@ impl ThreadView {
                             (
                                 format!("Failed to authenticate with {} provider", provider.name())
                                     .into(),
-                                "Open the settings to configure the selected provider".into(),
+                                t(keys::agent::AGENT_THREAD_HINT_CONFIGURE_PROVIDER).into(),
                             )
                         } else {
                             (
                                 format!("Model {} was not found", selected_model.model.0).into(),
-                                "You may need to reconfigure authentication for this provider"
+                                t(keys::agent::AGENT_THREAD_HINT_RECONFIGURE_AUTH)
                                     .into(),
                             )
                         }
                     } else {
                         (
                             format!("Provider {} was not found", selected_model.provider).into(),
-                            "Open the settings to configure providers".into(),
+                            t(keys::agent::AGENT_THREAD_HINT_CONFIGURE_PROVIDERS).into(),
                         )
                     }
                 }
                 agent::ThreadModel::Unset => {
                     if has_authenticated_provider {
                         (
-                            "No model selected".into(),
-                            "Choose a different model or configure other providers to get started"
+                            t(keys::agent::AGENT_THREAD_NO_MODEL_SELECTED).into(),
+                            t(keys::agent::AGENT_THREAD_HINT_CHOOSE_MODEL)
                                 .into(),
                         )
                     } else {
                         (
-                            "No model selected".into(),
-                            "Configure a provider to get started".into(),
+                            t(keys::agent::AGENT_THREAD_NO_MODEL_SELECTED).into(),
+                            t(keys::agent::AGENT_THREAD_HINT_CONFIGURE_START).into(),
                         )
                     }
                 }
@@ -12949,7 +12951,7 @@ impl ThreadView {
         Callout::new()
             .severity(Severity::Error)
             .icon(IconName::XCircle)
-            .title("Context Too Large")
+            .title(t(keys::agent::AGENT_THREAD_ERROR_CONTEXT_TOO_LARGE))
             .description(MESSAGE)
             .actions_slot(
                 h_flex()
@@ -13063,7 +13065,7 @@ impl ThreadView {
                 .clone()
                 .and_then(|selector| selector.read(cx).active_model(cx))
                 .map(|model| model.name.clone())
-                .unwrap_or_else(|| SharedString::from("The model"))
+                .unwrap_or_else(|| SharedString::from(t(keys::agent::AGENT_THE_MODEL)))
         } else {
             // ACP agent - use the agent name (e.g., "Claude Agent", "Gemini CLI")
             self.agent_id.0.clone()
@@ -13159,13 +13161,13 @@ impl ThreadView {
     }
 
     fn render_resume_notice(_cx: &Context<Self>) -> AnyElement {
-        let description = "This agent does not support viewing previous messages. However, your session will still continue from where you last left off.";
+        let description = t(keys::agent::AGENT_THREAD_RESUMED_HINT);
 
         Callout::new()
             .border_position(CalloutBorderPosition::Bottom)
             .severity(Severity::Info)
             .icon(IconName::Info)
-            .title("Resumed Session")
+            .title(t(keys::agent::AGENT_THREAD_RESUMED_SESSION))
             .description(description)
             .into_any_element()
     }
@@ -13175,8 +13177,8 @@ impl ThreadView {
             .border_position(self.callout_border_position())
             .icon(IconName::Warning)
             .severity(Severity::Warning)
-            .title("Codex on Windows")
-            .description("For best performance, run Codex in Windows Subsystem for Linux (WSL2)")
+            .title(t(keys::agent::AGENT_THREAD_CODEX_WINDOWS))
+            .description(t(keys::agent::AGENT_THREAD_CODEX_WSL_HINT))
             .actions_slot(
                 Button::new("open-wsl-modal", t(keys::agent::AGENT_THREAD_OPEN_WSL)).on_click(
                     cx.listener({
@@ -13260,10 +13262,10 @@ impl ThreadView {
                 let target = issue.clone();
 
                 let title = match issue.kind {
-                    SkillLoadingIssueKind::LoadFailed => "Skill Failed to Load",
+                    SkillLoadingIssueKind::LoadFailed => t(keys::agent::AGENT_THREAD_SKILL_FAILED),
                     SkillLoadingIssueKind::DescriptionTooLong => unreachable!(),
                     SkillLoadingIssueKind::CatalogBudgetExceeded => {
-                        "Skill Omitted from Model Catalog"
+                        t(keys::agent::AGENT_THREAD_SKILL_OMITTED)
                     }
                 };
 
@@ -13421,8 +13423,8 @@ impl ThreadView {
             .border_position(self.callout_border_position())
             .icon(IconName::Warning)
             .severity(Severity::Warning)
-            .title("Review Before Sending")
-            .description("This prompt was pre-filled by an external link. Read it carefully before you submit it to the model.")
+            .title(t(keys::agent::AGENT_THREAD_REVIEW_BEFORE_SEND))
+            .description(t(keys::agent::AGENT_THREAD_REVIEW_BEFORE_SEND_HINT))
             .dismiss_action(
                 IconButton::new("dismiss-external-source-prompt-warning", IconName::Close)
                     .icon_size(IconSize::Small)
@@ -13466,13 +13468,13 @@ impl ThreadView {
             .next()
             .and_then(|p| p.file_name())
             .map(|name| name.to_string_lossy().to_string())
-            .unwrap_or_else(|| "one folder".to_string());
+            .unwrap_or_else(|| t(keys::agent::AGENT_THREAD_ONE_FOLDER).to_string());
 
         Some(
             Callout::new()
                 .severity(Severity::Warning)
                 .icon(IconName::Warning)
-                .title("This agent doesn't currently support multi-root workspaces")
+                .title(t(keys::agent::AGENT_THREAD_NO_MULTI_ROOT))
                 .description(format!(
                     "It currently only operates by default on \"{}\".",
                     active_dir
@@ -13494,9 +13496,9 @@ impl ThreadView {
         let server_view = self.server_view.clone();
         let has_version = !version.is_empty();
         let title = if has_version {
-            "New Version Available"
+            t(keys::agent::AGENT_THREAD_NEW_VERSION)
         } else {
-            "Agent Update Available"
+            t(keys::agent::AGENT_THREAD_UPDATE_AVAILABLE)
         };
         let button_label = if has_version {
             format!("Update to v{}", version)
@@ -13560,16 +13562,16 @@ impl ThreadView {
             acp_thread::TokenUsageRatio::Warning => (
                 Severity::Warning,
                 IconName::Warning,
-                "Thread reaching the token limit soon",
+                t(keys::agent::AGENT_THREAD_TOKEN_LIMIT_SOON),
             ),
             acp_thread::TokenUsageRatio::Exceeded => (
                 Severity::Error,
                 IconName::XCircle,
-                "Thread reached the token limit",
+                t(keys::agent::AGENT_THREAD_TOKEN_LIMIT_REACHED),
             ),
         };
 
-        let description = "To continue, run /compact or start a new thread and @-mention this one";
+        let description = t(keys::agent::AGENT_THREAD_TOKEN_LIMIT_HINT);
 
         Some(
             Callout::new()
@@ -14613,23 +14615,35 @@ mod tests {
         for (name, interrupted_edit, expected) in [
             (None, false, None),
             (Some(" \t\n"), false, None),
-            (Some("read_file"), false, Some("Tool: read_file")),
+            (Some("read_file"), false, Some("Tool: read_file".to_string())),
             (
                 Some("  mcp__server__**read_file**<raw>  "),
                 false,
-                Some("Tool:   mcp__server__**read_file**<raw>  "),
+                Some("Tool:   mcp__server__**read_file**<raw>  ".to_string()),
             ),
-            (None, true, Some("Interrupted Edit")),
-            (Some(" \t\n"), true, Some("Interrupted Edit")),
+            (
+                None,
+                true,
+                Some(t(keys::agent::AGENT_THREAD_INTERRUPTED_EDIT)),
+            ),
+            (
+                Some(" \t\n"),
+                true,
+                Some(t(keys::agent::AGENT_THREAD_INTERRUPTED_EDIT)),
+            ),
             (
                 Some("edit_file"),
                 true,
-                Some("Interrupted Edit\nTool: edit_file"),
+                Some(format!(
+                    "{}\nTool: edit_file",
+                    t(keys::agent::AGENT_THREAD_INTERRUPTED_EDIT)
+                )),
             ),
         ] {
             let name = name.map(SharedString::from);
             assert_eq!(
-                ThreadView::tool_call_icon_tooltip(name.as_ref(), interrupted_edit).as_deref(),
+                ThreadView::tool_call_icon_tooltip(name.as_ref(), interrupted_edit)
+                    .map(|tooltip| tooltip.to_string()),
                 expected,
             );
         }

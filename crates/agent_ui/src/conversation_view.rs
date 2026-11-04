@@ -48,7 +48,7 @@ use crate::conversation_view::elicitation::{
     ElicitationCard, ElicitationCardHandlers, ElicitationFormState, should_render_elicitation,
 };
 use crate::message_editor::SessionCapabilities;
-use crate::{AgentThreadSource, DEFAULT_THREAD_TITLE, resolve_agent_image};
+use crate::{AgentThreadSource, default_thread_title, resolve_agent_image};
 use lru::LruCache;
 use rope::Point;
 use settings::{NotifyWhenAgentWaiting, Settings as _, SettingsStore};
@@ -747,7 +747,7 @@ fn resolve_outcome_from_selection(
         }
     }
 
-    // Use the selected granularity choice ("Always for terminal" or "Only this time").
+    // Use the selected granularity choice ("Always for terminal" or t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)).
     let selected_index = selection
         .and_then(|s| s.choice_index())
         .unwrap_or_else(|| choices.len().saturating_sub(1));
@@ -1333,7 +1333,7 @@ impl ConversationView {
         {
             return ServerState::LoadError {
                 error: LoadError::Other(
-                    "External agents are not yet supported in shared projects.".into(),
+                    t(keys::agent::AGENT_EXTERNAL_AGENT_SHARED_PROJECT).into(),
                 ),
             };
         }
@@ -1420,7 +1420,7 @@ impl ConversationView {
                         )
                     } else if recovering {
                         Task::ready(Err(anyhow!(
-                            "Reconnecting requires full history replay. Saved input has been kept."
+                            t(keys::agent::AGENT_RECONNECT_REQUIRES_REPLAY)
                         )))
                     } else if connection.supports_resume_session() {
                         resumed_without_history = true;
@@ -1433,7 +1433,7 @@ impl ConversationView {
                         )
                     } else {
                         Task::ready(Err(anyhow!(LoadError::Other(
-                            "Loading or resuming sessions is not supported by this agent.".into()
+                            t(keys::agent::AGENT_LOAD_UNSUPPORTED).into()
                         ))))
                     }
                 })
@@ -1885,7 +1885,7 @@ impl ConversationView {
             ServerState::Connected(view) => view
                 .active_view()
                 .and_then(|v| v.read(cx).thread.read(cx).title())
-                .unwrap_or_else(|| DEFAULT_THREAD_TITLE.into()),
+                .unwrap_or_else(|| default_thread_title().into()),
             ServerState::Loading { .. } => self
                 .loading_status
                 .clone()
@@ -2049,7 +2049,7 @@ impl ConversationView {
             // redraws them.
             AcpThreadEvent::SubagentAssociationUpdated => {}
             AcpThreadEvent::ToolAuthorizationRequested(_) => {
-                self.notify_with_sound("Waiting for tool confirmation", IconName::Info, window, cx);
+                self.notify_with_sound(t(keys::agent::AGENT_WAITING_TOOL_CONFIRMATION), IconName::Info, window, cx);
             }
             AcpThreadEvent::ToolAuthorizationReceived(_) => {}
             AcpThreadEvent::ElicitationRequested(_) => {
@@ -2115,7 +2115,7 @@ impl ConversationView {
                     }
                     if !is_subagent {
                         self.notify_with_sound(
-                            "Agent stopped at the output token limit",
+                            t(keys::agent::AGENT_STOPPED_TOKEN_LIMIT),
                             IconName::Warning,
                             window,
                             cx,
@@ -2134,7 +2134,7 @@ impl ConversationView {
                     }
                     if !is_subagent {
                         self.notify_with_sound(
-                            "Agent refused to respond to this request",
+                            t(keys::agent::AGENT_REFUSED_REQUEST),
                             IconName::Warning,
                             window,
                             cx,
@@ -2156,7 +2156,7 @@ impl ConversationView {
                                     .as_deref()
                                     .map(|error| anyhow::Error::new(error.clone()))
                                     .unwrap_or_else(|| {
-                                        anyhow!("Agent stopped because of an error")
+                                        anyhow!(t(keys::agent::AGENT_STOPPED_ERROR))
                                     });
                                 ThreadError::from(error)
                             });
@@ -2167,7 +2167,7 @@ impl ConversationView {
                     }
                     if !is_subagent {
                         self.notify_with_sound(
-                            "Agent stopped because of an error",
+                            t(keys::agent::AGENT_STOPPED_ERROR),
                             IconName::Warning,
                             window,
                             cx,
@@ -2188,9 +2188,9 @@ impl ConversationView {
                     let used_tools = thread.read(cx).used_tools_since_last_user_message();
                     self.notify_with_sound(
                         if used_tools {
-                            "Finished running tools"
+                            t(keys::agent::AGENT_FINISHED_RUNNING_TOOLS)
                         } else {
-                            "New message"
+                            t(keys::agent::AGENT_NEW_MESSAGE)
                         },
                         IconName::ZedAssistant,
                         window,
@@ -2229,7 +2229,7 @@ impl ConversationView {
                 }
                 if !is_subagent {
                     self.notify_with_sound(
-                        "Agent stopped due to an error",
+                        t(keys::agent::AGENT_STOPPED_DUE_TO_ERROR),
                         IconName::Warning,
                         window,
                         cx,
@@ -2239,7 +2239,7 @@ impl ConversationView {
             AcpThreadEvent::ConnectionLost => {
                 self.handle_load_error(
                     LoadError::Other(
-                        "Agent connection lost. Reconnect to restore the conversation.".into(),
+                        t(keys::agent::AGENT_CONNECTION_LOST).into(),
                     ),
                     window,
                     cx,
@@ -2268,7 +2268,7 @@ impl ConversationView {
                 let title = self
                     .title_override(cx)
                     .or_else(|| thread.read(cx).title())
-                    .unwrap_or_else(|| DEFAULT_THREAD_TITLE.into());
+                    .unwrap_or_else(|| default_thread_title().into());
                 if let Some(active_thread) = self.thread_view(&session_id) {
                     active_thread.update(cx, |active_thread, cx| {
                         active_thread.sync_title_editor(title, window, cx);
@@ -2661,7 +2661,7 @@ impl ConversationView {
         cx: &mut App,
     ) -> Task<Result<()>> {
         let Some(terminal_panel) = workspace.read(cx).panel::<TerminalPanel>(cx) else {
-            return Task::ready(Err(anyhow!("Terminal panel is unavailable")));
+            return Task::ready(Err(anyhow!(t(keys::agent::AGENT_TERMINAL_UNAVAILABLE))));
         };
 
         window.spawn(cx, async move |cx| {
@@ -2747,7 +2747,7 @@ impl ConversationView {
                     result = logged_in => {
                         if let Err(e) = result {
                             log::error!("{e}");
-                            return Err(anyhow!("exited before logging in"));
+                            return Err(anyhow!(t(keys::agent::AGENT_LOGIN_EXITED)));
                         }
                     }
                     _ = exit_status => {
@@ -2769,7 +2769,7 @@ impl ConversationView {
                                 })?
                                 .await;
                         }
-                        return Err(anyhow!("exited before logging in"));
+                        return Err(anyhow!(t(keys::agent::AGENT_LOGIN_EXITED)));
                     }
                 }
                 terminal.update(cx, |terminal, _| terminal.kill_active_task())?;
@@ -3262,7 +3262,7 @@ impl ConversationView {
                     t(keys::agent::AGENT_COPY_SAVED_INPUT),
                 )
                 .tooltip(Tooltip::text(
-                    "Copy the original content and receipt evidence as JSON",
+                    t(keys::agent::AGENT_COPY_SAVED_INPUT_HINT),
                 ))
                 .on_click(cx.listener(|this, _, window, cx| {
                     match ThreadRecovery::to_json(
@@ -3297,16 +3297,16 @@ impl ConversationView {
             } => {
                 return self.render_unsupported(path, current_version, minimum_version, window, cx);
             }
-            LoadError::FailedToInstall(msg) => ("Failed to Install", msg.to_string()),
+            LoadError::FailedToInstall(msg) => (t(keys::agent::AGENT_FAILED_TO_INSTALL), msg.to_string()),
             LoadError::Exited { status, stderr } => {
                 let mut message = format!("Server exited with status {status}");
                 if let Some(stderr) = stderr {
                     message.push_str("\n");
                     message.push_str(stderr);
                 };
-                ("Failed to Launch", message)
+                (t(keys::agent::AGENT_FAILED_TO_LAUNCH), message)
             }
-            LoadError::Other(msg) => ("Failed to Launch", msg.to_string()),
+            LoadError::Other(msg) => (t(keys::agent::AGENT_FAILED_TO_LAUNCH), msg.to_string()),
         };
 
         let action_slot = h_flex()
@@ -3797,7 +3797,7 @@ impl ConversationView {
                 .and_then(|active| active.read(cx).model_selector.clone())
                 .and_then(|selector| selector.read(cx).active_model(cx))
                 .map(|model| model.name.clone())
-                .unwrap_or_else(|| SharedString::from("The model"))
+                .unwrap_or_else(|| SharedString::from(t(keys::agent::AGENT_THE_MODEL)))
         } else {
             // ACP agent - use the agent name (e.g., "Claude Agent", "Gemini CLI")
             self.agent.agent_id().0
@@ -4280,9 +4280,9 @@ fn plan_summary_label(stats: &acp_thread::PlanStats<'_>, entry_count: usize) -> 
         if stats.cancelled == 0 {
             "All Done"
         } else if stats.completed == 0 {
-            "Cancelled"
+            t(keys::agent::AGENT_PLAN_CANCELLED)
         } else {
-            "Finished"
+            t(keys::agent::AGENT_PLAN_FINISHED)
         }
         .to_owned()
     } else if stats.completed == 0 {
@@ -6341,7 +6341,7 @@ pub(crate) mod tests {
                 "Backend failed",
                 Some("-32099"),
             ),
-            (None, "Agent stopped because of an error", None),
+            (None, t(keys::agent::AGENT_STOPPED_ERROR), None),
         ] {
             thread.update(cx, |thread, cx| {
                 thread
@@ -6926,7 +6926,7 @@ pub(crate) mod tests {
                 "user-canceled",
                 "Explore",
                 acp_v2::ToolCallStatus::Failed,
-                Some("User canceled"),
+                Some(t(keys::agent::AGENT_THREAD_USER_CANCELED)),
                 SubagentStatus::Canceled,
                 None,
             ),
@@ -7804,7 +7804,7 @@ pub(crate) mod tests {
                 assert_eq!(view.thread.read(cx).title().as_deref(), title);
                 assert_eq!(
                     view.title_editor.read(cx).text(cx),
-                    title_override.or(title).unwrap_or(DEFAULT_THREAD_TITLE)
+                    title_override.or(title).unwrap_or(default_thread_title().as_str())
                 );
             });
             cx.read(|cx| {
@@ -10927,7 +10927,7 @@ pub(crate) mod tests {
             conversation_view
                 .read(cx)
                 .active_thread()
-                .expect("No active thread")
+                .expect(t(keys::agent::AGENT_NO_ACTIVE_THREAD))
                 .clone()
         })
     }
@@ -16278,7 +16278,7 @@ pub(crate) mod tests {
                     "Missing pattern option"
                 );
                 assert!(
-                    labels.contains(&"Only this time"),
+                    labels.contains(&t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)),
                     "Missing 'Only this time' option"
                 );
             }
@@ -16570,7 +16570,7 @@ pub(crate) mod tests {
                     "Missing 'Always for terminal' option"
                 );
                 assert!(
-                    labels.contains(&"Only this time"),
+                    labels.contains(&t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)),
                     "Missing 'Only this time' option"
                 );
                 // Should NOT contain a pattern option
@@ -16796,7 +16796,7 @@ pub(crate) mod tests {
 
         cx.run_until_parked();
 
-        // Verify default granularity is the last option (index 2 = "Only this time")
+        // Verify default granularity is the last option (index 2 = t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME))
         thread_view.read_with(cx, |thread_view, cx| {
             let state = thread_view.active_thread().unwrap();
             let state = state.read(cx);
@@ -17005,7 +17005,7 @@ pub(crate) mod tests {
 
         cx.run_until_parked();
 
-        // Use default granularity (last option = "Only this time")
+        // Use default granularity (last option = t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME))
         // Simulate clicking the Deny button
         active_thread(&conversation_view, cx).update_in(cx, |view, window, cx| {
             view.reject_once(&RejectOnce, window, cx)
@@ -17193,7 +17193,7 @@ pub(crate) mod tests {
 
         let outcome = super::resolve_outcome_from_selection(&options, None, true).unwrap();
 
-        // Last choice is "Only this time" → option_id "allow".
+        // Last choice is t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME) → option_id "allow".
         assert_eq!(outcome.option_id.0.as_ref(), "allow");
         assert_eq!(outcome.option_kind, acp_v2::PermissionOptionKind::AllowOnce);
     }
@@ -17226,7 +17226,7 @@ pub(crate) mod tests {
         let outcome =
             super::resolve_outcome_from_selection(&options, Some(&selection), true).unwrap();
 
-        // choices.get(999) is None, falls back to choices.last() → "Only this time".
+        // choices.get(999) is None, falls back to choices.last() → t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME).
         assert_eq!(outcome.option_id.0.as_ref(), "allow");
     }
 
@@ -17300,7 +17300,7 @@ pub(crate) mod tests {
         let thread_id = conversation_view.read_with(cx, |view, _cx| view.thread_id);
         let assert_title =
             |title: Option<&str>, title_override: Option<&str>, cx: &VisualTestContext| {
-                let display_title = title_override.or(title).unwrap_or(DEFAULT_THREAD_TITLE);
+                let display_title = title_override.or(title).unwrap_or(default_thread_title().as_str());
                 title_editor.read_with(cx, |editor, cx| {
                     assert_eq!(editor.text(cx), display_title);
                 });
@@ -17336,13 +17336,13 @@ pub(crate) mod tests {
 
         cx.dispatch_action(editor::actions::DeleteLine);
         cx.run_until_parked();
-        cx.write_to_clipboard(ClipboardItem::new_string(DEFAULT_THREAD_TITLE.into()));
+        cx.write_to_clipboard(ClipboardItem::new_string(default_thread_title().into()));
         cx.dispatch_action(Paste);
         cx.run_until_parked();
-        assert_title(Some(DEFAULT_THREAD_TITLE), Some(DEFAULT_THREAD_TITLE), cx);
+        assert_title(Some(default_thread_title().as_str()), Some(default_thread_title().as_str()), cx);
         assert_eq!(
             connection.take_set_title_calls(),
-            vec![(session_id.clone(), DEFAULT_THREAD_TITLE.into())]
+            vec![(session_id.clone(), default_thread_title().into())]
         );
         for title in [Some("Agent replacement after chosen default"), None] {
             thread.update(cx, |thread, cx| {
@@ -17352,7 +17352,7 @@ pub(crate) mod tests {
                 thread.update_session_info(acp_v2::SessionInfoUpdate::new().title(title), cx);
             });
             cx.run_until_parked();
-            assert_title(title, Some(DEFAULT_THREAD_TITLE), cx);
+            assert_title(title, Some(default_thread_title().as_str()), cx);
             assert!(connection.take_set_title_calls().is_empty());
         }
 
@@ -20431,7 +20431,7 @@ pub(crate) mod tests {
         let label = |thread: &Entity<AcpThread>, cx: &mut TestAppContext| {
             thread.read_with(cx, |thread, _| thread_view::subagent_label(thread))
         };
-        assert_eq!(label(&native_child, cx), "Subagent");
+        assert_eq!(label(&native_child, cx), t(keys::agent::AGENT_THREAD_SUBAGENT));
 
         for thread in [&native_child, &acp_child] {
             thread.update(cx, |thread, cx| {

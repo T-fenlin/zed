@@ -893,7 +893,7 @@ fn format_timestamp_human(dt: &DateTime<Utc>) -> String {
     let duration = now.signed_duration_since(*dt);
 
     let relative = if duration.num_seconds() < 0 {
-        "in the future".to_string()
+        t(keys::agent::AGENT_TIME_FUTURE).to_string()
     } else if duration.num_seconds() < 60 {
         let seconds = duration.num_seconds();
         format!("{seconds} seconds ago")
@@ -3813,7 +3813,7 @@ impl AgentPanel {
                         workspace.show_toast(
                             workspace::Toast::new(
                                 workspace::notifications::NotificationId::unique::<ThreadCopiedToast>(),
-                                "Thread copied to clipboard (base64 encoded)",
+                                t(keys::agent::AGENT_COPY_THREAD_DONE),
                             )
                             .autohide(),
                             cx,
@@ -3884,7 +3884,7 @@ impl AgentPanel {
             Err(_) => {
                 Self::show_deferred_toast(
                     &self.workspace,
-                    "Failed to parse thread data from clipboard",
+                    t(keys::agent::AGENT_CLIPBOARD_PARSE_FAILED),
                     cx,
                 );
                 return;
@@ -3915,7 +3915,7 @@ impl AgentPanel {
                         workspace.show_toast(
                             workspace::Toast::new(
                                 workspace::notifications::NotificationId::unique::<ThreadLoadedToast>(),
-                                "Thread loaded from clipboard",
+                                t(keys::agent::AGENT_THREAD_LOADED),
                             )
                             .autohide(),
                             cx,
@@ -3936,7 +3936,7 @@ impl AgentPanel {
         cx: &mut Context<Self>,
     ) {
         let Some(thread_id) = self.active_thread_id(cx) else {
-            Self::show_deferred_toast(&self.workspace, "No active thread", cx);
+            Self::show_deferred_toast(&self.workspace, t(keys::agent::AGENT_NO_ACTIVE_THREAD), cx);
             return;
         };
 
@@ -5486,7 +5486,7 @@ impl AgentPanel {
                                         .icon_size(IconSize::Small)
                                         .tooltip(move |_window, cx| {
                                             Tooltip::with_meta(
-                                                "Title generation failed. Click to retry.",
+                                                t(keys::agent::AGENT_TITLE_GENERATION_FAILED),
                                                 None,
                                                 title_generation_error.clone(),
                                                 cx,
@@ -5602,7 +5602,7 @@ impl AgentPanel {
     fn show_no_thread_summary_model_toast(workspace: Entity<Workspace>, cx: &mut App) {
         workspace.update(cx, |workspace, cx| {
             let toast = StatusToast::new(
-                "No model is configured for summarizing thread titles.",
+                t(keys::agent::AGENT_NO_SUMMARY_MODEL),
                 cx,
                 |this, _cx| {
                     this.icon(
@@ -5694,7 +5694,7 @@ impl AgentPanel {
                     .icon_size(IconSize::Small),
                 move |_window, cx| {
                     Tooltip::for_action_in(
-                        "Toggle Agent Menu",
+                        t(keys::agent::AGENT_TOGGLE_MENU),
                         &ToggleOptionsMenu,
                         &focus_handle,
                         cx,
@@ -5761,14 +5761,14 @@ impl AgentPanel {
                             menu = menu
                                 .header(t(keys::agent::AGENT_MENU_MCP_SERVERS))
                                 .action(
-                                    "Add Server…",
+                                    t(keys::agent::AGENT_MENU_ADD_SERVER),
                                     Box::new(zed_actions::OpenSettingsAt {
                                         path: "context_servers".to_string(),
                                         target: None,
                                     }),
                                 )
                                 .action(
-                                    "Install New Servers…",
+                                    t(keys::agent::AGENT_MENU_INSTALL_SERVERS),
                                     Box::new(zed_actions::Extensions {
                                         category_filter: Some(
                                             zed_actions::ExtensionCategoryFilter::ContextServers,
@@ -5839,19 +5839,19 @@ impl AgentPanel {
 
                             menu = menu
                                 .separator()
-                                .action("Profiles", Box::new(ManageProfiles::default()));
+                                .action(t(keys::agent::AGENT_MENU_PROFILES), Box::new(ManageProfiles::default()));
                         }
 
                         menu = menu
                             .action("Settings", Box::new(OpenSettings))
                             .separator()
-                            .action("Toggle Threads Sidebar", Box::new(ToggleWorkspaceSidebar));
+                            .action(t(keys::agent::AGENT_MENU_TOGGLE_SIDEBAR), Box::new(ToggleWorkspaceSidebar));
 
                         if has_auth_methods || supports_logout {
                             menu = menu.separator()
                         }
                         if has_auth_methods {
-                            menu = menu.action("Reauthenticate", Box::new(ReauthenticateAgent))
+                            menu = menu.action(t(keys::agent::AGENT_MENU_REAUTHENTICATE), Box::new(ReauthenticateAgent))
                         }
                         if supports_logout {
                             menu = menu.action("Log Out", Box::new(LogoutAgent))
@@ -6138,7 +6138,7 @@ impl AgentPanel {
                 Tooltip::with_meta(
                     selected_agent_label_for_tooltip.clone(),
                     None,
-                    "Selected Agent",
+                    t(keys::agent::AGENT_SELECTED_AGENT),
                     cx,
                 )
             });
@@ -6173,9 +6173,9 @@ impl AgentPanel {
 
         let is_full_screen = self.is_zoomed(window, cx);
         let (icon_name, tooltip_text) = if is_full_screen {
-            (IconName::Minimize, "Disable Full Screen")
+            (IconName::Minimize, t(keys::agent::AGENT_DISABLE_FULLSCREEN))
         } else {
-            (IconName::Maximize, "Enable Full Screen")
+            (IconName::Maximize, t(keys::agent::AGENT_ENABLE_FULLSCREEN))
         };
         let full_screen_button = IconButton::new("toggle-full-screen", icon_name)
             .icon_size(IconSize::Small)
@@ -10808,7 +10808,7 @@ mod tests {
         });
 
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = "Thinking".to_string();
+            terminal.breadcrumb_text = t(keys::agent::AGENT_THREAD_THINKING).to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -10820,7 +10820,7 @@ mod tests {
             let metadata = panel
                 .terminal_metadata(terminal_id, cx)
                 .expect("terminal metadata should be available");
-            assert_eq!(metadata.title.as_ref(), "Thinking");
+            assert_eq!(metadata.title.as_ref(), t(keys::agent::AGENT_THREAD_THINKING));
             assert_eq!(metadata.display_title().as_ref(), "Fix bug");
         });
     }
@@ -10869,7 +10869,7 @@ mod tests {
                 .as_ref()
                 .expect("terminal title editor should be active while editing")
                 .clone();
-            assert_eq!(title_editor.read(cx).text(cx), "Thinking");
+            assert_eq!(title_editor.read(cx).text(cx), t(keys::agent::AGENT_THREAD_THINKING));
             title_editor
         });
 

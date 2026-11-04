@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use crate::diagnostics::{DiagnosticsOptions, codeblock_fence_for_path, collect_diagnostics};
 use acp_thread::{MentionUri, selection_name};
 use agent::{ThreadStore, outline};
@@ -407,7 +408,7 @@ impl MentionSet {
 
         if is_raster_image_path(&abs_path) {
             if !supports_images {
-                return Task::ready(Err(anyhow!("This model does not support images yet")));
+                return Task::ready(Err(anyhow!(t(keys::agent::AGENT_A_MENTION_IMAGES_UNSUPPORTED))));
             }
             let task = project.update(cx, |project, cx| project.open_image(project_path, cx));
             return cx.spawn(async move |_, cx| {
@@ -422,7 +423,7 @@ impl MentionSet {
                         format: LanguageModelImage::FORMAT,
                     }))
                 } else {
-                    Err(anyhow!("Failed to convert image"))
+                    Err(anyhow!(t(keys::agent::AGENT_A_MENTION_IMAGE_CONVERT_FAILED)))
                 }
             });
         }
@@ -636,7 +637,7 @@ impl MentionSet {
     ) -> Task<Result<Mention>> {
         let Some(thread_store) = self.thread_store.clone() else {
             return Task::ready(Err(anyhow!(
-                "Thread mentions are only supported for the native agent"
+                t(keys::agent::AGENT_A_MENTION_THREAD_NATIVE_ONLY)
             )));
         };
         let Some(project) = self.project.upgrade() else {
@@ -839,7 +840,7 @@ mod tests {
         assert!(
             error
                 .to_string()
-                .contains("Thread mentions are only supported for the native agent"),
+                .contains(t(keys::agent::AGENT_A_MENTION_THREAD_NATIVE_ONLY)),
             "Unexpected error: {error:#}"
         );
     }
@@ -1064,7 +1065,7 @@ pub(crate) async fn insert_images_as_context(
                         format: LanguageModelImage::FORMAT,
                     }))
                 } else {
-                    Err("Failed to convert image".into())
+                    Err(t(keys::agent::AGENT_A_MENTION_IMAGE_CONVERT_FAILED).into())
                 }
             })
             .shared();

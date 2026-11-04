@@ -563,7 +563,7 @@ impl ConfigureContextServerModal {
                     secret_editor: cx.new(|cx| {
                         let mut editor = Editor::single_line(window, cx);
                         editor.set_placeholder_text(
-                            "Enter client secret (leave empty for public clients)",
+                            t(keys::agent::AGENT_A_CONTEXT_SERVER_SECRET_PLACEHOLDER),
                             window,
                             cx,
                         );
@@ -803,7 +803,7 @@ impl ConfigureContextServerModal {
 
     fn render_modal_description(&self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
         const MODAL_DESCRIPTION: &str =
-            "Check the server docs for required arguments and environment variables.";
+            t(keys::agent::AGENT_A_CONTEXT_SERVER_DESCRIPTION);
 
         if let ConfigurationSource::Extension {
             installation_instructions: Some(installation_instructions),
@@ -1031,7 +1031,7 @@ impl ConfigureContextServerModal {
                     )
                     .child(
                         Label::new(
-                            "Enter your OAuth client secret, or leave empty for public clients",
+                            t(keys::agent::AGENT_A_CONTEXT_SERVER_CLIENT_SECRET_HINT),
                         )
                         .size(LabelSize::Small)
                         .color(Color::Muted),
@@ -1160,7 +1160,7 @@ impl Render for ConfigureContextServerModal {
                                         .child(match &self.state {
                                             State::Idle => div(),
                                             State::Waiting => {
-                                                self.render_loading("Connecting Server…")
+                                                self.render_loading(t(keys::agent::AGENT_A_CONTEXT_SERVER_CONNECTING))
                                             }
                                             State::AuthRequired { server_id } => {
                                                 self.render_auth_required(&server_id.clone(), cx)
@@ -1218,7 +1218,7 @@ fn wait_for_context_server(
             }
             ContextServerStatus::Stopped => {
                 if let Some(tx) = tx.lock().take() {
-                    let _ = tx.send(Err("Context server stopped running".into()));
+                    let _ = tx.send(Err(t(keys::agent::AGENT_A_CONTEXT_SERVER_STOPPED).into()));
                 }
             }
             ContextServerStatus::Error(error) => {

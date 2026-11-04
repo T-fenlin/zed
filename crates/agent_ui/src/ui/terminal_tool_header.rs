@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::time::Duration;
 
 use gpui::{AnyElement, ClickEvent, CursorStyle, Window};
@@ -199,7 +200,7 @@ impl RenderOnce for TerminalToolHeader {
                                     .icon_color(Color::Error)
                                     .tooltip(move |_window, cx| {
                                         Tooltip::with_meta(
-                                            "Stop This Command",
+                                            t(keys::agent::AGENT_STOP_COMMAND),
                                             None,
                                             "Also possible by placing your cursor inside the \
                                              terminal and using regular terminal bindings.",
@@ -344,8 +345,8 @@ impl Component for TerminalToolHeader {
         };
 
         let sandbox_warning = || TerminalSandboxWarning {
-            title: "Ran without sandbox".into(),
-            detail: "Unsandboxed execution is allowed for the rest of this thread.".into(),
+            title: t(keys::agent::AGENT_THREAD_RAN_WITHOUT_SANDBOX).into(),
+            detail: t(keys::agent::AGENT_THREAD_UNSANDBOXED_ALLOWED).into(),
             docs_url: "https://zed.dev/docs/ai/sandboxing".into(),
         };
 
@@ -408,7 +409,7 @@ impl Component for TerminalToolHeader {
                     ),
                 ),
                 single_example(
-                    "Ran without sandbox",
+                    t(keys::agent::AGENT_THREAD_RAN_WITHOUT_SANDBOX),
                     card(
                         "sandbox",
                         TerminalToolHeader::new(
@@ -446,7 +447,7 @@ impl Component for TerminalToolHeader {
                             true,
                         )
                         .elapsed(Duration::from_secs(3671))
-                        .truncated("Output was truncated")
+                        .truncated(t(keys::agent::AGENT_THREAD_OUTPUT_TRUNCATED))
                         .failed(Some(1))
                         .sandbox_warning(sandbox_warning()),
                     ),
