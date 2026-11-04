@@ -7,7 +7,6 @@
 pub mod keys;
 
 use fluent_bundle::{FluentArgs, FluentBundle, FluentResource, FluentValue};
-use i18n::{keys, t_static, t_with_args};
 use unic_langid::LanguageIdentifier;
 
 /// Supported locales. `en-US` is authoritative; other locales fall back to it.
@@ -72,7 +71,7 @@ bundle_sources! {
     "edit-prediction" => "edit-prediction.ftl",
     "editor" => "editor.ftl",
     "errors" => "errors.ftl",
-    t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS) => "extensions.ftl",
+    "extensions" => "extensions.ftl",
     "git-ui" => "git-ui.ftl",
     "keymap" => "keymap.ftl",
     "lang" => "lang.ftl",
