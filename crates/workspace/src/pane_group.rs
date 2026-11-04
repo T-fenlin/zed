@@ -415,9 +415,9 @@ impl PaneLeaderDecorator for PaneRenderContext<'_> {
                             })
                         } else {
                             leader_join_data = Some((leader_project_id, leader.user.legacy_id));
-                            Some(Label::new(format!(
-                                "Follow {} to their active project",
-                                leader.user.username,
+                            Some(Label::new(t_with_args(
+                                keys::workspace::WS_PANE_GROUP_FOLLOW,
+                                &[("user", &(leader.user.username).to_string())],
                             )))
                         }
                     }

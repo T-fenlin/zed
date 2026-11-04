@@ -1,4 +1,4 @@
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::ffi::OsStr;
 use std::path::Path;
 use std::rc::Rc;
@@ -780,13 +780,17 @@ pub(crate) fn render_buffer_header(
                                                     "Fold Excerpt"
                                                 },
                                                 Some(&ToggleFold),
-                                                format!(
-                                                    "{} to toggle all",
-                                                    text_for_keystroke(
-                                                        &Modifiers::alt(),
-                                                        "click",
-                                                        cx
-                                                    )
+                                                t_with_args(
+                                                    keys::search::SEARCH_TOGGLE_ALL_HINT,
+                                                    &[(
+                                                        "key",
+                                                        &(text_for_keystroke(
+                                                            &Modifiers::alt(),
+                                                            "click",
+                                                            cx,
+                                                        ))
+                                                        .to_string(),
+                                                    )],
                                                 ),
                                                 &focus_handle,
                                                 cx,

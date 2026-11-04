@@ -11,7 +11,7 @@ use editor::{
     scroll::{Autoscroll, ScrollAnchor},
 };
 use file_icons::FileIcons;
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 
 use fuzzy::{StringMatch, StringMatchCandidate, match_strings};
 use git::status::{FileStatus, GitSummary};
@@ -2542,10 +2542,12 @@ impl OutlinePanel {
     fn excerpt_label(&self, range: &ExcerptRange<language::Anchor>, cx: &App) -> Option<String> {
         let buffer_snapshot = self.buffer_snapshot_for_id(range.context.start.buffer_id, cx)?;
         let excerpt_range = range.context.to_point(&buffer_snapshot);
-        Some(format!(
-            "Lines {}- {}",
-            excerpt_range.start.row + 1,
-            excerpt_range.end.row + 1,
+        Some(t_with_args(
+            keys::outline::OUTLINE_LINES,
+            &[
+                ("start", &(excerpt_range.start.row + 1).to_string()),
+                ("end", &(excerpt_range.end.row + 1).to_string()),
+            ],
         ))
     }
 

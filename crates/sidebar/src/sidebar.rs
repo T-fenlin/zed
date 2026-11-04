@@ -2777,12 +2777,16 @@ impl Sidebar {
                                         current_branch.as_deref(),
                                     );
                                     for target in targets {
-                                        let label = format!(
-                                            "Based on {}",
-                                            target.branch_label(
-                                                has_multiple_repositories,
-                                                current_branch.as_deref(),
-                                            )
+                                        let label = t_with_args(
+                                            keys::sidebar::SIDEBAR_BASED_ON,
+                                            &[(
+                                                "branch",
+                                                &(target.branch_label(
+                                                    has_multiple_repositories,
+                                                    current_branch.as_deref(),
+                                                ))
+                                                .to_string(),
+                                            )],
                                         );
                                         let branch_target = target.branch_target();
                                         let workspace = base_workspace.clone();

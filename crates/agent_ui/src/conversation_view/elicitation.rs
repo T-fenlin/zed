@@ -260,7 +260,11 @@ impl ElicitationFormSubmission {
                 ) => {
                     if value.is_empty() {
                         if is_required {
-                            Err(format!("{} is required", property_title(name, property)).into())
+                            Err(t_with_args(
+                                keys::agent::AGENT_A_ELICIT_FIELD_REQUIRED,
+                                &[("title", &(property_title(name, property)).to_string())],
+                            )
+                            .into())
                         } else {
                             Ok(None)
                         }
@@ -280,7 +284,11 @@ impl ElicitationFormSubmission {
                             })
                             .map(|()| Some(value.clone().into()))
                     } else if is_required {
-                        Err(format!("{} is required", property_title(name, property)).into())
+                        Err(t_with_args(
+                            keys::agent::AGENT_A_ELICIT_FIELD_REQUIRED,
+                            &[("title", &(property_title(name, property)).to_string())],
+                        )
+                        .into())
                     } else {
                         Ok(None)
                     }
@@ -292,7 +300,11 @@ impl ElicitationFormSubmission {
                     let value = value.trim();
                     if value.is_empty() {
                         if is_required {
-                            Err(format!("{} is required", property_title(name, property)).into())
+                            Err(t_with_args(
+                                keys::agent::AGENT_A_ELICIT_FIELD_REQUIRED,
+                                &[("title", &(property_title(name, property)).to_string())],
+                            )
+                            .into())
                         } else {
                             Ok(None)
                         }
@@ -308,7 +320,11 @@ impl ElicitationFormSubmission {
                     let value = value.trim();
                     if value.is_empty() {
                         if is_required {
-                            Err(format!("{} is required", property_title(name, property)).into())
+                            Err(t_with_args(
+                                keys::agent::AGENT_A_ELICIT_FIELD_REQUIRED,
+                                &[("title", &(property_title(name, property)).to_string())],
+                            )
+                            .into())
                         } else {
                             Ok(None)
                         }
@@ -344,18 +360,20 @@ impl ElicitationFormSubmission {
                         .min_items
                         .is_some_and(|min_items| values.len() < min_items as usize)
                     {
-                        Err(
-                            format!("{} needs more selections", property_title(name, property))
-                                .into(),
+                        Err(t_with_args(
+                            keys::agent::AGENT_A_ELICIT_NEEDS_MORE_SELECTIONS,
+                            &[("title", &(property_title(name, property)).to_string())],
                         )
+                        .into())
                     } else if schema
                         .max_items
                         .is_some_and(|max_items| values.len() > max_items as usize)
                     {
-                        Err(
-                            format!("{} has too many selections", property_title(name, property))
-                                .into(),
+                        Err(t_with_args(
+                            keys::agent::AGENT_A_ELICIT_TOO_MANY_SELECTIONS,
+                            &[("title", &(property_title(name, property)).to_string())],
                         )
+                        .into())
                     } else {
                         Ok(Some(values.into()))
                     }

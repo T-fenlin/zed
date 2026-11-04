@@ -2192,7 +2192,13 @@ fn diagnostics_label(
     }
 
     let body = if parts.len() == 2 {
-        format!("{} and {}", parts[0], parts[1])
+        t_with_args(
+            keys::agent::AGENT_B_DIAGNOSTICS_AND,
+            &[
+                ("first", &(parts[0]).to_string()),
+                ("second", &(parts[1]).to_string()),
+            ],
+        )
     } else {
         parts
             .pop()

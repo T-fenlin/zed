@@ -3937,9 +3937,12 @@ impl ThreadView {
                 format!("Retrying. Next attempt in {next_attempt_in_secs} seconds.")
             }
         } else if next_attempt_in_secs == 1 {
-            format!(
-                "Retrying. Next attempt in 1 second (Attempt {} of {}).",
-                state.attempt, state.max_attempts,
+            t_with_args(
+                keys::agent::AGENT_THREAD_RETRY_1S_ATTEMPT,
+                &[
+                    ("attempt", &(state.attempt).to_string()),
+                    ("total", &(state.max_attempts).to_string()),
+                ],
             )
         } else {
             format!(

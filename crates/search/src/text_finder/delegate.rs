@@ -22,7 +22,7 @@
 //!                             |                  V
 //!                             . --------  Project search tab
 //! ```
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::ops::ControlFlow;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -1140,13 +1140,17 @@ impl Delegate {
                                                 Tooltip::with_meta_in(
                                                     label,
                                                     Some(action),
-                                                    format!(
-                                                        "{} to toggle all",
-                                                        text_for_keystroke(
-                                                            &Modifiers::alt(),
-                                                            "click",
-                                                            cx
-                                                        )
+                                                    t_with_args(
+                                                        keys::search::SEARCH_TOGGLE_ALL_HINT,
+                                                        &[(
+                                                            "key",
+                                                            &(text_for_keystroke(
+                                                                &Modifiers::alt(),
+                                                                "click",
+                                                                cx,
+                                                            ))
+                                                            .to_string(),
+                                                        )],
                                                     ),
                                                     &tooltip_focus_handle,
                                                     cx,

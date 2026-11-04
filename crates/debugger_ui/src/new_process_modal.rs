@@ -500,7 +500,7 @@ impl NewProcessModal {
             .debugger
             .as_ref()
             .map(|d| d.0.clone())
-            .unwrap_or_else(|| SELECT_DEBUGGER_LABEL.clone());
+            .unwrap_or_else(|| select_debugger_label());
 
         DropdownMenu::new(
             "dap-adapter-picker",
@@ -537,7 +537,9 @@ impl NewProcessModal {
     }
 }
 
-static SELECT_DEBUGGER_LABEL: SharedString = SharedString::new_static("Select Debugger");
+fn select_debugger_label() -> SharedString {
+    t(keys::debugger::DEBUGGER_SELECT_DEBUGGER).into()
+}
 
 #[derive(Clone, Copy)]
 pub(crate) enum NewProcessMode {
@@ -1540,7 +1542,7 @@ impl PickerDelegate for DebugDelegate {
                     this.child({
                         let is_recent_selected = self.divider_index >= Some(self.selected_index);
                         let run_entry_label = if is_recent_selected {
-                            "Rerun"
+                            t_static(keys::debugger::DEBUGGER_RERUN)
                         } else {
                             t_static(keys::debugger::DEBUGGER_SPAWN)
                         };

@@ -781,7 +781,13 @@ fn save_custom_agent_form(
         });
     if collides_with_other_agent {
         if let Some(form) = settings_window.custom_agent_form.as_mut() {
-            form.error = Some(format!("An agent named \"{}\" already exists.", id.0).into());
+            form.error = Some(
+                t_with_args(
+                    keys::settings_ui::SETTINGS_B_EXT_AGENT_NAME_EXISTS,
+                    &[("name", &(id.0).to_string())],
+                )
+                .into(),
+            );
         }
         cx.notify();
         return;

@@ -1200,7 +1200,13 @@ fn save_mcp_server_form(
         });
     if collides_with_other_server {
         if let Some(form) = settings_window.mcp_server_form.as_mut() {
-            form.error = Some(format!("A server named \"{}\" already exists.", id.0).into());
+            form.error = Some(
+                t_with_args(
+                    keys::settings_ui::SETTINGS_A_MCP_NAME_EXISTS,
+                    &[("name", &(id.0).to_string())],
+                )
+                .into(),
+            );
         }
         cx.notify();
         return;

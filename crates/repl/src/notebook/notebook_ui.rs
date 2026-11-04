@@ -1,5 +1,5 @@
 #![allow(unused, dead_code)]
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::future::Future;
 use std::{path::PathBuf, sync::Arc};
 
@@ -1276,10 +1276,12 @@ impl NotebookEditor {
                         IconButton::new("repl", icon)
                             .icon_color(icon_color)
                             .tooltip(move |window, cx| {
-                                Tooltip::text(format!(
-                                    "{} ({}). Click to change kernel.",
-                                    kernel_name,
-                                    kernel_status.to_string()
+                                Tooltip::text(t_with_args(
+                                    keys::repl::REPL_NOTEBOOK_KERNEL_TOOLTIP,
+                                    &[
+                                        ("kernel", &(kernel_name).to_string()),
+                                        ("status", &(kernel_status.to_string()).to_string()),
+                                    ],
                                 ))(window, cx)
                             })
                             .on_click(cx.listener(|this, _, window, cx| {
@@ -1361,10 +1363,12 @@ impl NotebookEditor {
                                 .size(IconSize::Small)
                                 .color(status_color),
                         ),
-                    Tooltip::text(format!(
-                        "Kernel: {} ({}). Click to change.",
-                        kernel_name,
-                        kernel_status.to_string()
+                    Tooltip::text(t_with_args(
+                        keys::repl::REPL_NOTEBOOK_KERNEL_TOOLTIP_PREFIXED,
+                        &[
+                            ("kernel", &(kernel_name).to_string()),
+                            ("status", &(kernel_status.to_string()).to_string()),
+                        ],
                     )),
                 )
                 .with_handle(kernel_picker_handle),

@@ -1,6 +1,6 @@
 use editor::{Editor, MultiBuffer};
 use gpui::{AnyElement, Entity, Modifiers};
-use i18n::{keys, t_static};
+use i18n::{keys, t_static, t_with_args};
 use markdown_preview::markdown_preview_view::MarkdownPreviewView;
 use svg_preview::svg_preview_view::SvgPreviewView;
 use tabular_data_preview::TabularDataPreviewPane;
@@ -69,9 +69,13 @@ impl QuickActionBar {
                 Tooltip::with_meta(
                     tooltip_text,
                     Some(open_action_for_tooltip),
-                    format!(
-                        "{} to open in a split",
-                        text_for_keystroke(&alt_click.modifiers, &alt_click.key, cx)
+                    t_with_args(
+                        keys::zed::ZED_A_OPEN_IN_SPLIT,
+                        &[(
+                            "keystroke",
+                            &(text_for_keystroke(&alt_click.modifiers, &alt_click.key, cx))
+                                .to_string(),
+                        )],
                     ),
                     cx,
                 )

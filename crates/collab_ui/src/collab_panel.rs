@@ -2791,7 +2791,7 @@ impl CollabPanel {
             (
                 "connect",
                 if is_busy {
-                    "Connecting…"
+                    t_static(keys::collab::COLLAB_CONNECTING)
                 } else {
                     t_static(keys::collab::COLLAB_CONNECT)
                 },

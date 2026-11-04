@@ -1,4 +1,4 @@
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::{
     cell::RefCell,
     cmp::{self},
@@ -55,7 +55,9 @@ use crate::{
     },
 };
 
-const NO_ACTION_ARGUMENTS_TEXT: SharedString = SharedString::new_static("<no arguments>");
+fn no_action_arguments_text() -> SharedString {
+    t(keys::keymap::KEYMAP_PLACEHOLDER_NO_ARGUMENTS).into()
+}
 const COLS: usize = 6;
 
 actions!(
@@ -1946,7 +1948,9 @@ enum KeybindContextString {
 }
 
 impl KeybindContextString {
-    const GLOBAL: SharedString = SharedString::new_static("<global>");
+    fn global_context() -> SharedString {
+        t(keys::keymap::KEYMAP_PLACEHOLDER_GLOBAL_CONTEXT).into()
+    }
 
     pub fn local(&self) -> Option<&SharedString> {
         match self {
@@ -1967,7 +1971,7 @@ impl RenderOnce for KeybindContextString {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         match self {
             KeybindContextString::Global => {
-                muted_styled_text(KeybindContextString::GLOBAL, cx).into_any_element()
+                muted_styled_text(KeybindContextString::global_context(), cx).into_any_element()
             }
             KeybindContextString::Local(name, language) => {
                 SyntaxHighlightedText::new(name, language).into_any_element()
@@ -2240,7 +2244,7 @@ impl Render for KeymapEditor {
                                         Some(arguments) => arguments.into_any_element(),
                                         None => {
                                             if binding.action().has_schema {
-                                                muted_styled_text(NO_ACTION_ARGUMENTS_TEXT, cx)
+                                                muted_styled_text(no_action_arguments_text(), cx)
                                                     .into_any_element()
                                             } else {
                                                 gpui::Empty.into_any_element()
@@ -2365,7 +2369,7 @@ impl Render for KeymapEditor {
                                                             log::error!("Unexpected override from the {} keymap", conflict.override_source.name());
                                                             None
                                                         }
-                                                    }.map(|source| format!("This keybinding is overridden by the '{}' binding from {}.", binding.action().humanized_name, source))
+                                                    }.map(|source| t_with_args(keys::keymap::KEYMAP_BINDING_OVERRIDDEN_BY, &[("action", &(binding.action().humanized_name).to_string()), ("source", &(source).to_string())]))
                                                 }).unwrap_or_else(|| t(keys::keymap::KEYMAP_BINDING_OVERRIDDEN).to_string());
 
                                                 row.tooltip(Tooltip::text(context))

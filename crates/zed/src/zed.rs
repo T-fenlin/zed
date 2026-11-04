@@ -1902,10 +1902,12 @@ fn open_log_file(workspace: &mut Workspace, window: &mut Window, cx: &mut Contex
                 .new_window_entity(|window, cx| {
                     let mut editor = Editor::for_multibuffer(buffer, Some(project), window, cx);
                     editor.set_read_only(true);
-                    editor.set_breadcrumb_header(format!(
-                        "Last {} lines in {}",
-                        MAX_LINES,
-                        paths::log_file().display()
+                    editor.set_breadcrumb_header(t_with_args(
+                        keys::zed::ZED_A_LOG_LAST_LINES,
+                        &[
+                            ("count", &(MAX_LINES).to_string()),
+                            ("path", &(paths::log_file().display()).to_string()),
+                        ],
                     ));
                     let last_multi_buffer_offset = editor.buffer().read(cx).len(cx);
                     editor.change_selections(Default::default(), window, cx, |s| {

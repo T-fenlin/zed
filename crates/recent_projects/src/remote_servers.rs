@@ -2758,7 +2758,10 @@ impl RemoteServerProjects {
                     PromptLevel::Warning,
                     &prompt_message,
                     None,
-                    &["Yes, remove it", t_static(keys::recent::RECENT_NO_KEEP_IT)],
+                    &[
+                        t_static(keys::recent::RECENT_YES_REMOVE_IT),
+                        t_static(keys::recent::RECENT_NO_KEEP_IT),
+                    ],
                     cx,
                 );
 
@@ -2912,7 +2915,10 @@ impl RemoteServerProjects {
                         PromptLevel::Warning,
                         &prompt_message,
                         None,
-                        &["Yes, remove it", t_static(keys::recent::RECENT_NO_KEEP_IT)],
+                        &[
+                            t_static(keys::recent::RECENT_YES_REMOVE_IT),
+                            t_static(keys::recent::RECENT_NO_KEEP_IT),
+                        ],
                         cx,
                     );
 

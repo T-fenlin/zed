@@ -2056,7 +2056,12 @@ impl ConversationView {
             }
             AcpThreadEvent::ToolAuthorizationReceived(_) => {}
             AcpThreadEvent::ElicitationRequested(_) => {
-                self.notify_with_sound("Waiting for input", IconName::Info, window, cx);
+                self.notify_with_sound(
+                    t(keys::agent::AGENT_WAITING_INPUT),
+                    IconName::Info,
+                    window,
+                    cx,
+                );
             }
             AcpThreadEvent::ElicitationResponded(_) => {}
             AcpThreadEvent::Retry(retry) => {
@@ -3345,9 +3350,9 @@ impl ConversationView {
                 &[("agent", &(self.agent.agent_id()).to_string())],
             ),
             if version.is_empty() {
-                format!(
-                    "Currently using {}, which does not report a valid --version",
-                    path,
+                t_with_args(
+                    keys::agent::AGENT_INVALID_VERSION,
+                    &[("path", &(path).to_string())],
                 )
             } else {
                 format!(

@@ -8171,9 +8171,12 @@ impl GitPanel {
                                         .when(!has_context_menu, |this| {
                                             this.tooltip(move |_, cx| {
                                                 let description = if is_unpushed {
-                                                    SharedString::from(format!(
-                                                        "Contains Unpushed Changes — {}",
-                                                        short_sha.clone(),
+                                                    SharedString::from(t_with_args(
+                                                        keys::git_ui::GIT_CONTAINS_UNPUSHED,
+                                                        &[(
+                                                            "sha",
+                                                            &(short_sha.clone()).to_string(),
+                                                        )],
                                                     ))
                                                 } else {
                                                     short_sha.clone()

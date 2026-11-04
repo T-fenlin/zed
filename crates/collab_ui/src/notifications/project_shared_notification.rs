@@ -3,7 +3,7 @@ use call::{ActiveCall, room};
 use client::User;
 use collections::HashMap;
 use gpui::{App, Size, TaskExt};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use std::sync::{Arc, Weak};
 
 use ui::{CollabNotification, prelude::*};
@@ -125,10 +125,12 @@ impl Render for ProjectSharedNotification {
         let no_worktree_root_names = self.worktree_root_names.is_empty();
 
         let punctuation = if no_worktree_root_names { "" } else { ":" };
-        let main_label = format!(
-            "{} is sharing a project with you{}",
-            self.owner.username.clone(),
-            punctuation
+        let main_label = t_with_args(
+            keys::collab::COLLAB_SHARING_PROJECT_WITH_YOU,
+            &[
+                ("name", &(self.owner.username.clone()).to_string()),
+                ("punctuation", &(punctuation).to_string()),
+            ],
         );
 
         div().size_full().font(ui_font).child(

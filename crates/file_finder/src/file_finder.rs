@@ -4,6 +4,7 @@ mod file_finder_tests;
 mod multi_select_tests;
 
 use futures::future::join_all;
+use i18n::{keys, t_static};
 pub use open_path_prompt::OpenPathDelegate;
 
 use channel::ChannelStore;
@@ -1491,7 +1492,7 @@ impl FileFinderDelegate {
                 } => (
                     channel_name.to_string(),
                     string_match.positions.clone(),
-                    "Channel Notes".to_string(),
+                    t_static(keys::outline::FILE_FINDER_CHANNEL_NOTES).to_string(),
                     vec![],
                 ),
                 Match::CreateNew(project_path) => (

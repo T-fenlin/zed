@@ -847,25 +847,33 @@ impl Render for HighlightsTreeView {
                             if self.editor.is_some() {
                                 let has_any = !self.cached_entries.is_empty();
                                 if has_any {
-                                    this.child(Label::new(t(keys::lang::LANG_TOOLS_HIGHLIGHTS_FILTERED_OUT_TITLE)))
-                                        .child(
-                                            Label::new(
-                                                "Enable text, syntax, or semantic highlights in the toolbar",
-                                            )
-                                            .size(LabelSize::Small),
-                                        )
-                                } else {
-                                    this.child(Label::new(t(keys::lang::LANG_TOOLS_NO_HIGHLIGHTS_TITLE))).child(
-                                        Label::new(
-                                            "The editor has no text, syntax, or semantic token highlights",
-                                        )
+                                    this.child(Label::new(t(
+                                        keys::lang::LANG_TOOLS_HIGHLIGHTS_FILTERED_OUT_TITLE,
+                                    )))
+                                    .child(
+                                        Label::new(t(
+                                            keys::lang::LANG_TOOLS_HIGHLIGHTS_FILTERED_OUT_DETAIL,
+                                        ))
                                         .size(LabelSize::Small),
+                                    )
+                                } else {
+                                    this.child(Label::new(t(
+                                        keys::lang::LANG_TOOLS_NO_HIGHLIGHTS_TITLE,
+                                    )))
+                                    .child(
+                                        Label::new(t(keys::lang::LANG_TOOLS_NO_HIGHLIGHTS_DETAIL))
+                                            .size(LabelSize::Small),
                                     )
                                 }
                             } else {
-                                this.child(Label::new(t(keys::lang::LANG_TOOLS_NOT_ATTACHED_TO_EDITOR))).child(
-                                    Label::new(t(keys::lang::LANG_TOOLS_FOCUS_EDITOR_FOR_HIGHLIGHTS))
-                                        .size(LabelSize::Small),
+                                this.child(Label::new(t(
+                                    keys::lang::LANG_TOOLS_NOT_ATTACHED_TO_EDITOR,
+                                )))
+                                .child(
+                                    Label::new(t(
+                                        keys::lang::LANG_TOOLS_FOCUS_EDITOR_FOR_HIGHLIGHTS,
+                                    ))
+                                    .size(LabelSize::Small),
                                 )
                             }
                         });
@@ -894,7 +902,7 @@ impl Item for HighlightsTreeView {
     fn to_item_events(_: &Self::Event, _: &mut dyn FnMut(workspace::item::ItemEvent)) {}
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Highlights".into()
+        t(keys::lang::LANG_TOOLS_HIGHLIGHTS_TAB).into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -962,7 +970,13 @@ impl HighlightsTreeToolbarItemView {
                 &[("count", &(total).to_string())],
             )
         } else {
-            format!("{} / {} highlights", filtered, total)
+            t_with_args(
+                keys::lang::LANG_TOOLS_HIGHLIGHTS_COUNT_FILTERED,
+                &[
+                    ("filtered", &(filtered).to_string()),
+                    ("total", &(total).to_string()),
+                ],
+            )
         };
 
         Some(ButtonLike::new("highlights header").child(Label::new(label)))
@@ -1000,7 +1014,7 @@ impl HighlightsTreeToolbarItemView {
 
                 let menu = ContextMenu::build(window, cx, move |menu, _, _| {
                     menu.toggleable_entry(
-                        "Text Highlights",
+                        t(keys::lang::LANG_TOOLS_TEXT_HIGHLIGHTS),
                         show_text,
                         IconPosition::Start,
                         Some(ToggleTextHighlights.boxed_clone()),
@@ -1024,7 +1038,7 @@ impl HighlightsTreeToolbarItemView {
                         },
                     )
                     .toggleable_entry(
-                        "Syntax Tokens",
+                        t(keys::lang::LANG_TOOLS_SYNTAX_TOKENS),
                         show_syntax,
                         IconPosition::Start,
                         Some(ToggleSyntaxTokens.boxed_clone()),

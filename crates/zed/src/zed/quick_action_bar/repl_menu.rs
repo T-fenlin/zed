@@ -101,9 +101,15 @@ impl QuickActionBar {
                             menu.custom_row(move |_window, _cx| {
                                 h_flex()
                                     .child(
-                                        Label::new(format!(
-                                            "kernel: {} ({})",
-                                            menu_state.kernel_name, menu_state.kernel_language
+                                        Label::new(t_with_args(
+                                            keys::zed::ZED_B_REPL_KERNEL_STATUS,
+                                            &[
+                                                ("name", &(menu_state.kernel_name).to_string()),
+                                                (
+                                                    "language",
+                                                    &(menu_state.kernel_language).to_string(),
+                                                ),
+                                            ],
                                         ))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
@@ -496,7 +502,14 @@ fn session_state(session: Entity<Session>, cx: &mut App) -> ReplMenuState {
     };
     let other = |state: &str| {
         transitional(
-            format!("{} state: {}", kernel_name, state).into(),
+            t_with_args(
+                keys::zed::ZED_B_REPL_KERNEL_STATE,
+                &[
+                    ("kernel", &(kernel_name).to_string()),
+                    ("state", &(state).to_string()),
+                ],
+            )
+            .into(),
             false,
             true,
         )
@@ -517,13 +530,27 @@ fn session_state(session: Entity<Session>, cx: &mut App) -> ReplMenuState {
         Kernel::Restarting => restarting(),
         Kernel::RunningKernel(kernel) => match &kernel.execution_state() {
             ExecutionState::Idle => ReplMenuState {
-                tooltip: format!("Run code on {} ({})", kernel_name, kernel_language).into(),
+                tooltip: t_with_args(
+                    keys::zed::ZED_B_REPL_RUN_CODE,
+                    &[
+                        ("kernel", &(kernel_name).to_string()),
+                        ("language", &(kernel_language).to_string()),
+                    ],
+                )
+                .into(),
                 indicator: Some(Indicator::dot().color(Color::Success)),
                 status: session.kernel.status(),
                 ..fill_fields()
             },
             ExecutionState::Busy => ReplMenuState {
-                tooltip: format!("Interrupt {} ({})", kernel_name, kernel_language).into(),
+                tooltip: t_with_args(
+                    keys::zed::ZED_B_REPL_INTERRUPT_KERNEL,
+                    &[
+                        ("kernel", &(kernel_name).to_string()),
+                        ("language", &(kernel_language).to_string()),
+                    ],
+                )
+                .into(),
                 icon_is_animating: true,
                 popover_disabled: false,
                 indicator: None,
@@ -540,7 +567,14 @@ fn session_state(session: Entity<Session>, cx: &mut App) -> ReplMenuState {
         },
         Kernel::StartingKernel(_) => starting(),
         Kernel::ErroredLaunch(e) => ReplMenuState {
-            tooltip: format!("Error with kernel {}: {}", kernel_name, e).into(),
+            tooltip: t_with_args(
+                keys::zed::ZED_B_REPL_KERNEL_ERROR,
+                &[
+                    ("kernel", &(kernel_name).to_string()),
+                    ("error", &(e).to_string()),
+                ],
+            )
+            .into(),
             popover_disabled: false,
             indicator: Some(Indicator::dot().color(Color::Error)),
             status: session.kernel.status(),
