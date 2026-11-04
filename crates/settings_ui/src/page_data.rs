@@ -2845,7 +2845,9 @@ fn editor_page() -> SettingsPage {
                 .into(),
                 field: Box::new(SettingField {
                     organization_override: None,
-                    json_path: Some("scrollbar"),
+                    json_path: Some(t_static(
+                        keys::settings_ui::SETTINGS_TERMINAL_SECTION_SCROLLBAR,
+                    )),
                     pick: |settings_content| {
                         settings_content.editor.scrollbar.as_ref()?.show.as_ref()
                     },

@@ -3990,7 +3990,12 @@ impl AgentPanel {
         let json = serde_json::Value::Array(entries);
         let text = serde_json::to_string_pretty(&json).unwrap_or_default();
 
-        self.open_json_buffer("All Sidebar Thread Metadata".to_string(), text, window, cx);
+        self.open_json_buffer(
+            t_static(keys::agent::AGENT_ALL_METADATA_TITLE).to_string(),
+            text,
+            window,
+            cx,
+        );
     }
 
     fn open_json_buffer(

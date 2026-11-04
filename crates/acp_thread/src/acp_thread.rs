@@ -12840,7 +12840,7 @@ mod tests {
                     ),
                     cx,
                 )
-                .expect("max tokens");
+                .expect(t_static(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_TOKENS));
             assert!(thread.had_error());
             assert_eq!(thread.latest_submission_id(), Some(late_id));
             assert!(matches!(

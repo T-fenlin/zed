@@ -1,4 +1,5 @@
 use anyhow::Result;
+use i18n::{keys, t_static};
 #[cfg(feature = "editing")]
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -2735,7 +2736,7 @@ mod tests {
         let text = r#"// "edit_predictions": { "disabled_globs": ["commented/**"] },
         {
             // "disabled_globs": ["commented/**"],
-            "languages": { "edit_predictions": { "disabled_globs": ["nested/**"] } },
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): { "edit_predictions": { "disabled_globs": ["nested/**"] } },
             "edit_predictions": {
                 /* "disabled_globs": ["commented/**"], */
                 "mode": "subtle",

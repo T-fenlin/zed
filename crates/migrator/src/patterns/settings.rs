@@ -37,7 +37,7 @@ pub const SETTINGS_LANGUAGES_PATTERN: &str = r#"(document
             ))
         )
     )
-    (#eq? @languages "languages")
+    (#eq? @languages t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES))
 )"#;
 
 pub const SETTINGS_ASSISTANT_TOOLS_PATTERN: &str = r#"(document

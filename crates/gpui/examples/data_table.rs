@@ -3,6 +3,7 @@
 #[path = "example_support/fonts.rs"]
 mod example_support;
 
+use i18n::{keys, t_static};
 use std::{ops::Range, rc::Rc, time::Duration};
 
 use gpui::{
@@ -301,7 +302,9 @@ impl DataTable {
         let table_bounds = self.table_bounds();
         let table_height = table_bounds.size.height;
         if table_height == px(0.) {
-            return div().id("scrollbar");
+            return div().id(t_static(
+                keys::settings_ui::SETTINGS_TERMINAL_SECTION_SCROLLBAR,
+            ));
         }
 
         let percentage = -self.scroll_top() / scroll_height;
@@ -313,7 +316,9 @@ impl DataTable {
         let scroll_handle = self.scroll_handle.0.borrow().base_handle.clone();
 
         div()
-            .id("scrollbar")
+            .id(t_static(
+                keys::settings_ui::SETTINGS_TERMINAL_SECTION_SCROLLBAR,
+            ))
             .absolute()
             .top(offset_top)
             .right_1()

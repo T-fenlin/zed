@@ -27,4 +27,4 @@ debugger-launch_custom = Launch Custom
 debugger-rerun = Rerun
 debugger-spawn = Spawn
 debugger-failed_edit_debug_json = Failed to edit debug.json
-debugger-debug_terminal = Debug Terminal
+debugger-debug_terminal = Debug terminal

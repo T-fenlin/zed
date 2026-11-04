@@ -46925,7 +46925,7 @@ async fn test_local_worktree_trust(cx: &mut TestAppContext) {
         path!("/project"),
         json!({
             ".zed": {
-                "settings.json": r#"{"languages":{"Rust":{"language_servers":["override-rust-analyzer"]}}}"#
+                "settings.json": r#"{t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES):{"Rust":{"language_servers":["override-rust-analyzer"]}}}"#
             },
             "main.rs": "fn main() {}"
         }),

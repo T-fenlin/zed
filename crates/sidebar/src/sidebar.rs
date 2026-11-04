@@ -3376,7 +3376,7 @@ impl Sidebar {
         let identifier = if self.filter_editor.focus_handle(cx).is_focused(window)
             || is_archived_search_focused
         {
-            "searching"
+            t_static(keys::keymap::KEYMAP_INDICATOR_SEARCHING)
         } else if is_renaming {
             "editing"
         } else {

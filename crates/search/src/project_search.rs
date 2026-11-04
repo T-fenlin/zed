@@ -3846,7 +3846,7 @@ pub mod tests {
                             let color = match color_type {
                                 "active" => active_match_bg,
                                 "match" => match_bg,
-                                "selection" => selection_bg,
+                                t_static(keys::agent::AGENT_B_SELECTION) => selection_bg,
                                 _ => panic!("Unknown color type"),
                             };
                             (range, color)
@@ -3935,9 +3935,12 @@ pub mod tests {
             cx,
             vec![
                 (dp(2, 32)..dp(2, 35), "active"),
-                (dp(2, 37)..dp(2, 40), "selection"),
+                (
+                    dp(2, 37)..dp(2, 40),
+                    t_static(keys::agent::AGENT_B_SELECTION),
+                ),
                 (dp(2, 37)..dp(2, 40), "match"),
-                (dp(5, 6)..dp(5, 9), "selection"),
+                (dp(5, 6)..dp(5, 9), t_static(keys::agent::AGENT_B_SELECTION)),
                 (dp(5, 6)..dp(5, 9), "match"),
             ],
         );
@@ -3950,10 +3953,13 @@ pub mod tests {
             &search_view,
             cx,
             vec![
-                (dp(2, 32)..dp(2, 35), "selection"),
+                (
+                    dp(2, 32)..dp(2, 35),
+                    t_static(keys::agent::AGENT_B_SELECTION),
+                ),
                 (dp(2, 32)..dp(2, 35), "match"),
                 (dp(2, 37)..dp(2, 40), "active"),
-                (dp(5, 6)..dp(5, 9), "selection"),
+                (dp(5, 6)..dp(5, 9), t_static(keys::agent::AGENT_B_SELECTION)),
                 (dp(5, 6)..dp(5, 9), "match"),
             ],
         );
@@ -3966,9 +3972,15 @@ pub mod tests {
             &search_view,
             cx,
             vec![
-                (dp(2, 32)..dp(2, 35), "selection"),
+                (
+                    dp(2, 32)..dp(2, 35),
+                    t_static(keys::agent::AGENT_B_SELECTION),
+                ),
                 (dp(2, 32)..dp(2, 35), "match"),
-                (dp(2, 37)..dp(2, 40), "selection"),
+                (
+                    dp(2, 37)..dp(2, 40),
+                    t_static(keys::agent::AGENT_B_SELECTION),
+                ),
                 (dp(2, 37)..dp(2, 40), "match"),
                 (dp(5, 6)..dp(5, 9), "active"),
             ],
@@ -3983,9 +3995,12 @@ pub mod tests {
             cx,
             vec![
                 (dp(2, 32)..dp(2, 35), "active"),
-                (dp(2, 37)..dp(2, 40), "selection"),
+                (
+                    dp(2, 37)..dp(2, 40),
+                    t_static(keys::agent::AGENT_B_SELECTION),
+                ),
                 (dp(2, 37)..dp(2, 40), "match"),
-                (dp(5, 6)..dp(5, 9), "selection"),
+                (dp(5, 6)..dp(5, 9), t_static(keys::agent::AGENT_B_SELECTION)),
                 (dp(5, 6)..dp(5, 9), "match"),
             ],
         );
@@ -3998,9 +4013,15 @@ pub mod tests {
             &search_view,
             cx,
             vec![
-                (dp(2, 32)..dp(2, 35), "selection"),
+                (
+                    dp(2, 32)..dp(2, 35),
+                    t_static(keys::agent::AGENT_B_SELECTION),
+                ),
                 (dp(2, 32)..dp(2, 35), "match"),
-                (dp(2, 37)..dp(2, 40), "selection"),
+                (
+                    dp(2, 37)..dp(2, 40),
+                    t_static(keys::agent::AGENT_B_SELECTION),
+                ),
                 (dp(2, 37)..dp(2, 40), "match"),
                 (dp(5, 6)..dp(5, 9), "active"),
             ],
@@ -4014,10 +4035,13 @@ pub mod tests {
             &search_view,
             cx,
             vec![
-                (dp(2, 32)..dp(2, 35), "selection"),
+                (
+                    dp(2, 32)..dp(2, 35),
+                    t_static(keys::agent::AGENT_B_SELECTION),
+                ),
                 (dp(2, 32)..dp(2, 35), "match"),
                 (dp(2, 37)..dp(2, 40), "active"),
-                (dp(5, 6)..dp(5, 9), "selection"),
+                (dp(5, 6)..dp(5, 9), t_static(keys::agent::AGENT_B_SELECTION)),
                 (dp(5, 6)..dp(5, 9), "match"),
             ],
         );

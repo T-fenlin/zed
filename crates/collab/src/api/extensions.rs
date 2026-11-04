@@ -11,6 +11,7 @@ use axum::{
 };
 use cloud_api_types::ExtensionApiManifest;
 use collections::HashMap;
+use i18n::{keys, t_static};
 use semver::Version as SemanticVersion;
 use serde::Deserialize;
 use std::{sync::Arc, time::Duration};
@@ -182,7 +183,9 @@ async fn fetch_extensions_from_blob_store(
                 continue;
             };
             let mut parts = key.split('/');
-            let Some(_) = parts.next().filter(|part| *part == "extensions") else {
+            let Some(_) = parts.next().filter(|part| {
+                *part == t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS)
+            }) else {
                 continue;
             };
             let Some(extension_id) = parts.next() else {

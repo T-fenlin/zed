@@ -174,7 +174,7 @@ pub(crate) enum PromptContextAction {
 impl PromptContextAction {
     pub fn keyword(&self) -> &'static str {
         match self {
-            Self::AddSelections => "selection",
+            Self::AddSelections => t_static(keys::agent::AGENT_B_SELECTION),
         }
     }
 
@@ -258,7 +258,7 @@ impl PromptContextType {
             Self::Thread => "thread",
             Self::Skill => "skill",
             Self::Diagnostics => "diagnostics",
-            Self::BranchDiff => "branch diff",
+            Self::BranchDiff => t_static(keys::agent::AGENT_B_BRANCH_DIFF),
         }
     }
 

@@ -8,6 +8,7 @@ mod v2;
 
 use debug_log::AcpDebugLog;
 pub use debug_log::{AcpDebugMessage, AcpDebugMessageContent, AcpDebugMessageDirection};
+use i18n::{keys, t_static};
 use session_updates::{InboundSessionNotification, InboundSessionUpdate, PendingSessionUpdates};
 pub use terminal_updates::{DecodedTerminalNotification, DecodedTerminalUpdate};
 #[cfg(any(test, feature = "test-support"))]
@@ -1178,7 +1179,9 @@ mod selection_tests {
             release_channel::init("0.0.0".parse().expect("version"), cx);
         });
         cx.executor().allow_parking();
-        let directory = tempfile::tempdir().expect("working directory");
+        let directory = tempfile::tempdir().expect(t_static(
+            keys::settings_ui::SETTINGS_TERMINAL_WORKING_DIRECTORY,
+        ));
         let project = Project::example([directory.path()], &mut cx.to_async()).await;
         let v1 = r#""result":{"protocolVersion":1,"agentCapabilities":{},"agentInfo":{"name":"selected-v1","version":"1"}}"#;
         let v2 = r#""result":{"protocolVersion":2,"info":{"name":"selected-v2","version":"1"},"capabilities":{"session":{}}}"#;
@@ -1284,7 +1287,7 @@ done
                 let project = project.clone();
                 async move |mut cx| {
                     connect(
-                        AgentId::new("selection"),
+                        AgentId::new(t_static(keys::agent::AGENT_B_SELECTION)),
                         project,
                         command,
                         WeakEntity::new_invalid(),

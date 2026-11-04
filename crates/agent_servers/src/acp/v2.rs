@@ -25,6 +25,7 @@ use futures::{
     future::{LocalBoxFuture, Shared},
 };
 use gpui::{App, AppContext as _, AsyncApp, Context, Entity, SharedString, Task, WeakEntity};
+use i18n::{keys, t_static};
 use project::{
     AgentId, AgentServerStore, Project,
     agent_server_store::{AgentServerCommand, AllAgentServersSettings},
@@ -3418,7 +3419,9 @@ mod tests {
             release_channel::init("0.0.0".parse().expect("version"), cx);
         });
         cx.executor().allow_parking();
-        let directory = tempfile::tempdir().expect("working directory");
+        let directory = tempfile::tempdir().expect(t_static(
+            keys::settings_ui::SETTINGS_TERMINAL_WORKING_DIRECTORY,
+        ));
         let project = Project::example([directory.path()], &mut cx.to_async()).await;
         let client = bounded(AcpV2Connection::stdio(
             AgentId::new("receipt-stdio"), project.clone(),
@@ -5554,7 +5557,9 @@ done
             release_channel::init("0.0.0".parse().expect("version"), cx);
         });
         cx.executor().allow_parking();
-        let directory = tempfile::tempdir().expect("working directory");
+        let directory = tempfile::tempdir().expect(t_static(
+            keys::settings_ui::SETTINGS_TERMINAL_WORKING_DIRECTORY,
+        ));
         let project = Project::example([directory.path()], &mut cx.to_async()).await;
         let command = AgentServerCommand {
             path: "/bin/sh".into(),
@@ -5619,7 +5624,9 @@ done
             release_channel::init("0.0.0".parse().expect("version"), cx);
         });
         cx.executor().allow_parking();
-        let directory = tempfile::tempdir().expect("working directory");
+        let directory = tempfile::tempdir().expect(t_static(
+            keys::settings_ui::SETTINGS_TERMINAL_WORKING_DIRECTORY,
+        ));
         let project = Project::example([directory.path()], &mut cx.to_async()).await;
         let command = AgentServerCommand {
             path: "/bin/sh".into(),
@@ -5722,7 +5729,9 @@ done
             release_channel::init("0.0.0".parse().expect("version"), cx);
         });
         cx.executor().allow_parking();
-        let directory = tempfile::tempdir().expect("working directory");
+        let directory = tempfile::tempdir().expect(t_static(
+            keys::settings_ui::SETTINGS_TERMINAL_WORKING_DIRECTORY,
+        ));
         let project = Project::example([directory.path()], &mut cx.to_async()).await;
         let command = AgentServerCommand {
             path: "/bin/sh".into(),
@@ -7578,7 +7587,9 @@ done
             release_channel::init("0.0.0".parse().expect("version"), cx);
         });
         cx.executor().allow_parking();
-        let directory = tempfile::tempdir().expect("working directory");
+        let directory = tempfile::tempdir().expect(t_static(
+            keys::settings_ui::SETTINGS_TERMINAL_WORKING_DIRECTORY,
+        ));
         let project = Project::example([directory.path()], &mut cx.to_async()).await;
         for quitting in [false, true] {
             let client = bounded(
@@ -7706,7 +7717,9 @@ exec sleep 60
             release_channel::init("0.0.0".parse().expect("version"), cx);
         });
         cx.executor().allow_parking();
-        let directory = tempfile::tempdir().expect("working directory");
+        let directory = tempfile::tempdir().expect(t_static(
+            keys::settings_ui::SETTINGS_TERMINAL_WORKING_DIRECTORY,
+        ));
         let project = Project::example([directory.path()], &mut cx.to_async()).await;
         for (response, expected) in [
             (
@@ -7796,7 +7809,9 @@ exec sleep 60
             release_channel::init("0.0.0".parse().expect("version"), cx);
         });
         cx.executor().allow_parking();
-        let directory = tempfile::tempdir().expect("working directory");
+        let directory = tempfile::tempdir().expect(t_static(
+            keys::settings_ui::SETTINGS_TERMINAL_WORKING_DIRECTORY,
+        ));
         let project = Project::example([directory.path()], &mut cx.to_async()).await;
         let command = AgentServerCommand {
             path: "/bin/sh".into(),

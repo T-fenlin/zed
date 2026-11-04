@@ -1241,7 +1241,7 @@ fn auto_resolve_permission_outcome(
 
 #[derive(Debug, thiserror::Error)]
 enum CompletionError {
-    #[error("max tokens")]
+    #[error(t_static(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_TOKENS))]
     MaxTokens,
     #[error("refusal")]
     Refusal,

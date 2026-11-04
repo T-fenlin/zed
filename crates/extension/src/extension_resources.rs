@@ -1,3 +1,4 @@
+use i18n::{keys, t_static};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -133,7 +134,9 @@ pub async fn copy_extension_resources(
     }
 
     if !manifest.languages.is_empty() {
-        let output_languages_dir = output_dir.join("languages");
+        let output_languages_dir = output_dir.join(t_static(
+            keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES,
+        ));
         create_dir(fs.as_ref(), &output_languages_dir).await?;
         futures::future::try_join_all(manifest.languages.iter().map(|language_path| {
             let fs = fs.clone();

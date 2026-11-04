@@ -717,22 +717,25 @@ impl Render for AgentDiffPane {
                         .gap_2()
                         .child(t(keys::agent::AGENT_DIFF_NO_CHANGES))
                         .child(
-                            Button::new("continue-iterating", "Continue Iterating")
-                                .style(ButtonStyle::Filled)
-                                .start_icon(
-                                    Icon::new(IconName::ForwardArrow)
-                                        .size(IconSize::Small)
-                                        .color(Color::Muted),
-                                )
-                                .full_width()
-                                .key_binding(KeyBinding::for_action_in(
-                                    &ToggleFocus,
-                                    &focus_handle.clone(),
-                                    cx,
-                                ))
-                                .on_click(|_event, window, cx| {
-                                    window.dispatch_action(ToggleFocus.boxed_clone(), cx)
-                                }),
+                            Button::new(
+                                "continue-iterating",
+                                t_static(keys::agent::AGENT_DIFF_CONTINUE),
+                            )
+                            .style(ButtonStyle::Filled)
+                            .start_icon(
+                                Icon::new(IconName::ForwardArrow)
+                                    .size(IconSize::Small)
+                                    .color(Color::Muted),
+                            )
+                            .full_width()
+                            .key_binding(KeyBinding::for_action_in(
+                                &ToggleFocus,
+                                &focus_handle.clone(),
+                                cx,
+                            ))
+                            .on_click(|_event, window, cx| {
+                                window.dispatch_action(ToggleFocus.boxed_clone(), cx)
+                            }),
                         ),
                 )
             })
@@ -911,7 +914,7 @@ fn render_diff_hunk_controls(
                             let focus_handle = editor.focus_handle(cx);
                             move |_window, cx| {
                                 Tooltip::for_action_in(
-                                    "Previous Hunk",
+                                    t_static(keys::agent::AGENT_DIFF_PREVIOUS_HUNK),
                                     &GoToPreviousHunk,
                                     &focus_handle,
                                     cx,
@@ -1081,7 +1084,7 @@ impl Render for AgentDiffToolbar {
         let spinner_icon = div()
             .px_0p5()
             .id("generating")
-            .tooltip(Tooltip::text("Generating Changes…"))
+            .tooltip(Tooltip::text(t_static(keys::agent::AGENT_DIFF_GENERATING)))
             .child(
                 Icon::new(IconName::LoadCircle)
                     .size(IconSize::Small)
@@ -1110,7 +1113,7 @@ impl Render for AgentDiffToolbar {
                                 IconButton::new("hunk-up", IconName::ArrowUp)
                                     .icon_size(IconSize::Small)
                                     .tooltip(Tooltip::for_action_title_in(
-                                        "Previous Hunk",
+                                        t_static(keys::agent::AGENT_DIFF_PREVIOUS_HUNK),
                                         &GoToPreviousHunk,
                                         &editor_focus_handle,
                                     ))
@@ -1129,7 +1132,7 @@ impl Render for AgentDiffToolbar {
                                 IconButton::new("hunk-down", IconName::ArrowDown)
                                     .icon_size(IconSize::Small)
                                     .tooltip(Tooltip::for_action_title_in(
-                                        "Next Hunk",
+                                        t_static(keys::agent::AGENT_DIFF_NEXT_HUNK),
                                         &GoToHunk,
                                         &editor_focus_handle,
                                     ))
@@ -1190,7 +1193,7 @@ impl Render for AgentDiffToolbar {
                             IconButton::new("review", IconName::ListTodo)
                                 .icon_size(IconSize::Small)
                                 .tooltip(Tooltip::for_action_title_in(
-                                    "Review All Files",
+                                    t_static(keys::agent::AGENT_DIFF_REVIEW_ALL_FILES),
                                     &OpenAgentDiff,
                                     &editor_focus_handle,
                                 ))

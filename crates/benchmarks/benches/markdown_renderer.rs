@@ -2,6 +2,7 @@ use benchmarks::bench_utils::random_rust_file;
 use gpui::{
     AppContext as _, BenchAppContext, Context, Entity, IntoElement, Render, SharedString, Window,
 };
+use i18n::{keys, t_static};
 use language::LanguageRegistry;
 use markdown::{
     CodeBlockRenderer, CopyButtonVisibility, Markdown, MarkdownElement, MarkdownFont,
@@ -276,7 +277,7 @@ fn random_word(rng: &mut StdRng) -> &'static str {
         "paragraph",
         "heading",
         "table",
-        "selection",
+        t_static(keys::agent::AGENT_B_SELECTION),
         "syntax",
         "highlight",
         "window",

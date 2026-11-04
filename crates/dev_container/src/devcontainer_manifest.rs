@@ -1,3 +1,4 @@
+use i18n::{keys, t_static};
 use std::{
     collections::HashMap,
     fmt::Debug,
@@ -4564,13 +4565,13 @@ mod test {
 
               "customizations": {
                 "vscode": {
-                  "extensions": [
+                  t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
                     "dbaeumer.vscode-eslint",
                     "GitHub.vscode-pull-request-github",
                   ],
                 },
                 "zed": {
-                  "extensions": ["vue", "ruby"],
+                  t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): ["vue", "ruby"],
                 },
                 "codespaces": {
                   "repositories": {
@@ -6283,13 +6284,13 @@ ENV DOCKER_BUILDKIT=1
 
               "customizations": {
                 "vscode": {
-                  "extensions": [
+                  t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
                     "dbaeumer.vscode-eslint",
                     "GitHub.vscode-pull-request-github",
                   ],
                 },
                 "zed": {
-                  "extensions": ["vue", "ruby"],
+                  t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): ["vue", "ruby"],
                 },
                 "codespaces": {
                   "repositories": {
@@ -7940,7 +7941,7 @@ RUN echo $RUBY_VERSION2
                           },
                           "customizations": {
                             "vscode": {
-                              "extensions": [
+                              t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
                                 "ms-azuretools.vscode-containers"
                               ],
                               "settings": {
@@ -9057,7 +9058,7 @@ RUN echo $RUBY_VERSION2
                             "init": true,
                             "customizations": {
                                 "vscode": {
-                                    "extensions": [
+                                    t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
                                         "golang.Go"
                                     ],
                                     "settings": {
@@ -9503,7 +9504,7 @@ RUN echo $RUBY_VERSION2
     },
     "customizations": {
         "vscode": {
-            "extensions": [
+            t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
                 "AmazonWebServices.aws-toolkit-vscode"
             ],
             "settings": {

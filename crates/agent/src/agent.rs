@@ -7032,7 +7032,9 @@ mod internal_tests {
         assert!(!project.matches_scope(""));
         // An unrelated worktree name (or MCP server name) must not
         // match a project skill from a different worktree.
-        assert!(!project.matches_scope("extensions"));
+        assert!(!project.matches_scope(t_static(
+            keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS
+        )));
 
         // A worktree literally named `global` is no longer ambiguous
         // with the global source: its skills are invoked as

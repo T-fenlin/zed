@@ -611,7 +611,7 @@ impl Render for ThreadImportModal {
                                                 .color(Color::Muted)
                                                 .with_rotate_animation(3),
                                         )
-                                        .child(Label::new("Fetching Agent Threads…")
+                                        .child(Label::new(t_static(keys::agent::AGENT_IMPORT_FETCHING_THREADS))
                                             .size(LabelSize::Small)
                                             .color(Color::Muted))
 

@@ -1946,7 +1946,7 @@ mod tests {
         ] {
             let mut text = format!(
                 r#"// "disabled_globs": ["commented/**"]
-{{"languages":{{"Rust":{{"disabled_globs":["nested/**"]}}}},
+{{t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES):{{"Rust":{{"disabled_globs":["nested/**"]}}}},
 /* "disabled_globs": ["commented/**"] */
 "edit_predictions":{{"disabled_globs":[{contents}],"mode":"subtle"}}}}"#
             );

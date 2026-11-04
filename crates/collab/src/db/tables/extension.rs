@@ -1,8 +1,9 @@
 use crate::db::ExtensionId;
+use i18n::{keys, t_static};
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
-#[sea_orm(table_name = "extensions")]
+#[sea_orm(table_name = t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS))]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: ExtensionId,

@@ -3,6 +3,7 @@ use anyhow::{Context as _, Result, anyhow};
 use collections::HashMap;
 use fs::Fs;
 use gpui::Rgba;
+use i18n::{keys, t_static};
 use paths::{cursor_settings_file_paths, vscode_settings_file_paths};
 use serde::Deserialize;
 use serde_json::{Map, Value};
@@ -328,7 +329,7 @@ impl VsCodeSettings {
                 "editor.find.seedSearchStringFromSelection",
                 |s| match s {
                     "always" => Some(SeedQuerySetting::Always),
-                    "selection" => Some(SeedQuerySetting::Selection),
+                    t_static(keys::agent::AGENT_B_SELECTION) => Some(SeedQuerySetting::Selection),
                     "never" => Some(SeedQuerySetting::Never),
                     _ => None,
                 },
@@ -633,7 +634,7 @@ impl VsCodeSettings {
                 Some(match s {
                     "boundary" => ShowWhitespaceSetting::Boundary,
                     "trailing" => ShowWhitespaceSetting::Trailing,
-                    "selection" => ShowWhitespaceSetting::Selection,
+                    t_static(keys::agent::AGENT_B_SELECTION) => ShowWhitespaceSetting::Selection,
                     "all" => ShowWhitespaceSetting::All,
                     _ => ShowWhitespaceSetting::None,
                 })

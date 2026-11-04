@@ -3445,7 +3445,11 @@ impl ActionArgumentsEditor {
             editor.set_text(arguments, window, cx);
         } else {
             // TODO: default value from schema?
-            editor.set_placeholder_text("Action Arguments", window, cx);
+            editor.set_placeholder_text(
+                t_static(keys::keymap::KEYMAP_ACTION_ARGUMENTS_PLACEHOLDER),
+                window,
+                cx,
+            );
         }
     }
 

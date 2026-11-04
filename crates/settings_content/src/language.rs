@@ -1,3 +1,4 @@
+use i18n::{keys, t_static};
 use std::{borrow::Cow, num::NonZeroU32};
 
 use collections::{HashMap, HashSet};
@@ -712,7 +713,7 @@ pub struct LanguageSettingsContent {
     /// ```json
     /// {
     ///   "edit_predictions_disabled_in": ["comment"],
-    ///   "languages": {
+    ///   t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
     ///     "Go": {
     ///       "edit_predictions_disabled_in": ["string", "..."]
     ///     }

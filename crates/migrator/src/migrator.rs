@@ -15,6 +15,7 @@
 //! You only need to write replacement logic for x-1 to x because you can be certain that, internally, every user will be at x-1, regardless of their on disk state.
 
 use anyhow::{Context as _, Result};
+use i18n::{keys, t_static};
 use settings_json::{infer_json_indent_size, parse_json_with_comments, update_value_in_json_text};
 use std::{cmp::Reverse, ops::Range, sync::LazyLock};
 use streaming_iterator::StreamingIterator;
@@ -738,7 +739,7 @@ mod tests {
         assert_migrate_settings(
             r#"
                 {
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "Astro": {
                             "show_inline_completions": true
                         }
@@ -748,7 +749,7 @@ mod tests {
             Some(
                 r#"
                 {
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "Astro": {
                             "show_edit_predictions": true
                         }
@@ -764,7 +765,7 @@ mod tests {
         assert_migrate_settings(
             r#"
                 {
-                    "scrollbar": {
+                    t_static(keys::settings_ui::SETTINGS_TERMINAL_SECTION_SCROLLBAR): {
                         "diagnostics": true
                     },
                     "chat_panel": {
@@ -775,7 +776,7 @@ mod tests {
             Some(
                 r#"
                 {
-                    "scrollbar": {
+                    t_static(keys::settings_ui::SETTINGS_TERMINAL_SECTION_SCROLLBAR): {
                         "diagnostics": "all"
                     },
                     "chat_panel": {
@@ -1396,7 +1397,7 @@ mod tests {
         assert_migrate_settings(
             indoc! {r#"
                 {
-                  "languages": {
+                  t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                       "formatter": [
                         {
@@ -1430,7 +1431,7 @@ mod tests {
                 }"#},
             Some(indoc! {r#"
                 {
-                  "languages": {
+                  t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                       "formatter": [
                         {
@@ -1472,7 +1473,7 @@ mod tests {
                       "default-4": true,
                     }
                   },
-                  "languages": {
+                  t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                       "formatter": [
                         {
@@ -1542,7 +1543,7 @@ mod tests {
                       "code_action": "default-4"
                     }
                   ],
-                  "languages": {
+                  t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                       "formatter": [
                         {
@@ -1623,7 +1624,7 @@ mod tests {
                       }
                     },
                   ],
-                  "languages": {
+                  t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                       "format_on_save": "prettier",
                       "formatter": [
@@ -1717,7 +1718,7 @@ mod tests {
                       "code_action": "included-4"
                     }
                   ],
-                  "languages": {
+                  t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                       "format_on_save": "prettier",
                       "formatter": [
@@ -1838,7 +1839,7 @@ mod tests {
             )],
             indoc! {r#"
                 {
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "Rust": {
                             "format_on_save": "rust-analyzer"
                         },
@@ -1849,7 +1850,7 @@ mod tests {
                 }"#},
             Some(indoc! {r#"
                 {
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "Rust": {
                             "formatter": "rust-analyzer",
                             "format_on_save": "on"
@@ -1875,7 +1876,7 @@ mod tests {
             indoc! {r#"
                 {
                     "format_on_save": "prettier",
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "Rust": {
                             "format_on_save": "rust-analyzer"
                         },
@@ -1888,7 +1889,7 @@ mod tests {
                 {
                     "formatter": "prettier",
                     "format_on_save": "on",
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "Rust": {
                             "formatter": "rust-analyzer",
                             "format_on_save": "on"
@@ -2593,7 +2594,7 @@ mod tests {
             indoc! {r#"
                 {
                     "auto_indent": true,
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "Python": {
                             "auto_indent": false
                         }
@@ -2602,7 +2603,7 @@ mod tests {
             Some(indoc! {r#"
                 {
                     "auto_indent": "syntax_aware",
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "Python": {
                             "auto_indent": "none"
                         }

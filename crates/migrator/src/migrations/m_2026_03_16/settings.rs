@@ -1,3 +1,4 @@
+use i18n::{keys, t_static};
 use std::ops::Range;
 use tree_sitter::{Query, QueryMatch};
 
@@ -34,7 +35,11 @@ fn is_heex_settings(contents: &str, mat: &QueryMatch, query: &Query) -> bool {
         Some(node) => node.byte_range(),
         None => return false,
     };
-    if contents.get(parent_range) != Some("languages") {
+    if contents.get(parent_range)
+        != Some(t_static(
+            keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES,
+        ))
+    {
         return false;
     }
 

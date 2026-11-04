@@ -4923,7 +4923,9 @@ impl ThreadView {
                 IconButton::new("dismiss-plan", IconName::Close)
                     .icon_size(IconSize::XSmall)
                     .shape(ui::IconButtonShape::Square)
-                    .tooltip(Tooltip::text("Clear Plan"))
+                    .tooltip(Tooltip::text(t_static(
+                        keys::agent::AGENT_THREAD_CLEAR_PLAN,
+                    )))
                     .on_click(cx.listener(|this, _, _, cx| {
                         this.thread.update(cx, |thread, cx| thread.clear_plan(cx));
                         cx.stop_propagation();
@@ -5029,11 +5031,21 @@ impl ThreadView {
 
         let id = format!("context-compaction-{entry_ix}");
         let header_label = match &compaction.status {
-            acp_thread::ContextCompactionStatus::InProgress => "Compacting Context…",
-            acp_thread::ContextCompactionStatus::Completed => "Context Compacted",
-            acp_thread::ContextCompactionStatus::Failed => "Compaction Failed",
-            acp_thread::ContextCompactionStatus::Canceled => "Compaction Canceled",
-            acp_thread::ContextCompactionStatus::Other(_) => "Context Compaction",
+            acp_thread::ContextCompactionStatus::InProgress => {
+                t_static(keys::agent::AGENT_THREAD_COMPACTING)
+            }
+            acp_thread::ContextCompactionStatus::Completed => {
+                t_static(keys::agent::AGENT_THREAD_COMPACTED)
+            }
+            acp_thread::ContextCompactionStatus::Failed => {
+                t_static(keys::agent::AGENT_THREAD_COMPACTION_FAILED)
+            }
+            acp_thread::ContextCompactionStatus::Canceled => {
+                t_static(keys::agent::AGENT_THREAD_COMPACTION_CANCELED)
+            }
+            acp_thread::ContextCompactionStatus::Other(_) => {
+                t_static(keys::agent::AGENT_THREAD_COMPACTION)
+            }
         };
         let chevron_end = if is_expanded {
             IconName::ChevronUp

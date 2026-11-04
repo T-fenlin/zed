@@ -1,4 +1,5 @@
 use anyhow::Result;
+use i18n::{keys, t_static};
 use serde_json::Value;
 use settings_content::{PlatformOverrides, ReleaseChannelOverrides};
 
@@ -62,12 +63,18 @@ pub(crate) fn migrate_language_setting(
         migrate_fn(value, prefix)?;
         let languages = value
             .as_object_mut()
-            .and_then(|obj| obj.get_mut("languages"))
+            .and_then(|obj| {
+                obj.get_mut(t_static(
+                    keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES,
+                ))
+            })
             .and_then(|languages| languages.as_object_mut());
         if let Some(languages) = languages {
             for (language_name, language) in languages.iter_mut() {
                 let mut path: Vec<&str> = prefix.to_vec();
-                path.push("languages");
+                path.push(t_static(
+                    keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES,
+                ));
                 path.push(language_name);
                 migrate_fn(language, &path)?;
             }

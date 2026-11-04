@@ -520,7 +520,10 @@ impl MessageEditor {
                             Box::new(editor::actions::Copy),
                         )
                         .action("Paste", Box::new(editor::actions::Paste))
-                        .action("Paste as Plain Text", Box::new(PasteRaw))
+                        .action(
+                            t_static(keys::agent::AGENT_B_PASTE_PLAIN_TEXT),
+                            Box::new(PasteRaw),
+                        )
                 }))
             });
 
@@ -1661,7 +1664,7 @@ impl MessageEditor {
             files: true,
             directories: false,
             multiple: true,
-            prompt: Some("Select Images".into()),
+            prompt: Some(t_static(keys::agent::AGENT_B_SELECT_IMAGES).into()),
         });
 
         window
@@ -4678,7 +4681,8 @@ mod tests {
         let source_text = "selection needs work\nselection looks fine";
         let first_range = 0..9;
         let second_start = "selection needs work\n".len();
-        let second_range = second_start..(second_start + "selection".len());
+        let second_range =
+            second_start..(second_start + t_static(keys::agent::AGENT_B_SELECTION).len());
         let first_uri = MentionUri::Selection {
             abs_path: Some(path!("/project/file.rs").into()),
             line_range: 0..=1,
@@ -4840,7 +4844,8 @@ mod tests {
         let source_text = "selection needs work\nselection looks fine";
         let first_range = 0..9;
         let second_start = "selection needs work\n".len();
-        let second_range = second_start..(second_start + "selection".len());
+        let second_range =
+            second_start..(second_start + t_static(keys::agent::AGENT_B_SELECTION).len());
         let first_uri = MentionUri::Selection {
             abs_path: Some(path!("/project/file.rs").into()),
             line_range: 0..=1,
@@ -5031,7 +5036,10 @@ mod tests {
         for block in &blocks {
             if let acp_v2::ContentBlock::Text(text) = block {
                 assert!(
-                    !text.text.split_whitespace().any(|word| word == "selection"),
+                    !text
+                        .text
+                        .split_whitespace()
+                        .any(|word| word == t_static(keys::agent::AGENT_B_SELECTION)),
                     "text block must not contain bare fold placeholder: {:?}",
                     text.text
                 );

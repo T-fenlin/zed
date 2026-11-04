@@ -9,6 +9,7 @@ use futures::{
 use gpui::{
     App, AppContext, AsyncApp, BorrowAppContext, Entity, Global, SharedString, Task, UpdateGlobal,
 };
+use i18n::{keys, t_static};
 
 use paths::{local_settings_file_relative_path, task_file_name};
 use schemars::{JsonSchema, json_schema};
@@ -2014,7 +2015,7 @@ mod tests {
         check_settings_update(
             &mut store,
             r#"{
-                "languages": {
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "JSON": {
                         "auto_indent": "syntax_aware"
                     }
@@ -2037,7 +2038,7 @@ mod tests {
                 );
             },
             r#"{
-                "languages": {
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                         "auto_indent": "syntax_aware"
                     },
@@ -2054,7 +2055,7 @@ mod tests {
         check_settings_update(
             &mut store,
             r#"{
-                "languages": {
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                         "language_setting_2": true
                     },
@@ -2068,7 +2069,7 @@ mod tests {
                 settings.languages_mut().remove("JSON").unwrap();
             },
             r#"{
-                "languages": {
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                         "language_setting_2": true
                     }
@@ -2081,7 +2082,7 @@ mod tests {
         check_settings_update(
             &mut store,
             r#"{
-                "languages": {
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "Rust": {
                         "language_setting_2": true
                     },
@@ -2095,7 +2096,7 @@ mod tests {
                 settings.languages_mut().remove("Rust").unwrap();
             },
             r#"{
-                "languages": {
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "JSON": {
                         "language_setting_1": false
                     }

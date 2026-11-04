@@ -9,6 +9,7 @@
 
 mod component_layout;
 
+use i18n::{keys, t_static};
 use std::sync::LazyLock;
 
 pub use component_layout::*;
@@ -267,7 +268,7 @@ pub trait Component {
 /// Defaults to [`Live`](ComponentStatus::Live).
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Display, EnumString)]
 pub enum ComponentStatus {
-    #[strum(serialize = "Work In Progress")]
+    #[strum(serialize = t_static(keys::extensions::EXTENSIONS_WORK_IN_PROGRESS))]
     WorkInProgress,
     #[strum(serialize = "Ready To Build")]
     EngineeringReady,

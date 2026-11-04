@@ -1,5 +1,6 @@
 use criterion::{BatchSize, BenchmarkId, Criterion, criterion_group, criterion_main};
 use fuzzy::CharBag;
+use i18n::{keys, t_static};
 use path::{PathStyle, rel_path::RelPath};
 use std::sync::atomic::AtomicBool;
 
@@ -99,7 +100,7 @@ const QUERY_WORDS: &[&str] = &[
     "workspace",
     "settings",
     "terminal",
-    "breadcrumbs",
+    t_static(keys::settings_ui::SETTINGS_TERMINAL_BREADCRUMBS),
     "git_blame",
     "fixtures",
     "schema",

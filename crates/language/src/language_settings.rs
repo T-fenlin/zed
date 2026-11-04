@@ -12,6 +12,7 @@ use ec4rs::{
 };
 use globset::{Glob, GlobMatcher, GlobSet, GlobSetBuilder};
 use gpui::{App, Modifiers, SharedString};
+use i18n::{keys, t_static};
 use itertools::Itertools;
 use settings::{DelayMs, DocumentFoldingRanges, DocumentSymbols, IntoGpui, SemanticTokens};
 
@@ -1157,7 +1158,7 @@ mod tests {
                 .set_user_settings(
                     &serde_json::json!({
                         "edit_predictions_disabled_in": ["comment"],
-                        "languages": {"Rust": language_settings},
+                        t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"Rust": language_settings},
                     })
                     .to_string(),
                     cx,
@@ -1215,7 +1216,7 @@ mod tests {
         ] {
             for language_specific in [false, true] {
                 let content = if language_specific {
-                    serde_json::json!({"languages": {"Rust": overrides}})
+                    serde_json::json!({t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"Rust": overrides}})
                 } else {
                     overrides.clone()
                 };
@@ -1791,7 +1792,7 @@ mod tests {
                     root.clone(),
                     LocalSettingsKind::Settings,
                     Some(
-                        r#"{"languages": {"TypeScript": {"language_servers": ["vtsls", "..."]}}}"#,
+                        r#"{t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"TypeScript": {"language_servers": ["vtsls", "..."]}}}"#,
                     ),
                     cx,
                 )
@@ -1811,7 +1812,7 @@ mod tests {
                 .set_user_settings(
                     r#"{
                         "language_servers": ["!vtsls", "..."],
-                        "languages": {"TypeScript": {"language_servers": ["vtsls", "..."]}}
+                        t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"TypeScript": {"language_servers": ["vtsls", "..."]}}
                     }"#,
                     cx,
                 )
@@ -1848,7 +1849,7 @@ mod tests {
 
             store
                 .set_user_settings(
-                    r#"{"languages": {"JavaScript": {"language_servers": ["!vtsls", "..."]}}}"#,
+                    r#"{t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"JavaScript": {"language_servers": ["!vtsls", "..."]}}}"#,
                     cx,
                 )
                 .unwrap();
@@ -1857,7 +1858,7 @@ mod tests {
                     worktree_id,
                     root,
                     LocalSettingsKind::Settings,
-                    Some(r#"{"languages": {"JavaScript": {"language_servers": ["..."]}}}"#),
+                    Some(r#"{t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"JavaScript": {"language_servers": ["..."]}}}"#),
                     cx,
                 )
                 .unwrap();
@@ -1951,7 +1952,7 @@ mod tests {
                 .set_user_settings(
                     r#"{
                         "language_servers": ["!eslint", "..."],
-                        "languages": {"TypeScript": {"language_servers": ["vtsls", "..."]}}
+                        t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"TypeScript": {"language_servers": ["vtsls", "..."]}}
                     }"#,
                     cx,
                 )
@@ -1971,7 +1972,7 @@ mod tests {
             // exclusions.
             store
                 .set_user_settings(
-                    r#"{"languages": {"TypeScript": {"language_servers": ["!typescript-language-server", "!vtsls", "..."]}}}"#,
+                    r#"{t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"TypeScript": {"language_servers": ["!typescript-language-server", "!vtsls", "..."]}}}"#,
                     cx,
                 )
                 .unwrap();
@@ -1982,7 +1983,7 @@ mod tests {
             );
             store
                 .set_user_settings(
-                    r#"{"languages": {"TypeScript": {"language_servers": ["!vtsls", "..."]}}}"#,
+                    r#"{t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"TypeScript": {"language_servers": ["!vtsls", "..."]}}}"#,
                     cx,
                 )
                 .unwrap();
@@ -1994,7 +1995,7 @@ mod tests {
 
             store
                 .set_user_settings(
-                    r#"{"languages": {"TypeScript": {"language_servers": ["eslint"]}}}"#,
+                    r#"{t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"TypeScript": {"language_servers": ["eslint"]}}}"#,
                     cx,
                 )
                 .unwrap();

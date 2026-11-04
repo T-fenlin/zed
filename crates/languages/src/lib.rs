@@ -1,5 +1,6 @@
 use futures::FutureExt as _;
 use gpui::{App, SharedString, UpdateGlobal};
+use i18n::{keys, t_static};
 use node_runtime::NodeRuntime;
 use project::Fs;
 use python::PyprojectTomlManifestProvider;
@@ -248,7 +249,7 @@ pub fn init(languages: Arc<LanguageRegistry>, fs: Arc<dyn Fs>, node: NodeRuntime
     //
     // ```json
     // {
-    //   "languages": {
+    //   t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
     //     "My Language": {
     //       "language_servers": ["tailwindcss-language-server", "..."]
     //     }

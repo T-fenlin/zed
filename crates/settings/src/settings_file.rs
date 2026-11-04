@@ -3,6 +3,7 @@ use collections::HashSet;
 use fs::{Fs, PathEventKind};
 use futures::{StreamExt, channel::mpsc};
 use gpui::{App, BackgroundExecutor, ReadGlobal};
+use i18n::{keys, t_static};
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
 #[cfg(test)]
@@ -119,7 +120,9 @@ pub fn visual_test_settings() -> String {
         }),
         &mut value,
     );
-    value.as_object_mut().unwrap().remove("languages");
+    value.as_object_mut().unwrap().remove(t_static(
+        keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES,
+    ));
     serde_json::to_string(&value).unwrap()
 }
 
@@ -162,7 +165,9 @@ pub fn test_settings() -> &'static str {
             }),
             &mut value,
         );
-        value.as_object_mut().unwrap().remove("languages");
+        value.as_object_mut().unwrap().remove(t_static(
+            keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES,
+        ));
         serde_json::to_string(&value).unwrap()
     });
     &CACHED

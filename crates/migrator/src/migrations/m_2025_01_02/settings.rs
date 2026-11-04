@@ -1,4 +1,5 @@
 use collections::HashMap;
+use i18n::{keys, t_static};
 use std::{ops::Range, sync::LazyLock};
 use tree_sitter::{Query, QueryMatch};
 
@@ -55,7 +56,10 @@ static UPDATED_SETTINGS: LazyLock<HashMap<(&str, &str), Vec<(&str, &str)>>> = La
             vec![("true", "\"always\""), ("false", "\"never\"")],
         ),
         (
-            ("scrollbar", "diagnostics"),
+            (
+                t_static(keys::settings_ui::SETTINGS_TERMINAL_SECTION_SCROLLBAR),
+                "diagnostics",
+            ),
             vec![("true", "\"all\""), ("false", "\"none\"")],
         ),
     ])

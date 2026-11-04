@@ -5,6 +5,7 @@ pub(crate) mod memory_view;
 pub(crate) mod module_list;
 pub mod stack_frame_list;
 pub mod variable_list;
+use i18n::{keys, t_static};
 use std::{
     any::Any,
     path::PathBuf,
@@ -1369,7 +1370,7 @@ impl RunningState {
             .clone()
             .filter(|title| !title.is_empty())
             .or_else(|| command.clone())
-            .unwrap_or_else(|| "Debug terminal".to_string());
+            .unwrap_or_else(|| t_static(keys::debugger::DEBUGGER_DEBUG_TERMINAL).to_string());
         let kind = task::SpawnInTerminal {
             id: task::TaskId("debug".to_string()),
             full_label: title.clone(),

@@ -1,3 +1,4 @@
+use i18n::{keys, t_static};
 use std::{
     borrow::Cow,
     path::{Path, PathBuf},
@@ -999,7 +1000,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
         "lsp": {
             "the-fake-language-server": {
                 "initialization_options": {
-                    "languages": ["user-lang"],
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): ["user-lang"],
                     "userOnly": true,
                 },
             },
@@ -1038,7 +1039,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
                 "globalPlugins": ["shared-plugin", plugin],
                 "maxMemory": memory,
             },
-            "languages": [lang],
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): [lang],
         });
         language_registry.register_fake_lsp_adapter(
             language,
@@ -1066,7 +1067,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
                 "tsserver": {
                     "globalPlugins": ["default-plugin"],
                 },
-                "languages": ["default-lang"],
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): ["default-lang"],
             })),
             initializer: Some(Box::new({
                 let sent_initialization_options = sent_initialization_options.clone();
@@ -1105,7 +1106,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
                 "globalPlugins": ["default-plugin", "shared-plugin", "astro-plugin", "vue-plugin"],
                 "maxMemory": 4096,
             },
-            "languages": ["user-lang"],
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): ["user-lang"],
             "userOnly": true,
         })),
     );
@@ -1116,7 +1117,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
                 "globalPlugins": ["shared-plugin", "astro-plugin", "vue-plugin"],
                 "maxMemory": 4096,
             },
-            "languages": ["astro", "vue"],
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): ["astro", "vue"],
         }),
     );
 }

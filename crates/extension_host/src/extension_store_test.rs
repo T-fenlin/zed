@@ -27,6 +27,7 @@ use gpui::{
     TestAppContext,
 };
 use http_client::{FakeHttpClient, Response};
+use i18n::{keys, t_static};
 use language::{
     BinaryStatus, LanguageConfig, LanguageMatcher, LanguageName, LanguageRegistry, QueryFiles,
 };
@@ -336,7 +337,7 @@ async fn test_extension_store(cx: &mut TestAppContext) {
                             "ruby": "grammars/ruby.wasm",
                             "embedded_template": "grammars/embedded_template.wasm"
                         },
-                        "languages": {
+                        t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                             "ruby": "languages/ruby",
                             "erb": "languages/erb"
                         }
@@ -345,7 +346,7 @@ async fn test_extension_store(cx: &mut TestAppContext) {
                         "ruby.wasm": "",
                         "embedded_template.wasm": "",
                     },
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "ruby": {
                             "config.toml": r#"
                                 name = "Ruby"
@@ -799,7 +800,11 @@ async fn test_extension_store_with_test_extension(cx: &mut TestAppContext) {
     let root_dir = util::dev_repo_root().expect("test extension requires a repository checkout");
     let cache_dir = root_dir.join("target");
     let test_extension_id = "test-extension";
-    let test_extension_dir = root_dir.join("extensions").join(test_extension_id);
+    let test_extension_dir = root_dir
+        .join(t_static(
+            keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS,
+        ))
+        .join(test_extension_id);
 
     let fs = RealFs::new(None, cx.executor());
     let extensions_tree = TempTree::new(json!({
@@ -1661,7 +1666,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "foo": {
                     "config.toml": r#"
 name = "Foo"
@@ -1781,7 +1786,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "foo": {
                     "config.toml": "name = \"Foo\"\ngrammar = \"foo\"\npath_suffixes = [\"foo\"]\n"
                 }
@@ -1927,7 +1932,7 @@ async fn test_headless_sync_uninstall_failure_does_not_block_other_extensions(
             "extension.toml": format!(
                 "id = \"{id}\"\nname = \"{id}\"\nversion = \"1.0.0\"\nschema_version = 1\nlanguages = [\"languages/lang\"]\n"
             ),
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "lang": {
                     "config.toml": format!(
                         "name = \"{id}-lang\"\ngrammar = \"{id}\"\npath_suffixes = [\"{id}\"]\n"
@@ -2371,7 +2376,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/shared"]
 "#,
-                "languages": {
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "shared": {
                         "config.toml": "name = \"Shared\"\ngrammar = \"shared\"\npath_suffixes = [\"shared\"]\n"
                     }
@@ -2385,7 +2390,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo"]
 "#,
-                "languages": {
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "foo": {
                         "config.toml": "name = \"Foo\"\ngrammar = \"foo\"\npath_suffixes = [\"foo\"]\n"
                     }
@@ -2500,7 +2505,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo", "languages/bar"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "foo": {
                     "config.toml": "name = \"Foo\"\ngrammar = \"foo\"\npath_suffixes = [\"foo\"]\n"
                 },
@@ -2593,7 +2598,7 @@ async fn test_headless_uninstall_restores_surviving_extensions_language_config(
             "extension.toml": format!(
                 "id = \"{id}\"\nname = \"{id}\"\nversion = \"1.0.0\"\nschema_version = 1\nlanguages = [\"languages/shared\"]\n"
             ),
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "shared": {
                     "config.toml": format!(
                         "name = \"Shared\"\ngrammar = \"shared\"\npath_suffixes = [\"{suffix}\"]\n"
@@ -2675,7 +2680,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "foo": {
                     "config.toml": "name = \"Foo\"\ngrammar = \"foo\"\npath_suffixes = [\"foo\"]\n"
                 }
@@ -2794,7 +2799,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "foo": {
                     "config.toml": "name = \"Foo\"\ngrammar = \"foo\"\npath_suffixes = [\"foo\"]\n"
                 }
@@ -2812,7 +2817,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "foo": {
                     "config.toml": "not valid toml ["
                 }
@@ -3055,7 +3060,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "foo": {
                     "config.toml": format!(
                         "name = \"Foo\"\ngrammar = \"foo\"\npath_suffixes = [\"{suffix}\"]\n"
@@ -3158,7 +3163,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "foo": {
                     "config.toml": format!(
                         "name = \"Foo\"\ngrammar = \"foo\"\npath_suffixes = [\"{suffix}\"]\n"
@@ -3240,7 +3245,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/foo"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "foo": {
                     "config.toml": format!(
                         "name = \"Foo\"\ngrammar = \"foo\"\npath_suffixes = [\"{suffix}\"]\n"
@@ -3352,7 +3357,7 @@ async fn test_headless_failed_uninstall_is_retried_on_later_syncs(cx: &mut TestA
             "extension.toml": format!(
                 "id = \"{id}\"\nname = \"{id}\"\nversion = \"1.0.0\"\nschema_version = 1\nlanguages = [\"languages/lang\"]\n"
             ),
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "lang": {
                     "config.toml": format!(
                         "name = \"{id}-lang\"\ngrammar = \"{id}\"\npath_suffixes = [\"{id}\"]\n"
@@ -3728,7 +3733,7 @@ version = "1.0.0"
 schema_version = 1
 languages = ["languages/shared"]
 "#,
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "shared": {
                     "config.toml": "name = \"Shared\"\npath_suffixes = [\"shadowed\"]\n"
                 }
@@ -4160,7 +4165,7 @@ async fn insert_language_extension(fs: &Arc<FakeFs>, id: &str, language: &str, s
             "extension.toml": format!(
                 "id = \"{id}\"\nname = \"{id}\"\nversion = \"1.0.0\"\nschema_version = 1\nlanguages = [\"languages/lang\"]\n"
             ),
-            "languages": {
+            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                 "lang": {
                     "config.toml": format!(
                         "name = \"{language}\"\npath_suffixes = [\"{suffix}\"]\n"

@@ -37,6 +37,7 @@ use gpui::{
     App, AppContext, BackgroundExecutor, BorrowAppContext, Entity, FutureExt, SharedString, Task,
     TestAppContext, UpdateGlobal,
 };
+use i18n::{keys, t_static};
 use itertools::Itertools;
 use language::{
     Buffer, BufferEvent, Diagnostic, DiagnosticEntry, DiagnosticEntryRef, DiagnosticMessage,
@@ -417,7 +418,7 @@ async fn test_editorconfig_support(cx: &mut gpui::TestAppContext) {
                 "remove_trailing_whitespace_on_save": false,
                 "preferred_line_length": 64,
                 "soft_wrap": "editor_width",
-                "languages": {
+                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                     "JavaScript": {
                         "remove_trailing_whitespace_on_save": true,
                     },
@@ -1688,7 +1689,7 @@ async fn test_running_multiple_instances_of_a_single_server_in_one_worktree(
             ".zed": {
                 "settings.json": r#"
                 {
-                    "languages": {
+                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
                         "Python": {
                             "language_servers": ["ty"]
                         }
@@ -2407,7 +2408,7 @@ async fn test_managing_language_servers(cx: &mut gpui::TestAppContext) {
     cx.update_global::<SettingsStore, _>(|store, cx| {
         store
             .set_user_settings(
-                r#"{"semantic_tokens":"combined","languages":{"Rust":{"language_servers":["replacement-rust-server"]}}}"#,
+                r#"{"semantic_tokens":"combined",t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES):{"Rust":{"language_servers":["replacement-rust-server"]}}}"#,
                 cx,
             )
             .unwrap();
@@ -2469,7 +2470,7 @@ async fn test_managing_language_servers(cx: &mut gpui::TestAppContext) {
                 .set_user_settings(
                     &json!({
                         "semantic_tokens": semantic_tokens,
-                        "languages": { "Rust": { "language_servers": ["replacement-rust-server"] } },
+                        t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): { "Rust": { "language_servers": ["replacement-rust-server"] } },
                         "lsp": { "replacement-rust-server": { "initialization_options": { "check": true } } }
                     })
                     .to_string(),
@@ -2667,7 +2668,7 @@ async fn test_language_servers_disabled_by_default(cx: &mut gpui::TestAppContext
     );
     assert_eq!(
         running_language_servers(
-            json!({ "languages": { "Rust": { "language_servers": ["!default-server", "..."] } } }),
+            json!({ t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): { "Rust": { "language_servers": ["!default-server", "..."] } } }),
             cx
         )
         .await,
@@ -2676,7 +2677,7 @@ async fn test_language_servers_disabled_by_default(cx: &mut gpui::TestAppContext
     );
     assert_eq!(
         running_language_servers(
-            json!({ "languages": { "Rust": { "language_servers": ["opt-in-server", "..."] } } }),
+            json!({ t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): { "Rust": { "language_servers": ["opt-in-server", "..."] } } }),
             cx
         )
         .await,
@@ -2693,7 +2694,7 @@ async fn test_language_server_relative_path(cx: &mut gpui::TestAppContext) {
     init_test(cx);
 
     let settings_json_contents = json!({
-        "languages": {
+        t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
             "Rust": {
                 "language_servers": ["my_fake_lsp", "lsp_on_path"]
             }
@@ -2777,7 +2778,7 @@ async fn test_language_server_tilde_path(cx: &mut gpui::TestAppContext) {
     init_test(cx);
 
     let settings_json_contents = json!({
-        "languages": {
+        t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
             "Rust": {
                 "language_servers": ["tilde_lsp"]
             }
