@@ -37,3 +37,4 @@ prompt-delete_skill_detail = This will move { $path } to the trash. This skill i
 prompt-save_edits = { $path } contains unsaved edits. Do you want to save it?
 prompt-save_edits_unnamed = This buffer contains unsaved edits. Do you want to save it?
 prompt-import_vscode_settings = Importing { $source } settings may overwrite your existing settings. Will import settings from { $path }
+prompt-could_not_find_settings = Could not find or load a { $source } settings file

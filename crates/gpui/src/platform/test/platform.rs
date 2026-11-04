@@ -102,6 +102,9 @@ struct TestPrompt {
     msg: String,
     detail: Option<String>,
     answers: Vec<String>,
+    /// Parallel to `answers`: the `PromptButton` kind of each answer, used to
+    /// match canonical English test responses against localized labels.
+    answer_buttons: Vec<PromptButton>,
     tx: oneshot::Sender<usize>,
 }
 
@@ -318,7 +321,22 @@ impl TestPlatform {
             .multiple_choice
             .pop_front()
             .expect("no pending multiple choice prompt");
-        let Some(ix) = prompt.answers.iter().position(|a| a == response) else {
+        // The i18n runtime localizes common buttons ("OK"/"Cancel") when the
+        // prompt is queued, so a plain English response may no longer match the
+        // localized label. Fall back to matching Ok/Cancel buttons by kind,
+        // letting tests answer with the canonical English words in any locale.
+        let Some(ix) = prompt
+            .answers
+            .iter()
+            .position(|a| a == response)
+            .or_else(|| {
+                prompt.answer_buttons.iter().position(|button| match button {
+                    PromptButton::Ok(_) => response.eq_ignore_ascii_case("ok"),
+                    PromptButton::Cancel(_) => response.eq_ignore_ascii_case("cancel"),
+                    PromptButton::Other(_) => false,
+                })
+            })
+        else {
             panic!(
                 "PROMPT: {}\n{:?}\n{:?}\nCannot respond with {}",
                 prompt.msg, prompt.detail, prompt.answers, response
@@ -357,6 +375,7 @@ impl TestPlatform {
         answers: &[PromptButton],
     ) -> oneshot::Receiver<usize> {
         let (tx, rx) = oneshot::channel();
+        let answer_buttons: Vec<PromptButton> = answers.to_vec();
         let answers: Vec<String> = answers.iter().map(|s| s.label().to_string()).collect();
         self.prompts
             .borrow_mut()
@@ -365,6 +384,7 @@ impl TestPlatform {
                 msg: msg.to_string(),
                 detail: detail.map(|s| s.to_string()),
                 answers,
+                answer_buttons,
                 tx,
             });
         rx

@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use std::ops::Range;
 
 use anyhow::Result;
@@ -892,7 +892,11 @@ fn collect_kv(
             continue;
         }
         if map.contains_key(&key) {
-            return Err(format!("Duplicate {label} \"{key}\".").into());
+            return Err(t_with_args(
+                keys::settings_ui::SETTINGS_B_EXT_AGENT_DUPLICATE,
+                &[("label", label), ("key", key.as_str())],
+            )
+            .into());
         }
         map.insert(key, value.clone());
     }
@@ -1087,7 +1091,7 @@ mod tests {
         values.name = "   ".into();
         assert_eq!(
             build_settings_from_values(values).unwrap_err().as_ref(),
-            "Agent name is required."
+            t(keys::settings_ui::SETTINGS_EXT_AGENT_ERROR_NAME_REQUIRED)
         );
     }
 
@@ -1097,7 +1101,7 @@ mod tests {
         values.command = "   ".into();
         assert_eq!(
             build_settings_from_values(values).unwrap_err().as_ref(),
-            "Command is required."
+            t(keys::settings_ui::SETTINGS_EXT_AGENT_ERROR_COMMAND_REQUIRED)
         );
     }
 
@@ -1107,7 +1111,13 @@ mod tests {
         values.env = vec![("FOO".into(), "1".into()), ("FOO".into(), "2".into())];
         assert_eq!(
             build_settings_from_values(values).unwrap_err().as_ref(),
-            "Duplicate environment variable \"FOO\"."
+            t_with_args(
+                keys::settings_ui::SETTINGS_B_EXT_AGENT_DUPLICATE,
+                &[
+                    ("label", &t(keys::settings_ui::SETTINGS_A_MCP_ENV_LABEL)),
+                    ("key", "FOO"),
+                ],
+            )
         );
     }
 

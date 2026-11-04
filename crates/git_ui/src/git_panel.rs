@@ -1,6 +1,6 @@
 use git_ui_core::askpass_modal::AskPassModal;
 pub(crate) use git_ui_core::notifications::{open_output, show_error_toast};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 
 use crate::commit_context_menu::{
     CommitContextMenuData, CommitContextMenuSource, commit_context_menu,
@@ -3072,9 +3072,9 @@ impl GitPanel {
                 .all(|target| target.scope == DiscardScope::Unstaged)
                 && tracked.iter().any(DiscardTarget::keeps_staged_changes)
             {
-                "unstaged changes"
+                t(keys::git_ui::GIT_UNSTAGED_CHANGES)
             } else {
-                "changes"
+                t(keys::git_ui::GIT_CHANGES)
             };
 
             let prompt = if skip_prompt {
@@ -3085,49 +3085,68 @@ impl GitPanel {
                     .map(|target| (&target.entry, false))
                     .or_else(|| untracked.first().map(|entry| (entry, true)))?;
 
+                let path = MarkdownInlineCode(
+                    entry
+                        .repo_path
+                        .file_name()
+                        .unwrap_or(entry.repo_path.display(path_style).as_ref()),
+                )
+                .to_string();
+
                 let (message, confirm_text) = if entry.status.is_deleted() {
                     (
-                        "Are you sure you want to restore ".to_string(),
-                        "Restore File",
+                        t_with_args(keys::git_ui::GIT_CONFIRM_RESTORE_PATH, &[("path", &path)]),
+                        t(keys::git_ui::GIT_RESTORE_FILE),
                     )
                 } else if is_trashed {
-                    ("Trash ".to_string(), "Trash")
+                    (
+                        t_with_args(keys::git_ui::GIT_CONFIRM_TRASH_PATH, &[("path", &path)]),
+                        t(keys::git_ui::GIT_TRASH),
+                    )
                 } else {
                     (
-                        format!("Are you sure you want to discard {changes} to "),
-                        "Discard Changes",
+                        t_with_args(
+                            keys::git_ui::GIT_CONFIRM_DISCARD_PATH,
+                            &[("changes", &changes), ("path", &path)],
+                        ),
+                        t(keys::git_ui::GIT_DISCARD_CHANGES),
                     )
                 };
 
                 Some(window.prompt(
                     PromptLevel::Warning,
-                    &format!(
-                        "{}{}?",
-                        message,
-                        MarkdownInlineCode(
-                            entry
-                                .repo_path
-                                .file_name()
-                                .unwrap_or(entry.repo_path.display(path_style).as_ref())
-                        )
-                    ),
+                    &message,
                     None,
-                    &[confirm_text, "Cancel"],
+                    &[confirm_text.as_str(), "Cancel"],
                     cx,
                 ))
             } else {
                 let (message, confirm_text) = match (tracked.len(), untracked.len()) {
                     (0, 0) => return Some(()),
                     (tracked_count, 0) => (
-                        format!("Discard {changes} to {tracked_count} files?"),
-                        "Discard",
-                    ),
-                    (0, untracked_count) => (format!("Trash {untracked_count} files?"), "Trash"),
-                    (tracked_count, untracked_count) => (
-                        format!(
-                            "Discard {changes} to {tracked_count} files and trash {untracked_count} files?"
+                        t_with_args(
+                            keys::git_ui::GIT_CONFIRM_DISCARD_COUNT,
+                            &[("changes", &changes), ("count", &tracked_count.to_string())],
                         ),
-                        "Discard and Trash",
+                        t(keys::git_ui::GIT_DISCARD),
+                    ),
+                    (0, untracked_count) => (
+                        t_with_args(
+                            keys::git_ui::GIT_CONFIRM_TRASH_COUNT,
+                            &[("count", &untracked_count.to_string())],
+                        ),
+                        t(keys::git_ui::GIT_TRASH),
+                    ),
+                    (tracked_count, untracked_count) => (
+                        t_with_args(
+                            keys::git_ui::GIT_CONFIRM_DISCARD_AND_TRASH_COUNT,
+                            &[
+                                ("changes", &changes),
+                                ("count", &tracked_count.to_string()),
+                                ("untracked", &untracked_count.to_string()),
+                            ],
+                        ),
+                        t(keys::git_ui::GIT_DISCARD_AND_TRASH),
                     ),
                 };
 
@@ -3135,7 +3154,7 @@ impl GitPanel {
                     PromptLevel::Warning,
                     &message,
                     None,
-                    &[confirm_text, "Cancel"],
+                    &[confirm_text.as_str(), "Cancel"],
                     cx,
                 ))
             };
@@ -3184,7 +3203,7 @@ impl GitPanel {
                 Ok(())
             })
             .detach_and_prompt_err(
-                "Failed to revert changes",
+                &t(keys::git_ui::GIT_FAILED_TO_REVERT),
                 window,
                 cx,
                 |e, _, _| Some(format!("{e}")),
@@ -3321,8 +3340,8 @@ impl GitPanel {
             RestoreTrackedFiles,
             Cancel,
         }
-        let prompt = prompt(
-            "Discard changes to these files?",
+        let prompt = prompt::<RestoreCancel>(
+            &t(keys::git_ui::GIT_CONFIRM_DISCARD_FILES),
             Some(&details),
             window,
             cx,
@@ -3384,7 +3403,12 @@ impl GitPanel {
             details.push_str(&format!("\nand {} more…", to_delete.len() - 5))
         }
 
-        let prompt = prompt("Trash these files?", Some(&details), window, cx);
+        let prompt = prompt::<TrashCancel>(
+            &t(keys::git_ui::GIT_CONFIRM_TRASH_FILES),
+            Some(&details),
+            window,
+            cx,
+        );
         cx.spawn_in(window, async move |_, cx| {
             match prompt.await? {
                 TrashCancel::Trash => {}
@@ -3410,12 +3434,20 @@ impl GitPanel {
             let failed_count = errors.len();
             if let Some(first_error) = errors.into_iter().next() {
                 return Err(anyhow::anyhow!(
-                    "Failed to trash {failed_count} of {total_count} files: {first_error:#}"
+                    "{}",
+                    t_with_args(
+                        keys::git_ui::GIT_FAILED_TO_TRASH_FILES_COUNT,
+                        &[
+                            ("failed", &failed_count.to_string()),
+                            ("total", &total_count.to_string()),
+                            ("error", &format!("{first_error:#}")),
+                        ],
+                    )
                 ));
             }
             Ok(())
         })
-        .detach_and_prompt_err("Failed to trash files", window, cx, |e, _, _| {
+        .detach_and_prompt_err(&t(keys::git_ui::GIT_FAILED_TO_TRASH), window, cx, |e, _, _| {
             Some(format!("{e}"))
         });
     }
@@ -4068,7 +4100,7 @@ impl GitPanel {
 
         if self.has_unstaged_conflicts() {
             error_spawn(
-                "There are still conflicts. You must stage these before committing",
+                &t(keys::git_ui::GIT_STAGE_CONFLICTS_FIRST),
                 window,
                 cx,
             );
@@ -4212,12 +4244,13 @@ impl GitPanel {
                     Uncommit,
                     Cancel,
                 }
-                let detail = format!(
-                    "This commit was already pushed to {}.",
-                    pushed_to.into_iter().join(", ")
+                let detail = t_with_args(
+                    keys::git_ui::GIT_ALREADY_PUSHED_TO,
+                    &[("targets", &pushed_to.into_iter().join(", "))],
                 );
+                let message = t(keys::git_ui::GIT_ARE_YOU_SURE);
                 let result = cx
-                    .update(|window, cx| prompt("Are you sure?", Some(&detail), window, cx))?
+                    .update(|window, cx| prompt(&message, Some(&detail), window, cx))?
                     .await?;
 
                 match result {
@@ -4812,10 +4845,12 @@ impl GitPanel {
         let worktree = if let [worktree] = worktrees.as_slice() {
             Task::ready(Some(worktree.clone()))
         } else if worktrees.is_empty() {
+            let message = t(keys::git_ui::GIT_CANNOT_INIT_REPOSITORY);
+            let detail = t(keys::git_ui::GIT_OPEN_DIRECTORY_FIRST);
             let result = window.prompt(
                 PromptLevel::Warning,
-                "Unable to initialize a git repository",
-                Some("Open a directory first"),
+                &message,
+                Some(&detail),
                 &["OK"],
                 cx,
             );
@@ -8651,52 +8686,73 @@ impl GitPanel {
         // being affected.
         // As such, we need to ensure we show the correct label, depending on
         // the actual `file_count`.
-        let file_label = if file_count == 1 { "File" } else { "Files" };
+        let file_count_text = file_count.to_string();
 
         let stage_title = match (target_kind, will_unstage) {
-            (SelectionTargetKind::Directory, true) => "Unstage Folder",
-            (SelectionTargetKind::Directory, false) => "Stage Folder",
-            (SelectionTargetKind::File, true) => "Unstage File",
-            (SelectionTargetKind::File, false) => "Stage File",
-            (SelectionTargetKind::Multiple, true) => &format!("Unstage {file_count} {file_label}"),
-            (SelectionTargetKind::Multiple, false) => &format!("Stage {file_count} {file_label}"),
+            (SelectionTargetKind::Directory, true) => t(keys::git_ui::GIT_UNSTAGE_FOLDER),
+            (SelectionTargetKind::Directory, false) => t(keys::git_ui::GIT_STAGE_FOLDER),
+            (SelectionTargetKind::File, true) => t(keys::git_ui::GIT_UNSTAGE_FILE),
+            (SelectionTargetKind::File, false) => t(keys::git_ui::GIT_STAGE_FILE),
+            (SelectionTargetKind::Multiple, true) => t_with_args(
+                keys::git_ui::GIT_UNSTAGE_MULTIPLE,
+                &[("count", &file_count_text)],
+            ),
+            (SelectionTargetKind::Multiple, false) => {
+                t_with_args(keys::git_ui::GIT_STAGE_MULTIPLE, &[("count", &file_count_text)])
+            }
         };
 
         let restore_title = match (target_kind, all_trashed, all_deleted) {
-            (SelectionTargetKind::Directory, true, _) => "Trash Folder",
-            (SelectionTargetKind::Directory, false, _) => "Discard Changes",
-            (SelectionTargetKind::File, true, _) => "Trash File",
-            (SelectionTargetKind::File, _, true) => "Restore File",
-            (SelectionTargetKind::File, _, _) => "Discard Changes",
-            (SelectionTargetKind::Multiple, true, _) => &format!("Trash {file_count} {file_label}"),
-            (SelectionTargetKind::Multiple, _, true) => {
-                &format!("Restore {file_count} {file_label}")
+            (SelectionTargetKind::Directory, true, _) => t(keys::git_ui::GIT_TRASH_FOLDER),
+            (SelectionTargetKind::Directory, false, _) => t(keys::git_ui::GIT_DISCARD_CHANGES),
+            (SelectionTargetKind::File, true, _) => t(keys::git_ui::GIT_TRASH_FILE),
+            (SelectionTargetKind::File, _, true) => t(keys::git_ui::GIT_RESTORE_FILE),
+            (SelectionTargetKind::File, _, _) => t(keys::git_ui::GIT_DISCARD_CHANGES),
+            (SelectionTargetKind::Multiple, true, _) => {
+                t_with_args(keys::git_ui::GIT_TRASH_MULTIPLE, &[("count", &file_count_text)])
             }
-            (SelectionTargetKind::Multiple, _, _) => {
-                &format!("Discard Changes to {file_count} {file_label}")
-            }
+            (SelectionTargetKind::Multiple, _, true) => t_with_args(
+                keys::git_ui::GIT_RESTORE_MULTIPLE,
+                &[("count", &file_count_text)],
+            ),
+            (SelectionTargetKind::Multiple, _, _) => t_with_args(
+                keys::git_ui::GIT_DISCARD_MULTIPLE,
+                &[("count", &file_count_text)],
+            ),
         };
         let is_bulk = matches!(target_kind, SelectionTargetKind::Multiple);
         let is_file_or_bulk = !matches!(target_kind, SelectionTargetKind::Directory);
         let has_tracked = !all_created;
         let plural = file_count > 1;
-        let copy_path_title = if plural { "Copy Paths" } else { "Copy Path" };
-        let copy_relative_path_title = if plural {
-            "Copy Relative Paths"
+        let copy_path_title = if plural {
+            t(keys::git_ui::GIT_COPY_PATHS)
         } else {
-            "Copy Relative Path"
+            t(keys::git_ui::GIT_COPY_PATH)
+        };
+        let copy_relative_path_title = if plural {
+            t(keys::git_ui::GIT_COPY_RELATIVE_PATHS)
+        } else {
+            t(keys::git_ui::GIT_COPY_RELATIVE_PATH)
         };
         let open_file_diff_title = if plural {
-            "Open File Diffs"
+            t(keys::git_ui::GIT_OPEN_FILE_DIFFS)
         } else {
-            "Open File Diff"
+            t(keys::git_ui::GIT_OPEN_FILE_DIFF)
         };
-        let view_file_title = if plural { "View Files" } else { "View File" };
-        let open_diff_title = if plural { "Open Diffs" } else { "Open Diff" };
-        let view_file_history_title = if plural {
-            "View File Histories"
+        let view_file_title = if plural {
+            t(keys::git_ui::GIT_VIEW_FILES)
         } else {
-            "View File History"
+            t(keys::git_ui::GIT_VIEW_FILE)
+        };
+        let open_diff_title = if plural {
+            t(keys::git_ui::GIT_OPEN_DIFFS)
+        } else {
+            t(keys::git_ui::GIT_OPEN_DIFF)
+        };
+        let view_file_history_title = if plural {
+            t(keys::git_ui::GIT_VIEW_FILE_HISTORIES)
+        } else {
+            t(keys::git_ui::GIT_VIEW_FILE_HISTORY)
         };
         ContextMenu::build(window, cx, |context_menu, _, _| {
             context_menu
@@ -8704,8 +8760,14 @@ impl GitPanel {
                 .action(stage_title, ToggleStaged.boxed_clone())
                 .action(restore_title, RestoreFile::default().boxed_clone())
                 .separator()
-                .action("Unstaged Changes", ViewUnstagedChanges.boxed_clone())
-                .action("Staged Changes", ViewStagedChanges.boxed_clone())
+                .action(
+                    t(keys::git_ui::GIT_SECTION_UNSTAGED_CHANGES),
+                    ViewUnstagedChanges.boxed_clone(),
+                )
+                .action(
+                    t(keys::git_ui::GIT_SECTION_STAGED_CHANGES),
+                    ViewStagedChanges.boxed_clone(),
+                )
                 .separator()
                 .action(copy_path_title, CopyPath.boxed_clone())
                 .action(copy_relative_path_title, CopyRelativePath.boxed_clone())
@@ -8713,18 +8775,18 @@ impl GitPanel {
                 .action_disabled_when(
                     !all_created,
                     if is_bulk && plural {
-                        "Add Files to .gitignore"
+                        t(keys::git_ui::GIT_ADD_FILES_TO_GITIGNORE)
                     } else {
-                        "Add to .gitignore"
+                        t(keys::git_ui::GIT_ADD_TO_GITIGNORE)
                     },
                     git::AddToGitignore.boxed_clone(),
                 )
                 .action_disabled_when(
                     !all_created,
                     if is_bulk && plural {
-                        "Add Files to .git/info/exclude"
+                        t(keys::git_ui::GIT_ADD_FILES_TO_EXCLUDE)
                     } else {
-                        "Add to .git/info/exclude"
+                        t(keys::git_ui::GIT_ADD_TO_EXCLUDE)
                     },
                     git::AddToGitInfoExclude.boxed_clone(),
                 )
@@ -11717,9 +11779,14 @@ mod tests {
             .pending_prompt()
             .expect("discard should show a confirmation prompt");
 
+        let changes = t(keys::git_ui::GIT_CHANGES);
+        let path = format!("{}", MarkdownInlineCode("__somefile__"));
         assert_eq!(
             message,
-            "Are you sure you want to discard changes to `__somefile__`?"
+            t_with_args(
+                keys::git_ui::GIT_CONFIRM_DISCARD_PATH,
+                &[("changes", &changes), ("path", &path)]
+            )
         );
     }
 
@@ -15472,7 +15539,7 @@ mod tests {
         let (message, detail) = cx
             .pending_prompt()
             .expect("discard tracked should show a confirmation prompt");
-        assert_eq!(message, "Discard changes to these files?");
+        assert_eq!(message, t(keys::git_ui::GIT_CONFIRM_DISCARD_FILES));
         assert!(
             detail.contains("staged_a.rs"),
             "prompt should list staged_a.rs, got: {detail}"

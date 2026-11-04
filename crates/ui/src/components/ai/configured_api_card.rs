@@ -135,7 +135,7 @@ impl Component for ConfiguredApiCard {
                 container()
                     .child(
                         ConfiguredApiCard::new("custom-button-label", "OpenAI API key configured")
-                            .button_label("Remove Key"),
+                            .button_label(t(keys::ui::UI_REMOVE_KEY)),
                     )
                     .into_any_element(),
             ),

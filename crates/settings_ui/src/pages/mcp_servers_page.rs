@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use std::sync::Arc;
 
 use collections::HashMap;
@@ -56,11 +56,13 @@ pub(crate) fn render_mcp_servers_page(
                 .px_8()
                 .gap_2()
                 .child(
-                    v_flex().child(Label::new("Configured Servers")).child(
-                        Label::new("Manage servers connected directly or via extensions.")
-                            .size(LabelSize::Small)
-                            .color(Color::Muted),
-                    ),
+                    v_flex()
+                        .child(Label::new(t(keys::settings_ui::SETTINGS_A_MCP_PAGE_TITLE)))
+                        .child(
+                            Label::new(t(keys::settings_ui::SETTINGS_A_MCP_PAGE_DESCRIPTION))
+                                .size(LabelSize::Small)
+                                .color(Color::Muted),
+                        ),
                 )
                 .child(server_list)
                 .child(Divider::horizontal()),
@@ -109,7 +111,7 @@ fn render_empty_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new("No MCP servers added yet. Click \"Add Server\" to get started.")
+            Label::new(t(keys::settings_ui::SETTINGS_A_MCP_EMPTY_STATE))
                 .color(Color::Muted)
                 .size(LabelSize::Small),
         )
@@ -125,7 +127,7 @@ fn render_no_project_state(cx: &App) -> AnyElement {
         .border_color(cx.theme().colors().border.opacity(0.6))
         .rounded_sm()
         .child(
-            Label::new("No active project found. Open a workspace to manage MCP servers.")
+            Label::new(t(keys::settings_ui::SETTINGS_A_MCP_NO_PROJECT))
                 .color(Color::Muted)
                 .size(LabelSize::Small),
         )
@@ -1314,7 +1316,11 @@ fn build_settings_from_values(
             // render, so a clearly invalid URL is reported to the user instead of
             // being silently written and failing later when the server starts.
             if let Err(error) = url::Url::parse(&url) {
-                return Err(format!("Invalid URL: {error}").into());
+                return Err(t_with_args(
+                    keys::settings_ui::SETTINGS_A_MCP_INVALID_URL,
+                    &[("error", &error.to_string())],
+                )
+                .into());
             }
             let headers = collect_kv(
                 &values.headers,
@@ -1386,7 +1392,11 @@ fn collect_kv(
             continue;
         }
         if map.contains_key(&key) {
-            return Err(format!("Duplicate {label} \"{key}\".").into());
+            return Err(t_with_args(
+                keys::settings_ui::SETTINGS_A_MCP_DUPLICATE_KV,
+                &[("label", label), ("key", key.as_str())],
+            )
+            .into());
         }
         map.insert(key, value.clone());
     }
@@ -1434,7 +1444,7 @@ mod tests {
         values.command = "/bin/server".into();
         assert_eq!(
             build_settings_from_values(&values).unwrap_err().as_ref(),
-            "Server name is required."
+            t(keys::settings_ui::SETTINGS_A_MCP_SERVER_NAME_REQUIRED)
         );
     }
 
@@ -1443,7 +1453,7 @@ mod tests {
         let values = values(McpTransport::Stdio);
         assert_eq!(
             build_settings_from_values(&values).unwrap_err().as_ref(),
-            "Command is required."
+            t(keys::settings_ui::SETTINGS_A_MCP_COMMAND_REQUIRED)
         );
     }
 
@@ -1452,7 +1462,7 @@ mod tests {
         let values = values(McpTransport::Http);
         assert_eq!(
             build_settings_from_values(&values).unwrap_err().as_ref(),
-            "URL is required."
+            t(keys::settings_ui::SETTINGS_A_MCP_URL_REQUIRED)
         );
     }
 
@@ -1461,8 +1471,12 @@ mod tests {
         let mut values = values(McpTransport::Http);
         values.url = "not a url".into();
         let error = build_settings_from_values(&values).unwrap_err();
+        let expected_prefix = t_with_args(
+            keys::settings_ui::SETTINGS_A_MCP_INVALID_URL,
+            &[("error", "")],
+        );
         assert!(
-            error.starts_with("Invalid URL"),
+            error.starts_with(expected_prefix.trim_end()),
             "unexpected error: {error}"
         );
     }
@@ -1474,7 +1488,7 @@ mod tests {
         values.timeout = "soon".into();
         assert_eq!(
             build_settings_from_values(&values).unwrap_err().as_ref(),
-            "Timeout must be a positive whole number of seconds."
+            t(keys::settings_ui::SETTINGS_A_MCP_TIMEOUT_INVALID)
         );
     }
 
@@ -1485,7 +1499,13 @@ mod tests {
         values.env = vec![("FOO".into(), "1".into()), ("FOO".into(), "2".into())];
         assert_eq!(
             build_settings_from_values(&values).unwrap_err().as_ref(),
-            "Duplicate environment variable \"FOO\"."
+            t_with_args(
+                keys::settings_ui::SETTINGS_A_MCP_DUPLICATE_KV,
+                &[
+                    ("label", &t(keys::settings_ui::SETTINGS_A_MCP_ENV_LABEL)),
+                    ("key", "FOO"),
+                ],
+            )
         );
     }
 
@@ -1499,7 +1519,13 @@ mod tests {
         ];
         assert_eq!(
             build_settings_from_values(&values).unwrap_err().as_ref(),
-            "Duplicate header \"Authorization\"."
+            t_with_args(
+                keys::settings_ui::SETTINGS_A_MCP_DUPLICATE_KV,
+                &[
+                    ("label", &t(keys::settings_ui::SETTINGS_A_MCP_HEADER_LABEL)),
+                    ("key", "Authorization"),
+                ],
+            )
         );
     }
 

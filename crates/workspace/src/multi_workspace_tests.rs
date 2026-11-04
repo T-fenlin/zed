@@ -6,6 +6,7 @@ use agent_settings::AgentSettings;
 use client::proto;
 use fs::{FakeFs, Fs};
 use gpui::{TestAppContext, VisualTestContext};
+use i18n::{keys, t};
 use project::DisableAiSettings;
 use serde_json::json;
 use settings::{Settings, SettingsStore};
@@ -1521,7 +1522,7 @@ async fn test_open_project_closes_empty_workspace_but_not_non_empty_ones(cx: &mu
     cx.run_until_parked();
 
     assert!(cx.has_pending_prompt(),);
-    cx.simulate_prompt_answer("Don't Save");
+    cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
     cx.run_until_parked();
 
     let workspace_a = open_task.await.unwrap();

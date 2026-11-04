@@ -22,6 +22,7 @@ use gpui::{
     EntityId, EventEmitter, FocusHandle, Focusable, MouseButton, MouseDownEvent, Point,
     Subscription, Task, TaskExt, WeakEntity, anchored, deferred,
 };
+use i18n::{keys, t};
 
 use itertools::Itertools as _;
 use language::Buffer;
@@ -512,11 +513,13 @@ impl DebugPanel {
 
         cx.spawn_in(window, async move |this, cx| {
             if should_prompt {
+                let yes = t(keys::prompt::PROMPT_YES);
+                let no = t(keys::prompt::PROMPT_NO);
                 let response = cx.prompt(
                     gpui::PromptLevel::Warning,
-                    "This Debug Session is still running. Are you sure you want to terminate it?",
+                    &t(keys::prompt::PROMPT_TERMINATE_DEBUG_SESSION),
                     None,
-                    &["Yes", "No"],
+                    &[yes.as_str(), no.as_str()],
                 );
                 if response.await == Ok(1) {
                     return;

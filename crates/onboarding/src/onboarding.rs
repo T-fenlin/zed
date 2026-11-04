@@ -8,6 +8,7 @@ use gpui::{
     FocusHandle, Focusable, Global, IntoElement, KeyContext, Render, ScrollHandle, SharedString,
     Subscription, Task, WeakEntity, Window, actions,
 };
+use i18n::{keys, t, t_with_args};
 use notifications::status_toast::StatusToast;
 use project::agent_server_store::AllAgentServersSettings;
 use schemars::JsonSchema;
@@ -484,7 +485,10 @@ pub async fn handle_import_vscode_settings(
                 zlog::error!("{err:?}");
                 let _ = cx.prompt(
                     gpui::PromptLevel::Info,
-                    &format!("Could not find or load a {source} settings file"),
+                    &t_with_args(
+                        keys::prompt::PROMPT_COULD_NOT_FIND_SETTINGS,
+                        &[("source", &source.to_string())],
+                    ),
                     None,
                     &["OK"],
                 );
@@ -493,16 +497,22 @@ pub async fn handle_import_vscode_settings(
         };
 
     if !skip_prompt {
+        let import = t(keys::prompt::PROMPT_IMPORT);
+        let prompt_message = t_with_args(
+            keys::prompt::PROMPT_IMPORT_VSCODE_SETTINGS,
+            &[
+                ("source", &vscode_settings.source.to_string()),
+                (
+                    "path",
+                    &truncate_and_remove_front(&vscode_settings.path.to_string_lossy(), 128),
+                ),
+            ],
+        );
         let prompt = cx.prompt(
             gpui::PromptLevel::Warning,
-            &format!(
-                "Importing {} settings may overwrite your existing settings. \
-                Will import settings from {}",
-                vscode_settings.source,
-                truncate_and_remove_front(&vscode_settings.path.to_string_lossy(), 128),
-            ),
+            &prompt_message,
             None,
-            &["Import", "Cancel"],
+            &[import.as_str(), "Cancel"],
         );
         let result = cx.spawn(async move |_| prompt.await.ok()).await;
         if result != Some(0) {

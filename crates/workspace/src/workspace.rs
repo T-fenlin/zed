@@ -3784,11 +3784,12 @@ impl Workspace {
                 if close_intent == CloseIntent::CloseWindow {
                     this.update(cx, |_, cx| cx.emit(Event::Activate))?;
                     let answer = cx.update(|window, cx| {
+                        let hang_up = t(keys::prompt::PROMPT_CLOSE_WINDOW_AND_HANG_UP);
                         window.prompt(
                             PromptLevel::Warning,
-                            "Do you want to leave the current call?",
+                            &t(keys::prompt::PROMPT_LEAVE_CALL),
                             None,
-                            &["Close window and hang up", "Cancel"],
+                            &[hang_up.as_str(), "Cancel"],
                             cx,
                         )
                     })?;
@@ -4032,11 +4033,13 @@ impl Workspace {
                             &mut remaining_dirty_items.iter().map(|(_, handle)| handle),
                             cx,
                         );
+                        let save_all = t(keys::prompt::PROMPT_SAVE_ALL);
+                        let discard_all = t(keys::prompt::PROMPT_DISCARD_ALL);
                         window.prompt(
                             PromptLevel::Warning,
-                            "Do you want to save all changes in the following files?",
+                            &t(keys::prompt::PROMPT_SAVE_ALL_CHANGES),
                             Some(&detail),
-                            &["Save all", "Discard all", "Cancel"],
+                            &[save_all.as_str(), discard_all.as_str(), "Cancel"],
                             cx,
                         )
                     })?;
@@ -10738,11 +10741,13 @@ async fn join_channel_internal(
         if let Some(multi_workspace) = requesting_window {
             let answer = multi_workspace
                 .update(cx, |_, window, cx| {
+                    let join = t(keys::prompt::PROMPT_YES_JOIN_CHANNEL);
+                    let detail = t(keys::prompt::PROMPT_LEAVE_CALL_UNSHARE);
                     window.prompt(
                         PromptLevel::Warning,
-                        "Do you want to switch channels?",
-                        Some("Leaving this call will unshare your current project."),
-                        &["Yes, Join Channel", "Cancel"],
+                        &t(keys::prompt::PROMPT_SWITCH_CHANNELS),
+                        Some(&detail),
+                        &[join.as_str(), "Cancel"],
                         cx,
                     )
                 })?
@@ -12045,11 +12050,12 @@ pub fn reload(cx: &mut App) {
     if let (true, Some(window)) = (should_confirm, workspace_windows.first()) {
         prompt = window
             .update(cx, |_, window, cx| {
+                let restart = t(keys::prompt::PROMPT_RESTART);
                 window.prompt(
                     PromptLevel::Info,
-                    "Are you sure you want to restart?",
+                    &t(keys::prompt::PROMPT_RESTART_CONFIRM),
                     None,
-                    &["Restart", "Cancel"],
+                    &[restart.as_str(), "Cancel"],
                     cx,
                 )
             })
@@ -13646,7 +13652,7 @@ mod tests {
         cx.run_until_parked();
 
         // Accept the save prompt.
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         cx.run_until_parked();
         let removed = remove_task.await.unwrap();
         assert!(removed, "removal should have succeeded");
@@ -13740,7 +13746,7 @@ mod tests {
             "closing a no-folder workspace with a dirty serializable item should prompt, \
              since the workspace will not be reachable after close"
         );
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         cx.executor().run_until_parked();
 
         assert!(task.await.unwrap());
@@ -13886,7 +13892,7 @@ mod tests {
             "replacing a workspace with a dirty serializable item should prompt, \
              since the workspace will be detached afterwards"
         );
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         cx.executor().run_until_parked();
 
         assert!(task.await.unwrap());
@@ -13965,7 +13971,7 @@ mod tests {
             "a save/discard prompt should be shown for the dirty scratch item \
              when its serialization fails"
         );
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         cx.executor().run_until_parked();
 
         // Preparing to close succeeds, even though serialization failed.
@@ -14027,7 +14033,7 @@ mod tests {
         cx.executor().run_until_parked();
 
         assert!(cx.has_pending_prompt());
-        cx.simulate_prompt_answer("Save all");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_SAVE_ALL));
 
         cx.executor().run_until_parked();
 
@@ -14042,7 +14048,7 @@ mod tests {
         assert!(cx.has_pending_prompt());
 
         // Cancel saving item 3.
-        cx.simulate_prompt_answer("Discard Edits");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DISCARD_EDITS));
         cx.executor().run_until_parked();
 
         // Item 3 is reloaded. There's a prompt to save item 4.
@@ -14218,7 +14224,7 @@ mod tests {
         // But we can only save whole items, so saving (2,3) for entry 3 includes 2.
         // assert!(!details.contains("2.txt"));
 
-        cx.simulate_prompt_answer("Save all");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_SAVE_ALL));
         cx.executor().run_until_parked();
         close.await;
 

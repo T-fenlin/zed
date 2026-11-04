@@ -406,7 +406,7 @@ impl ProfilePickerDelegate {
         for (idx, candidate) in candidates.iter().enumerate() {
             if !candidate.is_builtin && !inserted_custom_header {
                 if !entries.is_empty() {
-                    entries.push(ProfilePickerEntry::Header("Custom Profiles".into()));
+                    entries.push(ProfilePickerEntry::Header(t(keys::agent::AGENT_CUSTOM_PROFILES).into()));
                 }
                 inserted_custom_header = true;
             }
@@ -878,7 +878,7 @@ mod tests {
         )));
         assert!(entries.iter().any(|entry| matches!(
             entry,
-            ProfilePickerEntry::Header(label) if label.as_ref() == "Custom Profiles"
+            ProfilePickerEntry::Header(label) if label.as_ref() == t(keys::agent::AGENT_CUSTOM_PROFILES)
         )));
     }
 

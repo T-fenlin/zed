@@ -1,6 +1,7 @@
 use audio::{AudioDeviceInfo, AvailableAudioDevices};
 use cpal::DeviceId;
 use gpui::{AnyElement, App, ElementId, ReadGlobal, SharedString, Window};
+use i18n::{keys, t};
 use settings::{AudioInputDeviceName, AudioOutputDeviceName, SettingsStore};
 use std::str::FromStr;
 use ui::{ContextMenu, DropdownMenu, DropdownStyle, FluentBuilder, IconPosition, IntoElement};
@@ -8,7 +9,9 @@ use util::ResultExt;
 
 use crate::{SettingField, SettingsFieldMetadata, SettingsUiFile, update_settings_file};
 
-pub(crate) const SYSTEM_DEFAULT: &str = "System Default";
+pub(crate) fn system_default() -> String {
+    t(keys::settings_ui::SETTINGS_B_AUDIO_SYSTEM_DEFAULT)
+}
 
 pub(crate) fn get_current_device(
     current_id: Option<&DeviceId>,
@@ -46,7 +49,7 @@ where
         move |mut menu, _, _cx| {
             let is_system_default = current_device.is_none();
             menu = menu.toggleable_entry(
-                SYSTEM_DEFAULT,
+                system_default(),
                 is_system_default,
                 IconPosition::Start,
                 None,
@@ -86,7 +89,7 @@ where
         dropdown_id,
         current_device
             .map(|info| info.desc.name().to_string())
-            .unwrap_or(SYSTEM_DEFAULT.to_string()),
+            .unwrap_or_else(system_default),
         menu,
     )
     .style(DropdownStyle::Outlined)

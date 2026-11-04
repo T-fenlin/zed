@@ -5,6 +5,7 @@ use anyhow::Context as _;
 use collections::HashSet;
 use fuzzy::StringMatchCandidate;
 use git::repository::Worktree as GitWorktree;
+use i18n::{keys, t};
 use gpui::{
     Action, AnyElement, App, Context, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable,
     InteractiveElement, IntoElement, Modifiers, ModifiersChangedEvent, ParentElement, PromptLevel,
@@ -844,7 +845,9 @@ impl PickerDelegate for WorktreePickerDelegate {
                 matches.push(WorktreeEntry::Separator);
 
                 if open_here.len() > 1 {
-                    matches.push(WorktreeEntry::SectionHeader("This Window".into()));
+                    matches.push(WorktreeEntry::SectionHeader(
+                        t(keys::recent::RECENT_THIS_WINDOW).into(),
+                    ));
                     for worktree in open_here {
                         matches.push(WorktreeEntry::Worktree {
                             worktree,
@@ -2174,10 +2177,11 @@ mod tests {
             worktree_picker.picker.update(cx, |picker, _| {
                 let matches = &picker.delegate.matches;
 
+                let this_window_header = t(keys::recent::RECENT_THIS_WINDOW);
                 let header_index = matches
                     .iter()
                     .position(|entry| {
-                        matches!(entry, WorktreeEntry::SectionHeader(label) if label.as_ref() == "This Window")
+                        matches!(entry, WorktreeEntry::SectionHeader(label) if label.as_ref() == this_window_header)
                     })
                     .expect("section header should be present when multiple worktrees are open");
 

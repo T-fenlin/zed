@@ -5,6 +5,7 @@ use collections::HashSet;
 use editor::Editor;
 use fs::{FakeFs, Fs};
 use gpui::{App, BorrowAppContext, Context, Entity, VisualTestContext, Window};
+use i18n::{keys, t};
 use project::{Project, ProjectPath};
 use serde_json::{Value, json};
 use settings::{SettingsStore, SplicingVec};
@@ -436,7 +437,7 @@ async fn undo_create_dirty_file(cx: &mut gpui::TestAppContext) {
     cx.update_active_editor(|editor, _window, cx| assert!(editor.is_dirty(cx)));
 
     cx.undo().await;
-    cx.answer("Don't Save");
+    cx.answer(&t(keys::prompt::PROMPT_DONT_SAVE));
     cx.assert_not_exists("c.txt");
 }
 

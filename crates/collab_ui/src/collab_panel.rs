@@ -19,7 +19,7 @@ use gpui::{
     TextStyle, UniformListScrollHandle, WeakEntity, Window, actions, anchored, canvas, deferred,
     div, fill, point, prelude::*, px, size, uniform_list,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 
 use menu::{Cancel, Confirm, SecondaryConfirm, SelectNext, SelectPrevious};
 use notifications::{NotificationEntry, NotificationEvent, NotificationStore};
@@ -2528,12 +2528,16 @@ impl CollabPanel {
         let Some(channel) = self.channel_store.read(cx).channel_for_id(channel_id) else {
             return;
         };
-        let prompt_message = format!("Are you sure you want to leave \"#{}\"?", channel.name);
+        let prompt_message = t_with_args(
+            keys::prompt::PROMPT_LEAVE_CHANNEL,
+            &[("name", channel.name.as_str())],
+        );
+        let leave = t(keys::collab::COLLAB_LEAVE);
         let answer = window.prompt(
             PromptLevel::Warning,
             &prompt_message,
             None,
-            &["Leave", "Cancel"],
+            &[leave.as_str(), "Cancel"],
             cx,
         );
         cx.spawn_in(window, async move |this, cx| {
@@ -2558,15 +2562,16 @@ impl CollabPanel {
     ) {
         let channel_store = self.channel_store.clone();
         if let Some(channel) = channel_store.read(cx).channel_for_id(channel_id) {
-            let prompt_message = format!(
-                "Are you sure you want to remove the channel \"{}\"?",
-                channel.name
+            let prompt_message = t_with_args(
+                keys::prompt::PROMPT_REMOVE_CHANNEL,
+                &[("name", channel.name.as_str())],
             );
+            let remove = t(keys::collab::COLLAB_REMOVE);
             let answer = window.prompt(
                 PromptLevel::Warning,
                 &prompt_message,
                 None,
-                &["Remove", "Cancel"],
+                &[remove.as_str(), "Cancel"],
                 cx,
             );
             let workspace = self.workspace.clone();
@@ -2595,15 +2600,16 @@ impl CollabPanel {
         cx: &mut Context<Self>,
     ) {
         let user_store = self.user_store.clone();
-        let prompt_message = format!(
-            "Are you sure you want to remove \"{}\" from your contacts?",
-            github_login
+        let prompt_message = t_with_args(
+            keys::prompt::PROMPT_REMOVE_CONTACT,
+            &[("name", github_login)],
         );
+        let remove = t(keys::collab::COLLAB_REMOVE);
         let answer = window.prompt(
             PromptLevel::Warning,
             &prompt_message,
             None,
-            &["Remove", "Cancel"],
+            &[remove.as_str(), "Cancel"],
             cx,
         );
         let workspace = self.workspace.clone();

@@ -5,8 +5,8 @@ use edit_prediction::{
     open_ai_compatible::{open_ai_compatible_api_token, open_ai_compatible_api_url},
 };
 use edit_prediction_ui::{get_available_providers, set_completion_provider};
-use gpui::{App, Entity, ScrollHandle, TaskExt, prelude::*};
-use i18n::{keys, t};
+use gpui::{App, Entity, ScrollHandle, SharedString, TaskExt, prelude::*};
+use i18n::{keys, t, t_with_args};
 use language::language_settings::AllLanguageSettings;
 
 use settings::Settings as _;
@@ -87,9 +87,13 @@ pub(crate) fn render_edit_prediction_setup_page(
         Some(
             render_api_key_provider(
                 IconName::AiOpenAiCompat,
-                "OpenAI Compatible API",
+                t(keys::settings_ui::SETTINGS_B_EP_OPENAI_COMPATIBLE),
                 ApiKeyDocs::Custom {
-                    message: "The API key sent as Authorization: Bearer {key}.".into(),
+                    message: t_with_args(
+                        keys::settings_ui::SETTINGS_B_EP_API_KEY_BEARER,
+                        &[("key", "{key}")],
+                    )
+                    .into(),
                 },
                 open_ai_compatible_api_token(cx),
                 |cx| open_ai_compatible_api_url(cx),
@@ -130,7 +134,10 @@ fn render_provider_dropdown(window: &mut Window, cx: &mut App) -> AnyElement {
     let current_provider = AllLanguageSettings::get_global(cx)
         .edit_predictions
         .provider;
-    let current_provider_name = current_provider.display_name().unwrap_or("No provider set");
+    let current_provider_name = current_provider
+        .display_name()
+        .map(SharedString::from)
+        .unwrap_or_else(|| t(keys::settings_ui::SETTINGS_B_EP_NO_PROVIDER).into());
 
     let menu = ContextMenu::build(window, cx, move |mut menu, _, cx| {
         let available_providers = get_available_providers(cx);
@@ -194,7 +201,7 @@ enum ApiKeyDocs {
 
 fn render_api_key_provider(
     icon: IconName,
-    title: &'static str,
+    title: impl Into<SharedString>,
     docs: ApiKeyDocs,
     api_key_state: Entity<ApiKeyState>,
     current_url: fn(&mut App) -> SharedString,
@@ -202,6 +209,7 @@ fn render_api_key_provider(
     window: &mut Window,
     cx: &mut Context<SettingsWindow>,
 ) -> impl IntoElement {
+    let title = title.into();
     let weak_page = cx.weak_entity();
     let credentials_provider = zed_credentials_provider::global(cx);
     _ = window.use_keyed_state(current_url(cx), cx, |_, cx| {
@@ -247,9 +255,9 @@ fn render_api_key_provider(
             .detach_and_log_err(cx);
     };
 
-    let base_container = v_flex().id(title).min_w_0().pt_8().gap_1p5();
+    let base_container = v_flex().id(title.clone()).min_w_0().pt_8().gap_1p5();
 
-    let header = SettingsSectionHeader::new(title)
+    let header = SettingsSectionHeader::new(title.clone())
         .icon(icon)
         .no_padding(true);
 
@@ -283,22 +291,22 @@ fn render_api_key_provider(
     };
 
     let configured_card_label = if is_from_env_var {
-        "API Key Set in Environment Variable"
+        t(keys::settings_ui::SETTINGS_B_EP_API_KEY_ENV)
     } else {
-        "API Key Configured"
+        t(keys::settings_ui::SETTINGS_B_EP_API_KEY_CONFIGURED)
     };
 
     let container = if has_key {
         base_container.child(header).child(
             ConfiguredApiCard::new(format!("{title}-reset-key"), configured_card_label)
-                .button_label("Reset Key")
+                .button_label(t(keys::settings_ui::SETTINGS_B_EP_RESET_KEY))
                 .button_tab_index(0)
                 .disabled(is_from_env_var)
                 .when_some(env_var_name, |this, env_var_name| {
                     this.when(is_from_env_var, |this| {
-                        this.tooltip_label(format!(
-                            "To reset your API key, unset the {} environment variable.",
-                            env_var_name
+                        this.tooltip_label(t_with_args(
+                            keys::settings_ui::SETTINGS_B_API_KEY_RESET_TOOLTIP,
+                            &[("env_var", env_var_name.as_ref())],
                         ))
                     })
                 })
@@ -323,9 +331,9 @@ fn render_api_key_provider(
                         .child(description)
                         .when_some(env_var_name, |this, env_var_name| {
                             this.child({
-                                let label = format!(
-                                    "Or set the {} env var and restart Zed.",
-                                    env_var_name.as_ref()
+                                let label = t_with_args(
+                                    keys::settings_ui::SETTINGS_B_EP_ENV_VAR_HINT,
+                                    &[("env_var", env_var_name.as_ref())],
                                 );
                                 Label::new(label).size(LabelSize::Small).color(Color::Muted)
                             })

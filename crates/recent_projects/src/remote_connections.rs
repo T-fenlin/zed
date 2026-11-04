@@ -8,6 +8,7 @@ use askpass::EncryptedPassword;
 use editor::Editor;
 use futures::{FutureExt as _, channel::oneshot, select};
 use gpui::{AppContext, AsyncApp, PromptLevel, WindowHandle};
+use i18n::{keys, t};
 
 use project::{ProjectHost, trusted_worktrees};
 use remote::{
@@ -306,23 +307,25 @@ pub async fn open_remote_project(
                     }
                 });
                 log::error!("Failed to open project: {e:#}");
+                let failure_message = match connection_options {
+                    RemoteConnectionOptions::Ssh(_) => t(keys::recent::RECENT_FAILED_CONNECT_SSH),
+                    RemoteConnectionOptions::Wsl(_) => t(keys::recent::RECENT_FAILED_CONNECT_WSL),
+                    RemoteConnectionOptions::Docker(_) => {
+                        t(keys::recent::RECENT_FAILED_CONNECT_DEV_CONTAINER)
+                    }
+                    #[cfg(any(test, feature = "test-support"))]
+                    RemoteConnectionOptions::Mock(_) => {
+                        t(keys::recent::RECENT_FAILED_CONNECT_MOCK)
+                    }
+                };
                 let response = window
                     .update(cx, |_, window, cx| {
+                        let retry = t(keys::agent::AGENT_A_REGISTRY_RETRY);
                         window.prompt(
                             PromptLevel::Critical,
-                            match connection_options {
-                                RemoteConnectionOptions::Ssh(_) => "Failed to connect over SSH",
-                                RemoteConnectionOptions::Wsl(_) => "Failed to connect to WSL",
-                                RemoteConnectionOptions::Docker(_) => {
-                                    "Failed to connect to Dev Container"
-                                }
-                                #[cfg(any(test, feature = "test-support"))]
-                                RemoteConnectionOptions::Mock(_) => {
-                                    "Failed to connect to mock server"
-                                }
-                            },
+                            &failure_message,
                             Some(&format!("{e:#}")),
-                            &["Retry", "Cancel"],
+                            &[retry.as_str(), "Cancel"],
                             cx,
                         )
                     })?
@@ -367,23 +370,25 @@ pub async fn open_remote_project(
         match opened {
             Err(e) => {
                 log::error!("Failed to open project: {e:#}");
+                let failure_message = match connection_options {
+                    RemoteConnectionOptions::Ssh(_) => t(keys::recent::RECENT_FAILED_CONNECT_SSH),
+                    RemoteConnectionOptions::Wsl(_) => t(keys::recent::RECENT_FAILED_CONNECT_WSL),
+                    RemoteConnectionOptions::Docker(_) => {
+                        t(keys::recent::RECENT_FAILED_CONNECT_DEV_CONTAINER)
+                    }
+                    #[cfg(any(test, feature = "test-support"))]
+                    RemoteConnectionOptions::Mock(_) => {
+                        t(keys::recent::RECENT_FAILED_CONNECT_MOCK)
+                    }
+                };
                 let response = window
                     .update(cx, |_, window, cx| {
+                        let retry = t(keys::agent::AGENT_A_REGISTRY_RETRY);
                         window.prompt(
                             PromptLevel::Critical,
-                            match connection_options {
-                                RemoteConnectionOptions::Ssh(_) => "Failed to connect over SSH",
-                                RemoteConnectionOptions::Wsl(_) => "Failed to connect to WSL",
-                                RemoteConnectionOptions::Docker(_) => {
-                                    "Failed to connect to Dev Container"
-                                }
-                                #[cfg(any(test, feature = "test-support"))]
-                                RemoteConnectionOptions::Mock(_) => {
-                                    "Failed to connect to mock server"
-                                }
-                            },
+                            &failure_message,
                             Some(&format!("{e:#}")),
-                            &["Retry", "Cancel"],
+                            &[retry.as_str(), "Cancel"],
                             cx,
                         )
                     })?

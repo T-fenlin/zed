@@ -25,7 +25,7 @@ use gpui::{
     ScrollHandle, Subscription, Task, TaskExt, WeakEntity, WeakFocusHandle, Window, actions,
     anchored, deferred, prelude::*,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use itertools::Itertools;
 use language::{Capability, DiagnosticSeverity};
 use parking_lot::Mutex;
@@ -2007,11 +2007,13 @@ impl Pane {
             if save_intent == SaveIntent::Close && dirty_items.len() > 1 {
                 let answer = pane.update_in(cx, |_, window, cx| {
                     let detail = Self::file_names_for_prompt(&mut dirty_items.iter(), cx);
+                    let save_all = t(keys::prompt::PROMPT_SAVE_ALL);
+                    let discard_all = t(keys::prompt::PROMPT_DISCARD_ALL);
                     window.prompt(
                         PromptLevel::Warning,
-                        "Do you want to save changes to the following files?",
+                        &t(keys::prompt::PROMPT_SAVE_FILES),
                         Some(&detail),
-                        &["Save all", "Discard all", "Cancel"],
+                        &[save_all.as_str(), discard_all.as_str(), "Cancel"],
                         cx,
                     )
                 })?;
@@ -2058,11 +2060,16 @@ impl Pane {
                                     &mut [&item_to_close].into_iter(),
                                     cx,
                                 );
+                                let close_without_saving =
+                                    t(keys::prompt::PROMPT_CLOSE_WITHOUT_SAVING);
                                 window.prompt(
                                     PromptLevel::Warning,
-                                    &format!("Unable to save file: {err}"),
+                                    &t_with_args(
+                                        keys::prompt::PROMPT_UNABLE_TO_SAVE_FILE,
+                                        &[("error", &err.to_string())],
+                                    ),
                                     Some(&detail),
-                                    &["Close Without Saving", "Cancel"],
+                                    &[close_without_saving.as_str(), "Cancel"],
                                     cx,
                                 )
                             })?;
@@ -2261,9 +2268,9 @@ impl Pane {
         save_intent: SaveIntent,
         cx: &mut AsyncWindowContext,
     ) -> Result<bool> {
-        const CONFLICT_MESSAGE: &str = "This file has changed on disk since you started editing it. Do you want to overwrite it?";
+        let conflict_message = t(keys::prompt::PROMPT_OVERWRITE_CHANGED);
 
-        const DELETED_MESSAGE: &str = "This file has been deleted on disk since you started editing it. Do you want to recreate it?";
+        let deleted_message = t(keys::prompt::PROMPT_RECREATE_DELETED);
 
         let path_style = project.read_with(cx, |project, cx| project.path_style(cx));
         if save_intent == SaveIntent::Skip {
@@ -2332,11 +2339,13 @@ impl Pane {
             if has_deleted_file && is_singleton {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
+                    let save = t(keys::prompt::PROMPT_SAVE);
+                    let close = t(keys::prompt::PROMPT_CLOSE);
                     window.prompt(
                         PromptLevel::Warning,
-                        DELETED_MESSAGE,
+                        &deleted_message,
                         None,
-                        &["Save", "Close", "Cancel"],
+                        &[save.as_str(), close.as_str(), "Cancel"],
                         cx,
                     )
                 })?;
@@ -2367,11 +2376,13 @@ impl Pane {
             } else {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
+                    let overwrite = t(keys::prompt::PROMPT_OVERWRITE);
+                    let discard_edits = t(keys::prompt::PROMPT_DISCARD_EDITS);
                     window.prompt(
                         PromptLevel::Warning,
-                        CONFLICT_MESSAGE,
+                        &conflict_message,
                         None,
-                        &["Overwrite", "Discard Edits", "Cancel"],
+                        &[overwrite.as_str(), discard_edits.as_str(), "Cancel"],
                         cx,
                     )
                 })?;
@@ -2410,11 +2421,13 @@ impl Pane {
                         if pane.save_modals_spawned.insert(item_id) {
                             pane.activate_item(item_ix, true, true, window, cx);
                             let prompt = dirty_message_for(item.project_path(cx), path_style);
+                            let save = t(keys::prompt::PROMPT_SAVE);
+                            let dont_save = t(keys::prompt::PROMPT_DONT_SAVE);
                             Some(window.prompt(
                                 PromptLevel::Warning,
                                 &prompt,
                                 None,
-                                &["Save", "Don't Save", "Cancel"],
+                                &[save.as_str(), dont_save.as_str(), "Cancel"],
                                 cx,
                             ))
                         } else {
@@ -5078,12 +5091,15 @@ fn dirty_message_for(buffer_path: Option<ProjectPath>, path_style: PathStyle) ->
     match path {
         Some(path) => {
             let path = truncate_and_remove_front(&path, 80);
-            format!(
-                "{} contains unsaved edits. Do you want to save it?",
-                MarkdownInlineCode(path.as_str())
+            t_with_args(
+                keys::prompt::PROMPT_SAVE_EDITS,
+                &[(
+                    "path",
+                    &format!("{}", MarkdownInlineCode(path.as_str())),
+                )],
             )
         }
-        None => "This buffer contains unsaved edits. Do you want to save it?".to_string(),
+        None => t(keys::prompt::PROMPT_SAVE_EDITS_UNNAMED),
     }
 }
 
@@ -8254,7 +8270,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Save all");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_SAVE_ALL));
         save.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
@@ -8274,7 +8290,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DISCARD_ALL));
         save.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
@@ -8304,7 +8320,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DISCARD_ALL));
         close_task.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
@@ -8367,7 +8383,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DISCARD_ALL));
         close_task.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
@@ -8409,7 +8425,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         close_task.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
@@ -8542,7 +8558,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DISCARD_ALL));
         close_task.await.unwrap();
         assert_item_labels(&pane, [], cx);
 
@@ -8658,7 +8674,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Save all");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_SAVE_ALL));
         save.await.unwrap();
         assert_item_labels(&pane, ["C", "A*^"], cx);
 
@@ -8689,7 +8705,7 @@ mod tests {
         });
 
         cx.executor().run_until_parked();
-        cx.simulate_prompt_answer("Discard all");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DISCARD_ALL));
         save.await.unwrap();
         assert_item_labels(&pane, ["C", "A*^"], cx);
     }

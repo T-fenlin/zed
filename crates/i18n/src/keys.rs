@@ -2062,6 +2062,7 @@ pub mod prompt {
         PROMPT_SAVE_EDITS = "prompt-save_edits",
         PROMPT_SAVE_EDITS_UNNAMED = "prompt-save_edits_unnamed",
         PROMPT_IMPORT_VSCODE_SETTINGS = "prompt-import_vscode_settings",
+        PROMPT_COULD_NOT_FIND_SETTINGS = "prompt-could_not_find_settings",
     }
 }
 
@@ -2952,6 +2953,8 @@ pub mod git_ui {
         GIT_COPY_RELATIVE_PATHS = "git-copy_relative_paths",
         GIT_OPEN_FILE_DIFFS = "git-open_file_diffs",
         GIT_OPEN_FILE_DIFF = "git-open_file_diff",
+        GIT_OPEN_DIFFS = "git-open_diffs",
+        GIT_OPEN_DIFF = "git-open_diff",
         GIT_VIEW_FILES = "git-view_files",
         GIT_VIEW_FILE = "git-view_file",
         GIT_VIEW_FILE_HISTORIES = "git-view_file_histories",
@@ -3004,6 +3007,22 @@ pub mod git_ui {
         GIT_TRASH_MULTIPLE = "git-trash_multiple",
         GIT_RESTORE_MULTIPLE = "git-restore_multiple",
         GIT_DISCARD_MULTIPLE = "git-discard_multiple",
+        GIT_CHANGES = "git-changes",
+        GIT_UNSTAGED_CHANGES = "git-unstaged_changes",
+        GIT_DISCARD = "git-discard",
+        GIT_TRASH = "git-trash",
+        GIT_CONFIRM_RESTORE_PATH = "git-confirm_restore_path",
+        GIT_CONFIRM_TRASH_PATH = "git-confirm_trash_path",
+        GIT_CONFIRM_DISCARD_PATH = "git-confirm_discard_path",
+        GIT_CONFIRM_DISCARD_COUNT = "git-confirm_discard_count",
+        GIT_CONFIRM_TRASH_COUNT = "git-confirm_trash_count",
+        GIT_CONFIRM_DISCARD_AND_TRASH_COUNT = "git-confirm_discard_and_trash_count",
+        GIT_FAILED_TO_TRASH_FILES_COUNT = "git-failed_to_trash_files_count",
+        GIT_ALREADY_PUSHED_TO = "git-already_pushed_to",
+        GIT_STASH_ACTION_APPLY = "git-stash-action_apply",
+        GIT_STASH_ACTION_POP = "git-stash-action_pop",
+        GIT_STASH_ACTION_DROP = "git-stash-action_drop",
+        GIT_CONFIRM_STASH = "git-confirm_stash",
         GIT_BLAME_COPY_SHA = "git-blame-copy_sha",
         GIT_BLAME_COPY_COMMIT_SHA = "git-blame-copy_commit_sha",
         GIT_BLAME_OPEN_PERMALINK = "git-blame-open_permalink",
@@ -3342,6 +3361,8 @@ pub mod recent {
         RECENT_FAILED_CONNECT_WSL = "recent-failed_connect_wsl",
         RECENT_FAILED_CONNECT_DEV_CONTAINER = "recent-failed_connect_dev_container",
         RECENT_FAILED_CONNECT_MOCK = "recent-failed_connect_mock",
+        RECENT_THIS_WINDOW = "recent-this_window",
+        RECENT_FAILED_CONNECT = "recent-failed_connect",
     }
 }
 

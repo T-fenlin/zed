@@ -1054,7 +1054,9 @@ impl PickerDelegate for RecentProjectsDelegate {
             };
 
             if !matched_folders.is_empty() {
-                entries.push(ProjectPickerEntry::Header("Current Folders".into()));
+                entries.push(ProjectPickerEntry::Header(
+                    t(keys::recent::RECENT_CURRENT_FOLDERS).into(),
+                ));
                 for (index, positions) in matched_folders {
                     entries.push(ProjectPickerEntry::OpenFolder { index, positions });
                 }
@@ -1068,7 +1070,7 @@ impl PickerDelegate for RecentProjectsDelegate {
         };
 
         if has_projects_to_show {
-            entries.push(ProjectPickerEntry::Header("This Window".into()));
+            entries.push(ProjectPickerEntry::Header(t(keys::recent::RECENT_THIS_WINDOW).into()));
 
             if is_empty_query {
                 for id in 0..self.window_project_groups.len() {
@@ -1534,14 +1536,14 @@ impl PickerDelegate for RecentProjectsDelegate {
 
                 let focus_handle = self.focus_handle.clone();
                 let secondary_confirm_tooltip: SharedString = if self.create_new_window {
-                    "Open Project in This Window".into()
+                    t(keys::recent::RECENT_OPEN_PROJECT_THIS_WINDOW).into()
                 } else {
                     t(keys::sidebar::SIDEBAR_OPEN_PROJECT_NEW_WINDOW).into()
                 };
                 let primary_confirm_tooltip: SharedString = if self.create_new_window {
                     t(keys::sidebar::SIDEBAR_OPEN_PROJECT_NEW_WINDOW).into()
                 } else {
-                    "Open Project in This Window".into()
+                    t(keys::recent::RECENT_OPEN_PROJECT_THIS_WINDOW).into()
                 };
                 let secondary_confirm_icon = if self.create_new_window {
                     IconName::ThisWindow
@@ -1863,7 +1865,7 @@ impl PickerDelegate for RecentProjectsDelegate {
                         )
                     } else if self.create_new_window {
                         this.child(
-                            Button::new("open_here", "This Window")
+                            Button::new("open_here", t(keys::recent::RECENT_THIS_WINDOW))
                                 .key_binding(KeyBinding::for_action_in(
                                     &menu::SecondaryConfirm,
                                     &focus_handle,

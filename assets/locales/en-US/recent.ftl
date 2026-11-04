@@ -40,3 +40,5 @@ recent-failed_connect_ssh = Failed to connect over SSH
 recent-failed_connect_wsl = Failed to connect to WSL
 recent-failed_connect_dev_container = Failed to connect to Dev Container
 recent-failed_connect_mock = Failed to connect to mock server
+recent-this_window = This Window
+recent-failed_connect = Failed to connect

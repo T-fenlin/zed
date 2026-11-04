@@ -3556,7 +3556,7 @@ mod tests {
             .unwrap();
         executor.run_until_parked();
 
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         close.await.unwrap();
 
         // Advance the clock to ensure that the item has been serialized and dropped from the queue
@@ -3622,7 +3622,7 @@ mod tests {
         assert_eq!(cx.update(|cx| cx.windows().len()), 1);
 
         // The window is successfully closed after the user dismisses the prompt.
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         executor.run_until_parked();
         assert_eq!(cx.update(|cx| cx.windows().len()), 0);
     }
@@ -4790,7 +4790,7 @@ mod tests {
             })
             .unwrap();
         cx.background_executor.run_until_parked();
-        cx.simulate_prompt_answer("Overwrite");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_OVERWRITE));
         save_task.await.unwrap();
         window
             .update(cx, |_, _, cx| {
@@ -5116,7 +5116,7 @@ mod tests {
             close_pinned: false,
         });
         cx.background_executor.run_until_parked();
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         cx.background_executor.run_until_parked();
 
         workspace.read_with(cx, |workspace, cx| {
@@ -7343,7 +7343,7 @@ mod tests {
             })
             .unwrap();
         cx.run_until_parked();
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         close_task.await.ok();
         cx.run_until_parked();
 
@@ -7425,7 +7425,7 @@ mod tests {
             })
             .unwrap();
         cx.run_until_parked();
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         close_task.await.ok();
         cx.run_until_parked();
 
@@ -7636,7 +7636,7 @@ mod tests {
             cx.has_pending_prompt(),
             "Reload should prompt again for the dirty item"
         );
-        cx.simulate_prompt_answer("Don't Save");
+        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_DONT_SAVE));
         cx.run_until_parked();
 
         will_restart

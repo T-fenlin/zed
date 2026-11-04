@@ -5475,7 +5475,7 @@ pub mod test {
         pub fn test(window: &mut Window, cx: &mut Context<Self>) -> Self {
             let search_bar = cx.new(|cx| Editor::single_line(window, cx));
             let dummy_page = SettingsPage {
-                title: "Test",
+                title: "Test".into(),
                 items: Box::new([]),
             };
             Self {
@@ -5597,7 +5597,7 @@ pub mod test {
                     .last_mut()
                     .unwrap()
                     .items
-                    .push(SettingsPageItem::SectionHeader(title));
+                    .push(SettingsPageItem::SectionHeader(title.into()));
                 if selected_idx == Some(index) && !in_expanded_section {
                     panic!("Items in unexpanded sections cannot be selected");
                 }
@@ -5613,7 +5613,7 @@ pub mod test {
         let pages: Vec<SettingsPage> = page_builders
             .into_iter()
             .map(|builder| SettingsPage {
-                title: builder.title,
+                title: builder.title.into(),
                 items: builder.items.into_boxed_slice(),
             })
             .collect();
@@ -5789,9 +5789,9 @@ pub mod test {
             };
             settings_window_with_items(
                 vec![
-                    SettingsPageItem::SectionHeader("First"),
+                    SettingsPageItem::SectionHeader("First".into()),
                     setting(),
-                    SettingsPageItem::SectionHeader("Last"),
+                    SettingsPageItem::SectionHeader("Last".into()),
                     setting(),
                 ],
                 window,
@@ -5868,7 +5868,7 @@ pub mod test {
 
     #[gpui::test]
     fn tab_in_last_setting_keeps_focused_control_visible(cx: &mut gpui::TestAppContext) {
-        let control_handles = Rc::new(RefCell::new(HashMap::<&'static str, FocusHandle>::new()));
+        let control_handles = Rc::new(RefCell::new(HashMap::<SharedString, FocusHandle>::new()));
         let (settings_window, cx) = cx.add_window_view(|window, cx| {
             register_settings(cx);
             let app_state = AppState::test(cx);
@@ -5910,14 +5910,14 @@ pub mod test {
                 .unwrap();
             let mut settings_window = settings_window_with_items(
                 vec![
-                    SettingsPageItem::SectionHeader("First"),
+                    SettingsPageItem::SectionHeader("First".into()),
                     test_action_link(
                         "Preceding setting",
                         Some("A setting with a long description. ".repeat(100)),
                     ),
-                    SettingsPageItem::SectionHeader("Last"),
+                    SettingsPageItem::SectionHeader("Last".into()),
                     git_integration,
-                    SettingsPageItem::SectionHeader("Hidden"),
+                    SettingsPageItem::SectionHeader("Hidden".into()),
                 ],
                 window,
                 cx,
@@ -6023,7 +6023,7 @@ pub mod test {
                 .unwrap();
             window.activate_window();
             settings_window_with_items(
-                vec![SettingsPageItem::SectionHeader("Last"), setting],
+                vec![SettingsPageItem::SectionHeader("Last".into()), setting],
                 window,
                 cx,
             )
@@ -6070,14 +6070,14 @@ pub mod test {
                 )
             };
             settings_window.pages[0].items = vec![
-                SettingsPageItem::SectionHeader("One"),
+                SettingsPageItem::SectionHeader("One".into()),
                 setting("Initial setting", 100),
             ]
             .into_boxed_slice();
             settings_window.pages[1].items = vec![
-                SettingsPageItem::SectionHeader("First"),
+                SettingsPageItem::SectionHeader("First".into()),
                 setting("Last setting", 30),
-                SettingsPageItem::SectionHeader("Last"),
+                SettingsPageItem::SectionHeader("Last".into()),
                 setting("Last setting", 0),
             ]
             .into_boxed_slice();
@@ -6129,11 +6129,11 @@ pub mod test {
             );
             let setting = || test_action_link("Setting", None);
             settings_window.pages[1].items = vec![
-                SettingsPageItem::SectionHeader("Status Bar"),
+                SettingsPageItem::SectionHeader("Status Bar".into()),
                 setting(),
-                SettingsPageItem::SectionHeader("Title Bar"),
+                SettingsPageItem::SectionHeader("Title Bar".into()),
                 setting(),
-                SettingsPageItem::SectionHeader("Tab Bar"),
+                SettingsPageItem::SectionHeader("Tab Bar".into()),
                 setting(),
             ]
             .into_boxed_slice();
@@ -6200,8 +6200,8 @@ pub mod test {
             cx.new(|cx| {
                 settings_window_with_items(
                     vec![
-                        SettingsPageItem::SectionHeader("First"),
-                        SettingsPageItem::SectionHeader("Last"),
+                        SettingsPageItem::SectionHeader("First".into()),
+                        SettingsPageItem::SectionHeader("Last".into()),
                         test_action_link(
                             "Last setting",
                             Some(
@@ -6376,7 +6376,7 @@ pub mod test {
             register_settings(cx);
             let mut this = parse("v First*\n- One\nv Second\n- First\n- Last", window, cx);
             this.pages[0].items = vec![
-                SettingsPageItem::SectionHeader("One"),
+                SettingsPageItem::SectionHeader("One".into()),
                 test_action_link(
                     "Tall final row",
                     Some("A setting with a long description. ".repeat(8)),

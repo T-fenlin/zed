@@ -18,6 +18,7 @@ use gpui::{
     PromptLevel, Render, ScrollHandle, StatefulInteractiveElement as _, Styled, Task, WeakEntity,
     Window, actions,
 };
+use i18n::{keys, t, t_with_args};
 use language::{
     Buffer, Capability, DiskState, File, LanguageRegistry, LineEnding, OffsetRangeExt as _,
     ReplicaId, Rope, TextBuffer,
@@ -916,9 +917,10 @@ impl CommitView {
     }
 
     fn apply_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
+        let action = t(keys::git_ui::GIT_STASH_ACTION_APPLY);
         Self::stash_action(
             workspace,
-            "Apply",
+            &action,
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {
@@ -943,9 +945,10 @@ impl CommitView {
     }
 
     fn pop_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
+        let action = t(keys::git_ui::GIT_STASH_ACTION_POP);
         Self::stash_action(
             workspace,
-            "Pop",
+            &action,
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {
@@ -970,9 +973,10 @@ impl CommitView {
     }
 
     fn remove_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
+        let action = t(keys::git_ui::GIT_STASH_ACTION_DROP);
         Self::stash_action(
             workspace,
-            "Drop",
+            &action,
             window,
             cx,
             async move |repository, sha, stash, commit_view, workspace, cx| {
@@ -1020,9 +1024,13 @@ impl CommitView {
             return;
         };
         let sha = commit_view.read(cx).commit.sha.clone();
+        let message = t_with_args(
+            keys::git_ui::GIT_CONFIRM_STASH,
+            &[("action", str_action), ("index", &stash.to_string())],
+        );
         let answer = window.prompt(
             PromptLevel::Info,
-            &format!("{} stash@{{{}}}?", str_action, stash),
+            &message,
             None,
             &[str_action, "Cancel"],
             cx,

@@ -1,4 +1,5 @@
 use gpui::{App, Context, WeakEntity, Window};
+use i18n::{keys, t, t_with_args};
 use notifications::status_toast::StatusToast;
 use std::sync::Arc;
 use ui::{Color, Icon, IconName, IconSize, SharedString};
@@ -69,11 +70,13 @@ pub fn clone_and_open(
 
             let prompt_answer = if has_worktrees {
                 cx.update(|window, cx| {
+                    let add_to_project = t(keys::prompt::PROMPT_ADD_REPO_TO_PROJECT);
+                    let open_in_new_project = t(keys::prompt::PROMPT_OPEN_REPO_IN_NEW_PROJECT);
                     window.prompt(
                         gpui::PromptLevel::Info,
-                        &format!("Git Clone: {}", repo_name),
+                        &t_with_args(keys::prompt::PROMPT_GIT_CLONE, &[("name", &repo_name)]),
                         None,
-                        &["Add repo to project", "Open repo in new project"],
+                        &[add_to_project.as_str(), open_in_new_project.as_str()],
                         cx,
                     )
                 })

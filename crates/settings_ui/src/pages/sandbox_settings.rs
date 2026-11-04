@@ -11,9 +11,13 @@ use util::ResultExt as _;
 use crate::SettingsWindow;
 use crate::components::{SettingsInputField, SettingsSectionHeader};
 
-const DOMAINS_DESCRIPTION: &str = "Each entry is an exact domain (github.com) or a leading-*. subdomain wildcard (*.npmjs.org). IP addresses and local domains are not allowed.";
+fn domains_description() -> String {
+    t(keys::settings_ui::SETTINGS_B_SANDBOX_DOMAINS_DESC)
+}
 
-const WRITE_PATHS_DESCRIPTION: &str = "Each entry must be an absolute path and grants write access to the whole subtree, except protected Git metadata.";
+fn write_paths_description() -> String {
+    t(keys::settings_ui::SETTINGS_B_SANDBOX_WRITABLE_PATHS_DESC)
+}
 
 pub(crate) fn render_sandbox_settings_page(
     settings_window: &SettingsWindow,
@@ -138,7 +142,7 @@ pub(crate) fn render_sandbox_settings_page(
                     )
                     .child(render_list_section(
                         t(keys::settings_ui::SETTINGS_B_SANDBOX_ALLOWED_DOMAINS).into(),
-                        DOMAINS_DESCRIPTION.into(),
+                        domains_description().into(),
                         host_rows,
                         add_host_input,
                         empty_border,
@@ -171,7 +175,7 @@ pub(crate) fn render_sandbox_settings_page(
                     )
                     .child(render_list_section(
                         t(keys::settings_ui::SETTINGS_B_SANDBOX_WRITABLE_PATHS).into(),
-                        WRITE_PATHS_DESCRIPTION.into(),
+                        write_paths_description().into(),
                         path_rows,
                         add_path_input,
                         empty_border,

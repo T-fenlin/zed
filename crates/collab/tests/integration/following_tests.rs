@@ -8,6 +8,7 @@ use collab_ui::{
 };
 use editor::{Editor, MultiBuffer, MultiBufferOffset, PathKey, SelectionEffects};
 use gpui::proptest::prelude::*;
+use i18n::{keys, t};
 use gpui::{
     Action, AppContext as _, BackgroundExecutor, BorrowAppContext, Entity, SharedString,
     TestAppContext, VisualContext, VisualTestContext, point,
@@ -265,7 +266,7 @@ async fn test_basic_following(
     });
     executor.run_until_parked();
     // are you sure you want to leave the call?
-    cx_c.simulate_prompt_answer("Close window and hang up");
+    cx_c.simulate_prompt_answer(&t(keys::prompt::PROMPT_CLOSE_WINDOW_AND_HANG_UP));
     cx_c.cx.update(|_| {
         drop(workspace_c);
     });

@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use std::{collections::HashSet, sync::Arc};
 
 use editor::Editor;
@@ -235,8 +235,9 @@ fn render_api_key_providers_item(
             .button_tab_index(0)
             .disabled(is_from_env_var)
             .when(is_from_env_var, |this| {
-                this.tooltip_label(format!(
-                    "To reset your API key, unset the {env_var_name} environment variable."
+                this.tooltip_label(t_with_args(
+                    keys::settings_ui::SETTINGS_B_API_KEY_RESET_TOOLTIP,
+                    &[("env_var", env_var_name.as_str())],
                 ))
             })
             .on_click({
@@ -296,8 +297,9 @@ fn render_api_key_providers_item(
                                 ),
                         )
                         .child(
-                            Label::new(format!(
-                                "Or set the {env_var_name} env var and restart Zed for it to take effect."
+                            Label::new(t_with_args(
+                                keys::settings_ui::SETTINGS_B_LLM_ENV_VAR_HINT,
+                                &[("env_var", env_var_name.as_str())],
                             ))
                             .size(LabelSize::XSmall)
                             .color(Color::Muted),

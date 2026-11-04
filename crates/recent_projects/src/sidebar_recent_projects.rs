@@ -5,6 +5,7 @@ use gpui::{
     Action, AnyElement, App, Context, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable,
     Subscription, Task, TaskExt, WeakEntity, Window,
 };
+use i18n::{keys, t};
 use picker::{
     Picker, PickerDelegate,
     highlighted_match_with_paths::{HighlightedMatch, HighlightedMatchWithPaths},
@@ -368,7 +369,7 @@ impl PickerDelegate for SidebarRecentProjectsDelegate {
                 )
                 .tooltip(move |_, cx| {
                     Tooltip::with_meta(
-                        "Open Project in This Window",
+                        t(keys::recent::RECENT_OPEN_PROJECT_THIS_WINDOW),
                         None,
                         tooltip_path.clone(),
                         cx,

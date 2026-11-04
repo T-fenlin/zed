@@ -1642,7 +1642,7 @@ impl RemoteServerProjects {
             window,
             cx,
         )
-        .prompt_err("Failed to connect", window, cx, |_, _, _| None);
+        .prompt_err(&t(keys::recent::RECENT_FAILED_CONNECT), window, cx, |_, _, _| None);
 
         let address_editor = editor.clone();
         let creating = cx.spawn_in(window, async move |this, cx| {
@@ -1717,7 +1717,7 @@ impl RemoteServerProjects {
             window,
             cx,
         )
-        .prompt_err("Failed to connect", window, cx, |_, _, _| None);
+        .prompt_err(&t(keys::recent::RECENT_FAILED_CONNECT), window, cx, |_, _, _| None);
 
         let wsl_picker = picker.clone();
         let creating = cx.spawn_in(window, async move |this, cx| {
@@ -1831,7 +1831,7 @@ impl RemoteServerProjects {
                     window,
                     cx,
                 )
-                .prompt_err("Failed to connect", window, cx, |_, _, _| None);
+                .prompt_err(&t(keys::recent::RECENT_FAILED_CONNECT), window, cx, |_, _, _| None);
 
                 cx.spawn_in(window, async move |workspace, cx| {
                     let session = connect.await;
@@ -2045,9 +2045,10 @@ impl RemoteServerProjects {
             .await;
             if let Err(e) = result {
                 log::error!("Failed to connect: {e:#}");
+                let message = t(keys::recent::RECENT_FAILED_CONNECT);
                 cx.prompt(
                     gpui::PromptLevel::Critical,
-                    "Failed to connect",
+                    &message,
                     Some(&e.to_string()),
                     &["OK"],
                 )
@@ -2333,9 +2334,10 @@ impl RemoteServerProjects {
             .await;
             if let Err(e) = result {
                 log::error!("Failed to connect: {e:#}");
+                let message = t(keys::recent::RECENT_FAILED_CONNECT);
                 cx.prompt(
                     gpui::PromptLevel::Critical,
-                    "Failed to connect",
+                    &message,
                     Some(&e.to_string()),
                     &["OK"],
                 )

@@ -2,7 +2,7 @@ use agent_skills::{Skill, SkillIndex, SkillSource, encode_skill_share_link};
 use anyhow::Context as _;
 use fs::RemoveOptions;
 use gpui::{App, ClipboardItem, Entity, PromptLevel, ScrollHandle, SharedString, Task, prelude::*};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use project::{Project, WorktreeId};
 
 use ui::{Divider, Tooltip, prelude::*};
@@ -355,19 +355,33 @@ fn render_skill_row(
                                 return;
                             }
 
-                            let prompt_message =
-                                format!("Delete the {skill_scope} skill \"{skill_name}\"?");
-                            let prompt_detail = format!(
-                                "This will move {} to the trash. This skill is shared with other \
-                                 agent tools {shared_scope}, so it will no longer be available to \
-                                 them either.",
-                                directory_path.compact().display(),
+                            let prompt_message = if skill_scope == "project" {
+                                t_with_args(
+                                    keys::settings_ui::SETTINGS_A_SKILLS_DELETE_PROMPT_PROJECT,
+                                    &[("name", skill_name.as_str())],
+                                )
+                            } else {
+                                t_with_args(
+                                    keys::settings_ui::SETTINGS_A_SKILLS_DELETE_PROMPT_GLOBAL,
+                                    &[("name", skill_name.as_str())],
+                                )
+                            };
+                            let prompt_detail = t_with_args(
+                                keys::settings_ui::SETTINGS_A_SKILLS_DELETE_DETAIL,
+                                &[
+                                    (
+                                        "path",
+                                        &directory_path.compact().display().to_string(),
+                                    ),
+                                    ("shared_scope", shared_scope.as_str()),
+                                ],
                             );
+                            let delete = t(keys::settings_ui::SETTINGS_A_SKILLS_DELETE);
                             let answer = window.prompt(
                                 PromptLevel::Info,
                                 &prompt_message,
                                 Some(&prompt_detail),
-                                &["Delete", "Cancel"],
+                                &[delete.as_str(), "Cancel"],
                                 cx,
                             );
 
