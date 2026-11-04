@@ -1,6 +1,7 @@
 use client::telemetry;
 use extension_host::ExtensionStore;
 use gpui::{App, ClipboardItem, PromptLevel, actions};
+use i18n::{keys, t};
 use system_specs::{CopySystemSpecsIntoClipboard, SystemSpecs};
 use util::ResultExt;
 use workspace::Workspace;
@@ -62,7 +63,7 @@ pub fn init(cx: &mut App) {
 
                     cx.prompt(
                         PromptLevel::Info,
-                        "Copied into clipboard",
+                        &t(keys::misc::FEEDBACK_COPIED_TO_CLIPBOARD),
                         Some(&specs),
                         &["OK"],
                     )
@@ -75,7 +76,7 @@ pub fn init(cx: &mut App) {
                 cx.write_to_clipboard(ClipboardItem::new_string(clipboard_text.clone()));
                 drop(window.prompt(
                     PromptLevel::Info,
-                    "Copied into clipboard",
+                    &t(keys::misc::FEEDBACK_COPIED_TO_CLIPBOARD),
                     Some(&clipboard_text),
                     &["OK"],
                     cx,

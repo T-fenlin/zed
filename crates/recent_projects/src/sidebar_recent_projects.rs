@@ -269,7 +269,7 @@ impl PickerDelegate for SidebarRecentProjectsDelegate {
                             .await
                     })
                     .detach_and_prompt_err(
-                        "Failed to open project",
+                        &t(keys::recent::RECENT_FAILED_TO_OPEN_PROJECT),
                         window,
                         cx,
                         |_, _, _| None,

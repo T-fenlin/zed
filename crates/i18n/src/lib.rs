@@ -6,7 +6,6 @@
 
 pub mod keys;
 
-
 use fluent_bundle::{FluentArgs, FluentBundle, FluentResource, FluentValue};
 use unic_langid::LanguageIdentifier;
 
@@ -101,8 +100,7 @@ fn build_bundle(locale: Locale) -> FluentBundle<FluentResource> {
     // translation; we surface them but do not panic.
     bundle.set_use_isolating(false);
     for (_domain, text) in sources(locale) {
-        let res = FluentResource::try_new(text.to_string())
-            .unwrap_or_else(|(res, _errs)| res);
+        let res = FluentResource::try_new(text.to_string()).unwrap_or_else(|(res, _errs)| res);
         // Duplicate ids across files are tolerated on a best-effort basis.
         let _ = bundle.add_resource(res);
     }
@@ -155,26 +153,30 @@ pub fn t(key: &str) -> String {
 /// Resolve with arguments, e.g. `t_with_args("ui-choose_option_for", &[("name", "X")])`.
 pub fn t_with_args(key: &str, args: &[(&str, &str)]) -> String {
     with_registry(|reg| {
-    let mut fluent_args = FluentArgs::new();
-    for (k, v) in args {
-        fluent_args.set(*k, FluentValue::from(v.to_string()));
-    }
-    let try_bundle = |bundle: &FluentBundle<FluentResource>| -> Option<String> {
-        let msg = bundle.get_message(key)?;
-        let pattern = msg.value()?;
-        let mut errors = vec![];
-        let out = bundle.format_pattern(pattern, Some(&fluent_args), &mut errors);
-        if errors.is_empty() { Some(out.into_owned()) } else { Some(out.into_owned()) }
-    };
-    if let Some(s) = try_bundle(&reg.active_bundle) {
-        return s;
-    }
-    if reg.active != Locale::EnUs {
-        if let Some(s) = try_bundle(&reg.fallback_bundle) {
+        let mut fluent_args = FluentArgs::new();
+        for (k, v) in args {
+            fluent_args.set(*k, FluentValue::from(v.to_string()));
+        }
+        let try_bundle = |bundle: &FluentBundle<FluentResource>| -> Option<String> {
+            let msg = bundle.get_message(key)?;
+            let pattern = msg.value()?;
+            let mut errors = vec![];
+            let out = bundle.format_pattern(pattern, Some(&fluent_args), &mut errors);
+            if errors.is_empty() {
+                Some(out.into_owned())
+            } else {
+                Some(out.into_owned())
+            }
+        };
+        if let Some(s) = try_bundle(&reg.active_bundle) {
             return s;
         }
-    }
-    key.to_string()
+        if reg.active != Locale::EnUs {
+            if let Some(s) = try_bundle(&reg.fallback_bundle) {
+                return s;
+            }
+        }
+        key.to_string()
     })
 }
 

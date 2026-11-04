@@ -65,22 +65,41 @@
 
 > 以下为超出原清单范围、本轮未改的新发现项，需先补 key 或先引入 i18n 依赖。
 
-### project_panel（i18n 目前仅为 dev-dependency）
-- `project_panel.rs`：`"Do you want to trash"`、`"Replace"` 等删除/重命名提示
-- 若要在生产代码中使用 `t()`，需把 `i18n` 从 dev-dependencies 提升为常规依赖
+### project_panel（本轮已完成，i18n 已提为常规依赖）
+- `build_removal_prompt` 全面改走 `t()`/`t_with_args()`：单/多文件 × trash/delete 四种确认框、`.. 另有 N 个文件未显示`、未保存更改提示、`This action cannot be undone.`
+- 右键菜单 30+ 条标签（新建/打开/剪切/复制/粘贴/撤销/重做/复制路径/git 相关/重命名/移到废纸篓/删除/展开折叠等）全部接入 `panel-*` key
+- `restore_file` 的 `Discard changes to …?`、替换确认框的 `Replace`、`Failed to open file` 及错误码明细（SSH/远程断开、未共享路径）
+- 测试同步：`assert_prompt`、`pending_prompt` 断言改为对照 `t()`/`t_with_args()`；`cx.answer("Trash")` 等应答改用 `t(keys::panel::PANEL_TRASH)`
 
-### vim / open_path_prompt（尚无 i18n 依赖）
-- `vim/src/command.rs`：`"Argument required"`、`"No file name"`、`"Use ! to write partial buffer"`、`"Replace"`
-- `open_path_prompt.rs`：`"Replace"`
+### vim / open_path_prompt（本轮已完成，均已引入 i18n 依赖）
+- `vim/src/command.rs`：`Argument required`、`No file name`、`Use ! to write partial buffer`、`Failed to save`（3 处）、两处「已存在是否替换」确认框与 `Replace` 按钮
+- `open_path_prompt.rs`：「已存在是否替换」确认框
+- 共用文案放在 `misc` domain：`file_exists_prompt`、`file_exists_detail`、`replace`、`vim-*`
 
-### workspace
-- 已无遗留项（`Failed to join channel` 已在第 4 批完成）
+### auto_update / feedback / install_cli（本轮已完成）
+- `auto_update.rs`：包管理器安装说明、`Could not check for updates`
+- `feedback.rs`：`Copied into clipboard`（2 处）
+- `install_cli_binary.rs`：Linux 路径提示（改多行值）、安装失败通知、安装成功 toast
 
-### 其它 crate（无 i18n 依赖，需逐个引入）
-- `auto_update.rs`：`"Zed was installed via a package manager."`、`"Could not check for updates"`
-- `feedback.rs`：`"Copied into clipboard"`
-- `install_cli_binary.rs`、`move_to_applications.rs`
-- `ui` gallery preview / `agent_ui` thread_item 等组件预览中的演示文案（英文示例，是否译可再定）
+### 5. 失败提示 / 确认框收尾（第三批）
+
+- `collab_ui`：`Failed to join project`、`grant mic/write access`、`revoke access`、`create channel`、`hang up`、`set channel visibility`、`move channel`、`leave channel`、`remove contact`、`respond to contact request`、`Call failed`、`update role`、`remove member`、`invite member`（全部复用已存在的 `collab-failed_to_*` key）
+- `recent_projects`：`Failed to open project`（3 处）、`Cannot open Dev Container from remote project`、`Failed to start Dev Container…`、`Failed to reconnect`
+- `workspace` / `pane_group`：`Failed to join project`、`Failed to save`（4 处）
+- `editor`：`Failed to create buffer`
+- `debugger_ui`：`Failed to edit debug.json`
+- `vim`：`Failed to write lines`、`Failed to :w`（2 处）
+- `install_cli`：`Cannot install the Zed CLI`
+- `zed`：退出确认框、zed:// scheme 注册失败、不支持的 GPU 提示（4 段文案拼装）、inotify / ReadDirectoryChangesW 初始化失败提示与 `Troubleshoot and Quit` / `Skip` 按钮
+- 补充扫描：`show_error(...)` 系列 5 处（此前只清 `prompt` / `prompt_err` / `detach_and_prompt_err`，漏掉了 toast 通道）
+  - `collab_ui`：`There's no active call; join one first.` → 复用 `collab-no_active_call`
+  - `workspace/pane.rs`：`Cannot drop files on a remote project`、`Cannot drop local files on a remote SSH/Docker project`、`Could not translate the dropped paths into WSL paths`
+  - `workspace/workspace.rs`：`You cannot add folders to someone else's project`
+  - 注意：`show_error` 签名是 `E: WorkspaceError`，`String` 有实现、`&String` 没有 → 直接传 `t(...)`，不要加 `&`
+
+### 仍待处理
+- `zed/src/zed/move_to_applications.rs`（**仅 macOS 编译**）：`Move Zed to Applications?` 等 3 条文案。当前开发机为 Windows，改了也无法编译验证，暂不动，留待 macOS 环境补。
+- `ui` gallery preview / `agent_ui` thread_item 等组件预览里的英文示例文案（演示数据，是否译可再定）
 
 ### 有意不译（逻辑/遥测，非遗漏）
 - `settings_ui.rs` `setting_type()` 返回值（telemetry type）、`banner()` label（telemetry label）、`title.as_ref() == "LLM Providers"` 比较

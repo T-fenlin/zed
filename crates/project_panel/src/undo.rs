@@ -995,8 +995,8 @@ impl Inner {
                 window.prompt(
                     PromptLevel::Info,
                     &prompt.message,
-                    prompt.detail,
-                    &[prompt.confirmation_label, "Cancel"],
+                    prompt.detail.as_deref(),
+                    &[prompt.confirmation_label.as_str(), "Cancel"],
                     cx,
                 )
             })?

@@ -10,7 +10,7 @@ use crate::plan_chip::PlanChip;
 use agent_settings::{AgentSettings, WindowLayout};
 use arrayvec::ArrayVec;
 use git_ui_core::worktree_picker::WorktreePicker;
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use path::PathStyle;
 pub use platform_title_bar::{
     self, DraggedWindowTab, MergeAllWindows, MoveTabToNewWindow, PlatformTitleBar,
@@ -607,37 +607,46 @@ impl TitleBar {
         let options = self.project.read(cx).remote_connection_options(cx)?;
         let host: SharedString = options.display_name().into();
 
-        let (tooltip_title, icon) = match options {
-            RemoteConnectionOptions::Ssh(_) => {
-                (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Server)
-            }
-            RemoteConnectionOptions::Wsl(_) => {
-                (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Linux)
-            }
-            RemoteConnectionOptions::Docker(_dev_container_connection) => {
-                (t(keys::titlebar::TITLEBAR_DEV_CONTAINER), IconName::Box)
-            }
-            #[cfg(any(test, feature = "test-support"))]
-            RemoteConnectionOptions::Mock(_) => (
+        // Match on the connection kind rather than the enum: the `Mock` variant only
+        // exists when `test-support` is enabled, so an exhaustive match breaks when
+        // another crate in the same build enables that feature.
+        let (tooltip_title, icon) = match options.connection_type() {
+            "ssh" => (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Server),
+            "wsl" => (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Linux),
+            "mock" => (
                 t(keys::titlebar::TITLEBAR_MOCK_REMOTE_PROJECT),
                 IconName::Server,
             ),
+            _ => (t(keys::titlebar::TITLEBAR_DEV_CONTAINER), IconName::Box),
         };
 
         let (indicator_color, meta) = match self.project.read(cx).remote_connection_state(cx)? {
-            remote::ConnectionState::Connecting => (Color::Info, format!("Connecting to: {host}")),
-            remote::ConnectionState::Connected => (Color::Success, format!("Connected to: {host}")),
+            remote::ConnectionState::Connecting => (
+                Color::Info,
+                t_with_args(keys::titlebar::TITLEBAR_CONNECTING_TO, &[("host", &host)]),
+            ),
+            remote::ConnectionState::Connected => (
+                Color::Success,
+                t_with_args(keys::titlebar::TITLEBAR_CONNECTED_TO, &[("host", &host)]),
+            ),
             remote::ConnectionState::HeartbeatMissed => (
                 Color::Warning,
-                format!("Connection attempt to {host} missed. Retrying..."),
+                t_with_args(
+                    keys::titlebar::TITLEBAR_CONNECTION_MISSED,
+                    &[("host", &host)],
+                ),
             ),
             remote::ConnectionState::Reconnecting => (
                 Color::Warning,
-                format!("Lost connection to {host}. Reconnecting..."),
+                t_with_args(keys::titlebar::TITLEBAR_CONNECTION_LOST, &[("host", &host)]),
             ),
-            remote::ConnectionState::Disconnected => {
-                (Color::Error, format!("Disconnected from {host}"))
-            }
+            remote::ConnectionState::Disconnected => (
+                Color::Error,
+                t_with_args(
+                    keys::titlebar::TITLEBAR_DISCONNECTED_FROM,
+                    &[("host", &host)],
+                ),
+            ),
         };
 
         let icon_color = match self.project.read(cx).remote_connection_state(cx)? {

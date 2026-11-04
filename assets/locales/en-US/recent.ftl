@@ -42,3 +42,6 @@ recent-failed_connect_dev_container = Failed to connect to Dev Container
 recent-failed_connect_mock = Failed to connect to mock server
 recent-this_window = This Window
 recent-failed_connect = Failed to connect
+recent-failed_to_open_project = Failed to open project
+recent-cannot_open_dev_container_from_remote = Cannot open Dev Container from remote project
+recent-failed_to_reconnect = Failed to reconnect

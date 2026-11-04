@@ -307,16 +307,15 @@ pub async fn open_remote_project(
                     }
                 });
                 log::error!("Failed to open project: {e:#}");
-                let failure_message = match connection_options {
-                    RemoteConnectionOptions::Ssh(_) => t(keys::recent::RECENT_FAILED_CONNECT_SSH),
-                    RemoteConnectionOptions::Wsl(_) => t(keys::recent::RECENT_FAILED_CONNECT_WSL),
-                    RemoteConnectionOptions::Docker(_) => {
-                        t(keys::recent::RECENT_FAILED_CONNECT_DEV_CONTAINER)
-                    }
-                    #[cfg(any(test, feature = "test-support"))]
-                    RemoteConnectionOptions::Mock(_) => {
-                        t(keys::recent::RECENT_FAILED_CONNECT_MOCK)
-                    }
+                // Match on the connection kind rather than the enum itself: the
+                // `Mock` variant is gated behind `test-support`, so an exhaustive
+                // match breaks as soon as that feature is enabled by another crate
+                // in the same build.
+                let failure_message = match connection_options.connection_type() {
+                    "ssh" => t(keys::recent::RECENT_FAILED_CONNECT_SSH),
+                    "wsl" => t(keys::recent::RECENT_FAILED_CONNECT_WSL),
+                    "mock" => t(keys::recent::RECENT_FAILED_CONNECT_MOCK),
+                    _ => t(keys::recent::RECENT_FAILED_CONNECT_DEV_CONTAINER),
                 };
                 let response = window
                     .update(cx, |_, window, cx| {
@@ -370,16 +369,15 @@ pub async fn open_remote_project(
         match opened {
             Err(e) => {
                 log::error!("Failed to open project: {e:#}");
-                let failure_message = match connection_options {
-                    RemoteConnectionOptions::Ssh(_) => t(keys::recent::RECENT_FAILED_CONNECT_SSH),
-                    RemoteConnectionOptions::Wsl(_) => t(keys::recent::RECENT_FAILED_CONNECT_WSL),
-                    RemoteConnectionOptions::Docker(_) => {
-                        t(keys::recent::RECENT_FAILED_CONNECT_DEV_CONTAINER)
-                    }
-                    #[cfg(any(test, feature = "test-support"))]
-                    RemoteConnectionOptions::Mock(_) => {
-                        t(keys::recent::RECENT_FAILED_CONNECT_MOCK)
-                    }
+                // Match on the connection kind rather than the enum itself: the
+                // `Mock` variant is gated behind `test-support`, so an exhaustive
+                // match breaks as soon as that feature is enabled by another crate
+                // in the same build.
+                let failure_message = match connection_options.connection_type() {
+                    "ssh" => t(keys::recent::RECENT_FAILED_CONNECT_SSH),
+                    "wsl" => t(keys::recent::RECENT_FAILED_CONNECT_WSL),
+                    "mock" => t(keys::recent::RECENT_FAILED_CONNECT_MOCK),
+                    _ => t(keys::recent::RECENT_FAILED_CONNECT_DEV_CONTAINER),
                 };
                 let response = window
                     .update(cx, |_, window, cx| {

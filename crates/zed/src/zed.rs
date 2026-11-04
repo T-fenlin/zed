@@ -20,7 +20,7 @@ use agent_ui::AgentDiffToolbar;
 use anyhow::Context as _;
 pub use app_menus::*;
 use assets::Assets;
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 
 use breadcrumbs::Breadcrumbs;
 use client::zed_urls;
@@ -669,18 +669,16 @@ pub fn initialize_workspace(app_state: Arc<AppState>, cx: &mut App) {
 fn initialize_file_watcher(fs: &dyn Fs, window: &mut Window, cx: &mut Context<Workspace>) {
     if let Err(e) = fs.start_native_watcher() {
         let message = format!(
-            db::indoc! {r#"
-            inotify_init returned {}
-
-            This may be due to system-wide limits on inotify instances. For troubleshooting see: https://zed.dev/docs/linux
-            "#},
-            e
+            "{}\n\n{}",
+            t_with_args(keys::zed::ZED_A_INOTIFY_INIT_FAILED, &[("error", &format!("{e}"))]),
+            t(keys::zed::ZED_A_INOTIFY_LIMITS_HINT)
         );
+        let troubleshoot = t(keys::zed::ZED_A_TROUBLESHOOT_AND_QUIT);
         let prompt = window.prompt(
             PromptLevel::Critical,
-            "Could not start inotify",
+            &t(keys::zed::ZED_A_INOTIFY_TITLE),
             Some(&message),
-            &["Troubleshoot and Quit"],
+            &[troubleshoot.as_str()],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -700,18 +698,19 @@ fn initialize_file_watcher(fs: &dyn Fs, window: &mut Window, cx: &mut Context<Wo
 fn initialize_file_watcher(fs: &dyn Fs, window: &mut Window, cx: &mut Context<Workspace>) {
     if let Err(e) = fs.start_native_watcher() {
         let message = format!(
-            db::indoc! {r#"
-            ReadDirectoryChangesW initialization failed: {}
-
-            This may occur on network filesystems and WSL paths. For troubleshooting see: https://zed.dev/docs/windows
-            "#},
-            e
+            "{}\n\n{}",
+            t_with_args(
+                keys::zed::ZED_A_READ_DIRECTORY_CHANGES_FAILED,
+                &[("error", &format!("{e}"))],
+            ),
+            t(keys::zed::ZED_A_READ_DIRECTORY_CHANGES_HINT)
         );
+        let troubleshoot = t(keys::zed::ZED_A_TROUBLESHOOT_AND_QUIT);
         let prompt = window.prompt(
             PromptLevel::Critical,
-            "Could not start ReadDirectoryChangesW",
+            &t(keys::zed::ZED_A_READ_DIRECTORY_CHANGES_TITLE),
             Some(&message),
-            &["Troubleshoot and Quit"],
+            &[troubleshoot.as_str()],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -746,22 +745,26 @@ fn show_software_emulation_warning_if_needed(
             )
         };
         let message = format!(
-            db::indoc! {r#"
-            Zed uses {} for rendering and requires a compatible GPU.
-
-            Currently you are using a software emulated GPU ({}) which
-            will result in awful performance.
-
-            For troubleshooting see: {}
-            Set ZED_ALLOW_EMULATED_GPU=1 env var to permanently override.
-            "#},
-            graphics_api, specs.device_name, docs_url
+            "{}\n\n{} {}\n\n{}\n{}",
+            t_with_args(
+                keys::zed::ZED_A_GPU_INTRO,
+                &[("graphics_api", graphics_api)]
+            ),
+            t_with_args(
+                keys::zed::ZED_A_GPU_EMULATED,
+                &[("device", &specs.device_name)]
+            ),
+            t(keys::zed::ZED_A_GPU_WILL_BE_SLOW),
+            t_with_args(keys::zed::ZED_A_GPU_TROUBLESHOOT, &[("url", docs_url)]),
+            t(keys::zed::ZED_A_GPU_OVERRIDE)
         );
+        let skip = t(keys::zed::ZED_A_GPU_SKIP);
+        let troubleshoot = t(keys::zed::ZED_A_TROUBLESHOOT_AND_QUIT);
         let prompt = window.prompt(
             PromptLevel::Critical,
-            "Unsupported GPU",
+            &t(keys::zed::ZED_A_GPU_TITLE),
             Some(&message),
-            &["Skip", "Troubleshoot and Quit"],
+            &[skip.as_str(), troubleshoot.as_str()],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -1291,7 +1294,7 @@ fn register_actions(
                 Ok(())
             })
             .detach_and_prompt_err(
-                "Error registering zed:// scheme",
+                &t(keys::zed::ZED_A_ZED_SCHEME_ERROR),
                 window,
                 cx,
                 |_, _, _| None,
@@ -1780,11 +1783,12 @@ fn quit(_: &Quit, cx: &mut App) {
         if should_confirm && let Some(multi_workspace) = workspace_windows.first() {
             let answer = multi_workspace
                 .update(cx, |_, window, cx| {
+                    let quit = t(keys::zed::ZED_A_QUIT);
                     window.prompt(
                         PromptLevel::Info,
-                        "Are you sure you want to quit?",
+                        &t(keys::zed::ZED_A_QUIT_CONFIRM),
                         None,
-                        &["Quit", "Cancel"],
+                        &[quit.as_str(), "Cancel"],
                         cx,
                     )
                 })

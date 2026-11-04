@@ -8,6 +8,7 @@ use file_icons::FileIcons;
 use futures::channel::oneshot;
 use fuzzy::{CharBag, StringMatch, StringMatchCandidate};
 use gpui::{HighlightStyle, StyledText, Task};
+use i18n::{keys, t, t_with_args};
 use picker::{Picker, PickerDelegate};
 use project::{DirectoryItem, DirectoryLister};
 use settings::SettingsStore;
@@ -699,14 +700,18 @@ impl PickerDelegate for OpenPathDelegate {
                         };
                     if user_input.exists {
                         self.should_dismiss = false;
+                        let message = t_with_args(
+                            keys::misc::FILE_EXISTS_PROMPT,
+                            &[("path", &format!("{prompted_path:?}"))],
+                        );
+                        let detail = t(keys::misc::FILE_EXISTS_DETAIL);
+                        let replace = t(keys::misc::REPLACE);
                         let answer = window.prompt(
                             gpui::PromptLevel::Critical,
-                            &format!("{prompted_path:?} already exists. Do you want to replace it?"),
-                            Some(
-                                "A file or folder with the same name already exists. Replacing it will overwrite its current contents.",
-                            ),
-                            &["Replace", "Cancel"],
-                            cx
+                            &message,
+                            Some(&detail),
+                            &[replace.as_str(), "Cancel"],
+                            cx,
                         );
                         self.replace_prompt = cx.spawn_in(window, async move |picker, cx| {
                             let answer = answer.await.ok();

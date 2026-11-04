@@ -38,3 +38,4 @@ prompt-save_edits = { $path } 含有未保存的修改。要保存它吗？
 prompt-save_edits_unnamed = 此缓冲区含有未保存的修改。要保存它吗？
 prompt-import_vscode_settings = 导入 { $source } 设置可能会覆盖你现有的设置。将从 { $path } 导入设置
 prompt-could_not_find_settings = 找不到或无法加载 { $source } 设置文件
+prompt-failed_to_save = 保存失败

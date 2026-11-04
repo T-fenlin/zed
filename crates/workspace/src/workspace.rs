@@ -4343,7 +4343,10 @@ impl Workspace {
     ) {
         let project = self.project.read(cx);
         if project.is_via_collab() {
-            self.show_error("You cannot add folders to someone else's project", cx);
+            self.show_error(
+                t(keys::workspace::WS_CANNOT_ADD_FOLDERS_TO_FOREIGN_PROJECT),
+                cx,
+            );
             return;
         }
         let paths = self.prompt_for_open_path(
@@ -6768,7 +6771,7 @@ impl Workspace {
                     cx,
                 )
                 .detach_and_prompt_err(
-                    "Failed to join project",
+                    &t(keys::workspace::WS_PANE_GROUP_FAILED_JOIN),
                     window,
                     cx,
                     |error, _, _| Some(format!("{error:#}")),
@@ -8307,25 +8310,45 @@ impl Workspace {
                             window,
                             cx,
                         )
-                        .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                        .detach_and_prompt_err(
+                            &t(keys::prompt::PROMPT_FAILED_TO_SAVE),
+                            window,
+                            cx,
+                            |_, _, _| None,
+                        );
                 }))
                 .on_action(cx.listener(|workspace, _: &FormatAndSave, window, cx| {
                     workspace
                         .save_active_item(SaveIntent::FormatAndSave, window, cx)
-                        .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                        .detach_and_prompt_err(
+                            &t(keys::prompt::PROMPT_FAILED_TO_SAVE),
+                            window,
+                            cx,
+                            |_, _, _| None,
+                        );
                 }))
                 .on_action(cx.listener(
                     |workspace, _: &SaveWithoutFormat, window, cx| {
                         workspace
                             .save_active_item(SaveIntent::SaveWithoutFormat, window, cx)
-                            .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                            .detach_and_prompt_err(
+                                &t(keys::prompt::PROMPT_FAILED_TO_SAVE),
+                                window,
+                                cx,
+                                |_, _, _| None,
+                            );
                     },
                 ))
             })
             .on_action(cx.listener(|workspace, _: &SaveAs, window, cx| {
                 workspace
                     .save_active_item(SaveIntent::SaveAs, window, cx)
-                    .detach_and_prompt_err("Failed to save", window, cx, |_, _, _| None);
+                    .detach_and_prompt_err(
+                        &t(keys::prompt::PROMPT_FAILED_TO_SAVE),
+                        window,
+                        cx,
+                        |_, _, _| None,
+                    );
             }))
             .on_action(
                 cx.listener(|workspace, _: &ActivatePreviousPane, window, cx| {

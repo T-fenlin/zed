@@ -3002,7 +3002,7 @@ impl Editor {
         cx: &mut Context<Workspace>,
     ) {
         Self::new_in_workspace(workspace, window, cx).detach_and_prompt_err(
-            "Failed to create buffer",
+            &t(keys::editor::EDITOR_FAILED_TO_CREATE_BUFFER),
             window,
             cx,
             |e, _, _| match e.error_code() {
@@ -3090,7 +3090,7 @@ impl Editor {
             })?;
             anyhow::Ok(())
         })
-        .detach_and_prompt_err("Failed to create buffer", window, cx, |e, _, _| {
+        .detach_and_prompt_err(&t(keys::editor::EDITOR_FAILED_TO_CREATE_BUFFER), window, cx, |e, _, _| {
             match e.error_code() {
                 ErrorCode::RemoteUpgradeRequired => Some(format!(
                 "The remote instance of Zed does not support this yet. It must be upgraded to {}",

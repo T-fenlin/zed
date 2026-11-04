@@ -28,6 +28,7 @@ use gpui::{
     UniformListScrollHandle, WeakEntity, Window, actions, anchored, deferred, div, hsla,
     linear_color_stop, linear_gradient, point, px, size, transparent_white, uniform_list,
 };
+use i18n::{keys, t, t_with_args};
 use itertools::Itertools;
 use language::DiagnosticSeverity;
 use markdown_preview::markdown_preview_view::MarkdownPreviewView;
@@ -699,8 +700,8 @@ enum RemoveEntryTask {
 
 struct RemovalPrompt {
     message: String,
-    detail: Option<&'static str>,
-    confirmation_label: &'static str,
+    detail: Option<String>,
+    confirmation_label: String,
 }
 
 enum RemovalKind {
@@ -943,56 +944,73 @@ impl ProjectPanel {
                     allow_preview,
                 } => {
                     if let Some(worktree) = project.read(cx).worktree_for_entry(entry_id, cx)
-                        && let Some(entry) = worktree.read(cx).entry_for_id(entry_id) {
-                            let file_path = entry.path.clone();
-                            let worktree_id = worktree.read(cx).id();
-                            let entry_id = entry.id;
-                            let is_via_ssh = project.read(cx).is_via_remote_server();
+                        && let Some(entry) = worktree.read(cx).entry_for_id(entry_id)
+                    {
+                        let file_path = entry.path.clone();
+                        let worktree_id = worktree.read(cx).id();
+                        let entry_id = entry.id;
+                        let is_via_ssh = project.read(cx).is_via_remote_server();
 
-                            workspace
-                                .open_path_preview(
-                                    ProjectPath {
-                                        worktree_id,
-                                        path: file_path.clone(),
-                                    },
-                                    None,
-                                    focus_opened_item,
-                                    allow_preview,
-                                    true,
-                                    window, cx,
-                                )
-                                .detach_and_prompt_err("Failed to open file", window, cx, move |e, _, _| {
+                        workspace
+                            .open_path_preview(
+                                ProjectPath {
+                                    worktree_id,
+                                    path: file_path.clone(),
+                                },
+                                None,
+                                focus_opened_item,
+                                allow_preview,
+                                true,
+                                window,
+                                cx,
+                            )
+                            .detach_and_prompt_err(
+                                &t(keys::panel::PANEL_FAILED_TO_OPEN_FILE),
+                                window,
+                                cx,
+                                move |e, _, _| {
                                     match e.error_code() {
-                                        ErrorCode::Disconnected => if is_via_ssh {
-                                            Some("Disconnected from SSH host".to_string())
-                                        } else {
-                                            Some("Disconnected from remote project".to_string())
-                                        },
-                                        ErrorCode::UnsharedItem => Some(format!(
-                                            "{} is not shared by the host. This could be because it has been marked as `private`",
-                                            file_path.display(path_style)
+                                        ErrorCode::Disconnected => {
+                                            if is_via_ssh {
+                                                Some(t(keys::panel::PANEL_DISCONNECTED_SSH))
+                                            } else {
+                                                Some(t(keys::panel::PANEL_DISCONNECTED_REMOTE))
+                                            }
+                                        }
+                                        ErrorCode::UnsharedItem => Some(t_with_args(
+                                            keys::panel::PANEL_PATH_NOT_SHARED,
+                                            &[("path", &file_path.display(path_style).to_string())],
                                         )),
                                         // See note in worktree.rs where this error originates. Returning Some in this case prevents
                                         // the error popup from saying "Try Again", which is a red herring in this case
-                                        ErrorCode::Internal if e.to_string().contains("File is too large to load") => Some(e.to_string()),
+                                        ErrorCode::Internal
+                                            if e.to_string()
+                                                .contains("File is too large to load") =>
+                                        {
+                                            Some(e.to_string())
+                                        }
                                         _ => None,
                                     }
-                                });
+                                },
+                            );
 
-                            if let Some(project_panel) = project_panel.upgrade() {
-                                // Always select and mark the entry, regardless of whether it is opened or not.
-                                project_panel.update(cx, |project_panel, _| {
-                                    let entry = SelectedEntry { worktree_id, entry_id };
-                                    project_panel.marked_entries.clear();
-                                    project_panel.marked_entries.push(entry);
-                                    project_panel.selection = Some(entry);
-                                });
-                                if !focus_opened_item {
-                                    let focus_handle = project_panel.read(cx).focus_handle.clone();
-                                    window.focus(&focus_handle, cx);
-                                }
+                        if let Some(project_panel) = project_panel.upgrade() {
+                            // Always select and mark the entry, regardless of whether it is opened or not.
+                            project_panel.update(cx, |project_panel, _| {
+                                let entry = SelectedEntry {
+                                    worktree_id,
+                                    entry_id,
+                                };
+                                project_panel.marked_entries.clear();
+                                project_panel.marked_entries.push(entry);
+                                project_panel.selection = Some(entry);
+                            });
+                            if !focus_opened_item {
+                                let focus_handle = project_panel.read(cx).focus_handle.clone();
+                                window.focus(&focus_handle, cx);
                             }
                         }
+                    }
                 }
                 &Event::SplitEntry {
                     entry_id,
@@ -1000,19 +1018,21 @@ impl ProjectPanel {
                     split_direction,
                 } => {
                     if let Some(worktree) = project.read(cx).worktree_for_entry(entry_id, cx)
-                        && let Some(entry) = worktree.read(cx).entry_for_id(entry_id) {
-                            workspace
-                                .split_path_preview(
-                                    ProjectPath {
-                                        worktree_id: worktree.read(cx).id(),
-                                        path: entry.path.clone(),
-                                    },
-                                    allow_preview,
-                                    split_direction,
-                                    window, cx,
-                                )
-                                .detach_and_log_err(cx);
-                        }
+                        && let Some(entry) = worktree.read(cx).entry_for_id(entry_id)
+                    {
+                        workspace
+                            .split_path_preview(
+                                ProjectPath {
+                                    worktree_id: worktree.read(cx).id(),
+                                    path: entry.path.clone(),
+                                },
+                                allow_preview,
+                                split_direction,
+                                window,
+                                cx,
+                            )
+                            .detach_and_log_err(cx);
+                    }
                 }
 
                 _ => {}
@@ -1189,17 +1209,26 @@ impl ProjectPanel {
                 menu.context(self.focus_handle.clone()).map(|menu| {
                     if is_read_only {
                         menu.when(is_markdown, |menu| {
-                            menu.action("Open Markdown Preview", Box::new(OpenMarkdownPreview))
+                            menu.action(
+                                t(keys::panel::PANEL_OPEN_MARKDOWN_PREVIEW),
+                                Box::new(OpenMarkdownPreview),
+                            )
                         })
                         .when(is_svg, |menu| {
-                            menu.action("Open SVG Preview", Box::new(OpenSvgPreview))
+                            menu.action(
+                                t(keys::panel::PANEL_OPEN_SVG_PREVIEW),
+                                Box::new(OpenSvgPreview),
+                            )
                         })
                         .when(is_dir, |menu| {
-                            menu.action("Search Inside", Box::new(NewSearchInDirectory))
+                            menu.action(
+                                t(keys::panel::PANEL_SEARCH_INSIDE),
+                                Box::new(NewSearchInDirectory),
+                            )
                         })
                     } else {
-                        menu.action("New File", Box::new(NewFile))
-                            .action("New Folder", Box::new(NewDirectory))
+                        menu.action(t(keys::panel::PANEL_NEW_FILE), Box::new(NewFile))
+                            .action(t(keys::panel::PANEL_NEW_FOLDER), Box::new(NewDirectory))
                             .separator()
                             .when(is_local, |menu| {
                                 menu.action(
@@ -1208,107 +1237,171 @@ impl ProjectPanel {
                                 )
                             })
                             .when(is_local, |menu| {
-                                menu.action("Open in Default App", Box::new(OpenWithSystem))
+                                menu.action(
+                                    t(keys::panel::PANEL_OPEN_IN_DEFAULT_APP),
+                                    Box::new(OpenWithSystem),
+                                )
                             })
-                            .action("Open in Terminal", Box::new(OpenInTerminal))
+                            .action(
+                                t(keys::panel::PANEL_OPEN_IN_TERMINAL),
+                                Box::new(OpenInTerminal),
+                            )
                             .when(is_markdown, |menu| {
-                                menu.action("Open Markdown Preview", Box::new(OpenMarkdownPreview))
+                                menu.action(
+                                    t(keys::panel::PANEL_OPEN_MARKDOWN_PREVIEW),
+                                    Box::new(OpenMarkdownPreview),
+                                )
                             })
                             .when(is_svg, |menu| {
-                                menu.action("Open SVG Preview", Box::new(OpenSvgPreview))
+                                menu.action(
+                                    t(keys::panel::PANEL_OPEN_SVG_PREVIEW),
+                                    Box::new(OpenSvgPreview),
+                                )
                             })
                             .when(is_dir, |menu| {
-                                menu.separator()
-                                    .action("Find in Folder…", Box::new(NewSearchInDirectory))
+                                menu.separator().action(
+                                    t(keys::panel::PANEL_FIND_IN_FOLDER),
+                                    Box::new(NewSearchInDirectory),
+                                )
                             })
                             .when(is_unfoldable, |menu| {
-                                menu.action("Unfold Directory", Box::new(UnfoldDirectory))
+                                menu.action(
+                                    t(keys::panel::PANEL_UNFOLD_DIRECTORY),
+                                    Box::new(UnfoldDirectory),
+                                )
                             })
                             .when(is_foldable, |menu| {
-                                menu.action("Fold Directory", Box::new(FoldDirectory))
+                                menu.action(
+                                    t(keys::panel::PANEL_FOLD_DIRECTORY),
+                                    Box::new(FoldDirectory),
+                                )
                             })
                             .when(should_show_compare, |menu| {
-                                menu.separator()
-                                    .action("Compare Marked Files", Box::new(CompareMarkedFiles))
+                                menu.separator().action(
+                                    t(keys::panel::PANEL_COMPARE_MARKED_FILES),
+                                    Box::new(CompareMarkedFiles),
+                                )
                             })
                             .separator()
-                            .action("Cut", Box::new(Cut))
-                            .action("Copy", Box::new(Copy))
-                            .action("Duplicate", Box::new(Duplicate))
-                            .action_disabled_when(!has_pasteable_content, "Paste", Box::new(Paste))
+                            .action(t(keys::panel::PANEL_CUT), Box::new(Cut))
+                            .action(t(keys::panel::PANEL_COPY), Box::new(Copy))
+                            .action(t(keys::panel::PANEL_DUPLICATE), Box::new(Duplicate))
+                            .action_disabled_when(
+                                !has_pasteable_content,
+                                t(keys::panel::PANEL_PASTE),
+                                Box::new(Paste),
+                            )
                             .when(!is_collab, |menu| {
                                 let can_undo = self.undo_manager.can_undo();
                                 let can_redo = self.undo_manager.can_redo();
 
-                                menu.action_disabled_when(!can_undo, "Undo", Box::new(Undo))
-                                    .action_disabled_when(!can_redo, "Redo", Box::new(Redo))
+                                menu.action_disabled_when(
+                                    !can_undo,
+                                    t(keys::panel::PANEL_UNDO),
+                                    Box::new(Undo),
+                                )
+                                .action_disabled_when(
+                                    !can_redo,
+                                    t(keys::panel::PANEL_REDO),
+                                    Box::new(Redo),
+                                )
                             })
                             .when(is_remote, |menu| {
-                                menu.separator()
-                                    .action("Download...", Box::new(DownloadFromRemote))
+                                menu.separator().action(
+                                    t(keys::panel::PANEL_DOWNLOAD),
+                                    Box::new(DownloadFromRemote),
+                                )
                             })
                             .separator()
-                            .action("Copy Path", Box::new(zed_actions::workspace::CopyPath))
                             .action(
-                                "Copy Relative Path",
+                                t(keys::panel::PANEL_COPY_PATH),
+                                Box::new(zed_actions::workspace::CopyPath),
+                            )
+                            .action(
+                                t(keys::panel::PANEL_COPY_RELATIVE_PATH),
                                 Box::new(zed_actions::workspace::CopyRelativePath),
                             )
                             .when(has_git_repo, |menu| {
                                 menu.separator()
                                     .when(!is_dir && self.has_git_changes(entry_id), |menu| {
                                         menu.action(
-                                            "Restore File",
+                                            t(keys::panel::PANEL_RESTORE_FILE),
                                             Box::new(git::RestoreFile { skip_prompt: false }),
                                         )
                                     })
-                                    .action("Add to .gitignore", Box::new(git::AddToGitignore))
                                     .action(
-                                        "Add to .git/info/exclude",
+                                        t(keys::panel::PANEL_ADD_TO_GITIGNORE),
+                                        Box::new(git::AddToGitignore),
+                                    )
+                                    .action(
+                                        t(keys::panel::PANEL_ADD_TO_GIT_INFO_EXCLUDE),
                                         Box::new(git::AddToGitInfoExclude),
                                     )
                                     .when(has_history, |menu| {
-                                        menu.action("View History", Box::new(git::FileHistory))
+                                        menu.action(
+                                            t(keys::panel::PANEL_VIEW_HISTORY),
+                                            Box::new(git::FileHistory),
+                                        )
                                     })
                                     .when(!is_dir, |menu| {
                                         menu.action(
-                                            "Open File Permalink",
+                                            t(keys::panel::PANEL_OPEN_FILE_PERMALINK),
                                             git::OpenFilePermalink.boxed_clone(),
                                         )
                                         .action(
-                                            "Copy File Permalink",
+                                            t(keys::panel::PANEL_COPY_FILE_PERMALINK),
                                             git::CopyFilePermalink.boxed_clone(),
                                         )
                                     })
                             })
                             .when(!should_hide_rename, |menu| {
-                                menu.separator().action("Rename", Box::new(Rename))
+                                menu.separator()
+                                    .action(t(keys::panel::PANEL_RENAME), Box::new(Rename))
                             })
                             .when(!is_root && !is_collab, |menu| {
-                                menu.action("Trash", Box::new(Trash { skip_prompt: false }))
+                                menu.action(
+                                    t(keys::panel::PANEL_TRASH),
+                                    Box::new(Trash { skip_prompt: false }),
+                                )
                             })
                             .when(!is_root, |menu| {
-                                menu.action("Delete", Box::new(Delete { skip_prompt: false }))
+                                menu.action(
+                                    t(keys::panel::PANEL_DELETE),
+                                    Box::new(Delete { skip_prompt: false }),
+                                )
                             })
                             .when(!is_collab && is_root, |menu| {
                                 menu.separator()
                                     .action(
-                                        "Add Folders to Project…",
+                                        t(keys::panel::PANEL_ADD_FOLDERS_TO_PROJECT),
                                         Box::new(workspace::AddFolderToProject),
                                     )
-                                    .action("Remove from Project", Box::new(RemoveFromProject))
+                                    .action(
+                                        t(keys::panel::PANEL_REMOVE_FROM_PROJECT),
+                                        Box::new(RemoveFromProject),
+                                    )
                             })
                             .when(is_dir && !is_root, |menu| {
                                 menu.separator()
-                                    .action("Expand All", Box::new(ExpandSelectedEntryAndChildren))
                                     .action(
-                                        "Collapse All",
+                                        t(keys::panel::PANEL_EXPAND_ALL),
+                                        Box::new(ExpandSelectedEntryAndChildren),
+                                    )
+                                    .action(
+                                        t(keys::panel::PANEL_COLLAPSE_ALL),
                                         Box::new(CollapseSelectedEntryAndChildren),
                                     )
                             })
                             .when(is_dir && is_root, |menu| {
                                 menu.separator()
-                                    .action("Expand All", Box::new(ExpandAllEntries))
-                                    .action("Collapse All", Box::new(CollapseAllEntries))
+                                    .action(
+                                        t(keys::panel::PANEL_EXPAND_ALL),
+                                        Box::new(ExpandAllEntries),
+                                    )
+                                    .action(
+                                        t(keys::panel::PANEL_COLLAPSE_ALL),
+                                        Box::new(CollapseAllEntries),
+                                    )
                             })
                     }
                 })
@@ -2667,8 +2760,18 @@ impl ProjectPanel {
             let file_name = entry.path.file_name()?.to_string();
 
             let answer = if !action.skip_prompt {
-                let prompt = format!("Discard changes to {}?", MarkdownInlineCode(&file_name));
-                Some(window.prompt(PromptLevel::Info, &prompt, None, &["Restore", "Cancel"], cx))
+                let prompt = t_with_args(
+                    keys::panel::PANEL_DISCARD_CHANGES_PROMPT,
+                    &[("name", &MarkdownInlineCode(&file_name).to_string())],
+                );
+                let restore = t(keys::panel::PANEL_RESTORE);
+                Some(window.prompt(
+                    PromptLevel::Info,
+                    &prompt,
+                    None,
+                    &[restore.as_str(), "Cancel"],
+                    cx,
+                ))
             } else {
                 None
             };
@@ -2841,17 +2944,23 @@ impl ProjectPanel {
     where
         S: AsRef<str>,
     {
-        let (message_start, confirmation_label, detail) = match kind {
-            RemovalKind::Trash => ("Do you want to trash", "Trash", None),
+        let (confirmation_label, detail) = match kind {
+            RemovalKind::Trash => (t(keys::panel::PANEL_TRASH), None),
             RemovalKind::Delete => (
-                "Are you sure you want to permanently delete",
-                "Delete",
-                Some("This cannot be undone."),
+                t(keys::panel::PANEL_DELETE),
+                Some(t(keys::panel::PANEL_REMOVAL_CANNOT_BE_UNDONE)),
             ),
         };
 
         let mut message = match names {
-            [name] => format!("{message_start} {}?", MarkdownInlineCode(name.as_ref())),
+            [name] => {
+                let key = match kind {
+                    RemovalKind::Trash => keys::panel::PANEL_REMOVAL_TRASH_SINGLE,
+                    RemovalKind::Delete => keys::panel::PANEL_REMOVAL_DELETE_SINGLE,
+                };
+                let name = MarkdownInlineCode(name.as_ref()).to_string();
+                t_with_args(key, &[("name", &name)])
+            }
             _ => {
                 const CUTOFF_POINT: usize = 10;
                 let mut listed_names = names
@@ -2861,29 +2970,33 @@ impl ProjectPanel {
                     .collect::<Vec<_>>();
                 let omitted_count = names.len().saturating_sub(CUTOFF_POINT);
                 if omitted_count == 1 {
-                    listed_names.push(".. 1 file not shown".into());
+                    listed_names.push(t(keys::panel::PANEL_REMOVAL_OMITTED_ONE));
                 } else if omitted_count > 1 {
-                    listed_names.push(format!(".. {omitted_count} files not shown"));
+                    listed_names.push(t_with_args(
+                        keys::panel::PANEL_REMOVAL_OMITTED,
+                        &[("count", &omitted_count.to_string())],
+                    ));
                 }
 
-                format!(
-                    "{message_start} the following {} files?\n{}",
-                    names.len(),
-                    listed_names.join("\n")
-                )
+                let key = match kind {
+                    RemovalKind::Trash => keys::panel::PANEL_REMOVAL_TRASH_MULTIPLE,
+                    RemovalKind::Delete => keys::panel::PANEL_REMOVAL_DELETE_MULTIPLE,
+                };
+                let heading = t_with_args(key, &[("count", &names.len().to_string())]);
+                format!("{heading}\n{}", listed_names.join("\n"))
             }
         };
         match dirty_buffers {
             0 => {}
             1 if names.len() == 1 => {
-                message.push_str("\n\nIt has unsaved changes, which will be lost.");
-            }
-            1 => {
-                message.push_str("\n\n1 of these has unsaved changes, which will be lost.");
+                message.push_str("\n\n");
+                message.push_str(&t(keys::panel::PANEL_REMOVAL_UNSAVED_SINGLE));
             }
             dirty_buffers => {
-                message.push_str(&format!(
-                    "\n\n{dirty_buffers} of these have unsaved changes, which will be lost."
+                message.push_str("\n\n");
+                message.push_str(&t_with_args(
+                    keys::panel::PANEL_REMOVAL_UNSAVED_OF_MANY,
+                    &[("count", &dirty_buffers.to_string())],
                 ));
             }
         }
@@ -2949,8 +3062,8 @@ impl ProjectPanel {
                 Some(window.prompt(
                     PromptLevel::Info,
                     &prompt.message,
-                    prompt.detail,
-                    &[prompt.confirmation_label, "Cancel"],
+                    prompt.detail.as_deref(),
+                    &[prompt.confirmation_label.as_str(), "Cancel"],
                     cx,
                 ))
             } else {
@@ -5076,21 +5189,18 @@ impl ProjectPanel {
         cx.spawn_in(window, async move |this, cx| {
             async move {
                 for (filename, original_path) in &paths_to_replace {
-                    let prompt_message = format!(
-                        concat!(
-                            "A file or folder with name {} ",
-                            "already exists in the destination folder. ",
-                            "Do you want to replace it?"
-                        ),
-                        MarkdownInlineCode(filename)
+                    let prompt_message = t_with_args(
+                        keys::panel::PANEL_REPLACE_PROMPT,
+                        &[("name", &MarkdownInlineCode(filename).to_string())],
                     );
+                    let replace = t(keys::panel::PANEL_REPLACE);
                     let answer = cx
                         .update(|window, cx| {
                             window.prompt(
                                 PromptLevel::Info,
                                 &prompt_message,
                                 None,
-                                &["Replace", "Cancel"],
+                                &[replace.as_str(), "Cancel"],
                                 cx,
                             )
                         })?

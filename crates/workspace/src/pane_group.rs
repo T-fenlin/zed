@@ -11,6 +11,7 @@ use gpui::{
     Along, AnyView, AnyWeakView, Axis, Bounds, Entity, Hsla, IntoElement, MouseButton, Pixels,
     Point, StyleRefinement, WeakEntity, Window, point, size,
 };
+use i18n::{keys, t};
 use parking_lot::Mutex;
 use project::Project;
 use schemars::JsonSchema;
@@ -452,7 +453,7 @@ impl PaneLeaderDecorator for PaneRenderContext<'_> {
                                             cx,
                                         )
                                         .detach_and_prompt_err(
-                                            "Failed to join project",
+                                            &t(keys::workspace::WS_PANE_GROUP_FAILED_JOIN),
                                             window,
                                             cx,
                                             |error, _, _| Some(format!("{error:#}")),

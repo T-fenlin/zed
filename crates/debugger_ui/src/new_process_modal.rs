@@ -455,7 +455,12 @@ impl NewProcessModal {
                 cx.emit(DismissEvent);
             })
         })
-        .detach_and_prompt_err("Failed to edit debug.json", window, cx, |_, _, _| None);
+        .detach_and_prompt_err(
+            &t(keys::debugger::DEBUGGER_FAILED_EDIT_DEBUG_JSON),
+            window,
+            cx,
+            |_, _, _| None,
+        );
     }
 
     fn adapter_drop_down_menu(

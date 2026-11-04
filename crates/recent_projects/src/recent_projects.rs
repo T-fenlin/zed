@@ -510,7 +510,7 @@ pub fn init(cx: &mut App) {
                 cx.spawn_in(window, async move |_, cx| {
                     cx.prompt(
                         gpui::PromptLevel::Critical,
-                        "Cannot open Dev Container from remote project",
+                        &t(keys::recent::RECENT_CANNOT_OPEN_DEV_CONTAINER_FROM_REMOTE),
                         None,
                         &["OK"],
                     )
@@ -1070,7 +1070,9 @@ impl PickerDelegate for RecentProjectsDelegate {
         };
 
         if has_projects_to_show {
-            entries.push(ProjectPickerEntry::Header(t(keys::recent::RECENT_THIS_WINDOW).into()));
+            entries.push(ProjectPickerEntry::Header(
+                t(keys::recent::RECENT_THIS_WINDOW).into(),
+            ));
 
             if is_empty_query {
                 for id in 0..self.window_project_groups.len() {
@@ -2003,15 +2005,14 @@ fn icon_for_project_group(key: &ProjectGroupKey) -> IconName {
 }
 
 pub(crate) fn icon_for_remote_connection(options: Option<&RemoteConnectionOptions>) -> IconName {
-    match options {
+    // Match on the connection kind rather than the enum: the `Mock` variant only
+    // exists when `test-support` is enabled, so an exhaustive match would stop
+    // compiling as soon as another crate in the build enables that feature.
+    match options.map(|options| options.connection_type()) {
         None => IconName::Screen,
-        Some(options) => match options {
-            RemoteConnectionOptions::Ssh(_) => IconName::Server,
-            RemoteConnectionOptions::Wsl(_) => IconName::Linux,
-            RemoteConnectionOptions::Docker(_) => IconName::Box,
-            #[cfg(any(test, feature = "test-support"))]
-            RemoteConnectionOptions::Mock(_) => IconName::Server,
-        },
+        Some("ssh") | Some("mock") => IconName::Server,
+        Some("wsl") => IconName::Linux,
+        Some(_) => IconName::Box,
     }
 }
 
@@ -2189,7 +2190,7 @@ impl RecentProjectsDelegate {
                         workspace
                             .open_workspace_for_paths(OpenMode::NewWindow, paths, window, cx)
                             .detach_and_prompt_err(
-                                "Failed to open project",
+                                &t(keys::recent::RECENT_FAILED_TO_OPEN_PROJECT),
                                 window,
                                 cx,
                                 |_, _, _| None,
@@ -2217,7 +2218,7 @@ impl RecentProjectsDelegate {
                             .await
                     })
                     .detach_and_prompt_err(
-                        "Failed to open project",
+                        &t(keys::recent::RECENT_FAILED_TO_OPEN_PROJECT),
                         window,
                         cx,
                         |_, _, _| None,

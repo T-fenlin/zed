@@ -32,3 +32,30 @@ preserves_thinking = Preserves thinking in chat history
 reasoning_effort = Default reasoning effort
 save_provider = Save Provider
 cancel = Cancel
+file_exists_prompt = { $path } already exists. Do you want to replace it?
+file_exists_detail = A file or folder with the same name already exists. Replacing it will overwrite its current contents.
+replace = Replace
+vim-argument_required = Argument required
+vim-no_file_name = No file name
+vim-no_file_name_detail = Writing a partial buffer requires a file name.
+vim-partial_buffer_requires_bang = Use ! to write partial buffer
+vim-partial_buffer_requires_bang_detail = Overwriting the current file with the selected buffer content requires '!'.
+vim-failed_to_save = Failed to save
+auto_update-installed_via_package_manager = Zed was installed via a package manager.
+auto_update-check_failed = Could not check for updates
+auto_update-disabled_for_non_bundled = Auto-updates disabled for non-bundled app.
+feedback-copied_to_clipboard = Copied into clipboard
+cli-should_already_be_installed = CLI should already be installed
+cli-linux_path_detail =
+    If you installed Zed from our official release, add ~/.local/bin to your PATH.
+
+    If you installed Zed from another source, such as your package manager, you may need to create an alias or symlink manually.
+
+    Depending on your package manager, the CLI might be named zeditor, zedit, zed-editor, or something else.
+cli-add_to_path_manually = You can add `zed` to your PATH manually.
+cli-couldnt_install_title = Couldn't install the Zed CLI
+cli-show_me_how = Show me how
+cli-installed_toast = Installed `zed` to { $path }. You can launch { $channel } from your terminal.
+cannot_install_the_cli = Cannot install the Zed CLI
+vim-failed_to_write_lines = Failed to write lines
+vim-failed_to_write = Failed to :w

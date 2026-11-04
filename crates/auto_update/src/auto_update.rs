@@ -7,6 +7,7 @@ use gpui::{
     Task, TaskExt, Window, actions,
 };
 use http_client::{HttpClient, HttpClientWithUrl};
+use i18n::{keys, t};
 use paths::remote_servers_dir;
 use release_channel::{AppCommitSha, ReleaseChannel};
 use semver::Version;
@@ -314,7 +315,7 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
     {
         drop(window.prompt(
             gpui::PromptLevel::Info,
-            "Zed was installed via a package manager.",
+            &t(keys::misc::AUTO_UPDATE_INSTALLED_VIA_PACKAGE_MANAGER),
             Some(&message),
             &["OK"],
             cx,
@@ -332,10 +333,11 @@ pub fn check(_: &Check, window: &mut Window, cx: &mut App) {
     if let Some(updater) = AutoUpdater::get(cx) {
         updater.update(cx, |updater, cx| updater.poll(UpdateCheckType::Manual, cx));
     } else {
+        let detail = t(keys::misc::AUTO_UPDATE_DISABLED_FOR_NON_BUNDLED);
         drop(window.prompt(
             gpui::PromptLevel::Info,
-            "Could not check for updates",
-            Some("Auto-updates disabled for non-bundled app."),
+            &t(keys::misc::AUTO_UPDATE_CHECK_FAILED),
+            Some(&detail),
             &["OK"],
             cx,
         ));

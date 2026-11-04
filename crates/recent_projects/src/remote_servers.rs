@@ -416,14 +416,15 @@ impl ProjectPicker {
             RemoteConnectionOptions::Wsl(connection) => ProjectPickerData::Wsl {
                 distro_name: connection.distro_name.clone().into(),
             },
-            RemoteConnectionOptions::Docker(_) => ProjectPickerData::Ssh {
-                // Not implemented as a project picker at this time
-                connection_string: "".into(),
-                nickname: None,
-            },
-            #[cfg(any(test, feature = "test-support"))]
-            RemoteConnectionOptions::Mock(options) => ProjectPickerData::Ssh {
-                connection_string: format!("mock-{}", options.id).into(),
+            // Docker (and mock, when `test-support` is on) are not implemented as
+            // a project picker at this time. Matching with a catch-all arm keeps
+            // this compiling regardless of whether the `Mock` variant exists.
+            other => ProjectPickerData::Ssh {
+                connection_string: if other.connection_type() == "mock" {
+                    other.host().into()
+                } else {
+                    "".into()
+                },
                 nickname: None,
             },
         };
@@ -1642,7 +1643,12 @@ impl RemoteServerProjects {
             window,
             cx,
         )
-        .prompt_err(&t(keys::recent::RECENT_FAILED_CONNECT), window, cx, |_, _, _| None);
+        .prompt_err(
+            &t(keys::recent::RECENT_FAILED_CONNECT),
+            window,
+            cx,
+            |_, _, _| None,
+        );
 
         let address_editor = editor.clone();
         let creating = cx.spawn_in(window, async move |this, cx| {
@@ -1717,7 +1723,12 @@ impl RemoteServerProjects {
             window,
             cx,
         )
-        .prompt_err(&t(keys::recent::RECENT_FAILED_CONNECT), window, cx, |_, _, _| None);
+        .prompt_err(
+            &t(keys::recent::RECENT_FAILED_CONNECT),
+            window,
+            cx,
+            |_, _, _| None,
+        );
 
         let wsl_picker = picker.clone();
         let creating = cx.spawn_in(window, async move |this, cx| {
@@ -1831,7 +1842,12 @@ impl RemoteServerProjects {
                     window,
                     cx,
                 )
-                .prompt_err(&t(keys::recent::RECENT_FAILED_CONNECT), window, cx, |_, _, _| None);
+                .prompt_err(
+                    &t(keys::recent::RECENT_FAILED_CONNECT),
+                    window,
+                    cx,
+                    |_, _, _| None,
+                );
 
                 cx.spawn_in(window, async move |workspace, cx| {
                     let session = connect.await;
@@ -2281,7 +2297,7 @@ impl RemoteServerProjects {
                         log::error!("Failed to start dev container: {:?}", e);
                         cx.prompt(
                             gpui::PromptLevel::Critical,
-                            "Failed to start Dev Container. See logs for details",
+                            &t(keys::recent::RECENT_FAILED_TO_START_DEV_CONTAINER),
                             Some(&format!("{e}")),
                             &["OK"],
                         )

@@ -175,7 +175,7 @@ pub fn init(cx: &mut App) {
                 })
                 .detach_and_notify_err(workspace_handle, window, cx);
             } else {
-                workspace.show_error("There’s no active call; join one first.", cx);
+                workspace.show_error(t(keys::collab::COLLAB_NO_ACTIVE_CALL), cx);
             }
         });
         workspace.register_action(|workspace, _: &ShareProject, window, cx| {
@@ -1276,7 +1276,7 @@ impl CollabPanel {
                         let app_state = workspace.app_state().clone();
                         workspace::join_in_room_project(project_id, host_user_id, app_state, cx)
                             .detach_and_prompt_err(
-                                "Failed to join project",
+                                &t(keys::collab::COLLAB_FAILED_TO_JOIN_PROJECT),
                                 window,
                                 cx,
                                 |error, _, _| Some(format!("{error:#}")),
@@ -1436,7 +1436,7 @@ impl CollabPanel {
                                 })
                             })
                             .detach_and_prompt_err(
-                                "Failed to grant mic access",
+                                &t(keys::collab::COLLAB_FAILED_TO_GRANT_MIC_ACCESS),
                                 window,
                                 cx,
                                 |_, _, _| None,
@@ -1462,7 +1462,7 @@ impl CollabPanel {
                                     )
                                 })
                             })
-                            .detach_and_prompt_err("Failed to grant write access", window, cx, |e, _, _| {
+                            .detach_and_prompt_err(&t(keys::collab::COLLAB_FAILED_TO_GRANT_WRITE_ACCESS), window, cx, |e, _, _| {
                                 match e.error_code() {
                                     ErrorCode::NeedsCla => Some("This user has not yet signed the CLA at https://zed.dev/cla.".into()),
                                     _ => None,
@@ -1495,7 +1495,7 @@ impl CollabPanel {
                                 })
                             })
                             .detach_and_prompt_err(
-                                "Failed to revoke access",
+                                &t(keys::collab::COLLAB_FAILED_TO_REVOKE_ACCESS),
                                 window,
                                 cx,
                                 |_, _, _| None,
@@ -1866,7 +1866,7 @@ impl CollabPanel {
                         let app_state = workspace.read(cx).app_state().clone();
                         workspace::join_in_room_project(*project_id, *host_user_id, app_state, cx)
                             .detach_and_prompt_err(
-                                "Failed to join project",
+                                &t(keys::collab::COLLAB_FAILED_TO_JOIN_PROJECT),
                                 window,
                                 cx,
                                 |error, _, _| Some(format!("{error:#}")),
@@ -1968,14 +1968,14 @@ impl CollabPanel {
                             })
                         })
                         .detach_and_prompt_err(
-                            "Failed to create channel",
+                            &t(keys::collab::COLLAB_FAILED_TO_CREATE_CHANNEL),
                             window,
                             cx,
                             |_, _, _| None,
                         );
                     } else {
                         create.detach_and_prompt_err(
-                            "Failed to create channel",
+                            &t(keys::collab::COLLAB_FAILED_TO_CREATE_CHANNEL),
                             window,
                             cx,
                             |_, _, _| None,
@@ -2130,7 +2130,12 @@ impl CollabPanel {
     fn leave_call(window: &mut Window, cx: &mut App) {
         ActiveCall::global(cx)
             .update(cx, |call, cx| call.hang_up(cx))
-            .detach_and_prompt_err("Failed to hang up", window, cx, |_, _, _| None);
+            .detach_and_prompt_err(
+                &t(keys::collab::COLLAB_FAILED_TO_HANG_UP),
+                window,
+                cx,
+                |_, _, _| None,
+            );
     }
 
     fn toggle_contact_finder(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -2263,7 +2268,7 @@ impl CollabPanel {
             .update(cx, |channel_store, cx| {
                 channel_store.set_channel_visibility(channel_id, visibility, cx)
             })
-            .detach_and_prompt_err("Failed to set channel visibility", window, cx, |e, _, _| match e.error_code() {
+            .detach_and_prompt_err(&t(keys::collab::COLLAB_FAILED_TO_SET_VISIBILITY), window, cx, |e, _, _| match e.error_code() {
                 ErrorCode::BadPublicNesting =>
                     if e.error_tag("direction") == Some("parent") {
                         Some("To make a channel public, its parent channel must be public.".to_string())
@@ -2316,8 +2321,11 @@ impl CollabPanel {
             .update(cx, |channel_store, cx| {
                 channel_store.move_channel(channel_id, to, cx)
             })
-            .detach_and_prompt_err("Failed to move channel", window, cx, |e, _, _| {
-                match e.error_code() {
+            .detach_and_prompt_err(
+                &t(keys::collab::COLLAB_FAILED_TO_MOVE_CHANNEL),
+                window,
+                cx,
+                |e, _, _| match e.error_code() {
                     ErrorCode::BadPublicNesting => {
                         Some("Public channels must have public parents".into())
                     }
@@ -2328,8 +2336,8 @@ impl CollabPanel {
                         Some("You cannot move a channel into a different root channel".into())
                     }
                     _ => None,
-                }
-            })
+                },
+            )
     }
 
     pub fn move_channel_up(
@@ -2551,7 +2559,12 @@ impl CollabPanel {
             })?
             .await
         })
-        .detach_and_prompt_err("Failed to leave channel", window, cx, |_, _, _| None)
+        .detach_and_prompt_err(
+            &t(keys::collab::COLLAB_FAILED_TO_LEAVE_CHANNEL),
+            window,
+            cx,
+            |_, _, _| None,
+        )
     }
 
     fn remove_channel(
@@ -2622,7 +2635,12 @@ impl CollabPanel {
             }
             anyhow::Ok(())
         })
-        .detach_and_prompt_err("Failed to remove contact", window, cx, |_, _, _| None);
+        .detach_and_prompt_err(
+            &t(keys::collab::COLLAB_FAILED_TO_REMOVE_CONTACT),
+            window,
+            cx,
+            |_, _, _| None,
+        );
     }
 
     fn respond_to_contact_request(
@@ -2637,7 +2655,7 @@ impl CollabPanel {
                 store.respond_to_contact_request(user_id, accept, cx)
             })
             .detach_and_prompt_err(
-                "Failed to respond to contact request",
+                &t(keys::collab::COLLAB_FAILED_TO_RESPOND_TO_CONTACT_REQUEST),
                 window,
                 cx,
                 |_, _, _| None,
@@ -2662,7 +2680,12 @@ impl CollabPanel {
             .update(cx, |call, cx| {
                 call.invite(recipient_user_id, Some(self.project.clone()), cx)
             })
-            .detach_and_prompt_err("Call failed", window, cx, |_, _, _| None);
+            .detach_and_prompt_err(
+                &t(keys::collab::COLLAB_CALL_FAILED),
+                window,
+                cx,
+                |_, _, _| None,
+            );
     }
 
     fn join_channel(&self, channel_id: ChannelId, window: &mut Window, cx: &mut Context<Self>) {

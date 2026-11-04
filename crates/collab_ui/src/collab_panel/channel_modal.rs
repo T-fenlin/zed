@@ -545,7 +545,12 @@ impl ChannelModalDelegate {
                 cx.notify();
             })
         })
-        .detach_and_prompt_err("Failed to update role", window, cx, |_, _, _| None);
+        .detach_and_prompt_err(
+            &t(keys::collab::COLLAB_FAILED_TO_UPDATE_ROLE),
+            window,
+            cx,
+            |_, _, _| None,
+        );
         Some(())
     }
 
@@ -586,7 +591,12 @@ impl ChannelModalDelegate {
                 cx.notify();
             })
         })
-        .detach_and_prompt_err("Failed to remove member", window, cx, |_, _, _| None);
+        .detach_and_prompt_err(
+            &t(keys::collab::COLLAB_FAILED_TO_REMOVE_MEMBER),
+            window,
+            cx,
+            |_, _, _| None,
+        );
         Some(())
     }
 
@@ -617,7 +627,12 @@ impl ChannelModalDelegate {
                 cx.notify();
             })
         })
-        .detach_and_prompt_err("Failed to invite member", window, cx, |_, _, _| None);
+        .detach_and_prompt_err(
+            &t(keys::collab::COLLAB_FAILED_TO_INVITE_MEMBER),
+            window,
+            cx,
+            |_, _, _| None,
+        );
     }
 
     fn show_context_menu(

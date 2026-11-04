@@ -42,3 +42,6 @@ recent-failed_connect_dev_container = 连接开发容器失败
 recent-failed_connect_mock = 连接模拟服务器失败
 recent-this_window = 此窗口
 recent-failed_connect = 连接失败
+recent-failed_to_open_project = 无法打开项目
+recent-cannot_open_dev_container_from_remote = 无法从远程项目打开 Dev Container
+recent-failed_to_reconnect = 重新连接失败

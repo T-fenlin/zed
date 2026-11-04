@@ -80,15 +80,18 @@ pub fn show_error_toast(
                             .size(IconSize::Small)
                             .color(Color::Error),
                     )
-                    .action(t(keys::git_ui::GIT_TOAST_VIEW_LOG), move |window, cx| {
-                        let message = message.clone();
-                        let action = action.clone();
-                        workspace_weak
-                            .update(cx, move |workspace, cx| {
-                                open_output(action, workspace, &message, window, cx)
-                            })
-                            .ok();
-                    })
+                    .action(
+                        t(keys::git_ui::GIT_TOAST_VIEW_LOG),
+                        move |window, cx| {
+                            let message = message.clone();
+                            let action = action.clone();
+                            workspace_weak
+                                .update(cx, move |workspace, cx| {
+                                    open_output(action, workspace, &message, window, cx)
+                                })
+                                .ok();
+                        },
+                    )
                 });
                 workspace.toggle_status_toast(toast, cx)
             });

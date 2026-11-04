@@ -4184,13 +4184,14 @@ impl Pane {
                 let project = workspace.project().read(cx);
 
                 if project.is_via_collab() {
-                    workspace.show_error("Cannot drop files on a remote project", cx);
+                    workspace
+                        .show_error(t(keys::workspace::WS_PANE_CANNOT_DROP_FILES_ON_REMOTE), cx);
                     return (true, false);
                 }
                 if project.is_via_remote_server() {
                     if !project.is_via_wsl(cx) {
                         workspace.show_error(
-                            "Cannot drop local files on a remote SSH/Docker project",
+                            t(keys::workspace::WS_PANE_CANNOT_DROP_LOCAL_FILES_ON_REMOTE),
                             cx,
                         );
                         return (true, false);
@@ -4248,7 +4249,7 @@ impl Pane {
                             workspace
                                 .update_in(cx, |workspace, _, cx| {
                                     workspace.show_error(
-                                        "Could not translate the dropped paths into WSL paths",
+                                        t(keys::workspace::WS_PANE_FAILED_TO_TRANSLATE_WSL_PATHS),
                                         cx,
                                     );
                                 })
@@ -5093,10 +5094,7 @@ fn dirty_message_for(buffer_path: Option<ProjectPath>, path_style: PathStyle) ->
             let path = truncate_and_remove_front(&path, 80);
             t_with_args(
                 keys::prompt::PROMPT_SAVE_EDITS,
-                &[(
-                    "path",
-                    &format!("{}", MarkdownInlineCode(path.as_str())),
-                )],
+                &[("path", &format!("{}", MarkdownInlineCode(path.as_str())))],
             )
         }
         None => t(keys::prompt::PROMPT_SAVE_EDITS_UNNAMED),

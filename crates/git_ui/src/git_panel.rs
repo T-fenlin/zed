@@ -3447,9 +3447,12 @@ impl GitPanel {
             }
             Ok(())
         })
-        .detach_and_prompt_err(&t(keys::git_ui::GIT_FAILED_TO_TRASH), window, cx, |e, _, _| {
-            Some(format!("{e}"))
-        });
+        .detach_and_prompt_err(
+            &t(keys::git_ui::GIT_FAILED_TO_TRASH),
+            window,
+            cx,
+            |e, _, _| Some(format!("{e}")),
+        );
     }
 
     fn change_all_files_stage(&mut self, stage: bool, cx: &mut Context<Self>) {
@@ -4099,11 +4102,7 @@ impl GitPanel {
         };
 
         if self.has_unstaged_conflicts() {
-            error_spawn(
-                &t(keys::git_ui::GIT_STAGE_CONFLICTS_FIRST),
-                window,
-                cx,
-            );
+            error_spawn(&t(keys::git_ui::GIT_STAGE_CONFLICTS_FIRST), window, cx);
             return;
         }
 
@@ -4847,13 +4846,7 @@ impl GitPanel {
         } else if worktrees.is_empty() {
             let message = t(keys::git_ui::GIT_CANNOT_INIT_REPOSITORY);
             let detail = t(keys::git_ui::GIT_OPEN_DIRECTORY_FIRST);
-            let result = window.prompt(
-                PromptLevel::Warning,
-                &message,
-                Some(&detail),
-                &["OK"],
-                cx,
-            );
+            let result = window.prompt(PromptLevel::Warning, &message, Some(&detail), &["OK"], cx);
             cx.background_executor()
                 .spawn(async move {
                     result.await.ok();
@@ -8697,9 +8690,10 @@ impl GitPanel {
                 keys::git_ui::GIT_UNSTAGE_MULTIPLE,
                 &[("count", &file_count_text)],
             ),
-            (SelectionTargetKind::Multiple, false) => {
-                t_with_args(keys::git_ui::GIT_STAGE_MULTIPLE, &[("count", &file_count_text)])
-            }
+            (SelectionTargetKind::Multiple, false) => t_with_args(
+                keys::git_ui::GIT_STAGE_MULTIPLE,
+                &[("count", &file_count_text)],
+            ),
         };
 
         let restore_title = match (target_kind, all_trashed, all_deleted) {
@@ -8708,9 +8702,10 @@ impl GitPanel {
             (SelectionTargetKind::File, true, _) => t(keys::git_ui::GIT_TRASH_FILE),
             (SelectionTargetKind::File, _, true) => t(keys::git_ui::GIT_RESTORE_FILE),
             (SelectionTargetKind::File, _, _) => t(keys::git_ui::GIT_DISCARD_CHANGES),
-            (SelectionTargetKind::Multiple, true, _) => {
-                t_with_args(keys::git_ui::GIT_TRASH_MULTIPLE, &[("count", &file_count_text)])
-            }
+            (SelectionTargetKind::Multiple, true, _) => t_with_args(
+                keys::git_ui::GIT_TRASH_MULTIPLE,
+                &[("count", &file_count_text)],
+            ),
             (SelectionTargetKind::Multiple, _, true) => t_with_args(
                 keys::git_ui::GIT_RESTORE_MULTIPLE,
                 &[("count", &file_count_text)],
@@ -17129,7 +17124,7 @@ mod tests {
         });
 
         assert!(cx.has_pending_prompt());
-        cx.simulate_prompt_answer("Trash");
+        cx.simulate_prompt_answer(&t(keys::git_ui::GIT_TRASH));
         cx.executor().run_until_parked();
 
         assert!(
@@ -17158,7 +17153,7 @@ mod tests {
             panel.clean_all(&TrashUntrackedFiles, window, cx);
         });
         assert!(cx.has_pending_prompt());
-        cx.simulate_prompt_answer("Trash");
+        cx.simulate_prompt_answer(&t(keys::git_ui::GIT_TRASH));
         cx.executor().run_until_parked();
 
         assert!(!fs.is_file(path!("/project/untracked.txt").as_ref()).await);
