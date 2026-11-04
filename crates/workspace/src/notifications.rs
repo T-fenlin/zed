@@ -492,7 +492,7 @@ pub mod simple_message_notification {
     };
     use util::ResultExt as _;
 
-    use i18n::{keys, t, t_static};
+    use i18n::{keys, t, t_static, t_with_args};
 
     use crate::SuppressNotification;
     use crate::workspace_error::{
@@ -1640,7 +1640,13 @@ where
             Ok(value) => Some(value),
             Err(err) => {
                 log::error!("Showing error notification in workspace: {err:?}");
-                workspace.show_error(format!("Error: {err}"), cx);
+                workspace.show_error(
+                    t_with_args(
+                        keys::workspace::WS_B_ERROR,
+                        &[("error", &(err).to_string())],
+                    ),
+                    cx,
+                );
                 None
             }
         }
@@ -1655,7 +1661,10 @@ where
             Ok(value) => Some(value),
             Err(err) => {
                 log::error!("{err:?}");
-                let message = format!("Error: {err}");
+                let message = t_with_args(
+                    keys::workspace::WS_B_ERROR,
+                    &[("error", &(err).to_string())],
+                );
                 workspace
                     .update(cx, |workspace, cx| workspace.show_error(message, cx))
                     .ok();
@@ -1668,7 +1677,10 @@ where
         match self {
             Ok(value) => Some(value),
             Err(err) => {
-                let message = format!("Error: {err}");
+                let message = t_with_args(
+                    keys::workspace::WS_B_ERROR,
+                    &[("error", &(err).to_string())],
+                );
                 log::error!("Showing error notification in app: {message}");
                 show_app_notification(workspace_error_notification_id(), cx, {
                     move |cx| {

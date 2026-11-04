@@ -1,4 +1,4 @@
-use i18n::{keys, t_static};
+use i18n::{keys, t_static, t_with_args};
 use std::sync::Arc;
 
 use db::kvp::KeyValueStore;
@@ -164,8 +164,12 @@ fn suggest_for_buffer(
             };
             show_suggestion(workspace, &extension_id, cx, |cx| {
                 MessageNotification::new(
-                    format!(
-                        "Do you want to install the recommended '{extension_id}' extension for '{file_name_or_extension}' files?"
+                    t_with_args(
+                        keys::extensions::EXTENSIONS_INSTALL_RECOMMENDED,
+                        &[
+                            ("id", &(extension_id).to_string()),
+                            ("ext", &(file_name_or_extension).to_string()),
+                        ],
                     ),
                     cx,
                 )

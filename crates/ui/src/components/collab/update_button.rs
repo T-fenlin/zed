@@ -1,7 +1,7 @@
 use gpui::{AnyElement, AnyView, ClickEvent, prelude::*};
 
 use crate::{ButtonLike, CircularProgress, CommonAnimationExt, Tooltip, prelude::*};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 
 const LOAD_CIRCLE_GLYPH_VIEWBOX: f32 = 16.0;
 const LOAD_CIRCLE_GLYPH_STROKE_WIDTH: f32 = 1.2;
@@ -137,7 +137,10 @@ impl UpdateButton {
     }
 
     pub fn version_tooltip_message(version: impl std::fmt::Display) -> String {
-        format!("Update to Version: {version}")
+        t_with_args(
+            keys::ui::UI_UPDATE_TO_VERSION,
+            &[("version", &(version).to_string())],
+        )
     }
 
     pub fn downloading_tooltip_message(

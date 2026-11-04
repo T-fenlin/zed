@@ -1,5 +1,5 @@
 use super::*;
-use i18n::{keys, t_static};
+use i18n::{keys, t_static, t_with_args};
 
 impl Editor {
     pub fn move_left(&mut self, _: &MoveLeft, window: &mut Window, cx: &mut Context<Self>) {
@@ -1522,7 +1522,10 @@ impl Editor {
                 let title = if target.is_empty() {
                     t_static(keys::editor::EDITOR_NAV_REFERENCES).to_owned()
                 } else {
-                    format!("References to {target}")
+                    t_with_args(
+                        keys::editor::EDITOR_NAV_REFERENCES_TO,
+                        &[("target", &(target).to_string())],
+                    )
                 };
                 let allow_preview = PreviewTabsSettings::get_global(cx)
                     .enable_preview_multibuffer_from_code_navigation;

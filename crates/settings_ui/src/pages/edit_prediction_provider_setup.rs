@@ -278,10 +278,16 @@ fn render_api_key_provider(
                     .color(Color::Muted),
             )
             .child(
-                ButtonLink::new(format!("{title} dashboard"), dashboard_url)
-                    .no_icon(true)
-                    .label_size(LabelSize::Small)
-                    .label_color(Color::Muted),
+                ButtonLink::new(
+                    t_with_args(
+                        keys::settings_ui::SETTINGS_B_API_KEY_DASHBOARD,
+                        &[("provider", &(title).to_string())],
+                    ),
+                    dashboard_url,
+                )
+                .no_icon(true)
+                .label_size(LabelSize::Small)
+                .label_color(Color::Muted),
             )
             .child(
                 Label::new(t(keys::settings_ui::SETTINGS_B_API_KEY_TO_GENERATE))

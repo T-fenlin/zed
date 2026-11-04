@@ -3318,9 +3318,15 @@ impl CollabPanel {
                     } else {
                         let room = ActiveCall::global(cx).read(cx).room();
                         if room.is_some() {
-                            format!("Invite {username} to Join Call")
+                            t_with_args(
+                                keys::collab::COLLAB_INVITE_USER_TO_JOIN_CALL,
+                                &[("name", &(username).to_string())],
+                            )
                         } else {
-                            format!("Call {username}")
+                            t_with_args(
+                                keys::collab::COLLAB_CALL_NAMED,
+                                &[("name", &(username).to_string())],
+                            )
                         }
                     };
                     Tooltip::simple(text, cx)

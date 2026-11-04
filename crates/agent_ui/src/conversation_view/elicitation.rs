@@ -1645,21 +1645,42 @@ fn validate_number_value(
     schema: &acp::NumberPropertySchema,
     value: &str,
 ) -> Result<f64, SharedString> {
-    let parsed = value
-        .parse::<f64>()
-        .map_err(|_| SharedString::from(format!("{title} must be a number")))?;
+    let parsed = value.parse::<f64>().map_err(|_| {
+        SharedString::from(t_with_args(
+            keys::agent::AGENT_A_ELICIT_MUST_BE_NUMBER,
+            &[("title", &(title).to_string())],
+        ))
+    })?;
     if !parsed.is_finite() {
-        return Err(format!("{title} must be a finite number").into());
+        return Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_MUST_BE_FINITE,
+            &[("title", &(title).to_string())],
+        )
+        .into());
     }
     if let Some(minimum) = schema.minimum
         && parsed < minimum
     {
-        return Err(format!("{title} must be at least {minimum}").into());
+        return Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_MUST_BE_AT_LEAST,
+            &[
+                ("title", &(title).to_string()),
+                ("minimum", &(minimum).to_string()),
+            ],
+        )
+        .into());
     }
     if let Some(maximum) = schema.maximum
         && parsed > maximum
     {
-        return Err(format!("{title} must be at most {maximum}").into());
+        return Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_MUST_BE_AT_MOST,
+            &[
+                ("title", &(title).to_string()),
+                ("maximum", &(maximum).to_string()),
+            ],
+        )
+        .into());
     }
 
     Ok(parsed)
@@ -1670,18 +1691,35 @@ fn validate_integer_value(
     schema: &acp::IntegerPropertySchema,
     value: &str,
 ) -> Result<i64, SharedString> {
-    let parsed = value
-        .parse::<i64>()
-        .map_err(|_| SharedString::from(format!("{title} must be an integer")))?;
+    let parsed = value.parse::<i64>().map_err(|_| {
+        SharedString::from(t_with_args(
+            keys::agent::AGENT_A_ELICIT_MUST_BE_INTEGER,
+            &[("title", &(title).to_string())],
+        ))
+    })?;
     if let Some(minimum) = schema.minimum
         && parsed < minimum
     {
-        return Err(format!("{title} must be at least {minimum}").into());
+        return Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_MUST_BE_AT_LEAST,
+            &[
+                ("title", &(title).to_string()),
+                ("minimum", &(minimum).to_string()),
+            ],
+        )
+        .into());
     }
     if let Some(maximum) = schema.maximum
         && parsed > maximum
     {
-        return Err(format!("{title} must be at most {maximum}").into());
+        return Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_MUST_BE_AT_MOST,
+            &[
+                ("title", &(title).to_string()),
+                ("maximum", &(maximum).to_string()),
+            ],
+        )
+        .into());
     }
 
     Ok(parsed)
@@ -1697,13 +1735,21 @@ fn validate_string_value(
         .min_length
         .is_some_and(|min_length| length < min_length as usize)
     {
-        return Err(format!("{title} is too short").into());
+        return Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_TOO_SHORT,
+            &[("title", &(title).to_string())],
+        )
+        .into());
     }
     if schema
         .max_length
         .is_some_and(|max_length| length > max_length as usize)
     {
-        return Err(format!("{title} is too long").into());
+        return Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_TOO_LONG,
+            &[("title", &(title).to_string())],
+        )
+        .into());
     }
 
     validate_string_pattern_and_format(title, schema, value)
@@ -1718,7 +1764,11 @@ fn validate_single_select_value(
     if options.iter().any(|option| option.value.as_str() == value) {
         Ok(())
     } else {
-        Err(format!("{title} must be one of the provided options").into())
+        Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_MUST_BE_PROVIDED_OPTION,
+            &[("title", &(title).to_string())],
+        )
+        .into())
     }
 }
 
@@ -1747,10 +1797,18 @@ fn validate_string_pattern_and_format(
         .as_ref()
         .is_some_and(|pattern| pattern.len() > MAX_ELICITATION_PATTERN_BYTES)
     {
-        return Err(format!("{title} has an invalid validation pattern").into());
+        return Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_INVALID_PATTERN,
+            &[("title", &(title).to_string())],
+        )
+        .into());
     }
     if schema.pattern.is_some() && value.len() > MAX_ELICITATION_PATTERN_INPUT_BYTES {
-        return Err(format!("{title} is too long to validate safely").into());
+        return Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_TOO_LONG_TO_VALIDATE,
+            &[("title", &(title).to_string())],
+        )
+        .into());
     }
 
     let mut validation_schema = serde_json::Map::new();
@@ -1783,9 +1841,15 @@ fn validate_string_pattern_and_format(
         .build(&validation_schema)
         .map_err(|_| {
             if schema.pattern.is_some() {
-                format!("{title} has an invalid validation pattern")
+                t_with_args(
+                    keys::agent::AGENT_A_ELICIT_INVALID_PATTERN,
+                    &[("title", &(title).to_string())],
+                )
             } else {
-                format!("{title} has an invalid validation format")
+                t_with_args(
+                    keys::agent::AGENT_A_ELICIT_INVALID_FORMAT,
+                    &[("title", &(title).to_string())],
+                )
             }
         })?;
     let value = serde_json::Value::String(value.to_string());
@@ -1794,7 +1858,11 @@ fn validate_string_pattern_and_format(
             error.kind(),
             jsonschema::error::ValidationErrorKind::BacktrackLimitExceeded { .. }
         ) {
-            return Err(format!("{title} has a validation pattern that is too complex").into());
+            return Err(t_with_args(
+                keys::agent::AGENT_A_ELICIT_PATTERN_TOO_COMPLEX,
+                &[("title", &(title).to_string())],
+            )
+            .into());
         }
     } else {
         return Ok(());
@@ -1804,9 +1872,24 @@ fn validate_string_pattern_and_format(
         schema.pattern.is_some(),
         schema.format.as_ref().and_then(string_format_label),
     ) {
-        (true, Some(_)) => Err(format!("{title} does not match the requested constraints").into()),
-        (true, None) => Err(format!("{title} does not match the requested pattern").into()),
-        (false, Some(format)) => Err(format!("{title} must be {format}").into()),
+        (true, Some(_)) => Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_NOT_MATCH_CONSTRAINTS,
+            &[("title", &(title).to_string())],
+        )
+        .into()),
+        (true, None) => Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_NOT_MATCH_PATTERN,
+            &[("title", &(title).to_string())],
+        )
+        .into()),
+        (false, Some(format)) => Err(t_with_args(
+            keys::agent::AGENT_A_ELICIT_MUST_BE,
+            &[
+                ("title", &(title).to_string()),
+                ("format", &(format).to_string()),
+            ],
+        )
+        .into()),
         (false, None) => Ok(()),
     }
 }
@@ -2393,8 +2476,9 @@ impl<'a> ElicitationCard<'a> {
                                                 .color(Color::Warning),
                                         )
                                         .child(
-                                            Label::new(format!(
-                                                "This internationalized address displays as {decoded_host}. Verify it carefully."
+                                            Label::new(t_with_args(
+                                                keys::agent::AGENT_A_ELICIT_IDN_WARNING,
+                                                &[("host", &(decoded_host).to_string())],
                                             ))
                                             .size(LabelSize::Small)
                                             .color(Color::Warning),

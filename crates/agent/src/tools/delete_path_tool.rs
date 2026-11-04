@@ -11,6 +11,7 @@ use agent_client_protocol::schema::v2 as acp;
 use agent_settings::AgentSettings;
 use futures::{FutureExt as _, SinkExt, StreamExt, channel::mpsc};
 use gpui::{App, AppContext, Entity, SharedString, Task};
+use i18n::{keys, t_with_args};
 use project::{Project, ProjectPath};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -188,7 +189,7 @@ impl AgentTool for DeletePathTool {
                     }
                 }
 
-                return Ok(format!("Deleted {path}"));
+                return Ok(t_with_args(keys::acp::ACP_DIFF_DELETED, &[("path", &(path).to_string())]));
             }
 
             let (project_path, worktree_snapshot) = project.read_with(cx, |project, cx| {
@@ -260,7 +261,7 @@ impl AgentTool for DeletePathTool {
                     return Err("Delete cancelled by user".to_string());
                 }
             }
-            Ok(format!("Deleted {path}"))
+            Ok(t_with_args(keys::acp::ACP_DIFF_DELETED, &[("path", &(path).to_string())]))
         })
     }
 }

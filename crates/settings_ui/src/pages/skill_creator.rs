@@ -12,7 +12,7 @@ use gpui::{
     TextStyle, WeakEntity, WindowHandle, actions,
 };
 use http_client::{AsyncBody, HttpClient, HttpRequestExt, Request, StatusCode, Url};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use language::{Buffer, language_settings::SoftWrap};
 use project::{Project, Worktree};
 use settings::{ActionSequence, Settings};
@@ -447,8 +447,9 @@ impl SkillCreatorPage {
         match parse_imported_skill(&content, "") {
             Ok(imported) => self.apply_imported_skill(imported, window, cx),
             Err(err) => {
-                self.save_error = Some(SharedString::from(format!(
-                    "Couldn't read shared skill: {err}"
+                self.save_error = Some(SharedString::from(t_with_args(
+                    keys::settings_ui::SETTINGS_A_SKILL_COULDNT_READ_SHARED,
+                    &[("error", &(err).to_string())],
                 )));
                 cx.notify();
             }

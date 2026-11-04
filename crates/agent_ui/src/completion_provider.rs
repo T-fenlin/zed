@@ -2205,7 +2205,10 @@ fn diagnostics_label(
             .expect("at least one part present after non-empty check")
     };
 
-    format!("Diagnostics: {body}")
+    t_with_args(
+        keys::agent::AGENT_B_DIAGNOSTICS_WITH_BODY,
+        &[("body", &(body).to_string())],
+    )
 }
 
 fn diagnostics_submenu_label(

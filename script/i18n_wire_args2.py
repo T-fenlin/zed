@@ -69,6 +69,9 @@ def parse_format_calls(text):
         k = j + 1
         while k < len(text) and text[k] in " \t\n":
             k += 1
+        if k < len(text) and text[k] == ")":
+            yield m.start(), k + 1, raw, ""
+            continue
         if k >= len(text) or text[k] != ",":
             continue
         depth, p = 0, k + 1
@@ -181,6 +184,11 @@ def main():
             if not cands:
                 continue
             arg_list = split_top_level(args)
+            # 支持 Rust 2021 隐式捕获：format!("{seconds} seconds ago") 无显式参数
+            if not arg_list:
+                holders = [m.group(1).strip() for m in re.finditer(r"\{([^}]*)\}", raw)]
+                if holders and all(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", h) for h in holders):
+                    arg_list = holders
             owners = [c for c in cands if any(o in norm for o in OWNER.get(c[0], []))]
             pick = owners[0] if len(owners) == 1 else (cands[0] if len(cands) == 1 else None)
             if not pick:

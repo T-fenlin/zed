@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use std::path::PathBuf;
 
 use agent_settings::AgentSettings;
@@ -78,7 +78,10 @@ pub(crate) fn render_sandbox_settings_page(
         .child({
             let docs_url =
                 client::zed_urls::sandboxing_docs(Some("persistent-sandbox-permissions"), cx);
-            let tooltip = format!("Opens {docs_url}");
+            let tooltip = t_with_args(
+                keys::settings_ui::SETTINGS_B_SANDBOX_DOCS_TOOLTIP,
+                &[("url", &(docs_url).to_string())],
+            );
             // Wrap in a row so the button shrinks to its content width instead
             // of stretching across the settings page.
             h_flex().child(

@@ -87,18 +87,32 @@ impl HighlightCategory {
             HighlightCategory::SyntaxToken {
                 capture_name,
                 theme_key: None,
-            } => format!("syntax: {capture_name}").into(),
+            } => t_with_args(
+                keys::lang::LANG_TOOLS_HIGHLIGHT_SYNTAX,
+                &[("capture_name", &(capture_name).to_string())],
+            )
+            .into(),
             HighlightCategory::SemanticToken {
                 token_type,
                 token_modifiers,
                 theme_key,
             } => {
                 let label = match (token_type, token_modifiers) {
-                    (Some(token_type), Some(modifiers)) => {
-                        format!("semantic token: {token_type} [{modifiers}]")
-                    }
-                    (Some(token_type), None) => format!("semantic token: {token_type}"),
-                    (None, Some(modifiers)) => format!("semantic token [{modifiers}]"),
+                    (Some(token_type), Some(modifiers)) => t_with_args(
+                        keys::lang::LANG_TOOLS_HIGHLIGHT_SEMANTIC_TOKEN_MODIFIERS,
+                        &[
+                            ("token_type", &(token_type).to_string()),
+                            ("modifiers", &(modifiers).to_string()),
+                        ],
+                    ),
+                    (Some(token_type), None) => t_with_args(
+                        keys::lang::LANG_TOOLS_HIGHLIGHT_SEMANTIC_TOKEN,
+                        &[("token_type", &(token_type).to_string())],
+                    ),
+                    (None, Some(modifiers)) => t_with_args(
+                        keys::lang::LANG_TOOLS_HIGHLIGHT_SEMANTIC_MODIFIERS,
+                        &[("modifiers", &(modifiers).to_string())],
+                    ),
                     (None, None) => "semantic token".to_string(),
                 };
 

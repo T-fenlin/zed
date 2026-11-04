@@ -1,6 +1,6 @@
 use crate::{IconDecoration, IconDecorationKind, Tooltip, prelude::*};
 use gpui::{Animation, AnimationExt, SharedString, pulsating_between};
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use std::time::Duration;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -61,9 +61,18 @@ impl AiSettingItemSource {
 
     fn tooltip_text(&self, label: &str) -> String {
         match self {
-            Self::Extension => format!("{label} was installed from an extension."),
-            Self::Registry => format!("{label} was installed from the ACP registry."),
-            Self::Custom => format!("{label} was configured manually."),
+            Self::Extension => t_with_args(
+                keys::ui::UI_AI_SOURCE_EXTENSION,
+                &[("label", &(label).to_string())],
+            ),
+            Self::Registry => t_with_args(
+                keys::ui::UI_AI_SOURCE_REGISTRY,
+                &[("label", &(label).to_string())],
+            ),
+            Self::Custom => t_with_args(
+                keys::ui::UI_AI_SOURCE_CUSTOM,
+                &[("label", &(label).to_string())],
+            ),
         }
     }
 }

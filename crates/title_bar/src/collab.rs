@@ -242,7 +242,10 @@ impl TitleBar {
                                 .occlude()
                                 .tooltip({
                                     let login = collaborator.user.username.clone();
-                                    Tooltip::text(format!("Follow {login}"))
+                                    Tooltip::text(t_with_args(
+                                        keys::collab::COLLAB_FOLLOW,
+                                        &[("user", &(login).to_string())],
+                                    ))
                                 }),
                         )
                     }))
@@ -455,7 +458,10 @@ impl TitleBar {
                                 h_flex()
                                     .gap_4()
                                     .justify_between()
-                                    .child(Label::new(format!("Connection: {quality_label}")))
+                                    .child(Label::new(t_with_args(
+                                        keys::collab::COLLAB_CONNECTION_QUALITY,
+                                        &[("quality", &(quality_label).to_string())],
+                                    )))
                                     .when(has_key_binding, |this| this.child(key_binding)),
                             )
                             .child(
@@ -601,12 +607,20 @@ impl TitleBar {
                     let unshare_meta: SharedString = if folder_list.is_empty() {
                         t(keys::collab::COLLAB_STOP_SHARING_PROJECT).into()
                     } else {
-                        format!("Stop sharing {folder_list} with call participants").into()
+                        t_with_args(
+                            keys::collab::COLLAB_STOP_SHARING_NAMED,
+                            &[("folders", &(folder_list).to_string())],
+                        )
+                        .into()
                     };
                     let share_meta: SharedString = if folder_list.is_empty() {
                         t(keys::collab::COLLAB_SHARE_ACTIVE_PROJECT).into()
                     } else {
-                        format!("Share {folder_list} with call participants").into()
+                        t_with_args(
+                            keys::collab::COLLAB_SHARE_NAMED,
+                            &[("folders", &(folder_list).to_string())],
+                        )
+                        .into()
                     };
 
                     this.child(

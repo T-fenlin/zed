@@ -369,8 +369,9 @@ impl ExtensionCard {
                             let version = extension.manifest.version.clone();
                             move |_, cx| {
                                 Tooltip::simple(
-                                    format!(
-                                        "v{version} is not compatible with this version of Zed."
+                                    t_with_args(
+                                        keys::extensions::EXTENSIONS_INCOMPATIBLE_VERSION,
+                                        &[("version", &(version).to_string())],
                                     ),
                                     cx,
                                 )

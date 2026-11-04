@@ -1022,7 +1022,9 @@ fn render_user_pattern_row(
             IconButton::new(delete_id, IconName::Trash)
                 .icon_size(IconSize::Small)
                 .icon_color(Color::Muted)
-                .tooltip(Tooltip::text(t(keys::settings_ui::SETTINGS_A_TOOLS_DELETE_PATTERN)))
+                .tooltip(Tooltip::text(t(
+                    keys::settings_ui::SETTINGS_A_TOOLS_DELETE_PATTERN,
+                )))
                 .on_click(cx.listener(move |_, _, _, cx| {
                     delete_pattern(&tool_id_for_delete, rule_type, &pattern_for_delete, cx);
                 })),
@@ -1040,14 +1042,12 @@ fn render_user_pattern_row(
                     );
 
                     let validation_error = if !updated {
-                        Some(
-                            t(keys::settings_ui::SETTINGS_A_TOOLS_PATTERN_EXISTS)
-                                .to_string(),
-                        )
+                        Some(t(keys::settings_ui::SETTINGS_A_TOOLS_PATTERN_EXISTS).to_string())
                     } else {
                         match regex::Regex::new(&new_pattern) {
-                            Err(err) => Some(format!(
-                                "Invalid regex: {err}. Pattern saved but will block this tool until fixed or removed."
+                            Err(err) => Some(t_with_args(
+                                keys::settings_ui::SETTINGS_A_TOOLS_INVALID_REGEX,
+                                &[("error", &(err).to_string())],
                             )),
                             Ok(_) => None,
                         }
@@ -1074,7 +1074,9 @@ fn render_add_pattern_input(
     let settings_window = cx.entity().downgrade();
 
     SettingsInputField::new(input_id)
-        .with_placeholder(t(keys::settings_ui::SETTINGS_A_TOOLS_ADD_PATTERN_PLACEHOLDER))
+        .with_placeholder(t(
+            keys::settings_ui::SETTINGS_A_TOOLS_ADD_PATTERN_PLACEHOLDER,
+        ))
         .tab_index(0)
         .with_buffer_font()
         .display_clear_button()
@@ -1087,8 +1089,9 @@ fn render_add_pattern_input(
                     save_pattern(&tool_id_owned, rule_type, trimmed.clone(), cx);
 
                     let validation_error = match regex::Regex::new(&trimmed) {
-                        Err(err) => Some(format!(
-                            "Invalid regex: {err}. Pattern saved but will block this tool until fixed or removed."
+                        Err(err) => Some(t_with_args(
+                            keys::settings_ui::SETTINGS_A_TOOLS_INVALID_REGEX,
+                            &[("error", &(err).to_string())],
                         )),
                         Ok(_) => None,
                     };

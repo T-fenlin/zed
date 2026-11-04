@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use std::time::Duration;
 
 use acp_thread::AgentSessionListRequest;
@@ -402,7 +402,10 @@ impl ThreadImportModal {
             let message = if imported_count == 1 {
                 "Imported 1 thread.".to_string()
             } else {
-                format!("Imported {imported_count} threads.")
+                t_with_args(
+                    keys::agent::AGENT_IMPORT_IMPORTED_THREADS,
+                    &[("count", &(imported_count).to_string())],
+                )
             };
             StatusToast::new(message, cx, |this, _cx| {
                 this.icon(
@@ -962,15 +965,22 @@ fn show_cross_channel_import_toast(
     cx: &mut App,
 ) {
     let status_toast = if imported_count == 0 {
-        StatusToast::new(t(keys::agent::AGENT_IMPORT_NO_NEW_THREADS), cx, |this, _cx| {
-            this.icon(Icon::new(IconName::Info).color(Color::Muted))
-                .dismiss_button(true)
-        })
+        StatusToast::new(
+            t(keys::agent::AGENT_IMPORT_NO_NEW_THREADS),
+            cx,
+            |this, _cx| {
+                this.icon(Icon::new(IconName::Info).color(Color::Muted))
+                    .dismiss_button(true)
+            },
+        )
     } else {
         let message = if imported_count == 1 {
             "Imported 1 thread from other channels.".to_string()
         } else {
-            format!("Imported {imported_count} threads from other channels.")
+            t_with_args(
+                keys::agent::AGENT_IMPORT_IMPORTED_FROM_CHANNELS,
+                &[("count", &(imported_count).to_string())],
+            )
         };
         StatusToast::new(message, cx, |this, _cx| {
             this.icon(Icon::new(IconName::Check).color(Color::Success))

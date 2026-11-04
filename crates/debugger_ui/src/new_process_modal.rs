@@ -1,6 +1,6 @@
 use anyhow::{Context as _, bail};
 use collections::{FxHashMap, HashMap, HashSet};
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use language::{LanguageName, LanguageRegistry};
 use std::{
     borrow::Cow,
@@ -1105,17 +1105,30 @@ impl DebugDelegate {
             Some(TaskSourceKind::Lsp { language_name, .. }) => {
                 Some(format!("LSP: {language_name}"))
             }
-            Some(TaskSourceKind::Language { name }) => Some(format!("Language: {name}")),
+            Some(TaskSourceKind::Language { name }) => Some(t_with_args(
+                keys::debugger::DEBUGGER_SOURCE_LANGUAGE,
+                &[("language", &(name).to_string())],
+            )),
             _ => context.clone().and_then(|ctx| {
                 ctx.task_context
                     .task_variables
                     .get(&VariableName::RelativeFile)
-                    .map(|f| format!("in {f}"))
+                    .map(|f| {
+                        t_with_args(
+                            keys::debugger::DEBUGGER_SOURCE_IN_FILE,
+                            &[("file", &(f).to_string())],
+                        )
+                    })
                     .or_else(|| {
                         ctx.task_context
                             .task_variables
                             .get(&VariableName::Dirname)
-                            .map(|d| format!("in {d}/"))
+                            .map(|d| {
+                                t_with_args(
+                                    keys::debugger::DEBUGGER_SOURCE_IN_DIR,
+                                    &[("dir", &(d).to_string())],
+                                )
+                            })
                     })
             }),
         }

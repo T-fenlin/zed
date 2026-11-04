@@ -76,9 +76,11 @@ struct DevExtensionNotInstalledError {
 impl WorkspaceError for DevExtensionNotInstalledError {
     fn primary_message(&self) -> SharedString {
         match &self.extension_id {
-            Some(extension_id) => {
-                format!("Dev extension '{extension_id}' is not installed.").into()
-            }
+            Some(extension_id) => t_with_args(
+                keys::extensions::EXTENSIONS_DEV_NOT_INSTALLED,
+                &[("id", &(extension_id).to_string())],
+            )
+            .into(),
             None => t(keys::extensions::EXTENSIONS_NO_DEV_INSTALLED).into(),
         }
     }

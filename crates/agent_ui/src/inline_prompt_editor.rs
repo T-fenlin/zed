@@ -13,7 +13,7 @@ use gpui::{
     AnyElement, App, ClipboardItem, Context, Entity, EventEmitter, FocusHandle, Focusable,
     Subscription, TextStyle, TextStyleRefinement, WeakEntity, Window, actions,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_with_args};
 use language_model::{LanguageModel, LanguageModelRegistry};
 use markdown::{HeadingLevelStyles, Markdown, MarkdownElement, MarkdownStyle};
 use parking_lot::Mutex;
@@ -406,10 +406,21 @@ impl<T: 'static> PromptEditor<T> {
 
         let agent_panel_keybinding =
             ui::text_for_action(&zed_actions::assistant::ToggleFocus, window, cx)
-                .map(|keybinding| format!("{keybinding} to chat"))
+                .map(|keybinding| {
+                    t_with_args(
+                        keys::agent::AGENT_B_KEYBINDING_TO_CHAT,
+                        &[("keybinding", &(keybinding).to_string())],
+                    )
+                })
                 .unwrap_or_default();
 
-        format!("{action}… ({agent_panel_keybinding} ― ↓↑ for history — @ to include context)")
+        t_with_args(
+            keys::agent::AGENT_B_PROMPT_PLACEHOLDER,
+            &[
+                ("action", &(action).to_string()),
+                ("keybinding", &(agent_panel_keybinding).to_string()),
+            ],
+        )
     }
 
     pub fn prompt(&self, cx: &App) -> String {

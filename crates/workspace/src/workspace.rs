@@ -11575,7 +11575,7 @@ pub fn open_paths(
                 workspace.update(cx, |workspace, cx| {
                     for item in open_task.iter().flatten() {
                         if let Err(e) = item {
-                            workspace.show_error(format!("Error: {e}"), cx);
+                            workspace.show_error(t_with_args(keys::workspace::WS_B_ERROR, &[("error", &(e).to_string())]), cx);
                         }
                     }
                 });

@@ -1,4 +1,4 @@
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use std::{
     cell::Cell,
     fmt,
@@ -896,16 +896,28 @@ fn format_timestamp_human(dt: &DateTime<Utc>) -> String {
         t(keys::agent::AGENT_TIME_FUTURE).to_string()
     } else if duration.num_seconds() < 60 {
         let seconds = duration.num_seconds();
-        format!("{seconds} seconds ago")
+        t_with_args(
+            keys::agent::AGENT_TIME_SECONDS_AGO,
+            &[("count", &(seconds).to_string())],
+        )
     } else if duration.num_minutes() < 60 {
         let minutes = duration.num_minutes();
-        format!("{minutes} minutes ago")
+        t_with_args(
+            keys::agent::AGENT_TIME_MINUTES_AGO,
+            &[("count", &(minutes).to_string())],
+        )
     } else if duration.num_hours() < 24 {
         let hours = duration.num_hours();
-        format!("{hours} hours ago")
+        t_with_args(
+            keys::agent::AGENT_TIME_HOURS_AGO,
+            &[("count", &(hours).to_string())],
+        )
     } else {
         let days = duration.num_days();
-        format!("{days} days ago")
+        t_with_args(
+            keys::agent::AGENT_TIME_DAYS_AGO,
+            &[("count", &(days).to_string())],
+        )
     };
 
     format!("{} ({})", dt.to_rfc3339(), relative)

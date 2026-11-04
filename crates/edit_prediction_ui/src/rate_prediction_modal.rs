@@ -9,7 +9,7 @@ use gpui::{
     App, BorderStyle, DismissEvent, EdgesRefinement, Entity, EventEmitter, FocusHandle, Focusable,
     Length, StyleRefinement, Task, TextStyleRefinement, Window, actions, prelude::*,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use language::{
     Bias, Buffer, BufferSnapshot, CodeLabel, LanguageRegistry, Point, ToOffset, ToPoint,
     language_settings::{self, InlayHintKind},
@@ -1327,9 +1327,7 @@ impl RatePredictionsModal {
                                 ),
                             ),
                     )
-                    .tooltip(Tooltip::text(format!(
-                        "{tooltip_text} • Trigger: {trigger_tooltip}"
-                    )))
+                    .tooltip(Tooltip::text(t_with_args(keys::edit_prediction::EDIT_PREDICTION_TOOLTIP_STATUS_TRIGGER, &[("status", &(tooltip_text).to_string()), ("trigger", &(trigger_tooltip).to_string())])))
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.select_completion(Some(completion.clone()), true, window, cx);
                     }))

@@ -1298,7 +1298,10 @@ impl PickerDelegate for BranchListDelegate {
 
         let warning_banner = || {
             self.branch_list_error.as_deref().map(|error| {
-                let message = format!("Some branches could not be loaded: {error}");
+                let message = t_with_args(
+                    keys::git_ui::GIT_B_BRANCHES_LOAD_ERROR,
+                    &[("error", &(error).to_string())],
+                );
                 div().p_1p5().child(
                     Banner::new()
                         .severity(Severity::Warning)
@@ -1719,14 +1722,20 @@ impl PickerDelegate for BranchListDelegate {
                 .single_line()
                 .truncate()
                 .into_any_element(),
-            Entry::NewBranch { name } => Label::new(format!("Create Branch: \"{name}\"…"))
-                .single_line()
-                .truncate()
-                .into_any_element(),
-            Entry::NewRemoteName { name, .. } => Label::new(format!("Create Remote: \"{name}\""))
-                .single_line()
-                .truncate()
-                .into_any_element(),
+            Entry::NewBranch { name } => Label::new(t_with_args(
+                keys::git_ui::GIT_B_CREATE_BRANCH_ENTRY,
+                &[("name", &(name).to_string())],
+            ))
+            .single_line()
+            .truncate()
+            .into_any_element(),
+            Entry::NewRemoteName { name, .. } => Label::new(t_with_args(
+                keys::git_ui::GIT_B_CREATE_REMOTE_ENTRY,
+                &[("name", &(name).to_string())],
+            ))
+            .single_line()
+            .truncate()
+            .into_any_element(),
             Entry::Branch { branch, positions } => {
                 HighlightedLabel::new(branch.name().to_string(), positions.clone())
                     .single_line()
@@ -1785,7 +1794,11 @@ impl PickerDelegate for BranchListDelegate {
         };
 
         let create_from_default_button = self.default_branch.as_ref().map(|default_branch| {
-            let tooltip_label: SharedString = format!("Create New From: {default_branch}").into();
+            let tooltip_label: SharedString = t_with_args(
+                keys::git_ui::GIT_B_CREATE_NEW_FROM,
+                &[("default_branch", &(default_branch).to_string())],
+            )
+            .into();
             let focus_handle = self.focus_handle.clone();
 
             IconButton::new("create_from_default", IconName::GitBranchPlus)
@@ -1831,10 +1844,14 @@ impl PickerDelegate for BranchListDelegate {
                             .child(entry_title)
                             .child({
                                 let message = match entry {
-                                    Entry::NewUrl { url } => format!("Based off {url}"),
-                                    Entry::NewRemoteName { url, .. } => {
-                                        format!("Based off {url}")
-                                    }
+                                    Entry::NewUrl { url } => t_with_args(
+                                        keys::git_ui::GIT_B_BASED_OFF,
+                                        &[("value", &(url).to_string())],
+                                    ),
+                                    Entry::NewRemoteName { url, .. } => t_with_args(
+                                        keys::git_ui::GIT_B_BASED_OFF,
+                                        &[("value", &(url).to_string())],
+                                    ),
                                     Entry::NewBranch { .. } => {
                                         if let Some(current_branch) =
                                             self.repo.as_ref().and_then(|repo| {
@@ -2038,7 +2055,10 @@ impl PickerDelegate for BranchListDelegate {
                     .as_ref()
                     .filter(|_| matches!(selected_entry, Some(Entry::NewBranch { .. })))
                     .map(|default_branch| {
-                        let button_label = format!("Create New From: {default_branch}");
+                        let button_label = t_with_args(
+                            keys::git_ui::GIT_B_CREATE_NEW_FROM,
+                            &[("default_branch", &(default_branch).to_string())],
+                        );
 
                         Button::new("branch-from-default", button_label)
                             .key_binding(
@@ -2122,7 +2142,10 @@ impl PickerDelegate for BranchListDelegate {
             PickerState::NewBranch => {
                 let branch_from_default_button =
                     self.default_branch.as_ref().map(|default_branch| {
-                        let button_label = format!("Create New From: {default_branch}");
+                        let button_label = t_with_args(
+                            keys::git_ui::GIT_B_CREATE_NEW_FROM,
+                            &[("default_branch", &(default_branch).to_string())],
+                        );
 
                         Button::new("branch-from-default", button_label)
                             .key_binding(

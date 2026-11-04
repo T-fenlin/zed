@@ -5,6 +5,7 @@ use fs::Fs;
 use futures::{FutureExt, StreamExt, future::BoxFuture};
 use gpui::{App, AsyncApp, Context, Entity, Task, TaskExt};
 use http_client::{CustomHeaders, HttpClient};
+use i18n::{keys, t_with_args};
 use language_model::{
     ApiKeyState, AuthenticateError, EnvVar, IconOrSvg, InlineDescription, LanguageModel,
     LanguageModelClient, LanguageModelCompletionError, LanguageModelCompletionStream,
@@ -1239,8 +1240,9 @@ impl ConfigurationView {
                 .disabled(env_var_set)
                 .on_click(cx.listener(|this, _, window, cx| this.reset_api_key(window, cx)))
                 .when(env_var_set, |this| {
-                    this.tooltip_label(format!(
-                        "To reset your API key, unset the {API_KEY_ENV_VAR_NAME} environment variable."
+                    this.tooltip_label(t_with_args(
+                        keys::settings_ui::SETTINGS_B_API_KEY_RESET_TOOLTIP,
+                        &[("env_var", &(API_KEY_ENV_VAR_NAME).to_string())],
                     ))
                 })
                 .into_any_element()

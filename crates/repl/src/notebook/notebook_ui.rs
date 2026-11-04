@@ -593,13 +593,22 @@ impl NotebookEditor {
         let msg_id = message.header.msg_id.clone();
 
         let send_result = match &mut self.kernel {
-            Kernel::RunningKernel(kernel) => kernel
-                .request_tx()
-                .try_send(message)
-                .map_err(|err| format!("failed to send execute request to kernel (the kernel process may have died): {err}")),
-            Kernel::StartingKernel(_) => Err(t(keys::repl::REPL_NOTEBOOK_KERNEL_STARTING).to_string()),
-            Kernel::ErroredLaunch(error) => Err(format!("the kernel failed to launch: {error}")),
-            Kernel::ShuttingDown | Kernel::Shutdown => Err(t(keys::repl::REPL_NOTEBOOK_KERNEL_SHUT_DOWN).to_string()),
+            Kernel::RunningKernel(kernel) => kernel.request_tx().try_send(message).map_err(|err| {
+                t_with_args(
+                    keys::repl::REPL_NOTEBOOK_SEND_FAILED,
+                    &[("error", &(err).to_string())],
+                )
+            }),
+            Kernel::StartingKernel(_) => {
+                Err(t(keys::repl::REPL_NOTEBOOK_KERNEL_STARTING).to_string())
+            }
+            Kernel::ErroredLaunch(error) => Err(t_with_args(
+                keys::repl::REPL_NOTEBOOK_KERNEL_LAUNCH_FAILED,
+                &[("error", &(error).to_string())],
+            )),
+            Kernel::ShuttingDown | Kernel::Shutdown => {
+                Err(t(keys::repl::REPL_NOTEBOOK_KERNEL_SHUT_DOWN).to_string())
+            }
             Kernel::Restarting => Err(t(keys::repl::REPL_NOTEBOOK_KERNEL_RESTARTING).to_string()),
         };
 

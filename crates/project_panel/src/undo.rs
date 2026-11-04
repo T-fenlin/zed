@@ -138,7 +138,7 @@ use futures::channel::mpsc;
 use gpui::{
     AppContext, AsyncApp, IntoElement, PromptLevel, SharedString, Styled, Task, WeakEntity,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use markdown::{Markdown, MarkdownElement};
 use project::Project;
 use project::{ProjectPath, WorktreeId};
@@ -672,7 +672,13 @@ impl Inner {
                     .entry_for_path(from, cx)
                     .map(|entry| entry.id)
                     .with_context(|| {
-                        format!("Failed to {operation} `{from_name}`. It no longer exists.")
+                        t_with_args(
+                            keys::panel::PANEL_FAILED_TO_RENAME,
+                            &[
+                                ("operation", &(operation).to_string()),
+                                ("name", &(from_name).to_string()),
+                            ],
+                        )
                     })?;
 
                 Ok(project.rename_entry(entry_id, to.clone(), cx))

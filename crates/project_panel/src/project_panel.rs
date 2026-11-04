@@ -3150,7 +3150,13 @@ impl ProjectPanel {
             (true, 1) => format!("Failed to trash {failed_count} of {total_count} file."),
             (true, _) => format!("Failed to trash {failed_count} of {total_count} files."),
             (false, 1) => format!("Failed to delete {failed_count} of {total_count} file."),
-            (false, _) => format!("Failed to delete {failed_count} of {total_count} files."),
+            (false, _) => t_with_args(
+                keys::panel::PANEL_FAILED_TO_DELETE,
+                &[
+                    ("failed", &(failed_count).to_string()),
+                    ("total", &(total_count).to_string()),
+                ],
+            ),
         };
 
         let toast = StatusToast::new(message, cx, |this, _| {

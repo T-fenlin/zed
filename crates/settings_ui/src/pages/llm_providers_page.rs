@@ -252,7 +252,10 @@ fn render_api_key_providers_item(
     }
 
     let input_id = format!("{}-api-key-input", provider_id.0);
-    let aria_label = format!("{provider_name} API Key");
+    let aria_label = t_with_args(
+        keys::settings_ui::SETTINGS_B_API_KEY_ARIA,
+        &[("provider", &(provider_name).to_string())],
+    );
 
     v_flex()
         .gap_2()
@@ -283,7 +286,10 @@ fn render_api_key_providers_item(
                                 )
                                 .child(
                                     ButtonLink::new(
-                                        format!("{provider_name} dashboard"),
+                                        t_with_args(
+                                            keys::settings_ui::SETTINGS_B_API_KEY_DASHBOARD,
+                                            &[("provider", &(provider_name).to_string())],
+                                        ),
                                         api_key_url,
                                     )
                                     .no_icon(true)
@@ -428,8 +434,14 @@ fn render_inline_description(
                     .color(Color::Muted),
             )
             .child(
-                ButtonLink::new(format!("{provider_name} dashboard."), url)
-                    .label_size(LabelSize::Small),
+                ButtonLink::new(
+                    t_with_args(
+                        keys::settings_ui::SETTINGS_B_LLM_DASHBOARD_PERIOD,
+                        &[("provider", &(provider_name).to_string())],
+                    ),
+                    url,
+                )
+                .label_size(LabelSize::Small),
             )
             .into_any_element(),
         InlineDescription::Text(text) => Label::new(text)
@@ -1345,9 +1357,13 @@ fn parse_anthropic_model(
 }
 
 fn parse_u64_field(value: &str, name: &str) -> Result<u64, SharedString> {
-    value
-        .parse::<u64>()
-        .map_err(|_| format!("{name} must be a number").into())
+    value.parse::<u64>().map_err(|_| {
+        t_with_args(
+            keys::settings_ui::SETTINGS_B_LLM_NUMBER_REQUIRED,
+            &[("name", &(name).to_string())],
+        )
+        .into()
+    })
 }
 
 #[cfg(test)]

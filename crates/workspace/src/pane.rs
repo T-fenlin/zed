@@ -4286,7 +4286,13 @@ impl Pane {
                         _ = workspace.update_in(cx, |workspace, window, cx| {
                             for item in opened_items.into_iter().flatten() {
                                 if let Err(e) = item {
-                                    workspace.show_error(format!("Error: {e}"), cx);
+                                    workspace.show_error(
+                                        t_with_args(
+                                            keys::workspace::WS_B_ERROR,
+                                            &[("error", &(e).to_string())],
+                                        ),
+                                        cx,
+                                    );
                                 }
                             }
                             if to_pane.read(cx).items_len() == 0 {
