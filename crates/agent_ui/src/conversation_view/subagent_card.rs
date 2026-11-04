@@ -1,16 +1,15 @@
-use i18n::{keys, t};
 use acp_thread::{
     AcpThread, AgentThreadEntry, MessageIdentity, SessionMessage, SessionMessageSide, ToolCall,
     ToolCallContent, ToolCallStatus,
 };
 use agent_client_protocol::schema::v2 as acp_v2;
 use gpui::{App, Entity, SharedString};
+use i18n::{keys, t, t_static};
 use std::{fmt, ops::Range};
 
 use super::thread_view::subagent_label;
 
 /// Native subagent tool calls report a user cancellation as output with this text.
-
 
 /// The transcript entry a subagent card stands for. It keys the card's expansion state
 /// and element IDs, since the same subagent can have more than one card.
@@ -285,7 +284,7 @@ impl SubagentCardState {
         };
         title.unwrap_or_else(|| match self.status {
             SubagentStatus::Canceled => t(keys::agent::AGENT_THREAD_SUBAGENT_CANCELED).into(),
-            SubagentStatus::Failed => "Subagent Failed".into(),
+            SubagentStatus::Failed => t(keys::agent::AGENT_THREAD_SUBAGENT_FAILED).into(),
             SubagentStatus::Running | SubagentStatus::Completed | SubagentStatus::Unknown => {
                 t(keys::agent::AGENT_THREAD_SPAWNING_AGENT).into()
             }
@@ -336,7 +335,9 @@ fn tool_call_error(tool_call: &ToolCall, cx: &App) -> Option<SharedString> {
         };
         block
             .text_content(cx)
-            .filter(|text| !text.is_empty() && *text != t(keys::agent::AGENT_THREAD_USER_CANCELED).as_str())
+            .filter(|text| {
+                !text.is_empty() && *text != t(keys::agent::AGENT_THREAD_USER_CANCELED).as_str()
+            })
             .map(SharedString::from)
     })
 }
@@ -369,10 +370,22 @@ mod tests {
         );
         assert_eq!(labeled.title(None).as_ref(), "Explore");
         for (status, title) in [
-            (SubagentStatus::Running, t(keys::agent::AGENT_THREAD_SPAWNING_AGENT)),
-            (SubagentStatus::Completed, t(keys::agent::AGENT_THREAD_SPAWNING_AGENT)),
-            (SubagentStatus::Failed, "Subagent Failed"),
-            (SubagentStatus::Canceled, t(keys::agent::AGENT_THREAD_SUBAGENT_CANCELED)),
+            (
+                SubagentStatus::Running,
+                t(keys::agent::AGENT_THREAD_SPAWNING_AGENT),
+            ),
+            (
+                SubagentStatus::Completed,
+                t(keys::agent::AGENT_THREAD_SPAWNING_AGENT),
+            ),
+            (
+                SubagentStatus::Failed,
+                t_static(keys::agent::AGENT_THREAD_SUBAGENT_FAILED),
+            ),
+            (
+                SubagentStatus::Canceled,
+                t(keys::agent::AGENT_THREAD_SUBAGENT_CANCELED),
+            ),
         ] {
             assert_eq!(card(None, status, None).title(None).as_ref(), title);
         }

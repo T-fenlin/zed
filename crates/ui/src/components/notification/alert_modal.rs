@@ -2,10 +2,10 @@ use crate::component_prelude::*;
 use crate::prelude::*;
 use crate::{Checkbox, ListBulletItem, ToggleState};
 use gpui::Action;
-use i18n::{keys, t};
 use gpui::FocusHandle;
 use gpui::IntoElement;
 use gpui::Stateful;
+use i18n::{keys, t, t_static};
 use smallvec::{SmallVec, smallvec};
 use theme::ActiveTheme;
 
@@ -142,8 +142,12 @@ impl RenderOnce for AlertModal {
         if let Some(footer) = self.footer {
             modal = modal.child(footer);
         } else if has_default_footer {
-            let primary_action = self.primary_action.unwrap_or_else(|| t(keys::ui::UI_OK).into());
-            let dismiss_label = self.dismiss_label.unwrap_or_else(|| t(keys::ui::UI_CANCEL).into());
+            let primary_action = self
+                .primary_action
+                .unwrap_or_else(|| t(keys::ui::UI_OK).into());
+            let dismiss_label = self
+                .dismiss_label
+                .unwrap_or_else(|| t(keys::ui::UI_CANCEL).into());
 
             modal = modal.child(
                 h_flex()
@@ -192,7 +196,7 @@ impl Component for AlertModal {
                                 "The current window will be closed, and connections to any shared projects will be terminated."
                             )
                             .primary_action("Leave Call")
-                            .dismiss_label("Cancel")
+                            .dismiss_label(t_static(keys::ui::UI_CANCEL))
                             .into_any_element(),
                     )]),
                     example_group(vec![single_example(

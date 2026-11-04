@@ -1,6 +1,7 @@
 use agent_client_protocol::schema::{MaybeUndefined, v1 as acp_v1, v2 as acp_v2};
 use anyhow::Result;
 use gpui::SharedString;
+use i18n::{keys, t, t_static};
 
 /// What a parent ACP session has reported about a subagent session it owns.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -137,7 +138,7 @@ mod tests {
                     "state": {
                         "state": "idle",
                         "stopReason": "error",
-                        "error": {"code": -32000, "message": "Authentication required"},
+                        "error": {"code": -32000, "message": t_static(keys::acp::ACP_AUTH_REQUIRED)},
                     },
                 }),
                 json!({
@@ -145,7 +146,7 @@ mod tests {
                     "state": {
                         "state": "idle",
                         "stopReason": "error",
-                        "error": {"code": -32000, "message": "Authentication required"},
+                        "error": {"code": -32000, "message": t_static(keys::acp::ACP_AUTH_REQUIRED)},
                     },
                 }),
             ),

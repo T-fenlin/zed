@@ -1,6 +1,6 @@
 use editor::EditorSettings;
 use gpui::{App, FocusHandle};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use settings::Settings as _;
 use ui::{ButtonCommon, Clickable, Context, Render, Tooltip, Window, prelude::*};
 use workspace::{HideStatusItem, ItemHandle, StatusItemView};
@@ -36,14 +36,14 @@ impl Render for SearchButton {
                 .tooltip(move |_window, cx| {
                     if let Some(focus_handle) = &focus_handle {
                         Tooltip::for_action_in(
-                            "Project Search",
+                            t_static(keys::search::SEARCH_PROJECT_SEARCH),
                             &workspace::DeploySearch::default(),
                             focus_handle,
                             cx,
                         )
                     } else {
                         Tooltip::for_action(
-                            "Project Search",
+                            t_static(keys::search::SEARCH_PROJECT_SEARCH),
                             &workspace::DeploySearch::default(),
                             cx,
                         )

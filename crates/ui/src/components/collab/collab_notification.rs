@@ -1,4 +1,5 @@
 use gpui::{AnyElement, SharedUri, prelude::*};
+use i18n::{keys, t_static};
 use smallvec::SmallVec;
 
 use crate::{Avatar, prelude::*};
@@ -106,7 +107,7 @@ impl Component for CollabNotification {
                         CollabNotification::new(
                             avatar,
                             Button::new("accept", "Open"),
-                            Button::new("decline", "Dismiss"),
+                            Button::new("decline", t_static(keys::ui::UI_DISMISS)),
                         )
                         .child(Label::new("the user is sharing a project"))
                         .child(Label::new("zed").color(Color::Muted)),
@@ -154,8 +155,8 @@ impl Component for CollabNotification {
                     .child(
                         CollabNotification::new(
                             avatar,
-                            Button::new("dismiss", "Dismiss"),
-                            Button::new("close", "Close"),
+                            Button::new("dismiss", t_static(keys::ui::UI_DISMISS)),
+                            Button::new("close", t_static(keys::ui::UI_CLOSE)),
                         )
                         .child(Label::new("maxbrunsfeld accepted your contact request")),
                     )

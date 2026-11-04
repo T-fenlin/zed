@@ -5,6 +5,7 @@ use gpui::{
     ScrollStrategy, SharedString, Size, StrikethroughStyle, StyledText, Task, TaskExt,
     UniformListScrollHandle, div, px, uniform_list,
 };
+use i18n::{keys, t_static};
 use itertools::Itertools;
 use language::CodeLabel;
 use language::{Buffer, LanguageName, LanguageRegistry};
@@ -1697,32 +1698,32 @@ fn render_completion_kind_letter(
 
 fn completion_kind_name(kind: CompletionItemKind) -> &'static str {
     match kind {
-        CompletionItemKind::TEXT => "Text",
-        CompletionItemKind::METHOD => "Method",
-        CompletionItemKind::FUNCTION => "Function",
-        CompletionItemKind::CONSTRUCTOR => "Constructor",
-        CompletionItemKind::FIELD => "Field",
-        CompletionItemKind::VARIABLE => "Variable",
-        CompletionItemKind::CLASS => "Class",
-        CompletionItemKind::INTERFACE => "Interface",
-        CompletionItemKind::MODULE => "Module",
-        CompletionItemKind::PROPERTY => "Property",
-        CompletionItemKind::UNIT => "Unit",
-        CompletionItemKind::VALUE => "Value",
-        CompletionItemKind::ENUM => "Enum",
-        CompletionItemKind::KEYWORD => "Keyword",
-        CompletionItemKind::SNIPPET => "Snippet",
-        CompletionItemKind::COLOR => "Color",
-        CompletionItemKind::FILE => "File",
-        CompletionItemKind::REFERENCE => "Reference",
-        CompletionItemKind::FOLDER => "Folder",
-        CompletionItemKind::ENUM_MEMBER => "Enum Member",
-        CompletionItemKind::CONSTANT => "Constant",
-        CompletionItemKind::STRUCT => "Struct",
-        CompletionItemKind::EVENT => "Event",
-        CompletionItemKind::OPERATOR => "Operator",
-        CompletionItemKind::TYPE_PARAMETER => "Type Parameter",
-        _ => "Unknown",
+        CompletionItemKind::TEXT => t_static(keys::editor::EDITOR_KIND_TEXT),
+        CompletionItemKind::METHOD => t_static(keys::editor::EDITOR_KIND_METHOD),
+        CompletionItemKind::FUNCTION => t_static(keys::editor::EDITOR_KIND_FUNCTION),
+        CompletionItemKind::CONSTRUCTOR => t_static(keys::editor::EDITOR_KIND_CONSTRUCTOR),
+        CompletionItemKind::FIELD => t_static(keys::editor::EDITOR_KIND_FIELD),
+        CompletionItemKind::VARIABLE => t_static(keys::editor::EDITOR_KIND_VARIABLE),
+        CompletionItemKind::CLASS => t_static(keys::editor::EDITOR_KIND_CLASS),
+        CompletionItemKind::INTERFACE => t_static(keys::editor::EDITOR_KIND_INTERFACE),
+        CompletionItemKind::MODULE => t_static(keys::editor::EDITOR_KIND_MODULE),
+        CompletionItemKind::PROPERTY => t_static(keys::editor::EDITOR_KIND_PROPERTY),
+        CompletionItemKind::UNIT => t_static(keys::editor::EDITOR_KIND_UNIT),
+        CompletionItemKind::VALUE => t_static(keys::editor::EDITOR_KIND_VALUE),
+        CompletionItemKind::ENUM => t_static(keys::editor::EDITOR_KIND_ENUM),
+        CompletionItemKind::KEYWORD => t_static(keys::editor::EDITOR_KIND_KEYWORD),
+        CompletionItemKind::SNIPPET => t_static(keys::editor::EDITOR_KIND_SNIPPET),
+        CompletionItemKind::COLOR => t_static(keys::editor::EDITOR_KIND_COLOR),
+        CompletionItemKind::FILE => t_static(keys::editor::EDITOR_KIND_FILE),
+        CompletionItemKind::REFERENCE => t_static(keys::editor::EDITOR_KIND_REFERENCE),
+        CompletionItemKind::FOLDER => t_static(keys::editor::EDITOR_KIND_FOLDER),
+        CompletionItemKind::ENUM_MEMBER => t_static(keys::editor::EDITOR_KIND_ENUM_MEMBER),
+        CompletionItemKind::CONSTANT => t_static(keys::editor::EDITOR_KIND_CONSTANT),
+        CompletionItemKind::STRUCT => t_static(keys::editor::EDITOR_KIND_STRUCT),
+        CompletionItemKind::EVENT => t_static(keys::editor::EDITOR_KIND_EVENT),
+        CompletionItemKind::OPERATOR => t_static(keys::editor::EDITOR_KIND_OPERATOR),
+        CompletionItemKind::TYPE_PARAMETER => t_static(keys::editor::EDITOR_KIND_TYPE_PARAMETER),
+        _ => t_static(keys::editor::EDITOR_KIND_UNKNOWN),
     }
 }
 

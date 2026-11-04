@@ -17,9 +17,9 @@ use agent_ui::threads_archive_view::{
 };
 use agent_ui::{
     AcpThreadImportOnboarding, Agent, AgentPanel, AgentPanelEvent, AgentThreadSource,
-    ArchiveSelectedThread, CrossChannelImportOnboarding, NewTerminalThread, default_thread_title,
-    NewThread, RenameSelectedThread, TerminalId, ThreadId, ThreadImportModal,
-    ThreadTitleRegenerationResult, channels_with_threads, import_threads_from_other_channels,
+    ArchiveSelectedThread, CrossChannelImportOnboarding, NewTerminalThread, NewThread,
+    RenameSelectedThread, TerminalId, ThreadId, ThreadImportModal, ThreadTitleRegenerationResult,
+    channels_with_threads, default_thread_title, import_threads_from_other_channels,
 };
 use agent_ui::{MessageEditorEvent, StateChange, thread_worktree_archive};
 use chrono::{DateTime, Utc};
@@ -33,7 +33,7 @@ use gpui::{
     TaskExt, WeakEntity, Window, WindowBackgroundAppearance, WindowHandle, linear_color_stop,
     linear_gradient, list, prelude::*, px,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use itertools::Itertools;
 use language_model::LanguageModelRegistry;
 use menu::{
@@ -877,7 +877,7 @@ impl Sidebar {
 
         let filter_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Search threads…", window, cx);
+            editor.set_placeholder_text(t(keys::sidebar::SIDEBAR_SEARCH_THREADS), window, cx);
             editor
         });
         let rename_editor = cx.new(|cx| Editor::single_line(window, cx));
@@ -2742,60 +2742,64 @@ impl Sidebar {
                     });
 
                     if let Some(base_workspace) = base_workspace.filter(|_| !creation_blocked) {
-                        menu = menu.separator().submenu("Create New Worktree…", {
-                            let this = this.clone();
-                            move |mut submenu, _window, submenu_cx| {
-                                let project = base_workspace.read(submenu_cx).project().clone();
-                                let project_ref = project.read(submenu_cx);
-                                let has_multiple_repositories =
-                                    project_ref.repositories(submenu_cx).len() > 1;
-                                let current_branch =
-                                    project_ref.active_repository(submenu_cx).and_then(|repo| {
-                                        repo.read(submenu_cx)
-                                            .branch
-                                            .as_ref()
-                                            .map(|branch| branch.name().to_string())
-                                    });
-                                let default_branch = this
-                                    .read_with(submenu_cx, |sidebar, _| {
-                                        match sidebar.worktree_default_branches.get(&key) {
-                                            Some(DefaultBranchCache::Resolved(branch)) => {
-                                                branch.clone()
+                        menu = menu.separator().submenu(
+                            t_static(keys::sidebar::SIDEBAR_CREATE_NEW_WORKTREE),
+                            {
+                                let this = this.clone();
+                                move |mut submenu, _window, submenu_cx| {
+                                    let project = base_workspace.read(submenu_cx).project().clone();
+                                    let project_ref = project.read(submenu_cx);
+                                    let has_multiple_repositories =
+                                        project_ref.repositories(submenu_cx).len() > 1;
+                                    let current_branch = project_ref
+                                        .active_repository(submenu_cx)
+                                        .and_then(|repo| {
+                                            repo.read(submenu_cx)
+                                                .branch
+                                                .as_ref()
+                                                .map(|branch| branch.name().to_string())
+                                        });
+                                    let default_branch = this
+                                        .read_with(submenu_cx, |sidebar, _| {
+                                            match sidebar.worktree_default_branches.get(&key) {
+                                                Some(DefaultBranchCache::Resolved(branch)) => {
+                                                    branch.clone()
+                                                }
+                                                _ => None,
                                             }
-                                            _ => None,
-                                        }
-                                    })
-                                    .ok()
-                                    .flatten();
+                                        })
+                                        .ok()
+                                        .flatten();
 
-                                let targets = worktree_create_targets(
-                                    has_multiple_repositories,
-                                    default_branch,
-                                    current_branch.as_deref(),
-                                );
-                                for target in targets {
-                                    let label = format!(
-                                        "Based on {}",
-                                        target.branch_label(
-                                            has_multiple_repositories,
-                                            current_branch.as_deref(),
-                                        )
+                                    let targets = worktree_create_targets(
+                                        has_multiple_repositories,
+                                        default_branch,
+                                        current_branch.as_deref(),
                                     );
-                                    let branch_target = target.branch_target();
-                                    let workspace = base_workspace.clone();
-                                    submenu = submenu.entry(label, None, move |window, cx| {
-                                        create_worktree_in_workspace(
-                                            &workspace,
-                                            branch_target.clone(),
-                                            window,
-                                            cx,
+                                    for target in targets {
+                                        let label = format!(
+                                            "Based on {}",
+                                            target.branch_label(
+                                                has_multiple_repositories,
+                                                current_branch.as_deref(),
+                                            )
                                         );
-                                    });
-                                }
+                                        let branch_target = target.branch_target();
+                                        let workspace = base_workspace.clone();
+                                        submenu = submenu.entry(label, None, move |window, cx| {
+                                            create_worktree_in_workspace(
+                                                &workspace,
+                                                branch_target.clone(),
+                                                window,
+                                                cx,
+                                            );
+                                        });
+                                    }
 
-                                submenu
-                            }
-                        });
+                                    submenu
+                                }
+                            },
+                        );
                     }
 
                     menu
@@ -2977,7 +2981,7 @@ impl Sidebar {
 
                         let menu = menu.when(show_multi_project_entries, |this| {
                             this.entry(
-                                "Open Project in New Window",
+                                t_static(keys::sidebar::SIDEBAR_OPEN_PROJECT_NEW_WINDOW),
                                 Some(Box::new(workspace::MoveProjectToNewWindow)),
                                 {
                                     let project_group_key = project_group_key.clone();
@@ -3020,9 +3024,9 @@ impl Sidebar {
                                             );
 
                                         let label = if has_threads {
-                                            "Focus Last Project"
+                                            t_static(keys::sidebar::SIDEBAR_FOCUS_LAST_PROJECT)
                                         } else {
-                                            "Focus Project"
+                                            t_static(keys::sidebar::SIDEBAR_FOCUS_PROJECT)
                                         };
 
                                         h_flex()
@@ -3845,7 +3849,7 @@ impl Sidebar {
     fn show_no_thread_summary_model_toast(workspace: Entity<Workspace>, cx: &mut App) {
         Self::show_thread_title_toast(
             workspace,
-            "No model is configured for summarizing thread titles.",
+            t_static(keys::sidebar::SIDEBAR_NO_MODEL_FOR_TITLE),
             cx,
         );
     }
@@ -3939,7 +3943,7 @@ impl Sidebar {
                         if let Some(workspace) = this.active_workspace(cx) {
                             Self::show_thread_title_toast(
                                 workspace,
-                                "Failed to regenerate thread title.",
+                                t_static(keys::sidebar::SIDEBAR_FAILED_TO_REGENERATE_TITLE),
                                 cx,
                             );
                         }
@@ -6373,7 +6377,7 @@ impl Sidebar {
                         let focus_handle = focus_handle.clone();
                         move |_window, cx| {
                             Tooltip::for_action_in(
-                                "Rename Thread",
+                                t_static(keys::sidebar::SIDEBAR_RENAME_THREAD),
                                 &RenameSelectedThread,
                                 &focus_handle,
                                 cx,
@@ -6401,9 +6405,9 @@ impl Sidebar {
                             .style(ButtonStyle::Tinted(TintColor::Error))
                             .tooltip(Tooltip::text(
                                 if thread.status == AgentThreadStatus::Unconfirmed {
-                                    "Request Stop (Activity Unconfirmed)"
+                                    t_static(keys::sidebar::SIDEBAR_REQUEST_STOP_UNCONFIRMED)
                                 } else {
-                                    "Stop Generation"
+                                    t_static(keys::sidebar::SIDEBAR_STOP_GENERATION)
                                 },
                             ))
                             .on_click(cx.listener(move |this, _, _window, cx| {
@@ -6442,7 +6446,7 @@ impl Sidebar {
                                     let focus_handle = focus_handle.clone();
                                     move |_window, cx| {
                                         Tooltip::for_action_in(
-                                            "Archive Thread",
+                                            t_static(keys::sidebar::SIDEBAR_ARCHIVE_THREAD),
                                             &ArchiveSelectedThread,
                                             &focus_handle,
                                             cx,
@@ -6692,7 +6696,7 @@ impl Sidebar {
                             let focus_handle = focus_handle.clone();
                             move |_window, cx| {
                                 Tooltip::for_action_in(
-                                    "Close Terminal",
+                                    t_static(keys::sidebar::SIDEBAR_CLOSE_TERMINAL),
                                     &ArchiveSelectedThread,
                                     &focus_handle,
                                     cx,
@@ -7362,9 +7366,9 @@ impl Sidebar {
     fn render_no_results(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let has_query = self.has_filter_query(cx);
         let message = if has_query {
-            "No threads match your search."
+            t_static(keys::sidebar::SIDEBAR_NO_THREADS_MATCH)
         } else {
-            "No threads yet"
+            t_static(keys::sidebar::SIDEBAR_NO_THREADS)
         };
 
         v_flex()
@@ -7382,7 +7386,7 @@ impl Sidebar {
 
     fn render_empty_state(&self, cx: &mut Context<Self>) -> impl IntoElement {
         ProjectEmptyState::new(
-            "Threads Sidebar",
+            t_static(keys::sidebar::SIDEBAR_PANEL_TITLE),
             self.focus_handle(cx),
             KeyBinding::for_action(&workspace::Open::default(), cx),
         )
@@ -7578,9 +7582,9 @@ impl Sidebar {
                     .toggle_state(is_archive)
                     .tooltip(move |_, cx| {
                         let label = if is_archive {
-                            "Hide Thread History"
+                            t_static(keys::sidebar::SIDEBAR_HIDE_THREAD_HISTORY)
                         } else {
-                            "Show Thread History"
+                            t_static(keys::sidebar::SIDEBAR_SHOW_THREAD_HISTORY)
                         };
                         Tooltip::for_action(label, &ToggleThreadHistory, cx)
                     })
@@ -7672,12 +7676,12 @@ impl Sidebar {
         });
         render_import_onboarding_banner(
             "acp",
-            "Looking for threads from external agents?",
-            "Import threads from agents like Claude Agent, Codex, and more, whether started in Zed or another client.",
+            t_static(keys::sidebar::SIDEBAR_ACP_IMPORT_TITLE),
+            t_static(keys::sidebar::SIDEBAR_ACP_IMPORT_DESCRIPTION),
             if verbose_labels {
-                "Import Threads from External Agents"
+                t_static(keys::sidebar::SIDEBAR_IMPORT_EXTERNAL_AGENTS)
             } else {
-                "Import Threads"
+                t_static(keys::sidebar::SIDEBAR_IMPORT_THREADS)
             },
             |_, _window, cx| AcpThreadImportOnboarding::dismiss(cx),
             on_import,
@@ -7724,12 +7728,12 @@ impl Sidebar {
         });
         render_import_onboarding_banner(
             "channel",
-            "Threads found from other channels",
+            t_static(keys::sidebar::SIDEBAR_CROSS_CHANNEL_TITLE),
             description,
             if verbose_labels {
-                "Import Threads from Other Channels"
+                t_static(keys::sidebar::SIDEBAR_IMPORT_OTHER_CHANNELS)
             } else {
-                "Import Threads"
+                t_static(keys::sidebar::SIDEBAR_IMPORT_THREADS)
             },
             |_, _window, cx| CrossChannelImportOnboarding::dismiss(cx),
             on_import,

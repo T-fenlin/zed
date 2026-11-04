@@ -91,7 +91,11 @@ impl Render for InvalidItemView {
                     v_flex()
                         .justify_center()
                         .gap_2()
-                        .child(h_flex().justify_center().child("Could not open file"))
+                        .child(
+                            h_flex()
+                                .justify_center()
+                                .child(t(keys::workspace::WS_INVALID_ITEM_COULD_NOT_OPEN)),
+                        )
                         .child(
                             h_flex()
                                 .justify_center()

@@ -1,7 +1,7 @@
 use crate::{commit_view::CommitView, create_tag_at_commit};
 use git::Oid;
 use gpui::{Action, ClipboardItem, Entity, FocusHandle, SharedString, WeakEntity, Window, actions};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use project::{GIT_COMMAND_TASK_TAG, git_store::Repository};
 
 use task::{TaskContext, TaskVariables, VariableName};
@@ -80,7 +80,7 @@ pub(crate) fn commit_context_menu(
                 }
             })
             .entry(
-                "Copy SHA",
+                t_static(keys::git_ui::GIT_BLAME_COPY_SHA),
                 Some(CopyCommitSha.boxed_clone()),
                 move |_window, cx| {
                     cx.write_to_clipboard(ClipboardItem::new_string(sha.to_string()));
@@ -98,7 +98,7 @@ pub(crate) fn commit_context_menu(
             .when(ref_name.is_none(), |menu| {
                 menu.map(|menu| {
                     let tag_names = commit.tag_names.clone();
-                    let copy_tag_label = "Copy Tag";
+                    let copy_tag_label = t_static(keys::git_ui::GIT_GRAPH_COPY_TAG);
 
                     match tag_names.as_slice() {
                         [] => menu.item(

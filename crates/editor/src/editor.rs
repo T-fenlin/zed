@@ -120,7 +120,7 @@ pub(crate) use git::{DiffHunkKey, StoredReviewComment};
 use git::{DiffReviewDragState, DiffReviewOverlay, InlineBlamePopover};
 pub(crate) use git::{DisplayDiffHunk, PhantomDiffReviewIndicator};
 pub use hover_popover::hover_markdown_style;
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 pub use inlays::Inlay;
 pub use inline_input::InlineInputState;
 pub(crate) use inline_input::{InlineInputHistoryDirection, InlineInputPreview};
@@ -1728,8 +1728,8 @@ enum GutterButtonIntent {
 impl GutterButtonIntent {
     fn as_str(&self) -> &'static str {
         match self {
-            Self::SetBookmark => "Set Bookmark",
-            Self::SetBreakpoint => "Set Breakpoint",
+            Self::SetBookmark => t_static(keys::editor::EDITOR_SET_BOOKMARK),
+            Self::SetBreakpoint => t_static(keys::editor::EDITOR_SET_BREAKPOINT),
         }
     }
 
@@ -2225,7 +2225,7 @@ impl Editor {
                             Self::open_transaction_for_hidden_buffers(
                                 workspace,
                                 transaction.clone(),
-                                "Rename".to_string(),
+                                t(keys::editor::EDITOR_RENAME).to_string(),
                                 window,
                                 cx,
                             );
@@ -2245,7 +2245,7 @@ impl Editor {
                             Self::open_transaction_for_hidden_buffers(
                                 workspace,
                                 transaction.clone(),
-                                "LSP Edit".to_string(),
+                                t(keys::editor::EDITOR_LSP_EDIT).to_string(),
                                 window,
                                 cx,
                             );
@@ -4503,7 +4503,7 @@ impl Editor {
         let set_breakpoint_msg = if breakpoint.as_ref().is_some() {
             "Unset Breakpoint"
         } else {
-            "Set Breakpoint"
+            t_static(keys::editor::EDITOR_SET_BREAKPOINT)
         };
 
         let git_blame_msg = if self.show_git_blame_gutter {

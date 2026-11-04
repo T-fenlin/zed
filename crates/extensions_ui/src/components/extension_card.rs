@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::{collections::BTreeSet, sync::Arc};
 
 use cloud_api_types::{ExtensionApiManifest, ExtensionMetadata, ExtensionProvides};
@@ -193,7 +193,7 @@ impl ExtensionCard {
     fn uninstall_button(extension_id: &Arc<str>, is_dev: bool) -> Button {
         Button::new(
             Self::button_id(extension_id, ExtensionOperation::Remove),
-            "Uninstall",
+            t_static(keys::extensions::EXTENSIONS_UNINSTALL),
         )
         .on_click({
             let extension_id = extension_id.clone();
@@ -216,7 +216,7 @@ impl ExtensionCard {
     ) -> Button {
         Button::new(
             SharedString::from(format!("configure-{extension_id}")),
-            "Configure",
+            t_static(keys::extensions::EXTENSIONS_CONFIGURE),
         )
         .on_click({
             let extension_id = extension_id.clone();
@@ -247,7 +247,7 @@ impl ExtensionCard {
         let rebuild = is_dev.then(|| {
             Button::new(
                 SharedString::from(format!("rebuild-{}", extension.id)),
-                "Rebuild",
+                t_static(keys::extensions::EXTENSIONS_REBUILD),
             )
             .color(Color::Accent)
             .disabled(Self::disables_actions(status))
@@ -287,7 +287,7 @@ impl ExtensionCard {
     fn install_button(extension_id: &Arc<str>) -> Button {
         Button::new(
             Self::button_id(extension_id, ExtensionOperation::Install),
-            "Install",
+            t_static(keys::extensions::EXTENSIONS_INSTALL),
         )
         .style(ButtonStyle::Tinted(ui::TintColor::Accent))
         .start_icon(
@@ -340,7 +340,7 @@ impl ExtensionCard {
                 let upgrade = matches!(status, ExtensionStatus::Upgrading).then(|| {
                     Button::new(
                         Self::button_id(&extension.id, ExtensionOperation::Upgrade),
-                        "Upgrade",
+                        t_static(keys::extensions::EXTENSIONS_UPGRADE),
                     )
                     .disabled(Self::disables_actions(status))
                 });
@@ -361,7 +361,7 @@ impl ExtensionCard {
                     );
                     Button::new(
                         Self::button_id(&extension.id, ExtensionOperation::Upgrade),
-                        "Upgrade",
+                        t_static(keys::extensions::EXTENSIONS_UPGRADE),
                     )
                     .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                     .when(!is_compatible, |button| {
@@ -427,17 +427,31 @@ fn provided_feature_labels(
 
 pub(crate) fn extension_provides_label(provides: ExtensionProvides) -> &'static str {
     match provides {
-        ExtensionProvides::Themes => "Themes",
-        ExtensionProvides::IconThemes => "Icon Themes",
-        ExtensionProvides::Languages => "Languages",
-        ExtensionProvides::Grammars => "Grammars",
-        ExtensionProvides::LanguageServers => "Language Servers",
-        ExtensionProvides::ContextServers => "MCP Servers",
-        ExtensionProvides::AgentServers => "Agent Servers",
-        ExtensionProvides::SlashCommands => "Slash Commands",
-        ExtensionProvides::IndexedDocsProviders => "Indexed Docs Providers",
-        ExtensionProvides::Snippets => "Snippets",
-        ExtensionProvides::DebugAdapters => "Debug Adapters",
+        ExtensionProvides::Themes => t_static(keys::extensions::EXTENSIONS_PROVIDES_THEMES),
+        ExtensionProvides::IconThemes => {
+            t_static(keys::extensions::EXTENSIONS_PROVIDES_ICON_THEMES)
+        }
+        ExtensionProvides::Languages => t_static(keys::extensions::EXTENSIONS_PROVIDES_LANGUAGES),
+        ExtensionProvides::Grammars => t_static(keys::extensions::EXTENSIONS_PROVIDES_GRAMMARS),
+        ExtensionProvides::LanguageServers => {
+            t_static(keys::extensions::EXTENSIONS_PROVIDES_LANGUAGE_SERVERS)
+        }
+        ExtensionProvides::ContextServers => {
+            t_static(keys::extensions::EXTENSIONS_PROVIDES_CONTEXT_SERVERS)
+        }
+        ExtensionProvides::AgentServers => {
+            t_static(keys::extensions::EXTENSIONS_PROVIDES_AGENT_SERVERS)
+        }
+        ExtensionProvides::SlashCommands => {
+            t_static(keys::extensions::EXTENSIONS_PROVIDES_SLASH_COMMANDS)
+        }
+        ExtensionProvides::IndexedDocsProviders => {
+            t_static(keys::extensions::EXTENSIONS_PROVIDES_INDEXED_DOCS)
+        }
+        ExtensionProvides::Snippets => t_static(keys::extensions::EXTENSIONS_PROVIDES_SNIPPETS),
+        ExtensionProvides::DebugAdapters => {
+            t_static(keys::extensions::EXTENSIONS_PROVIDES_DEBUG_ADAPTERS)
+        }
     }
 }
 
@@ -720,7 +734,7 @@ impl RenderOnce for ExtensionCard {
                                             .icon_size(IconSize::Small)
                                             .tooltip(move |_, cx| {
                                                 Tooltip::with_meta(
-                                                    "Visit Extension Repository",
+                                                    t_static(keys::extensions::EXTENSIONS_VISIT_REPOSITORY),
                                                     None,
                                                     repository_url_for_tooltip.clone(),
                                                     cx,

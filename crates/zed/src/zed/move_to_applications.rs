@@ -4,7 +4,7 @@ use gpui::{
     App, AsyncWindowContext, Context, DismissEvent, EventEmitter, FocusHandle, Focusable,
     PromptButton, PromptLevel, Render, WeakEntity, Window,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -74,12 +74,10 @@ impl MoveToApplicationsRequest {
         let response = cx
             .prompt(
                 PromptLevel::Info,
-                "Move Zed to Applications?",
-                Some(
-                    "Zed is running from a temporary location. Move it to Applications to finish installing it.",
-                ),
+                t_static(keys::zed::ZED_B_MOVE_TITLE),
+                Some(t_static(keys::zed::ZED_B_MOVE_DESCRIPTION)),
                 &[
-                    PromptButton::ok("Yes"),
+                    PromptButton::ok(t_static(keys::zed::ZED_B_MOVE_YES)),
                     PromptButton::cancel("No"),
                     PromptButton::new(t(keys::zed::ZED_B_MOVE_DONT_ASK)),
                 ],
@@ -104,7 +102,7 @@ impl MoveToApplicationsRequest {
                         .ok();
                     cx.prompt(
                         PromptLevel::Critical,
-                        "Failed to move Zed to Applications",
+                        t_static(keys::zed::ZED_B_MOVE_FAILED),
                         Some(&error.to_string()),
                         &["OK"],
                     )

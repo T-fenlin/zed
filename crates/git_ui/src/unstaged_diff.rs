@@ -13,7 +13,7 @@ use gpui::{
     Action, AnyElement, App, Context, Entity, EventEmitter, FocusHandle, Focusable, Render,
     SharedString, Subscription, Task, WeakEntity,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use language::Capability;
 use project::{
     Project, ProjectPath,
@@ -140,7 +140,7 @@ impl UnstagedDiff {
         telemetry::event!(
             "Git Unstaged Diff Opened",
             source = if entry.is_some() {
-                "Git Panel"
+                t_static(keys::git_ui::GIT_PANEL_TITLE)
             } else {
                 "Action"
             }
@@ -210,7 +210,7 @@ impl UnstagedDiff {
             DiffMultibuffer::new(
                 branch_diff,
                 Capability::ReadWrite,
-                "No unstaged changes",
+                t_static(keys::git_ui::GIT_NO_UNSTAGED_CHANGES),
                 move |editor, cx| {
                     editor.set_diff_hunk_renderer(Some(Arc::new(UnstagedDiffHunkRenderer)), cx);
                     editor.rhs_editor().update(cx, |rhs_editor, _cx| {
@@ -348,11 +348,11 @@ impl Item for UnstagedDiff {
     }
 
     fn tab_tooltip_text(&self, _: &App) -> Option<SharedString> {
-        Some("Unstaged Changes".into())
+        Some(t(keys::git_ui::GIT_SECTION_UNSTAGED_CHANGES).into())
     }
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Unstaged Changes".into()
+        t(keys::git_ui::GIT_SECTION_UNSTAGED_CHANGES).into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {

@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use gpui::{AnyElement, IntoElement, ParentElement, Styled};
+use i18n::{keys, t, t_static};
 
 /// Banners provide informative and brief messages without interrupting the user.
 /// This component offers four severity levels that can be used depending on the message.
@@ -14,7 +15,7 @@ use gpui::{AnyElement, IntoElement, ParentElement, Styled};
 ///     .severity(Severity::Success)
 ///     .children([Label::new("This is a success message")])
 ///     .action_slot(
-///         Button::new("learn-more", "Learn More")
+///         Button::new("learn-more", t(keys::ui::UI_LEARN_MORE))
 ///             .end_icon(Icon::new(IconName::ArrowUpRight).size(IconSize::Small)),
 ///     );
 /// ```
@@ -153,7 +154,7 @@ impl Component for Banner {
                     .severity(Severity::Info)
                     .child(Label::new("This is an informational message"))
                     .action_slot(
-                        Button::new("learn-more", "Learn More")
+                        Button::new("learn-more", t(keys::ui::UI_LEARN_MORE))
                             .end_icon(Icon::new(IconName::ArrowUpRight).size(IconSize::Small)),
                     )
                     .into_any_element(),
@@ -163,7 +164,7 @@ impl Component for Banner {
                 Banner::new()
                     .severity(Severity::Success)
                     .child(Label::new("Operation completed successfully"))
-                    .action_slot(Button::new("dismiss", "Dismiss"))
+                    .action_slot(Button::new("dismiss", t_static(keys::ui::UI_DISMISS)))
                     .into_any_element(),
             ),
             single_example(

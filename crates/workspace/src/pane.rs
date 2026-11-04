@@ -25,7 +25,7 @@ use gpui::{
     ScrollHandle, Subscription, Task, TaskExt, WeakEntity, WeakFocusHandle, Window, actions,
     anchored, deferred, prelude::*,
 };
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use itertools::Itertools;
 use language::{Capability, DiagnosticSeverity};
 use parking_lot::Mutex;
@@ -3189,7 +3189,7 @@ impl Pane {
                     if let Some(pane) = pane.upgrade() {
                         menu = menu
                             .entry(
-                                "Close",
+                                t_static(keys::workspace::WS_B_CLOSE),
                                 Some(Box::new(close_active_item_action)),
                                 window.handler_for(&pane, move |pane, window, cx| {
                                     pane.close_item_by_id(item_id, SaveIntent::Close, window, cx)
@@ -4390,15 +4390,27 @@ fn default_render_tab_bar_buttons(
                 .with_handle(pane.new_item_context_menu_handle.clone())
                 .menu(move |window, cx| {
                     Some(ContextMenu::build(window, cx, |menu, _, _| {
-                        menu.action("New File", NewFile.boxed_clone())
-                            .action("Open File", ToggleFileFinder::default().boxed_clone())
-                            .separator()
-                            .action("Search Project", DeploySearch::default().boxed_clone())
-                            .action("Search Symbols", ToggleProjectSymbols.boxed_clone())
-                            .separator()
-                            .action("New Terminal", NewTerminal::default().boxed_clone())
+                        menu.action(t(keys::pane::PANE_NEW_FILE), NewFile.boxed_clone())
                             .action(
-                                "New Center Terminal",
+                                t(keys::pane::PANE_OPEN_FILE),
+                                ToggleFileFinder::default().boxed_clone(),
+                            )
+                            .separator()
+                            .action(
+                                t(keys::pane::PANE_SEARCH_PROJECT),
+                                DeploySearch::default().boxed_clone(),
+                            )
+                            .action(
+                                t(keys::pane::PANE_SEARCH_SYMBOLS),
+                                ToggleProjectSymbols.boxed_clone(),
+                            )
+                            .separator()
+                            .action(
+                                t(keys::pane::PANE_NEW_TERMINAL),
+                                NewTerminal::default().boxed_clone(),
+                            )
+                            .action(
+                                t_static(keys::pane::PANE_NEW_CENTER_TERMINAL),
                                 NewCenterTerminal::default().boxed_clone(),
                             )
                     }))
@@ -4418,15 +4430,36 @@ fn default_render_tab_bar_buttons(
                     ContextMenu::build(window, cx, |menu, _, _| {
                         let mode = SplitMode::MovePane;
                         if can_split_move {
-                            menu.action("Split Right", SplitRight { mode }.boxed_clone())
-                                .action("Split Left", SplitLeft { mode }.boxed_clone())
-                                .action("Split Up", SplitUp { mode }.boxed_clone())
-                                .action("Split Down", SplitDown { mode }.boxed_clone())
+                            menu.action(
+                                t(keys::pane::PANE_SPLIT_RIGHT),
+                                SplitRight { mode }.boxed_clone(),
+                            )
+                            .action(
+                                t(keys::pane::PANE_SPLIT_LEFT),
+                                SplitLeft { mode }.boxed_clone(),
+                            )
+                            .action(t(keys::pane::PANE_SPLIT_UP), SplitUp { mode }.boxed_clone())
+                            .action(
+                                t(keys::pane::PANE_SPLIT_DOWN),
+                                SplitDown { mode }.boxed_clone(),
+                            )
                         } else {
-                            menu.action("Split Right", SplitRight::default().boxed_clone())
-                                .action("Split Left", SplitLeft::default().boxed_clone())
-                                .action("Split Up", SplitUp::default().boxed_clone())
-                                .action("Split Down", SplitDown::default().boxed_clone())
+                            menu.action(
+                                t(keys::pane::PANE_SPLIT_RIGHT),
+                                SplitRight::default().boxed_clone(),
+                            )
+                            .action(
+                                t(keys::pane::PANE_SPLIT_LEFT),
+                                SplitLeft::default().boxed_clone(),
+                            )
+                            .action(
+                                t(keys::pane::PANE_SPLIT_UP),
+                                SplitUp::default().boxed_clone(),
+                            )
+                            .action(
+                                t(keys::pane::PANE_SPLIT_DOWN),
+                                SplitDown::default().boxed_clone(),
+                            )
                         }
                     })
                     .into()
@@ -4443,7 +4476,11 @@ fn default_render_tab_bar_buttons(
                 }))
                 .tooltip(move |_window, cx| {
                     Tooltip::for_action(
-                        if zoomed { "Zoom Out" } else { "Zoom In" },
+                        if zoomed {
+                            t_static(keys::pane::PANE_ZOOM_OUT)
+                        } else {
+                            "Zoom In"
+                        },
                         &ToggleZoom,
                         cx,
                     )
@@ -9584,7 +9621,7 @@ mod tests {
         );
         assert_eq!(
             dirty_message_for(None, PathStyle::Unix),
-            "This buffer contains unsaved edits. Do you want to save it?"
+            t_static(keys::workspace::WS_PANE_UNSAVED)
         );
     }
 

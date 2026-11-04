@@ -1,5 +1,5 @@
 use gpui::{Action, Entity, OwnedMenu, OwnedMenuItem, Subscription, actions};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use project::DisableAiSettings;
 use settings::{Settings, SettingsStore};
 use workspace::AccessibleMode;
@@ -527,7 +527,7 @@ mod tests {
         cx.update(|cx| {
             cx.set_menus(vec![
                 Menu::new("Zed").items([MenuItem::action(
-                    "Settings",
+                    t_static(keys::titlebar::TITLEBAR_MENU_SETTINGS),
                     OpenApplicationMenu(String::new()),
                 )]),
                 view_menu(true),

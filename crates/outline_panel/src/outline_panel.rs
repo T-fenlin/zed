@@ -11,7 +11,7 @@ use editor::{
     scroll::{Autoscroll, ScrollAnchor},
 };
 use file_icons::FileIcons;
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 
 use fuzzy::{StringMatch, StringMatchCandidate, match_strings};
 use git::status::{FileStatus, GitSummary};
@@ -1073,7 +1073,11 @@ impl OutlinePanel {
         cx.new(|cx| {
             let filter_editor = cx.new(|cx| {
                 let mut editor = Editor::single_line(window, cx);
-                editor.set_placeholder_text("Search buffer symbols…", window, cx);
+                editor.set_placeholder_text(
+                    t(keys::outline::OUTLINE_SEARCH_PLACEHOLDER),
+                    window,
+                    cx,
+                );
                 editor
             });
             let filter_update_subscription = cx.subscribe_in(
@@ -1813,17 +1817,29 @@ impl OutlinePanel {
                     ui::utils::reveal_in_file_manager_label(false),
                     Box::new(RevealInFileManager),
                 )
-                .action("Open in Terminal", Box::new(OpenInTerminal))
+                .action(
+                    t(keys::outline::OUTLINE_OPEN_IN_TERMINAL),
+                    Box::new(OpenInTerminal),
+                )
                 .when(is_unfoldable, |menu| {
-                    menu.action("Unfold Directory", Box::new(UnfoldDirectory))
+                    menu.action(
+                        t(keys::outline::OUTLINE_UNFOLD_DIRECTORY),
+                        Box::new(UnfoldDirectory),
+                    )
                 })
                 .when(is_foldable, |menu| {
-                    menu.action("Fold Directory", Box::new(FoldDirectory))
+                    menu.action(
+                        t(keys::outline::OUTLINE_FOLD_DIRECTORY),
+                        Box::new(FoldDirectory),
+                    )
                 })
                 .separator()
-                .action("Copy Path", Box::new(zed_actions::workspace::CopyPath))
                 .action(
-                    "Copy Relative Path",
+                    t(keys::outline::OUTLINE_COPY_PATH),
+                    Box::new(zed_actions::workspace::CopyPath),
+                )
+                .action(
+                    t_static(keys::outline::OUTLINE_COPY_RELATIVE_PATH),
                     Box::new(zed_actions::workspace::CopyRelativePath),
                 )
         });
@@ -2697,9 +2713,9 @@ impl OutlinePanel {
                             .map(|icon| icon.color(color).into_any_element());
                             (icon, name)
                         }
-                        None => (None, "Untitled".to_string()),
+                        None => (None, t(keys::outline::OUTLINE_UNTITLED).to_string()),
                     },
-                    None => (None, "Unknown buffer".to_string()),
+                    None => (None, t(keys::outline::OUTLINE_UNKNOWN_BUFFER).to_string()),
                 };
                 (
                     ElementId::from(("buffer", external_file.buffer_id.to_proto())),
@@ -2936,9 +2952,9 @@ impl OutlinePanel {
             .rounded_sm()
             .hover(|style| style.bg(cx.theme().colors().ghost_element_hover))
             .tooltip(Tooltip::text(if is_expanded {
-                "Collapse"
+                t_static(keys::outline::OUTLINE_COLLAPSE)
             } else {
-                "Expand"
+                t_static(keys::outline::OUTLINE_EXPAND)
             }))
             .on_click(
                 cx.listener(move |panel, event: &gpui::ClickEvent, window, cx| {
@@ -5268,9 +5284,9 @@ impl OutlinePanel {
     ) -> impl IntoElement {
         let contents = if self.cached_entries.is_empty() {
             let header = if query.is_some() {
-                "No matches for query"
+                t_static(keys::outline::OUTLINE_NO_MATCHES)
             } else {
-                "No outlines available"
+                t_static(keys::outline::OUTLINE_NO_OUTLINES)
             };
 
             v_flex()
@@ -5469,18 +5485,32 @@ impl OutlinePanel {
 
     fn render_filter_footer(&mut self, pinned: bool, cx: &mut Context<Self>) -> Div {
         let (pin_button_id, icon, icon_tooltip) = if pinned {
-            ("unpin_button", IconName::Unpin, "Unpin Outline")
+            (
+                "unpin_button",
+                IconName::Unpin,
+                t_static(keys::outline::OUTLINE_UNPIN),
+            )
         } else {
-            ("pin_button", IconName::Pin, "Pin Active Outline")
+            (
+                "pin_button",
+                IconName::Pin,
+                t_static(keys::outline::OUTLINE_PIN),
+            )
         };
 
         let has_query = self.query(cx).is_some();
         let show_symbols_toggle = self.multi_buffer_active(cx);
         let hide_symbols = self.hide_symbols_active(cx);
         let (hide_symbols_icon, hide_symbols_tooltip) = if hide_symbols {
-            (IconName::FileCodeOff, "Show Symbols")
+            (
+                IconName::FileCodeOff,
+                t_static(keys::outline::OUTLINE_SHOW_SYMBOLS),
+            )
         } else {
-            (IconName::FileCode, "Hide Symbols")
+            (
+                IconName::FileCode,
+                t_static(keys::outline::OUTLINE_HIDE_SYMBOLS),
+            )
         };
 
         h_flex()
@@ -5599,7 +5629,7 @@ impl Panel for OutlinePanel {
     }
 
     fn persistent_name() -> &'static str {
-        "Outline Panel"
+        t_static(keys::outline::OUTLINE_TITLE)
     }
 
     fn panel_key() -> &'static str {
@@ -5638,7 +5668,7 @@ impl Panel for OutlinePanel {
     }
 
     fn icon_tooltip(&self, _window: &Window, _: &App) -> Option<&'static str> {
-        Some("Outline Panel")
+        Some(t_static(keys::outline::OUTLINE_TITLE))
     }
 
     fn toggle_action(&self) -> Box<dyn Action> {

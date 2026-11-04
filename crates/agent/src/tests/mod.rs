@@ -24,6 +24,7 @@ use gpui::{
     App, AppContext, AsyncApp, Entity, Task, TestAppContext, UpdateGlobal,
     http_client::FakeHttpClient,
 };
+use i18n::{keys, t_static};
 use indoc::indoc;
 use language_model::{
     CompletionIntent, LanguageModelCompletionError, LanguageModelCompletionEvent, LanguageModelId,
@@ -1462,7 +1463,7 @@ fn test_permission_options_terminal_with_pattern() {
         .collect();
     assert!(labels.contains(&"Always for terminal"));
     assert!(labels.contains(&"Always for `cargo build` commands"));
-    assert!(labels.contains(&"Only this time"));
+    assert!(labels.contains(&t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)));
 }
 
 #[test]
@@ -1482,7 +1483,7 @@ fn test_permission_options_terminal_command_with_flag_second_token() {
         .collect();
     assert!(labels.contains(&"Always for terminal"));
     assert!(labels.contains(&"Always for `ls` commands"));
-    assert!(labels.contains(&"Only this time"));
+    assert!(labels.contains(&t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)));
 }
 
 #[test]
@@ -1502,7 +1503,7 @@ fn test_permission_options_terminal_single_word_command() {
         .collect();
     assert!(labels.contains(&"Always for terminal"));
     assert!(labels.contains(&"Always for `whoami` commands"));
-    assert!(labels.contains(&"Only this time"));
+    assert!(labels.contains(&t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)));
 }
 
 #[test]
@@ -1559,7 +1560,7 @@ fn test_permission_options_without_pattern() {
         .map(|choice| choice.allow.name.as_ref())
         .collect();
     assert!(labels.contains(&"Always for terminal"));
-    assert!(labels.contains(&"Only this time"));
+    assert!(labels.contains(&t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)));
     assert!(!labels.iter().any(|label| label.contains("commands")));
 }
 
@@ -1646,7 +1647,7 @@ fn test_permission_options_terminal_pipeline_produces_dropdown_with_patterns() {
         .map(|choice| choice.allow.name.as_ref())
         .collect();
     assert!(labels.contains(&"Always for terminal"));
-    assert!(labels.contains(&"Only this time"));
+    assert!(labels.contains(&t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)));
 
     // Should have per-command patterns for "cargo test" and "tail"
     assert_eq!(patterns.len(), 2);
@@ -7568,7 +7569,10 @@ async fn test_subagent_parent_cancellation_before_acceptance(cx: &mut TestAppCon
         test.fake.pending_completions().is_empty(),
         "cancelled child must not start a provider request"
     );
-    assert_eq!(send.await.unwrap_err().to_string(), "User canceled");
+    assert_eq!(
+        send.await.unwrap_err().to_string(),
+        t_static(keys::agent::AGENT_THREAD_USER_CANCELED)
+    );
     test.assert_stopped(cx);
 }
 
@@ -7583,7 +7587,10 @@ async fn test_subagent_compaction_parent_cancellation(cx: &mut TestAppContext) {
     cx.run_until_parked();
     assert!(!test.fake.is_stream_closed(&test.model, &request));
     test.parent.update(cx, |thread, cx| thread.cancel(cx)).await;
-    assert_eq!(send.await.unwrap_err().to_string(), "User canceled");
+    assert_eq!(
+        send.await.unwrap_err().to_string(),
+        t_static(keys::agent::AGENT_THREAD_USER_CANCELED)
+    );
     cx.run_until_parked();
     assert!(test.fake.is_stream_closed(&test.model, &request));
     test.assert_stopped(cx);
@@ -9239,7 +9246,7 @@ async fn test_queued_message_does_not_end_turn_without_boundary_flag(cx: &mut Te
     );
 
     // Let the continuation finish the turn naturally.
-    fake.send_last_text(&model, "All done");
+    fake.send_last_text(&model, t_static(keys::agent::AGENT_PLAN_ALL_DONE));
     fake.send_last_event(
         &model,
         LanguageModelCompletionEvent::Stop(StopReason::EndTurn),

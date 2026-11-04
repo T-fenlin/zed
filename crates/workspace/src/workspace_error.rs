@@ -1,3 +1,4 @@
+use i18n::{keys, t_static};
 use std::{sync::Arc, time::Duration};
 
 use gpui::{Action, SharedString};
@@ -197,7 +198,7 @@ impl WorkspaceError for PortalError {
 
     fn primary_action(&self) -> ErrorAction {
         ErrorAction::link(
-            "See docs",
+            t_static(keys::workspace::WS_ERROR_SEE_DOCS),
             "https://zed.dev/docs/linux#i-cant-open-any-files",
         )
     }

@@ -1,7 +1,7 @@
 use gpui::ElementId;
 use gpui::TaskExt;
 use gpui::{AnyElement, Entity};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use picker::Picker;
 use repl::{
     ExecutionState, JupyterSettings, Kernel, KernelSpecification, KernelStatus, Session,
@@ -136,9 +136,9 @@ impl QuickActionBar {
                     .custom_entry(
                         move |_window, _cx| {
                             Label::new(if has_nonempty_selection {
-                                "Run Selection"
+                                t_static(keys::zed::ZED_B_REPL_RUN_SELECTION)
                             } else {
-                                "Run Line"
+                                t_static(keys::zed::ZED_B_REPL_RUN_LINE)
                             })
                             .into_any_element()
                         },
@@ -206,7 +206,10 @@ impl QuickActionBar {
                         },
                     )
                     .separator()
-                    .action("View Sessions", Box::new(repl::Sessions))
+                    .action(
+                        t(keys::zed::ZED_B_REPL_VIEW_SESSIONS),
+                        Box::new(repl::Sessions),
+                    )
                     // TODO: Add shut down all kernels action
                     // .action("Shut Down all Kernels", Box::new(gpui::NoAction))
                 })
@@ -351,7 +354,9 @@ impl QuickActionBar {
                                     Label::new(if let Some(name) = current_kernel_name {
                                         name
                                     } else {
-                                        SharedString::from("Select Kernel")
+                                        SharedString::from(t(
+                                            keys::repl::REPL_NOTEBOOK_SELECT_KERNEL,
+                                        ))
                                     })
                                     .size(LabelSize::Small)
                                     .color(if current_kernelspec.is_some() {
@@ -404,7 +409,7 @@ fn session_state(session: Entity<Session>, cx: &mut App) -> ReplMenuState {
 
     let fill_fields = || {
         ReplMenuState {
-            tooltip: "Nothing running".into(),
+            tooltip: t(keys::zed::ZED_B_REPL_NOTHING_RUNNING).into(),
             icon: IconName::ReplNeutral,
             icon_color: Color::Default,
             icon_is_animating: false,
@@ -455,7 +460,7 @@ fn session_state(session: Entity<Session>, cx: &mut App) -> ReplMenuState {
     };
 
     let shutdown = || ReplMenuState {
-        tooltip: "Nothing running".into(),
+        tooltip: t(keys::zed::ZED_B_REPL_NOTHING_RUNNING).into(),
         icon: IconName::ReplNeutral,
         icon_color: Color::Default,
         icon_is_animating: false,

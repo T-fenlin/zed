@@ -25,7 +25,7 @@ use gpui::{
     UniformListScrollHandle, WeakEntity, Window, actions, anchored, deferred, point, prelude::*,
     px, uniform_list,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use language::line_diff;
 use markdown::{Markdown, MarkdownElement};
 use menu::{Cancel, SelectFirst, SelectLast, SelectNext, SelectPrevious};
@@ -153,7 +153,7 @@ impl PickerDelegate for CommitTagPickerDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        "Copy Tag".into()
+        t(keys::git_ui::GIT_GRAPH_COPY_TAG).into()
     }
 
     fn match_count(&self) -> usize {
@@ -1648,7 +1648,7 @@ impl GitGraph {
 
         let search_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text("Search commits…", window, cx);
+            editor.set_placeholder_text(t(keys::git_ui::GIT_GRAPH_SEARCH_COMMITS), window, cx);
             editor
         });
 
@@ -2822,9 +2822,21 @@ impl GitGraph {
     ) {
         let is_path_history = matches!(self.log_source, LogSource::Path(_));
         let columns: &[&str] = if is_path_history {
-            &["Description", "Date", "Author", "Commit"]
+            &[
+                "Description",
+                t_static(keys::git_ui::GIT_GRAPH_COLUMN_DATE),
+                "Author",
+                "Commit",
+            ]
         } else {
-            &["Refs", "Graph", "Description", "Date", "Author", "Commit"]
+            &[
+                "Refs",
+                "Graph",
+                "Description",
+                t_static(keys::git_ui::GIT_GRAPH_COLUMN_DATE),
+                "Author",
+                "Commit",
+            ]
         };
 
         let filter = self.column_visibility.clone();
@@ -2914,7 +2926,7 @@ impl GitGraph {
                             })
                             .tooltip(move |_window, cx| {
                                 Tooltip::for_action_in(
-                                    "Match Case Sensitivity",
+                                    t_static(keys::git_ui::GIT_GRAPH_MATCH_CASE),
                                     &ToggleCaseSensitive,
                                     &focus_handle,
                                     cx,
@@ -2933,7 +2945,7 @@ impl GitGraph {
                             .icon_size(IconSize::Small)
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Select Previous Match",
+                                    t_static(keys::git_ui::GIT_GRAPH_SELECT_PREVIOUS_MATCH),
                                     &SelectPreviousMatch,
                                     &focus_handle,
                                     cx,
@@ -2956,7 +2968,7 @@ impl GitGraph {
                             .icon_size(IconSize::Small)
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Select Next Match",
+                                    t_static(keys::git_ui::GIT_GRAPH_SELECT_NEXT_MATCH),
                                     &SelectNextMatch,
                                     &focus_handle,
                                     cx,
@@ -3131,9 +3143,9 @@ impl GitGraph {
             .toggle_state(self.changed_files_view_mode.is_tree())
             .tooltip({
                 let tooltip = if is_tree_view {
-                    "Show Flat View"
+                    t_static(keys::git_ui::GIT_GRAPH_SHOW_FLAT_VIEW)
                 } else {
-                    "Show Tree View"
+                    t_static(keys::git_ui::GIT_GRAPH_SHOW_TREE_VIEW)
                 };
                 move |_, cx| Tooltip::for_action(tooltip, &ToggleChangedFilesView, cx)
             })
@@ -3192,9 +3204,9 @@ impl GitGraph {
                             )
                             .tooltip({
                                 let label = if self.commit_details_metadata_collapsed {
-                                    "Show Commit Details"
+                                    t_static(keys::git_ui::GIT_GRAPH_SHOW_COMMIT_DETAILS)
                                 } else {
-                                    "Hide Commit Details"
+                                    t_static(keys::git_ui::GIT_GRAPH_HIDE_COMMIT_DETAILS)
                                 };
                                 move |_window, cx: &mut App| Tooltip::simple(label, cx)
                             })
@@ -3266,9 +3278,17 @@ impl GitGraph {
                                     let is_copied = copied_state.read(cx).is_copied();
 
                                     let (icon, icon_color, tooltip_label) = if is_copied {
-                                        (IconName::Check, Color::Success, "Email Copied!")
+                                        (
+                                            IconName::Check,
+                                            Color::Success,
+                                            t_static(keys::git_ui::GIT_GRAPH_EMAIL_COPIED),
+                                        )
                                     } else {
-                                        (IconName::Envelope, Color::Muted, "Copy Email")
+                                        (
+                                            IconName::Envelope,
+                                            Color::Muted,
+                                            t_static(keys::git_ui::GIT_GRAPH_COPY_EMAIL),
+                                        )
                                     };
 
                                     let copy_email = author_email.clone();
@@ -3319,7 +3339,11 @@ impl GitGraph {
                                     let is_copied = copied_state.read(cx).is_copied();
 
                                     let (icon, icon_color, tooltip_label) = if is_copied {
-                                        (IconName::Check, Color::Success, "Commit SHA Copied!")
+                                        (
+                                            IconName::Check,
+                                            Color::Success,
+                                            t_static(keys::git_ui::GIT_GRAPH_SHA_COPIED),
+                                        )
                                     } else {
                                         (IconName::Hash, Color::Muted, "Copy Commit SHA")
                                     };
@@ -4379,7 +4403,7 @@ impl Render for GitGraph {
             } else if is_loading {
                 "Loading".to_string()
             } else {
-                "No commits found".to_string()
+                t(keys::git_ui::GIT_GRAPH_NO_COMMITS).to_string()
             };
             let label = Label::new(message)
                 .color(Color::Muted)
@@ -4792,9 +4816,9 @@ impl Item for GitGraph {
             move |_, _| {
                 v_flex()
                     .child(Label::new(if path_history_path.is_some() {
-                        "Path History"
+                        t_static(keys::git_ui::GIT_GRAPH_PATH_HISTORY)
                     } else {
-                        "Git Graph"
+                        t_static(keys::git_ui::GIT_GRAPH_GRAPH_TITLE)
                     }))
                     .when_some(path_history_path.clone(), |this, path| {
                         this.child(Label::new(path).color(Color::Muted).size(LabelSize::Small))
@@ -4823,7 +4847,10 @@ impl Item for GitGraph {
                     .file_name()
                     .map(|name| name.to_string_lossy().to_string())
             })
-            .map_or_else(|| "Git Graph".into(), |name| SharedString::from(name))
+            .map_or_else(
+                || t(keys::git_ui::GIT_GRAPH_GRAPH_TITLE).into(),
+                |name| SharedString::from(name),
+            )
     }
 
     fn show_toolbar(&self) -> bool {
@@ -6914,7 +6941,7 @@ mod tests {
                     CommitData {
                         sha: first_sha,
                         parents: smallvec![target_sha],
-                        author_name: "Author".into(),
+                        author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 1,
                         subject: "Add feature".into(),
@@ -6926,7 +6953,7 @@ mod tests {
                     CommitData {
                         sha: target_sha,
                         parents: smallvec![third_sha],
-                        author_name: "Author".into(),
+                        author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 2,
                         subject: "Fix branch loading".into(),
@@ -6938,7 +6965,7 @@ mod tests {
                     CommitData {
                         sha: third_sha,
                         parents: smallvec![],
-                        author_name: "Author".into(),
+                        author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 3,
                         subject: "Update docs".into(),
@@ -7748,7 +7775,7 @@ mod tests {
                     CommitData {
                         sha,
                         parents: smallvec![],
-                        author_name: "Author".into(),
+                        author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 1_700_000_000,
                         subject: "Commit subject".into(),
@@ -7839,7 +7866,7 @@ mod tests {
                 CommitData {
                     sha: first_sha,
                     parents: smallvec![],
-                    author_name: "Author".into(),
+                    author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
                     subject: "Commit subject".into(),
@@ -8434,7 +8461,7 @@ mod tests {
                 CommitData {
                     sha: commit_sha,
                     parents: smallvec![],
-                    author_name: "Author".into(),
+                    author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
                     subject: "Fix crash".into(),
@@ -8523,7 +8550,7 @@ mod tests {
                 CommitData {
                     sha: commit_sha,
                     parents: smallvec![],
-                    author_name: "Author".into(),
+                    author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
                     subject: "Long commit message".into(),
@@ -8645,7 +8672,7 @@ mod tests {
                 CommitData {
                     sha: commit_sha,
                     parents: smallvec![],
-                    author_name: "Author".into(),
+                    author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
                     subject: "Fix crash".into(),

@@ -1,6 +1,6 @@
 use anyhow::{Context as _, bail};
 use collections::{FxHashMap, HashMap, HashSet};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use language::{LanguageName, LanguageRegistry};
 use std::{
     borrow::Cow,
@@ -550,10 +550,10 @@ pub(crate) enum NewProcessMode {
 impl std::fmt::Display for NewProcessMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mode = match self {
-            NewProcessMode::Task => "Run",
-            NewProcessMode::Debug => "Debug",
-            NewProcessMode::Attach => "Attach",
-            NewProcessMode::Launch => "Launch",
+            NewProcessMode::Task => t_static(keys::debugger::DEBUGGER_MODE_RUN),
+            NewProcessMode::Debug => t_static(keys::debugger::DEBUGGER_MODE_DEBUG),
+            NewProcessMode::Attach => t_static(keys::debugger::DEBUGGER_MODE_ATTACH),
+            NewProcessMode::Launch => t_static(keys::debugger::DEBUGGER_MODE_LAUNCH),
         };
 
         write!(f, "{}", mode)
@@ -648,7 +648,7 @@ impl Render for NewProcessModal {
                             )
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Run predefined task",
+                                    t_static(keys::debugger::DEBUGGER_MODE_RUN_DESC),
                                     &ActivateTaskTab,
                                     &task_focus_handle,
                                     cx,
@@ -664,7 +664,7 @@ impl Render for NewProcessModal {
                             )
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Start a predefined debug scenario",
+                                    t_static(keys::debugger::DEBUGGER_MODE_DEBUG_DESC),
                                     &ActivateDebugTab,
                                     &debug_focus_handle,
                                     cx,
@@ -689,7 +689,7 @@ impl Render for NewProcessModal {
                             )
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Attach the debugger to a running process",
+                                    t_static(keys::debugger::DEBUGGER_MODE_ATTACH_DESC),
                                     &ActivateAttachTab,
                                     &attach_focus_handle,
                                     cx,
@@ -705,7 +705,7 @@ impl Render for NewProcessModal {
                             )
                             .tooltip(move |_, cx| {
                                 Tooltip::for_action_in(
-                                    "Launch a new process with a debugger",
+                                    t_static(keys::debugger::DEBUGGER_MODE_LAUNCH_DESC),
                                     &ActivateLaunchTab,
                                     &launch_focus_handle,
                                     cx,
@@ -847,10 +847,14 @@ impl ConfigureMode {
         });
 
         let cwd = cx.new(|cx| {
-            InputField::new(window, cx, "Ex: $ZED_WORKTREE_ROOT")
-                .label(t(keys::debugger::DEBUGGER_WORKING_DIRECTORY))
-                .tab_stop(true)
-                .tab_index(2)
+            InputField::new(
+                window,
+                cx,
+                t_static(keys::debugger::DEBUGGER_PROGRAM_PLACEHOLDER),
+            )
+            .label(t(keys::debugger::DEBUGGER_WORKING_DIRECTORY))
+            .tab_stop(true)
+            .tab_index(2)
         });
 
         cx.new(|_| Self {
@@ -987,7 +991,7 @@ impl AttachMode {
     ) -> Entity<Self> {
         let definition = ZedDebugConfig {
             adapter: debugger.unwrap_or(DebugAdapterName("".into())).0,
-            label: "Attach New Session Setup".into(),
+            label: t(keys::debugger::DEBUGGER_ATTACH_NEW_SESSION).into(),
             request: dap::DebugRequest::Attach(task::AttachRequest { process_id: None }),
             stop_on_entry: Some(false),
         };
@@ -1244,7 +1248,7 @@ impl PickerDelegate for DebugDelegate {
     }
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> std::sync::Arc<str> {
-        "Find a debug task, or debug a command".into()
+        t(keys::debugger::DEBUGGER_FIND_DEBUG_TASK).into()
     }
 
     fn update_matches(
@@ -1342,7 +1346,7 @@ impl PickerDelegate for DebugDelegate {
 
         let args = args.collect::<Vec<_>>();
         let task = task::TaskTemplate {
-            label: "one-off".to_owned(), // TODO: rename using command as label
+            label: t(keys::debugger::DEBUGGER_ONE_OFF).to_owned(), // TODO: rename using command as label
             env,
             command: program,
             args,
@@ -1535,7 +1539,11 @@ impl PickerDelegate for DebugDelegate {
                 } else {
                     this.child({
                         let is_recent_selected = self.divider_index >= Some(self.selected_index);
-                        let run_entry_label = if is_recent_selected { "Rerun" } else { "Spawn" };
+                        let run_entry_label = if is_recent_selected {
+                            "Rerun"
+                        } else {
+                            t_static(keys::debugger::DEBUGGER_SPAWN)
+                        };
 
                         Button::new("spawn", run_entry_label)
                             .key_binding(KeyBinding::for_action(&menu::Confirm, cx))

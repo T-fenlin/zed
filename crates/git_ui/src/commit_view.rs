@@ -18,7 +18,7 @@ use gpui::{
     PromptLevel, Render, ScrollHandle, StatefulInteractiveElement as _, Styled, Task, WeakEntity,
     Window, actions,
 };
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use language::{
     Buffer, Capability, DiskState, File, LanguageRegistry, LineEnding, OffsetRangeExt as _,
     ReplicaId, Rope, TextBuffer,
@@ -1032,7 +1032,7 @@ impl CommitView {
             PromptLevel::Info,
             &message,
             None,
-            &[str_action, "Cancel"],
+            &[str_action, t_static(keys::git_ui::GIT_B_CANCEL)],
             cx,
         );
 

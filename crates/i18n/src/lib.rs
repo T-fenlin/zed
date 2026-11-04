@@ -185,6 +185,29 @@ pub fn active_locale() -> Locale {
     with_registry(|r| r.active)
 }
 
+/// Resolve a message id to a `&'static str`, for call sites whose types still
+/// expect a static string slice (menu item arrays, match arms returning
+/// `&'static str`, `Option<&'static str>` fields, ...).
+///
+/// The resolved text is interned once per (locale, key) and leaked; since the
+/// key set is fixed at compile time this is bounded by the number of keys.
+/// Prefer [`t`] / [`t_with_args`] where `String` is accepted.
+pub fn t_static(key: &'static str) -> &'static str {
+    thread_local! {
+        static CACHE: std::cell::RefCell<std::collections::HashMap<(Locale, &'static str), &'static str>> =
+            std::cell::RefCell::new(std::collections::HashMap::new());
+    }
+    let locale = active_locale();
+    CACHE.with(|cache| {
+        if let Some(value) = cache.borrow().get(&(locale, key)) {
+            return *value;
+        }
+        let leaked: &'static str = Box::leak(t(key).into_boxed_str());
+        cache.borrow_mut().insert((locale, key), leaked);
+        leaked
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

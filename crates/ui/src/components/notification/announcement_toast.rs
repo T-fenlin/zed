@@ -1,7 +1,7 @@
 use crate::{ListBulletItem, prelude::*};
 use component::{Component, ComponentScope, example_group, single_example};
 use gpui::{AnyElement, ClickEvent, IntoElement, ParentElement, SharedString};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use smallvec::SmallVec;
 
 #[derive(IntoElement, RegisterComponent)]
@@ -183,8 +183,8 @@ impl Component for AnnouncementToast {
                         .bullet_item(ListBulletItem::new(
                             "Updated workspace layout designed for agentic workflows",
                         ))
-                        .primary_action_label("Try Now")
-                        .secondary_action_label("Learn More"),
+                        .primary_action_label(t_static(keys::ui::UI_TRY_NOW))
+                        .secondary_action_label(t_static(keys::ui::UI_LEARN_MORE)),
                 )
                 .into_any_element(),
         )];

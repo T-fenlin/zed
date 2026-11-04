@@ -1,5 +1,6 @@
 use editor::{Editor, MultiBuffer};
 use gpui::{AnyElement, Entity, Modifiers};
+use i18n::{keys, t_static};
 use markdown_preview::markdown_preview_view::MarkdownPreviewView;
 use svg_preview::svg_preview_view::SvgPreviewView;
 use tabular_data_preview::TabularDataPreviewPane;
@@ -40,17 +41,17 @@ impl QuickActionBar {
         let (button_id, tooltip_text, open_action_for_tooltip) = match &preview_target {
             PreviewTarget::Markdown(_) => (
                 "toggle-markdown-preview",
-                "Preview Markdown",
+                t_static(keys::zed::ZED_A_PREVIEW_MARKDOWN),
                 &markdown_preview::OpenPreview as &dyn gpui::Action,
             ),
             PreviewTarget::Svg(_) => (
                 "toggle-svg-preview",
-                "Preview SVG",
+                t_static(keys::zed::ZED_A_PREVIEW_SVG),
                 &svg_preview::OpenPreview as &dyn gpui::Action,
             ),
             PreviewTarget::TabularData(_) => (
                 "toggle-tabular-preview",
-                "Preview Tabular Data",
+                t_static(keys::zed::ZED_A_PREVIEW_TABULAR_DATA),
                 &tabular_data_preview::OpenPreview as &dyn gpui::Action,
             ),
         };

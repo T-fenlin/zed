@@ -26,6 +26,7 @@ use gpui::{
     BackgroundExecutor, DismissEvent, Task, TaskExt, TestAppContext, UpdateGlobal,
     VisualTestContext, WindowBounds, WindowOptions, div,
 };
+use i18n::{keys, t_static};
 use indoc::{formatdoc, indoc};
 use language::{
     BracketPair, BracketPairConfig,
@@ -36874,7 +36875,7 @@ fn test_gutter_button_tooltip_updates_intent_with_secondary_modifier(cx: &mut Te
     let meta = cx.read(|cx| tooltip.meta_text(cx));
     assert!(meta.contains("-click to add a bookmark"), "got: {meta}");
     assert!(!meta.contains("-click to add a breakpoint"), "got: {meta}");
-    assert!(meta.contains("right-click for more options"));
+    assert!(meta.contains(t_static(keys::editor::EDITOR_RIGHT_CLICK_HINT)));
 
     // When only one feature is enabled (primary == secondary), a
     // modifier-click repeats the primary action, so the tooltip must not
@@ -36886,7 +36887,7 @@ fn test_gutter_button_tooltip_updates_intent_with_secondary_modifier(cx: &mut Te
         on_render: None,
     };
     let meta = cx.read(|cx| single_feature_tooltip.meta_text(cx));
-    assert_eq!(meta, "right-click for more options");
+    assert_eq!(meta, t_static(keys::editor::EDITOR_RIGHT_CLICK_HINT));
 }
 
 #[gpui::test]
@@ -36912,17 +36913,17 @@ fn test_gutter_button_tooltip_renders_modifier_transitions(cx: &mut TestAppConte
         assert!(!meta.contains("-click to add a breakpoint"), "got: {meta}");
     };
 
-    assert_render("Set Breakpoint");
+    assert_render(t_static(keys::editor::EDITOR_SET_BREAKPOINT));
 
     cx.simulate_modifiers_change(cx.read(Modifiers::secondary_key));
     tooltip.update_in(cx, |_, _window, cx| cx.notify());
     cx.run_until_parked();
-    assert_render("Set Bookmark");
+    assert_render(t_static(keys::editor::EDITOR_SET_BOOKMARK));
 
     cx.simulate_modifiers_change(Modifiers::none());
     tooltip.update_in(cx, |_, _window, cx| cx.notify());
     cx.run_until_parked();
-    assert_render("Set Breakpoint");
+    assert_render(t_static(keys::editor::EDITOR_SET_BREAKPOINT));
 }
 
 #[gpui::test]

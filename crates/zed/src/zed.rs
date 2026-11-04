@@ -20,7 +20,7 @@ use agent_ui::AgentDiffToolbar;
 use anyhow::Context as _;
 pub use app_menus::*;
 use assets::Assets;
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 
 use breadcrumbs::Breadcrumbs;
 use client::zed_urls;
@@ -241,7 +241,7 @@ pub fn init(cx: &mut App) {
             open_bundled_file(
                 workspace,
                 asset_str::<Assets>("licenses.md"),
-                "Open Source License Attribution",
+                t_static(keys::zed::ZED_A_BUNDLE_LICENSES_TITLE),
                 "Markdown",
                 window,
                 cx,
@@ -298,7 +298,7 @@ pub fn init(cx: &mut App) {
             open_bundled_file(
                 workspace,
                 settings::default_semantic_token_rules(),
-                "Default Semantic Token Rules",
+                t_static(keys::zed::ZED_A_BUNDLE_SEMANTIC_TOKEN_RULES_TITLE),
                 "JSONC",
                 window,
                 cx,
@@ -310,7 +310,7 @@ pub fn init(cx: &mut App) {
             open_bundled_file(
                 workspace,
                 settings::default_settings(),
-                "Default Settings",
+                t_static(keys::zed::ZED_A_BUNDLE_DEFAULT_SETTINGS_TITLE),
                 "JSON",
                 window,
                 cx,
@@ -322,7 +322,7 @@ pub fn init(cx: &mut App) {
             open_bundled_file(
                 workspace,
                 settings::default_keymap(),
-                "Default Key Bindings",
+                t_static(keys::zed::ZED_A_BUNDLE_DEFAULT_KEYMAP_TITLE),
                 "JSON",
                 window,
                 cx,
@@ -670,7 +670,10 @@ fn initialize_file_watcher(fs: &dyn Fs, window: &mut Window, cx: &mut Context<Wo
     if let Err(e) = fs.start_native_watcher() {
         let message = format!(
             "{}\n\n{}",
-            t_with_args(keys::zed::ZED_A_INOTIFY_INIT_FAILED, &[("error", &format!("{e}"))]),
+            t_with_args(
+                keys::zed::ZED_A_INOTIFY_INIT_FAILED,
+                &[("error", &format!("{e}"))]
+            ),
             t(keys::zed::ZED_A_INOTIFY_LIMITS_HINT)
         );
         let troubleshoot = t(keys::zed::ZED_A_TROUBLESHOOT_AND_QUIT);
@@ -1564,7 +1567,7 @@ fn open_about_window(cx: &mut App) {
             let version = env!("CARGO_PKG_VERSION");
 
             let debug = if cfg!(debug_assertions) {
-                "(debug)"
+                t_static(keys::zed::ZED_A_ABOUT_DEBUG_SUFFIX)
             } else {
                 ""
             };
@@ -1727,7 +1730,7 @@ fn open_about_window(cx: &mut App) {
     cx.open_window(
         WindowOptions {
             titlebar: Some(TitlebarOptions {
-                title: Some("About Zed".into()),
+                title: Some(t(keys::app_menu::MENU_ZED_ABOUT).into()),
                 appears_transparent: true,
                 traffic_light_position: Some(point(px(12.), px(12.))),
             }),
@@ -1788,7 +1791,7 @@ fn quit(_: &Quit, cx: &mut App) {
                         PromptLevel::Info,
                         &t(keys::zed::ZED_A_QUIT_CONFIRM),
                         None,
-                        &[quit.as_str(), "Cancel"],
+                        &[quit.as_str(), t_static(keys::zed::ZED_A_CANCEL)],
                         cx,
                     )
                 })
@@ -1894,7 +1897,9 @@ fn open_log_file(workspace: &mut Workspace, window: &mut Window, cx: &mut Contex
                 buffer.set_text(log, cx);
             });
 
-            let buffer = cx.new(|cx| MultiBuffer::singleton(buffer, cx).with_title("Log".into()));
+            let buffer = cx.new(|cx| {
+                MultiBuffer::singleton(buffer, cx).with_title(t(keys::zed::ZED_A_LOG_TITLE).into())
+            });
 
             let editor = cx
                 .new_window_entity(|window, cx| {
@@ -1948,7 +1953,7 @@ fn notify_settings_errors(result: settings::SettingsParseResult, is_user: bool, 
                 show_app_notification(id, cx, move |cx| {
                     cx.new(|cx| {
                         MessageNotification::new(format!("Invalid user settings file\n{error}"), cx)
-                            .primary_message("Open Settings File")
+                            .primary_message(t_static(keys::app_menu::MENU_ZED_OPEN_SETTINGS_FILE))
                             .primary_icon(IconName::Settings)
                             .primary_on_click(|window, cx| {
                                 window.dispatch_action(
@@ -1984,7 +1989,7 @@ fn notify_settings_errors(result: settings::SettingsParseResult, is_user: bool, 
                             ),
                             cx,
                         )
-                        .primary_message("Open Settings File")
+                        .primary_message(t_static(keys::app_menu::MENU_ZED_OPEN_SETTINGS_FILE))
                         .primary_icon(IconName::Settings)
                         .primary_on_click(|window, cx| {
                             window.dispatch_action(zed_actions::OpenSettingsFile.boxed_clone(), cx);
@@ -2001,16 +2006,16 @@ fn init_global_config_error_notifications(cx: &mut App) {
     cx.observe_new(|_: &mut SettingsObserver, _, cx| {
         cx.subscribe_self::<SettingsObserverEvent>(|_, event, cx| {
             let (result, file_kind, on_click): (_, _, fn(&mut Window, &mut App)) = match event {
-                SettingsObserverEvent::GlobalTasksUpdated(result) => {
-                    (result, "tasks", |window, cx| {
-                        window.dispatch_action(OpenTasks.boxed_clone(), cx)
-                    })
-                }
-                SettingsObserverEvent::GlobalDebugScenariosUpdated(result) => {
-                    (result, "debug scenarios", |window, cx| {
-                        window.dispatch_action(OpenDebugTasks.boxed_clone(), cx)
-                    })
-                }
+                SettingsObserverEvent::GlobalTasksUpdated(result) => (
+                    result,
+                    t_static(keys::zed::ZED_A_FILE_KIND_TASKS),
+                    |window, cx| window.dispatch_action(OpenTasks.boxed_clone(), cx),
+                ),
+                SettingsObserverEvent::GlobalDebugScenariosUpdated(result) => (
+                    result,
+                    t_static(keys::zed::ZED_A_FILE_KIND_DEBUG_SCENARIOS),
+                    |window, cx| window.dispatch_action(OpenDebugTasks.boxed_clone(), cx),
+                ),
                 _ => return,
             };
             let id = NotificationId::Named(format!("invalid-global-{file_kind}-file").into());
@@ -2021,7 +2026,7 @@ fn init_global_config_error_notifications(cx: &mut App) {
                     show_app_notification(id, cx, move |cx| {
                         cx.new(|cx| {
                             MessageNotification::new(message.clone(), cx)
-                                .primary_message("Open File")
+                                .primary_message(t_static(keys::zed::ZED_A_OPEN_FILE))
                                 .primary_icon(IconName::Settings)
                                 .primary_on_click(move |window, cx| {
                                     on_click(window, cx);
@@ -2271,7 +2276,7 @@ fn show_keymap_file_json_error(
     show_app_notification(notification_id, cx, move |cx| {
         cx.new(|cx| {
             MessageNotification::new(message.clone(), cx)
-                .primary_message("Open Keymap File")
+                .primary_message(t_static(keys::app_menu::MENU_ZED_OPEN_KEYMAP_FILE))
                 .primary_icon(IconName::Settings)
                 .primary_on_click(|window, cx| {
                     window.dispatch_action(zed_actions::OpenKeymapFile.boxed_clone(), cx);
@@ -2289,7 +2294,7 @@ fn show_keymap_file_load_error(
     show_markdown_app_notification(
         notification_id,
         error_message,
-        "Open Keymap File".into(),
+        t(keys::app_menu::MENU_ZED_OPEN_KEYMAP_FILE).into(),
         |window, cx| {
             window.dispatch_action(zed_actions::OpenKeymapFile.boxed_clone(), cx);
             cx.emit(DismissEvent);
@@ -2348,7 +2353,7 @@ fn reload_keymaps(cx: &mut App, mut user_key_bindings: Vec<KeyBinding>) {
     // On Windows, this is set in the `update_jump_list` method of the `HistoryManager`.
     #[cfg(not(target_os = "windows"))]
     cx.set_dock_menu(vec![gpui::MenuItem::action(
-        "New Window",
+        t_static(keys::app_menu::MENU_FILE_NEW_WINDOW),
         workspace::NewWindow,
     )]);
     // todo: nicer api here?
@@ -2657,7 +2662,7 @@ fn open_local_file(
         struct NoOpenFolders;
 
         workspace.show_notification(NotificationId::unique::<NoOpenFolders>(), cx, |cx| {
-            cx.new(|cx| MessageNotification::new("This project has no folders open.", cx))
+            cx.new(|cx| MessageNotification::new(t_static(keys::zed::ZED_A_NO_OPEN_FOLDERS), cx))
         });
         None
     }
@@ -3171,7 +3176,7 @@ mod tests {
             1,
             "create_new_window: false should reuse the current window"
         );
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
         executor.run_until_parked();
     }
 
@@ -3894,7 +3899,7 @@ mod tests {
                             "settings.json": r#"{"on_new_window": "readme"}"#
                         }
                     },
-                    "none": {"code.rs": ""},
+                    t_static(keys::lang::LANG_TOOLS_STYLE_NONE): {"code.rs": ""},
                     "explicit": {"README.md": "", "code.rs": ""},
                     "missing": {"README.md": ""}
                 }),
@@ -3921,7 +3926,11 @@ mod tests {
             (readme, vec!["invalid"], None, false),
             (
                 readme,
-                vec!["none", "first", "second"],
+                vec![
+                    t_static(keys::lang::LANG_TOOLS_STYLE_NONE),
+                    "first",
+                    "second",
+                ],
                 Some("first/README.txt"),
                 true,
             ),
@@ -4841,7 +4850,7 @@ mod tests {
             .update(cx, |_, window, cx| {
                 editor.update(cx, |editor, cx| {
                     assert!(!editor.is_dirty(cx));
-                    assert_eq!(editor.title(cx), "untitled");
+                    assert_eq!(editor.title(cx), t_static(keys::lang::LANG_TOOLS_UNTITLED));
                     assert!(Arc::ptr_eq(
                         &editor
                             .buffer()
@@ -7327,7 +7336,7 @@ mod tests {
             "Case 1: Should prompt to save dirty item in active workspace"
         );
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
         cx.run_until_parked();
 
         assert_eq!(
@@ -7409,7 +7418,7 @@ mod tests {
             "Case 2: Should prompt to save dirty item in non-active workspace"
         );
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
         cx.run_until_parked();
 
         assert_eq!(
@@ -7493,7 +7502,7 @@ mod tests {
             "Case 3: Should prompt to save dirty item in non-active window"
         );
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
         cx.run_until_parked();
 
         assert_eq!(
@@ -7615,7 +7624,7 @@ mod tests {
             "Reload should prompt to save the dirty item in the non-active workspace"
         );
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
         cx.run_until_parked();
 
         assert_eq!(
@@ -8488,11 +8497,11 @@ mod tests {
         cx.update(|cx| reload_keymaps(cx, Vec::new()));
         cx.update(|cx| {
             assert!(
-                has_view_item(cx, "Agent Panel"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_AGENT_PANEL)),
                 "expected Agent Panel in the View menu when AI is enabled"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to be in View menu"
             );
         });
@@ -8509,11 +8518,11 @@ mod tests {
         });
         cx.update(|cx| {
             assert!(
-                !has_view_item(cx, "Agent Panel"),
+                !has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_AGENT_PANEL)),
                 "expected Agent Panel to be removed from the View menu after disabling AI"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8528,11 +8537,11 @@ mod tests {
         cx.update(|cx| reload_keymaps(cx, Vec::new()));
         cx.update(|cx| {
             assert!(
-                has_view_item(cx, "Agent Panel"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_AGENT_PANEL)),
                 "expected Agent Panel back in the View menu after re-enabling AI"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8545,11 +8554,11 @@ mod tests {
         cx.update(|cx| reload_keymaps(cx, Vec::new()));
         cx.update(|cx| {
             assert!(
-                has_view_item(cx, "Agent Panel"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_AGENT_PANEL)),
                 "expected Agent Panel before disabling AI"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics in the View menu"
             );
         });
@@ -8590,11 +8599,11 @@ mod tests {
 
         cx.update(|cx| {
             assert!(
-                !has_view_item(cx, "Agent Panel"),
+                !has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_AGENT_PANEL)),
                 "expected Agent Panel removed even though the keymap file is malformed"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8612,11 +8621,11 @@ mod tests {
 
         cx.update(|cx| {
             assert!(
-                has_view_item(cx, "Agent Panel"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_AGENT_PANEL)),
                 "expected Agent Panel added back even though the keymap file is malformed"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8675,7 +8684,7 @@ mod tests {
         cx.get_menus()
             .expect("reload_keymaps should populate the menu bar")
             .iter()
-            .find(|menu| menu.name == "View")
+            .find(|menu| menu.name == t_static(keys::app_menu::MENU_VIEW_TITLE))
             .expect("expected a View menu")
             .items
             .iter()

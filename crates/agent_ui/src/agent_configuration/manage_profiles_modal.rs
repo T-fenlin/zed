@@ -185,7 +185,11 @@ impl ManageProfilesModal {
     ) {
         let name_editor = cx.new(|cx| Editor::single_line(window, cx));
         name_editor.update(cx, |editor, cx| {
-            editor.set_placeholder_text(t(keys::agent::AGENT_PROFILES_NAME_PLACEHOLDER), window, cx);
+            editor.set_placeholder_text(
+                t(keys::agent::AGENT_PROFILES_NAME_PLACEHOLDER),
+                window,
+                cx,
+            );
         });
 
         self.mode = Mode::NewProfile(NewProfileMode {
@@ -574,7 +578,10 @@ impl ManageProfilesModal {
             div()
                 .track_focus(&self.focus_handle(cx))
                 .size_full()
-                .child(ProfileModalHeader::new(t(keys::agent::AGENT_PROFILES_TITLE), None))
+                .child(ProfileModalHeader::new(
+                    t(keys::agent::AGENT_PROFILES_TITLE),
+                    None,
+                ))
                 .child(
                     v_flex()
                         .pb_1()
@@ -654,7 +661,7 @@ impl ManageProfilesModal {
                 .profiles
                 .get(base_profile_id)
                 .map(|profile| profile.name.clone())
-                .unwrap_or_else(|| "Unknown".into())
+                .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into())
         });
 
         v_flex()
@@ -686,7 +693,7 @@ impl ManageProfilesModal {
             .profiles
             .get(&mode.profile_id)
             .map(|profile| profile.name.clone())
-            .unwrap_or_else(|| "Unknown".into());
+            .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
         let icon = match mode.profile_id.as_str() {
             "write" => IconName::Pencil,
@@ -883,7 +890,10 @@ impl ManageProfilesModal {
                                                 .size(IconSize::Small)
                                                 .color(Color::Error),
                                         )
-                                        .child(Label::new(t(keys::agent::AGENT_PROFILES_DELETE)).color(Color::Error))
+                                        .child(
+                                            Label::new(t(keys::agent::AGENT_PROFILES_DELETE))
+                                                .color(Color::Error),
+                                        )
                                         .disabled(builtin_profiles::is_builtin(&mode.profile_id))
                                         .on_click({
                                             let profile_id = mode.profile_id.clone();
@@ -1012,7 +1022,7 @@ impl Render for ManageProfilesModal {
                         .profiles
                         .get(profile_id)
                         .map(|profile| profile.name.clone())
-                        .unwrap_or_else(|| "Unknown".into());
+                        .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
                     v_flex()
                         .pb_1()
@@ -1035,7 +1045,7 @@ impl Render for ManageProfilesModal {
                         .profiles
                         .get(profile_id)
                         .map(|profile| profile.name.clone())
-                        .unwrap_or_else(|| "Unknown".into());
+                        .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
                     v_flex()
                         .pb_1()
@@ -1058,7 +1068,7 @@ impl Render for ManageProfilesModal {
                         .profiles
                         .get(profile_id)
                         .map(|profile| profile.name.clone())
-                        .unwrap_or_else(|| "Unknown".into());
+                        .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
                     v_flex()
                         .pb_1()

@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::{rc::Rc, sync::Arc};
 
 use acp_thread::AgentSessionConfigOptions;
@@ -393,15 +393,15 @@ impl ConfigOptionSelector {
 
     fn current_value_name(&self) -> String {
         let Some(option) = self.current_option() else {
-            return "Unknown".to_string();
+            return t(keys::agent::AGENT_UNKNOWN).to_string();
         };
 
         match &option.kind {
             acp::SessionConfigKind::Select(select) => {
                 find_option_name(&select.options, &select.current_value)
-                    .unwrap_or_else(|| "Unknown".to_string())
+                    .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).to_string())
             }
-            _ => "Unknown".to_string(),
+            _ => t(keys::agent::AGENT_UNKNOWN).to_string(),
         }
     }
 
@@ -527,33 +527,33 @@ impl Render for ConfigOptionSelector {
                             acp::SessionConfigOptionCategory::Mode => {
                                 content = content
                                     .child(action_tooltip_container(
-                                        "Change Mode",
+                                        t_static(keys::agent::AGENT_CHANGE_MODE),
                                         KeyBinding::for_action(&ToggleProfileSelector, cx),
                                     ))
                                     .child(action_tooltip_container(
-                                        "Cycle Through Modes",
+                                        t_static(keys::agent::AGENT_CYCLE_MODES),
                                         KeyBinding::for_action(&CycleModeSelector, cx),
                                     ));
                             }
                             acp::SessionConfigOptionCategory::Model => {
                                 content = content
                                     .child(action_tooltip_container(
-                                        "Change Model",
+                                        t_static(keys::agent::AGENT_CHANGE_MODEL),
                                         KeyBinding::for_action(&ToggleModelSelector, cx),
                                     ))
                                     .child(action_tooltip_container(
-                                        "Cycle Favorite Models",
+                                        t_static(keys::agent::AGENT_CYCLE_FAVORITE_MODELS),
                                         KeyBinding::for_action(&CycleFavoriteModels, cx),
                                     ));
                             }
                             acp::SessionConfigOptionCategory::ThoughtLevel => {
                                 content = content
                                     .child(action_tooltip_container(
-                                        "Change Thinking Effort",
+                                        t_static(keys::agent::AGENT_CHANGE_THINKING_EFFORT),
                                         KeyBinding::for_action(&ToggleThinkingEffortMenu, cx),
                                     ))
                                     .child(action_tooltip_container(
-                                        "Cycle Thinking Effort",
+                                        t_static(keys::agent::AGENT_CYCLE_THINKING_EFFORT),
                                         KeyBinding::for_action(&CycleThinkingEffort, cx),
                                     ));
                             }
@@ -1073,7 +1073,9 @@ fn options_to_picker_entries(
     }
 
     if !favorite_options.is_empty() {
-        entries.push(ConfigOptionPickerEntry::Separator(t(keys::agent::AGENT_FAVORITES).into()));
+        entries.push(ConfigOptionPickerEntry::Separator(
+            t(keys::agent::AGENT_FAVORITES).into(),
+        ));
         for option in favorite_options {
             entries.push(ConfigOptionPickerEntry::Option(option));
         }
@@ -1083,7 +1085,9 @@ fn options_to_picker_entries(
         if let Some(option) = options.first()
             && option.group.is_none()
         {
-            entries.push(ConfigOptionPickerEntry::Separator(t(keys::agent::AGENT_ALL_OPTIONS).into()));
+            entries.push(ConfigOptionPickerEntry::Separator(
+                t(keys::agent::AGENT_ALL_OPTIONS).into(),
+            ));
         }
     }
 

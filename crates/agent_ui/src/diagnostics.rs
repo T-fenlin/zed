@@ -1,5 +1,6 @@
 use anyhow::Result;
 use gpui::{App, AppContext as _, Entity, Task};
+use i18n::{keys, t_static};
 use language::{Anchor, BufferSnapshot, DiagnosticEntryRef, DiagnosticSeverity, ToOffset};
 use multi_buffer::MultiBuffer;
 use project::{DiagnosticSummary, Project};
@@ -137,7 +138,7 @@ pub fn collect_diagnostics(
         }
 
         let mut label = String::new();
-        label.push_str("Diagnostics");
+        label.push_str(t_static(keys::agent::AGENT_B_DIAGNOSTICS));
         if let Some(source) = error_source {
             write!(label, " ({})", source).unwrap();
         }

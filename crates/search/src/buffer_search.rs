@@ -24,6 +24,7 @@ use gpui::{
     IntoElement, KeyContext, ParentElement as _, Render, ScrollHandle, Styled, Subscription, Task,
     TaskExt, WeakEntity, Window, div,
 };
+use i18n::{keys, t_static};
 use language::{Language, LanguageRegistry};
 use project::{
     search::SearchQuery,
@@ -119,9 +120,15 @@ impl Render for BufferSearchBar {
                 .map(|editor: Entity<Editor>| editor.read(cx).has_any_buffer_folded(cx))
                 .unwrap_or_default();
             let (icon, tooltip_label) = if is_collapsed {
-                (IconName::ChevronUpDown, "Expand All Files")
+                (
+                    IconName::ChevronUpDown,
+                    t_static(keys::search::SEARCH_EXPAND_ALL),
+                )
             } else {
-                (IconName::ChevronDownUp, "Collapse All Files")
+                (
+                    IconName::ChevronDownUp,
+                    t_static(keys::search::SEARCH_COLLAPSE_ALL),
+                )
             };
 
             let collapse_expand_icon_button = |id| {
@@ -270,7 +277,7 @@ impl Render for BufferSearchBar {
                     "buffer-search-bar-toggle",
                     IconName::Replace,
                     self.replace_enabled.then_some(ActionButtonState::Toggled),
-                    "Toggle Replace",
+                    t_static(keys::search::SEARCH_TOGGLE_REPLACE),
                     &ToggleReplace,
                     focus_handle.clone(),
                     cx,
@@ -296,7 +303,7 @@ impl Render for BufferSearchBar {
                         let focus_handle = focus_handle.clone();
                         move |_window, cx| {
                             Tooltip::for_action_in(
-                                "Toggle Search Selection",
+                                t_static(keys::search::SEARCH_TOGGLE_SELECTION),
                                 &ToggleSelection,
                                 &focus_handle,
                                 cx,
@@ -318,7 +325,7 @@ impl Render for BufferSearchBar {
                         self.active_match_index
                             .is_none()
                             .then_some(ActionButtonState::Disabled),
-                        "Select Previous Match",
+                        t_static(keys::search::SEARCH_PREV_MATCH),
                         &SelectPreviousMatch,
                         query_focus.clone(),
                         cx,
@@ -330,7 +337,7 @@ impl Render for BufferSearchBar {
                         self.active_match_index
                             .is_none()
                             .then_some(ActionButtonState::Disabled),
-                        "Select Next Match",
+                        t_static(keys::search::SEARCH_NEXT_MATCH),
                         &SelectNextMatch,
                         query_focus.clone(),
                         cx,
@@ -353,7 +360,7 @@ impl Render for BufferSearchBar {
                         "buffer-search-nav-button",
                         IconName::SelectAll,
                         Default::default(),
-                        "Select All Matches",
+                        t_static(keys::search::SEARCH_SELECT_ALL_MATCHES),
                         &SelectAllMatches,
                         query_focus.clone(),
                         cx,
@@ -367,7 +374,7 @@ impl Render for BufferSearchBar {
                     "buffer-search",
                     IconName::Close,
                     Default::default(),
-                    "Close Search Bar",
+                    t_static(keys::search::SEARCH_CLOSE_BAR),
                     &Dismiss,
                     focus_handle.clone(),
                     cx,
@@ -403,7 +410,7 @@ impl Render for BufferSearchBar {
                     "buffer-search-replace-button",
                     IconName::ReplaceNext,
                     Default::default(),
-                    "Replace Next Match",
+                    t_static(keys::search::SEARCH_REPLACE_NEXT),
                     &ReplaceNext,
                     focus_handle.clone(),
                     cx,
@@ -413,7 +420,7 @@ impl Render for BufferSearchBar {
                     "buffer-search-replace-button",
                     IconName::ReplaceAll,
                     Default::default(),
-                    "Replace All Matches",
+                    t_static(keys::search::SEARCH_REPLACE_ALL),
                     &ReplaceAll,
                     focus_handle,
                     cx,
@@ -460,7 +467,7 @@ impl Render for BufferSearchBar {
                                 "buffer-search",
                                 IconName::Close,
                                 Default::default(),
-                                "Close Search Bar",
+                                t_static(keys::search::SEARCH_CLOSE_BAR),
                                 &Dismiss,
                                 focus_handle.clone(),
                                 cx,

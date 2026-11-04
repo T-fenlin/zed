@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -760,7 +760,7 @@ impl ThreadsArchiveView {
                             .tooltip({
                                 move |_window, cx| {
                                     Tooltip::for_action_in(
-                                        "Archive Thread",
+                                        t_static(keys::agent::AGENT_ARCHIVE_THREAD),
                                         &ArchiveSelectedThread,
                                         &focus_handle,
                                         cx,
@@ -1428,7 +1428,9 @@ impl PickerDelegate for ProjectPickerDelegate {
         };
 
         if has_siblings_to_show {
-            entries.push(ProjectPickerEntry::Header(t(keys::recent::RECENT_THIS_WINDOW).into()));
+            entries.push(ProjectPickerEntry::Header(
+                t(keys::recent::RECENT_THIS_WINDOW).into(),
+            ));
 
             if is_empty_query {
                 for (id, workspace) in self.workspaces.iter().enumerate() {

@@ -3,6 +3,7 @@ use agent_client_protocol::schema::v2 as acp_v2;
 use anyhow::Result;
 use futures::FutureExt as _;
 use gpui::{App, AsyncApp, Entity, SharedString, Task};
+use i18n::{keys, t_static};
 use project::Project;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -3386,7 +3387,11 @@ mod tests {
                     "Allow always",
                     acp_v2::PermissionOptionKind::AllowAlways,
                 ),
-                ("deny", "Deny", acp_v2::PermissionOptionKind::RejectOnce),
+                (
+                    "deny",
+                    t_static(keys::agent::AGENT_THREAD_DENY),
+                    acp_v2::PermissionOptionKind::RejectOnce
+                ),
             ]
         );
 
@@ -3488,7 +3493,11 @@ mod tests {
                     "Allow always",
                     acp_v2::PermissionOptionKind::AllowAlways,
                 ),
-                ("deny", "Deny", acp_v2::PermissionOptionKind::RejectOnce),
+                (
+                    "deny",
+                    t_static(keys::agent::AGENT_THREAD_DENY),
+                    acp_v2::PermissionOptionKind::RejectOnce
+                ),
             ]
         );
 
@@ -3728,7 +3737,7 @@ mod tests {
             .await
             .expect_err("scoping a request in an unsandboxed thread should be rejected");
         assert!(
-            error.contains("Sandboxing is disabled for this thread"),
+            error.contains(t_static(keys::agent::AGENT_SANDBOX_DISABLED_THREAD)),
             "unexpected error: {error}"
         );
         // The error must name exactly the fields that have no effect.

@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::{rc::Rc, sync::Arc};
 
 use acp_thread::{
@@ -405,7 +405,9 @@ fn info_list_to_picker_entries(
 
     let has_favorites = !favorite_models.is_empty();
     if has_favorites {
-        entries.push(ModelPickerEntry::Separator(t(keys::agent::AGENT_FAVORITE_MODELS).into()));
+        entries.push(ModelPickerEntry::Separator(
+            t(keys::agent::AGENT_FAVORITE_MODELS).into(),
+        ));
         for model in favorite_models {
             entries.push(ModelPickerEntry::Model((*model).clone(), true));
         }
@@ -812,7 +814,10 @@ mod tests {
     #[gpui::test]
     fn test_favorites_are_not_duplicated_when_repeated_in_other_sections(_cx: &mut TestAppContext) {
         let models = create_model_list(vec![
-            ("Recommended", vec!["zed/claude", "anthropic/claude"]),
+            (
+                t_static(keys::agent::AGENT_RECOMMENDED),
+                vec!["zed/claude", "anthropic/claude"],
+            ),
             ("Zed", vec!["zed/claude", "zed/gpt-5"]),
             ("Antropic", vec!["anthropic/claude"]),
             ("OpenAI", vec!["openai/gpt-5"]),
@@ -828,7 +833,7 @@ mod tests {
             vec![
                 t(keys::agent::AGENT_FAVORITE_MODELS),
                 "zed/claude",
-                "Recommended",
+                t_static(keys::agent::AGENT_RECOMMENDED),
                 "zed/claude",
                 "anthropic/claude",
                 "Zed",

@@ -12,6 +12,7 @@ use gpui::{
     AbsoluteLength, App, Asset, Element, Entity, MouseButton, ParentElement, Pixels, Render,
     ScrollHandle, StatefulInteractiveElement, Task, WeakEntity, Window, prelude::*,
 };
+use i18n::{keys, t};
 use markdown::{Markdown, MarkdownElement};
 use notifications::status_toast::StatusToast;
 use project::git_store::{Repository, UnshallowState};
@@ -460,7 +461,7 @@ impl Render for CommitTooltip {
                                         .child(Divider::vertical())
                                         .child(
                                             CopyButton::new("copy-commit-sha", full_sha)
-                                                .tooltip_label("Copy SHA"),
+                                                .tooltip_label(t(keys::git_ui::GIT_BLAME_COPY_SHA)),
                                         ),
                                 ),
                         ),

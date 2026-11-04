@@ -1,4 +1,3 @@
-use i18n::{keys, t};
 use crate::diagnostics::{DiagnosticsOptions, codeblock_fence_for_path, collect_diagnostics};
 use acp_thread::{MentionUri, selection_name};
 use agent::{ThreadStore, outline};
@@ -18,6 +17,7 @@ use gpui::{
     SharedString, Task, WeakEntity,
 };
 use http_client::{AsyncBody, HttpClientWithUrl};
+use i18n::{keys, t};
 use itertools::Either;
 use language::Buffer;
 use language_model::{LanguageModelImage, LanguageModelImageExt};
@@ -408,7 +408,9 @@ impl MentionSet {
 
         if is_raster_image_path(&abs_path) {
             if !supports_images {
-                return Task::ready(Err(anyhow!(t(keys::agent::AGENT_A_MENTION_IMAGES_UNSUPPORTED))));
+                return Task::ready(Err(anyhow!(t(
+                    keys::agent::AGENT_A_MENTION_IMAGES_UNSUPPORTED
+                ))));
             }
             let task = project.update(cx, |project, cx| project.open_image(project_path, cx));
             return cx.spawn(async move |_, cx| {
@@ -423,7 +425,9 @@ impl MentionSet {
                         format: LanguageModelImage::FORMAT,
                     }))
                 } else {
-                    Err(anyhow!(t(keys::agent::AGENT_A_MENTION_IMAGE_CONVERT_FAILED)))
+                    Err(anyhow!(t(
+                        keys::agent::AGENT_A_MENTION_IMAGE_CONVERT_FAILED
+                    )))
                 }
             });
         }
@@ -636,9 +640,9 @@ impl MentionSet {
         cx: &mut Context<Self>,
     ) -> Task<Result<Mention>> {
         let Some(thread_store) = self.thread_store.clone() else {
-            return Task::ready(Err(anyhow!(
-                t(keys::agent::AGENT_A_MENTION_THREAD_NATIVE_ONLY)
-            )));
+            return Task::ready(Err(anyhow!(t(
+                keys::agent::AGENT_A_MENTION_THREAD_NATIVE_ONLY
+            ))));
         };
         let Some(project) = self.project.upgrade() else {
             return Task::ready(Err(anyhow!("project not found")));
@@ -1170,7 +1174,7 @@ pub(crate) fn paste_images_as_context(
 
     Some(window.spawn(cx, async move |mut cx| {
         use itertools::Itertools;
-        let default_name: SharedString = "Image".into();
+        let default_name: SharedString = t(keys::agent::AGENT_THREAD_IMAGE).into();
         let (mut images, paths): (Vec<(gpui::Image, SharedString)>, Vec<_>) = clipboard
             .into_entries()
             .filter_map(|entry| match entry {

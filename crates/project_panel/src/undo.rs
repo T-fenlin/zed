@@ -138,6 +138,7 @@ use futures::channel::mpsc;
 use gpui::{
     AppContext, AsyncApp, IntoElement, PromptLevel, SharedString, Styled, Task, WeakEntity,
 };
+use i18n::{keys, t, t_static};
 use markdown::{Markdown, MarkdownElement};
 use project::Project;
 use project::{ProjectPath, WorktreeId};
@@ -431,11 +432,9 @@ enum UndoMessage {
 impl UndoMessage {
     fn error_title(&self) -> &'static str {
         match self {
-            UndoMessage::Changed(_) => {
-                "this is a bug in the manage_undo_and_redo task please report"
-            }
-            UndoMessage::Undo => "Undo Failed",
-            UndoMessage::Redo => "Redo Failed",
+            UndoMessage::Changed(_) => t_static(keys::panel::PANEL_UNDO_BUG_REPORT),
+            UndoMessage::Undo => t_static(keys::panel::PANEL_UNDO_FAILED),
+            UndoMessage::Redo => t_static(keys::panel::PANEL_REDO_FAILED),
         }
     }
 }
@@ -851,7 +850,7 @@ impl Inner {
                     project_path_display(project, &project_path, path_style, cx)
                 }))
             })
-            .unwrap_or_else(|| "item".to_string());
+            .unwrap_or_else(|| t(keys::panel::PANEL_UNTITLED_ITEM).to_string());
 
         workspace
             .update(cx, |workspace, cx| {

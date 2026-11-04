@@ -2,6 +2,7 @@ use gpui::{
     Animation, AnimationExt, Context, EventEmitter, FocusHandle, Focusable, FontWeight, KeyContext,
     KeybindingKeystroke, Keystroke, Modifiers, ModifiersChangedEvent, Subscription, Task, actions,
 };
+use i18n::{keys, t_static};
 use ui::{
     ActiveTheme as _, Color, IconButton, IconButtonShape, IconName, IconSize, Label, LabelSize,
     ParentElement as _, Render, Styled as _, Tooltip, Window, prelude::*,
@@ -610,9 +611,9 @@ impl Render for KeystrokeInput {
                                     .map(|this| {
                                         this.tooltip(Tooltip::for_action_title(
                                             if self.search {
-                                                "Stop Searching"
+                                                t_static(keys::keymap::KEYMAP_STOP_SEARCHING)
                                             } else {
-                                                "Stop Recording"
+                                                t_static(keys::keymap::KEYMAP_STOP_RECORDING)
                                             },
                                             &StopRecording,
                                         ))
@@ -629,9 +630,9 @@ impl Render for KeystrokeInput {
                                     .map(|this| {
                                         this.tooltip(Tooltip::for_action_title(
                                             if self.search {
-                                                "Start Searching"
+                                                t_static(keys::keymap::KEYMAP_START_SEARCHING)
                                             } else {
-                                                "Start Recording"
+                                                t_static(keys::keymap::KEYMAP_START_RECORDING)
                                             },
                                             &StartRecording,
                                         ))
@@ -650,7 +651,7 @@ impl Render for KeystrokeInput {
                                 .shape(IconButtonShape::Square)
                                 .tooltip(move |_, cx| {
                                     Tooltip::with_meta(
-                                        "Clear Keystrokes",
+                                        t_static(keys::keymap::KEYMAP_CLEAR_KEYSTROKES),
                                         Some(&ClearKeystrokes),
                                         "Hit it three times to execute",
                                         cx,

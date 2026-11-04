@@ -16,7 +16,7 @@ use gpui::{
     WeakEntity, Window, WindowBounds, WindowHandle, WindowOptions, actions, container_query, div,
     list, point, prelude::*, px, uniform_list,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 
 use language::Buffer;
 use platform_title_bar::PlatformTitleBar;
@@ -1738,9 +1738,9 @@ enum SettingsUiFile {
 impl SettingsUiFile {
     fn setting_type(&self) -> &'static str {
         match self {
-            SettingsUiFile::User => "User",
-            SettingsUiFile::Project(_) => "Project",
-            SettingsUiFile::Server(_) => "Server",
+            SettingsUiFile::User => t_static(keys::settings_ui::SETTINGS_ENUM_USER),
+            SettingsUiFile::Project(_) => t_static(keys::settings_ui::SETTINGS_ENUM_PROJECT),
+            SettingsUiFile::Server(_) => t_static(keys::settings_ui::SETTINGS_ENUM_SERVER),
         }
     }
 
@@ -3830,7 +3830,8 @@ impl SettingsWindow {
             let is_skills_page =
                 current_sub_page.link.json_path == Some(AGENT_SKILLS_SETTINGS_PATH);
             let is_llm_providers_page = current_sub_page.link.json_path == Some("llm_providers")
-                && current_sub_page.link.title.as_ref() == "LLM Providers";
+                && current_sub_page.link.title.as_ref()
+                    == t_static(keys::settings_ui::SETTINGS_AI_LLM_PROVIDERS);
             let is_external_agents_page = current_sub_page.link.json_path == Some("agent_servers");
             let is_mcp_servers_page = current_sub_page.link.json_path == Some("context_servers");
 
@@ -3961,7 +3962,7 @@ impl SettingsWindow {
                 .gap_2()
                 .when_some(parse_error, |this, err| {
                     this.child(banner(
-                        "Failed to load your settings. Some values may be incorrect and changes may be lost.",
+                        t_static(keys::settings_ui::SETTINGS_UI_LOAD_FAILED),
                         err,
                         &mut self.shown_errors,
                         cx,
@@ -3969,17 +3970,20 @@ impl SettingsWindow {
                 })
                 .map(|this| match &error.migration_status {
                     settings::MigrationStatus::Succeeded => this.child(banner(
-                        "Your settings are out of date, and need to be updated.",
+                        t_static(keys::settings_ui::SETTINGS_UI_OUTDATED),
                         match &self.current_file {
                             SettingsUiFile::User => t(keys::settings_ui::SETTINGS_UI_OUTDATED_AUTO),
-                            SettingsUiFile::Server(_) | SettingsUiFile::Project(_)  => t(keys::settings_ui::SETTINGS_UI_OUTDATED_MANUAL)
-                        }.to_string(),
+                            SettingsUiFile::Server(_) | SettingsUiFile::Project(_) => {
+                                t(keys::settings_ui::SETTINGS_UI_OUTDATED_MANUAL)
+                            }
+                        }
+                        .to_string(),
                         &mut self.shown_errors,
                         cx,
                     )),
                     settings::MigrationStatus::Failed { error: err } if !parse_failed => this
                         .child(banner(
-                            "Your settings file is out of date, automatic migration failed",
+                            t_static(keys::settings_ui::SETTINGS_UI_OUTDATED_MIGRATION_FAILED),
                             err.clone(),
                             &mut self.shown_errors,
                             cx,
@@ -4590,7 +4594,8 @@ impl SettingsWindow {
     fn retry_llm_provider_authentication(&self, cx: &mut Context<Self>) {
         if self.sub_page_stack.last().is_some_and(|sub_page| {
             sub_page.link.json_path == Some("llm_providers")
-                && sub_page.link.title.as_ref() == "LLM Providers"
+                && sub_page.link.title.as_ref()
+                    == t_static(keys::settings_ui::SETTINGS_AI_LLM_PROVIDERS)
         }) && !DisableAiSettings::get_global(cx).disable_ai
         {
             language_model::LanguageModelRegistry::global(cx)
@@ -5789,9 +5794,13 @@ pub mod test {
             };
             settings_window_with_items(
                 vec![
-                    SettingsPageItem::SectionHeader("First".into()),
+                    SettingsPageItem::SectionHeader(
+                        t(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
+                    ),
                     setting(),
-                    SettingsPageItem::SectionHeader("Last".into()),
+                    SettingsPageItem::SectionHeader(
+                        t(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
+                    ),
                     setting(),
                 ],
                 window,
@@ -5900,26 +5909,34 @@ pub mod test {
                             .into_any_element()
                     }
                 });
-            let git_integration = page_data::settings_data(cx)
-                .into_iter()
-                .flat_map(|page| Vec::from(page.items))
-                .find(|item| match item {
-                    SettingsPageItem::DynamicItem(item) => {
-                        item.discriminant.title == "Disable Git Integration"
-                    }
-                    _ => false,
-                })
-                .unwrap();
+            let git_integration =
+                page_data::settings_data(cx)
+                    .into_iter()
+                    .flat_map(|page| Vec::from(page.items))
+                    .find(|item| match item {
+                        SettingsPageItem::DynamicItem(item) => item.discriminant.title
+                            == t_static(
+                                keys::settings_ui::SETTINGS_VERSION_CONTROL_DISABLE_GIT_INTEGRATION,
+                            ),
+                        _ => false,
+                    })
+                    .unwrap();
             let mut settings_window = settings_window_with_items(
                 vec![
-                    SettingsPageItem::SectionHeader("First".into()),
+                    SettingsPageItem::SectionHeader(
+                        t(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
+                    ),
                     test_action_link(
                         "Preceding setting",
                         Some("A setting with a long description. ".repeat(100)),
                     ),
-                    SettingsPageItem::SectionHeader("Last".into()),
+                    SettingsPageItem::SectionHeader(
+                        t(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
+                    ),
                     git_integration,
-                    SettingsPageItem::SectionHeader("Hidden".into()),
+                    SettingsPageItem::SectionHeader(
+                        t(keys::settings_ui::SETTINGS_ENUM_HIDDEN).into(),
+                    ),
                 ],
                 window,
                 cx,
@@ -5945,29 +5962,48 @@ pub mod test {
             cx.run_until_parked();
             let viewport = list_state.viewport_bounds();
             if clipped {
-                let status_bounds = cx.debug_bounds("Enable Git Status").unwrap();
+                let status_bounds = cx
+                    .debug_bounds(t_static(
+                        keys::settings_ui::SETTINGS_VERSION_CONTROL_ENABLE_GIT_STATUS,
+                    ))
+                    .unwrap();
                 settings_window.update(cx, |_, cx| {
                     list_state.scroll_by(status_bounds.bottom() - viewport.bottom() + px(1.));
                     cx.notify();
                 });
                 cx.run_until_parked();
             }
-            let status_handle = control_handles.borrow()["Enable Git Status"].clone();
-            let diff_handle = control_handles.borrow()["Enable Git Diff"].clone();
+            let status_handle = control_handles.borrow()
+                [t_static(keys::settings_ui::SETTINGS_VERSION_CONTROL_ENABLE_GIT_STATUS)]
+            .clone();
+            let diff_handle = control_handles.borrow()
+                [t_static(keys::settings_ui::SETTINGS_VERSION_CONTROL_ENABLE_GIT_DIFF)]
+            .clone();
             cx.update(|window, cx| {
                 status_handle.focus(window, cx);
                 window.focus_next(cx);
             });
             cx.run_until_parked();
             cx.update(|window, cx| assert!(status_handle.contains_focused(window, cx)));
-            let status_bounds = cx.debug_bounds("Enable Git Status").unwrap();
+            let status_bounds = cx
+                .debug_bounds(t_static(
+                    keys::settings_ui::SETTINGS_VERSION_CONTROL_ENABLE_GIT_STATUS,
+                ))
+                .unwrap();
             let initial_row_bounds = list_state.bounds_for_item(4).unwrap();
             let initial_offset = list_state.scroll_px_offset_for_scrollbar();
             assert!(status_bounds.top() >= viewport.top());
             assert!(status_bounds.bottom() <= viewport.bottom());
             if clipped {
                 assert_eq!(status_bounds.bottom(), viewport.bottom() - px(1.));
-                assert!(cx.debug_bounds("Enable Git Diff").unwrap().top() > viewport.bottom());
+                assert!(
+                    cx.debug_bounds(t_static(
+                        keys::settings_ui::SETTINGS_VERSION_CONTROL_ENABLE_GIT_DIFF
+                    ))
+                    .unwrap()
+                    .top()
+                        > viewport.bottom()
+                );
             } else {
                 assert!(initial_row_bounds.top() >= viewport.top());
                 assert_eq!(initial_row_bounds.bottom(), viewport.bottom());
@@ -5987,7 +6023,11 @@ pub mod test {
                 cx.run_until_parked();
             }
             cx.update(|window, cx| assert!(diff_handle.contains_focused(window, cx)));
-            let diff_bounds = cx.debug_bounds("Enable Git Diff").unwrap();
+            let diff_bounds = cx
+                .debug_bounds(t_static(
+                    keys::settings_ui::SETTINGS_VERSION_CONTROL_ENABLE_GIT_DIFF,
+                ))
+                .unwrap();
             assert_eq!(
                 list_state.bounds_for_item(4).unwrap().bottom(),
                 viewport.bottom()
@@ -6019,13 +6059,21 @@ pub mod test {
                 .into_iter()
                 .flat_map(|page| Vec::from(page.items))
                 .find(|item| match item {
-                    SettingsPageItem::SettingItem(item) => item.title == "Fallback Branch Name",
+                    SettingsPageItem::SettingItem(item) => {
+                        item.title
+                            == t_static(keys::settings_ui::SETTINGS_PANELS_FALLBACK_BRANCH_NAME)
+                    }
                     _ => false,
                 })
                 .unwrap();
             window.activate_window();
             settings_window_with_items(
-                vec![SettingsPageItem::SectionHeader("Last".into()), setting],
+                vec![
+                    SettingsPageItem::SectionHeader(
+                        t(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
+                    ),
+                    setting,
+                ],
                 window,
                 cx,
             )
@@ -6077,9 +6125,9 @@ pub mod test {
             ]
             .into_boxed_slice();
             settings_window.pages[1].items = vec![
-                SettingsPageItem::SectionHeader("First".into()),
+                SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_ENUM_FIRST).into()),
                 setting("Last setting", 30),
-                SettingsPageItem::SectionHeader("Last".into()),
+                SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_ENUM_LAST).into()),
                 setting("Last setting", 0),
             ]
             .into_boxed_slice();
@@ -6131,11 +6179,17 @@ pub mod test {
             );
             let setting = || test_action_link("Setting", None);
             settings_window.pages[1].items = vec![
-                SettingsPageItem::SectionHeader("Status Bar".into()),
+                SettingsPageItem::SectionHeader(
+                    t(keys::settings_ui::SETTINGS_WINDOW_SECTION_STATUS_BAR).into(),
+                ),
                 setting(),
-                SettingsPageItem::SectionHeader("Title Bar".into()),
+                SettingsPageItem::SectionHeader(
+                    t(keys::settings_ui::SETTINGS_WINDOW_SECTION_TITLE_BAR).into(),
+                ),
                 setting(),
-                SettingsPageItem::SectionHeader("Tab Bar".into()),
+                SettingsPageItem::SectionHeader(
+                    t(keys::settings_ui::SETTINGS_WINDOW_SECTION_TAB_BAR).into(),
+                ),
                 setting(),
             ]
             .into_boxed_slice();
@@ -6177,7 +6231,7 @@ pub mod test {
                     files: USER,
                     render: |_, _, _, _| gpui::Empty.into_any_element(),
                 },
-                "Title Bar".into(),
+                t(keys::settings_ui::SETTINGS_WINDOW_SECTION_TITLE_BAR).into(),
             ));
             settings_window.list_state.scroll_to(gpui::ListOffset {
                 item_ix: 3,
@@ -6202,8 +6256,12 @@ pub mod test {
             cx.new(|cx| {
                 settings_window_with_items(
                     vec![
-                        SettingsPageItem::SectionHeader("First".into()),
-                        SettingsPageItem::SectionHeader("Last".into()),
+                        SettingsPageItem::SectionHeader(
+                            t(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
+                        ),
+                        SettingsPageItem::SectionHeader(
+                            t(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
+                        ),
                         test_action_link(
                             "Last setting",
                             Some(
@@ -6465,7 +6523,7 @@ pub mod test {
         v Project
         - Project Settings*
         ",
-        toggle_page: "Project",
+        toggle_page: t(keys::settings_ui::SETTINGS_ENUM_PROJECT),
         after: r"
         > General
         > Project*
@@ -6484,7 +6542,7 @@ pub mod test {
         - General
         > Appearance & Behavior
         ",
-        toggle_page: "Project",
+        toggle_page: t(keys::settings_ui::SETTINGS_ENUM_PROJECT),
         after: r"
         v General Page
         - General
@@ -6572,7 +6630,10 @@ pub mod test {
             let privacy_idx = settings_window
                 .navbar_entries
                 .iter()
-                .position(|entry| entry.title == "Privacy" && !entry.is_root)
+                .position(|entry| {
+                    entry.title == t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_PRIVACY)
+                        && !entry.is_root
+                })
                 .expect("Privacy nested entry should exist");
 
             let click_event = |click_count| {
@@ -7129,7 +7190,10 @@ pub mod test {
                 1,
                 "Skills sub-page should stay open when switching scope"
             );
-            assert_eq!(settings_window.sub_page_stack[0].link.title, "Skills");
+            assert_eq!(
+                settings_window.sub_page_stack[0].link.title,
+                t_static(keys::settings_ui::SETTINGS_AI_SKILLS)
+            );
             assert_eq!(
                 displayed_skill_names(settings_window, cx),
                 ["project-skill"]
@@ -7430,7 +7494,10 @@ pub mod test {
                 .collect();
             assert_eq!(
                 titles,
-                ["Skills", "Create Skill"],
+                [
+                    "Skills",
+                    t_static(keys::settings_ui::SETTINGS_UI_CREATE_SKILL)
+                ],
                 "skill creator should be pushed on top of the skills page"
             );
             assert!(
@@ -7523,7 +7590,10 @@ pub mod test {
                     .collect();
                 assert_eq!(
                     titles,
-                    ["Skills", "Create Skill"],
+                    [
+                        "Skills",
+                        t_static(keys::settings_ui::SETTINGS_UI_CREATE_SKILL)
+                    ],
                     "skill creator should be pushed on top of the skills page"
                 );
             })

@@ -8,7 +8,7 @@ use gpui::{
     ClipboardItem, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, Render,
     Subscription, Task, TaskExt as _, Window,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use livekit_client::ConnectionQuality;
 use release_channel::{AppVersion, ReleaseChannel};
 use serde::Serialize;
@@ -156,10 +156,17 @@ fn call_diagnostics(cx: &App) -> Option<Entity<CallDiagnostics>> {
 
 fn quality_label(quality: Option<ConnectionQuality>) -> (&'static str, Color) {
     match quality {
-        Some(ConnectionQuality::Excellent) => ("Excellent", Color::Success),
-        Some(ConnectionQuality::Good) => ("Good", Color::Success),
+        Some(ConnectionQuality::Excellent) => (
+            t_static(keys::collab::COLLAB_QUALITY_EXCELLENT),
+            Color::Success,
+        ),
+        Some(ConnectionQuality::Good) => {
+            (t_static(keys::collab::COLLAB_QUALITY_GOOD), Color::Success)
+        }
         Some(ConnectionQuality::Poor) => ("Poor", Color::Warning),
-        Some(ConnectionQuality::Lost) => ("Lost", Color::Error),
+        Some(ConnectionQuality::Lost) => {
+            (t_static(keys::collab::COLLAB_QUALITY_LOST), Color::Error)
+        }
         None => ("—", Color::Muted),
     }
 }
@@ -168,31 +175,31 @@ fn metric_rating(label: &str, value_ms: f64) -> (&'static str, Color) {
     match label {
         "Latency" => {
             if value_ms < 100.0 {
-                ("Normal", Color::Success)
+                (t_static(keys::collab::COLLAB_RATING_NORMAL), Color::Success)
             } else if value_ms < 300.0 {
-                ("High", Color::Warning)
+                (t_static(keys::collab::COLLAB_RATING_HIGH), Color::Warning)
             } else {
                 ("Poor", Color::Error)
             }
         }
         "Jitter" => {
             if value_ms < 30.0 {
-                ("Normal", Color::Success)
+                (t_static(keys::collab::COLLAB_RATING_NORMAL), Color::Success)
             } else if value_ms < 75.0 {
-                ("High", Color::Warning)
+                (t_static(keys::collab::COLLAB_RATING_HIGH), Color::Warning)
             } else {
                 ("Poor", Color::Error)
             }
         }
-        _ => ("Normal", Color::Success),
+        _ => (t_static(keys::collab::COLLAB_RATING_NORMAL), Color::Success),
     }
 }
 
 fn input_lag_rating(value_ms: u128) -> (&'static str, Color) {
     if value_ms < 20 {
-        ("Normal", Color::Success)
+        (t_static(keys::collab::COLLAB_RATING_NORMAL), Color::Success)
     } else if value_ms < 50 {
-        ("High", Color::Warning)
+        (t_static(keys::collab::COLLAB_RATING_HIGH), Color::Warning)
     } else {
         ("Poor", Color::Error)
     }
@@ -200,9 +207,9 @@ fn input_lag_rating(value_ms: u128) -> (&'static str, Color) {
 
 fn packet_loss_rating(loss_pct: f64) -> (&'static str, Color) {
     if loss_pct < 1.0 {
-        ("Normal", Color::Success)
+        (t_static(keys::collab::COLLAB_RATING_NORMAL), Color::Success)
     } else if loss_pct < 5.0 {
-        ("High", Color::Warning)
+        (t_static(keys::collab::COLLAB_RATING_HIGH), Color::Warning)
     } else {
         ("Poor", Color::Error)
     }
@@ -340,28 +347,28 @@ impl Render for CallStatsModal {
                                 .child(Label::new(t(keys::collab::COLLAB_NETWORK)).weight(FontWeight::SEMIBOLD))
                                 .child(self.render_metric_row(
                                     "Latency",
-                                    "Time for data to travel to the server",
+                                    t_static(keys::collab::COLLAB_LATENCY_DESCRIPTION),
                                     stats.latency_ms,
                                     |v| format!("{:.0}ms", v),
                                     |v| metric_rating("Latency", v),
                                 ))
                                 .child(self.render_metric_row(
                                     "Jitter",
-                                    "Variance or fluctuation in latency",
+                                    t_static(keys::collab::COLLAB_JITTER_DESCRIPTION),
                                     stats.jitter_ms,
                                     |v| format!("{:.0}ms", v),
                                     |v| metric_rating("Jitter", v),
                                 ))
                                 .child(self.render_metric_row(
                                     "Packet loss",
-                                    "Amount of data lost during transfer",
+                                    t_static(keys::collab::COLLAB_PACKET_LOSS_DESCRIPTION),
                                     stats.packet_loss_pct,
                                     |v| format!("{:.1}%", v),
                                     packet_loss_rating,
                                 ))
                                 .child(self.render_metric_row(
                                     "Input lag",
-                                    "Delay from audio capture to WebRTC",
+                                    t_static(keys::collab::COLLAB_INPUT_LAG_DESCRIPTION),
                                     stats.input_lag.map(|d| d.0.as_millis()),
                                     |v| format!("{}ms", v),
                                     input_lag_rating,
@@ -407,9 +414,12 @@ impl CallStatsModal {
     fn render_remote_audio(&self, audio: RemoteAudioDiagnostics) -> impl IntoElement {
         let issue_score = audio_issue_score(&audio);
         let (status, color) = if issue_score > 0 {
-            ("Affected", Color::Warning)
+            (
+                t_static(keys::collab::COLLAB_AUDIO_AFFECTED),
+                Color::Warning,
+            )
         } else {
-            ("Healthy", Color::Success)
+            (t_static(keys::collab::COLLAB_AUDIO_HEALTHY), Color::Success)
         };
         let packet_loss = audio
             .packet_loss_pct

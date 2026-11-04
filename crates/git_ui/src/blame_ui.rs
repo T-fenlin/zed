@@ -14,7 +14,7 @@ use gpui::{
     ClipboardItem, Entity, Hsla, MouseButton, Pixels, Rems, ScrollHandle, Subscription, TextStyle,
     TextStyleRefinement, UnderlineStyle, WeakEntity, prelude::*,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use markdown::{Markdown, MarkdownElement};
 use project::{
     git_store::Repository,
@@ -503,7 +503,9 @@ impl BlameRenderer for GitBlameRenderer {
                                             .child(Divider::vertical())
                                             .child(
                                                 CopyButton::new("copy-blame-sha", sha.to_string())
-                                                    .tooltip_label("Copy SHA"),
+                                                    .tooltip_label(t(
+                                                        keys::git_ui::GIT_BLAME_COPY_SHA,
+                                                    )),
                                             ),
                                     ),
                             ),
@@ -575,9 +577,11 @@ fn deploy_blame_entry_context_menu(
             .when_some(
                 details.and_then(|details| details.permalink.clone()),
                 |this, url| {
-                    this.entry("Open Commit Permalink", None, move |_, cx| {
-                        cx.open_url(url.as_str())
-                    })
+                    this.entry(
+                        t_static(keys::git_ui::GIT_BLAME_OPEN_PERMALINK),
+                        None,
+                        move |_, cx| cx.open_url(url.as_str()),
+                    )
                 },
             )
             .when(has_blame_targets, |this| this.separator())
@@ -598,16 +602,20 @@ fn deploy_blame_entry_context_menu(
             .when_some(blame_previous_revision, |this, (revision, path)| {
                 let repository = repository.clone();
                 let workspace = workspace.clone();
-                this.entry("Blame Previous Revision", None, move |window, cx| {
-                    open_buffer_blame_at_revision(
-                        repository.clone(),
-                        workspace.clone(),
-                        path.clone(),
-                        revision,
-                        window,
-                        cx,
-                    );
-                })
+                this.entry(
+                    t_static(keys::git_ui::GIT_BLAME_BLAME_PREVIOUS),
+                    None,
+                    move |window, cx| {
+                        open_buffer_blame_at_revision(
+                            repository.clone(),
+                            workspace.clone(),
+                            path.clone(),
+                            revision,
+                            window,
+                            cx,
+                        );
+                    },
+                )
             })
     });
 

@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::{cmp::Reverse, sync::Arc};
 
 use agent_settings::AgentSettings;
@@ -274,14 +274,18 @@ impl GroupedModels {
         let mut entries = Vec::new();
 
         if !self.favorites.is_empty() {
-            entries.push(LanguageModelPickerEntry::Separator(t(keys::agent::AGENT_FAVORITE_MODELS).into()));
+            entries.push(LanguageModelPickerEntry::Separator(
+                t(keys::agent::AGENT_FAVORITE_MODELS).into(),
+            ));
             for info in &self.favorites {
                 entries.push(LanguageModelPickerEntry::Model(info.clone()));
             }
         }
 
         if !self.recommended.is_empty() {
-            entries.push(LanguageModelPickerEntry::Separator("Recommended".into()));
+            entries.push(LanguageModelPickerEntry::Separator(
+                t(keys::agent::AGENT_RECOMMENDED).into(),
+            ));
             for info in &self.recommended {
                 entries.push(LanguageModelPickerEntry::Model(info.clone()));
             }
@@ -769,7 +773,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(LanguageModelPickerEntry::Separator(s)) if s == "Recommended"
+            Some(LanguageModelPickerEntry::Separator(s)) if s == t_static(keys::agent::AGENT_RECOMMENDED)
         ));
 
         assert!(grouped_models.favorites.is_empty());

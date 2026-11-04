@@ -210,21 +210,26 @@ pub(crate) fn render_skills_setup_page(
                         .gap_2()
                         .child(Label::new(message).color(Color::Muted))
                         .child(
-                            Button::new("open-skill-creator-empty", "Create a Skill")
-                                .tab_index(0_isize)
-                                .style(ButtonStyle::Outlined)
-                                .start_icon(
-                                    Icon::new(IconName::Plus)
-                                        .size(IconSize::Small)
-                                        .color(Color::Muted),
-                                )
-                                .on_click(cx.listener(move |this, _event, window, cx| {
+                            Button::new(
+                                "open-skill-creator-empty",
+                                t(keys::settings_ui::SETTINGS_SKILLS_CREATE),
+                            )
+                            .tab_index(0_isize)
+                            .style(ButtonStyle::Outlined)
+                            .start_icon(
+                                Icon::new(IconName::Plus)
+                                    .size(IconSize::Small)
+                                    .color(Color::Muted),
+                            )
+                            .on_click(cx.listener(
+                                move |this, _event, window, cx| {
                                     this.open_skill_creator_sub_page(
                                         SkillCreatorOpenMode::Form,
                                         window,
                                         cx,
                                     );
-                                })),
+                                },
+                            )),
                         ),
                 )
             } else {
@@ -369,10 +374,7 @@ fn render_skill_row(
                             let prompt_detail = t_with_args(
                                 keys::settings_ui::SETTINGS_A_SKILLS_DELETE_DETAIL,
                                 &[
-                                    (
-                                        "path",
-                                        &directory_path.compact().display().to_string(),
-                                    ),
+                                    ("path", &directory_path.compact().display().to_string()),
                                     ("shared_scope", shared_scope.as_str()),
                                 ],
                             );

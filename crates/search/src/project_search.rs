@@ -27,7 +27,7 @@ use gpui::{
     ParentElement, Point, Render, SharedString, Styled, Subscription, Task, TaskExt, UpdateGlobal,
     WeakEntity, Window, actions, div,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use itertools::Itertools;
 use language::{Buffer, Language};
 use menu::Confirm;
@@ -1071,18 +1071,20 @@ impl Render for ProjectSearchView {
 
             let heading_text = match model.search_state {
                 SearchState::Running { .. } if model.search_state.no_results_so_far() => {
-                    "No Results"
+                    t_static(keys::search::SEARCH_NO_RESULTS)
                 }
                 SearchState::Running {
                     activity: SearchActivity::WaitingForScan,
                     ..
-                } => "Loading project…",
+                } => t_static(keys::search::SEARCH_LOADING_PROJECT),
                 SearchState::Running {
                     activity: SearchActivity::Searching,
                     ..
-                } => "Searching…",
-                SearchState::Completed(SearchCompletion::NoResults) => "No Results",
-                _ => "Search All Files",
+                } => t_static(keys::search::SEARCH_SEARCHING),
+                SearchState::Completed(SearchCompletion::NoResults) => {
+                    t_static(keys::search::SEARCH_NO_RESULTS)
+                }
+                _ => t_static(keys::search::SEARCH_SEARCH_ALL_FILES),
             };
 
             let heading_text = div()
@@ -1137,7 +1139,7 @@ impl Item for ProjectSearchView {
             .is_empty()
             .not()
             .then(|| query_text.into())
-            .or_else(|| Some("Project Search".into()))
+            .or_else(|| Some(t(keys::search::SEARCH_PROJECT_SEARCH).into()))
     }
 
     fn act_as_type<'a>(
@@ -1181,7 +1183,7 @@ impl Item for ProjectSearchView {
 
         last_query
             .filter(|query| !query.is_empty())
-            .unwrap_or_else(|| "Project Search".into())
+            .unwrap_or_else(|| t(keys::search::SEARCH_PROJECT_SEARCH).into())
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -1942,7 +1944,11 @@ impl ProjectSearchView {
             let should_search = if should_prompt_to_save {
                 let save = t(keys::search::SEARCH_SAVE);
                 let dont_save = t(keys::search::SEARCH_DONT_SAVE);
-                let options = &[save.as_str(), dont_save.as_str(), "Cancel"];
+                let options = &[
+                    save.as_str(),
+                    dont_save.as_str(),
+                    t_static(keys::search::SEARCH_CANCEL),
+                ];
                 let result_channel = this.update_in(cx, |_, window, cx| {
                     window.prompt(
                         gpui::PromptLevel::Warning,
@@ -2523,16 +2529,16 @@ impl ProjectSearchView {
             .gap_1()
             .child(
                 Label::new(if EditorSettings::get_global(cx).search.search_on_type {
-                    "Start typing to search. For more options:"
+                    t_static(keys::search::SEARCH_START_TYPING)
                 } else {
-                    "Hit enter to search. For more options:"
+                    t_static(keys::search::SEARCH_HIT_ENTER)
                 })
                 .color(Color::Muted)
                 .mb_2(),
             )
             .child(render_landing_action_button(
                 "filter-paths",
-                "Include/exclude specific paths",
+                t_static(keys::search::SEARCH_INCLUDE_EXCLUDE),
                 IconName::Filter,
                 &ToggleFilters,
                 focus_handle.clone(),
@@ -2541,7 +2547,7 @@ impl ProjectSearchView {
             ))
             .child(render_landing_action_button(
                 "find-replace",
-                "Find and replace",
+                t_static(keys::search::SEARCH_FIND_REPLACE),
                 IconName::Replace,
                 &ToggleReplace,
                 focus_handle.clone(),
@@ -2550,7 +2556,7 @@ impl ProjectSearchView {
             ))
             .child(render_landing_action_button(
                 "regex",
-                "Match with regex",
+                t_static(keys::search::SEARCH_MATCH_REGEX),
                 IconName::Regex,
                 &ToggleRegex,
                 focus_handle.clone(),
@@ -2559,7 +2565,7 @@ impl ProjectSearchView {
             ))
             .child(render_landing_action_button(
                 "match-case",
-                "Match case",
+                t_static(keys::search::SEARCH_MATCH_CASE),
                 IconName::CaseSensitive,
                 &ToggleCaseSensitive,
                 focus_handle.clone(),
@@ -2568,7 +2574,7 @@ impl ProjectSearchView {
             ))
             .child(render_landing_action_button(
                 "match-whole-words",
-                "Match whole words",
+                t_static(keys::search::SEARCH_MATCH_WHOLE_WORDS),
                 IconName::WholeWord,
                 &ToggleWholeWord,
                 focus_handle,
@@ -3139,7 +3145,7 @@ impl Render for ProjectSearchBar {
                     .active_match_index
                     .is_none()
                     .then_some(ActionButtonState::Disabled),
-                "Select Previous Match",
+                t_static(keys::search::SEARCH_PREV_MATCH),
                 &SelectPreviousMatch,
                 query_focus.clone(),
                 cx,
@@ -3152,7 +3158,7 @@ impl Render for ProjectSearchBar {
                     .active_match_index
                     .is_none()
                     .then_some(ActionButtonState::Disabled),
-                "Select Next Match",
+                t_static(keys::search::SEARCH_NEXT_MATCH),
                 &SelectNextMatch,
                 query_focus.clone(),
                 cx,
@@ -3216,7 +3222,7 @@ impl Render for ProjectSearchBar {
                         let focus_handle = focus_handle.clone();
                         move |_window, cx| {
                             Tooltip::for_action_in(
-                                "Toggle Filters",
+                                t_static(keys::search::SEARCH_TOGGLE_FILTERS),
                                 &ToggleFilters,
                                 &focus_handle,
                                 cx,
@@ -3231,7 +3237,7 @@ impl Render for ProjectSearchBar {
                     .as_ref()
                     .map(|search| search.read(cx).replace_enabled)
                     .and_then(|enabled| enabled.then_some(ActionButtonState::Toggled)),
-                "Toggle Replace",
+                t_static(keys::search::SEARCH_TOGGLE_REPLACE),
                 &ToggleReplace,
                 focus_handle.clone(),
                 cx,
@@ -3242,9 +3248,15 @@ impl Render for ProjectSearchBar {
         let is_collapsed = search.results_editor.read(cx).has_any_buffer_folded(cx);
 
         let (icon, tooltip_label) = if is_collapsed {
-            (IconName::ChevronUpDown, "Expand All Search Results")
+            (
+                IconName::ChevronUpDown,
+                t_static(keys::search::SEARCH_EXPAND_ALL_RESULTS),
+            )
         } else {
-            (IconName::ChevronDownUp, "Collapse All Search Results")
+            (
+                IconName::ChevronDownUp,
+                t_static(keys::search::SEARCH_COLLAPSE_ALL_RESULTS),
+            )
         };
 
         let expand_button = IconButton::new("project-search-collapse-expand", icon)
@@ -3290,7 +3302,7 @@ impl Render for ProjectSearchBar {
                     "project-search-replace-button",
                     IconName::ReplaceNext,
                     is_search_underway.then_some(ActionButtonState::Disabled),
-                    "Replace Next Match",
+                    t_static(keys::search::SEARCH_REPLACE_NEXT),
                     &ReplaceNext,
                     focus_handle.clone(),
                     cx,
@@ -3300,7 +3312,7 @@ impl Render for ProjectSearchBar {
                     "project-search-replace-button",
                     IconName::ReplaceAll,
                     Default::default(),
-                    "Replace All Matches",
+                    t_static(keys::search::SEARCH_REPLACE_ALL),
                     &ReplaceAll,
                     focus_handle,
                     cx,

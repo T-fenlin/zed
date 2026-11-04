@@ -34,6 +34,7 @@ use gpui::{
     App, AppContext, Application, AsyncApp, QuitMode, Task, TaskExt, UpdateGlobal as _, block_on,
 };
 use gpui_platform;
+use i18n::{keys, t, t_static};
 
 use gpui_tokio::Tokio;
 use language::LanguageRegistry;
@@ -94,7 +95,7 @@ fn build_application() -> Application {
 }
 
 fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
-    let message = "Zed failed to launch";
+    let message = t(keys::zed::ZED_B_FAILED_TO_LAUNCH);
     let error_details = errors
         .into_iter()
         .flat_map(|(kind, paths)| {
@@ -133,7 +134,7 @@ fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
                             gpui::PromptLevel::Critical,
                             message,
                             Some(&error_details),
-                            &["Exit"],
+                            &[t_static(keys::zed::ZED_B_EXIT)],
                             cx,
                         );
 
@@ -176,7 +177,7 @@ fn fail_to_open_window(e: anyhow::Error, _cx: &mut App) {
             proxy
                 .add_notification(
                     notification_id,
-                    Notification::new("Zed failed to launch")
+                    Notification::new(t_static(keys::zed::ZED_B_FAILED_TO_LAUNCH))
                         .body(Some(
                             format!(
                                 "{e:?}. See https://zed.dev/docs/linux for troubleshooting steps."
@@ -333,7 +334,7 @@ fn main() {
             .as_ref()
             .map(|sha| sha.short())
             .as_deref()
-            .unwrap_or("unknown"),
+            .unwrap_or(t_static(keys::lang::LANG_TOOLS_UNKNOWN)),
     );
 
     #[cfg(windows)]
@@ -840,7 +841,7 @@ fn main() {
         );
         telemetry::event!(
             "Settings Changed",
-            setting = "keymap",
+            setting = t_static(keys::zed::ZED_A_MIGRATION_FILE_KEYMAP),
             value = BaseKeymap::get_global(cx).to_string()
         );
         telemetry.flush_events().detach();

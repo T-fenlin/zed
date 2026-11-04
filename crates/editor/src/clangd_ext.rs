@@ -1,5 +1,6 @@
 use anyhow::Context as _;
 use gpui::{App, Context, Entity, TaskExt, Window};
+use i18n::{keys, t};
 use language::Language;
 use project::lsp_store::lsp_ext_command::SwitchSourceHeaderResult;
 use rpc::proto;
@@ -43,7 +44,7 @@ pub fn switch_source_header(
                 .file()
                 .map(|file| file.path())
                 .map(|path| path.display(PathStyle::local()).to_string())
-                .unwrap_or_else(|| "Unknown".to_string())
+                .unwrap_or_else(|| t(keys::editor::EDITOR_KIND_UNKNOWN).to_string())
         });
 
         let switch_source_header = if let Some((client, project_id)) = upstream_client {

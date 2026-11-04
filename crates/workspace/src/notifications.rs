@@ -365,23 +365,23 @@ impl Render for LanguageServerPrompt {
                                             "copy-description",
                                             request.message.clone(),
                                         )
-                                        .tooltip_label("Copy Description"),
+                                        .tooltip_label(t(keys::workspace::WS_B_COPY_DESCRIPTION)),
                                     )
                                     .child(
                                         IconButton::new(close_id, close_icon)
                                             .tooltip(move |_window, cx| {
                                                 if suppress {
                                                     Tooltip::with_meta(
-                                                        "Suppress",
+                                                        t_static(keys::workspace::WS_B_SUPPRESS),
                                                         Some(&SuppressNotification),
-                                                        "Click to close",
+                                                        t_static(keys::workspace::WS_B_LSP_CLICK_TO_CLOSE),
                                                         cx,
                                                     )
                                                 } else {
                                                     Tooltip::with_meta(
-                                                        "Close",
+                                                        t_static(keys::workspace::WS_B_CLOSE),
                                                         Some(&menu::Cancel),
-                                                        "Suppress with shift-click",
+                                                        t_static(keys::workspace::WS_B_SUPPRESS_WITH_SHIFT_CLICK),
                                                         cx,
                                                     )
                                                 }
@@ -492,7 +492,7 @@ pub mod simple_message_notification {
     };
     use util::ResultExt as _;
 
-    use i18n::{keys, t};
+    use i18n::{keys, t, t_static};
 
     use crate::SuppressNotification;
     use crate::workspace_error::{
@@ -1060,7 +1060,7 @@ pub mod simple_message_notification {
                 .when_some(copy_text, |el, text| {
                     el.child(
                         CopyButton::new("copy-notification-message", text)
-                            .tooltip_label("Copy Message"),
+                            .tooltip_label(t(keys::workspace::WS_B_COPY_MESSAGE)),
                     )
                 })
                 .when(show_close_button, |el| {
@@ -1069,16 +1069,16 @@ pub mod simple_message_notification {
                             .tooltip(move |_window, cx| {
                                 if suppress {
                                     Tooltip::with_meta(
-                                        "Suppress",
+                                        t_static(keys::workspace::WS_B_SUPPRESS),
                                         Some(&SuppressNotification),
-                                        "Click to Close",
+                                        t_static(keys::workspace::WS_B_NOTIFICATION_CLICK_TO_CLOSE),
                                         cx,
                                     )
                                 } else if show_suppress_button {
                                     Tooltip::with_meta(
-                                        "Close",
+                                        t_static(keys::workspace::WS_B_CLOSE),
                                         Some(&menu::Cancel),
-                                        "Shift-click to Suppress",
+                                        t_static(keys::workspace::WS_B_SHIFT_CLICK_TO_SUPPRESS),
                                         cx,
                                     )
                                 } else {

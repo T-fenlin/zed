@@ -5,7 +5,7 @@ use component::{Component, ComponentScope, example_group_with_title, single_exam
 use editor::Editor;
 use futures::channel::oneshot;
 use gpui::{AnyElement, App, Div, Empty, Entity, Focusable, Role, SharedString, Window, div};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::collections::BTreeMap;
 use std::rc::Rc;
 use ui::{
@@ -1993,13 +1993,31 @@ impl<'a> ElicitationCard<'a> {
         );
         let (status_label, status_icon, status_color) = match &self.elicitation.status {
             ElicitationStatus::Pending { .. } => ("Waiting for input", IconName::Info, Color::Info),
-            ElicitationStatus::Accepted if is_accepted_url => {
-                (t(keys::agent::AGENT_A_ELICIT_STATUS_WAITING_COMPLETION), IconName::Info, Color::Info)
-            }
-            ElicitationStatus::Accepted => (t(keys::agent::AGENT_A_ELICIT_STATUS_SUBMITTED), IconName::Check, Color::Success),
-            ElicitationStatus::Declined => (t(keys::agent::AGENT_A_ELICIT_STATUS_DECLINED), IconName::Close, Color::Muted),
-            ElicitationStatus::Canceled => (t(keys::agent::AGENT_A_ELICIT_STATUS_CANCELED), IconName::Circle, Color::Muted),
-            ElicitationStatus::Completed => (t(keys::agent::AGENT_A_ELICIT_STATUS_COMPLETED), IconName::Check, Color::Success),
+            ElicitationStatus::Accepted if is_accepted_url => (
+                t(keys::agent::AGENT_A_ELICIT_STATUS_WAITING_COMPLETION),
+                IconName::Info,
+                Color::Info,
+            ),
+            ElicitationStatus::Accepted => (
+                t(keys::agent::AGENT_A_ELICIT_STATUS_SUBMITTED),
+                IconName::Check,
+                Color::Success,
+            ),
+            ElicitationStatus::Declined => (
+                t(keys::agent::AGENT_A_ELICIT_STATUS_DECLINED),
+                IconName::Close,
+                Color::Muted,
+            ),
+            ElicitationStatus::Canceled => (
+                t(keys::agent::AGENT_A_ELICIT_STATUS_CANCELED),
+                IconName::Circle,
+                Color::Muted,
+            ),
+            ElicitationStatus::Completed => (
+                t(keys::agent::AGENT_A_ELICIT_STATUS_COMPLETED),
+                IconName::Check,
+                Color::Success,
+            ),
         };
 
         let body = v_flex()
@@ -2401,9 +2419,17 @@ impl<'a> ElicitationCard<'a> {
             open_url.is_some() && matches!(self.elicitation.status, ElicitationStatus::Accepted);
         let is_submitting = self.form_state.is_some_and(|state| state.is_submitting);
         let (accept_label, accept_icon, accept_icon_color) = if is_accepted_url {
-            (t(keys::agent::AGENT_A_ELICIT_OPEN_AGAIN), IconName::ArrowUpRight, Color::Muted)
+            (
+                t(keys::agent::AGENT_A_ELICIT_OPEN_AGAIN),
+                IconName::ArrowUpRight,
+                Color::Muted,
+            )
         } else if open_url.is_some() {
-            ("Open", IconName::ArrowUpRight, Color::Muted)
+            (
+                t_static(keys::agent::AGENT_A_ELICIT_OPEN),
+                IconName::ArrowUpRight,
+                Color::Muted,
+            )
         } else {
             ("Submit", IconName::Check, Color::Success)
         };

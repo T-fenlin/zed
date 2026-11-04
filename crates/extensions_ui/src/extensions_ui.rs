@@ -2,7 +2,7 @@ mod components;
 mod extension_suggestions;
 mod extension_version_selector;
 
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::sync::OnceLock;
 use std::time::Duration;
 use std::{any::TypeId, ops::Range, sync::Arc};
@@ -79,12 +79,15 @@ impl WorkspaceError for DevExtensionNotInstalledError {
             Some(extension_id) => {
                 format!("Dev extension '{extension_id}' is not installed.").into()
             }
-            None => "No dev extensions are installed.".into(),
+            None => t(keys::extensions::EXTENSIONS_NO_DEV_INSTALLED).into(),
         }
     }
 
     fn primary_action(&self) -> ErrorAction {
-        ErrorAction::new("Install Dev Extension", InstallDevExtension)
+        ErrorAction::new(
+            t_static(keys::extensions::EXTENSIONS_INSTALL_DEV_EXTENSION),
+            InstallDevExtension,
+        )
     }
 
     fn severity(&self) -> ErrorSeverity {
@@ -1000,30 +1003,30 @@ impl ExtensionsPage {
             self.fetch_state == ExtensionFetchState::Failed && fetch_is_relevant;
         let is_loading = self.fetch_state == ExtensionFetchState::Fetching && fetch_is_relevant;
         let message = if is_loading {
-            "Loading extensions…"
+            t_static(keys::extensions::EXTENSIONS_LOADING)
         } else if fetch_failure_is_relevant {
-            "Failed to load extensions. Please check your connection and try again."
+            t_static(keys::extensions::EXTENSIONS_LOAD_FAILED)
         } else {
             match self.filter {
                 ExtensionFilter::All => {
                     if has_search {
-                        "No extensions that match your search."
+                        t_static(keys::extensions::EXTENSIONS_NO_MATCHING_ALL)
                     } else {
-                        "No extensions."
+                        t_static(keys::extensions::EXTENSIONS_NO_ALL)
                     }
                 }
                 ExtensionFilter::Installed => {
                     if has_search {
-                        "No installed extensions that match your search."
+                        t_static(keys::extensions::EXTENSIONS_NO_MATCHING_INSTALLED)
                     } else {
-                        "No installed extensions."
+                        t_static(keys::extensions::EXTENSIONS_NO_INSTALLED)
                     }
                 }
                 ExtensionFilter::NotInstalled => {
                     if has_search {
-                        "No not installed extensions that match your search."
+                        t_static(keys::extensions::EXTENSIONS_NO_MATCHING_NOT_INSTALLED)
                     } else {
-                        "No not installed extensions."
+                        t_static(keys::extensions::EXTENSIONS_NO_NOT_INSTALLED)
                     }
                 }
             }
@@ -1203,109 +1206,109 @@ impl ExtensionsPage {
     fn render_feature_upsells(&self, cx: &Context<Self>) -> impl IntoElement {
         v_flex().children(self.upsells.iter().map(|feature| match feature {
             Feature::AgentClaude => self.render_feature_upsell_banner(
-                "Claude Agent support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_CLAUDE_AGENT),
                 "https://zed.dev/docs/ai/external-agents#claude-agent",
                 false,
                 cx,
             ),
             Feature::AgentCodex => self.render_feature_upsell_banner(
-                "Codex CLI support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_CODEX_CLI),
                 "https://zed.dev/docs/ai/external-agents#codex-cli",
                 false,
                 cx,
             ),
             Feature::AgentGemini => self.render_feature_upsell_banner(
-                "Gemini CLI support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_GEMINI_CLI),
                 "https://zed.dev/docs/ai/external-agents#gemini-cli",
                 false,
                 cx,
             ),
             Feature::ExtensionBasedpyright => self.render_feature_upsell_banner(
-                "Basedpyright (Python language server) support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_BASEDPYRIGHT),
                 "https://zed.dev/docs/languages/python#basedpyright",
                 false,
                 cx,
             ),
             Feature::ExtensionRuff => self.render_feature_upsell_banner(
-                "Ruff (linter for Python) support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_RUFF),
                 "https://zed.dev/docs/languages/python#code-formatting--linting",
                 false,
                 cx,
             ),
             Feature::ExtensionTailwind => self.render_feature_upsell_banner(
-                "Tailwind CSS support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_TAILWIND),
                 "https://zed.dev/docs/languages/tailwindcss",
                 false,
                 cx,
             ),
             Feature::ExtensionTy => self.render_feature_upsell_banner(
-                "Ty (Python language server) support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_TY),
                 "https://zed.dev/docs/languages/python",
                 false,
                 cx,
             ),
             Feature::Git => self.render_feature_upsell_banner(
-                "Zed comes with basic Git support—more features are coming in the future.",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_GIT),
                 "https://zed.dev/docs/git",
                 false,
                 cx,
             ),
             Feature::LanguageBash => self.render_feature_upsell_banner(
-                "Shell support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_SHELL),
                 "https://zed.dev/docs/languages/bash",
                 false,
                 cx,
             ),
             Feature::LanguageC => self.render_feature_upsell_banner(
-                "C support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_C),
                 "https://zed.dev/docs/languages/c",
                 false,
                 cx,
             ),
             Feature::LanguageCpp => self.render_feature_upsell_banner(
-                "C++ support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_CPP),
                 "https://zed.dev/docs/languages/cpp",
                 false,
                 cx,
             ),
             Feature::LanguageGo => self.render_feature_upsell_banner(
-                "Go support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_GO),
                 "https://zed.dev/docs/languages/go",
                 false,
                 cx,
             ),
             Feature::LanguagePython => self.render_feature_upsell_banner(
-                "Python support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_PYTHON),
                 "https://zed.dev/docs/languages/python",
                 false,
                 cx,
             ),
             Feature::LanguageReact => self.render_feature_upsell_banner(
-                "React support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_REACT),
                 "https://zed.dev/docs/languages/typescript",
                 false,
                 cx,
             ),
             Feature::LanguageRust => self.render_feature_upsell_banner(
-                "Rust support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_RUST),
                 "https://zed.dev/docs/languages/rust",
                 false,
                 cx,
             ),
             Feature::LanguageTypescript => self.render_feature_upsell_banner(
-                "Typescript support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_TYPESCRIPT),
                 "https://zed.dev/docs/languages/typescript",
                 false,
                 cx,
             ),
             Feature::OpenIn => self.render_feature_upsell_banner(
-                "Zed supports linking to a source line on GitHub and others.",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_GITHUB_LINKS),
                 "https://zed.dev/docs/git#git-integrations",
                 false,
                 cx,
             ),
             Feature::Vim => self.render_feature_upsell_banner(
-                "Vim support is built-in to Zed!",
+                t_static(keys::extensions::EXTENSIONS_UPSELL_VIM),
                 "https://zed.dev/docs/vim",
                 true,
                 cx,
@@ -1440,7 +1443,9 @@ impl PickerDelegate for DevExtensionRebuildPickerDelegate {
     fn dismissed(&mut self, _window: &mut Window, _cx: &mut Context<Picker<Self>>) {}
 
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
-        Arc::from("Rebuild dev extension…")
+        Arc::from(t_static(
+            keys::extensions::EXTENSIONS_REBUILD_DEV_PLACEHOLDER,
+        ))
     }
 
     fn render_match(
@@ -1475,7 +1480,7 @@ impl PickerDelegate for DevExtensionRebuildPickerDelegate {
     }
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
-        Some("No dev extensions found".into())
+        Some(t(keys::extensions::EXTENSIONS_NO_DEV_FOUND).into())
     }
 }
 
@@ -1533,7 +1538,7 @@ impl Render for ExtensionsPage {
                                                 }),
                                             ),
                                             ToggleButtonSimple::new(
-                                                "Not Installed",
+                                                t_static(keys::extensions::EXTENSIONS_FILTER_NOT_INSTALLED),
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = ExtensionFilter::NotInstalled;
                                                     this.rebuild_displayed_extensions(cx);
@@ -1625,7 +1630,7 @@ impl Render for ExtensionsPage {
                                         .severity(Severity::Warning)
                                         .child(
                                             Label::new(
-                                                "Failed to load extensions. Showing installed extensions only.",
+                                                t_static(keys::extensions::EXTENSIONS_LOAD_FAILED_INSTALLED_ONLY),
                                             )
                                             .mt_0p5(),
                                         )
@@ -1659,7 +1664,7 @@ impl Item for ExtensionsPage {
     type Event = ItemEvent;
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Extensions".into()
+        t(keys::extensions::EXTENSIONS_PANEL).into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {

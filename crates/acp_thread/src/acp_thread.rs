@@ -21,7 +21,6 @@ use collections::{HashSet, IndexMap};
 pub use connection::*;
 pub use diff::*;
 use feature_flags::{AcpBetaFeatureFlag, FeatureFlagAppExt as _};
-use i18n::{keys, t};
 #[cfg(any(test, feature = "test-support"))]
 use futures::future::BoxFuture;
 use futures::{FutureExt, channel::oneshot};
@@ -29,6 +28,7 @@ use gpui::{
     ActivityGuard, AppContext, AsyncApp, Context, Entity, EventEmitter, SharedString, Subscription,
     Task, WeakEntity,
 };
+use i18n::{keys, t, t_static};
 use itertools::Itertools;
 use language::language_settings::FormatOnSave;
 use language::{
@@ -16946,7 +16946,10 @@ mod tests {
             assert_eq!(call.reported_kind, None);
             assert_eq!(call.reported_status, None);
             assert_eq!(call.status(), ToolCallStatus::Pending);
-            assert_eq!(call.label.read(cx).source(), "Tool call");
+            assert_eq!(
+                call.label.read(cx).source(),
+                t_static(keys::acp::ACP_TOOL_CALL_DEFAULT_LABEL)
+            );
             assert!(call.content().is_empty());
 
             thread
@@ -17400,7 +17403,10 @@ mod tests {
             assert_eq!(call.meta, None);
             assert_eq!(call.tool_name, None);
             assert!(call.subagent_session_info.is_none());
-            assert_eq!(call.label.read(cx).source(), "Tool call");
+            assert_eq!(
+                call.label.read(cx).source(),
+                t_static(keys::acp::ACP_TOOL_CALL_DEFAULT_LABEL)
+            );
             thread
                 .upsert_wire_tool_call(
                     acp_v2::ToolCallUpdate::new("metadata")
@@ -17954,10 +17960,14 @@ mod tests {
                 "Reading **file**",
                 true,
             ),
-            (acp_v1::ToolCall::new("tool", ""), "Tool call", false),
+            (
+                acp_v1::ToolCall::new("tool", ""),
+                t_static(keys::acp::ACP_TOOL_CALL_DEFAULT_LABEL),
+                false,
+            ),
             (
                 acp_v1::ToolCall::new("tool", "\n\t ").name(" \t"),
-                "Tool call",
+                t_static(keys::acp::ACP_TOOL_CALL_DEFAULT_LABEL),
                 false,
             ),
             (
@@ -18068,7 +18078,7 @@ mod tests {
             ),
             (
                 acp_v1::ToolCallUpdateFields::new().name(" \t"),
-                "Tool call",
+                t_static(keys::acp::ACP_TOOL_CALL_DEFAULT_LABEL),
                 false,
             ),
             (
@@ -18296,9 +18306,12 @@ mod tests {
             .update(cx, |thread, cx| {
                 thread.handle_session_update(
                     acp_v1::SessionUpdate::ToolCall(
-                        acp_v1::ToolCall::new("tool-call", "Tool call")
-                            .name("first_class")
-                            .meta(meta_with_tool_name("legacy")),
+                        acp_v1::ToolCall::new(
+                            "tool-call",
+                            t_static(keys::acp::ACP_TOOL_CALL_DEFAULT_LABEL),
+                        )
+                        .name("first_class")
+                        .meta(meta_with_tool_name("legacy")),
                     ),
                     cx,
                 )

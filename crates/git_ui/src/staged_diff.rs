@@ -13,7 +13,7 @@ use gpui::{
     Action, AnyElement, App, Context, Entity, EventEmitter, FocusHandle, Focusable, Render,
     SharedString, Subscription, Task, WeakEntity,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use language::Capability;
 use project::{
     Project, ProjectPath,
@@ -115,7 +115,7 @@ impl StagedDiff {
         telemetry::event!(
             "Git Staged Diff Opened",
             source = if entry.is_some() {
-                "Git Panel"
+                t_static(keys::git_ui::GIT_PANEL_TITLE)
             } else {
                 "Action"
             }
@@ -304,11 +304,11 @@ impl Item for StagedDiff {
     }
 
     fn tab_tooltip_text(&self, _: &App) -> Option<SharedString> {
-        Some("Staged Changes".into())
+        Some(t(keys::git_ui::GIT_SECTION_STAGED_CHANGES).into())
     }
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Staged Changes".into()
+        t(keys::git_ui::GIT_SECTION_STAGED_CHANGES).into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -813,7 +813,10 @@ mod tests {
                     .serialized_item_kind(),
                 "StagedDiff"
             );
-            assert_eq!(active_item.tab_content_text(0, cx), "Staged Changes");
+            assert_eq!(
+                active_item.tab_content_text(0, cx),
+                t_static(keys::git_ui::GIT_SECTION_STAGED_CHANGES)
+            );
             assert!(!active_item.can_save(cx));
         });
     }
@@ -1036,7 +1039,10 @@ mod tests {
                     .serialized_item_kind(),
                 "StagedDiff"
             );
-            assert_eq!(active_item.tab_content_text(0, cx), "Staged Changes");
+            assert_eq!(
+                active_item.tab_content_text(0, cx),
+                t_static(keys::git_ui::GIT_SECTION_STAGED_CHANGES)
+            );
             assert!(!active_item.can_save(cx));
             assert_eq!(workspace.items_of_type::<ProjectDiff>(cx).count(), 0);
             assert_eq!(workspace.items_of_type::<StagedDiff>(cx).count(), 1);

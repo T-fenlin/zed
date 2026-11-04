@@ -1,3 +1,4 @@
+use i18n::{keys, t};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -870,8 +871,8 @@ impl CodeCell {
         cx: &mut Context<Self>,
     ) {
         self.outputs.push(Output::ErrorOutput(ErrorView {
-            ename: "Kernel Error".to_string(),
-            evalue: "cell could not be executed".to_string(),
+            ename: t(keys::repl::REPL_CELL_KERNEL_ERROR_TITLE).to_string(),
+            evalue: t(keys::repl::REPL_CELL_KERNEL_ERROR_BODY).to_string(),
             traceback: cx.new(|cx| TerminalOutput::from(error_message, window, cx)),
         }));
         self.execution_start_time = None;
@@ -1216,7 +1217,9 @@ impl Render for CodeCell {
                                                                 .text_color(
                                                                     cx.theme().colors().text_muted,
                                                                 )
-                                                                .child("Running..."),
+                                                                .child(t(
+                                                                    keys::repl::REPL_CELL_RUNNING,
+                                                                )),
                                                         )
                                                         .into_any_element()
                                                 } else if let Some(duration_text) =

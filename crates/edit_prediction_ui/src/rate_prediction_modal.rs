@@ -9,7 +9,7 @@ use gpui::{
     App, BorderStyle, DismissEvent, EdgesRefinement, Entity, EventEmitter, FocusHandle, Focusable,
     Length, StyleRefinement, Task, TextStyleRefinement, Window, actions, prelude::*,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use language::{
     Bias, Buffer, BufferSnapshot, CodeLabel, LanguageRegistry, Point, ToOffset, ToPoint,
     language_settings::{self, InlayHintKind},
@@ -88,8 +88,10 @@ enum RatePredictionView {
 impl RatePredictionView {
     pub fn name(&self) -> &'static str {
         match self {
-            Self::SuggestedEdits => "Suggested Edits",
-            Self::RawInput => "Recorded Events & Input",
+            Self::SuggestedEdits => {
+                t_static(keys::edit_prediction::EDIT_PREDICTION_VIEW_SUGGESTED_EDITS)
+            }
+            Self::RawInput => t_static(keys::edit_prediction::EDIT_PREDICTION_VIEW_RAW_INPUT),
         }
     }
 }
@@ -102,7 +104,10 @@ impl RatePredictionsModal {
                 RatePredictionsModal::new(ep_store, language_registry, window, cx)
             });
 
-            telemetry::event!("Rate Prediction Modal Open", source = "Edit Prediction");
+            telemetry::event!(
+                "Rate Prediction Modal Open",
+                source = t_static(keys::edit_prediction::EDIT_PREDICTION_EDIT_PREDICTION)
+            );
         }
     }
 
@@ -800,7 +805,11 @@ impl RatePredictionsModal {
                     editor.set_show_wrap_guides(false, cx);
                     editor.set_show_indent_guides(false, cx);
                     editor.set_show_edit_predictions(Some(false), window, cx);
-                    editor.set_placeholder_text("Add your feedback…", window, cx);
+                    editor.set_placeholder_text(
+                        t(keys::edit_prediction::EDIT_PREDICTION_FEEDBACK_PLACEHOLDER),
+                        window,
+                        cx,
+                    );
                     editor.set_completion_provider(Some(Rc::new(FeedbackCompletionProvider)));
                     if focus {
                         cx.focus_self(window);
@@ -1009,7 +1018,10 @@ impl RatePredictionsModal {
                             .into_any_element()
                         } else {
                             div()
-                                .child("No active completion".to_string())
+                                .child(
+                                    t(keys::edit_prediction::EDIT_PREDICTION_NO_ACTIVE_COMPLETION)
+                                        .to_string(),
+                                )
                                 .into_any_element()
                         }),
                 )
@@ -1103,7 +1115,7 @@ impl RatePredictionsModal {
                             .child(
                                 DropdownMenu::new(
                                         "failure-mode-dropdown",
-                                        "Issue",
+                                        t_static(keys::edit_prediction::EDIT_PREDICTION_ISSUE_DROPDOWN),
                                         failure_mode_menu,
                                     )
                                     .handle(self.failure_mode_menu_handle.clone())
@@ -1181,7 +1193,7 @@ impl RatePredictionsModal {
                                         .disabled(rated || feedback_empty)
                                         .when(feedback_empty, |this| {
                                             this.tooltip(Tooltip::text(
-                                                "Explain what's bad about it before reporting it",
+                                                t_static(keys::edit_prediction::EDIT_PREDICTION_BAD_PREDICTION_HINT),
                                             ))
                                         })
                                         .key_binding(KeyBinding::for_action_in(
@@ -1238,44 +1250,44 @@ impl RatePredictionsModal {
 
                 let (icon_name, icon_color, tooltip_text) =
                     match (rated, completion.edits.is_empty()) {
-                        (true, _) => (IconName::Check, Color::Success, "Rated Prediction"),
-                        (false, true) => (IconName::File, Color::Muted, "No Edits Produced"),
-                        (false, false) => (IconName::FileDiff, Color::Accent, "Edits Available"),
+                        (true, _) => (IconName::Check, Color::Success, t_static(keys::edit_prediction::EDIT_PREDICTION_STATUS_RATED)),
+                        (false, true) => (IconName::File, Color::Muted, t_static(keys::edit_prediction::EDIT_PREDICTION_STATUS_NO_EDITS)),
+                        (false, false) => (IconName::FileDiff, Color::Accent, t_static(keys::edit_prediction::EDIT_PREDICTION_STATUS_EDITS_AVAILABLE)),
                     };
                 let (trigger_icon, trigger_tooltip) = match completion.trigger {
-                    PredictEditsRequestTrigger::Testing => (IconName::Debug, "Testing"),
+                    PredictEditsRequestTrigger::Testing => (IconName::Debug, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_TESTING)),
                     PredictEditsRequestTrigger::Diagnostics => {
-                        (IconName::ToolDiagnostics, "Diagnostics")
+                        (IconName::ToolDiagnostics, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_DIAGNOSTICS))
                     }
                     PredictEditsRequestTrigger::DiagnosticNavigation => {
-                        (IconName::ArrowRight, "Diagnostic Navigation")
+                        (IconName::ArrowRight, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_DIAGNOSTIC_NAVIGATION))
                     }
-                    PredictEditsRequestTrigger::Cli => (IconName::Terminal, "CLI"),
-                    PredictEditsRequestTrigger::Explicit => (IconName::Person, "Explicit"),
-                    PredictEditsRequestTrigger::BufferEdit => (IconName::Pencil, "Buffer Edit"),
+                    PredictEditsRequestTrigger::Cli => (IconName::Terminal, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_CLI)),
+                    PredictEditsRequestTrigger::Explicit => (IconName::Person, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_EXPLICIT)),
+                    PredictEditsRequestTrigger::BufferEdit => (IconName::Pencil, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_BUFFER_EDIT)),
                     PredictEditsRequestTrigger::LSPCompletionAccepted => {
-                        (IconName::Code, "LSP Completion Accepted")
+                        (IconName::Code, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_LSP_COMPLETION_ACCEPTED))
                     }
                     PredictEditsRequestTrigger::PredictionAccepted => {
-                        (IconName::ZedPredict, "Prediction Accepted")
+                        (IconName::ZedPredict, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_PREDICTION_ACCEPTED))
                     }
                     PredictEditsRequestTrigger::PredictionPartiallyAccepted => {
-                        (IconName::CheckDouble, "Prediction Partially Accepted")
+                        (IconName::CheckDouble, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_PREDICTION_PARTIALLY_ACCEPTED))
                     }
-                    PredictEditsRequestTrigger::EditorCreated => (IconName::File, "Editor Created"),
+                    PredictEditsRequestTrigger::EditorCreated => (IconName::File, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_EDITOR_CREATED)),
                     PredictEditsRequestTrigger::ProviderChanged => {
-                        (IconName::Settings, "Provider Changed")
+                        (IconName::Settings, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_PROVIDER_CHANGED))
                     }
                     PredictEditsRequestTrigger::UserInfoChanged => {
-                        (IconName::Person, "User Info Changed")
+                        (IconName::Person, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_USER_INFO_CHANGED))
                     }
                     PredictEditsRequestTrigger::VimModeChanged => {
-                        (IconName::Keyboard, "Vim Mode Changed")
+                        (IconName::Keyboard, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_VIM_MODE_CHANGED))
                     }
                     PredictEditsRequestTrigger::SettingsChanged => {
-                        (IconName::Settings, "Settings Changed")
+                        (IconName::Settings, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_SETTINGS_CHANGED))
                     }
-                    PredictEditsRequestTrigger::Other => (IconName::CircleHelp, "Other"),
+                    PredictEditsRequestTrigger::Other => (IconName::CircleHelp, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_OTHER)),
                 };
 
                 let file = completion.buffer.read(cx).file();
@@ -1424,22 +1436,58 @@ struct FeedbackCompletionProvider;
 
 impl FeedbackCompletionProvider {
     const FAILURE_MODES: &'static [(&'static str, &'static str)] = &[
-        ("@location", "Unexpected location"),
-        ("@malformed", "Incomplete, cut off, or syntax error"),
+        (
+            "@location",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_LOCATION),
+        ),
+        (
+            "@malformed",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_MALFORMED),
+        ),
         (
             "@deleted",
-            "Deleted code that should be kept (use `@reverted` if it undid a recent edit)",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_DELETED),
         ),
-        ("@style", "Wrong coding style or conventions"),
-        ("@repetitive", "Repeated existing code"),
-        ("@hallucinated", "Referenced non-existent symbols"),
-        ("@formatting", "Wrong indentation or structure"),
-        ("@aggressive", "Changed more than expected"),
-        ("@conservative", "Too cautious, changed too little"),
-        ("@context", "Ignored or misunderstood context"),
-        ("@reverted", "Undid recent edits"),
-        ("@cursor_position", "Cursor placed in unhelpful position"),
-        ("@whitespace", "Unwanted whitespace or newline changes"),
+        (
+            "@style",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_STYLE),
+        ),
+        (
+            "@repetitive",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_REPETITIVE),
+        ),
+        (
+            "@hallucinated",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_HALLUCINATED),
+        ),
+        (
+            "@formatting",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_FORMATTING),
+        ),
+        (
+            "@aggressive",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_AGGRESSIVE),
+        ),
+        (
+            "@conservative",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_CONSERVATIVE),
+        ),
+        (
+            "@context",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_CONTEXT),
+        ),
+        (
+            "@reverted",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_REVERTED),
+        ),
+        (
+            "@cursor_position",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_CURSOR_POSITION),
+        ),
+        (
+            "@whitespace",
+            t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_WHITESPACE),
+        ),
     ];
 }
 

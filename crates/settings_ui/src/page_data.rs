@@ -1,6 +1,6 @@
 use gpui::SharedString;
 use gpui::{Action as _, App};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use itertools::Itertools as _;
 use settings::{
     AudioInputDeviceName, AudioOutputDeviceName, EditPredictionDataCollectionChoice,
@@ -2596,7 +2596,7 @@ fn editor_page() -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_EDITOR_RELATIVE_LINE_NUMBERS).into(),
-                description: "Controls line number display in the editor's gutter. \"disabled\" shows absolute line numbers, \"enabled\" shows relative line numbers for each absolute line, and \"wrapped\" shows relative line numbers for every line, absolute or wrapped.".into(),
+                description: t(keys::settings_ui::SETTINGS_EDITOR_CONTROLS_LINE_NUMBER_DISPLAY_IN_THE_EDIT).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("relative_line_numbers"),
@@ -4437,10 +4437,15 @@ fn search_and_files_page() -> SettingsPage {
 
     fn file_scan_section() -> [SettingsPageItem; 7] {
         [
-            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_SEARCH_SECTION_FILE_SCAN).into()),
+            SettingsPageItem::SectionHeader(
+                t(keys::settings_ui::SETTINGS_SEARCH_SECTION_FILE_SCAN).into(),
+            ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_SEARCH_FILE_SCAN_EXCLUSIONS).into(),
-                description: "Files or globs of files that will be excluded by Zed entirely. They will be skipped during file scans, file searches, and not be displayed in the project file tree. Takes precedence over \"File Scan Inclusions\"".into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_SEARCH_FILES_OR_GLOBS_OF_FILES_THAT_WILL_BE_EXC,
+                )
+                .into(),
                 field: Box::new(
                     SettingField {
                         organization_override: None,
@@ -4463,7 +4468,10 @@ fn search_and_files_page() -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_SEARCH_FILE_SCAN_INCLUSIONS).into(),
-                description: "Files or globs of files that will be included by Zed, even when ignored by git. This is useful for files that are not tracked by git, but are still important to your project. Note that globs that are overly broad can slow down Zed's file scanning. \"File Scan Exclusions\" takes precedence over these inclusions".into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_SEARCH_FILES_OR_GLOBS_OF_FILES_THAT_WILL_BE_INC,
+                )
+                .into(),
                 field: Box::new(
                     SettingField {
                         organization_override: None,
@@ -4486,7 +4494,10 @@ fn search_and_files_page() -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_SEARCH_FILE_SCAN_DEPTH).into(),
-                description: t(keys::settings_ui::SETTINGS_SEARCH_MAXIMUM_DIRECTORY_DEPTH_TO_EAGERLY_INDEX).into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_SEARCH_MAXIMUM_DIRECTORY_DEPTH_TO_EAGERLY_INDEX,
+                )
+                .into(),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("file_scan_depth"),
@@ -4502,7 +4513,10 @@ fn search_and_files_page() -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_SEARCH_SCAN_SYMBOLIC_LINKS).into(),
-                description: t(keys::settings_ui::SETTINGS_SEARCH_WHEN_TO_SCAN_CONTENT_OF_LINKED_DIRECTORI).into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_SEARCH_WHEN_TO_SCAN_CONTENT_OF_LINKED_DIRECTORI,
+                )
+                .into(),
                 field: Box::new(SettingField {
                     json_path: Some("scan_symlinks"),
                     organization_override: None,
@@ -4518,7 +4532,10 @@ fn search_and_files_page() -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_SEARCH_RESTORE_FILE_STATE).into(),
-                description: t(keys::settings_ui::SETTINGS_SEARCH_RESTORE_PREVIOUS_FILE_STATE_WHEN_REOPENI).into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_SEARCH_RESTORE_PREVIOUS_FILE_STATE_WHEN_REOPENI,
+                )
+                .into(),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("restore_on_file_reopen"),
@@ -4534,7 +4551,10 @@ fn search_and_files_page() -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_SEARCH_CLOSE_ON_FILE_DELETE).into(),
-                description: t(keys::settings_ui::SETTINGS_SEARCH_AUTOMATICALLY_CLOSE_FILES_THAT_HAVE_BEEN).into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_SEARCH_AUTOMATICALLY_CLOSE_FILES_THAT_HAVE_BEEN,
+                )
+                .into(),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("close_on_file_delete"),
@@ -6743,7 +6763,7 @@ fn panels_page() -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_PANELS_HIDDEN_FILES).into(),
-                description: "Globs to match files that will be considered \"hidden\" and can be hidden from the project panel.".into(),
+                description: t(keys::settings_ui::SETTINGS_PANELS_GLOBS_TO_MATCH_FILES_THAT_WILL_BE_CONSID).into(),
                 field: Box::new(
                     SettingField {
                         organization_override: None,
@@ -8654,9 +8674,10 @@ fn terminal_page() -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_TERMINAL_AUDIBLE_BELL).into(),
-                description:
-                    "Whether to play a sound when the BEL character (`\\a`, `0x07`) is printed"
-                        .into(),
+                description: t_static(
+                    keys::settings_ui::SETTINGS_TERMINAL_WHETHER_TO_PLAY_A_SOUND_WHEN_THE_BEL_CHA,
+                )
+                .into(),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("terminal.bell"),
@@ -10189,7 +10210,10 @@ fn ai_page(cx: &App) -> SettingsPage {
         items.extend([
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_AI_AUTO_COMPACT).into(),
-                description: t(keys::settings_ui::SETTINGS_AI_AUTOMATICALLY_COMPACT_THE_AGENT_S_CONTEX).into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_AI_AUTOMATICALLY_COMPACT_THE_AGENT_S_CONTEX,
+                )
+                .into(),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("agent.auto_compact.enabled"),
@@ -10216,7 +10240,10 @@ fn ai_page(cx: &App) -> SettingsPage {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_AI_AUTO_COMPACT_THRESHOLD).into(),
-                description: "When auto compaction runs. A percentage string like \"90%\" is measured against the context window. A positive integer is the number of used tokens to compact after. A negative integer is the number of tokens remaining in the context window before compacting.".into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_AI_WHEN_AUTO_COMPACTION_RUNS_A_PERCENTAGE_S,
+                )
+                .into(),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("agent.auto_compact.threshold"),
@@ -10893,7 +10920,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_USE_ON_TYPE_FORMAT).into(),
-                description: "Whether to use additional LSP queries to format (and amend) the code after every \"trigger\" symbol input, defined by LSP server capabilities".into(),
+                description: t(keys::settings_ui::SETTINGS_NETWORK_WHETHER_TO_USE_ADDITIONAL_LSP_QUERIES_TO).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("languages.$(language).use_on_type_format"),
@@ -11045,10 +11072,15 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
 
     fn whitespace_section() -> [SettingsPageItem; 4] {
         [
-            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_NETWORK_SECTION_WHITESPACE).into()),
+            SettingsPageItem::SectionHeader(
+                t(keys::settings_ui::SETTINGS_NETWORK_SECTION_WHITESPACE).into(),
+            ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_SHOW_WHITESPACES).into(),
-                description: t(keys::settings_ui::SETTINGS_NETWORK_WHETHER_TO_SHOW_TABS_AND_SPACES_IN_THE_E).into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_NETWORK_WHETHER_TO_SHOW_TABS_AND_SPACES_IN_THE_E,
+                )
+                .into(),
                 field: Box::new(SettingField {
                     organization_override: None,
                     json_path: Some("languages.$(language).show_whitespaces"),
@@ -11068,7 +11100,10 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_SPACE_WHITESPACE_INDICATOR).into(),
-                description: "Visible character used to render space characters when show_whitespaces is enabled (default: \"•\")".into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_NETWORK_VISIBLE_CHARACTER_USED_TO_RENDER_SPACE_C,
+                )
+                .into(),
                 field: Box::new(
                     SettingField {
                         organization_override: None,
@@ -11095,7 +11130,10 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
             }),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_TAB_WHITESPACE_INDICATOR).into(),
-                description: "Visible character used to render tab characters when show_whitespaces is enabled (default: \"→\")".into(),
+                description: t(
+                    keys::settings_ui::SETTINGS_NETWORK_VISIBLE_CHARACTER_USED_TO_RENDER_TAB_CHA,
+                )
+                .into(),
                 field: Box::new(
                     SettingField {
                         organization_override: None,
@@ -12428,23 +12466,31 @@ fn non_editor_language_settings_data() -> Box<[SettingsPageItem]> {
 
 fn edit_prediction_language_settings_section() -> [SettingsPageItem; 5] {
     [
-        SettingsPageItem::SectionHeader(t(keys::edit_prediction::EDIT_PREDICTION_EDIT_PREDICTIONS).into()),
+        SettingsPageItem::SectionHeader(
+            t(keys::edit_prediction::EDIT_PREDICTION_EDIT_PREDICTIONS).into(),
+        ),
         SettingsPageItem::SubPageLink(SubPageLink {
             title: t(keys::edit_prediction::EDIT_PREDICTION_CONFIGURE_PROVIDERS).into(),
             r#type: Default::default(),
             json_path: Some("edit_predictions.providers"),
-            description: Some(t(keys::settings_ui::SETTINGS_EDIT_PREDICTION_PROVIDERS_DESCRIPTION).into()),
+            description: Some(
+                t(keys::settings_ui::SETTINGS_EDIT_PREDICTION_PROVIDERS_DESCRIPTION).into(),
+            ),
             search_aliases: &[],
             in_json: false,
             files: USER,
-            render: render_edit_prediction_setup_page
+            render: render_edit_prediction_setup_page,
         }),
         SettingsPageItem::SettingItem(SettingItem {
             title: t(keys::settings_ui::SETTINGS_NETWORK_DATA_COLLECTION).into(),
-            description: t(keys::settings_ui::SETTINGS_NETWORK_CONTROLS_WHETHER_ZED_MAY_COLLECT_TRAININ).into(),
+            description: t(
+                keys::settings_ui::SETTINGS_NETWORK_CONTROLS_WHETHER_ZED_MAY_COLLECT_TRAININ,
+            )
+            .into(),
             field: Box::new(SettingField {
                 organization_override: Some(|org_settings| {
-                    const DATA_COLLECTION_DISABLED: EditPredictionDataCollectionChoice = EditPredictionDataCollectionChoice::No;
+                    const DATA_COLLECTION_DISABLED: EditPredictionDataCollectionChoice =
+                        EditPredictionDataCollectionChoice::No;
 
                     if !org_settings.edit_prediction.is_feedback_enabled {
                         Some(&DATA_COLLECTION_DISABLED)
@@ -12476,7 +12522,10 @@ fn edit_prediction_language_settings_section() -> [SettingsPageItem; 5] {
         }),
         SettingsPageItem::SettingItem(SettingItem {
             title: t(keys::settings_ui::SETTINGS_NETWORK_SHOW_EDIT_PREDICTIONS).into(),
-            description: t(keys::settings_ui::SETTINGS_NETWORK_CONTROLS_WHETHER_EDIT_PREDICTIONS_ARE_SH).into(),
+            description: t(
+                keys::settings_ui::SETTINGS_NETWORK_CONTROLS_WHETHER_EDIT_PREDICTIONS_ARE_SH,
+            )
+            .into(),
             field: Box::new(SettingField {
                 organization_override: None,
                 json_path: Some("languages.$(language).show_edit_predictions"),
@@ -12496,7 +12545,10 @@ fn edit_prediction_language_settings_section() -> [SettingsPageItem; 5] {
         }),
         SettingsPageItem::SettingItem(SettingItem {
             title: t(keys::settings_ui::SETTINGS_NETWORK_DISABLE_IN_LANGUAGE_SCOPES).into(),
-            description: "Disable edit predictions in these language scopes, such as \"comment\" and \"string\". Use \"...\" to add scopes without repeating the inherited list.".into(),
+            description: t(
+                keys::settings_ui::SETTINGS_NETWORK_DISABLE_EDIT_PREDICTIONS_IN_THESE_LANGUA,
+            )
+            .into(),
             field: Box::new(
                 SettingField {
                     organization_override: None,

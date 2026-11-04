@@ -1,12 +1,13 @@
 use crate::{
-    SelectPermissionGranularity, default_thread_title,
+    SelectPermissionGranularity,
     conversation_view::thread_search_bar::{ThreadSearchBar, ThreadSearchBarEvent},
+    default_thread_title,
     entry_view_state::TERMINAL_CONTENT_TOP_PADDING,
     open_abs_path_at_point, project_path_for_file_link,
     thread_metadata_store::{ThreadId, ThreadMetadataStore},
 };
 use agent_client_protocol::schema::v2 as acp_v2;
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::{cell::RefCell, path::Path};
 
 use acp_thread::{
@@ -1439,7 +1440,10 @@ impl ThreadView {
         match command {
             PromptLocalCommand::ThumbsUp => {
                 self.handle_feedback_click(ThreadFeedback::Positive, window, cx);
-                self.show_local_command_toast("Thanks for your feedback!", cx);
+                self.show_local_command_toast(
+                    t_static(keys::agent::AGENT_THREAD_FEEDBACK_THANKS),
+                    cx,
+                );
             }
             PromptLocalCommand::ThumbsDown => {
                 self.handle_feedback_click(ThreadFeedback::Negative, window, cx);
@@ -1487,9 +1491,7 @@ impl ThreadView {
         cx: &mut App,
     ) -> Task<Result<(Vec<acp_v2::ContentBlock>, Vec<Entity<Buffer>>)>> {
         if message_editor.read(cx).editor().read(cx).read_only(cx) {
-            return Task::ready(Err(anyhow!(
-                t(keys::agent::AGENT_THREAD_DRAFT_UNSUPPORTED)
-            )));
+            return Task::ready(Err(anyhow!(t(keys::agent::AGENT_THREAD_DRAFT_UNSUPPORTED))));
         }
         let expand = self.as_native_thread(cx).is_some_and(|thread| {
             let thread = thread.read(cx);
@@ -1873,9 +1875,7 @@ impl ThreadView {
         if let Some(content) = content {
             if !content.iter().all(acp_thread::content::can_convert_to_v1) {
                 self.handle_thread_error(
-                    anyhow!(
-                        t(keys::agent::AGENT_THREAD_SAVED_UNSUPPORTED)
-                    ),
+                    anyhow!(t(keys::agent::AGENT_THREAD_SAVED_UNSUPPORTED)),
                     cx,
                 );
                 return;
@@ -1966,7 +1966,7 @@ impl ThreadView {
                                 true,
                             ),
                             SubmissionState::Cancelled => (t(keys::agent::AGENT_PLAN_CANCELLED).into(), None, true),
-                            _ => ("Message".into(), None, false),
+                            _ => (t(keys::agent::AGENT_THREAD_SUBMISSION_MESSAGE).into(), None, false),
                         };
                     let preview: String =
                         Itertools::intersperse(Self::submission_text_parts(&record.content), " ")
@@ -2197,12 +2197,7 @@ impl ThreadView {
 
     pub fn send(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.message_editor.read(cx).editor().read(cx).read_only(cx) {
-            self.handle_thread_error(
-                anyhow!(
-                    t(keys::agent::AGENT_THREAD_DRAFT_UNSUPPORTED)
-                ),
-                cx,
-            );
+            self.handle_thread_error(anyhow!(t(keys::agent::AGENT_THREAD_DRAFT_UNSUPPORTED)), cx);
             return;
         }
         let thread = &self.thread;
@@ -2562,12 +2557,7 @@ impl ThreadView {
 
     pub fn interrupt_and_send(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.message_editor.read(cx).editor().read(cx).read_only(cx) {
-            self.handle_thread_error(
-                anyhow!(
-                    t(keys::agent::AGENT_THREAD_DRAFT_UNSUPPORTED)
-                ),
-                cx,
-            );
+            self.handle_thread_error(anyhow!(t(keys::agent::AGENT_THREAD_DRAFT_UNSUPPORTED)), cx);
             return;
         }
         let thread = &self.thread;
@@ -2844,9 +2834,7 @@ impl ThreadView {
                 // Rewind can outlive a source update that replaces the editor with a fallback.
                 if message_editor.read(cx).editor().read(cx).read_only(cx) {
                     thread.handle_thread_error(
-                        anyhow!(
-                            t(keys::agent::AGENT_THREAD_REWOUND_READONLY)
-                        ),
+                        anyhow!(t(keys::agent::AGENT_THREAD_REWOUND_READONLY)),
                         cx,
                     );
                     return;
@@ -3187,10 +3175,7 @@ impl ThreadView {
                 .iter()
                 .all(acp_thread::content::can_convert_to_v1)
         }) {
-            self.handle_thread_error(
-                anyhow!(t(keys::agent::AGENT_THREAD_QUEUED_UNSUPPORTED)),
-                cx,
-            );
+            self.handle_thread_error(anyhow!(t(keys::agent::AGENT_THREAD_QUEUED_UNSUPPORTED)), cx);
             return false;
         }
         let Some(queued_message) = self.remove_from_queue(id, cx) else {
@@ -4224,7 +4209,7 @@ impl ThreadView {
                                     .tooltip({
                                         move |_, cx| {
                                             Tooltip::with_meta(
-                                                "Go to File",
+                                                t_static(keys::agent::AGENT_THREAD_GO_TO_FILE),
                                                 None,
                                                 full_path.clone(),
                                                 cx,
@@ -4496,7 +4481,9 @@ impl ThreadView {
                     .debug_selector(|| format!("generic-permission-unknown-{}", subject.type_))
                     .child(format!("Unknown permission subject: {}", subject.type_)),
             ),
-            Some(_) => Some(v_flex().child(t(keys::agent::AGENT_THREAD_UNKNOWN_PERMISSION_SUBJECT))),
+            Some(_) => {
+                Some(v_flex().child(t(keys::agent::AGENT_THREAD_UNKNOWN_PERMISSION_SUBJECT)))
+            }
             None => None,
         };
         v_flex()
@@ -4744,7 +4731,7 @@ impl ThreadView {
         let label: SharedString = if pending_count > 1 {
             format!("Awaiting Confirmation ({pending_count})").into()
         } else {
-            "Awaiting Confirmation".into()
+            t(keys::agent::AGENT_THREAD_AWAITING_CONFIRMATION).into()
         };
 
         let header = h_flex()
@@ -5476,9 +5463,15 @@ impl ThreadView {
 
         let editor_expanded = self.editor_expanded;
         let (expand_icon, expand_tooltip) = if editor_expanded {
-            (IconName::Minimize, t(keys::agent::AGENT_THREAD_MINIMIZE_EDITOR))
+            (
+                IconName::Minimize,
+                t(keys::agent::AGENT_THREAD_MINIMIZE_EDITOR),
+            )
         } else {
-            (IconName::Maximize, t(keys::agent::AGENT_THREAD_EXPAND_EDITOR))
+            (
+                IconName::Maximize,
+                t(keys::agent::AGENT_THREAD_EXPAND_EDITOR),
+            )
         };
 
         let max_content_width = AgentSettings::get_global(cx).max_content_width;
@@ -5659,7 +5652,7 @@ impl ThreadView {
             })
             .tooltip(move |_window, cx| {
                 Tooltip::with_meta(
-                    "Steer",
+                    t_static(keys::agent::AGENT_THREAD_STEER),
                     None,
                     "Interrupt the agent at its next step to send this message. \
                      When off, queued messages wait for the agent to finish.",
@@ -5797,7 +5790,10 @@ impl ThreadView {
                                                     cx,
                                                 )
                                             } else {
-                                                Tooltip::simple(t(keys::agent::AGENT_THREAD_REMOVE_FROM_QUEUE), cx)
+                                                Tooltip::simple(
+                                                    t(keys::agent::AGENT_THREAD_REMOVE_FROM_QUEUE),
+                                                    cx,
+                                                )
                                             }
                                         }
                                     })
@@ -5820,7 +5816,10 @@ impl ThreadView {
                                                     cx,
                                                 )
                                             } else {
-                                                Tooltip::simple(t(keys::agent::AGENT_THREAD_EDIT), cx)
+                                                Tooltip::simple(
+                                                    t(keys::agent::AGENT_THREAD_EDIT),
+                                                    cx,
+                                                )
                                             }
                                         }
                                     })
@@ -6154,10 +6153,19 @@ impl ThreadView {
                 let settings = augment_settings_sandbox_policy(&settings_policy, baseline);
                 let thread = SandboxPolicyDisplay::from_policy(&thread_policy);
                 // Omit the per-thread section when it grants nothing extra.
-                let thread = (!sandbox_policy_grants_nothing(&thread))
-                    .then(|| sandbox_section(t(keys::agent::AGENT_THREAD_ALLOWED_FOR_THREAD), &thread, false));
+                let thread = (!sandbox_policy_grants_nothing(&thread)).then(|| {
+                    sandbox_section(
+                        t(keys::agent::AGENT_THREAD_ALLOWED_FOR_THREAD),
+                        &thread,
+                        false,
+                    )
+                });
                 SandboxStatusTooltip::enabled(
-                    sandbox_section(t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS), &settings, true),
+                    sandbox_section(
+                        t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS),
+                        &settings,
+                        true,
+                    ),
                     thread,
                 )
             }
@@ -6395,9 +6403,9 @@ impl ThreadView {
                         )
                     })
                 } else {
-                    this.tooltip(Tooltip::text(
-                        t(keys::agent::AGENT_THREAD_THINKING_ALWAYS_ON),
-                    ))
+                    this.tooltip(Tooltip::text(t(
+                        keys::agent::AGENT_THREAD_THINKING_ALWAYS_ON,
+                    )))
                 }
             });
         let thinking_toggle = if supports_disabling_thinking {
@@ -6471,10 +6479,10 @@ impl ThreadView {
                 .cloned()
         });
 
-        let label = selected
-            .clone()
-            .or(default_effort_level)
-            .map_or(t(keys::agent::AGENT_THREAD_SELECT_EFFORT).into(), |effort| effort.name);
+        let label = selected.clone().or(default_effort_level).map_or(
+            t(keys::agent::AGENT_THREAD_SELECT_EFFORT).into(),
+            |effort| effort.name,
+        );
 
         let (label_color, icon) = if self.thinking_effort_menu_handle.is_deployed() {
             (Color::Accent, IconName::ChevronUp)
@@ -6724,7 +6732,7 @@ impl ThreadView {
                 {
                     move |_window, cx| {
                         Tooltip::for_action_in(
-                            "Add Context",
+                            t_static(keys::agent::AGENT_ADD_CONTEXT),
                             &OpenAddContextMenu,
                             &focus_handle,
                             cx,
@@ -6826,17 +6834,24 @@ impl ThreadView {
                         }),
                 )
                 .when(!available_skills.is_empty(), |this| {
-                    this.submenu_with_colored_icon("Skills", IconName::Sparkle, Color::Muted, {
-                        let message_editor = message_editor.clone();
-                        let available_skills = available_skills.clone();
-                        move |mut menu, _window, _cx| {
-                            for skill in &available_skills {
-                                menu = menu
-                                    .item(Self::skill_menu_entry(skill, message_editor.clone()));
+                    this.submenu_with_colored_icon(
+                        t_static(keys::agent::AGENT_MENU_SKILLS),
+                        IconName::Sparkle,
+                        Color::Muted,
+                        {
+                            let message_editor = message_editor.clone();
+                            let available_skills = available_skills.clone();
+                            move |mut menu, _window, _cx| {
+                                for skill in &available_skills {
+                                    menu = menu.item(Self::skill_menu_entry(
+                                        skill,
+                                        message_editor.clone(),
+                                    ));
+                                }
+                                menu
                             }
-                            menu
-                        }
-                    })
+                        },
+                    )
                 })
                 .item(
                     ContextMenuEntry::new(t(keys::agent::AGENT_THREAD_IMAGE))
@@ -7258,13 +7273,17 @@ fn sandbox_section(title: &str, policy: &SandboxPolicyDisplay, show_empty: bool)
     let mut section = SandboxSection::new(title.to_string());
 
     if show_empty || !write_empty {
-        section =
-            section.group(SandboxGroup::new("Write Access").rows(sandbox_fs_rows(&policy.fs)));
+        section = section.group(
+            SandboxGroup::new(t_static(keys::agent::AGENT_THREAD_WRITE_ACCESS))
+                .rows(sandbox_fs_rows(&policy.fs)),
+        );
     }
 
     if show_empty || !network_empty {
-        section = section
-            .group(SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS)).rows(sandbox_network_rows(&policy.network)));
+        section = section.group(
+            SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS))
+                .rows(sandbox_network_rows(&policy.network)),
+        );
     }
 
     section
@@ -7292,9 +7311,9 @@ fn network_grants_nothing(network: &SandboxNetPolicy) -> bool {
 /// row per granted path.
 fn sandbox_fs_rows(fs: &SandboxFsDisplay) -> Vec<SandboxRow> {
     match fs {
-        SandboxFsDisplay::Unrestricted => vec![SandboxRow::message(
-            t(keys::agent::AGENT_THREAD_ALL_PATHS_EXCEPT_GIT),
-        )],
+        SandboxFsDisplay::Unrestricted => vec![SandboxRow::message(t(
+            keys::agent::AGENT_THREAD_ALL_PATHS_EXCEPT_GIT,
+        ))],
         SandboxFsDisplay::Restricted(entries) if entries.is_empty() => {
             vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))]
         }
@@ -7316,7 +7335,9 @@ fn sandbox_fs_rows(fs: &SandboxFsDisplay) -> Vec<SandboxRow> {
 /// one row per allowed domain.
 fn sandbox_network_rows(network: &SandboxNetPolicy) -> Vec<SandboxRow> {
     match network {
-        SandboxNetPolicy::Unrestricted => vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_ALL_DOMAINS))],
+        SandboxNetPolicy::Unrestricted => vec![SandboxRow::message(t(
+            keys::agent::AGENT_THREAD_ALL_DOMAINS,
+        ))],
         SandboxNetPolicy::Blocked => vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))],
         SandboxNetPolicy::Restricted { allowed_domains } if allowed_domains.is_empty() => {
             vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))]
@@ -8107,8 +8128,7 @@ impl ThreadView {
             .then(|| {
                 (self.is_subagent() && self.is_thread_feedback_enabled(cx)).then(|| {
                     let feedback = self.thread_feedback.feedback;
-                    let tooltip_meta =
-                        t(keys::agent::AGENT_THREAD_RATING_HINT);
+                    let tooltip_meta = t(keys::agent::AGENT_THREAD_RATING_HINT);
 
                     h_flex()
                         .child(
@@ -8120,7 +8140,9 @@ impl ThreadView {
                                 })
                                 .tooltip(move |window, cx| match feedback {
                                     Some(ThreadFeedback::Positive) => {
-                                        Tooltip::text(t(keys::agent::AGENT_THREAD_FEEDBACK_THANKS))(window, cx)
+                                        Tooltip::text(t(keys::agent::AGENT_THREAD_FEEDBACK_THANKS))(
+                                            window, cx,
+                                        )
                                     }
                                     _ => Tooltip::with_meta(
                                         t(keys::agent::AGENT_THREAD_HELPFUL),
@@ -8130,7 +8152,11 @@ impl ThreadView {
                                     ),
                                 })
                                 .on_click(cx.listener(move |this, _, window, cx| {
-                                    this.handle_feedback_click(ThreadFeedback::Positive, window, cx);
+                                    this.handle_feedback_click(
+                                        ThreadFeedback::Positive,
+                                        window,
+                                        cx,
+                                    );
                                 })),
                         )
                         .child(
@@ -8141,11 +8167,11 @@ impl ThreadView {
                                     _ => Color::Muted,
                                 })
                                 .tooltip(move |window, cx| match feedback {
-                                    Some(ThreadFeedback::Negative) => Tooltip::text(
-                                        t(keys::agent::AGENT_THREAD_FEEDBACK_THANKS_HINT),
-                                    )(
-                                        window, cx
-                                    ),
+                                    Some(ThreadFeedback::Negative) => {
+                                        Tooltip::text(t(
+                                            keys::agent::AGENT_THREAD_FEEDBACK_THANKS_HINT,
+                                        ))(window, cx)
+                                    }
                                     _ => Tooltip::with_meta(
                                         t(keys::agent::AGENT_THREAD_NOT_HELPFUL),
                                         None,
@@ -8154,7 +8180,11 @@ impl ThreadView {
                                     ),
                                 })
                                 .on_click(cx.listener(move |this, _, window, cx| {
-                                    this.handle_feedback_click(ThreadFeedback::Negative, window, cx);
+                                    this.handle_feedback_click(
+                                        ThreadFeedback::Negative,
+                                        window,
+                                        cx,
+                                    );
                                 })),
                         )
                 })
@@ -9492,7 +9522,7 @@ impl ThreadView {
         let (title, detail, docs_section): (SharedString, SharedString, Option<&'static str>) =
             match reason {
                 SandboxNotAppliedReason::ErrorLinuxWsl(error) => (
-                    "Couldn't create a sandbox".into(),
+                    t(keys::agent::AGENT_THREAD_SANDBOX_FAILED).into(),
                     error.user_facing_message().into(),
                     Some(error.docs_section()),
                 ),
@@ -9508,11 +9538,13 @@ impl ThreadView {
                                 error.user_facing_message()
                             ))
                         })
-                        .unwrap_or_else(|| {
-                            t(keys::agent::AGENT_THREAD_UNSANDBOXED_ALLOWED).into()
-                        });
+                        .unwrap_or_else(|| t(keys::agent::AGENT_THREAD_UNSANDBOXED_ALLOWED).into());
                     let docs_section = thread_error.as_ref().map(|error| error.docs_section());
-                    (t(keys::agent::AGENT_THREAD_RAN_WITHOUT_SANDBOX).into(), detail, docs_section)
+                    (
+                        t(keys::agent::AGENT_THREAD_RAN_WITHOUT_SANDBOX).into(),
+                        detail,
+                        docs_section,
+                    )
                 }
             };
 
@@ -9840,7 +9872,9 @@ impl ThreadView {
                                 .gap_1()
                                 .border_l_1()
                                 .border_color(self.tool_card_border_color(cx))
-                                .child(input_output_header(t(keys::agent::AGENT_THREAD_RAW_INPUT).into()))
+                                .child(input_output_header(
+                                    t(keys::agent::AGENT_THREAD_RAW_INPUT).into(),
+                                ))
                                 .children(tool_call.raw_input_markdown.clone().map(|input| {
                                     div().id(("tool-call-raw-input-markdown", entry_ix)).child(
                                         self.render_markdown(
@@ -9850,7 +9884,9 @@ impl ThreadView {
                                         ),
                                     )
                                 }))
-                                .child(input_output_header("Output:".into())),
+                                .child(input_output_header(
+                                    t(keys::agent::AGENT_THREAD_OUTPUT_LABEL).into(),
+                                )),
                         )
                     })
                     .children(tool_call.content().iter().enumerate().map(
@@ -10822,17 +10858,29 @@ impl ThreadView {
             .bg(cx.theme().colors().editor_background)
             .map(|this| {
                 if is_redirected {
-                    this.child(captioned_path("Source".into(), requested_display, cx))
-                        .child(
-                            Icon::new(IconName::ArrowDown)
-                                .color(Color::Muted)
-                                .size(IconSize::Small),
-                        )
-                        .child(captioned_path(t(keys::agent::AGENT_THREAD_TARGET).into(), granted_display, cx))
+                    this.child(captioned_path(
+                        t(keys::agent::AGENT_THREAD_SOURCE).into(),
+                        requested_display,
+                        cx,
+                    ))
+                    .child(
+                        Icon::new(IconName::ArrowDown)
+                            .color(Color::Muted)
+                            .size(IconSize::Small),
+                    )
+                    .child(captioned_path(
+                        t(keys::agent::AGENT_THREAD_TARGET).into(),
+                        granted_display,
+                        cx,
+                    ))
                 } else {
                     // Not a genuine redirect: show what the user asked for (e.g.
                     // the `C:\...` path), not the internal Linux canonical.
-                    this.child(captioned_path(t(keys::agent::AGENT_THREAD_WRITE_PATH).into(), requested_display, cx))
+                    this.child(captioned_path(
+                        t(keys::agent::AGENT_THREAD_WRITE_PATH).into(),
+                        requested_display,
+                        cx,
+                    ))
                 }
             })
             .child(Divider::horizontal())
@@ -11464,7 +11512,11 @@ impl ThreadView {
         let tool_name = tool_name.filter(|name| !name.trim().is_empty());
         match (tool_name, interrupted_edit) {
             (Some(name), true) => Some(
-                format!("{}\nTool: {name}", t(keys::agent::AGENT_THREAD_INTERRUPTED_EDIT)).into(),
+                format!(
+                    "{}\nTool: {name}",
+                    t(keys::agent::AGENT_THREAD_INTERRUPTED_EDIT)
+                )
+                .into(),
             ),
             (Some(name), false) => Some(format!("Tool: {name}").into()),
             (None, true) => Some(t(keys::agent::AGENT_THREAD_INTERRUPTED_EDIT).into()),
@@ -12693,7 +12745,13 @@ impl ThreadView {
                     .unwrap_or_else(|| {
                         format!("No credentials are configured for {provider}.").into()
                     });
-                self.render_error_callout(t(keys::agent::AGENT_THREAD_ERROR_CREDENTIALS), message, false, true, cx)
+                self.render_error_callout(
+                    t(keys::agent::AGENT_THREAD_ERROR_CREDENTIALS),
+                    message,
+                    false,
+                    true,
+                    cx,
+                )
             }
             ThreadError::StreamError { provider } => self.render_error_callout(
                 t(keys::agent::AGENT_THREAD_ERROR_CONNECTION),
@@ -12710,7 +12768,13 @@ impl ThreadView {
                 let message = Self::provider_by_name(provider, cx)
                     .map(|provider| provider.authentication_error_message())
                     .unwrap_or_else(|| format!("Could not authenticate with {provider}.").into());
-                self.render_error_callout(t(keys::agent::AGENT_THREAD_ERROR_AUTHENTICATION), message, false, false, cx)
+                self.render_error_callout(
+                    t(keys::agent::AGENT_THREAD_ERROR_AUTHENTICATION),
+                    message,
+                    false,
+                    false,
+                    cx,
+                )
             }
             ThreadError::PermissionDenied { provider, message } => {
                 let message: SharedString = message.clone().unwrap_or_else(|| {
@@ -12718,11 +12782,21 @@ impl ThreadView {
                         .into()
                 });
 
-                self.render_error_callout(t(keys::agent::AGENT_THREAD_ERROR_PERMISSION), message, false, false, cx)
+                self.render_error_callout(
+                    t(keys::agent::AGENT_THREAD_ERROR_PERMISSION),
+                    message,
+                    false,
+                    false,
+                    cx,
+                )
             }
-            ThreadError::ProviderRejection { message } => {
-                self.render_error_callout(t(keys::agent::AGENT_THREAD_ERROR_REQUEST), message.clone(), true, false, cx)
-            }
+            ThreadError::ProviderRejection { message } => self.render_error_callout(
+                t(keys::agent::AGENT_THREAD_ERROR_REQUEST),
+                message.clone(),
+                true,
+                false,
+                cx,
+            ),
             ThreadError::MaxOutputTokens => self.render_error_callout(
                 t(keys::agent::AGENT_THREAD_ERROR_OUTPUT_LIMIT),
                 "The model stopped because it reached its maximum output length. \
@@ -12866,8 +12940,7 @@ impl ThreadView {
                         } else {
                             (
                                 format!("Model {} was not found", selected_model.model.0).into(),
-                                t(keys::agent::AGENT_THREAD_HINT_RECONFIGURE_AUTH)
-                                    .into(),
+                                t(keys::agent::AGENT_THREAD_HINT_RECONFIGURE_AUTH).into(),
                             )
                         }
                     } else {
@@ -12881,8 +12954,7 @@ impl ThreadView {
                     if has_authenticated_provider {
                         (
                             t(keys::agent::AGENT_THREAD_NO_MODEL_SELECTED).into(),
-                            t(keys::agent::AGENT_THREAD_HINT_CHOOSE_MODEL)
-                                .into(),
+                            t(keys::agent::AGENT_THREAD_HINT_CHOOSE_MODEL).into(),
                         )
                     } else {
                         (
@@ -13097,7 +13169,7 @@ impl ThreadView {
         Callout::new()
             .severity(Severity::Error)
             .icon(IconName::XCircle)
-            .title("An Error Happened")
+            .title(t(keys::agent::AGENT_THREAD_ERROR_HAPPENED))
             .description_slot(description)
             .actions_slot(
                 h_flex()
@@ -13503,7 +13575,7 @@ impl ThreadView {
         let button_label = if has_version {
             format!("Update to v{}", version)
         } else {
-            "Reconnect".to_string()
+            t(keys::agent::AGENT_THREAD_RECONNECT).to_string()
         };
 
         v_flex().w_full().justify_end().child(
@@ -14615,7 +14687,11 @@ mod tests {
         for (name, interrupted_edit, expected) in [
             (None, false, None),
             (Some(" \t\n"), false, None),
-            (Some("read_file"), false, Some("Tool: read_file".to_string())),
+            (
+                Some("read_file"),
+                false,
+                Some("Tool: read_file".to_string()),
+            ),
             (
                 Some("  mcp__server__**read_file**<raw>  "),
                 false,

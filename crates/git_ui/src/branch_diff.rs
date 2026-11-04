@@ -17,6 +17,7 @@ use gpui::{
     Action, App, AppContext as _, Entity, EventEmitter, FocusHandle, Focusable, Render,
     SharedString, Subscription, Task, WeakEntity,
 };
+use i18n::{keys, t, t_static};
 use language::{BufferId, Capability};
 use project::{
     Project, ProjectPath,
@@ -88,7 +89,8 @@ impl BranchDiff {
             let workspace = cx.entity().downgrade();
             window
                 .spawn(cx, async |_cx| {
-                    let result: Result<()> = Err(anyhow!("No active repository"));
+                    let result: Result<()> =
+                        Err(anyhow!(t_static(keys::git_ui::GIT_NO_ACTIVE_REPOSITORY)));
                     result
                 })
                 .detach_and_notify_err(workspace, window, cx);
@@ -146,7 +148,8 @@ impl BranchDiff {
             let workspace = cx.entity().downgrade();
             window
                 .spawn(cx, async |_cx| {
-                    let result: Result<()> = Err(anyhow!("No active repository"));
+                    let result: Result<()> =
+                        Err(anyhow!(t_static(keys::git_ui::GIT_NO_ACTIVE_REPOSITORY)));
                     result
                 })
                 .detach_and_notify_err(workspace, window, cx);
@@ -253,7 +256,9 @@ impl BranchDiff {
         cx: &mut App,
     ) -> Task<Result<Entity<Self>>> {
         let Some(repo) = project.read(cx).git_store().read(cx).active_repository() else {
-            return Task::ready(Err(anyhow!("No active repository")));
+            return Task::ready(Err(anyhow!(t_static(
+                keys::git_ui::GIT_NO_ACTIVE_REPOSITORY
+            ))));
         };
         let main_branch = repo.update(cx, |repo, _| repo.default_branch(true));
         window.spawn(cx, async move |cx| {
@@ -336,7 +341,7 @@ impl BranchDiff {
             DiffMultibuffer::new(
                 branch_diff,
                 Capability::ReadWrite,
-                "No changes",
+                t_static(keys::git_ui::GIT_NO_CHANGES),
                 move |editor, cx| {
                     editor.set_diff_hunk_renderer(Some(Arc::new(HiddenDiffHunkRenderer)), cx);
                     editor.rhs_editor().update(cx, move |rhs_editor, _cx| {
@@ -478,7 +483,9 @@ impl Item for BranchDiff {
     fn tab_content_text(&self, _detail: usize, cx: &App) -> SharedString {
         match self.diff_base(cx) {
             DiffBase::Merge { base_ref } => format!("Changes since {}", base_ref).into(),
-            DiffBase::Head | DiffBase::Index | DiffBase::Staged => "Changes".into(),
+            DiffBase::Head | DiffBase::Index | DiffBase::Staged => {
+                t(keys::git_ui::GIT_TAB_CHANGES).into()
+            }
         }
     }
 
@@ -1216,7 +1223,9 @@ mod tests {
         let target_branch_diff = cx
             .update(|window, cx| {
                 let Some(repository) = project.read(cx).active_repository(cx) else {
-                    return Task::ready(Err(anyhow!("No active repository")));
+                    return Task::ready(Err(anyhow!(t_static(
+                        keys::git_ui::GIT_NO_ACTIVE_REPOSITORY
+                    ))));
                 };
                 BranchDiff::new_with_branch_base(
                     project.clone(),

@@ -1,7 +1,7 @@
 use anyhow::Context as _;
 use editor::Editor;
 use fuzzy_nucleo::StringMatchCandidate;
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 
 use collections::{HashMap, HashSet};
 use git::repository::{Branch, delete_branch_flag};
@@ -339,7 +339,7 @@ impl BranchList {
         // Fetch default branch asynchronously since it requires a git operation
         cx.spawn_in(window, async move |this, cx| {
             let default_branch = default_branch_request
-                .context("No active repository")?
+                .context(t_static(keys::git_ui::GIT_NO_ACTIVE_REPOSITORY))?
                 .await
                 .map(Result::ok)
                 .ok()
@@ -358,7 +358,7 @@ impl BranchList {
 
         cx.spawn(async move |this, cx| {
             let remote_urls = remote_urls_request
-                .context("No active repository")?
+                .context(t_static(keys::git_ui::GIT_NO_ACTIVE_REPOSITORY))?
                 .await??;
             let remote_provider_icons = cx.update(|cx| remote_provider_icons(&remote_urls, cx));
             this.update(cx, |this, cx| {
@@ -613,9 +613,9 @@ impl BranchFilter {
 
     fn label(self) -> &'static str {
         match self {
-            Self::All => "All Branches",
-            Self::Local => "Local Branches",
-            Self::Remote => "Remote Branches",
+            Self::All => t_static(keys::git_ui::GIT_B_ALL_BRANCHES),
+            Self::Local => t_static(keys::git_ui::GIT_B_LOCAL_BRANCHES),
+            Self::Remote => t_static(keys::git_ui::GIT_B_REMOTE_BRANCHES),
         }
     }
 }
@@ -874,9 +874,9 @@ impl Render for DeleteBranchTooltip {
         // merged check), so there is no separate force delete to offer for them.
         if self.is_remote {
             return Tooltip::with_meta_in(
-                "Delete Local Tracking Branch",
+                t_static(keys::git_ui::GIT_B_DELETE_LOCAL_TRACKING_BRANCH),
                 Some(&branch_picker::DeleteBranch),
-                "Does not delete the branch on the remote",
+                t_static(keys::git_ui::GIT_B_DELETE_TRACKING_META),
                 &self.focus_handle,
                 cx,
             )
@@ -901,7 +901,7 @@ impl Render for DeleteBranchTooltip {
             .into_any_element()
         } else {
             Tooltip::with_meta_in(
-                "Delete Branch",
+                t_static(keys::git_ui::GIT_B_DELETE_BRANCH),
                 Some(&branch_picker::DeleteBranch),
                 concat!("Hold ", ui::alt_key_name!(), " to force delete"),
                 &self.focus_handle,
@@ -1054,7 +1054,7 @@ impl BranchListDelegate {
         let focus_handle = self.focus_handle.clone();
         move |_, cx| {
             Tooltip::for_action_in(
-                "Filter Branches",
+                t_static(keys::git_ui::GIT_B_FILTER_BRANCHES),
                 &branch_picker::ToggleFilterMenu,
                 &focus_handle,
                 cx,
@@ -1270,18 +1270,18 @@ impl PickerDelegate for BranchListDelegate {
     fn placeholder_text(&self, _window: &mut Window, _cx: &mut App) -> Arc<str> {
         match self.state {
             PickerState::List | PickerState::NewRemote | PickerState::NewBranch => {
-                "Switch or type to create a branch…"
+                t_static(keys::git_ui::GIT_B_BRANCH_PLACEHOLDER)
             }
-            PickerState::CreateRemote(_) => "Enter a name for this remote…",
+            PickerState::CreateRemote(_) => t_static(keys::git_ui::GIT_B_REMOTE_NAME_PLACEHOLDER),
         }
         .into()
     }
 
     fn no_matches_text(&self, _window: &mut Window, _cx: &mut App) -> Option<SharedString> {
         match self.state {
-            PickerState::CreateRemote(_) => {
-                Some(SharedString::new_static("Remote name can't be empty"))
-            }
+            PickerState::CreateRemote(_) => Some(SharedString::new_static(t_static(
+                keys::git_ui::GIT_B_REMOTE_NAME_EMPTY,
+            ))),
             _ => None,
         }
     }
@@ -1843,7 +1843,8 @@ impl PickerDelegate for BranchListDelegate {
                                         {
                                             format!("Based off {}", current_branch)
                                         } else {
-                                            "Based off the current branch".to_string()
+                                            t(keys::git_ui::GIT_B_BASED_OFF_CURRENT_BRANCH)
+                                                .to_string()
                                         }
                                     }
                                     Entry::Branch { .. } => String::new(),
@@ -1984,9 +1985,9 @@ impl PickerDelegate for BranchListDelegate {
                         });
                 starts_section.then(|| {
                     if branch.is_remote() {
-                        ("Remote Branches", ix != 0)
+                        (t_static(keys::git_ui::GIT_B_REMOTE_BRANCHES), ix != 0)
                     } else {
-                        ("Local Branches", false)
+                        (t_static(keys::git_ui::GIT_B_LOCAL_BRANCHES), false)
                     }
                 })
             });
@@ -2052,9 +2053,9 @@ impl PickerDelegate for BranchListDelegate {
 
                 let selected_branch = selected_entry.and_then(|entry| entry.as_branch());
                 let delete_label = if selected_branch.is_some_and(|branch| branch.is_remote()) {
-                    "Delete Local Tracking Branch"
+                    t_static(keys::git_ui::GIT_B_DELETE_LOCAL_TRACKING_BRANCH)
                 } else {
-                    "Delete"
+                    t_static(keys::git_ui::GIT_B_DELETE)
                 };
 
                 let delete_and_select_btns = h_flex()
@@ -2749,7 +2750,7 @@ mod tests {
         cx.run_until_parked();
         assert!(cx.has_pending_prompt());
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer(t_static(keys::git_ui::GIT_B_CANCEL));
         cx.run_until_parked();
         assert!(!cx.has_pending_prompt());
 

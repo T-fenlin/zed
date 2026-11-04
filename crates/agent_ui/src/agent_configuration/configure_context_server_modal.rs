@@ -2,7 +2,7 @@ use anyhow::{Context as _, Result};
 use collections::HashMap;
 use context_server::{ContextServerCommand, ContextServerId};
 use editor::{Editor, EditorElement, EditorStyle};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 
 use extension_host::ExtensionStore;
 use gpui::{
@@ -795,15 +795,16 @@ impl EventEmitter<DismissEvent> for ConfigureContextServerModal {}
 impl ConfigureContextServerModal {
     fn render_modal_header(&self) -> ModalHeader {
         let text: SharedString = match &self.source {
-            ConfigurationSource::Existing { .. } => "Configure MCP Server".into(),
+            ConfigurationSource::Existing { .. } => {
+                t(keys::agent::AGENT_A_CONTEXT_SERVER_CONFIGURE_MCP).into()
+            }
             ConfigurationSource::Extension { id, .. } => format!("Configure {}", id.0).into(),
         };
         ModalHeader::new().headline(text)
     }
 
     fn render_modal_description(&self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
-        const MODAL_DESCRIPTION: &str =
-            t(keys::agent::AGENT_A_CONTEXT_SERVER_DESCRIPTION);
+        const MODAL_DESCRIPTION: &str = t(keys::agent::AGENT_A_CONTEXT_SERVER_DESCRIPTION);
 
         if let ConfigurationSource::Extension {
             installation_instructions: Some(installation_instructions),
@@ -892,7 +893,7 @@ impl ConfigureContextServerModal {
                             let repository_url = repository_url.clone();
                             move |_window, cx| {
                                 Tooltip::with_meta(
-                                    "Open Repository",
+                                    t_static(keys::agent::AGENT_A_CONTEXT_SERVER_OPEN_REPOSITORY),
                                     None,
                                     repository_url.clone(),
                                     cx,
@@ -1030,11 +1031,9 @@ impl ConfigureContextServerModal {
                             .color(Color::Muted),
                     )
                     .child(
-                        Label::new(
-                            t(keys::agent::AGENT_A_CONTEXT_SERVER_CLIENT_SECRET_HINT),
-                        )
-                        .size(LabelSize::Small)
-                        .color(Color::Muted),
+                        Label::new(t(keys::agent::AGENT_A_CONTEXT_SERVER_CLIENT_SECRET_HINT))
+                            .size(LabelSize::Small)
+                            .color(Color::Muted),
                     ),
             )
             .child(
@@ -1159,9 +1158,9 @@ impl Render for ConfigureContextServerModal {
                                         .child(self.render_modal_content(cx))
                                         .child(match &self.state {
                                             State::Idle => div(),
-                                            State::Waiting => {
-                                                self.render_loading(t(keys::agent::AGENT_A_CONTEXT_SERVER_CONNECTING))
-                                            }
+                                            State::Waiting => self.render_loading(t(
+                                                keys::agent::AGENT_A_CONTEXT_SERVER_CONNECTING,
+                                            )),
                                             State::AuthRequired { server_id } => {
                                                 self.render_auth_required(&server_id.clone(), cx)
                                             }

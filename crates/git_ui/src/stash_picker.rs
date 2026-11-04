@@ -1,5 +1,5 @@
 use fuzzy::StringMatchCandidate;
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 
 use git::stash::StashEntry;
 use gpui::{
@@ -658,7 +658,7 @@ impl PickerDelegate for StashListDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("drop-stash", "Drop")
+                    Button::new("drop-stash", t_static(keys::git_ui::GIT_STASH_ACTION_DROP))
                         .key_binding(
                             KeyBinding::for_action_in(
                                 &stash_picker::DropStashItem,
@@ -688,7 +688,7 @@ impl PickerDelegate for StashListDelegate {
                         })),
                 )
                 .child(
-                    Button::new("pop-stash", "Pop")
+                    Button::new("pop-stash", t_static(keys::git_ui::GIT_STASH_ACTION_POP))
                         .key_binding(
                             KeyBinding::for_action_in(&menu::SecondaryConfirm, &focus_handle, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),

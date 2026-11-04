@@ -2,7 +2,7 @@
 use gpui::{
     AnyElement, App, Entity, EventEmitter, FocusHandle, Focusable, Hsla, Task, actions, hsla,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use strum::IntoEnumIterator;
 use theme::all_theme_colors;
 use ui::{
@@ -137,7 +137,11 @@ impl ThemePreview {
 
         v_flex()
             .gap_1()
-            .child(Headline::new(t(keys::editor::EDITOR_KIND_TEXT)).size(HeadlineSize::Small).color(Color::Muted))
+            .child(
+                Headline::new(t(keys::editor::EDITOR_KIND_TEXT))
+                    .size(HeadlineSize::Small)
+                    .color(Color::Muted),
+            )
             .child(
                 h_flex()
                     .items_start()
@@ -145,146 +149,174 @@ impl ThemePreview {
                     .child(
                         v_flex()
                             .gap_1()
-                            .child(Headline::new(t(keys::workspace::WS_B_HEADLINE_SIZES)).size(HeadlineSize::Small).color(Color::Muted))
-                            .child(Headline::new(t(keys::workspace::WS_B_XLARGE_HEADLINE)).size(HeadlineSize::XLarge))
-                            .child(Headline::new(t(keys::workspace::WS_B_LARGE_HEADLINE)).size(HeadlineSize::Large))
-                            .child(Headline::new(t(keys::workspace::WS_B_MEDIUM_HEADLINE)).size(HeadlineSize::Medium))
-                            .child(Headline::new(t(keys::workspace::WS_B_SMALL_HEADLINE)).size(HeadlineSize::Small))
-                            .child(Headline::new(t(keys::workspace::WS_B_XSMALL_HEADLINE)).size(HeadlineSize::XSmall)),
+                            .child(
+                                Headline::new(t(keys::workspace::WS_B_HEADLINE_SIZES))
+                                    .size(HeadlineSize::Small)
+                                    .color(Color::Muted),
+                            )
+                            .child(
+                                Headline::new(t(keys::workspace::WS_B_XLARGE_HEADLINE))
+                                    .size(HeadlineSize::XLarge),
+                            )
+                            .child(
+                                Headline::new(t(keys::workspace::WS_B_LARGE_HEADLINE))
+                                    .size(HeadlineSize::Large),
+                            )
+                            .child(
+                                Headline::new(t(keys::workspace::WS_B_MEDIUM_HEADLINE))
+                                    .size(HeadlineSize::Medium),
+                            )
+                            .child(
+                                Headline::new(t(keys::workspace::WS_B_SMALL_HEADLINE))
+                                    .size(HeadlineSize::Small),
+                            )
+                            .child(
+                                Headline::new(t(keys::workspace::WS_B_XSMALL_HEADLINE))
+                                    .size(HeadlineSize::XSmall),
+                            ),
                     )
                     .child(
                         v_flex()
                             .gap_1()
-                            .child(Headline::new(t(keys::workspace::WS_B_TEXT_COLORS)).size(HeadlineSize::Small).color(Color::Muted))
+                            .child(
+                                Headline::new(t(keys::workspace::WS_B_TEXT_COLORS))
+                                    .size(HeadlineSize::Small)
+                                    .color(Color::Muted),
+                            )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Default Text",
+                                    t_static(keys::workspace::WS_B_DEFAULT_TEXT),
                                     Color::Default.color(cx),
                                 ))
                                 .color(Color::Default),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Accent Text",
+                                    t_static(keys::workspace::WS_B_ACCENT_TEXT),
                                     Color::Accent.color(cx),
                                 ))
                                 .color(Color::Accent),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Conflict Text",
+                                    t_static(keys::workspace::WS_B_CONFLICT_TEXT),
                                     Color::Conflict.color(cx),
                                 ))
                                 .color(Color::Conflict),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Created Text",
+                                    t_static(keys::workspace::WS_B_CREATED_TEXT),
                                     Color::Created.color(cx),
                                 ))
                                 .color(Color::Created),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Deleted Text",
+                                    t_static(keys::workspace::WS_B_DELETED_TEXT),
                                     Color::Deleted.color(cx),
                                 ))
                                 .color(Color::Deleted),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Disabled Text",
+                                    t_static(keys::workspace::WS_B_DISABLED_TEXT),
                                     Color::Disabled.color(cx),
                                 ))
                                 .color(Color::Disabled),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Error Text",
+                                    t_static(keys::workspace::WS_B_ERROR_TEXT),
                                     Color::Error.color(cx),
                                 ))
                                 .color(Color::Error),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Hidden Text",
+                                    t_static(keys::workspace::WS_B_HIDDEN_TEXT),
                                     Color::Hidden.color(cx),
                                 ))
                                 .color(Color::Hidden),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Hint Text",
+                                    t_static(keys::workspace::WS_B_HINT_TEXT),
                                     Color::Hint.color(cx),
                                 ))
                                 .color(Color::Hint),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Ignored Text",
+                                    t_static(keys::workspace::WS_B_IGNORED_TEXT),
                                     Color::Ignored.color(cx),
                                 ))
                                 .color(Color::Ignored),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Info Text",
+                                    t_static(keys::workspace::WS_B_INFO_TEXT),
                                     Color::Info.color(cx),
                                 ))
                                 .color(Color::Info),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Modified Text",
+                                    t_static(keys::workspace::WS_B_MODIFIED_TEXT),
                                     Color::Modified.color(cx),
                                 ))
                                 .color(Color::Modified),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Muted Text",
+                                    t_static(keys::workspace::WS_B_MUTED_TEXT),
                                     Color::Muted.color(cx),
                                 ))
                                 .color(Color::Muted),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Placeholder Text",
+                                    t_static(keys::workspace::WS_B_PLACEHOLDER_TEXT),
                                     Color::Placeholder.color(cx),
                                 ))
                                 .color(Color::Placeholder),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Selected Text",
+                                    t_static(keys::workspace::WS_B_SELECTED_TEXT),
                                     Color::Selected.color(cx),
                                 ))
                                 .color(Color::Selected),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Success Text",
+                                    t_static(keys::workspace::WS_B_SUCCESS_TEXT),
                                     Color::Success.color(cx),
                                 ))
                                 .color(Color::Success),
                             )
                             .child(
                                 Label::new(label_with_contrast(
-                                    "Warning Text",
+                                    t_static(keys::workspace::WS_B_WARNING_TEXT),
                                     Color::Warning.color(cx),
                                 ))
                                 .color(Color::Warning),
-                            )
+                            ),
                     )
                     .child(
                         v_flex()
                             .gap_1()
-                            .child(Headline::new(t(keys::workspace::WS_B_WRAPPING_TEXT)).size(HeadlineSize::Small).color(Color::Muted))
                             .child(
-                                div().max_w(px(200.)).child(
-                                "This is a longer piece of text that should wrap to multiple lines. It demonstrates how text behaves when it exceeds the width of its container."
-                            ))
-                    )
+                                Headline::new(t(keys::workspace::WS_B_WRAPPING_TEXT))
+                                    .size(HeadlineSize::Small)
+                                    .color(Color::Muted),
+                            )
+                            .child(
+                                div()
+                                    .max_w(px(200.))
+                                    .child(t_static(keys::workspace::WS_B_WRAPPING_TEXT_EXAMPLE)),
+                            ),
+                    ),
             )
     }
 
@@ -358,9 +390,17 @@ impl ThemePreview {
             .size_full()
             .child(
                 v_flex()
-                    .child(Headline::new(t(keys::workspace::WS_B_THEME_PREVIEW)).size(HeadlineSize::Large))
-                    .child(div().w_full().text_color(cx.theme().colors().text_muted).child("This view lets you preview a range of UI elements across a theme. Use it for testing out changes to the theme."))
+                    .child(
+                        Headline::new(t(keys::workspace::WS_B_THEME_PREVIEW))
+                            .size(HeadlineSize::Large),
                     )
+                    .child(
+                        div()
+                            .w_full()
+                            .text_color(cx.theme().colors().text_muted)
+                            .child(t(keys::workspace::WS_B_THEME_PREVIEW_DESCRIPTION)),
+                    ),
+            )
             .child(self.render_theme_layer(ElevationIndex::Background, window, cx))
             .child(self.render_theme_layer(ElevationIndex::Surface, window, cx))
             .child(self.render_theme_layer(ElevationIndex::EditorSurface, window, cx))

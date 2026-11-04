@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::{
     cell::Cell,
     fmt,
@@ -5126,7 +5126,7 @@ impl Panel for AgentPanel {
     }
 
     fn icon_tooltip(&self, _window: &Window, _cx: &App) -> Option<&'static str> {
-        Some("Agent Panel")
+        Some(t_static(keys::agent::AGENT_PANEL_TITLE))
     }
 
     fn toggle_action(&self) -> Box<dyn Action> {
@@ -5601,18 +5601,15 @@ impl AgentPanel {
 
     fn show_no_thread_summary_model_toast(workspace: Entity<Workspace>, cx: &mut App) {
         workspace.update(cx, |workspace, cx| {
-            let toast = StatusToast::new(
-                t(keys::agent::AGENT_NO_SUMMARY_MODEL),
-                cx,
-                |this, _cx| {
+            let toast =
+                StatusToast::new(t(keys::agent::AGENT_NO_SUMMARY_MODEL), cx, |this, _cx| {
                     this.icon(
                         Icon::new(IconName::Warning)
                             .size(IconSize::Small)
                             .color(Color::Warning),
                     )
                     .dismiss_button(true)
-                },
-            );
+                });
             workspace.toggle_status_toast(toast, cx);
         });
     }
@@ -5778,7 +5775,7 @@ impl AgentPanel {
                                 )
                                 .separator()
                                 .header(t(keys::agent::AGENT_MENU_CONTEXT))
-                                .action("Skills", Box::new(ManageSkills));
+                                .action(t(keys::agent::AGENT_MENU_SKILLS), Box::new(ManageSkills));
 
                             if project_agents_md_path.is_some() || global_agents_md_loaded {
                                 if global_agents_md_loaded {
@@ -5837,24 +5834,32 @@ impl AgentPanel {
                                 }
                             }
 
-                            menu = menu
-                                .separator()
-                                .action(t(keys::agent::AGENT_MENU_PROFILES), Box::new(ManageProfiles::default()));
+                            menu = menu.separator().action(
+                                t(keys::agent::AGENT_MENU_PROFILES),
+                                Box::new(ManageProfiles::default()),
+                            );
                         }
 
                         menu = menu
-                            .action("Settings", Box::new(OpenSettings))
+                            .action(t(keys::agent::AGENT_MENU_SETTINGS), Box::new(OpenSettings))
                             .separator()
-                            .action(t(keys::agent::AGENT_MENU_TOGGLE_SIDEBAR), Box::new(ToggleWorkspaceSidebar));
+                            .action(
+                                t(keys::agent::AGENT_MENU_TOGGLE_SIDEBAR),
+                                Box::new(ToggleWorkspaceSidebar),
+                            );
 
                         if has_auth_methods || supports_logout {
                             menu = menu.separator()
                         }
                         if has_auth_methods {
-                            menu = menu.action(t(keys::agent::AGENT_MENU_REAUTHENTICATE), Box::new(ReauthenticateAgent))
+                            menu = menu.action(
+                                t(keys::agent::AGENT_MENU_REAUTHENTICATE),
+                                Box::new(ReauthenticateAgent),
+                            )
                         }
                         if supports_logout {
-                            menu = menu.action("Log Out", Box::new(LogoutAgent))
+                            menu = menu
+                                .action(t(keys::agent::AGENT_MENU_LOG_OUT), Box::new(LogoutAgent))
                         }
 
                         if let Some(conversation_view) = conversation_view.as_ref() {
@@ -5878,7 +5883,7 @@ impl AgentPanel {
         let focus_handle = self.focus_handle(cx);
 
         ProjectEmptyState::new(
-            "Agent Panel",
+            t_static(keys::agent::AGENT_PANEL_TITLE),
             focus_handle.clone(),
             KeyBinding::for_action_in(&workspace::Open::default(), &focus_handle, cx),
         )
@@ -10820,7 +10825,10 @@ mod tests {
             let metadata = panel
                 .terminal_metadata(terminal_id, cx)
                 .expect("terminal metadata should be available");
-            assert_eq!(metadata.title.as_ref(), t(keys::agent::AGENT_THREAD_THINKING));
+            assert_eq!(
+                metadata.title.as_ref(),
+                t(keys::agent::AGENT_THREAD_THINKING)
+            );
             assert_eq!(metadata.display_title().as_ref(), "Fix bug");
         });
     }
@@ -10869,7 +10877,10 @@ mod tests {
                 .as_ref()
                 .expect("terminal title editor should be active while editing")
                 .clone();
-            assert_eq!(title_editor.read(cx).text(cx), t(keys::agent::AGENT_THREAD_THINKING));
+            assert_eq!(
+                title_editor.read(cx).text(cx),
+                t(keys::agent::AGENT_THREAD_THINKING)
+            );
             title_editor
         });
 

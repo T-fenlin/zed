@@ -52,7 +52,7 @@ use gpui::{
     TextStyleRefinement, UnderlineStyle, WeakEntity, Window, div, fill, outline, pattern_slash,
     point, px, quad, relative, size, solid_background, transparent_black, underline_y_offset,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use itertools::Itertools;
 use language::{
     Diagnostic, HighlightedText, IndentGuideSettings, LanguageAwareStyling,
@@ -2837,7 +2837,7 @@ impl EditorElement {
                         });
                     })
                     .tooltip(Tooltip::for_action_title(
-                        "Expand Excerpt",
+                        t_static(keys::editor::EDITOR_EXPAND_EXCERPT),
                         &crate::actions::ExpandExcerpts::default(),
                     ))
                     .into_any_element();
@@ -7443,7 +7443,10 @@ enum LineFragment {
 impl fmt::Debug for LineFragment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            LineFragment::Text(line) => f.debug_tuple("Text").field(line).finish(),
+            LineFragment::Text(line) => f
+                .debug_tuple(t_static(keys::editor::EDITOR_KIND_TEXT))
+                .field(line)
+                .finish(),
             LineFragment::Element { size, len, .. } => f
                 .debug_struct("Element")
                 .field("size", size)

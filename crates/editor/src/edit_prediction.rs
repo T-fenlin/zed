@@ -1,5 +1,5 @@
 use super::*;
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 
 pub fn make_suggestion_styles(cx: &App) -> EditPredictionStyles {
     EditPredictionStyles {
@@ -1160,7 +1160,7 @@ impl Editor {
                 let target_display_point = range.end.to_display_point(editor_snapshot);
 
                 self.render_edit_prediction_end_of_line_popover(
-                    "Accept",
+                    t_static(keys::editor::EDITOR_EP_ACCEPT),
                     editor_snapshot,
                     visible_row_range,
                     target_display_point,
@@ -1765,17 +1765,27 @@ impl Editor {
             .items_end()
             .when(flag_on_right, |el| el.items_start())
             .child(if flag_on_right {
-                self.render_edit_prediction_line_popover("Jump", None, window, cx)
-                    .rounded_bl(px(0.))
-                    .rounded_tl(px(0.))
-                    .border_l_2()
-                    .border_color(border_color)
+                self.render_edit_prediction_line_popover(
+                    t_static(keys::editor::EDITOR_EP_JUMP),
+                    None,
+                    window,
+                    cx,
+                )
+                .rounded_bl(px(0.))
+                .rounded_tl(px(0.))
+                .border_l_2()
+                .border_color(border_color)
             } else {
-                self.render_edit_prediction_line_popover("Jump", None, window, cx)
-                    .rounded_br(px(0.))
-                    .rounded_tr(px(0.))
-                    .border_r_2()
-                    .border_color(border_color)
+                self.render_edit_prediction_line_popover(
+                    t_static(keys::editor::EDITOR_EP_JUMP),
+                    None,
+                    window,
+                    cx,
+                )
+                .rounded_br(px(0.))
+                .rounded_tr(px(0.))
+                .border_r_2()
+                .border_color(border_color)
             })
             .child(div().w(POLE_WIDTH).bg(border_color).h(line_height))
             .into_any();
@@ -1811,7 +1821,12 @@ impl Editor {
         cx: &mut App,
     ) -> Option<(AnyElement, gpui::Point<Pixels>)> {
         let mut element = self
-            .render_edit_prediction_line_popover("Scroll", Some(scroll_icon), window, cx)
+            .render_edit_prediction_line_popover(
+                t_static(keys::editor::EDITOR_EP_SCROLL),
+                Some(scroll_icon),
+                window,
+                cx,
+            )
             .into_any();
 
         let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);
@@ -1847,7 +1862,7 @@ impl Editor {
         if target_display_point.row().as_f64() < scroll_top {
             let mut element = self
                 .render_edit_prediction_line_popover(
-                    "Jump to Edit",
+                    t_static(keys::editor::EDITOR_EP_JUMP_TO_EDIT),
                     Some(IconName::ArrowUp),
                     window,
                     cx,
@@ -1866,7 +1881,7 @@ impl Editor {
         } else if (target_display_point.row().as_f64() + 1.) > scroll_bottom {
             let mut element = self
                 .render_edit_prediction_line_popover(
-                    "Jump to Edit",
+                    t_static(keys::editor::EDITOR_EP_JUMP_TO_EDIT),
                     Some(IconName::ArrowDown),
                     window,
                     cx,
@@ -1884,7 +1899,7 @@ impl Editor {
             Some((element, origin))
         } else {
             self.render_edit_prediction_end_of_line_popover(
-                "Jump to Edit",
+                t_static(keys::editor::EDITOR_EP_JUMP_TO_EDIT),
                 editor_snapshot,
                 visible_row_range,
                 target_display_point,
@@ -2544,7 +2559,7 @@ impl Render for MissingEditPredictionKeybindingTooltip {
                         .flex_1()
                         .text_ui_sm(cx)
                         .child(Label::new(t(keys::editor::EDITOR_EP_CONFLICT_TITLE)))
-                        .child("Your keymap currently overrides the default accept keybinding. To continue, assign one keybinding for the `editor::AcceptEditPrediction` action.")
+                        .child(t(keys::editor::EDITOR_EP_CONFLICT_BODY))
                 )
                 .child(
                     h_flex()

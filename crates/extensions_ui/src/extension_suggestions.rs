@@ -1,3 +1,4 @@
+use i18n::{keys, t_static};
 use std::sync::Arc;
 
 use db::kvp::KeyValueStore;
@@ -138,10 +139,10 @@ fn suggest_for_buffer(
                         .into_any_element()
                 })
                 .with_title(suggestion.title)
-                .more_info_message("Learn more")
+                .more_info_message(t_static(keys::extensions::EXTENSIONS_LEARN_MORE))
                 .more_info_url(suggestion.docs_url)
                 .primary_message(suggestion.install_message)
-                .secondary_message("Don't show again")
+                .secondary_message(t_static(keys::extensions::EXTENSIONS_DONT_SHOW_AGAIN))
             });
         }
         None => {
@@ -168,8 +169,8 @@ fn suggest_for_buffer(
                     ),
                     cx,
                 )
-                .primary_message("Yes, install extension")
-                .secondary_message("No, don't install it")
+                .primary_message(t_static(keys::extensions::EXTENSIONS_YES_INSTALL))
+                .secondary_message(t_static(keys::extensions::EXTENSIONS_NO_DONT_INSTALL))
             });
         }
     }
@@ -234,9 +235,10 @@ fn show_suggestion(
                 .secondary_icon(IconName::Close)
                 .secondary_icon_color(Color::Error)
                 .secondary_on_click(move |_window, cx| dismiss_suggestion(&extension_id, cx))
-                .secondary_menu_entry("Disable Suggestions", |_window, cx| {
-                    disable_extension_suggestions(cx)
-                })
+                .secondary_menu_entry(
+                    t_static(keys::extensions::EXTENSIONS_DISABLE_SUGGESTIONS),
+                    |_window, cx| disable_extension_suggestions(cx),
+                )
         })
     });
 }

@@ -14,7 +14,7 @@ use gpui::{
     App, ClipboardItem, Context, Entity, EventEmitter, Focusable, Pixels, Point, Render,
     Subscription, Task, VisualContext as _, WeakEntity, Window, actions,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use project::Project;
 use rpc::proto::ChannelVisibility;
 use std::{
@@ -338,7 +338,7 @@ impl ChannelView {
                 workspace.show_toast(
                     Toast::new(
                         NotificationId::unique::<CopyLinkForPositionToast>(),
-                        "Link copied to clipboard",
+                        t_static(keys::collab::COLLAB_LINK_COPIED),
                     ),
                     cx,
                 );
@@ -413,13 +413,16 @@ impl ChannelView {
                 self.channel_buffer.read(cx).is_connected(),
             ) {
                 (false, true) => None,
-                (true, true) => Some("read-only"),
-                (_, false) => Some("disconnected"),
+                (true, true) => Some(t_static(keys::collab::COLLAB_READ_ONLY)),
+                (_, false) => Some(t_static(keys::collab::COLLAB_DISCONNECTED)),
             };
 
             (channel.name.clone(), status.map(Into::into))
         } else {
-            ("<unknown>".into(), Some("disconnected".into()))
+            (
+                t(keys::collab::COLLAB_UNKNOWN_VALUE).into(),
+                Some("disconnected".into()),
+            )
         }
     }
 }

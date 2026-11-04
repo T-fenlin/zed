@@ -11,6 +11,7 @@ use gpui::{
     ParentElement, Render, Styled, Task, TaskExt, Window, actions,
 };
 use gpui::{WeakEntity, linear_color_stop, linear_gradient};
+use i18n::{keys, t};
 use menu::{SelectNext, SelectPrevious};
 
 use schemars::JsonSchema;
@@ -169,7 +170,7 @@ const CONTENT: (Section<4>, Section<3>) = (
         entries: [
             SectionEntry {
                 icon: IconName::Plus,
-                title: "New File",
+                title: t(keys::pane::PANE_NEW_FILE),
                 action: &NewFile,
                 visibility_guard: SectionVisibility::Always,
             },

@@ -17,6 +17,7 @@ use gpui::{
     AnyElement, App, AsyncWindowContext, Context, Entity, EntityId, EventEmitter, Font,
     IntoElement, ParentElement, Pixels, SharedString, Styled, Task, WeakEntity, Window, point,
 };
+use i18n::{keys, t, t_static};
 use language::{
     Bias, Buffer, BufferRow, CharKind, CharScopeContext, HighlightedText, LocalFile, PLAIN_TEXT,
     Point, SelectionGoal,
@@ -1245,14 +1246,14 @@ impl Item for Editor {
 
         if is_markdown {
             actions.push((
-                "Open Markdown Preview".into(),
+                t(keys::editor::EDITOR_ACTION_OPEN_MARKDOWN_PREVIEW).into(),
                 Box::new(OpenMarkdownPreview) as Box<dyn gpui::Action>,
             ));
         }
 
         if is_svg {
             actions.push((
-                "Open SVG Preview".into(),
+                t(keys::editor::EDITOR_ACTION_OPEN_SVG_PREVIEW).into(),
                 Box::new(OpenSvgPreview) as Box<dyn gpui::Action>,
             ));
         }
@@ -1455,7 +1456,7 @@ impl SerializableItem for Editor {
                 let buffer = project
                     .update(cx, |project, cx| project.create_buffer(None, true, cx))
                     .await
-                    .context("Failed to create buffer")?;
+                    .context(t_static(keys::editor::EDITOR_FAILED_TO_CREATE_BUFFER))?;
                 if language.is_none() {
                     buffer.update(cx, |buffer, _| {
                         buffer.set_content_language_detection_enabled(true);

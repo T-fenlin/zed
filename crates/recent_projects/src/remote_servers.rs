@@ -19,7 +19,7 @@ use gpui::{
     Action, AnyElement, App, ClipboardItem, Context, DismissEvent, Entity, EventEmitter,
     FocusHandle, Focusable, PromptLevel, Subscription, Task, TaskExt, WeakEntity, Window,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use log::{debug, info};
 use open_path_prompt::OpenPathDelegate;
 use paths::{global_ssh_config_file, user_ssh_config_file};
@@ -2755,7 +2755,7 @@ impl RemoteServerProjects {
                     PromptLevel::Warning,
                     &prompt_message,
                     None,
-                    &["Yes, remove it", "No, keep it"],
+                    &["Yes, remove it", t_static(keys::recent::RECENT_NO_KEEP_IT)],
                     cx,
                 );
 
@@ -2906,7 +2906,7 @@ impl RemoteServerProjects {
                         PromptLevel::Warning,
                         &prompt_message,
                         None,
-                        &["Yes, remove it", "No, keep it"],
+                        &["Yes, remove it", t_static(keys::recent::RECENT_NO_KEEP_IT)],
                         cx,
                     );
 

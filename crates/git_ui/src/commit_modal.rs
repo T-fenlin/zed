@@ -4,7 +4,7 @@ use crate::git_panel::{
 };
 use crate::git_panel_settings::GitPanelSettings;
 use git::{Amend, Commit, GenerateCommitMessage, Signoff, SkipHooks};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use project::DisableAiSettings;
 use settings::Settings;
 use ui::{
@@ -297,7 +297,7 @@ impl CommitModal {
                             })
                             .when(has_previous_commit, |this| {
                                 this.toggleable_entry(
-                                    "Amend",
+                                    t_static(keys::git_ui::GIT_AMEND),
                                     amend_enabled,
                                     IconPosition::Start,
                                     Some(Box::new(Amend)),
@@ -314,7 +314,7 @@ impl CommitModal {
                                 )
                             })
                             .toggleable_entry(
-                                "Signoff",
+                                t_static(keys::git_ui::GIT_SIGNOFF),
                                 signoff_enabled,
                                 IconPosition::Start,
                                 Some(Box::new(Signoff)),
@@ -410,7 +410,10 @@ impl CommitModal {
             .with_handle(self.branch_list_handle.clone())
             .trigger_with_tooltip(
                 branch_picker_button,
-                Tooltip::for_action_title("Switch Branch", &zed_actions::git::Branch),
+                Tooltip::for_action_title(
+                    t_static(keys::git_ui::GIT_SWITCH_BRANCH),
+                    &zed_actions::git::Branch,
+                ),
             )
             .anchor(Anchor::BottomLeft)
             .offset(gpui::Point {
@@ -421,7 +424,8 @@ impl CommitModal {
         let focus_handle = self.focus_handle(cx);
 
         let close_kb_hint = ui::KeyBinding::for_action(&menu::Cancel, cx).map(|close_kb| {
-            KeybindingHint::new(close_kb, cx.theme().colors().editor_background).suffix("Cancel")
+            KeybindingHint::new(close_kb, cx.theme().colors().editor_background)
+                .suffix(t_static(keys::git_ui::GIT_B_CANCEL))
         });
 
         h_flex()

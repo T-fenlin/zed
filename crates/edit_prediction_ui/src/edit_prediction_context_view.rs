@@ -1,3 +1,4 @@
+use i18n::{keys, t, t_static};
 use std::{
     any::TypeId,
     collections::VecDeque,
@@ -295,7 +296,8 @@ impl EditPredictionContextView {
                     ])
                 }
                 table = table.row(vec![
-                    "Total Time".into_any_element(),
+                    t_static(keys::edit_prediction::EDIT_PREDICTION_CONTEXT_TOTAL_TIME)
+                        .into_any_element(),
                     format!("{} ms", (run.finished_at.unwrap_or(t0) - t0).as_millis())
                         .into_any_element(),
                 ]);
@@ -309,7 +311,9 @@ impl EditPredictionContextView {
                             IconButton::new("go-back", IconName::ChevronLeft)
                                 .disabled(self.current_ix == 0 || self.runs.len() < 2)
                                 .tooltip(ui::Tooltip::for_action_title(
-                                    "Go to previous run",
+                                    t_static(
+                                        keys::edit_prediction::EDIT_PREDICTION_CONTEXT_PREVIOUS_RUN,
+                                    ),
                                     &EditPredictionContextGoBack,
                                 ))
                                 .on_click(cx.listener(|this, _, window, cx| {
@@ -338,7 +342,9 @@ impl EditPredictionContextView {
                             IconButton::new("go-forward", IconName::ChevronRight)
                                 .disabled(self.current_ix + 1 == self.runs.len())
                                 .tooltip(ui::Tooltip::for_action_title(
-                                    "Go to next run",
+                                    t_static(
+                                        keys::edit_prediction::EDIT_PREDICTION_CONTEXT_NEXT_RUN,
+                                    ),
                                     &EditPredictionContextGoBack,
                                 ))
                                 .on_click(cx.listener(|this, _, window, cx| {
@@ -369,7 +375,7 @@ impl Item for EditPredictionContextView {
     type Event = ();
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Edit Prediction Context".into()
+        t(keys::edit_prediction::EDIT_PREDICTION_CONTEXT_VIEW_TITLE).into()
     }
 
     fn buffer_kind(&self, _cx: &App) -> workspace::item::ItemBufferKind {
@@ -406,7 +412,7 @@ impl gpui::Render for EditPredictionContextView {
                             .size_full()
                             .justify_center()
                             .items_center()
-                            .child("No retrieval runs yet"),
+                            .child(t(keys::edit_prediction::EDIT_PREDICTION_CONTEXT_NO_RUNS)),
                     )
                 } else {
                     this.child(self.runs[self.current_ix].editor.clone())

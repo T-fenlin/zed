@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::path::PathBuf;
 
 use file_icons::FileIcons;
@@ -218,30 +218,43 @@ impl Component for SandboxStatusTooltip {
     }
 
     fn preview(_window: &mut Window, cx: &mut App) -> AnyElement {
-        let settings_section = SandboxSection::new(t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS))
-            .group(SandboxGroup::new("Write Access").rows([
-                SandboxRow::path("/Users/you/project"),
-                SandboxRow::path("/tmp (isolated)"),
-            ]))
-            .group(SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS)).rows([
-                SandboxRow::domain("github.com"),
-                SandboxRow::domain("*.npmjs.org"),
-            ]));
+        let settings_section =
+            SandboxSection::new(t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS))
+                .group(
+                    SandboxGroup::new(t_static(keys::agent::AGENT_THREAD_WRITE_ACCESS)).rows([
+                        SandboxRow::path("/Users/you/project"),
+                        SandboxRow::path("/tmp (isolated)"),
+                    ]),
+                )
+                .group(
+                    SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS)).rows([
+                        SandboxRow::domain("github.com"),
+                        SandboxRow::domain("*.npmjs.org"),
+                    ]),
+                );
 
         let thread_section = SandboxSection::new(t(keys::agent::AGENT_THREAD_ALLOWED_FOR_THREAD))
             .group(
-                SandboxGroup::new("Write Access").row(SandboxRow::path("/Users/you/project/build")),
+                SandboxGroup::new(t_static(keys::agent::AGENT_THREAD_WRITE_ACCESS))
+                    .row(SandboxRow::path("/Users/you/project/build")),
             )
-            .group(SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS)).row(SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))));
-
-        let unrestricted_section = SandboxSection::new(t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS))
-            .group(SandboxGroup::new("Write Access").row(SandboxRow::message(
-                t(keys::agent::AGENT_THREAD_ALL_PATHS_EXCEPT_GIT),
-            )))
             .group(
                 SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS))
-                    .row(SandboxRow::message(t(keys::agent::AGENT_THREAD_ALL_DOMAINS))),
+                    .row(SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))),
             );
+
+        let unrestricted_section =
+            SandboxSection::new(t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS))
+                .group(
+                    SandboxGroup::new(t(keys::agent::AGENT_THREAD_WRITE_ACCESS)).row(
+                        SandboxRow::message(t(keys::agent::AGENT_THREAD_ALL_PATHS_EXCEPT_GIT)),
+                    ),
+                )
+                .group(
+                    SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS)).row(
+                        SandboxRow::message(t(keys::agent::AGENT_THREAD_ALL_DOMAINS)),
+                    ),
+                );
 
         let container = || div().p_2().elevation_2(cx).max_w_112();
 

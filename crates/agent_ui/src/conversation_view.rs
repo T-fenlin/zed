@@ -33,7 +33,7 @@ use gpui::{
     TextStyle, WeakEntity, Window, WindowHandle, div, ease_in_out, img, linear_color_stop,
     linear_gradient, list, pulsating_between,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use language::{Buffer, Language};
 use language_model::{
     LanguageModelCompletionError, ProviderErrorCategory, ZED_CLOUD_PROVIDER_NAME,
@@ -1332,9 +1332,7 @@ impl ConversationView {
             && agent.clone().downcast::<NativeAgentServer>().is_none()
         {
             return ServerState::LoadError {
-                error: LoadError::Other(
-                    t(keys::agent::AGENT_EXTERNAL_AGENT_SHARED_PROJECT).into(),
-                ),
+                error: LoadError::Other(t(keys::agent::AGENT_EXTERNAL_AGENT_SHARED_PROJECT).into()),
             };
         }
         let session_work_dirs = work_dirs.unwrap_or_else(|| project.read(cx).default_path_list(cx));
@@ -1419,9 +1417,9 @@ impl ConversationView {
                             cx,
                         )
                     } else if recovering {
-                        Task::ready(Err(anyhow!(
-                            t(keys::agent::AGENT_RECONNECT_REQUIRES_REPLAY)
-                        )))
+                        Task::ready(Err(anyhow!(t(
+                            keys::agent::AGENT_RECONNECT_REQUIRES_REPLAY
+                        ))))
                     } else if connection.supports_resume_session() {
                         resumed_without_history = true;
                         connection.clone().resume_session(
@@ -2049,7 +2047,12 @@ impl ConversationView {
             // redraws them.
             AcpThreadEvent::SubagentAssociationUpdated => {}
             AcpThreadEvent::ToolAuthorizationRequested(_) => {
-                self.notify_with_sound(t(keys::agent::AGENT_WAITING_TOOL_CONFIRMATION), IconName::Info, window, cx);
+                self.notify_with_sound(
+                    t(keys::agent::AGENT_WAITING_TOOL_CONFIRMATION),
+                    IconName::Info,
+                    window,
+                    cx,
+                );
             }
             AcpThreadEvent::ToolAuthorizationReceived(_) => {}
             AcpThreadEvent::ElicitationRequested(_) => {
@@ -2238,9 +2241,7 @@ impl ConversationView {
             }
             AcpThreadEvent::ConnectionLost => {
                 self.handle_load_error(
-                    LoadError::Other(
-                        t(keys::agent::AGENT_CONNECTION_LOST).into(),
-                    ),
+                    LoadError::Other(t(keys::agent::AGENT_CONNECTION_LOST).into()),
                     window,
                     cx,
                 );
@@ -3261,9 +3262,7 @@ impl ConversationView {
                     "copy-saved-agent-input",
                     t(keys::agent::AGENT_COPY_SAVED_INPUT),
                 )
-                .tooltip(Tooltip::text(
-                    t(keys::agent::AGENT_COPY_SAVED_INPUT_HINT),
-                ))
+                .tooltip(Tooltip::text(t(keys::agent::AGENT_COPY_SAVED_INPUT_HINT)))
                 .on_click(cx.listener(|this, _, window, cx| {
                     match ThreadRecovery::to_json(
                         this.root_session_id.as_ref(),
@@ -3297,7 +3296,9 @@ impl ConversationView {
             } => {
                 return self.render_unsupported(path, current_version, minimum_version, window, cx);
             }
-            LoadError::FailedToInstall(msg) => (t(keys::agent::AGENT_FAILED_TO_INSTALL), msg.to_string()),
+            LoadError::FailedToInstall(msg) => {
+                (t(keys::agent::AGENT_FAILED_TO_INSTALL), msg.to_string())
+            }
             LoadError::Exited { status, stderr } => {
                 let mut message = format!("Server exited with status {status}");
                 if let Some(stderr) = stderr {
@@ -7804,7 +7805,9 @@ pub(crate) mod tests {
                 assert_eq!(view.thread.read(cx).title().as_deref(), title);
                 assert_eq!(
                     view.title_editor.read(cx).text(cx),
-                    title_override.or(title).unwrap_or(default_thread_title().as_str())
+                    title_override
+                        .or(title)
+                        .unwrap_or(default_thread_title().as_str())
                 );
             });
             cx.read(|cx| {
@@ -8745,7 +8748,7 @@ pub(crate) mod tests {
                 tool_call_id,
                 PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                     "1",
-                    "Allow",
+                    t_static(keys::agent::AGENT_THREAD_ALLOW),
                     acp_v2::PermissionOptionKind::AllowOnce,
                 )]),
             )]));
@@ -12278,7 +12281,7 @@ pub(crate) mod tests {
         );
         let copy_response = cx
             .debug_bounds("MENU_ITEM-Copy This Agent Response")
-            .expect("Copy This Agent Response");
+            .expect(t_static(keys::agent::AGENT_THREAD_COPY_RESPONSE));
         cx.simulate_click(copy_response.center(), gpui::Modifiers::default());
         let copied = cx
             .update(|_, cx| cx.read_from_clipboard().and_then(|item| item.text()))
@@ -12377,7 +12380,9 @@ pub(crate) mod tests {
                 gpui::MouseButton::Right,
                 gpui::Modifiers::default(),
             );
-            let copy = cx.debug_bounds("MENU_ITEM-Copy Link").expect("Copy Link");
+            let copy = cx
+                .debug_bounds("MENU_ITEM-Copy Link")
+                .expect(t_static(keys::agent::AGENT_THREAD_COPY_LINK));
             cx.simulate_click(copy.center(), gpui::Modifiers::default());
             let copied = cx.update(|_, cx| cx.read_from_clipboard().and_then(|item| item.text()));
             assert_eq!(copied.as_deref(), Some(expected));
@@ -12840,7 +12845,7 @@ pub(crate) mod tests {
                     ),
                     PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                         "allow-review",
-                        "Allow",
+                        t_static(keys::agent::AGENT_THREAD_ALLOW),
                         acp_v2::PermissionOptionKind::AllowOnce,
                     )]),
                     acp_thread::AuthorizationKind::PermissionGrant,
@@ -17113,7 +17118,7 @@ pub(crate) mod tests {
             ),
             acp_v2::PermissionOption::new(
                 acp_v2::PermissionOptionId::new("deny"),
-                "Deny",
+                t_static(keys::agent::AGENT_THREAD_DENY),
                 acp_v2::PermissionOptionKind::RejectOnce,
             ),
         ])
@@ -17300,7 +17305,9 @@ pub(crate) mod tests {
         let thread_id = conversation_view.read_with(cx, |view, _cx| view.thread_id);
         let assert_title =
             |title: Option<&str>, title_override: Option<&str>, cx: &VisualTestContext| {
-                let display_title = title_override.or(title).unwrap_or(default_thread_title().as_str());
+                let display_title = title_override
+                    .or(title)
+                    .unwrap_or(default_thread_title().as_str());
                 title_editor.read_with(cx, |editor, cx| {
                     assert_eq!(editor.text(cx), display_title);
                 });
@@ -17339,7 +17346,11 @@ pub(crate) mod tests {
         cx.write_to_clipboard(ClipboardItem::new_string(default_thread_title().into()));
         cx.dispatch_action(Paste);
         cx.run_until_parked();
-        assert_title(Some(default_thread_title().as_str()), Some(default_thread_title().as_str()), cx);
+        assert_title(
+            Some(default_thread_title().as_str()),
+            Some(default_thread_title().as_str()),
+            cx,
+        );
         assert_eq!(
             connection.take_set_title_calls(),
             vec![(session_id.clone(), default_thread_title().into())]
@@ -17512,7 +17523,7 @@ pub(crate) mod tests {
             tool_call_id,
             PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                 acp_v2::PermissionOptionId::new(option_id),
-                "Allow",
+                t_static(keys::agent::AGENT_THREAD_ALLOW),
                 acp_v2::PermissionOptionKind::AllowOnce,
             )]),
             cx,
@@ -18518,7 +18529,7 @@ pub(crate) mod tests {
                         acp_v1::ToolCall::new("queued-tool", "Queued permission").into(),
                         PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                             "allow-child",
-                            "Allow",
+                            t_static(keys::agent::AGENT_THREAD_ALLOW),
                             acp_v2::PermissionOptionKind::AllowOnce,
                         )]),
                         acp_thread::AuthorizationKind::PermissionGrant,
@@ -19490,7 +19501,7 @@ pub(crate) mod tests {
                 tool_call_id_value.clone(),
                 PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                     "allow",
-                    "Allow",
+                    t_static(keys::agent::AGENT_THREAD_ALLOW),
                     acp_v2::PermissionOptionKind::AllowOnce,
                 )]),
             )]));
@@ -20431,7 +20442,10 @@ pub(crate) mod tests {
         let label = |thread: &Entity<AcpThread>, cx: &mut TestAppContext| {
             thread.read_with(cx, |thread, _| thread_view::subagent_label(thread))
         };
-        assert_eq!(label(&native_child, cx), t(keys::agent::AGENT_THREAD_SUBAGENT));
+        assert_eq!(
+            label(&native_child, cx),
+            t(keys::agent::AGENT_THREAD_SUBAGENT)
+        );
 
         for thread in [&native_child, &acp_child] {
             thread.update(cx, |thread, cx| {

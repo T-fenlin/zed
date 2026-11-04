@@ -1,5 +1,5 @@
 #![allow(unused, dead_code)]
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::future::Future;
 use std::{path::PathBuf, sync::Arc};
 
@@ -597,10 +597,10 @@ impl NotebookEditor {
                 .request_tx()
                 .try_send(message)
                 .map_err(|err| format!("failed to send execute request to kernel (the kernel process may have died): {err}")),
-            Kernel::StartingKernel(_) => Err("the kernel is still starting".to_string()),
+            Kernel::StartingKernel(_) => Err(t(keys::repl::REPL_NOTEBOOK_KERNEL_STARTING).to_string()),
             Kernel::ErroredLaunch(error) => Err(format!("the kernel failed to launch: {error}")),
-            Kernel::ShuttingDown | Kernel::Shutdown => Err("the kernel is shut down".to_string()),
-            Kernel::Restarting => Err("the kernel is restarting".to_string()),
+            Kernel::ShuttingDown | Kernel::Shutdown => Err(t(keys::repl::REPL_NOTEBOOK_KERNEL_SHUT_DOWN).to_string()),
+            Kernel::Restarting => Err(t(keys::repl::REPL_NOTEBOOK_KERNEL_RESTARTING).to_string()),
         };
 
         if let Some(Cell::Code(cell)) = self.cell_map.get(&cell_id) {
@@ -1270,7 +1270,9 @@ impl NotebookEditor {
                             .kernel_specification
                             .as_ref()
                             .map(|spec| spec.name().to_string())
-                            .unwrap_or_else(|| "Select Kernel".to_string());
+                            .unwrap_or_else(|| {
+                                t(keys::repl::REPL_NOTEBOOK_SELECT_KERNEL).to_string()
+                            });
                         IconButton::new("repl", icon)
                             .icon_color(icon_color)
                             .tooltip(move |window, cx| {
@@ -1297,7 +1299,7 @@ impl NotebookEditor {
             .kernel_specification
             .as_ref()
             .map(|spec| spec.name().to_string())
-            .unwrap_or_else(|| "Select Kernel".to_string());
+            .unwrap_or_else(|| t(keys::repl::REPL_NOTEBOOK_SELECT_KERNEL).to_string());
 
         let (status_icon, status_color) = match &kernel_status {
             KernelStatus::Idle => (IconName::Circle, Color::Success),
@@ -2256,7 +2258,10 @@ mod tests {
             };
             match outputs.as_slice() {
                 [nbformat::v4::Output::Error(error)] => {
-                    assert_eq!(error.ename, "Kernel Error");
+                    assert_eq!(
+                        error.ename,
+                        t_static(keys::repl::REPL_CELL_KERNEL_ERROR_TITLE)
+                    );
                     let traceback = error.traceback.join("\n");
                     assert!(
                         traceback.contains("the kernel failed to launch"),

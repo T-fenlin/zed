@@ -1,4 +1,4 @@
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use std::sync::Arc;
 
 use collections::HashMap;
@@ -1607,7 +1607,7 @@ mod tests {
             settings_validation_error(Some(&http("not a url")))
                 .unwrap()
                 .as_ref(),
-            "Invalid URL in settings."
+            t_static(keys::settings_ui::SETTINGS_A_MCP_INVALID_URL_IN_SETTINGS)
         );
         assert!(settings_validation_error(Some(&http("https://example.com/mcp"))).is_none());
         assert!(settings_validation_error(None).is_none());

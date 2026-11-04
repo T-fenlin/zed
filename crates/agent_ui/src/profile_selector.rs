@@ -201,7 +201,7 @@ impl Render for ProfileSelector {
 
         let selected_profile = profile
             .map(|profile| profile.name.clone())
-            .unwrap_or_else(|| "Unknown".into());
+            .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
         let icon = if self.picker_handle.is_deployed() {
             IconName::ChevronUp
@@ -406,7 +406,9 @@ impl ProfilePickerDelegate {
         for (idx, candidate) in candidates.iter().enumerate() {
             if !candidate.is_builtin && !inserted_custom_header {
                 if !entries.is_empty() {
-                    entries.push(ProfilePickerEntry::Header(t(keys::agent::AGENT_CUSTOM_PROFILES).into()));
+                    entries.push(ProfilePickerEntry::Header(
+                        t(keys::agent::AGENT_CUSTOM_PROFILES).into(),
+                    ));
                 }
                 inserted_custom_header = true;
             }

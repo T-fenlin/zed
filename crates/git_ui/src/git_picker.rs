@@ -1,3 +1,4 @@
+use i18n::{keys, t_static};
 use std::fmt::Display;
 
 use gpui::{
@@ -29,8 +30,8 @@ pub enum GitPickerTab {
 impl Display for GitPickerTab {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let label = match self {
-            GitPickerTab::Branches => "Branches",
-            GitPickerTab::Stashes => "Stashes",
+            GitPickerTab::Branches => t_static(keys::git_ui::GIT_PICKER_BRANCHES),
+            GitPickerTab::Stashes => t_static(keys::git_ui::GIT_PICKER_STASHES),
         };
         write!(f, "{}", label)
     }

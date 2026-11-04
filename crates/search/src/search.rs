@@ -3,6 +3,7 @@ pub use buffer_search::BufferSearchBar;
 pub use editor::HighlightKey;
 use editor::SearchSettings;
 use gpui::{Action, App, ClickEvent, Entity, FocusHandle, IntoElement, actions};
+use i18n::{keys, t_static};
 use project::search::SearchQuery;
 pub use project_search::ProjectSearchView;
 use ui::{IconButtonShape, Tooltip, prelude::*};
@@ -111,12 +112,12 @@ impl SearchOption {
 
     pub fn label(&self) -> &'static str {
         match self {
-            SearchOption::WholeWord => "Match Whole Words",
-            SearchOption::CaseSensitive => "Match Case Sensitivity",
-            SearchOption::IncludeIgnored => "Also search files ignored by configuration",
-            SearchOption::Regex => "Use Regular Expressions",
-            SearchOption::OneMatchPerLine => "One Match Per Line",
-            SearchOption::Backwards => "Search Backwards",
+            SearchOption::WholeWord => t_static(keys::search::SEARCH_OPTION_WHOLE_WORDS),
+            SearchOption::CaseSensitive => t_static(keys::search::SEARCH_OPTION_CASE_SENSITIVITY),
+            SearchOption::IncludeIgnored => t_static(keys::search::SEARCH_OPTION_IGNORED_FILES),
+            SearchOption::Regex => t_static(keys::search::SEARCH_OPTION_REGEX),
+            SearchOption::OneMatchPerLine => t_static(keys::search::SEARCH_OPTION_ONE_PER_LINE),
+            SearchOption::Backwards => t_static(keys::search::SEARCH_OPTION_BACKWARDS),
         }
     }
 
@@ -254,7 +255,11 @@ pub(crate) fn show_no_more_matches(window: &mut Window, cx: &mut App) {
         };
         workspace.update(cx, |workspace, cx| {
             workspace.show_toast(
-                Toast::new(notification_id.clone(), "No more matches").autohide(),
+                Toast::new(
+                    notification_id.clone(),
+                    t_static(keys::search::SEARCH_NO_MORE_MATCHES),
+                )
+                .autohide(),
                 cx,
             );
         })

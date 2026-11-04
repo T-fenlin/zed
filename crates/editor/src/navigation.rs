@@ -1,4 +1,5 @@
 use super::*;
+use i18n::{keys, t_static};
 
 impl Editor {
     pub fn move_left(&mut self, _: &MoveLeft, window: &mut Window, cx: &mut Context<Self>) {
@@ -1519,7 +1520,7 @@ impl Editor {
                     .take(3)
                     .join(", ");
                 let title = if target.is_empty() {
-                    "References".to_owned()
+                    t_static(keys::editor::EDITOR_NAV_REFERENCES).to_owned()
                 } else {
                     format!("References to {target}")
                 };
@@ -1783,10 +1784,16 @@ impl Editor {
 
             if num_locations > 1 {
                 let tab_kind = match kind {
-                    Some(GotoDefinitionKind::Implementation) => "Implementations",
-                    Some(GotoDefinitionKind::Symbol) | None => "Definitions",
-                    Some(GotoDefinitionKind::Declaration) => "Declarations",
-                    Some(GotoDefinitionKind::Type) => "Types",
+                    Some(GotoDefinitionKind::Implementation) => {
+                        t_static(keys::editor::EDITOR_NAV_IMPLEMENTATIONS)
+                    }
+                    Some(GotoDefinitionKind::Symbol) | None => {
+                        t_static(keys::editor::EDITOR_NAV_DEFINITIONS)
+                    }
+                    Some(GotoDefinitionKind::Declaration) => {
+                        t_static(keys::editor::EDITOR_NAV_DECLARATIONS)
+                    }
+                    Some(GotoDefinitionKind::Type) => t_static(keys::editor::EDITOR_NAV_TYPES),
                 };
                 let title = editor
                     .update_in(cx, |_, _, cx| {

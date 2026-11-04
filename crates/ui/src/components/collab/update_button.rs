@@ -259,7 +259,10 @@ impl Component for UpdateButton {
                             "Installing",
                             UpdateButton::installing(version).into_any_element(),
                         ),
-                        single_example("Up to Date", UpdateButton::up_to_date().into_any_element()),
+                        single_example(
+                            t(keys::ui::UI_UP_TO_DATE),
+                            UpdateButton::up_to_date().into_any_element(),
+                        ),
                     ],
                 ),
                 example_group_with_title(

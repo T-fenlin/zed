@@ -1,4 +1,5 @@
 use anyhow::Context as _;
+use i18n::{keys, t_static};
 
 use git::repository::{Remote, RemoteCommandOutput};
 use ui::SharedString;
@@ -6,9 +7,15 @@ use util::ResultExt as _;
 
 const PULL_REQUEST_HINTS: &[(&str, &str)] = &[
     // GitHub: "Create a pull request for 'branch' on GitHub by visiting:"
-    ("Create a pull request", "Create Pull Request"),
+    (
+        "Create a pull request",
+        t_static(keys::git_ui::GIT_CREATE_PULL_REQUEST),
+    ),
     // Bitbucket: "Create pull request for branch:"
-    ("Create pull request", "Create Pull Request"),
+    (
+        "Create pull request",
+        t_static(keys::git_ui::GIT_CREATE_PULL_REQUEST),
+    ),
     // GitLab: "To create a merge request for branch, visit:"
     ("create a merge request", "Create Merge Request"),
     // GitLab: "View merge request for branch:"
@@ -216,7 +223,7 @@ mod tests {
         let msg = format_output(&action, output);
         if let SuccessStyle::PushPrLink { label, url } = msg.style {
             assert_eq!(msg.message, "Pushed test_branch to test_remote");
-            assert_eq!(label, "Create Pull Request");
+            assert_eq!(label, t_static(keys::git_ui::GIT_CREATE_PULL_REQUEST));
             assert_eq!(url, "https://example.com/test/test/pull/new/test");
         } else {
             panic!("Expected PushPrLink variant");
@@ -275,7 +282,7 @@ mod tests {
         assert_eq!(
             extract_pull_request_link(&output),
             Some((
-                "Create Pull Request",
+                t_static(keys::git_ui::GIT_CREATE_PULL_REQUEST),
                 "https://bitbucket.example.com/projects/TEST/repos/test/pull-requests?create&sourceBranch=refs/heads/test".to_string()
             ))
         );

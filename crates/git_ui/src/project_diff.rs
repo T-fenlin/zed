@@ -16,7 +16,7 @@ use gpui::{
     Action, App, AppContext as _, Entity, EventEmitter, FocusHandle, Focusable, Render,
     Subscription, Task, WeakEntity, actions,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use language::Capability;
 use multi_buffer::MultiBuffer;
 use project::{
@@ -138,7 +138,7 @@ impl ProjectDiff {
         telemetry::event!(
             "Git Diff Opened",
             source = if entry.is_some() {
-                "Git Panel"
+                t_static(keys::git_ui::GIT_PANEL_TITLE)
             } else {
                 "Action"
             }
@@ -1474,7 +1474,10 @@ mod tests {
         assert_ne!(diff_item.entity_id(), unstaged_item.entity_id());
         let unstaged_editor = workspace.update(cx, |workspace, cx| {
             let active_item = workspace.active_item(cx).unwrap();
-            assert_eq!(active_item.tab_content_text(0, cx), "Unstaged Changes");
+            assert_eq!(
+                active_item.tab_content_text(0, cx),
+                t_static(keys::git_ui::GIT_SECTION_UNSTAGED_CHANGES)
+            );
             active_item
                 .act_as::<DiffMultibuffer>(cx)
                 .unwrap()
@@ -1534,7 +1537,10 @@ mod tests {
         let staged_editor = workspace.update(cx, |workspace, cx| {
             workspace.active_item_as::<StagedDiff>(cx).unwrap();
             let active_item = workspace.active_item(cx).unwrap();
-            assert_eq!(active_item.tab_content_text(0, cx), "Staged Changes");
+            assert_eq!(
+                active_item.tab_content_text(0, cx),
+                t_static(keys::git_ui::GIT_SECTION_STAGED_CHANGES)
+            );
             active_item
                 .act_as::<DiffMultibuffer>(cx)
                 .unwrap()

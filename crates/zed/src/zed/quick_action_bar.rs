@@ -15,7 +15,7 @@ use gpui::{
     FocusHandle, Focusable, InteractiveElement, ParentElement, Render, Styled, Subscription,
     WeakEntity, Window, anchored, deferred, point,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use project::{
     DisableAiSettings,
     project_settings::{DiagnosticSeverity, ProjectSettings},
@@ -149,7 +149,7 @@ impl Render for QuickActionBar {
                 !self.buffer_search_bar.read(cx).is_dismissed(),
                 Box::new(buffer_search::Deploy::find()),
                 focus_handle.clone(),
-                "Buffer Search",
+                t_static(keys::zed::ZED_B_BUFFER_SEARCH),
                 {
                     let buffer_search_bar = self.buffer_search_bar.clone();
                     move |_, window, cx| {
@@ -167,7 +167,7 @@ impl Render for QuickActionBar {
             false,
             Box::new(InlineAssist::default()),
             focus_handle,
-            "Inline Assist",
+            t_static(keys::zed::ZED_B_INLINE_ASSIST),
             move |_, window, cx| {
                 window.dispatch_action(Box::new(InlineAssist::default()), cx);
             },
@@ -200,7 +200,7 @@ impl Render for QuickActionBar {
                         .when(!is_deployed, |this| {
                             this.when(has_available_code_actions, |this| {
                                 this.tooltip(Tooltip::for_action_title(
-                                    "Code Actions",
+                                    t_static(keys::zed::ZED_B_CODE_ACTIONS),
                                     &ToggleCodeActions::default(),
                                 ))
                             })
@@ -208,7 +208,7 @@ impl Render for QuickActionBar {
                                 !has_available_code_actions,
                                 |this| {
                                     this.tooltip(Tooltip::for_action_title(
-                                        "No Code Actions Available",
+                                        t_static(keys::zed::ZED_B_NO_CODE_ACTIONS),
                                         &ToggleCodeActions::default(),
                                     ))
                                 },
@@ -270,23 +270,32 @@ impl Render for QuickActionBar {
                     let focus = focus.clone();
                     let menu = ContextMenu::build(window, cx, move |menu, _, _| {
                         menu.context(focus.clone())
-                            .action("Select All", Box::new(SelectAll))
                             .action(
-                                "Select Next Occurrence",
+                                t(keys::app_menu::MENU_SELECTION_SELECT_ALL),
+                                Box::new(SelectAll),
+                            )
+                            .action(
+                                t_static(keys::app_menu::MENU_SELECTION_SELECT_NEXT_OCCURRENCE),
                                 Box::new(SelectNext {
                                     replace_newest: false,
                                 }),
                             )
-                            .action("Expand Selection", Box::new(SelectLargerSyntaxNode))
-                            .action("Shrink Selection", Box::new(SelectSmallerSyntaxNode))
                             .action(
-                                "Add Cursor Above",
+                                t(keys::app_menu::MENU_SELECTION_EXPAND),
+                                Box::new(SelectLargerSyntaxNode),
+                            )
+                            .action(
+                                t(keys::app_menu::MENU_SELECTION_SHRINK),
+                                Box::new(SelectSmallerSyntaxNode),
+                            )
+                            .action(
+                                t_static(keys::app_menu::MENU_SELECTION_ADD_CURSOR_ABOVE),
                                 Box::new(AddSelectionAbove {
                                     skip_soft_wrap: true,
                                 }),
                             )
                             .action(
-                                "Add Cursor Below",
+                                t_static(keys::app_menu::MENU_SELECTION_ADD_CURSOR_BELOW),
                                 Box::new(AddSelectionBelow {
                                     skip_soft_wrap: true,
                                 }),
@@ -294,30 +303,49 @@ impl Render for QuickActionBar {
                             .when(!disable_ai, |this| {
                                 this.separator().action_disabled_when(
                                     !has_selection,
-                                    "Add to Agent Thread",
+                                    t_static(keys::zed::ZED_B_ADD_TO_AGENT_THREAD),
                                     Box::new(AddSelectionToThread),
                                 )
                             })
                             .separator()
-                            .action("Go to Symbol", Box::new(ToggleOutline))
-                            .action("Go to Line/Column", Box::new(ToggleGoToLine))
-                            .separator()
-                            .action("Next Problem", Box::new(GoToDiagnostic::default()))
+                            .action(t(keys::zed::ZED_B_GO_TO_SYMBOL), Box::new(ToggleOutline))
                             .action(
-                                "Previous Problem",
+                                t(keys::zed::ZED_B_GO_TO_LINE_COLUMN),
+                                Box::new(ToggleGoToLine),
+                            )
+                            .separator()
+                            .action(
+                                t(keys::app_menu::MENU_GO_NEXT_PROBLEM),
+                                Box::new(GoToDiagnostic::default()),
+                            )
+                            .action(
+                                t_static(keys::app_menu::MENU_GO_PREVIOUS_PROBLEM),
                                 Box::new(GoToPreviousDiagnostic::default()),
                             )
                             .separator()
-                            .action_disabled_when(!has_diff_hunks, "Next Hunk", Box::new(GoToHunk))
                             .action_disabled_when(
                                 !has_diff_hunks,
-                                "Previous Hunk",
+                                t_static(keys::zed::ZED_B_NEXT_HUNK),
+                                Box::new(GoToHunk),
+                            )
+                            .action_disabled_when(
+                                !has_diff_hunks,
+                                t_static(keys::zed::ZED_B_PREVIOUS_HUNK),
                                 Box::new(GoToPreviousHunk),
                             )
                             .separator()
-                            .action("Move Line Up", Box::new(MoveLineUp))
-                            .action("Move Line Down", Box::new(MoveLineDown))
-                            .action("Duplicate Selection", Box::new(DuplicateLineDown))
+                            .action(
+                                t(keys::app_menu::MENU_SELECTION_MOVE_LINE_UP),
+                                Box::new(MoveLineUp),
+                            )
+                            .action(
+                                t(keys::app_menu::MENU_SELECTION_MOVE_LINE_DOWN),
+                                Box::new(MoveLineDown),
+                            )
+                            .action(
+                                t(keys::app_menu::MENU_SELECTION_DUPLICATE),
+                                Box::new(DuplicateLineDown),
+                            )
                     });
                     Some(menu)
                 })
@@ -352,7 +380,7 @@ impl Render for QuickActionBar {
 
                             if supports_inlay_hints {
                                 menu = menu.toggleable_entry(
-                                    "Inlay Hints",
+                                    t_static(keys::zed::ZED_B_INLAY_HINTS),
                                     inlay_hints_enabled,
                                     IconPosition::Start,
                                     Some(editor::actions::ToggleInlayHints.boxed_clone()),
@@ -373,7 +401,7 @@ impl Render for QuickActionBar {
                                 );
 
                                 menu = menu.toggleable_entry(
-                                    "Inline Values",
+                                    t_static(keys::zed::ZED_B_INLINE_VALUES),
                                     inline_values_enabled,
                                     IconPosition::Start,
                                     Some(editor::actions::ToggleInlineValues.boxed_clone()),
@@ -396,7 +424,7 @@ impl Render for QuickActionBar {
 
                             if supports_semantic_tokens {
                                 menu = menu.toggleable_entry(
-                                    "Semantic Highlights",
+                                    t_static(keys::zed::ZED_B_SEMANTIC_HIGHLIGHTS),
                                     semantic_highlights_enabled,
                                     IconPosition::Start,
                                     Some(editor::actions::ToggleSemanticHighlights.boxed_clone()),
@@ -419,7 +447,7 @@ impl Render for QuickActionBar {
 
                             if supports_code_lens {
                                 menu = menu.toggleable_entry(
-                                    "Code Lens",
+                                    t_static(keys::zed::ZED_B_CODE_LENS),
                                     code_lens_enabled,
                                     IconPosition::Start,
                                     Some(editor::actions::ToggleCodeLens.boxed_clone()),
@@ -490,7 +518,7 @@ impl Render for QuickActionBar {
 
                             if is_full {
                                 menu = menu.toggleable_entry(
-                                    "Diagnostics",
+                                    t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS),
                                     diagnostics_enabled,
                                     IconPosition::Start,
                                     Some(ToggleDiagnostics.boxed_clone()),

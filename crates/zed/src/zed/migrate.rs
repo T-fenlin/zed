@@ -2,7 +2,7 @@ use anyhow::{Context as _, Result};
 use editor::Editor;
 use fs::Fs;
 use gpui::WeakEntity;
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use migrator::{migrate_keymap, migrate_settings};
 use settings::{KeymapFile, Settings, SettingsStore};
 use util::ResultExt;
@@ -97,7 +97,7 @@ impl MigrationBanner {
     fn show(&mut self, cx: &mut Context<Self>) {
         let (file_type, backup_file_name) = match self.migration_type {
             Some(MigrationType::Keymap) => (
-                "keymap",
+                t_static(keys::zed::ZED_A_MIGRATION_FILE_KEYMAP),
                 paths::keymap_backup_file()
                     .file_name()
                     .unwrap_or_default()
@@ -105,7 +105,7 @@ impl MigrationBanner {
                     .into_owned(),
             ),
             Some(MigrationType::Settings) => (
-                "settings",
+                t_static(keys::zed::ZED_A_MIGRATION_FILE_SETTINGS),
                 paths::settings_backup_file()
                     .file_name()
                     .unwrap_or_default()

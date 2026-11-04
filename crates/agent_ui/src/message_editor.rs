@@ -1,5 +1,5 @@
-use crate::default_thread_title;
 use crate::SendImmediately;
+use crate::default_thread_title;
 use crate::{
     ChatWithFollow,
     completion_provider::{
@@ -28,6 +28,7 @@ use gpui::{
     Focusable, Image, ImageFormat, KeyContext, SharedString, Subscription, Task, TaskExt,
     TextStyle, WeakEntity,
 };
+use i18n::{keys, t, t_static};
 use language::{Buffer, language_settings::InlayHintKind};
 use parking_lot::RwLock;
 use project::AgentId;
@@ -335,7 +336,7 @@ async fn resolve_pasted_context_items(
 ) -> (Vec<ResolvedPastedContextItem>, Vec<Entity<Worktree>>) {
     let mut items = Vec::new();
     let mut added_worktrees = Vec::new();
-    let default_image_name: SharedString = "Image".into();
+    let default_image_name: SharedString = t(keys::agent::AGENT_THREAD_IMAGE).into();
     // A bitmap and image files in the clipboard are usually the same image (e.g. a
     // screenshot saved to a temporary file), so skip image files when there's a bitmap.
     let has_clipboard_image = entries
@@ -1670,7 +1671,7 @@ impl MessageEditor {
                     _ => return Ok::<(), anyhow::Error>(()),
                 };
 
-                let default_image_name: SharedString = "Image".into();
+                let default_image_name: SharedString = t(keys::agent::AGENT_THREAD_IMAGE).into();
                 let images = cx
                     .background_spawn(async move {
                         paths
@@ -1843,7 +1844,7 @@ impl MessageEditor {
                         MentionUri::parse(&uri, path_style)
                     } else {
                         Ok(MentionUri::PastedImage {
-                            name: "Image".to_string(),
+                            name: t(keys::agent::AGENT_THREAD_IMAGE).to_string(),
                         })
                     };
                     let Some(mention_uri) = mention_uri.log_err() else {
@@ -3431,7 +3432,7 @@ mod tests {
                     "Files & Directories".into(),
                     "Symbols".into(),
                     "Threads".into(),
-                    "Fetch".into()
+                    t(keys::agent::AGENT_B_FETCH).into()
                 ]
             );
         });
@@ -5482,7 +5483,7 @@ mod tests {
         let image_name = temporary_image_path
             .file_name()
             .and_then(|n| n.to_str())
-            .unwrap_or("Image")
+            .unwrap_or(t_static(keys::agent::AGENT_THREAD_IMAGE))
             .to_string();
         std::fs::remove_file(&temporary_image_path).expect("remove temp png");
 
@@ -5551,7 +5552,7 @@ mod tests {
                     paste_image_context(&message_editor, entries, inline, &mut cx);
 
                     let image_uri = MentionUri::PastedImage {
-                        name: "Image".into(),
+                        name: t(keys::agent::AGENT_THREAD_IMAGE).into(),
                     };
                     editor.update(&mut cx, |editor, cx| {
                         assert_eq!(editor.text(cx), format!("{} ", image_uri.as_link()));
@@ -5605,7 +5606,7 @@ mod tests {
             );
 
             let image_uri = MentionUri::PastedImage {
-                name: "Image".into(),
+                name: t(keys::agent::AGENT_THREAD_IMAGE).into(),
             };
             let contents = mention_contents(&message_editor, &mut cx).await;
             let Some((_, Mention::Image(pasted_image))) =

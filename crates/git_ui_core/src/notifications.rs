@@ -1,6 +1,6 @@
 use editor::Editor;
 use gpui::{App, Context, Entity, SharedString};
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use language::Buffer;
 use notifications::status_toast::StatusToast;
 use proto::RpcError;
@@ -204,7 +204,7 @@ mod tests {
                 code: proto::ErrorCode::Internal as i32,
                 tags: Default::default(),
             },
-            "Pull",
+            t_static(keys::git_ui::GIT_A_PULL),
         );
 
         let message = format_git_error_toast_message(&rpc_error);
@@ -224,7 +224,7 @@ mod tests {
                 code: proto::ErrorCode::Internal as i32,
                 tags: Default::default(),
             },
-            "Pull",
+            t_static(keys::git_ui::GIT_A_PULL),
         );
         let wrapped = rpc_error.context("sending pull request");
 

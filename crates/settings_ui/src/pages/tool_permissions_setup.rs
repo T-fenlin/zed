@@ -4,7 +4,7 @@ use gpui::{
     Focusable, HighlightStyle, ReadGlobal, ScrollHandle, StyledText, TextStyleRefinement, point,
     prelude::*,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use settings::{Settings as _, SettingsStore, ToolPermissionMode};
 use shell_command_parser::extract_commands;
 use std::sync::Arc;
@@ -16,7 +16,7 @@ use util::shell::ShellKind;
 use crate::{SettingsWindow, components::SettingsInputField};
 
 const HARDCODED_RULES_DESCRIPTION: &str =
-    "`rm -rf` commands are always blocked when run on `$HOME`, `~`, `.`, `..`, or `/`";
+    t_static(keys::settings_ui::SETTINGS_A_TOOLS_HARDCODED_RULES);
 const SETTINGS_DISCLAIMER: &str = "Note: custom tool permissions only apply to the Zed native agent and don’t extend to external agents connected through the Agent Client Protocol (ACP).";
 
 /// Tools that support permission rules
@@ -24,62 +24,62 @@ const TOOLS: &[ToolInfo] = &[
     ToolInfo {
         id: "terminal",
         name: "Terminal",
-        description: "Commands executed in the terminal",
-        regex_explanation: "Patterns are matched against each command in the input. Commands chained with &&, ||, ;, or pipes are split and checked individually.",
+        description: t(keys::settings_ui::SETTINGS_TOOLS_TERMINAL_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_TERMINAL_REGEX),
     },
     ToolInfo {
         id: "edit_file",
-        name: "Edit File",
-        description: "File editing operations",
-        regex_explanation: "Patterns are matched against the file path being edited.",
+        name: t(keys::settings_ui::SETTINGS_TOOLS_EDIT_FILE),
+        description: t(keys::settings_ui::SETTINGS_TOOLS_EDIT_FILE_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_EDIT_FILE_REGEX),
     },
     ToolInfo {
         id: "write_file",
         name: "Write File",
-        description: "File creation and overwrite operations",
-        regex_explanation: "Patterns are matched against the file path being written.",
+        description: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_FILE_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_FILE_REGEX),
     },
     ToolInfo {
         id: "delete_path",
         name: "Delete Path",
-        description: "File and directory deletion",
-        regex_explanation: "Patterns are matched against the path being deleted.",
+        description: t(keys::settings_ui::SETTINGS_TOOLS_DELETE_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_DELETE_REGEX),
     },
     ToolInfo {
         id: "copy_path",
         name: "Copy Path",
-        description: "File and directory copying",
-        regex_explanation: "Patterns are matched independently against the source path and the destination path. Enter either path below to test.",
+        description: t(keys::settings_ui::SETTINGS_TOOLS_COPY_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_MOVE_REGEX),
     },
     ToolInfo {
         id: "move_path",
         name: "Move Path",
-        description: "File and directory moves/renames",
-        regex_explanation: "Patterns are matched independently against the source path and the destination path. Enter either path below to test.",
+        description: t(keys::settings_ui::SETTINGS_TOOLS_MOVE_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_MOVE_REGEX),
     },
     ToolInfo {
         id: "create_directory",
-        name: "Create Directory",
-        description: "Directory creation",
-        regex_explanation: "Patterns are matched against the directory path being created.",
+        name: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_DIRECTORY),
+        description: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_DIRECTORY_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_DIRECTORY_REGEX),
     },
     ToolInfo {
         id: "fetch",
-        name: "Fetch",
-        description: "HTTP requests to URLs",
-        regex_explanation: "Patterns are matched against the URL being fetched.",
+        name: t(keys::settings_ui::SETTINGS_TOOLS_FETCH),
+        description: t(keys::settings_ui::SETTINGS_TOOLS_FETCH_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_FETCH_REGEX),
     },
     ToolInfo {
         id: "search_web",
-        name: "Web Search",
-        description: "Web search queries",
-        regex_explanation: "Patterns are matched against the search query.",
+        name: t(keys::settings_ui::SETTINGS_TOOLS_WEB_SEARCH),
+        description: t(keys::settings_ui::SETTINGS_TOOLS_WEB_SEARCH_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_WEB_SEARCH_REGEX),
     },
     ToolInfo {
         id: "skill",
-        name: "Skill",
-        description: "Loading agent skill instructions",
-        regex_explanation: "Patterns are matched against the absolute path to the skill's SKILL.md file.",
+        name: t(keys::settings_ui::SETTINGS_TOOLS_SKILL),
+        description: t(keys::settings_ui::SETTINGS_TOOLS_SKILL_DESCRIPTION),
+        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_SKILL_REGEX),
     },
 ];
 

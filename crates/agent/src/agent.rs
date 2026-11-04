@@ -14,6 +14,7 @@ mod tools;
 
 use context_server::ContextServerId;
 pub use db::*;
+use i18n::{keys, t, t_static};
 use itertools::Itertools;
 pub use native_agent_server::NativeAgentServer;
 use parking_lot::Mutex;
@@ -457,7 +458,7 @@ impl LanguageModels {
         }
         if !recommended.is_empty() {
             language_model_list.insert(
-                acp_thread::AgentModelGroupName("Recommended".into()),
+                acp_thread::AgentModelGroupName(t(keys::agent::AGENT_RECOMMENDED).into()),
                 recommended,
             );
         }
@@ -4026,7 +4027,7 @@ impl SubagentHandle for NativeSubagentHandle {
             let response_stop_reason = response.as_ref().ok().cloned();
             let result = match response {
                 Ok(reason) => match reason {
-                    acp_v2::StopReason::Cancelled => Err(anyhow!("User canceled")),
+                    acp_v2::StopReason::Cancelled => Err(anyhow!(t_static(keys::agent::AGENT_THREAD_USER_CANCELED))),
                     acp_v2::StopReason::MaxTokens => Err(anyhow!("The agent reached the maximum number of tokens.")),
                     acp_v2::StopReason::MaxTurnRequests => Err(anyhow!("The agent reached the maximum number of allowed requests between user turns. Try prompting again.")),
                     acp_v2::StopReason::Refusal => Err(anyhow!("The agent refused to process that prompt. Try again.")),

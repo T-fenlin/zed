@@ -550,9 +550,9 @@ impl Item for AgentDiffPane {
 
             move |_, _| {
                 v_flex()
-                    .child(Label::new(
-                        title.clone().unwrap_or_else(|| "Review".to_string()),
-                    ))
+                    .child(Label::new(title.clone().unwrap_or_else(|| {
+                        t(keys::agent::AGENT_THREAD_REVIEW).to_string()
+                    })))
                     .child(
                         Label::new(t(keys::agent::AGENT_DIFF_TITLE))
                             .color(Color::Muted)
@@ -685,7 +685,7 @@ impl Item for AgentDiffPane {
     fn tab_content_text(&self, _detail: usize, cx: &App) -> SharedString {
         match self.thread.read(cx).title() {
             Some(title) => format!("Review: {}", truncate_and_trailoff(&title, 20)).into(),
-            None => "Review".into(),
+            None => t(keys::agent::AGENT_THREAD_REVIEW).into(),
         }
     }
 }

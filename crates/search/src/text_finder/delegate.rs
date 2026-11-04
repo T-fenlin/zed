@@ -22,6 +22,7 @@
 //!                             |                  V
 //!                             . --------  Project search tab
 //! ```
+use i18n::{keys, t, t_static};
 use std::ops::ControlFlow;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -788,30 +789,36 @@ impl PickerDelegate for Delegate {
     ) -> Vec<picker::PickerAction> {
         use gpui::Action as _;
         vec![
-            picker::PickerAction::header("Split…"),
+            picker::PickerAction::header(t_static(keys::search::SEARCH_SPLIT_ELLIPSIS)),
             picker::PickerAction::button(
-                "Left",
+                t_static(keys::search::SEARCH_SPLIT_LEFT),
                 workspace::pane::SplitLeft::default().boxed_clone(),
             ),
             picker::PickerAction::button(
-                "Right",
+                t_static(keys::search::SEARCH_SPLIT_RIGHT),
                 workspace::pane::SplitRight::default().boxed_clone(),
             ),
-            picker::PickerAction::button("Up", workspace::pane::SplitUp::default().boxed_clone()),
             picker::PickerAction::button(
-                "Down",
+                t(keys::search::SEARCH_SPLIT_UP),
+                workspace::pane::SplitUp::default().boxed_clone(),
+            ),
+            picker::PickerAction::button(
+                t_static(keys::search::SEARCH_SPLIT_DOWN),
                 workspace::pane::SplitDown::default().boxed_clone(),
             ),
             picker::PickerAction::separator(),
             picker::PickerAction::button(
                 if self.selected_matches.len() > 1 {
-                    "Open Multiple"
+                    t_static(keys::search::SEARCH_OPEN_MULTIPLE)
                 } else {
-                    "Open File"
+                    t_static(keys::search::SEARCH_OPEN_FILE)
                 },
                 menu::Confirm.boxed_clone(),
             ),
-            picker::PickerAction::button("Open as Tab", super::ToProjectSearch.boxed_clone()),
+            picker::PickerAction::button(
+                t(keys::search::SEARCH_OPEN_AS_TAB),
+                super::ToProjectSearch.boxed_clone(),
+            ),
         ]
     }
 
@@ -1123,9 +1130,12 @@ impl Delegate {
                                             .tooltip(move |_window, cx| {
                                                 let (label, action): (_, &dyn gpui::Action) =
                                                     if is_collapsed {
-                                                        ("Unfold", &Unfold)
+                                                        (
+                                                            t_static(keys::search::SEARCH_UNFOLD),
+                                                            &Unfold,
+                                                        )
                                                     } else {
-                                                        ("Fold", &Fold)
+                                                        (t_static(keys::search::SEARCH_FOLD), &Fold)
                                                     };
                                                 Tooltip::with_meta_in(
                                                     label,

@@ -8,6 +8,7 @@ use crate::{
 };
 use gpui::prelude::FluentBuilder;
 use gpui::{Context, DismissEvent, Entity, Focusable as _, Pixels, Point, Subscription, Window};
+use i18n::{keys, t, t_static};
 use project::DisableAiSettings;
 use std::ops::Range;
 use text::PointUtf16;
@@ -250,55 +251,73 @@ pub fn deploy_context_menu(
                     builder.action("Run to Cursor", Box::new(RunToCursor))
                 })
                 .when(evaluate_selection && has_selections, |builder| {
-                    builder.action("Evaluate Selection", Box::new(EvaluateSelectedText))
+                    builder.action(
+                        t(keys::editor::EDITOR_A_EVALUATE_SELECTION),
+                        Box::new(EvaluateSelectedText),
+                    )
                 })
                 .when(
                     run_to_cursor || (evaluate_selection && has_selections),
                     |builder| builder.separator(),
                 )
-                .action("Go to Definition", Box::new(GoToDefinition::default()))
-                .action("Go to Declaration", Box::new(GoToDeclaration::default()))
                 .action(
-                    "Go to Type Definition",
+                    t(keys::editor::EDITOR_A_GO_TO_DEFINITION),
+                    Box::new(GoToDefinition::default()),
+                )
+                .action(
+                    t(keys::editor::EDITOR_A_GO_TO_DECLARATION),
+                    Box::new(GoToDeclaration::default()),
+                )
+                .action(
+                    t_static(keys::editor::EDITOR_A_GO_TO_TYPE_DEFINITION),
                     Box::new(GoToTypeDefinition::default()),
                 )
                 .action(
-                    "Go to Implementation",
+                    t_static(keys::editor::EDITOR_A_GO_TO_IMPLEMENTATION),
                     Box::new(GoToImplementation::default()),
                 )
                 .action(
-                    "Find All References",
+                    t_static(keys::editor::EDITOR_A_FIND_ALL_REFERENCES),
                     Box::new(FindAllReferences::default()),
                 )
                 .action(
-                    "Show Incoming Calls",
+                    t_static(keys::editor::EDITOR_A_SHOW_INCOMING_CALLS),
                     Box::new(zed_actions::ShowIncomingCalls),
                 )
                 .action(
-                    "Show Outgoing Calls",
+                    t_static(keys::editor::EDITOR_A_SHOW_OUTGOING_CALLS),
                     Box::new(zed_actions::ShowOutgoingCalls),
                 )
                 .separator()
-                .action("Rename Symbol", Box::new(Rename))
-                .action("Format Buffer", Box::new(Format))
+                .action(t(keys::editor::EDITOR_A_RENAME_SYMBOL), Box::new(Rename))
+                .action(t(keys::editor::EDITOR_A_FORMAT_BUFFER), Box::new(Format))
                 .when(format_selections, |cx| {
-                    cx.action("Format Selections", Box::new(FormatSelections))
+                    cx.action(
+                        t(keys::editor::EDITOR_A_FORMAT_SELECTIONS),
+                        Box::new(FormatSelections),
+                    )
                 })
                 .action(
-                    "Show Code Actions",
+                    t_static(keys::editor::EDITOR_A_SHOW_CODE_ACTIONS),
                     Box::new(ToggleCodeActions {
                         deployed_from: None,
                         quick_launch: false,
                     }),
                 )
                 .when(!disable_ai && has_selections, |this| {
-                    this.action("Add to Agent Thread", Box::new(AddSelectionToThread))
+                    this.action(
+                        t(keys::editor::EDITOR_A_ADD_TO_AGENT_THREAD),
+                        Box::new(AddSelectionToThread),
+                    )
                 })
                 .separator()
-                .action("Cut", Box::new(Cut))
-                .action("Copy", Box::new(Copy))
-                .action("Copy and Trim", Box::new(CopyAndTrim))
-                .action("Paste", Box::new(Paste))
+                .action(t(keys::editor::EDITOR_A_CUT), Box::new(Cut))
+                .action(t(keys::editor::EDITOR_A_COPY), Box::new(Copy))
+                .action(
+                    t(keys::editor::EDITOR_A_COPY_AND_TRIM),
+                    Box::new(CopyAndTrim),
+                )
+                .action(t(keys::editor::EDITOR_A_PASTE), Box::new(Paste))
                 .separator()
                 .action_disabled_when(
                     !has_reveal_target,
@@ -306,24 +325,30 @@ pub fn deploy_context_menu(
                     Box::new(RevealInFileManager),
                 )
                 .when(is_markdown, |builder| {
-                    builder.action("Open Markdown Preview", Box::new(OpenMarkdownPreview))
+                    builder.action(
+                        t(keys::editor::EDITOR_ACTION_OPEN_MARKDOWN_PREVIEW),
+                        Box::new(OpenMarkdownPreview),
+                    )
                 })
                 .when(is_svg, |builder| {
-                    builder.action("Open SVG Preview", Box::new(OpenSvgPreview))
+                    builder.action(
+                        t(keys::editor::EDITOR_ACTION_OPEN_SVG_PREVIEW),
+                        Box::new(OpenSvgPreview),
+                    )
                 })
                 .action_disabled_when(
                     !has_reveal_target,
-                    "Open in Terminal",
+                    t_static(keys::editor::EDITOR_A_OPEN_IN_TERMINAL),
                     Box::new(OpenInTerminal),
                 )
                 .action_disabled_when(
                     !has_git_repo,
-                    "Copy Permalink to Line",
+                    t_static(keys::editor::EDITOR_A_COPY_PERMALINK_TO_LINE),
                     Box::new(CopyPermalinkToLine),
                 )
                 .action_disabled_when(
                     !has_git_repo,
-                    "View File History",
+                    t_static(keys::editor::EDITOR_A_VIEW_FILE_HISTORY),
                     Box::new(git::FileHistory),
                 );
             match focus {

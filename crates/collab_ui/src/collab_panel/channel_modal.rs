@@ -9,7 +9,7 @@ use gpui::{
     Render, Styled, Subscription, Task, TaskExt, WeakEntity, Window, actions, anchored, deferred,
     div,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use picker::{Picker, PickerDelegate};
 use std::sync::Arc;
 use ui::{Avatar, Checkbox, ContextMenu, ListItem, ListItemSpacing, prelude::*};
@@ -667,9 +667,9 @@ impl ChannelModalDelegate {
             if role == ChannelRole::Admin || role == ChannelRole::Guest {
                 let picker = picker.clone();
                 let label = if role == ChannelRole::Guest {
-                    "Promote to Member"
+                    t_static(keys::collab::COLLAB_PROMOTE_TO_MEMBER)
                 } else {
-                    "Demote to Member"
+                    t_static(keys::collab::COLLAB_DEMOTE_TO_MEMBER)
                 };
 
                 menu = menu.entry(label, None, move |window, cx| {

@@ -28,7 +28,7 @@ use gpui::{
     UniformListScrollHandle, WeakEntity, Window, actions, anchored, deferred, div, hsla,
     linear_color_stop, linear_gradient, point, px, size, transparent_white, uniform_list,
 };
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use itertools::Itertools;
 use language::DiagnosticSeverity;
 use markdown_preview::markdown_preview_view::MarkdownPreviewView;
@@ -2168,25 +2168,23 @@ impl ProjectPanel {
         if !filename.is_empty() {
             if filename.is_empty() {
                 edit_state.validation_state =
-                    ValidationState::Error("File or directory name cannot be empty.".to_string());
+                    ValidationState::Error(t(keys::panel::PANEL_NAME_EMPTY).to_string());
                 cx.notify();
                 return;
             }
 
             let trimmed_filename = filename.trim();
             if trimmed_filename != filename {
-                edit_state.validation_state = ValidationState::Warning(
-                    "File or directory name contains leading or trailing whitespace.".to_string(),
-                );
+                edit_state.validation_state =
+                    ValidationState::Warning(t(keys::panel::PANEL_NAME_WHITESPACE).to_string());
                 cx.notify();
                 return;
             }
             let trimmed_filename = trimmed_filename.trim_start_matches('/');
 
             let Ok(filename) = RelPath::from_unix_str(trimmed_filename) else {
-                edit_state.validation_state = ValidationState::Warning(
-                    "File or directory name contains leading or trailing whitespace.".to_string(),
-                );
+                edit_state.validation_state =
+                    ValidationState::Warning(t(keys::panel::PANEL_NAME_WHITESPACE).to_string());
                 cx.notify();
                 return;
             };
@@ -4043,7 +4041,7 @@ impl ProjectPanel {
             files: false,
             directories: true,
             multiple: false,
-            prompt: Some("Download".into()),
+            prompt: Some(t(keys::panel::PANEL_DOWNLOAD_DIALOG).into()),
         });
 
         let fs = self.fs.clone();
@@ -6755,7 +6753,7 @@ impl ProjectPanel {
                                         Tooltip::with_meta(
                                             path.to_string_lossy().into_owned(),
                                             None,
-                                            "Symbolic Link",
+                                            t_static(keys::panel::PANEL_SYMBOLIC_LINK),
                                             cx,
                                         )
                                     })
@@ -8265,7 +8263,7 @@ impl Render for ProjectPanel {
                 .size_full()
                 .child(
                     ProjectEmptyState::new(
-                        "Project Panel",
+                        t_static(keys::panel::PANEL_PROJECT_PANEL),
                         focus_handle.clone(),
                         KeyBinding::for_action_in(&workspace::Open::default(), &focus_handle, cx),
                     )
@@ -8392,7 +8390,7 @@ impl Panel for ProjectPanel {
     }
 
     fn icon_tooltip(&self, _window: &Window, _cx: &App) -> Option<&'static str> {
-        Some("Project Panel")
+        Some(t_static(keys::panel::PANEL_PROJECT_PANEL))
     }
 
     fn toggle_action(&self) -> Box<dyn Action> {
@@ -8400,7 +8398,7 @@ impl Panel for ProjectPanel {
     }
 
     fn persistent_name() -> &'static str {
-        "Project Panel"
+        t_static(keys::panel::PANEL_PROJECT_PANEL)
     }
 
     fn panel_key() -> &'static str {

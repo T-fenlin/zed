@@ -10,7 +10,7 @@ use gpui::{
     InteractiveElement, IntoElement, Modifiers, ModifiersChangedEvent, ParentElement, PromptLevel,
     Render, SharedString, Styled, Subscription, Task, TaskExt, WeakEntity, Window, actions,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use picker::{Picker, PickerDelegate, PickerEditorPosition};
 use project::{Project, git_store::RepositoryEvent, repo_identity_path};
 use ui::{
@@ -572,7 +572,7 @@ impl WorktreePickerDelegate {
                                 PromptLevel::Warning,
                                 &prompt_message,
                                 None,
-                                &["Force Delete", "Cancel"],
+                                &["Force Delete", t_static(keys::git_ui::GIT_B_CANCEL)],
                                 cx,
                             )
                         })?;
@@ -1448,7 +1448,7 @@ impl PickerDelegate for WorktreePickerDelegate {
             Some(
                 footer
                     .child(
-                        Button::new("create-worktree", "Create")
+                        Button::new("create-worktree", t_static(keys::git_ui::GIT_B_CREATE))
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -1475,18 +1475,23 @@ impl PickerDelegate for WorktreePickerDelegate {
                             .when(!is_deleting && can_delete, |this| {
                                 let focus_handle = focus_handle.clone();
                                 this.child(
-                                    Button::new("delete-worktree", "Delete")
-                                        .key_binding(
-                                            KeyBinding::for_action_in(
-                                                &DeleteWorktree,
-                                                &focus_handle,
-                                                cx,
-                                            )
-                                            .map(|kb| kb.size(rems_from_px(12_f32))),
+                                    Button::new(
+                                        "delete-worktree",
+                                        t_static(keys::git_ui::GIT_B_DELETE),
+                                    )
+                                    .key_binding(
+                                        KeyBinding::for_action_in(
+                                            &DeleteWorktree,
+                                            &focus_handle,
+                                            cx,
                                         )
-                                        .on_click(|_, window, cx| {
+                                        .map(|kb| kb.size(rems_from_px(12_f32))),
+                                    )
+                                    .on_click(
+                                        |_, window, cx| {
                                             window.dispatch_action(DeleteWorktree.boxed_clone(), cx)
-                                        }),
+                                        },
+                                    ),
                                 )
                             })
                             .when(!is_deleting && !is_current, |this| {
@@ -1993,7 +1998,7 @@ mod tests {
             "pending delete state should clear while waiting for force-delete confirmation"
         );
 
-        cx.simulate_prompt_answer("Force Delete");
+        cx.simulate_prompt_answer(t_static(keys::git_ui::GIT_B_FORCE_DELETE));
         cx.run_until_parked();
 
         assert!(!cx.has_pending_prompt());
@@ -2037,7 +2042,7 @@ mod tests {
         assert!(cx.has_pending_prompt());
         assert!(deleting_worktree_paths(&worktree_picker, &mut cx).is_empty());
 
-        cx.simulate_prompt_answer("Cancel");
+        cx.simulate_prompt_answer(t_static(keys::git_ui::GIT_B_CANCEL));
         cx.run_until_parked();
 
         assert!(!cx.has_pending_prompt());

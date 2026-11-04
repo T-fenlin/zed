@@ -10,6 +10,7 @@ use crate::{
 use acp_thread::{AgentModelId, ClientUserMessageId, MentionUri, ProcessOutput};
 use action_log::ActionLog;
 use agent_settings::UserAgentsMd;
+use i18n::{keys, t, t_static};
 
 use crate::sandboxing::{
     SandboxRequest, ThreadSandbox, ThreadSandboxGrants, sandbox_git_dirs,
@@ -1021,12 +1022,12 @@ impl ToolPermissionContext {
             return acp_thread::PermissionOptions::Flat(vec![
                 acp_v2::PermissionOption::new(
                     acp_v2::PermissionOptionId::new("allow"),
-                    "Allow",
+                    t_static(keys::agent::AGENT_THREAD_ALLOW),
                     acp_v2::PermissionOptionKind::AllowOnce,
                 ),
                 acp_v2::PermissionOption::new(
                     acp_v2::PermissionOptionId::new("deny"),
-                    "Deny",
+                    t_static(keys::agent::AGENT_THREAD_DENY),
                     acp_v2::PermissionOptionKind::RejectOnce,
                 ),
             ]);
@@ -1063,12 +1064,12 @@ impl ToolPermissionContext {
                     choices.push(acp_thread::PermissionOptionChoice {
                         allow: acp_v2::PermissionOption::new(
                             acp_v2::PermissionOptionId::new("allow"),
-                            "Only this time",
+                            t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME),
                             acp_v2::PermissionOptionKind::AllowOnce,
                         ),
                         deny: acp_v2::PermissionOption::new(
                             acp_v2::PermissionOptionId::new("deny"),
-                            "Only this time",
+                            t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME),
                             acp_v2::PermissionOptionKind::RejectOnce,
                         ),
                         sub_patterns: vec![],
@@ -1175,7 +1176,7 @@ impl ToolPermissionContext {
         }
 
         push_choice(
-            "Only this time".to_string(),
+            t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME).to_string(),
             "allow".to_string(),
             "deny".to_string(),
             acp_v2::PermissionOptionKind::AllowOnce,
@@ -6096,12 +6097,12 @@ impl ToolCallEventStream {
             acp_thread::PermissionOptionChoice {
                 allow: acp_v2::PermissionOption::new(
                     acp_v2::PermissionOptionId::new("allow"),
-                    "Only this time",
+                    t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME),
                     acp_v2::PermissionOptionKind::AllowOnce,
                 ),
                 deny: acp_v2::PermissionOption::new(
                     acp_v2::PermissionOptionId::new("deny"),
-                    "Only this time",
+                    t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME),
                     acp_v2::PermissionOptionKind::RejectOnce,
                 ),
                 sub_patterns: vec![],
@@ -6240,7 +6241,7 @@ impl ToolCallEventStream {
             ),
             acp_v2::PermissionOption::new(
                 acp_v2::PermissionOptionId::new(acp_thread::SandboxPermission::Deny.as_id()),
-                "Deny",
+                t_static(keys::agent::AGENT_THREAD_DENY),
                 acp_v2::PermissionOptionKind::RejectOnce,
             ),
         ]);
@@ -6620,7 +6621,7 @@ impl ToolCallEventStream {
             ),
             acp_v2::PermissionOption::new(
                 acp_v2::PermissionOptionId::new(acp_thread::SandboxPermission::Deny.as_id()),
-                "Deny",
+                t_static(keys::agent::AGENT_THREAD_DENY),
                 acp_v2::PermissionOptionKind::RejectOnce,
             ),
         ]);
@@ -9383,7 +9384,11 @@ mod tests {
                     "Allow always",
                     acp_v2::PermissionOptionKind::AllowAlways,
                 ),
-                ("deny", "Deny", acp_v2::PermissionOptionKind::RejectOnce),
+                (
+                    "deny",
+                    t_static(keys::agent::AGENT_THREAD_DENY),
+                    acp_v2::PermissionOptionKind::RejectOnce
+                ),
             ]
         );
 
@@ -9455,7 +9460,7 @@ mod tests {
                 ("allow", "Run without sandbox once"),
                 ("allow_thread", "Run without sandbox for this thread"),
                 ("allow_always", "Always run without sandbox"),
-                ("deny", "Deny"),
+                ("deny", t_static(keys::agent::AGENT_THREAD_DENY)),
             ]
         );
 

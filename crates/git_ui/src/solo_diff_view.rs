@@ -15,7 +15,7 @@ use gpui::{
     Action, App, AppContext as _, Context, Empty, Entity, EventEmitter, FocusHandle, Focusable,
     HighlightStyle, IntoElement, Render, Subscription, Task, WeakEntity, Window,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use language::{Anchor, Buffer, HighlightedText, OffsetRangeExt as _, Point};
 use multi_buffer::{MultiBuffer, PathKey, excerpt_context_lines};
 use project::{
@@ -872,7 +872,7 @@ impl Render for SoloDiffGitToolbar {
                     .width(rems_from_px(80_f32))
                     .disabled(!button_states.stage_file)
                     .tooltip(Tooltip::for_action_title_in(
-                        "Stage All",
+                        t_static(keys::git_ui::GIT_STAGE_ALL),
                         &StageFile,
                         &focus_handle,
                     ))
@@ -882,7 +882,7 @@ impl Render for SoloDiffGitToolbar {
                     .width(rems_from_px(80_f32))
                     .disabled(!button_states.unstage_file)
                     .tooltip(Tooltip::for_action_title_in(
-                        "Unstage All",
+                        t_static(keys::git_ui::GIT_UNSTAGE_ALL),
                         &UnstageFile,
                         &focus_handle,
                     ))

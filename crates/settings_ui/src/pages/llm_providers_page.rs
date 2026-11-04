@@ -291,9 +291,11 @@ fn render_api_key_providers_item(
                                     .label_color(Color::Muted),
                                 )
                                 .child(
-                                    Label::new(t(keys::settings_ui::SETTINGS_B_API_KEY_TO_GENERATE))
-                                        .size(LabelSize::Small)
-                                        .color(Color::Muted),
+                                    Label::new(t(
+                                        keys::settings_ui::SETTINGS_B_API_KEY_TO_GENERATE,
+                                    ))
+                                    .size(LabelSize::Small)
+                                    .color(Color::Muted),
                                 ),
                         )
                         .child(

@@ -4,7 +4,7 @@ use gpui::{
     Animation, AnimationExt, ClickEvent, Hsla, MouseButton, SharedString,
     WindowBackgroundAppearance, pulsating_between,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use itertools::Itertools as _;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
@@ -677,7 +677,7 @@ impl Component for ThreadItem {
                     .into_any_element(),
             ),
             single_example(
-                "Waiting for Confirmation",
+                t_static(keys::ui::UI_WAITING_FOR_CONFIRMATION),
                 container()
                     .child(
                         ThreadItem::new("ti-2b", "Execute shell command in terminal")

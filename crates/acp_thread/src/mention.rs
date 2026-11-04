@@ -350,9 +350,10 @@ impl MentionUri {
                 let count = line_count.to_string();
                 t_with_args(keys::acp::ACP_MENTION_TERMINAL, &[("count", &count)])
             }
-            MentionUri::GitDiff { base_ref } => {
-                t_with_args(keys::acp::ACP_MENTION_BRANCH_DIFF, &[("base_ref", base_ref)])
-            }
+            MentionUri::GitDiff { base_ref } => t_with_args(
+                keys::acp::ACP_MENTION_BRANCH_DIFF,
+                &[("base_ref", base_ref)],
+            ),
             MentionUri::MergeConflict { file_path } => {
                 let name = Path::new(file_path)
                     .file_name()
@@ -1780,7 +1781,10 @@ mod tests {
         assert_eq!(global_skill.disambiguated_name(0), "create-skill");
         assert_eq!(
             global_skill.disambiguated_name(1),
-            t_with_args(keys::acp::ACP_MENTION_SKILL_GLOBAL, &[("name", "create-skill")])
+            t_with_args(
+                keys::acp::ACP_MENTION_SKILL_GLOBAL,
+                &[("name", "create-skill")]
+            )
         );
         assert_eq!(
             project_skill.disambiguated_name(1),
