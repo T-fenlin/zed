@@ -21,6 +21,7 @@ use collections::{HashSet, IndexMap};
 pub use connection::*;
 pub use diff::*;
 use feature_flags::{AcpBetaFeatureFlag, FeatureFlagAppExt as _};
+use i18n::{keys, t};
 #[cfg(any(test, feature = "test-support"))]
 use futures::future::BoxFuture;
 use futures::{FutureExt, channel::oneshot};
@@ -1541,7 +1542,7 @@ impl ToolCall {
             return tool_name
                 .filter(|name| !name.trim().is_empty())
                 .cloned()
-                .unwrap_or_else(|| "Tool call".into());
+                .unwrap_or_else(|| t(keys::acp::ACP_TOOL_CALL_DEFAULT_LABEL).into());
         };
 
         if kind == &acp_v2::ToolKind::Execute {
@@ -2717,7 +2718,7 @@ impl ContentBlock {
                 } else {
                     RenderBlock::Unsupported {
                         markdown: Self::create_markdown(
-                            "Image content could not be displayed.".into(),
+                            t(keys::acp::ACP_CONTENT_IMAGE_UNAVAILABLE).into(),
                             language_registry,
                             cx,
                         ),
@@ -2739,9 +2740,9 @@ impl ContentBlock {
         cx: &mut App,
     ) -> RenderBlock {
         let description = match content {
-            acp_v2::ContentBlock::Audio(_) => "Audio content is not supported.",
-            acp_v2::ContentBlock::Other(_) => "Unknown content type is not supported.",
-            _ => "This content is not supported.",
+            acp_v2::ContentBlock::Audio(_) => t(keys::acp::ACP_CONTENT_AUDIO_UNSUPPORTED),
+            acp_v2::ContentBlock::Other(_) => t(keys::acp::ACP_CONTENT_UNKNOWN_UNSUPPORTED),
+            _ => t(keys::acp::ACP_CONTENT_UNSUPPORTED),
         };
         RenderBlock::Unsupported {
             markdown: Self::create_markdown(description.into(), language_registry, cx),
@@ -3252,7 +3253,7 @@ impl ToolCallContent {
                 text: &patch.text,
             }
             .to_string(),
-            None => "Diff patch preview unavailable.".to_string(),
+            None => t(keys::acp::ACP_DIFF_PATCH_UNAVAILABLE),
         }
     }
 
@@ -3287,7 +3288,7 @@ impl ToolCallContent {
             PreparedToolCallContent::Other(source) => Self::Other {
                 source,
                 markdown: ContentBlock::create_markdown(
-                    "Unsupported tool call content.".into(),
+                    t(keys::acp::ACP_TOOL_CALL_CONTENT_UNSUPPORTED).into(),
                     language_registry,
                     cx,
                 ),
@@ -9210,7 +9211,7 @@ mod tests {
             assert_eq!(content.markdowns().next(), Some(&fallback));
             assert_eq!(
                 content.to_markdown(cx),
-                "Image content could not be displayed."
+                t(keys::acp::ACP_CONTENT_IMAGE_UNAVAILABLE)
             );
 
             content.replace(
@@ -9416,26 +9417,24 @@ mod tests {
             ));
             assert_eq!(
                 content.to_markdown(cx),
-                concat!(
-                    "before\n\n```\nresource text\n```\n\n",
-                    "[@https://example.com/resource](https://example.com/resource)\n\n",
-                    "tool://archive.bin\n\n",
-                    "Image content could not be displayed.\n\n",
-                    "Audio content is not supported.\n\nafter",
+                format!(
+                    "before\n\n```\nresource text\n```\n\n[@https://example.com/resource](https://example.com/resource)\n\ntool://archive.bin\n\n{}\n\n{}\n\nafter",
+                    t(keys::acp::ACP_CONTENT_IMAGE_UNAVAILABLE),
+                    t(keys::acp::ACP_CONTENT_AUDIO_UNSUPPORTED),
                 )
             );
             assert_eq!(
                 content
                     .markdowns()
-                    .map(|markdown| markdown.read(cx).source())
+                    .map(|markdown| markdown.read(cx).source().to_string())
                     .collect::<Vec<_>>(),
-                [
-                    "before",
-                    "```\nresource text\n```",
-                    "[@https://example.com/resource](https://example.com/resource)",
-                    "Image content could not be displayed.",
-                    "Audio content is not supported.",
-                    "after",
+                vec![
+                    "before".to_string(),
+                    "```\nresource text\n```".to_string(),
+                    "[@https://example.com/resource](https://example.com/resource)".to_string(),
+                    t(keys::acp::ACP_CONTENT_IMAGE_UNAVAILABLE),
+                    t(keys::acp::ACP_CONTENT_AUDIO_UNSUPPORTED),
+                    "after".to_string(),
                 ]
             );
             assert!(!content.to_markdown(cx).contains("private-audio-data"));
@@ -9487,7 +9486,7 @@ mod tests {
             assert_eq!(rendered.unsupported_content(), Some(&source));
             assert_eq!(
                 rendered.to_markdown(cx),
-                "Unknown content type is not supported."
+                t(keys::acp::ACP_CONTENT_UNKNOWN_UNSUPPORTED)
             );
 
             let output = ContentBlock::new_output(source, &language_registry, cx);
@@ -9498,7 +9497,7 @@ mod tests {
             assert_eq!(other.fields, raw_fields);
             assert_eq!(
                 output.to_markdown(cx),
-                "Unknown content type is not supported."
+                t(keys::acp::ACP_CONTENT_UNKNOWN_UNSUPPORTED)
             );
         });
     }
@@ -9634,14 +9633,14 @@ mod tests {
                             .mime_type("text/markdown".to_string()),
                     ),
                 )),
-                "Resource preview",
+                "Resource preview".to_string(),
             ),
             (
                 acp_v2::ContentBlock::Audio(acp_v2::AudioContent::new(
                     "private-audio-data",
                     "audio/wav",
                 )),
-                "Audio content is not supported.",
+                t(keys::acp::ACP_CONTENT_AUDIO_UNSUPPORTED),
             ),
         ] {
             thread.update(cx, |thread, cx| {
@@ -16005,14 +16004,9 @@ mod tests {
                 assert!(blob.visible_content(cx));
                 assert_eq!(
                     thread.to_markdown(cx),
-                    concat!(
-                        "## Context Compaction (Completed)\n\n",
-                        "retained context\n\n",
-                        "Retained resource text\n\n",
-                        "`Image`\n\n",
-                        "https://example.com/context\n\n",
-                        "Audio content is not supported.\n\n",
-                        "summary://attachment\n\n",
+                    format!(
+                        "## Context Compaction (Completed)\n\nretained context\n\nRetained resource text\n\n`Image`\n\nhttps://example.com/context\n\n{}\n\nsummary://attachment\n\n",
+                        t(keys::acp::ACP_CONTENT_AUDIO_UNSUPPORTED)
                     )
                 );
             });
@@ -16049,7 +16043,7 @@ mod tests {
             assert!(
                 thread
                     .to_markdown(cx)
-                    .contains("Audio content is not supported.")
+                    .contains(&t(keys::acp::ACP_CONTENT_AUDIO_UNSUPPORTED))
             );
         });
     }

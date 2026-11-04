@@ -1,6 +1,7 @@
 use agent_client_protocol::schema::v2 as acp;
 use anyhow::{Context as _, Result, bail};
 use file_icons::FileIcons;
+use i18n::{keys, t, t_with_args};
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
@@ -344,21 +345,20 @@ impl MentionUri {
             MentionUri::Symbol { name, .. } => name.clone(),
             MentionUri::Thread { name, .. } => name.clone(),
             MentionUri::Rule { name, .. } => name.clone(),
-            MentionUri::Diagnostics { .. } => "Diagnostics".to_string(),
+            MentionUri::Diagnostics { .. } => t(keys::acp::ACP_MENTION_DIAGNOSTICS),
             MentionUri::TerminalSelection { line_count } => {
-                if *line_count == 1 {
-                    "Terminal (1 line)".to_string()
-                } else {
-                    format!("Terminal ({} lines)", line_count)
-                }
+                let count = line_count.to_string();
+                t_with_args(keys::acp::ACP_MENTION_TERMINAL, &[("count", &count)])
             }
-            MentionUri::GitDiff { base_ref } => format!("Branch Diff ({})", base_ref),
+            MentionUri::GitDiff { base_ref } => {
+                t_with_args(keys::acp::ACP_MENTION_BRANCH_DIFF, &[("base_ref", base_ref)])
+            }
             MentionUri::MergeConflict { file_path } => {
                 let name = Path::new(file_path)
                     .file_name()
                     .unwrap_or_default()
                     .to_string_lossy();
-                format!("Merge Conflict ({name})")
+                t_with_args(keys::acp::ACP_MENTION_MERGE_CONFLICT, &[("name", &name)])
             }
             MentionUri::Selection {
                 abs_path: path,
@@ -384,7 +384,7 @@ impl MentionUri {
             MentionUri::Skill { name, source, .. } => {
                 if source.is_empty() {
                     // Must match `SkillSource::display_label()` in agent_skills.
-                    format!("{} (global)", name)
+                    t_with_args(keys::acp::ACP_MENTION_SKILL_GLOBAL, &[("name", name)])
                 } else {
                     format!("{} ({})", name, source)
                 }
@@ -840,11 +840,13 @@ fn single_query_param(url: &Url, name: &'static str) -> Result<Option<String>> {
 }
 
 pub fn selection_name(path: Option<&Path>, line_range: &RangeInclusive<u32>) -> String {
+    let name = path
+        .and_then(|path| path.file_name())
+        .map(|name| name.display().to_string())
+        .unwrap_or_else(|| t(keys::acp::ACP_MENTION_UNTITLED));
     format!(
         "{} ({}:{})",
-        path.and_then(|path| path.file_name())
-            .unwrap_or("Untitled".as_ref())
-            .display(),
+        name,
         *line_range.start() + 1,
         *line_range.end() + 1
     )
@@ -1722,12 +1724,18 @@ mod tests {
             _ => panic!("Expected TerminalSelection variant"),
         }
         assert_eq!(parsed.to_uri().to_string(), terminal_uri);
-        assert_eq!(parsed.name(), "Terminal (42 lines)");
+        assert_eq!(
+            parsed.name(),
+            t_with_args(keys::acp::ACP_MENTION_TERMINAL, &[("count", "42")])
+        );
 
         // Test single line
         let single_line_uri = "zed:///agent/terminal-selection?lines=1";
         let parsed_single = MentionUri::parse(single_line_uri, PathStyle::local()).unwrap();
-        assert_eq!(parsed_single.name(), "Terminal (1 line)");
+        assert_eq!(
+            parsed_single.name(),
+            t_with_args(keys::acp::ACP_MENTION_TERMINAL, &[("count", "1")])
+        );
     }
 
     #[test]
@@ -1770,7 +1778,10 @@ mod tests {
         };
         assert_eq!(global_skill.name(), "create-skill");
         assert_eq!(global_skill.disambiguated_name(0), "create-skill");
-        assert_eq!(global_skill.disambiguated_name(1), "create-skill (global)");
+        assert_eq!(
+            global_skill.disambiguated_name(1),
+            t_with_args(keys::acp::ACP_MENTION_SKILL_GLOBAL, &[("name", "create-skill")])
+        );
         assert_eq!(
             project_skill.disambiguated_name(1),
             "create-skill (my-project)"

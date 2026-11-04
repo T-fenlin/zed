@@ -4403,10 +4403,10 @@ pub(crate) mod tests {
     #[test]
     fn test_thread_error_auth_marker_uses_description_or_default() {
         for (marker, expected) in [
-            (AuthRequired::new(), "Authentication required"),
+            (AuthRequired::new(), t(keys::acp::ACP_AUTH_REQUIRED)),
             (
                 AuthRequired::new().with_description("Sign in again".to_string()),
-                "Sign in again",
+                "Sign in again".to_string(),
             ),
         ] {
             let error = anyhow!(marker).context("Sending prompt");

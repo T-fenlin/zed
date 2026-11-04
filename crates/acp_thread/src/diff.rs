@@ -5,6 +5,7 @@ use anyhow::{Result, anyhow, ensure};
 use buffer_diff::BufferDiff;
 use collections::{HashMap, HashSet};
 use gpui::{App, AppContext, AsyncApp, Context, Entity, SharedString, Subscription, Task};
+use i18n::{keys, t, t_with_args};
 use itertools::Itertools;
 use language::{
     Anchor, Buffer, Capability, LanguageRegistry, LineEnding, OffsetRangeExt as _, Point,
@@ -86,7 +87,11 @@ impl DiffPatch {
             }
             Err(error) => {
                 let preview = format!(
-                    "Diff preview unavailable: {error}\n\n{}",
+                    "{}\n\n{}",
+                    t_with_args(
+                        keys::acp::ACP_DIFF_PREVIEW_UNAVAILABLE,
+                        &[("error", &error.to_string())]
+                    ),
                     crate::ToolCallContent::patch_preview(source)
                 );
                 Self {
@@ -284,24 +289,29 @@ fn diff_change_paths(change: &acp_v2::DiffChange) -> Option<(Option<&Path>, Opti
 
 pub fn diff_change_label(change: &acp_v2::DiffChange) -> String {
     match &change.operation {
-        acp_v2::DiffChangeOperation::Add(change) => format!("Added {}", change.path.0.display()),
-        acp_v2::DiffChangeOperation::Delete(change) => {
-            format!("Deleted {}", change.path.0.display())
-        }
-        acp_v2::DiffChangeOperation::Modify(change) => {
-            format!("Modified {}", change.path.0.display())
-        }
-        acp_v2::DiffChangeOperation::Move(change) => format!(
-            "Moved {} → {}",
-            change.old_path.0.display(),
-            change.path.0.display()
+        acp_v2::DiffChangeOperation::Add(change) => t_with_args(
+            keys::acp::ACP_DIFF_ADDED,
+            &[("path", &change.path.0.display().to_string())],
         ),
-        acp_v2::DiffChangeOperation::Copy(change) => format!(
-            "Copied {} → {}",
-            change.old_path.0.display(),
-            change.path.0.display()
+        acp_v2::DiffChangeOperation::Delete(change) => t_with_args(
+            keys::acp::ACP_DIFF_DELETED,
+            &[("path", &change.path.0.display().to_string())],
         ),
-        _ => "Unsupported file operation".to_owned(),
+        acp_v2::DiffChangeOperation::Modify(change) => t_with_args(
+            keys::acp::ACP_DIFF_MODIFIED,
+            &[("path", &change.path.0.display().to_string())],
+        ),
+        acp_v2::DiffChangeOperation::Move(change) => {
+            let from = change.old_path.0.display().to_string();
+            let to = change.path.0.display().to_string();
+            t_with_args(keys::acp::ACP_DIFF_MOVED, &[("from", &from), ("to", &to)])
+        }
+        acp_v2::DiffChangeOperation::Copy(change) => {
+            let from = change.old_path.0.display().to_string();
+            let to = change.path.0.display().to_string();
+            t_with_args(keys::acp::ACP_DIFF_COPIED, &[("from", &from), ("to", &to)])
+        }
+        _ => t(keys::acp::ACP_DIFF_UNSUPPORTED_OPERATION),
     }
 }
 

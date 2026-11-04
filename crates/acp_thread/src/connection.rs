@@ -634,7 +634,7 @@ impl AuthRequired {
 impl Error for AuthRequired {}
 impl fmt::Display for AuthRequired {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Authentication required")
+        f.write_str(&i18n::t(i18n::keys::acp::ACP_AUTH_REQUIRED))
     }
 }
 
