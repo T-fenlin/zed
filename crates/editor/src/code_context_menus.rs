@@ -1698,7 +1698,7 @@ fn render_completion_kind_letter(
 
 fn completion_kind_name(kind: CompletionItemKind) -> &'static str {
     match kind {
-        CompletionItemKind::TEXT => t_static(keys::editor::EDITOR_KIND_TEXT),
+        CompletionItemKind::TEXT => "Text",
         CompletionItemKind::METHOD => t_static(keys::editor::EDITOR_KIND_METHOD),
         CompletionItemKind::FUNCTION => t_static(keys::editor::EDITOR_KIND_FUNCTION),
         CompletionItemKind::CONSTRUCTOR => t_static(keys::editor::EDITOR_KIND_CONSTRUCTOR),
@@ -1709,12 +1709,12 @@ fn completion_kind_name(kind: CompletionItemKind) -> &'static str {
         CompletionItemKind::MODULE => t_static(keys::editor::EDITOR_KIND_MODULE),
         CompletionItemKind::PROPERTY => t_static(keys::editor::EDITOR_KIND_PROPERTY),
         CompletionItemKind::UNIT => t_static(keys::editor::EDITOR_KIND_UNIT),
-        CompletionItemKind::VALUE => t_static(keys::editor::EDITOR_KIND_VALUE),
+        CompletionItemKind::VALUE => "Value",
         CompletionItemKind::ENUM => t_static(keys::editor::EDITOR_KIND_ENUM),
         CompletionItemKind::KEYWORD => t_static(keys::editor::EDITOR_KIND_KEYWORD),
         CompletionItemKind::SNIPPET => t_static(keys::editor::EDITOR_KIND_SNIPPET),
         CompletionItemKind::COLOR => t_static(keys::editor::EDITOR_KIND_COLOR),
-        CompletionItemKind::FILE => t_static(keys::editor::EDITOR_KIND_FILE),
+        CompletionItemKind::FILE => "File",
         CompletionItemKind::REFERENCE => t_static(keys::editor::EDITOR_KIND_REFERENCE),
         CompletionItemKind::FOLDER => t_static(keys::editor::EDITOR_KIND_FOLDER),
         CompletionItemKind::ENUM_MEMBER => t_static(keys::editor::EDITOR_KIND_ENUM_MEMBER),
@@ -1723,7 +1723,7 @@ fn completion_kind_name(kind: CompletionItemKind) -> &'static str {
         CompletionItemKind::EVENT => t_static(keys::editor::EDITOR_KIND_EVENT),
         CompletionItemKind::OPERATOR => t_static(keys::editor::EDITOR_KIND_OPERATOR),
         CompletionItemKind::TYPE_PARAMETER => t_static(keys::editor::EDITOR_KIND_TYPE_PARAMETER),
-        _ => t_static(keys::editor::EDITOR_KIND_UNKNOWN),
+        _ => "Unknown",
     }
 }
 

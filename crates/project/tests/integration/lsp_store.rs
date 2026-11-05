@@ -1000,7 +1000,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
         "lsp": {
             "the-fake-language-server": {
                 "initialization_options": {
-                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): ["user-lang"],
+                    "languages": ["user-lang"],
                     "userOnly": true,
                 },
             },
@@ -1039,7 +1039,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
                 "globalPlugins": ["shared-plugin", plugin],
                 "maxMemory": memory,
             },
-            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): [lang],
+            "languages": [lang],
         });
         language_registry.register_fake_lsp_adapter(
             language,
@@ -1067,7 +1067,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
                 "tsserver": {
                     "globalPlugins": ["default-plugin"],
                 },
-                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): ["default-lang"],
+                "languages": ["default-lang"],
             })),
             initializer: Some(Box::new({
                 let sent_initialization_options = sent_initialization_options.clone();
@@ -1106,7 +1106,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
                 "globalPlugins": ["default-plugin", "shared-plugin", "astro-plugin", "vue-plugin"],
                 "maxMemory": 4096,
             },
-            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): ["user-lang"],
+            "languages": ["user-lang"],
             "userOnly": true,
         })),
     );
@@ -1117,7 +1117,7 @@ async fn test_other_adapters_lsp_configuration_contributions_are_unioned(cx: &mu
                 "globalPlugins": ["shared-plugin", "astro-plugin", "vue-plugin"],
                 "maxMemory": 4096,
             },
-            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): ["astro", "vue"],
+            "languages": ["astro", "vue"],
         }),
     );
 }

@@ -458,7 +458,7 @@ impl LanguageModels {
         }
         if !recommended.is_empty() {
             language_model_list.insert(
-                acp_thread::AgentModelGroupName(t(keys::agent::AGENT_RECOMMENDED).into()),
+                acp_thread::AgentModelGroupName("Recommended".into()),
                 recommended,
             );
         }

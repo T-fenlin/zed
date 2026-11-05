@@ -856,7 +856,7 @@ impl Inner {
                     project_path_display(project, &project_path, path_style, cx)
                 }))
             })
-            .unwrap_or_else(|| t(keys::panel::PANEL_UNTITLED_ITEM).to_string());
+            .unwrap_or_else(|| "item".to_string());
 
         workspace
             .update(cx, |workspace, cx| {

@@ -1287,7 +1287,7 @@ done
                 let project = project.clone();
                 async move |mut cx| {
                     connect(
-                        AgentId::new(t_static(keys::agent::AGENT_B_SELECTION)),
+                        AgentId::new("selection"),
                         project,
                         command,
                         WeakEntity::new_invalid(),

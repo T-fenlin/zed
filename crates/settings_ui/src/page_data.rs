@@ -107,7 +107,7 @@ fn developer_page(cx: &App) -> SettingsPage {
     }
 
     items.push(SettingsPageItem::SectionHeader(
-        t(keys::settings_ui::SETTINGS_DEVELOPER_SECTION_INSTRUMENTATION).into(),
+        t_static(keys::settings_ui::SETTINGS_DEVELOPER_SECTION_INSTRUMENTATION).into(),
     ));
     items.push(SettingsPageItem::SettingItem(SettingItem {
         title: t(keys::settings_ui::SETTINGS_DEVELOPER_PERFORMANCE_PROFILER).into(),
@@ -139,7 +139,7 @@ fn developer_page(cx: &App) -> SettingsPage {
     }));
 
     SettingsPage {
-        title: t(keys::settings_ui::SETTINGS_DEVELOPER_DEVELOPER).into(),
+        title: t_static(keys::settings_ui::SETTINGS_DEVELOPER_DEVELOPER).into(),
         items: items.into_boxed_slice(),
     }
 }
@@ -334,7 +334,7 @@ fn general_page(cx: &App) -> SettingsPage {
     fn security_section() -> [SettingsPageItem; 2] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_GENERAL_SECTION_SECURITY).into(),
+                t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_SECURITY).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_GENERAL_TRUST_ALL_PROJECTS_BY_DEFAULT).into(),
@@ -460,9 +460,7 @@ fn general_page(cx: &App) -> SettingsPage {
 
     fn privacy_section() -> [SettingsPageItem; 4] {
         [
-            SettingsPageItem::SectionHeader(
-                t(keys::edit_prediction::EDIT_PREDICTION_PRIVACY_HEADER).into(),
-            ),
+            SettingsPageItem::SectionHeader("Privacy".into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_GENERAL_TELEMETRY_DIAGNOSTICS).into(),
                 description: t(
@@ -565,7 +563,7 @@ fn general_page(cx: &App) -> SettingsPage {
 
     fn extensions_section() -> [SettingsPageItem; 2] {
         [
-            SettingsPageItem::SectionHeader(t(keys::app_menu::MENU_ZED_EXTENSIONS).into()),
+            SettingsPageItem::SectionHeader("Extensions".into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_GENERAL_SUGGEST_EXTENSIONS).into(),
                 description: t(keys::settings_ui::SETTINGS_EXTENSIONS_SUGGEST_FOR_FILES).into(),
@@ -584,7 +582,7 @@ fn general_page(cx: &App) -> SettingsPage {
     }
 
     SettingsPage {
-        title: t(keys::settings_ui::SETTINGS_GENERAL_GENERAL).into(),
+        title: "General".into(),
         items: concat_sections!(
             @vec,
             general_settings_section(cx),
@@ -602,7 +600,7 @@ fn general_page(cx: &App) -> SettingsPage {
 fn appearance_page() -> SettingsPage {
     fn theme_section() -> [SettingsPageItem; 3] {
         [
-            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_APPEARANCE_SECTION_THEME).into()),
+            SettingsPageItem::SectionHeader("Theme".into()),
             SettingsPageItem::DynamicItem(DynamicItem {
                 discriminant: SettingItem {
                     files: USER,
@@ -699,7 +697,7 @@ fn appearance_page() -> SettingsPage {
                         settings::ThemeSelectionDiscriminants::Dynamic => vec![
                             SettingItem {
                                 files: USER,
-                                title: t(keys::settings_ui::SETTINGS_APPEARANCE_MODE).into(),
+                                title: "Mode".into(),
                                 description: t(keys::settings_ui::SETTINGS_APPEARANCE_CHOOSE_WHETHER_TO_USE_THE_SELECTED_LIGHT).into(),
                                 field: Box::new(SettingField {
                                     organization_override: None,
@@ -880,7 +878,7 @@ fn appearance_page() -> SettingsPage {
                         settings::IconThemeSelectionDiscriminants::Dynamic => vec![
                             SettingItem {
                                 files: USER,
-                                title: t(keys::settings_ui::SETTINGS_APPEARANCE_MODE).into(),
+                                title: "Mode".into(),
                                 description: t(keys::settings_ui::SETTINGS_APPEARANCE_CHOOSE_WHETHER_TO_USE_THE_SELECTED_LIGHT_2).into(),
                                 field: Box::new(SettingField {
                                     organization_override: None,
@@ -1519,7 +1517,7 @@ fn appearance_page() -> SettingsPage {
     fn cursor_section() -> [SettingsPageItem; 7] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_APPEARANCE_SECTION_CURSOR).into(),
+                t_static(keys::settings_ui::SETTINGS_APPEARANCE_SECTION_CURSOR).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_APPEARANCE_MULTI_CURSOR_MODIFIER).into(),
@@ -1638,7 +1636,7 @@ fn appearance_page() -> SettingsPage {
     fn highlighting_section() -> [SettingsPageItem; 6] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_APPEARANCE_SECTION_HIGHLIGHTING).into(),
+                t_static(keys::settings_ui::SETTINGS_APPEARANCE_SECTION_HIGHLIGHTING).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_APPEARANCE_UNNECESSARY_CODE_FADE).into(),
@@ -1739,7 +1737,7 @@ fn appearance_page() -> SettingsPage {
     fn guides_section() -> [SettingsPageItem; 3] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_APPEARANCE_SECTION_GUIDES).into(),
+                t_static(keys::settings_ui::SETTINGS_APPEARANCE_SECTION_GUIDES).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_APPEARANCE_SHOW_WRAP_GUIDES).into(),
@@ -1814,7 +1812,7 @@ fn appearance_page() -> SettingsPage {
     );
 
     SettingsPage {
-        title: t(keys::settings_ui::SETTINGS_APPEARANCE_APPEARANCE).into(),
+        title: t_static(keys::settings_ui::SETTINGS_APPEARANCE_APPEARANCE).into(),
         items,
     }
 }
@@ -1823,7 +1821,7 @@ fn keymap_page() -> SettingsPage {
     fn keybindings_section() -> [SettingsPageItem; 2] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_KEYMAP_SECTION_KEYBINDINGS).into(),
+                t_static(keys::settings_ui::SETTINGS_KEYMAP_SECTION_KEYBINDINGS).into(),
             ),
             SettingsPageItem::ActionLink(ActionLink {
                 title: t(keys::settings_ui::SETTINGS_KEYMAP_EDIT_KEYBINDINGS).into(),
@@ -1918,7 +1916,7 @@ fn keymap_page() -> SettingsPage {
     );
 
     SettingsPage {
-        title: t(keys::settings_ui::SETTINGS_KEYMAP_KEYMAP).into(),
+        title: "Keymap".into(),
         items,
     }
 }
@@ -2080,7 +2078,7 @@ fn editor_page() -> SettingsPage {
     fn multibuffer_section() -> [SettingsPageItem; 7] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_EDITOR_SECTION_MULTIBUFFER).into(),
+                t_static(keys::settings_ui::SETTINGS_EDITOR_SECTION_MULTIBUFFER).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_EDITOR_DOUBLE_CLICK_IN_MULTIBUFFER).into(),
@@ -2204,7 +2202,7 @@ fn editor_page() -> SettingsPage {
     fn scrolling_section() -> [SettingsPageItem; 9] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_EDITOR_SECTION_SCROLLING).into(),
+                t_static(keys::settings_ui::SETTINGS_EDITOR_SECTION_SCROLLING).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_EDITOR_SCROLL_BEYOND_LAST_LINE).into(),
@@ -2433,7 +2431,7 @@ fn editor_page() -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_EDITOR_SECTION_HOVER_POPOVER).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
+                title: "Enabled".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_SHOW_THE_INFORMATIONAL_HOVER_BOX_WHEN_MO,
                 )
@@ -2451,7 +2449,7 @@ fn editor_page() -> SettingsPage {
             }),
             // todo(settings ui): add units to this number input
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_DELAY).into(),
+                title: "Delay".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_TIME_TO_WAIT_IN_MILLISECONDS_BEFORE_SHOW,
                 )
@@ -2468,7 +2466,7 @@ fn editor_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_STICKY).into(),
+                title: t_static(keys::settings_ui::SETTINGS_EDITOR_STICKY).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_WHETHER_THE_HOVER_POPOVER_STICKS_WHEN_TH,
                 )
@@ -2513,7 +2511,7 @@ fn editor_page() -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_EDITOR_SECTION_DRAG_AND_DROP_SELECTION).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
+                title: "Enabled".into(),
                 description: t(keys::settings_ui::SETTINGS_EDITOR_ENABLE_DRAG_AND_DROP_SELECTION)
                     .into(),
                 field: Box::new(SettingField {
@@ -2538,7 +2536,7 @@ fn editor_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_DELAY).into(),
+                title: "Delay".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_DELAY_IN_MILLISECONDS_BEFORE_DRAG_AND_DR,
                 )
@@ -2569,7 +2567,7 @@ fn editor_page() -> SettingsPage {
 
     fn gutter_section() -> [SettingsPageItem; 10] {
         [
-            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_EDITOR_SECTION_GUTTER).into()),
+            SettingsPageItem::SectionHeader(t_static(keys::settings_ui::SETTINGS_EDITOR_SECTION_GUTTER).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_EDITOR_SHOW_LINE_NUMBERS).into(),
                 description: t(keys::settings_ui::SETTINGS_EDITOR_SHOW_LINE_NUMBERS_IN_THE_GUTTER).into(),
@@ -2835,10 +2833,10 @@ fn editor_page() -> SettingsPage {
     fn scrollbar_section() -> [SettingsPageItem; 10] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_EDITOR_SECTION_SCROLLBAR).into(),
+                t_static(keys::settings_ui::SETTINGS_EDITOR_SECTION_SCROLLBAR).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_SHOW).into(),
+                title: "Show".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_WHEN_TO_SHOW_THE_SCROLLBAR_IN_THE_EDITOR,
                 )
@@ -2863,7 +2861,7 @@ fn editor_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_CURSORS).into(),
+                title: t_static(keys::settings_ui::SETTINGS_EDITOR_CURSORS).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_SHOW_CURSOR_POSITIONS_IN_THE_SCROLLBAR,
                 )
@@ -2998,7 +2996,7 @@ fn editor_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::agent::AGENT_B_DIAGNOSTICS).into(),
+                title: "Diagnostics".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_WHICH_DIAGNOSTIC_INDICATORS_TO_SHOW_IN_T,
                 )
@@ -3095,10 +3093,10 @@ fn editor_page() -> SettingsPage {
     fn minimap_section() -> [SettingsPageItem; 7] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_EDITOR_SECTION_MINIMAP).into(),
+                t_static(keys::settings_ui::SETTINGS_EDITOR_SECTION_MINIMAP).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_SHOW).into(),
+                title: "Show".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_WHEN_TO_SHOW_THE_MINIMAP_IN_THE_EDITOR,
                 )
@@ -3145,7 +3143,7 @@ fn editor_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_THUMB).into(),
+                title: t_static(keys::settings_ui::SETTINGS_EDITOR_THUMB).into(),
                 description: t(keys::settings_ui::SETTINGS_EDITOR_WHEN_TO_SHOW_THE_MINIMAP_THUMB)
                     .into(),
                 field: Box::new(SettingField {
@@ -3254,11 +3252,9 @@ fn editor_page() -> SettingsPage {
 
     fn toolbar_section() -> [SettingsPageItem; 6] {
         [
-            SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_EDITOR_SECTION_TOOLBAR).into(),
-            ),
+            SettingsPageItem::SectionHeader("Toolbar".into()),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_BREADCRUMBS).into(),
+                title: t_static(keys::settings_ui::SETTINGS_EDITOR_BREADCRUMBS).into(),
                 description: t(keys::settings_ui::SETTINGS_EDITOR_SHOW_BREADCRUMBS).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -3730,7 +3726,7 @@ fn editor_page() -> SettingsPage {
     );
 
     SettingsPage {
-        title: t(keys::settings_ui::SETTINGS_EDITOR_EDITOR).into(),
+        title: t_static(keys::settings_ui::SETTINGS_EDITOR_EDITOR).into(),
         items: items,
     }
 }
@@ -3768,7 +3764,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
 
     fn diagnostics_section() -> [SettingsPageItem; 3] {
         [
-            SettingsPageItem::SectionHeader(t(keys::agent::AGENT_B_DIAGNOSTICS).into()),
+            SettingsPageItem::SectionHeader("Diagnostics".into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_LANGUAGES_MAX_SEVERITY).into(),
                 description: t(keys::settings_ui::SETTINGS_DIAGNOSTICS_FILTER_LEVEL_HINT).into(),
@@ -3820,7 +3816,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_INLINE_DIAGNOSTICS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
+                title: "Enabled".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_LANGUAGES_WHETHER_TO_SHOW_DIAGNOSTICS_INLINE_OR_NO,
                 )
@@ -3880,7 +3876,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_LANGUAGES_PADDING).into(),
+                title: "Padding".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_LANGUAGES_THE_AMOUNT_OF_PADDING_BETWEEN_THE_END_OF,
                 )
@@ -3948,7 +3944,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LSP_PULL_DIAGNOSTICS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
+                title: "Enabled".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_LANGUAGES_WHETHER_TO_PULL_FOR_LANGUAGE_SERVER_POWE,
                 )
@@ -3979,7 +3975,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
             }),
             // todo(settings_ui): Needs unit
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_LANGUAGES_DEBOUNCE).into(),
+                title: "Debounce".into(),
                 description: t(keys::settings_ui::SETTINGS_DIAGNOSTICS_PULL_DEBOUNCE_HINT).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -4014,7 +4010,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LSP_HIGHLIGHTS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_LANGUAGES_DEBOUNCE).into(),
+                title: "Debounce".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_LANGUAGES_THE_DEBOUNCE_DELAY_BEFORE_QUERYING_HIGHL,
                 )
@@ -4038,31 +4034,34 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
     fn languages_list_section(cx: &App) -> Box<[SettingsPageItem]> {
         // todo(settings_ui): Refresh on extension (un)/installed
         // Note that `crates/json_schema_store` solves the same problem, there is probably a way to unify the two
-        std::iter::once(SettingsPageItem::SectionHeader(
-            t(keys::extensions::EXTENSIONS_PROVIDES_LANGUAGES).into(),
-        ))
-        .chain(all_language_names(cx).into_iter().map(|language_name| {
-            let link = format!("languages.{language_name}");
-            SettingsPageItem::SubPageLink(SubPageLink {
-                title: language_name,
-                r#type: crate::SubPageType::Language,
-                description: None,
-                search_aliases: &[],
-                json_path: Some(link.leak()),
-                in_json: true,
-                files: USER | PROJECT,
-                render: |this, scroll_handle, window, cx| {
-                    let items: Box<[SettingsPageItem]> = concat_sections!(
-                        language_settings_data(),
-                        non_editor_language_settings_data(),
-                        edit_prediction_language_settings_section()
-                    );
-                    this.render_sub_page_items(items.iter().enumerate(), scroll_handle, window, cx)
+        std::iter::once(SettingsPageItem::SectionHeader("Languages".into()))
+            .chain(all_language_names(cx).into_iter().map(|language_name| {
+                let link = format!("languages.{language_name}");
+                SettingsPageItem::SubPageLink(SubPageLink {
+                    title: language_name,
+                    r#type: crate::SubPageType::Language,
+                    description: None,
+                    search_aliases: &[],
+                    json_path: Some(link.leak()),
+                    in_json: true,
+                    files: USER | PROJECT,
+                    render: |this, scroll_handle, window, cx| {
+                        let items: Box<[SettingsPageItem]> = concat_sections!(
+                            language_settings_data(),
+                            non_editor_language_settings_data(),
+                            edit_prediction_language_settings_section()
+                        );
+                        this.render_sub_page_items(
+                            items.iter().enumerate(),
+                            scroll_handle,
+                            window,
+                            cx,
+                        )
                         .into_any_element()
-                },
-            })
-        }))
-        .collect()
+                    },
+                })
+            }))
+            .collect()
     }
 
     SettingsPage {
@@ -4085,7 +4084,7 @@ fn search_and_files_page() -> SettingsPage {
     fn search_section() -> [SettingsPageItem; 10] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_SEARCH_SECTION_SEARCH).into(),
+                t_static(keys::settings_ui::SETTINGS_SEARCH_SECTION_SEARCH).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_SEARCH_WHOLE_WORD).into(),
@@ -4184,7 +4183,7 @@ fn search_and_files_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_SEARCH_REGEX).into(),
+                title: t_static(keys::settings_ui::SETTINGS_SEARCH_REGEX).into(),
                 description: t(keys::settings_ui::SETTINGS_SEARCH_USE_REGEX_SEARCH_BY_DEFAULT)
                     .into(),
                 field: Box::new(SettingField {
@@ -5662,7 +5661,7 @@ fn window_and_layout_page() -> SettingsPage {
     fn layout_section() -> [SettingsPageItem; 6] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_WINDOW_SECTION_LAYOUT).into(),
+                t_static(keys::settings_ui::SETTINGS_WINDOW_SECTION_LAYOUT).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_WINDOW_BOTTOM_DOCK_LAYOUT).into(),
@@ -5792,7 +5791,7 @@ fn window_and_layout_page() -> SettingsPage {
 
     fn window_section() -> [SettingsPageItem; 6] {
         [
-            SettingsPageItem::SectionHeader(t(keys::app_menu::MENU_WINDOW_TITLE).into()),
+            SettingsPageItem::SectionHeader("Window".into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_WINDOW_TITLE_FORMAT).into(),
                 description: "Window title template. Available variables are `${projectName}`, `${fileName}`, `${filePath}`, `${relativePath}`, `${fileStem}`, `${remoteName}`, `${remoteHost}`, `${appName}`, `${branch}`, and `${separator}`. `${separator}` is omitted when adjacent variables are empty, but literal text is preserved. The collaboration indicator, when present, is appended after the rendered template. If the template renders to nothing, the default template is used instead.".into(),
@@ -7798,7 +7797,7 @@ fn panels_page() -> SettingsPage {
     }
 
     SettingsPage {
-        title: t(keys::settings_ui::SETTINGS_PANELS_PANELS).into(),
+        title: t_static(keys::settings_ui::SETTINGS_PANELS_PANELS).into(),
         items: concat_sections![
             project_panel_section(),
             terminal_panel_section(),
@@ -7814,7 +7813,7 @@ fn panels_page() -> SettingsPage {
 fn debugger_page() -> SettingsPage {
     fn general_section() -> [SettingsPageItem; 6] {
         [
-            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_GENERAL_GENERAL).into()),
+            SettingsPageItem::SectionHeader("General".into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_DEBUGGER_STEPPING_GRANULARITY).into(),
                 description: t(
@@ -7868,7 +7867,7 @@ fn debugger_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_DEBUGGER_TIMEOUT).into(),
+                title: t_static(keys::settings_ui::SETTINGS_DEBUGGER_TIMEOUT).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_DEBUGGER_TIME_IN_MILLISECONDS_UNTIL_TIMEOUT_ERROR,
                 )
@@ -7940,7 +7939,7 @@ fn debugger_page() -> SettingsPage {
     }
 
     SettingsPage {
-        title: t(keys::settings_ui::SETTINGS_DEBUGGER_DEBUGGER).into(),
+        title: t_static(keys::settings_ui::SETTINGS_DEBUGGER_DEBUGGER).into(),
         items: concat_sections![general_section()],
     }
 }
@@ -7948,7 +7947,7 @@ fn debugger_page() -> SettingsPage {
 fn terminal_page() -> SettingsPage {
     fn environment_section() -> [SettingsPageItem; 5] {
         [
-                SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_TERMINAL_SECTION_ENVIRONMENT).into()),
+                SettingsPageItem::SectionHeader(t_static(keys::settings_ui::SETTINGS_TERMINAL_SECTION_ENVIRONMENT).into()),
                 SettingsPageItem::DynamicItem(DynamicItem {
                     discriminant: SettingItem {
                         files: USER | PROJECT,
@@ -8034,7 +8033,7 @@ fn terminal_page() -> SettingsPage {
                             settings::ShellDiscriminants::System => vec![],
                             settings::ShellDiscriminants::Program => vec![SettingItem {
                                 files: USER | PROJECT,
-                                title: t(keys::debugger::DEBUGGER_PROGRAM).into(),
+                                title: "Program".into(),
                                 description: t(keys::settings_ui::SETTINGS_TERMINAL_THE_SHELL_PROGRAM_TO_USE).into(),
                                 field: Box::new(SettingField {
                                     organization_override: None,
@@ -8065,7 +8064,7 @@ fn terminal_page() -> SettingsPage {
                             settings::ShellDiscriminants::WithArguments => vec![
                                 SettingItem {
                                     files: USER | PROJECT,
-                                    title: t(keys::debugger::DEBUGGER_PROGRAM).into(),
+                                    title: "Program".into(),
                                     description: t(keys::settings_ui::SETTINGS_TERMINAL_THE_SHELL_PROGRAM_TO_RUN).into(),
                                     field: Box::new(SettingField {
                                         organization_override: None,
@@ -8098,7 +8097,7 @@ fn terminal_page() -> SettingsPage {
                                 },
                                 SettingItem {
                                     files: USER | PROJECT,
-                                    title: t(keys::keymap::KEYMAP_ARGUMENTS).into(),
+                                    title: "Arguments".into(),
                                     description: t(keys::settings_ui::SETTINGS_TERMINAL_THE_ARGUMENTS_TO_PASS_TO_THE_SHELL_PROGR).into(),
                                     field: Box::new(
                                         SettingField {
@@ -8243,7 +8242,7 @@ fn terminal_page() -> SettingsPage {
                             settings::WorkingDirectoryDiscriminants::AlwaysHome => vec![],
                             settings::WorkingDirectoryDiscriminants::Always => vec![SettingItem {
                                 files: USER | PROJECT,
-                                title: t(keys::settings_ui::SETTINGS_TERMINAL_DIRECTORY).into(),
+                                title: t_static(keys::settings_ui::SETTINGS_TERMINAL_DIRECTORY).into(),
                                 description: t(keys::settings_ui::SETTINGS_TERMINAL_THE_DIRECTORY_PATH_TO_USE_WILL_BE_SHELL).into(),
                                 field: Box::new(SettingField {
                                     organization_override: None,
@@ -8317,7 +8316,7 @@ fn terminal_page() -> SettingsPage {
     fn font_section() -> [SettingsPageItem; 6] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_TERMINAL_SECTION_FONT).into(),
+                t_static(keys::settings_ui::SETTINGS_TERMINAL_SECTION_FONT).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_APPEARANCE_FONT_SIZE).into(),
@@ -8802,11 +8801,9 @@ fn terminal_page() -> SettingsPage {
 
     fn toolbar_section() -> [SettingsPageItem; 2] {
         [
-            SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_EDITOR_SECTION_TOOLBAR).into(),
-            ),
+            SettingsPageItem::SectionHeader("Toolbar".into()),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_BREADCRUMBS).into(),
+                title: t_static(keys::settings_ui::SETTINGS_EDITOR_BREADCRUMBS).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_TERMINAL_DISPLAY_THE_TERMINAL_TITLE_IN_BREADCRUMB,
                 )
@@ -8841,7 +8838,7 @@ fn terminal_page() -> SettingsPage {
     fn scrollbar_section() -> [SettingsPageItem; 2] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_EDITOR_SECTION_SCROLLBAR).into(),
+                t_static(keys::settings_ui::SETTINGS_EDITOR_SECTION_SCROLLBAR).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_PANELS_SHOW_SCROLLBAR).into(),
@@ -8879,7 +8876,7 @@ fn terminal_page() -> SettingsPage {
     }
 
     SettingsPage {
-        title: t(keys::settings_ui::SETTINGS_TERMINAL_TERMINAL).into(),
+        title: t_static(keys::settings_ui::SETTINGS_TOOLS_TERMINAL).into(),
         items: concat_sections![
             environment_section(),
             font_section(),
@@ -9072,7 +9069,7 @@ fn version_control_page() -> SettingsPage {
         [
             SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_VERSION_CONTROL_SECTION_GIT_GUTTER).into()),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_VISIBILITY).into(),
+                title: t_static(keys::settings_ui::SETTINGS_VERSION_CONTROL_VISIBILITY).into(),
                 description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_CONTROL_WHETHER_GIT_STATUS_IS_SHOWN_IN_T).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -9087,7 +9084,7 @@ fn version_control_page() -> SettingsPage {
             }),
             // todo(settings_ui): Figure out the right default for this value in default.json
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_LANGUAGES_DEBOUNCE).into(),
+                title: "Debounce".into(),
                 description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_DEBOUNCE_THRESHOLD_IN_MILLISECONDS_AFTER).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -9110,7 +9107,7 @@ fn version_control_page() -> SettingsPage {
             SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_VERSION_CONTROL_SECTION_INLINE_GIT_BLAME).into()),
             SettingsPageItem::DynamicItem(DynamicItem {
                 discriminant: SettingItem {
-                    title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
+                    title: "Enabled".into(),
                     description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_WHETHER_OR_NOT_TO_SHOW_GIT_BLAME_DATA_FO).into(),
                     field: Box::new(SettingField {
                         organization_override: None,
@@ -9150,7 +9147,7 @@ fn version_control_page() -> SettingsPage {
                 fields: vec![
                     vec![],
                     vec![SettingItem {
-                        title: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_LOCATION).into(),
+                        title: t_static(keys::settings_ui::SETTINGS_VERSION_CONTROL_LOCATION).into(),
                         description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_WHERE_TO_RENDER_GIT_BLAME_WHEN_IT_IS_ENA).into(),
                         field: Box::new(SettingField {
                             organization_override: None,
@@ -9179,7 +9176,7 @@ fn version_control_page() -> SettingsPage {
                 ],
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_DELAY).into(),
+                title: "Delay".into(),
                 description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_THE_DELAY_AFTER_WHICH_THE_INLINE_BLAME_I).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -9206,7 +9203,7 @@ fn version_control_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_LANGUAGES_PADDING).into(),
+                title: "Padding".into(),
                 description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_PADDING_BETWEEN_THE_END_OF_THE_SOURCE_LI).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -9480,7 +9477,7 @@ fn collaboration_page() -> SettingsPage {
     fn calls_section() -> [SettingsPageItem; 3] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_COLLABORATION_SECTION_CALLS).into(),
+                t_static(keys::settings_ui::SETTINGS_COLLABORATION_SECTION_CALLS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_COLLABORATION_MUTE_ON_JOIN).into(),
@@ -9582,7 +9579,7 @@ fn collaboration_page() -> SettingsPage {
     }
 
     SettingsPage {
-        title: t(keys::settings_ui::SETTINGS_COLLABORATION_COLLABORATION).into(),
+        title: t_static(keys::settings_ui::SETTINGS_COLLABORATION_COLLABORATION).into(),
         items: concat_sections![calls_section(), audio_settings()],
     }
 }
@@ -9590,7 +9587,7 @@ fn collaboration_page() -> SettingsPage {
 fn ai_page(cx: &App) -> SettingsPage {
     fn general_section() -> [SettingsPageItem; 8] {
         [
-            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_GENERAL_GENERAL).into()),
+            SettingsPageItem::SectionHeader("General".into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_AI_DISABLE_AI).into(),
                 description: t(
@@ -9776,7 +9773,7 @@ fn ai_page(cx: &App) -> SettingsPage {
 
         items.extend([
             SettingsPageItem::SubPageLink(SubPageLink {
-                title: t(keys::agent::AGENT_MENU_SKILLS).into(),
+                title: "Skills".into(),
                 r#type: Default::default(),
                 json_path: Some(zed_actions::AGENT_SKILLS_SETTINGS_PATH),
                 description: Some(t(keys::settings_ui::SETTINGS_SKILLS_DESCRIPTION).into()),
@@ -9792,7 +9789,7 @@ fn ai_page(cx: &App) -> SettingsPage {
                 render: render_skills_setup_page,
             }),
             SettingsPageItem::SubPageLink(SubPageLink {
-                title: t(keys::settings_ui::SETTINGS_AI_SANDBOX).into(),
+                title: t_static(keys::settings_ui::SETTINGS_AI_SANDBOX).into(),
                 r#type: Default::default(),
                 json_path: Some(zed_actions::AGENT_SANDBOX_SETTINGS_PATH),
                 description: Some(
@@ -10325,9 +10322,9 @@ fn ai_page(cx: &App) -> SettingsPage {
 fn network_page() -> SettingsPage {
     fn network_section() -> [SettingsPageItem; 3] {
         [
-            SettingsPageItem::SectionHeader(t(keys::collab::COLLAB_NETWORK).into()),
+            SettingsPageItem::SectionHeader("Network".into()),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_PROXY).into(),
+                title: t_static(keys::settings_ui::SETTINGS_NETWORK_PROXY).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_THE_PROXY_TO_USE_FOR_NETWORK_REQUESTS,
                 )
@@ -10370,7 +10367,7 @@ fn network_page() -> SettingsPage {
     }
 
     SettingsPage {
-        title: t(keys::collab::COLLAB_NETWORK).into(),
+        title: "Network".into(),
         items: concat_sections![network_section()],
     }
 }
@@ -10414,7 +10411,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
     fn indentation_section() -> [SettingsPageItem; 5] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_NETWORK_SECTION_INDENTATION).into(),
+                t_static(keys::settings_ui::SETTINGS_NETWORK_SECTION_INDENTATION).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_TAB_SIZE).into(),
@@ -10509,7 +10506,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
     fn wrapping_section() -> [SettingsPageItem; 7] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_NETWORK_SECTION_WRAPPING).into(),
+                t_static(keys::settings_ui::SETTINGS_NETWORK_SECTION_WRAPPING).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_SOFT_WRAP).into(),
@@ -10663,7 +10660,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 t(keys::settings_ui::SETTINGS_NETWORK_SECTION_INDENT_GUIDES).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
+                title: "Enabled".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_DISPLAY_INDENT_GUIDES_IN_THE_EDITOR,
                 )
@@ -10744,7 +10741,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 files: USER | PROJECT,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_COLORING).into(),
+                title: t_static(keys::settings_ui::SETTINGS_NETWORK_COLORING).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_DETERMINES_HOW_INDENT_GUIDES_ARE_COLORED,
                 )
@@ -10802,7 +10799,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
 
     fn formatting_section() -> [SettingsPageItem; 8] {
         [
-            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_NETWORK_SECTION_FORMATTING).into()),
+            SettingsPageItem::SectionHeader(t_static(keys::settings_ui::SETTINGS_NETWORK_SECTION_FORMATTING).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_FORMAT_ON_SAVE).into(),
                 description: "On: format the whole buffer.\nOff: do not format.\nModifications: format only lines with unstaged changes; skips formatting when a git diff or LSP range formatting is unavailable.\nModifications If Available: same, but falls back to formatting the whole buffer.".into(),
@@ -10894,7 +10891,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 files: USER | PROJECT,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_FORMATTER).into(),
+                title: t_static(keys::settings_ui::SETTINGS_NETWORK_FORMATTER).into(),
                 description: t(keys::settings_ui::SETTINGS_NETWORK_HOW_TO_PERFORM_A_BUFFER_FORMAT).into(),
                 field: Box::new(
                     SettingField {
@@ -10973,7 +10970,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
     fn autoclose_section() -> [SettingsPageItem; 5] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_NETWORK_SECTION_AUTOCLOSE).into(),
+                t_static(keys::settings_ui::SETTINGS_NETWORK_SECTION_AUTOCLOSE).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_USE_AUTOCLOSE).into(),
@@ -11075,7 +11072,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
     fn whitespace_section() -> [SettingsPageItem; 4] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_NETWORK_SECTION_WHITESPACE).into(),
+                t_static(keys::settings_ui::SETTINGS_NETWORK_SECTION_WHITESPACE).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_SHOW_WHITESPACES).into(),
@@ -11166,7 +11163,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
     fn completions_section() -> [SettingsPageItem; 8] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_NETWORK_SECTION_COMPLETIONS).into(),
+                t_static(keys::settings_ui::SETTINGS_NETWORK_SECTION_COMPLETIONS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_SHOW_COMPLETIONS_ON_INPUT).into(),
@@ -11215,7 +11212,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 files: USER | PROJECT,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_WORDS).into(),
+                title: t_static(keys::settings_ui::SETTINGS_NETWORK_WORDS).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_CONTROLS_HOW_WORDS_ARE_COMPLETED,
                 )
@@ -11329,7 +11326,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 t(keys::settings_ui::SETTINGS_NETWORK_SECTION_INLAY_HINTS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
+                title: "Enabled".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_GLOBAL_SWITCH_TO_TOGGLE_HINTS_ON_AND_OFF,
                 )
@@ -11572,10 +11569,10 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
     fn tasks_section() -> [SettingsPageItem; 4] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_NETWORK_SECTION_TASKS).into(),
+                t_static(keys::settings_ui::SETTINGS_NETWORK_SECTION_TASKS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
+                title: "Enabled".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_WHETHER_TASKS_ARE_ENABLED_FOR_THIS_LANGU,
                 )
@@ -11598,7 +11595,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 files: USER | PROJECT,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_VARIABLES).into(),
+                title: t_static(keys::settings_ui::SETTINGS_NETWORK_VARIABLES).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_EXTRA_TASK_VARIABLES_TO_SET_FOR_A_PARTIC,
                 )
@@ -11656,7 +11653,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
     fn miscellaneous_section() -> [SettingsPageItem; 8] {
         [
             SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_NETWORK_SECTION_MISCELLANEOUS).into(),
+                t_static(keys::settings_ui::SETTINGS_NETWORK_SECTION_MISCELLANEOUS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_NETWORK_LANGUAGE_DETECTION).into(),
@@ -11699,7 +11696,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 files: USER | PROJECT,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_DEBUGGERS).into(),
+                title: "Debuggers".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_PREFERRED_DEBUGGERS_FOR_THIS_LANGUAGE,
                 )
@@ -12234,7 +12231,7 @@ fn non_editor_language_settings_data() -> Box<[SettingsPageItem]> {
                 t(keys::settings_ui::SETTINGS_NETWORK_SECTION_LSP_COMPLETIONS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
+                title: "Enabled".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_WHETHER_TO_FETCH_LSP_COMPLETIONS_OR_NOT,
                 )
@@ -12310,11 +12307,9 @@ fn non_editor_language_settings_data() -> Box<[SettingsPageItem]> {
 
     fn debugger_section() -> [SettingsPageItem; 2] {
         [
-            SettingsPageItem::SectionHeader(
-                t(keys::settings_ui::SETTINGS_NETWORK_DEBUGGERS).into(),
-            ),
+            SettingsPageItem::SectionHeader("Debuggers".into()),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_DEBUGGERS).into(),
+                title: "Debuggers".into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_PREFERRED_DEBUGGERS_FOR_THIS_LANGUAGE,
                 )
@@ -12350,7 +12345,7 @@ fn non_editor_language_settings_data() -> Box<[SettingsPageItem]> {
         [
             SettingsPageItem::SectionHeader("Prettier".into()),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_ALLOWED).into(),
+                title: t_static(keys::settings_ui::SETTINGS_NETWORK_ALLOWED).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_ENABLES_OR_DISABLES_FORMATTING_WITH_PRET,
                 )
@@ -12373,7 +12368,7 @@ fn non_editor_language_settings_data() -> Box<[SettingsPageItem]> {
                 files: USER | PROJECT,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_PARSER).into(),
+                title: t_static(keys::settings_ui::SETTINGS_NETWORK_PARSER).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_FORCES_PRETTIER_INTEGRATION_TO_USE_A_SPE,
                 )
@@ -12396,7 +12391,7 @@ fn non_editor_language_settings_data() -> Box<[SettingsPageItem]> {
                 files: USER | PROJECT,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_PLUGINS).into(),
+                title: t_static(keys::settings_ui::SETTINGS_NETWORK_PLUGINS).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_FORCES_PRETTIER_INTEGRATION_TO_USE_SPECI,
                 )
@@ -12426,7 +12421,7 @@ fn non_editor_language_settings_data() -> Box<[SettingsPageItem]> {
                 files: USER | PROJECT,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: t(keys::settings_ui::SETTINGS_NETWORK_OPTIONS).into(),
+                title: t_static(keys::settings_ui::SETTINGS_NETWORK_OPTIONS).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_DEFAULT_PRETTIER_OPTIONS_IN_THE_FORMAT_A,
                 )

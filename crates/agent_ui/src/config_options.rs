@@ -393,15 +393,15 @@ impl ConfigOptionSelector {
 
     fn current_value_name(&self) -> String {
         let Some(option) = self.current_option() else {
-            return t(keys::agent::AGENT_UNKNOWN).to_string();
+            return "Unknown".to_string();
         };
 
         match &option.kind {
             acp::SessionConfigKind::Select(select) => {
                 find_option_name(&select.options, &select.current_value)
-                    .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).to_string())
+                    .unwrap_or_else(|| "Unknown".to_string())
             }
-            _ => t(keys::agent::AGENT_UNKNOWN).to_string(),
+            _ => "Unknown".to_string(),
         }
     }
 
@@ -418,7 +418,7 @@ impl ConfigOptionSelector {
 
     fn render_trigger_button(&self, _window: &mut Window, _cx: &mut Context<Self>) -> Button {
         let Some(option) = self.current_option() else {
-            return Button::new("config-option-trigger", t(keys::agent::AGENT_UNKNOWN))
+            return Button::new("config-option-trigger", "Unknown")
                 .label_size(LabelSize::Small)
                 .color(Color::Muted)
                 .disabled(true);
@@ -898,7 +898,7 @@ impl PickerDelegate for ConfigOptionPickerDelegate {
                                     let (icon, color, tooltip) = if is_favorite {
                                         (IconName::StarFilled, Color::Accent, "Unfavorite")
                                     } else {
-                                        (IconName::Star, Color::Default, t(keys::agent::AGENT_FAVORITE_MODELS))
+                                        (IconName::Star, Color::Default, t_static(keys::agent::AGENT_FAVORITE_MODELS))
                                     };
 
                                     let config_id = self.config_id.clone();
@@ -1073,9 +1073,7 @@ fn options_to_picker_entries(
     }
 
     if !favorite_options.is_empty() {
-        entries.push(ConfigOptionPickerEntry::Separator(
-            t(keys::agent::AGENT_FAVORITES).into(),
-        ));
+        entries.push(ConfigOptionPickerEntry::Separator("Favorites".into()));
         for option in favorite_options {
             entries.push(ConfigOptionPickerEntry::Option(option));
         }

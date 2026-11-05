@@ -1,4 +1,3 @@
-use i18n::{keys, t_static};
 use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::fmt;
@@ -371,9 +370,7 @@ impl ExtensionManifest {
             self.lib.kind = Some(ExtensionLibraryKind::Rust);
         }
 
-        let languages_dir = extension_path.join(t_static(
-            keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES,
-        ));
+        let languages_dir = extension_path.join("languages");
         if fs.is_dir(&languages_dir).await {
             let mut language_dir_entries = fs
                 .read_dir(&languages_dir)

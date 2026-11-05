@@ -572,7 +572,7 @@ impl WorktreePickerDelegate {
                                 PromptLevel::Warning,
                                 &prompt_message,
                                 None,
-                                &["Force Delete", t_static(keys::git_ui::GIT_B_CANCEL)],
+                                &["Force Delete", "Cancel"],
                                 cx,
                             )
                         })?;
@@ -1448,7 +1448,7 @@ impl PickerDelegate for WorktreePickerDelegate {
             Some(
                 footer
                     .child(
-                        Button::new("create-worktree", t_static(keys::git_ui::GIT_B_CREATE))
+                        Button::new("create-worktree", "Create")
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -1475,23 +1475,18 @@ impl PickerDelegate for WorktreePickerDelegate {
                             .when(!is_deleting && can_delete, |this| {
                                 let focus_handle = focus_handle.clone();
                                 this.child(
-                                    Button::new(
-                                        "delete-worktree",
-                                        t_static(keys::git_ui::GIT_B_DELETE),
-                                    )
-                                    .key_binding(
-                                        KeyBinding::for_action_in(
-                                            &DeleteWorktree,
-                                            &focus_handle,
-                                            cx,
+                                    Button::new("delete-worktree", "Delete")
+                                        .key_binding(
+                                            KeyBinding::for_action_in(
+                                                &DeleteWorktree,
+                                                &focus_handle,
+                                                cx,
+                                            )
+                                            .map(|kb| kb.size(rems_from_px(12_f32))),
                                         )
-                                        .map(|kb| kb.size(rems_from_px(12_f32))),
-                                    )
-                                    .on_click(
-                                        |_, window, cx| {
+                                        .on_click(|_, window, cx| {
                                             window.dispatch_action(DeleteWorktree.boxed_clone(), cx)
-                                        },
-                                    ),
+                                        }),
                                 )
                             })
                             .when(!is_deleting && !is_current, |this| {
@@ -2042,7 +2037,7 @@ mod tests {
         assert!(cx.has_pending_prompt());
         assert!(deleting_worktree_paths(&worktree_picker, &mut cx).is_empty());
 
-        cx.simulate_prompt_answer(t_static(keys::git_ui::GIT_B_CANCEL));
+        cx.simulate_prompt_answer("Cancel");
         cx.run_until_parked();
 
         assert!(!cx.has_pending_prompt());

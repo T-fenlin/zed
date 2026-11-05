@@ -17,6 +17,7 @@ default = ["editing"]
 editing = ["dep:tree-sitter", "dep:tree-sitter-json", "dep:serde_json"]
 
 [dependencies]
+i18n.workspace = true
 anyhow.workspace = true
 tree-sitter = { workspace = true, optional = true }
 tree-sitter-json = { workspace = true, optional = true }

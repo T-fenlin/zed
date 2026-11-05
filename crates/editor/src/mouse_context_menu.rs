@@ -311,13 +311,13 @@ pub fn deploy_context_menu(
                     )
                 })
                 .separator()
-                .action(t(keys::editor::EDITOR_A_CUT), Box::new(Cut))
-                .action(t(keys::editor::EDITOR_A_COPY), Box::new(Copy))
+                .action("Cut", Box::new(Cut))
+                .action("Copy", Box::new(Copy))
                 .action(
                     t(keys::editor::EDITOR_A_COPY_AND_TRIM),
                     Box::new(CopyAndTrim),
                 )
-                .action(t(keys::editor::EDITOR_A_PASTE), Box::new(Paste))
+                .action("Paste", Box::new(Paste))
                 .separator()
                 .action_disabled_when(
                     !has_reveal_target,

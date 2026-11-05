@@ -13,6 +13,7 @@ path = "src/fuzzy_nucleo.rs"
 doctest = false
 
 [dependencies]
+i18n.workspace = true
 fuzzy.workspace = true
 nucleo.workspace = true
 parking_lot = { workspace = true, features = ["arc_lock", "send_guard"] }

@@ -1942,13 +1942,9 @@ impl ProjectSearchView {
             let should_prompt_to_save = !skip_save_on_close && !will_autosave && is_dirty;
 
             let should_search = if should_prompt_to_save {
-                let save = t(keys::search::SEARCH_SAVE);
+                let save = "Save";
                 let dont_save = t(keys::search::SEARCH_DONT_SAVE);
-                let options = &[
-                    save.as_str(),
-                    dont_save.as_str(),
-                    t_static(keys::search::SEARCH_CANCEL),
-                ];
+                let options = &[save.as_str(), dont_save.as_str(), "Cancel"];
                 let result_channel = this.update_in(cx, |_, window, cx| {
                     window.prompt(
                         gpui::PromptLevel::Warning,
@@ -3846,7 +3842,7 @@ pub mod tests {
                             let color = match color_type {
                                 "active" => active_match_bg,
                                 "match" => match_bg,
-                                t_static(keys::agent::AGENT_B_SELECTION) => selection_bg,
+                                "selection" => selection_bg,
                                 _ => panic!("Unknown color type"),
                             };
                             (range, color)
@@ -3935,12 +3931,9 @@ pub mod tests {
             cx,
             vec![
                 (dp(2, 32)..dp(2, 35), "active"),
-                (
-                    dp(2, 37)..dp(2, 40),
-                    t_static(keys::agent::AGENT_B_SELECTION),
-                ),
+                (dp(2, 37)..dp(2, 40), "selection"),
                 (dp(2, 37)..dp(2, 40), "match"),
-                (dp(5, 6)..dp(5, 9), t_static(keys::agent::AGENT_B_SELECTION)),
+                (dp(5, 6)..dp(5, 9), "selection"),
                 (dp(5, 6)..dp(5, 9), "match"),
             ],
         );
@@ -3953,13 +3946,10 @@ pub mod tests {
             &search_view,
             cx,
             vec![
-                (
-                    dp(2, 32)..dp(2, 35),
-                    t_static(keys::agent::AGENT_B_SELECTION),
-                ),
+                (dp(2, 32)..dp(2, 35), "selection"),
                 (dp(2, 32)..dp(2, 35), "match"),
                 (dp(2, 37)..dp(2, 40), "active"),
-                (dp(5, 6)..dp(5, 9), t_static(keys::agent::AGENT_B_SELECTION)),
+                (dp(5, 6)..dp(5, 9), "selection"),
                 (dp(5, 6)..dp(5, 9), "match"),
             ],
         );
@@ -3972,15 +3962,9 @@ pub mod tests {
             &search_view,
             cx,
             vec![
-                (
-                    dp(2, 32)..dp(2, 35),
-                    t_static(keys::agent::AGENT_B_SELECTION),
-                ),
+                (dp(2, 32)..dp(2, 35), "selection"),
                 (dp(2, 32)..dp(2, 35), "match"),
-                (
-                    dp(2, 37)..dp(2, 40),
-                    t_static(keys::agent::AGENT_B_SELECTION),
-                ),
+                (dp(2, 37)..dp(2, 40), "selection"),
                 (dp(2, 37)..dp(2, 40), "match"),
                 (dp(5, 6)..dp(5, 9), "active"),
             ],
@@ -3995,12 +3979,9 @@ pub mod tests {
             cx,
             vec![
                 (dp(2, 32)..dp(2, 35), "active"),
-                (
-                    dp(2, 37)..dp(2, 40),
-                    t_static(keys::agent::AGENT_B_SELECTION),
-                ),
+                (dp(2, 37)..dp(2, 40), "selection"),
                 (dp(2, 37)..dp(2, 40), "match"),
-                (dp(5, 6)..dp(5, 9), t_static(keys::agent::AGENT_B_SELECTION)),
+                (dp(5, 6)..dp(5, 9), "selection"),
                 (dp(5, 6)..dp(5, 9), "match"),
             ],
         );
@@ -4013,15 +3994,9 @@ pub mod tests {
             &search_view,
             cx,
             vec![
-                (
-                    dp(2, 32)..dp(2, 35),
-                    t_static(keys::agent::AGENT_B_SELECTION),
-                ),
+                (dp(2, 32)..dp(2, 35), "selection"),
                 (dp(2, 32)..dp(2, 35), "match"),
-                (
-                    dp(2, 37)..dp(2, 40),
-                    t_static(keys::agent::AGENT_B_SELECTION),
-                ),
+                (dp(2, 37)..dp(2, 40), "selection"),
                 (dp(2, 37)..dp(2, 40), "match"),
                 (dp(5, 6)..dp(5, 9), "active"),
             ],
@@ -4035,13 +4010,10 @@ pub mod tests {
             &search_view,
             cx,
             vec![
-                (
-                    dp(2, 32)..dp(2, 35),
-                    t_static(keys::agent::AGENT_B_SELECTION),
-                ),
+                (dp(2, 32)..dp(2, 35), "selection"),
                 (dp(2, 32)..dp(2, 35), "match"),
                 (dp(2, 37)..dp(2, 40), "active"),
-                (dp(5, 6)..dp(5, 9), t_static(keys::agent::AGENT_B_SELECTION)),
+                (dp(5, 6)..dp(5, 9), "selection"),
                 (dp(5, 6)..dp(5, 9), "match"),
             ],
         );

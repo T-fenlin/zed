@@ -164,7 +164,7 @@ impl Component for Banner {
                 Banner::new()
                     .severity(Severity::Success)
                     .child(Label::new("Operation completed successfully"))
-                    .action_slot(Button::new("dismiss", t_static(keys::ui::UI_DISMISS)))
+                    .action_slot(Button::new("dismiss", "Dismiss"))
                     .into_any_element(),
             ),
             single_example(

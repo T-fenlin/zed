@@ -888,7 +888,7 @@ impl Render for ProjectDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", t(keys::git_ui::GIT_STAGE))
+                            Button::new("stage", t_static(keys::git_ui::GIT_STAGE))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Stage and Go to Next Hunk",
@@ -900,7 +900,7 @@ impl Render for ProjectDiffToolbar {
                                 })),
                         )
                         .child(
-                            Button::new("unstage", t(keys::git_ui::GIT_UNSTAGE))
+                            Button::new("unstage", t_static(keys::git_ui::GIT_UNSTAGE))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Unstage and Go to Next Hunk",
@@ -951,7 +951,7 @@ impl Render for ProjectDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", t(keys::git_ui::GIT_COMMIT))
+                Button::new("commit", "Commit")
                     .tooltip(Tooltip::for_action_title_in(
                         "Commit",
                         &Commit,

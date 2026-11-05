@@ -175,7 +175,7 @@ impl Render for ChannelModal {
                                         ui::ToggleState::Unselected
                                     },
                                 )
-                                .label(t(keys::collab::COLLAB_PUBLIC))
+                                .label(t_static(keys::collab::COLLAB_PUBLIC))
                                 .on_click(cx.listener(Self::set_channel_visibility)),
                             )
                             .children(
@@ -434,17 +434,17 @@ impl PickerDelegate for ChannelModalDelegate {
                         Mode::ManageMembers => slot
                             .children(
                                 if request_status == Some(proto::channel_member::Kind::Invitee) {
-                                    Some(Label::new(t(keys::collab::COLLAB_INVITED)))
+                                    Some(Label::new(t_static(keys::collab::COLLAB_INVITED)))
                                 } else {
                                     None
                                 },
                             )
                             .children(match membership.map(|m| m.role) {
                                 Some(ChannelRole::Admin) => {
-                                    Some(Label::new(t(keys::collab::COLLAB_ADMIN)))
+                                    Some(Label::new(t_static(keys::collab::COLLAB_ADMIN)))
                                 }
                                 Some(ChannelRole::Guest) => {
-                                    Some(Label::new(t(keys::collab::COLLAB_GUEST)))
+                                    Some(Label::new(t_static(keys::collab::COLLAB_GUEST)))
                                 }
                                 _ => None,
                             })
@@ -453,7 +453,8 @@ impl PickerDelegate for ChannelModalDelegate {
                             })
                             .when(is_me, |el| {
                                 el.child(
-                                    Label::new(t(keys::collab::COLLAB_YOU)).color(Color::Muted),
+                                    Label::new(t_static(keys::collab::COLLAB_YOU))
+                                        .color(Color::Muted),
                                 )
                             })
                             .children(
@@ -471,12 +472,10 @@ impl PickerDelegate for ChannelModalDelegate {
                                 },
                             ),
                         Mode::InviteMembers => match request_status {
-                            Some(proto::channel_member::Kind::Invitee) => {
-                                slot.children(Some(Label::new(t(keys::collab::COLLAB_INVITED))))
-                            }
-                            Some(proto::channel_member::Kind::Member) => {
-                                slot.children(Some(Label::new(t(keys::collab::COLLAB_MEMBER))))
-                            }
+                            Some(proto::channel_member::Kind::Invitee) => slot
+                                .children(Some(Label::new(t_static(keys::collab::COLLAB_INVITED)))),
+                            Some(proto::channel_member::Kind::Member) => slot
+                                .children(Some(Label::new(t_static(keys::collab::COLLAB_MEMBER)))),
                             _ => slot,
                         },
                     }

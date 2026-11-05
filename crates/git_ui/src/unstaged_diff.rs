@@ -70,7 +70,7 @@ impl DiffHunkRenderer for UnstagedDiffHunkRenderer {
             .block_mouse_except_scroll()
             .shadow_md()
             .child(
-                Button::new(("stage", row as u64), t(keys::git_ui::GIT_STAGE))
+                Button::new(("stage", row as u64), t_static(keys::git_ui::GIT_STAGE))
                     .alpha(if status.is_pending() { 0.66 } else { 1.0 })
                     .tooltip(Tooltip::text("Stage Hunk"))
                     .on_click({
@@ -88,27 +88,27 @@ impl DiffHunkRenderer for UnstagedDiffHunkRenderer {
                     }),
             )
             .child(
-                Button::new(
-                    ("restore", row as u64),
-                    t(keys::agent::AGENT_THREAD_RESTORE),
-                )
-                .tooltip(Tooltip::text("Restore Hunk"))
-                .on_click({
-                    let editor = editor.clone();
-                    let hunk_range = hunk_range_for_restore;
-                    move |_event, window, cx| {
-                        editor.update(cx, |editor, cx| {
-                            let snapshot = editor.buffer().read(cx).snapshot(cx);
-                            let hunks: Vec<_> = editor
-                                .diff_hunks_in_ranges(std::slice::from_ref(&hunk_range), &snapshot)
-                                .collect();
-                            if !hunks.is_empty() {
-                                editor.apply_restore(hunks, window, cx);
-                            }
-                        });
-                    }
-                })
-                .disabled(is_created_file),
+                Button::new(("restore", row as u64), "Restore")
+                    .tooltip(Tooltip::text("Restore Hunk"))
+                    .on_click({
+                        let editor = editor.clone();
+                        let hunk_range = hunk_range_for_restore;
+                        move |_event, window, cx| {
+                            editor.update(cx, |editor, cx| {
+                                let snapshot = editor.buffer().read(cx).snapshot(cx);
+                                let hunks: Vec<_> = editor
+                                    .diff_hunks_in_ranges(
+                                        std::slice::from_ref(&hunk_range),
+                                        &snapshot,
+                                    )
+                                    .collect();
+                                if !hunks.is_empty() {
+                                    editor.apply_restore(hunks, window, cx);
+                                }
+                            });
+                        }
+                    })
+                    .disabled(is_created_file),
             )
             .into_any_element()
     }
@@ -715,7 +715,7 @@ impl Render for UnstagedDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", t(keys::git_ui::GIT_STAGE))
+                            Button::new("stage", t_static(keys::git_ui::GIT_STAGE))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::text("Stage Selected Hunks"))
                                 .on_click(cx.listener(|this, _, window, cx| {
@@ -725,7 +725,7 @@ impl Render for UnstagedDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("stage", t(keys::git_ui::GIT_STAGE))
+                            Button::new("stage", t_static(keys::git_ui::GIT_STAGE))
                                 .disabled(!button_states.stage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Stage and Go to Next Hunk",
@@ -738,7 +738,7 @@ impl Render for UnstagedDiffToolbar {
                         )
                     })
                     .child(
-                        Button::new("restore", t(keys::agent::AGENT_THREAD_RESTORE))
+                        Button::new("restore", "Restore")
                             .disabled(!button_states.restore)
                             .tooltip(Tooltip::text("Restore Selected Hunks"))
                             .on_click(cx.listener(|this, _, window, cx| {

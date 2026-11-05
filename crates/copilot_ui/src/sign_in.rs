@@ -255,11 +255,7 @@ impl CopilotCodeVerification {
                     .p_1()
                     .justify_between()
                     .child(Label::new(data.user_code.clone()))
-                    .child(Label::new(if copied {
-                        t(keys::ui::UI_COPIED)
-                    } else {
-                        t(keys::app_menu::MENU_EDIT_COPY)
-                    })),
+                    .child(Label::new(if copied { "Copied!" } else { "Copy" })),
             )
             .on_click({
                 let user_code = data.user_code.clone();
@@ -361,15 +357,12 @@ impl CopilotCodeVerification {
                             }),
                     )
                     .child(
-                        Button::new(
-                            "copilot-enable-cancel-button",
-                            t(keys::agent::AGENT_THREAD_CANCEL),
-                        )
-                        .full_width()
-                        .size(ButtonSize::Medium)
-                        .on_click(cx.listener(|_, _, _, cx| {
-                            cx.emit(DismissEvent);
-                        })),
+                        Button::new("copilot-enable-cancel-button", "Cancel")
+                            .full_width()
+                            .size(ButtonSize::Medium)
+                            .on_click(cx.listener(|_, _, _, cx| {
+                                cx.emit(DismissEvent);
+                            })),
                     ),
             )
     }
@@ -417,13 +410,10 @@ impl CopilotCodeVerification {
                     .on_click(move |_, _, cx| cx.open_url(&sign_up_url)),
             )
             .child(
-                Button::new(
-                    "copilot-subscribe-cancel-button",
-                    t(keys::agent::AGENT_THREAD_CANCEL),
-                )
-                .full_width()
-                .size(ButtonSize::Medium)
-                .on_click(cx.listener(|_, _, _, cx| cx.emit(DismissEvent))),
+                Button::new("copilot-subscribe-cancel-button", "Cancel")
+                    .full_width()
+                    .size(ButtonSize::Medium)
+                    .on_click(cx.listener(|_, _, _, cx| cx.emit(DismissEvent))),
             )
     }
 
@@ -596,11 +586,7 @@ impl CopilotChatCodeVerification {
                     .p_1()
                     .justify_between()
                     .child(Label::new(user_code.clone()))
-                    .child(Label::new(if copied {
-                        t(keys::ui::UI_COPIED)
-                    } else {
-                        t(keys::app_menu::MENU_EDIT_COPY)
-                    })),
+                    .child(Label::new(if copied { "Copied!" } else { "Copy" })),
             )
             .on_click(move |_, window, cx| {
                 cx.write_to_clipboard(ClipboardItem::new_string(user_code.clone()));
@@ -652,15 +638,12 @@ impl CopilotChatCodeVerification {
                             }),
                     )
                     .child(
-                        Button::new(
-                            "copilot-chat-enable-cancel-button",
-                            t(keys::agent::AGENT_THREAD_CANCEL),
-                        )
-                        .full_width()
-                        .size(ButtonSize::Medium)
-                        .on_click(cx.listener(|_, _, _, cx| {
-                            cx.emit(DismissEvent);
-                        })),
+                        Button::new("copilot-chat-enable-cancel-button", "Cancel")
+                            .full_width()
+                            .size(ButtonSize::Medium)
+                            .on_click(cx.listener(|_, _, _, cx| {
+                                cx.emit(DismissEvent);
+                            })),
                     ),
             )
     }
@@ -692,14 +675,11 @@ impl CopilotChatCodeVerification {
             )
             .child(Label::new(message.to_owned()).color(Color::Muted))
             .child(
-                Button::new(
-                    "copilot-chat-error-cancel-button",
-                    t(keys::agent::AGENT_THREAD_CANCEL),
-                )
-                .full_width()
-                .style(ButtonStyle::Outlined)
-                .size(ButtonSize::Medium)
-                .on_click(cx.listener(|_, _, _, cx| cx.emit(DismissEvent))),
+                Button::new("copilot-chat-error-cancel-button", "Cancel")
+                    .full_width()
+                    .style(ButtonStyle::Outlined)
+                    .size(ButtonSize::Medium)
+                    .on_click(cx.listener(|_, _, _, cx| cx.emit(DismissEvent))),
             )
     }
 

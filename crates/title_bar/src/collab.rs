@@ -385,26 +385,12 @@ impl TitleBar {
             .map(|inner| inner.0)
             .unwrap_or(ConnectionQuality::Lost);
         let (signal_icon, signal_color, quality_label) = match effective_quality {
-            ConnectionQuality::Excellent => (
-                IconName::SignalHigh,
-                Some(Color::Success),
-                t(keys::collab::COLLAB_QUALITY_EXCELLENT),
-            ),
-            ConnectionQuality::Good => (
-                IconName::SignalHigh,
-                None,
-                t(keys::collab::COLLAB_QUALITY_GOOD),
-            ),
-            ConnectionQuality::Poor => (
-                IconName::SignalMedium,
-                Some(Color::Warning),
-                t(keys::collab::COLLAB_QUALITY_POOR),
-            ),
-            ConnectionQuality::Lost => (
-                IconName::SignalLow,
-                Some(Color::Error),
-                t(keys::collab::COLLAB_QUALITY_LOST),
-            ),
+            ConnectionQuality::Excellent => {
+                (IconName::SignalHigh, Some(Color::Success), "Excellent")
+            }
+            ConnectionQuality::Good => (IconName::SignalHigh, None, "Good"),
+            ConnectionQuality::Poor => (IconName::SignalMedium, Some(Color::Warning), "Poor"),
+            ConnectionQuality::Lost => (IconName::SignalLow, Some(Color::Error), "Lost"),
         };
 
         let quality_label: SharedString = quality_label.into();
@@ -467,14 +453,8 @@ impl TitleBar {
                             .child(
                                 v_flex()
                                     .gap_0p5()
-                                    .child(stat_row(
-                                        t(keys::collab::COLLAB_STAT_LATENCY).into(),
-                                        latency,
-                                    ))
-                                    .child(stat_row(
-                                        t(keys::collab::COLLAB_STAT_JITTER).into(),
-                                        jitter,
-                                    ))
+                                    .child(stat_row("Latency".into(), latency))
+                                    .child(stat_row("Jitter".into(), jitter))
                                     .child(stat_row(
                                         t(keys::collab::COLLAB_STAT_PACKET_LOSS).into(),
                                         packet_loss,

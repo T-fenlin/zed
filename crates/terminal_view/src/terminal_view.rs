@@ -1159,7 +1159,7 @@ impl TerminalView {
         };
 
         if self.terminal.read(cx).last_content.selection.is_some() {
-            dispatch_context.add(t_static(keys::agent::AGENT_B_SELECTION));
+            dispatch_context.add("selection");
         }
 
         dispatch_context

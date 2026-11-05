@@ -249,7 +249,7 @@ pub fn init(languages: Arc<LanguageRegistry>, fs: Arc<dyn Fs>, node: NodeRuntime
     //
     // ```json
     // {
-    //   t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
+    //   "languages": {
     //     "My Language": {
     //       "language_servers": ["tailwindcss-language-server", "..."]
     //     }

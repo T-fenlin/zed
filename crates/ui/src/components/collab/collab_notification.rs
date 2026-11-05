@@ -107,7 +107,7 @@ impl Component for CollabNotification {
                         CollabNotification::new(
                             avatar,
                             Button::new("accept", "Open"),
-                            Button::new("decline", t_static(keys::ui::UI_DISMISS)),
+                            Button::new("decline", "Dismiss"),
                         )
                         .child(Label::new("the user is sharing a project"))
                         .child(Label::new("zed").color(Color::Muted)),
@@ -155,8 +155,8 @@ impl Component for CollabNotification {
                     .child(
                         CollabNotification::new(
                             avatar,
-                            Button::new("dismiss", t_static(keys::ui::UI_DISMISS)),
-                            Button::new("close", t_static(keys::ui::UI_CLOSE)),
+                            Button::new("dismiss", "Dismiss"),
+                            Button::new("close", "Close"),
                         )
                         .child(Label::new("maxbrunsfeld accepted your contact request")),
                     )

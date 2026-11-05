@@ -1022,12 +1022,12 @@ impl ToolPermissionContext {
             return acp_thread::PermissionOptions::Flat(vec![
                 acp_v2::PermissionOption::new(
                     acp_v2::PermissionOptionId::new("allow"),
-                    t_static(keys::agent::AGENT_THREAD_ALLOW),
+                    "Allow",
                     acp_v2::PermissionOptionKind::AllowOnce,
                 ),
                 acp_v2::PermissionOption::new(
                     acp_v2::PermissionOptionId::new("deny"),
-                    t_static(keys::agent::AGENT_THREAD_DENY),
+                    "Deny",
                     acp_v2::PermissionOptionKind::RejectOnce,
                 ),
             ]);
@@ -6241,7 +6241,7 @@ impl ToolCallEventStream {
             ),
             acp_v2::PermissionOption::new(
                 acp_v2::PermissionOptionId::new(acp_thread::SandboxPermission::Deny.as_id()),
-                t_static(keys::agent::AGENT_THREAD_DENY),
+                "Deny",
                 acp_v2::PermissionOptionKind::RejectOnce,
             ),
         ]);
@@ -6621,7 +6621,7 @@ impl ToolCallEventStream {
             ),
             acp_v2::PermissionOption::new(
                 acp_v2::PermissionOptionId::new(acp_thread::SandboxPermission::Deny.as_id()),
-                t_static(keys::agent::AGENT_THREAD_DENY),
+                "Deny",
                 acp_v2::PermissionOptionKind::RejectOnce,
             ),
         ]);
@@ -9384,11 +9384,7 @@ mod tests {
                     "Allow always",
                     acp_v2::PermissionOptionKind::AllowAlways,
                 ),
-                (
-                    "deny",
-                    t_static(keys::agent::AGENT_THREAD_DENY),
-                    acp_v2::PermissionOptionKind::RejectOnce
-                ),
+                ("deny", "Deny", acp_v2::PermissionOptionKind::RejectOnce),
             ]
         );
 
@@ -9460,7 +9456,7 @@ mod tests {
                 ("allow", "Run without sandbox once"),
                 ("allow_thread", "Run without sandbox for this thread"),
                 ("allow_always", "Always run without sandbox"),
-                ("deny", t_static(keys::agent::AGENT_THREAD_DENY)),
+                ("deny", "Deny"),
             ]
         );
 

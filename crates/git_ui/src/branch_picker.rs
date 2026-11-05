@@ -1167,7 +1167,7 @@ impl BranchListDelegate {
 
                     if let Some(prompt_message) = force_delete_prompt {
                         let force_delete = t(keys::git_ui::GIT_B_FORCE_DELETE);
-                        let cancel = t(keys::git_ui::GIT_B_CANCEL);
+                        let cancel = "Cancel";
                         let answer = cx.update(|window, cx| {
                             window.prompt(
                                 PromptLevel::Warning,
@@ -2078,7 +2078,7 @@ impl PickerDelegate for BranchListDelegate {
                 let delete_label = if selected_branch.is_some_and(|branch| branch.is_remote()) {
                     t_static(keys::git_ui::GIT_B_DELETE_LOCAL_TRACKING_BRANCH)
                 } else {
-                    t_static(keys::git_ui::GIT_B_DELETE)
+                    "Delete"
                 };
 
                 let delete_and_select_btns = h_flex()
@@ -2106,7 +2106,7 @@ impl PickerDelegate for BranchListDelegate {
                         },
                     )
                     .child(
-                        Button::new("switch_branch", t(keys::git_ui::GIT_B_SWITCH))
+                        Button::new("switch_branch", t_static(keys::git_ui::GIT_B_SWITCH))
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -2121,7 +2121,7 @@ impl PickerDelegate for BranchListDelegate {
                         .justify_end()
                         .map(|this| match branch_from_default_button {
                             Some(button) => this.child(button).child(
-                                Button::new("create", t(keys::git_ui::GIT_B_CREATE))
+                                Button::new("create", "Create")
                                     .key_binding(
                                         KeyBinding::for_action_in(
                                             &menu::Confirm,
@@ -2169,7 +2169,7 @@ impl PickerDelegate for BranchListDelegate {
                             this.child(button)
                         })
                         .child(
-                            Button::new("create-new-branch", t(keys::git_ui::GIT_B_CREATE))
+                            Button::new("create-new-branch", "Create")
                                 .key_binding(
                                     KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                         .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -2185,7 +2185,7 @@ impl PickerDelegate for BranchListDelegate {
                 footer_container()
                     .justify_end()
                     .child(
-                        Button::new("confirm-create-remote", t(keys::git_ui::GIT_B_CONFIRM))
+                        Button::new("confirm-create-remote", "Confirm")
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -2776,7 +2776,7 @@ mod tests {
         cx.run_until_parked();
         assert!(cx.has_pending_prompt());
 
-        cx.simulate_prompt_answer(t_static(keys::git_ui::GIT_B_CANCEL));
+        cx.simulate_prompt_answer("Cancel");
         cx.run_until_parked();
         assert!(!cx.has_pending_prompt());
 

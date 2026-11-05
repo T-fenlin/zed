@@ -178,7 +178,9 @@ fn render_provider_dropdown(window: &mut Window, cx: &mut App) -> AnyElement {
                         .w_full()
                         .min_w_0()
                         .max_w_1_2()
-                        .child(Label::new(t(keys::settings_ui::SETTINGS_B_EP_PROVIDER)))
+                        .child(Label::new(t_static(
+                            keys::settings_ui::SETTINGS_B_EP_PROVIDER,
+                        )))
                         .child(
                             Label::new(t(keys::settings_ui::SETTINGS_B_EP_PROVIDER_DESC))
                                 .size(LabelSize::Small)
@@ -432,7 +434,7 @@ fn ollama_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL).into(),
+            title: t_static(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL).into(),
             description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OLLAMA_MODEL).into(),
             field: Box::new(SettingField {
                 organization_override: None,
@@ -599,7 +601,7 @@ fn open_ai_compatible_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL).into(),
+            title: t_static(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL).into(),
             description: t(keys::settings_ui::SETTINGS_EDIT_PRED_OPENAI_COMPAT_MODEL).into(),
             field: Box::new(SettingField {
                 organization_override: None,
@@ -798,7 +800,7 @@ fn codestral_settings() -> Box<[SettingsPageItem]> {
             files: USER,
         }),
         SettingsPageItem::SettingItem(SettingItem {
-            title: t(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL).into(),
+            title: t_static(keys::settings_ui::SETTINGS_EDIT_PRED_MODEL).into(),
             description: t(keys::settings_ui::SETTINGS_EDIT_PRED_CODESTRAL_MODEL).into(),
             field: Box::new(SettingField {
                 organization_override: None,

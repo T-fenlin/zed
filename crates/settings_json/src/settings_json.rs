@@ -2736,7 +2736,7 @@ mod tests {
         let text = r#"// "edit_predictions": { "disabled_globs": ["commented/**"] },
         {
             // "disabled_globs": ["commented/**"],
-            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): { "edit_predictions": { "disabled_globs": ["nested/**"] } },
+            "languages": { "edit_predictions": { "disabled_globs": ["nested/**"] } },
             "edit_predictions": {
                 /* "disabled_globs": ["commented/**"], */
                 "mode": "subtle",

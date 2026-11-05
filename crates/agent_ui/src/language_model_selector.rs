@@ -275,7 +275,7 @@ impl GroupedModels {
 
         if !self.favorites.is_empty() {
             entries.push(LanguageModelPickerEntry::Separator(
-                t(keys::agent::AGENT_FAVORITE_MODELS).into(),
+                t_static(keys::agent::AGENT_FAVORITE_MODELS).into(),
             ));
             for info in &self.favorites {
                 entries.push(LanguageModelPickerEntry::Model(info.clone()));
@@ -283,9 +283,7 @@ impl GroupedModels {
         }
 
         if !self.recommended.is_empty() {
-            entries.push(LanguageModelPickerEntry::Separator(
-                t(keys::agent::AGENT_RECOMMENDED).into(),
-            ));
+            entries.push(LanguageModelPickerEntry::Separator("Recommended".into()));
             for info in &self.recommended {
                 entries.push(LanguageModelPickerEntry::Model(info.clone()));
             }
@@ -757,7 +755,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(LanguageModelPickerEntry::Separator(s)) if s == t(keys::agent::AGENT_FAVORITE_MODELS)
+            Some(LanguageModelPickerEntry::Separator(s)) if s == t_static(keys::agent::AGENT_FAVORITE_MODELS)
         ));
 
         assert_models_eq(grouped_models.favorites, vec!["zed/gemini"]);
@@ -773,7 +771,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(LanguageModelPickerEntry::Separator(s)) if s == t_static(keys::agent::AGENT_RECOMMENDED)
+            Some(LanguageModelPickerEntry::Separator(s)) if s == "Recommended"
         ));
 
         assert!(grouped_models.favorites.is_empty());

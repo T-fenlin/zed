@@ -5571,7 +5571,7 @@ impl AgentPanel {
                             .into_any_element()
                     }
                 } else {
-                    Label::new(t(keys::settings_ui::SETTINGS_TERMINAL_TERMINAL)).into_any_element()
+                    Label::new("Terminal").into_any_element()
                 }
             }
 
@@ -5791,8 +5791,8 @@ impl AgentPanel {
                                     }),
                                 )
                                 .separator()
-                                .header(t(keys::agent::AGENT_MENU_CONTEXT))
-                                .action(t(keys::agent::AGENT_MENU_SKILLS), Box::new(ManageSkills));
+                                .header("Context")
+                                .action("Skills", Box::new(ManageSkills));
 
                             if project_agents_md_path.is_some() || global_agents_md_loaded {
                                 if global_agents_md_loaded {
@@ -5852,13 +5852,13 @@ impl AgentPanel {
                             }
 
                             menu = menu.separator().action(
-                                t(keys::agent::AGENT_MENU_PROFILES),
+                                t_static(keys::agent::AGENT_MENU_PROFILES),
                                 Box::new(ManageProfiles::default()),
                             );
                         }
 
                         menu = menu
-                            .action(t(keys::agent::AGENT_MENU_SETTINGS), Box::new(OpenSettings))
+                            .action("Settings", Box::new(OpenSettings))
                             .separator()
                             .action(
                                 t(keys::agent::AGENT_MENU_TOGGLE_SIDEBAR),
@@ -5870,7 +5870,7 @@ impl AgentPanel {
                         }
                         if has_auth_methods {
                             menu = menu.action(
-                                t(keys::agent::AGENT_MENU_REAUTHENTICATE),
+                                t_static(keys::agent::AGENT_MENU_REAUTHENTICATE),
                                 Box::new(ReauthenticateAgent),
                             )
                         }
@@ -10830,7 +10830,7 @@ mod tests {
         });
 
         terminal_entity.update(&mut cx, |terminal, cx| {
-            terminal.breadcrumb_text = t(keys::agent::AGENT_THREAD_THINKING).to_string();
+            terminal.breadcrumb_text = t_static(keys::agent::AGENT_THREAD_THINKING).to_string();
             cx.emit(TerminalEvent::BreadcrumbsChanged);
         });
         cx.run_until_parked();
@@ -10842,10 +10842,7 @@ mod tests {
             let metadata = panel
                 .terminal_metadata(terminal_id, cx)
                 .expect("terminal metadata should be available");
-            assert_eq!(
-                metadata.title.as_ref(),
-                t(keys::agent::AGENT_THREAD_THINKING)
-            );
+            assert_eq!(metadata.title.as_ref(), "Thinking");
             assert_eq!(metadata.display_title().as_ref(), "Fix bug");
         });
     }
@@ -10894,10 +10891,7 @@ mod tests {
                 .as_ref()
                 .expect("terminal title editor should be active while editing")
                 .clone();
-            assert_eq!(
-                title_editor.read(cx).text(cx),
-                t(keys::agent::AGENT_THREAD_THINKING)
-            );
+            assert_eq!(title_editor.read(cx).text(cx), "Thinking");
             title_editor
         });
 

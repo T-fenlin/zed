@@ -402,10 +402,10 @@ fn git_panel_view_options_menu(
 
         context_menu
             .context(focus_handle.clone())
-            .header(t(keys::agent::AGENT_VIEW))
+            .header("View")
             .item({
                 let view_options_menu_state = view_options_menu_state.clone();
-                ContextMenuEntry::new(t(keys::git_ui::GIT_VIEW_LIST))
+                ContextMenuEntry::new(t_static(keys::git_ui::GIT_VIEW_LIST))
                     .toggle(IconPosition::End, !state.tree_view)
                     .handler(move |window, cx| {
                         if state.tree_view {
@@ -419,7 +419,7 @@ fn git_panel_view_options_menu(
             })
             .item({
                 let view_options_menu_state = view_options_menu_state.clone();
-                ContextMenuEntry::new(t(keys::git_ui::GIT_VIEW_TREE))
+                ContextMenuEntry::new(t_static(keys::git_ui::GIT_VIEW_TREE))
                     .toggle(IconPosition::End, state.tree_view)
                     .handler(move |window, cx| {
                         if !state.tree_view {
@@ -450,7 +450,7 @@ fn git_panel_view_options_menu(
                     })
                     .item({
                         let view_options_menu_state = view_options_menu_state.clone();
-                        ContextMenuEntry::new(t(keys::settings_ui::SETTINGS_A_SKILL_NAME_LABEL))
+                        ContextMenuEntry::new("Name")
                             .toggle(IconPosition::End, state.sort_by == GitPanelSortBy::Name)
                             .handler(move |window, cx| {
                                 if !state.tree_view {
@@ -467,7 +467,7 @@ fn git_panel_view_options_menu(
             .header(t(keys::git_ui::GIT_GROUP_BY))
             .item({
                 let view_options_menu_state = view_options_menu_state.clone();
-                ContextMenuEntry::new(t(keys::settings_ui::SETTINGS_ENUM_NONE))
+                ContextMenuEntry::new("None")
                     .toggle(IconPosition::End, state.group_by == GitPanelGroupBy::None)
                     .handler(move |window, cx| {
                         if state.group_by != GitPanelGroupBy::None {
@@ -764,7 +764,7 @@ impl GitHeaderEntry {
     }
     pub fn title(&self) -> &'static str {
         match self.header {
-            Section::Conflict => t_static(keys::git_ui::GIT_SECTION_CONFLICTS),
+            Section::Conflict => "Conflicts",
             Section::Tracked => t_static(keys::git_ui::GIT_SECTION_TRACKED),
             Section::New => t_static(keys::git_ui::GIT_SECTION_UNTRACKED),
             Section::Staged => t_static(keys::git_ui::GIT_SECTION_STAGED),
@@ -3092,7 +3092,7 @@ impl GitPanel {
             {
                 t(keys::git_ui::GIT_UNSTAGED_CHANGES)
             } else {
-                t(keys::git_ui::GIT_CHANGES)
+                "changes"
             };
 
             let prompt = if skip_prompt {
@@ -3119,16 +3119,13 @@ impl GitPanel {
                 } else if is_trashed {
                     (
                         t_with_args(keys::git_ui::GIT_CONFIRM_TRASH_PATH, &[("path", &path)]),
-                        t(keys::git_ui::GIT_TRASH),
+                        "Trash",
                     )
                 } else {
                     (
                         t_with_args(
                             keys::git_ui::GIT_CONFIRM_DISCARD_PATH,
-                            &[
-                                (t_static(keys::git_ui::GIT_CHANGES), &changes),
-                                ("path", &path),
-                            ],
+                            &[("changes", &changes), ("path", &path)],
                         ),
                         t(keys::git_ui::GIT_DISCARD_CHANGES),
                     )
@@ -3138,7 +3135,7 @@ impl GitPanel {
                     PromptLevel::Warning,
                     &message,
                     None,
-                    &[confirm_text.as_str(), t_static(keys::git_ui::GIT_B_CANCEL)],
+                    &[confirm_text.as_str(), "Cancel"],
                     cx,
                 ))
             } else {
@@ -3147,25 +3144,22 @@ impl GitPanel {
                     (tracked_count, 0) => (
                         t_with_args(
                             keys::git_ui::GIT_CONFIRM_DISCARD_COUNT,
-                            &[
-                                (t_static(keys::git_ui::GIT_CHANGES), &changes),
-                                ("count", &tracked_count.to_string()),
-                            ],
+                            &[("changes", &changes), ("count", &tracked_count.to_string())],
                         ),
-                        t(keys::git_ui::GIT_DISCARD),
+                        t_static(keys::git_ui::GIT_DISCARD),
                     ),
                     (0, untracked_count) => (
                         t_with_args(
                             keys::git_ui::GIT_CONFIRM_TRASH_COUNT,
                             &[("count", &untracked_count.to_string())],
                         ),
-                        t(keys::git_ui::GIT_TRASH),
+                        "Trash",
                     ),
                     (tracked_count, untracked_count) => (
                         t_with_args(
                             keys::git_ui::GIT_CONFIRM_DISCARD_AND_TRASH_COUNT,
                             &[
-                                (t_static(keys::git_ui::GIT_CHANGES), &changes),
+                                ("changes", &changes),
                                 ("count", &tracked_count.to_string()),
                                 ("untracked", &untracked_count.to_string()),
                             ],
@@ -3178,7 +3172,7 @@ impl GitPanel {
                     PromptLevel::Warning,
                     &message,
                     None,
-                    &[confirm_text.as_str(), t_static(keys::git_ui::GIT_B_CANCEL)],
+                    &[confirm_text.as_str(), "Cancel"],
                     cx,
                 ))
             };
@@ -4314,9 +4308,9 @@ impl GitPanel {
         }?;
 
         let action_text = if git_status_entry.status.is_deleted() {
-            Some(t_static(keys::git_ui::GIT_B_DELETE))
+            Some("Delete")
         } else if git_status_entry.status.is_created() {
-            Some(t_static(keys::git_ui::GIT_B_CREATE))
+            Some("Create")
         } else if git_status_entry.status.is_modified() {
             Some("Update")
         } else {
@@ -6506,7 +6500,7 @@ impl GitPanel {
                     }
                     (Toast, false) => this,
                     (ToastWithLog { output }, false) => {
-                        this.action("View Log", move |window, cx| {
+                        this.action(t_static(keys::git_ui::GIT_VIEW_LOG), move |window, cx| {
                             let output = output.clone();
                             let output =
                                 format!("stdout:\n{}\nstderr:\n{}", output.stdout, output.stderr);
@@ -7414,7 +7408,7 @@ impl GitPanel {
                     ),
             )
             .child(
-                Button::new("cancel", t(keys::agent::AGENT_THREAD_CANCEL))
+                Button::new("cancel", "Cancel")
                     .label_size(LabelSize::Small)
                     .layer(ElevationIndex::ModalSurface)
                     .on_click(cx.listener(|this, _, _, cx| this.set_amend_pending(false, cx))),
@@ -7578,7 +7572,7 @@ impl GitPanel {
                 ElementId::Name("changes-tab".into()),
                 active_tab == GitPanelTab::Changes,
                 true,
-                t(keys::git_ui::GIT_TAB_CHANGES).into(),
+                t_static(keys::git_ui::GIT_TAB_CHANGES).into(),
                 GitPanelTab::Changes,
                 ActivateChangesTab.boxed_clone(),
             ))
@@ -7591,7 +7585,7 @@ impl GitPanel {
                 ElementId::Name("history-tab".into()),
                 active_tab != GitPanelTab::Changes,
                 false,
-                t(keys::git_ui::GIT_TAB_HISTORY).into(),
+                t_static(keys::git_ui::GIT_TAB_HISTORY).into(),
                 GitPanelTab::History,
                 ActivateHistoryTab.boxed_clone(),
             ))
@@ -11864,16 +11858,13 @@ mod tests {
             .pending_prompt()
             .expect("discard should show a confirmation prompt");
 
-        let changes = t(keys::git_ui::GIT_CHANGES);
+        let changes = "changes";
         let path = format!("{}", MarkdownInlineCode("__somefile__"));
         assert_eq!(
             message,
             t_with_args(
                 keys::git_ui::GIT_CONFIRM_DISCARD_PATH,
-                &[
-                    (t_static(keys::git_ui::GIT_CHANGES), &changes),
-                    ("path", &path)
-                ]
+                &[("changes", &changes), ("path", &path)]
             )
         );
     }
@@ -16233,7 +16224,7 @@ mod tests {
             cx,
             json!({
                 ".git": {},
-                t_static(keys::git_ui::GIT_CHANGES): {
+                "changes": {
                     "untracked.txt": "",
                     "nested": {
                         "untracked.txt": ""
@@ -16255,11 +16246,8 @@ mod tests {
         await_git_panel_entries(&panel, &mut cx).await;
 
         panel.update_in(&mut cx, |panel, window, cx| {
-            let index = directory_index_for_repo_path(
-                &panel,
-                &repo_path(t_static(keys::git_ui::GIT_CHANGES)),
-            )
-            .expect("`changes` directory should be present in the Git panel");
+            let index = directory_index_for_repo_path(&panel, &repo_path("changes"))
+                .expect("`changes` directory should be present in the Git panel");
 
             panel.selected_entry = Some(index);
             panel.revert_selected(&RestoreFile { skip_prompt: true }, window, cx);
@@ -17152,7 +17140,7 @@ mod tests {
         });
 
         assert!(cx.has_pending_prompt(), "bulk revert should prompt once");
-        cx.simulate_prompt_answer(t_static(keys::git_ui::GIT_B_CANCEL));
+        cx.simulate_prompt_answer("Cancel");
         cx.executor().run_until_parked();
 
         assert!(fs.is_file(path!("/project/a.txt").as_ref()).await);
@@ -17220,7 +17208,7 @@ mod tests {
         });
 
         assert!(cx.has_pending_prompt());
-        cx.simulate_prompt_answer(&t(keys::git_ui::GIT_TRASH));
+        cx.simulate_prompt_answer(&"Trash");
         cx.executor().run_until_parked();
 
         assert!(
@@ -17249,7 +17237,7 @@ mod tests {
             panel.clean_all(&TrashUntrackedFiles, window, cx);
         });
         assert!(cx.has_pending_prompt());
-        cx.simulate_prompt_answer(&t(keys::git_ui::GIT_TRASH));
+        cx.simulate_prompt_answer(&"Trash");
         cx.executor().run_until_parked();
 
         assert!(!fs.is_file(path!("/project/untracked.txt").as_ref()).await);

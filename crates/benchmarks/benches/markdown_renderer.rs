@@ -277,7 +277,7 @@ fn random_word(rng: &mut StdRng) -> &'static str {
         "paragraph",
         "heading",
         "table",
-        t_static(keys::agent::AGENT_B_SELECTION),
+        "selection",
         "syntax",
         "highlight",
         "window",

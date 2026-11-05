@@ -142,7 +142,7 @@ impl ThemePreview {
         v_flex()
             .gap_1()
             .child(
-                Headline::new(t(keys::editor::EDITOR_KIND_TEXT))
+                Headline::new("Text")
                     .size(HeadlineSize::Small)
                     .color(Color::Muted),
             )
@@ -336,7 +336,7 @@ impl ThemePreview {
         v_flex()
             .gap_1()
             .child(
-                Headline::new(t(keys::workspace::WS_B_COLORS))
+                Headline::new(t_static(keys::workspace::WS_B_COLORS))
                     .size(HeadlineSize::Small)
                     .color(Color::Muted),
             )

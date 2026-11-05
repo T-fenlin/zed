@@ -138,7 +138,7 @@ pub fn collect_diagnostics(
         }
 
         let mut label = String::new();
-        label.push_str(t_static(keys::agent::AGENT_B_DIAGNOSTICS));
+        label.push_str("Diagnostics");
         if let Some(source) = error_source {
             write!(label, " ({})", source).unwrap();
         }

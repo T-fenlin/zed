@@ -23,7 +23,7 @@ const SETTINGS_DISCLAIMER: &str = "Note: custom tool permissions only apply to t
 const TOOLS: &[ToolInfo] = &[
     ToolInfo {
         id: "terminal",
-        name: "Terminal",
+        name: t_static(keys::settings_ui::SETTINGS_TOOLS_TERMINAL),
         description: t(keys::settings_ui::SETTINGS_TOOLS_TERMINAL_DESCRIPTION),
         regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_TERMINAL_REGEX),
     },
@@ -65,7 +65,7 @@ const TOOLS: &[ToolInfo] = &[
     },
     ToolInfo {
         id: "fetch",
-        name: t(keys::settings_ui::SETTINGS_TOOLS_FETCH),
+        name: "Fetch",
         description: t(keys::settings_ui::SETTINGS_TOOLS_FETCH_DESCRIPTION),
         regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_FETCH_REGEX),
     },
@@ -77,7 +77,7 @@ const TOOLS: &[ToolInfo] = &[
     },
     ToolInfo {
         id: "skill",
-        name: t(keys::settings_ui::SETTINGS_TOOLS_SKILL),
+        name: t_static(keys::settings_ui::SETTINGS_TOOLS_SKILL),
         description: t(keys::settings_ui::SETTINGS_TOOLS_SKILL_DESCRIPTION),
         regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_SKILL_REGEX),
     },
@@ -281,29 +281,26 @@ fn render_tool_list_item(
         )
         .child({
             let tool_name = tool.name;
-            Button::new(
-                format!("configure-{}", tool.id),
-                t(keys::agent::AGENT_B_CONFIGURE),
-            )
-            .tab_index(tool_index as isize)
-            .style(ButtonStyle::OutlinedGhost)
-            .size(ButtonSize::Medium)
-            .end_icon(
-                Icon::new(IconName::ChevronRight)
-                    .size(IconSize::Small)
-                    .color(Color::Muted),
-            )
-            .on_click(cx.listener(move |this, _, window, cx| {
-                this.push_dynamic_sub_page(
-                    tool_name,
-                    t(keys::settings_ui::SETTINGS_AI_TOOL_PERMISSIONS),
-                    None,
-                    true,
-                    render_fn,
-                    window,
-                    cx,
-                );
-            }))
+            Button::new(format!("configure-{}", tool.id), "Configure")
+                .tab_index(tool_index as isize)
+                .style(ButtonStyle::OutlinedGhost)
+                .size(ButtonSize::Medium)
+                .end_icon(
+                    Icon::new(IconName::ChevronRight)
+                        .size(IconSize::Small)
+                        .color(Color::Muted),
+                )
+                .on_click(cx.listener(move |this, _, window, cx| {
+                    this.push_dynamic_sub_page(
+                        tool_name,
+                        t(keys::settings_ui::SETTINGS_AI_TOOL_PERMISSIONS),
+                        None,
+                        true,
+                        render_fn,
+                        window,
+                        cx,
+                    );
+                }))
         })
         .into_any_element()
 }
@@ -385,7 +382,7 @@ pub(crate) fn render_tool_config_page(
                         .severity(Severity::Warning)
                         .child(Label::new(error).size(LabelSize::Small))
                         .action_slot(
-                            Button::new("dismiss-regex-error", t(keys::agent::AGENT_DISMISS))
+                            Button::new("dismiss-regex-error", "Dismiss")
                                 .style(ButtonStyle::Tinted(ui::TintColor::Warning))
                                 .on_click(cx.listener(|this, _, _, cx| {
                                     this.regex_validation_error = None;
@@ -797,9 +794,9 @@ fn implied_mode_from_patterns(
 
 fn mode_display_label(mode: ToolPermissionMode) -> String {
     match mode {
-        ToolPermissionMode::Allow => t(keys::agent::AGENT_THREAD_ALLOW),
-        ToolPermissionMode::Deny => t(keys::agent::AGENT_THREAD_DENY),
-        ToolPermissionMode::Confirm => t(keys::git_ui::GIT_B_CONFIRM),
+        ToolPermissionMode::Allow => "Allow",
+        ToolPermissionMode::Deny => "Deny",
+        ToolPermissionMode::Confirm => "Confirm",
     }
 }
 
@@ -815,7 +812,7 @@ fn render_verdict_label(mode: ToolPermissionMode) -> AnyElement {
     h_flex()
         .gap_1()
         .child(
-            Label::new(t(keys::settings_ui::SETTINGS_A_TOOLS_RESULT))
+            Label::new("Result:")
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )
@@ -1140,19 +1137,15 @@ fn render_global_default_mode_section(current_mode: ToolPermissionMode) -> AnyEl
                 )
                 .menu(move |window, cx| {
                     Some(ContextMenu::build(window, cx, move |menu, _, _| {
-                        menu.entry(t(keys::git_ui::GIT_B_CONFIRM), None, move |_, cx| {
+                        menu.entry("Confirm", None, move |_, cx| {
                             set_global_default_permission(ToolPermissionMode::Confirm, cx);
                         })
-                        .entry(t(keys::agent::AGENT_THREAD_ALLOW), None, move |_, cx| {
+                        .entry("Allow", None, move |_, cx| {
                             set_global_default_permission(ToolPermissionMode::Allow, cx);
                         })
-                        .entry(
-                            t(keys::agent::AGENT_THREAD_DENY),
-                            None,
-                            move |_, cx| {
-                                set_global_default_permission(ToolPermissionMode::Deny, cx);
-                            },
-                        )
+                        .entry("Deny", None, move |_, cx| {
+                            set_global_default_permission(ToolPermissionMode::Deny, cx);
+                        })
                     }))
                 })
                 .anchor(gpui::Anchor::TopRight),
@@ -1166,9 +1159,9 @@ fn render_default_mode_section(
     _cx: &mut Context<SettingsWindow>,
 ) -> AnyElement {
     let mode_label = match current_mode {
-        ToolPermissionMode::Allow => t(keys::agent::AGENT_THREAD_ALLOW),
-        ToolPermissionMode::Deny => t(keys::agent::AGENT_THREAD_DENY),
-        ToolPermissionMode::Confirm => t(keys::git_ui::GIT_B_CONFIRM),
+        ToolPermissionMode::Allow => "Allow",
+        ToolPermissionMode::Deny => "Deny",
+        ToolPermissionMode::Confirm => "Confirm",
     };
 
     let tool_id_owned = tool_id.to_string();
@@ -1207,19 +1200,15 @@ fn render_default_mode_section(
                         let tool_id_allow = tool_id.clone();
                         let tool_id_deny = tool_id;
 
-                        menu.entry(t(keys::git_ui::GIT_B_CONFIRM), None, move |_, cx| {
+                        menu.entry("Confirm", None, move |_, cx| {
                             set_default_mode(&tool_id_confirm, ToolPermissionMode::Confirm, cx);
                         })
-                        .entry(t(keys::agent::AGENT_THREAD_ALLOW), None, move |_, cx| {
+                        .entry("Allow", None, move |_, cx| {
                             set_default_mode(&tool_id_allow, ToolPermissionMode::Allow, cx);
                         })
-                        .entry(
-                            t(keys::agent::AGENT_THREAD_DENY),
-                            None,
-                            move |_, cx| {
-                                set_default_mode(&tool_id_deny, ToolPermissionMode::Deny, cx);
-                            },
-                        )
+                        .entry("Deny", None, move |_, cx| {
+                            set_default_mode(&tool_id_deny, ToolPermissionMode::Deny, cx);
+                        })
                     }))
                 })
                 .anchor(gpui::Anchor::TopRight),

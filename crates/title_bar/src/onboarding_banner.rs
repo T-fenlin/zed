@@ -47,7 +47,7 @@ impl OnboardingBanner {
                 action,
                 icon_name,
                 label: label.into(),
-                subtitle: subtitle.or(Some(t(keys::titlebar::TITLEBAR_INTRODUCING).into())),
+                subtitle: subtitle.or(Some("Introducing:".into())),
             },
             visible_when: None,
             dismissed: get_dismissed(source, cx),

@@ -513,8 +513,8 @@ impl DebugPanel {
 
         cx.spawn_in(window, async move |this, cx| {
             if should_prompt {
-                let yes = t(keys::prompt::PROMPT_YES);
-                let no = t(keys::prompt::PROMPT_NO);
+                let yes = "Yes";
+                let no = "No";
                 let response = cx.prompt(
                     gpui::PromptLevel::Warning,
                     &t(keys::prompt::PROMPT_TERMINATE_DEBUG_SESSION),

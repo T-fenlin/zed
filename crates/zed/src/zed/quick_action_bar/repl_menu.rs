@@ -157,7 +157,7 @@ impl QuickActionBar {
                     )
                     .custom_entry(
                         move |_window, _cx| {
-                            Label::new(t(keys::zed::ZED_B_REPL_INTERRUPT))
+                            Label::new(t_static(keys::zed::ZED_B_REPL_INTERRUPT))
                                 .size(LabelSize::Small)
                                 .color(Color::Error)
                                 .into_any_element()

@@ -518,7 +518,7 @@ impl Render for QuickActionBar {
 
                             if is_full {
                                 menu = menu.toggleable_entry(
-                                    t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS),
+                                    "Diagnostics",
                                     diagnostics_enabled,
                                     IconPosition::Start,
                                     Some(ToggleDiagnostics.boxed_clone()),

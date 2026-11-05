@@ -1391,10 +1391,10 @@ impl PickerDelegate for RemoteServerPickerDelegate {
                             window.dispatch_action(menu::SecondaryConfirm.boxed_clone(), cx)
                         }),
                 )
-                .child(confirm_button(t(keys::agent::AGENT_A_ELICIT_OPEN).into()))
+                .child(confirm_button("Open".into()))
                 .into_any_element()
         } else {
-            confirm_button(t(keys::recent::RECENT_SELECT).into()).into_any_element()
+            confirm_button(t_static(keys::recent::RECENT_SELECT).into()).into_any_element()
         };
 
         Some(
@@ -2447,7 +2447,7 @@ impl RemoteServerProjects {
                                                 .color(Color::Muted)
                                                 .size(IconSize::Small),
                                         )
-                                        .child(Label::new(t(keys::recent::RECENT_EXIT)))
+                                        .child(Label::new("Exit"))
                                         .on_click(cx.listener(|this, _, window, cx| {
                                             this.cancel(&menu::Cancel, window, cx);
                                             cx.notify();

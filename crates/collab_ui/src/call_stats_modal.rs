@@ -344,7 +344,7 @@ impl Render for CallStatsModal {
                         .child(
                             v_flex()
                                 .gap_1()
-                                .child(Label::new(t(keys::collab::COLLAB_NETWORK)).weight(FontWeight::SEMIBOLD))
+                                .child(Label::new("Network").weight(FontWeight::SEMIBOLD))
                                 .child(self.render_metric_row(
                                     "Latency",
                                     t_static(keys::collab::COLLAB_LATENCY_DESCRIPTION),
@@ -360,14 +360,14 @@ impl Render for CallStatsModal {
                                     |v| metric_rating("Jitter", v),
                                 ))
                                 .child(self.render_metric_row(
-                                    "Packet loss",
+                                    t_static(keys::collab::COLLAB_PACKET_LOSS),
                                     t_static(keys::collab::COLLAB_PACKET_LOSS_DESCRIPTION),
                                     stats.packet_loss_pct,
                                     |v| format!("{:.1}%", v),
                                     packet_loss_rating,
                                 ))
                                 .child(self.render_metric_row(
-                                    "Input lag",
+                                    t_static(keys::collab::COLLAB_INPUT_LAG),
                                     t_static(keys::collab::COLLAB_INPUT_LAG_DESCRIPTION),
                                     stats.input_lag.map(|d| d.0.as_millis()),
                                     |v| format!("{}ms", v),

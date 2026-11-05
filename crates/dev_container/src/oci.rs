@@ -108,7 +108,7 @@ pub(crate) async fn download_oci_tarball(
 
     let request = Request::get(&url)
         .header("Authorization", format!("Bearer {}", token))
-        .header(t(keys::agent::AGENT_THREAD_ACCEPT), accept_header)
+        .header("Accept", accept_header)
         .body(AsyncBody::default())
         .map_err(|e| {
             log::error!("Failed to create blob request: {e}");
@@ -154,10 +154,7 @@ where
 {
     let request = match Request::get(url)
         .header("Authorization", format!("Bearer {}", token))
-        .header(
-            t(keys::agent::AGENT_THREAD_ACCEPT),
-            "application/vnd.oci.image.manifest.v1+json",
-        )
+        .header("Accept", "application/vnd.oci.image.manifest.v1+json")
         .body(AsyncBody::default())
     {
         Ok(request) => request,

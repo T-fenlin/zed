@@ -2715,7 +2715,7 @@ impl OutlinePanel {
                             .map(|icon| icon.color(color).into_any_element());
                             (icon, name)
                         }
-                        None => (None, t(keys::outline::OUTLINE_UNTITLED).to_string()),
+                        None => (None, "Untitled".to_string()),
                     },
                     None => (None, t(keys::outline::OUTLINE_UNKNOWN_BUFFER).to_string()),
                 };
@@ -2943,20 +2943,16 @@ impl OutlinePanel {
         h_flex()
             .id("expand-collapse")
             .role(gpui::Role::Button)
-            .aria_label(if is_expanded {
-                t(keys::outline::OUTLINE_COLLAPSE)
-            } else {
-                t(keys::outline::OUTLINE_EXPAND)
-            })
+            .aria_label(if is_expanded { "Collapse" } else { "Expand" })
             .aria_expanded(is_expanded)
             .flex_none()
             .cursor_pointer()
             .rounded_sm()
             .hover(|style| style.bg(cx.theme().colors().ghost_element_hover))
             .tooltip(Tooltip::text(if is_expanded {
-                t_static(keys::outline::OUTLINE_COLLAPSE)
+                "Collapse"
             } else {
-                t_static(keys::outline::OUTLINE_EXPAND)
+                "Expand"
             }))
             .on_click(
                 cx.listener(move |panel, event: &gpui::ClickEvent, window, cx| {
@@ -5821,7 +5817,7 @@ impl Render for OutlinePanel {
                         .gap_0p5()
                         .border_b_1()
                         .border_color(cx.theme().colors().border_variant)
-                        .child(Label::new(t(keys::outline::OUTLINE_SEARCHING)).color(Color::Muted))
+                        .child(Label::new("Searching:").color(Color::Muted))
                         .child(Label::new(query_text)),
                 )
             })

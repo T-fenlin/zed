@@ -97,7 +97,7 @@ impl MigrationBanner {
     fn show(&mut self, cx: &mut Context<Self>) {
         let (file_type, backup_file_name) = match self.migration_type {
             Some(MigrationType::Keymap) => (
-                t_static(keys::zed::ZED_A_MIGRATION_FILE_KEYMAP),
+                "keymap",
                 paths::keymap_backup_file()
                     .file_name()
                     .unwrap_or_default()
@@ -105,7 +105,7 @@ impl MigrationBanner {
                     .into_owned(),
             ),
             Some(MigrationType::Settings) => (
-                t_static(keys::zed::ZED_A_MIGRATION_FILE_SETTINGS),
+                "settings",
                 paths::settings_backup_file()
                     .file_name()
                     .unwrap_or_default()

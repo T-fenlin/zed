@@ -2704,7 +2704,7 @@ impl GitGraph {
 
         let git_graph = cx.entity();
         let context_menu = ContextMenu::build(window, cx, move |mut menu, _window, _| {
-            menu = menu.header(t(keys::git_ui::GIT_GRAPH_REFS));
+            menu = menu.header(t_static(keys::git_ui::GIT_GRAPH_REFS));
             for (ref_entry, name) in ref_entries {
                 let git_graph = git_graph.clone();
                 menu = menu.submenu(name, move |submenu, window, _cx| {
@@ -2830,10 +2830,10 @@ impl GitGraph {
             ]
         } else {
             &[
-                "Refs",
+                t_static(keys::git_ui::GIT_GRAPH_REFS),
                 "Graph",
                 "Description",
-                t_static(keys::git_ui::GIT_GRAPH_COLUMN_DATE),
+                "Date",
                 "Author",
                 "Commit",
             ]
@@ -2851,7 +2851,7 @@ impl GitGraph {
         let context_menu = ContextMenu::build(window, cx, |mut context_menu, _window, _cx| {
             context_menu = context_menu
                 .context(focus_handle)
-                .header(t(keys::git_ui::GIT_GRAPH_COLUMNS));
+                .header(t_static(keys::git_ui::GIT_GRAPH_COLUMNS));
             for (col_idx, label) in columns.iter().enumerate() {
                 let is_visible = !filter.get(col_idx).copied().unwrap_or(false);
                 // Disable hiding the last remaining visible column.
@@ -3345,7 +3345,11 @@ impl GitGraph {
                                             t_static(keys::git_ui::GIT_GRAPH_SHA_COPIED),
                                         )
                                     } else {
-                                        (IconName::Hash, Color::Muted, "Copy Commit SHA")
+                                        (
+                                            IconName::Hash,
+                                            Color::Muted,
+                                            t_static(keys::git_ui::GIT_BLAME_COPY_COMMIT_SHA),
+                                        )
                                     };
 
                                     Button::new("sha-button", &full_sha)
@@ -4354,7 +4358,7 @@ impl GitGraph {
                             }),
                     )
                     .child(
-                        Label::new(t(keys::agent::AGENT_THREAD_SUBMISSION_MESSAGE))
+                        Label::new("Message")
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),
@@ -4479,7 +4483,7 @@ impl Render for GitGraph {
                                     if !is_path_history {
                                         TableRow::from_vec(
                                             vec![
-                                                Label::new(t(keys::git_ui::GIT_GRAPH_REFS))
+                                                Label::new(t_static(keys::git_ui::GIT_GRAPH_REFS))
                                                     .color(Color::Muted)
                                                     .truncate()
                                                     .into_any_element(),
@@ -4487,16 +4491,16 @@ impl Render for GitGraph {
                                                     .color(Color::Muted)
                                                     .truncate()
                                                     .into_any_element(),
-                                                Label::new(t(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION))
+                                                Label::new("Description")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(t(keys::git_ui::GIT_GRAPH_COLUMN_DATE))
+                                                Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_DATE))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR))
+                                                Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(t(keys::git_ui::GIT_COMMIT))
+                                                Label::new("Commit")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],
@@ -4505,16 +4509,16 @@ impl Render for GitGraph {
                                     } else {
                                         TableRow::from_vec(
                                             vec![
-                                                Label::new(t(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION))
+                                                Label::new("Description")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(t(keys::git_ui::GIT_GRAPH_COLUMN_DATE))
+                                                Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_DATE))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR))
+                                                Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new(t(keys::git_ui::GIT_COMMIT))
+                                                Label::new("Commit")
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],
@@ -6941,7 +6945,7 @@ mod tests {
                     CommitData {
                         sha: first_sha,
                         parents: smallvec![target_sha],
-                        author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
+                        author_name: t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 1,
                         subject: "Add feature".into(),
@@ -6953,7 +6957,7 @@ mod tests {
                     CommitData {
                         sha: target_sha,
                         parents: smallvec![third_sha],
-                        author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
+                        author_name: t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 2,
                         subject: "Fix branch loading".into(),
@@ -6965,7 +6969,7 @@ mod tests {
                     CommitData {
                         sha: third_sha,
                         parents: smallvec![],
-                        author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
+                        author_name: t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 3,
                         subject: "Update docs".into(),
@@ -7775,7 +7779,7 @@ mod tests {
                     CommitData {
                         sha,
                         parents: smallvec![],
-                        author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
+                        author_name: t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                         author_email: "author@example.com".into(),
                         commit_timestamp: 1_700_000_000,
                         subject: "Commit subject".into(),
@@ -7866,7 +7870,7 @@ mod tests {
                 CommitData {
                     sha: first_sha,
                     parents: smallvec![],
-                    author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
+                    author_name: t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
                     subject: "Commit subject".into(),
@@ -8461,7 +8465,7 @@ mod tests {
                 CommitData {
                     sha: commit_sha,
                     parents: smallvec![],
-                    author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
+                    author_name: t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
                     subject: "Fix crash".into(),
@@ -8550,7 +8554,7 @@ mod tests {
                 CommitData {
                     sha: commit_sha,
                     parents: smallvec![],
-                    author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
+                    author_name: t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
                     subject: "Long commit message".into(),
@@ -8672,7 +8676,7 @@ mod tests {
                 CommitData {
                     sha: commit_sha,
                     parents: smallvec![],
-                    author_name: t(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
+                    author_name: t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR).into(),
                     author_email: "author@example.com".into(),
                     commit_timestamp: 1_700_000_000,
                     subject: "Fix crash".into(),

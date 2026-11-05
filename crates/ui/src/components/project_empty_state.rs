@@ -84,11 +84,7 @@ impl RenderOnce for ProjectEmptyState {
                         h_flex()
                             .gap_2()
                             .child(Divider::horizontal().color(DividerColor::Border))
-                            .child(
-                                Label::new(t(keys::ui::UI_OR))
-                                    .size(LabelSize::XSmall)
-                                    .color(Color::Muted),
-                            )
+                            .child(Label::new("or").size(LabelSize::XSmall).color(Color::Muted))
                             .child(Divider::horizontal().color(DividerColor::Border)),
                     )
                     .child(

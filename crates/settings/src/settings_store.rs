@@ -2015,7 +2015,7 @@ mod tests {
         check_settings_update(
             &mut store,
             r#"{
-                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
+                "languages": {
                     "JSON": {
                         "auto_indent": "syntax_aware"
                     }
@@ -2038,7 +2038,7 @@ mod tests {
                 );
             },
             r#"{
-                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
+                "languages": {
                     "Rust": {
                         "auto_indent": "syntax_aware"
                     },
@@ -2055,7 +2055,7 @@ mod tests {
         check_settings_update(
             &mut store,
             r#"{
-                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
+                "languages": {
                     "Rust": {
                         "language_setting_2": true
                     },
@@ -2069,7 +2069,7 @@ mod tests {
                 settings.languages_mut().remove("JSON").unwrap();
             },
             r#"{
-                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
+                "languages": {
                     "Rust": {
                         "language_setting_2": true
                     }
@@ -2082,7 +2082,7 @@ mod tests {
         check_settings_update(
             &mut store,
             r#"{
-                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
+                "languages": {
                     "Rust": {
                         "language_setting_2": true
                     },
@@ -2096,7 +2096,7 @@ mod tests {
                 settings.languages_mut().remove("Rust").unwrap();
             },
             r#"{
-                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
+                "languages": {
                     "JSON": {
                         "language_setting_1": false
                     }

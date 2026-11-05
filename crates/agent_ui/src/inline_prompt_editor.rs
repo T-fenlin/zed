@@ -396,12 +396,12 @@ impl<T: 'static> PromptEditor<T> {
         let action = match mode {
             PromptEditorMode::Buffer { codegen, .. } => {
                 if codegen.read(cx).is_insertion {
-                    t(keys::agent::AGENT_GENERATE)
+                    t_static(keys::agent::AGENT_GENERATE)
                 } else {
-                    t(keys::agent::AGENT_TRANSFORM)
+                    t_static(keys::agent::AGENT_TRANSFORM)
                 }
             }
-            PromptEditorMode::Terminal { .. } => t(keys::agent::AGENT_GENERATE),
+            PromptEditorMode::Terminal { .. } => t_static(keys::agent::AGENT_GENERATE),
         };
 
         let agent_panel_keybinding =
@@ -1561,8 +1561,8 @@ pub enum GenerationMode {
 impl GenerationMode {
     fn start_label(self) -> String {
         match self {
-            GenerationMode::Generate => t(keys::agent::AGENT_GENERATE),
-            GenerationMode::Transform => t(keys::agent::AGENT_TRANSFORM),
+            GenerationMode::Generate => t_static(keys::agent::AGENT_GENERATE),
+            GenerationMode::Transform => t_static(keys::agent::AGENT_TRANSFORM),
         }
     }
     fn tooltip_interrupt(self) -> String {
@@ -1866,7 +1866,7 @@ mod tests {
         .await;
 
         let image_uri = acp_thread::MentionUri::PastedImage {
-            name: t(keys::agent::AGENT_THREAD_IMAGE).into(),
+            name: t_static(keys::agent::AGENT_THREAD_IMAGE).into(),
         };
         assert_eq!(prompt, format!("{} ", image_uri.as_link()));
     }

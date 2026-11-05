@@ -467,13 +467,8 @@ fn new_kv_row(
     cx: &mut Context<SettingsWindow>,
 ) -> KeyValueRow {
     KeyValueRow {
-        key: new_input(
-            &t(keys::settings_ui::SETTINGS_EXT_AGENT_KEY),
-            key,
-            window,
-            cx,
-        ),
-        value: new_input(&t(keys::editor::EDITOR_KIND_VALUE), value, window, cx),
+        key: new_input(&"Key", key, window, cx),
+        value: new_input(&"Value", value, window, cx),
     }
 }
 
@@ -535,7 +530,7 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                t(keys::settings_ui::SETTINGS_EXT_AGENT_COMMAND).into(),
+                "Command".into(),
                 t(keys::settings_ui::SETTINGS_EXT_AGENT_COMMAND_HINT).into(),
                 input_box(&form.command, cx).into_any_element(),
                 None,
@@ -549,7 +544,7 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                t(keys::settings_ui::SETTINGS_EXT_AGENT_ARGUMENTS).into(),
+                "Arguments".into(),
                 t(keys::settings_ui::SETTINGS_EXT_AGENT_ARGUMENTS_HINT).into(),
                 input_box(&form.args, cx).into_any_element(),
                 None,
@@ -633,29 +628,26 @@ fn render_env_section(
             )
         }))
         .child(
-            Button::new(
-                "custom-agent-env-add",
-                t(keys::settings_ui::SETTINGS_EXT_AGENT_ADD),
-            )
-            .style(ButtonStyle::Outlined)
-            .label_size(LabelSize::Small)
-            .tab_index(0isize)
-            .start_icon(
-                Icon::new(IconName::Plus)
-                    .size(IconSize::Small)
-                    .color(Color::Muted),
-            )
-            .on_click(cx.listener(move |this, _, window, cx| {
-                let row = new_kv_row(None, None, window, cx);
-                // Focus the new key so the user can type immediately and tab
-                // through the new row (key -> value -> ... -> Add button).
-                let key_handle = row.key.focus_handle(cx);
-                if let Some(form) = this.custom_agent_form.as_mut() {
-                    form.env.push(row);
-                }
-                key_handle.focus(window, cx);
-                cx.notify();
-            })),
+            Button::new("custom-agent-env-add", "Add")
+                .style(ButtonStyle::Outlined)
+                .label_size(LabelSize::Small)
+                .tab_index(0isize)
+                .start_icon(
+                    Icon::new(IconName::Plus)
+                        .size(IconSize::Small)
+                        .color(Color::Muted),
+                )
+                .on_click(cx.listener(move |this, _, window, cx| {
+                    let row = new_kv_row(None, None, window, cx);
+                    // Focus the new key so the user can type immediately and tab
+                    // through the new row (key -> value -> ... -> Add button).
+                    let key_handle = row.key.focus_handle(cx);
+                    if let Some(form) = this.custom_agent_form.as_mut() {
+                        form.env.push(row);
+                    }
+                    key_handle.focus(window, cx);
+                    cx.notify();
+                })),
         )
         .into_any_element();
 
@@ -707,16 +699,13 @@ fn render_form_actions(
                 .border_1()
                 .border_color(cancel_border)
                 .child(
-                    Button::new(
-                        "custom-agent-form-cancel",
-                        t(keys::agent::AGENT_THREAD_CANCEL),
-                    )
-                    .style(ButtonStyle::Subtle)
-                    .track_focus(&cancel_handle)
-                    .on_click(cx.listener(|this, _, window, cx| {
-                        this.custom_agent_form = None;
-                        this.pop_sub_page(window, cx);
-                    })),
+                    Button::new("custom-agent-form-cancel", "Cancel")
+                        .style(ButtonStyle::Subtle)
+                        .track_focus(&cancel_handle)
+                        .on_click(cx.listener(|this, _, window, cx| {
+                            this.custom_agent_form = None;
+                            this.pop_sub_page(window, cx);
+                        })),
                 ),
         )
         .child(
@@ -725,7 +714,7 @@ fn render_form_actions(
                 .border_1()
                 .border_color(save_border)
                 .child(
-                    Button::new("custom-agent-form-save", t(keys::app_menu::MENU_FILE_SAVE))
+                    Button::new("custom-agent-form-save", "Save")
                         .style(ButtonStyle::Filled)
                         .track_focus(&save_handle)
                         .on_click(cx.listener(|this, _, window, cx| {

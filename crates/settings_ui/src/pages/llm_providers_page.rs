@@ -402,21 +402,18 @@ fn render_subpage_item(
                 }),
         )
         .child(
-            Button::new(
-                format!("configure-{}", provider_id.0),
-                t(keys::agent::AGENT_B_CONFIGURE),
-            )
-            .style(ButtonStyle::OutlinedGhost)
-            .size(ButtonSize::Medium)
-            .end_icon(
-                Icon::new(IconName::ChevronRight)
-                    .size(IconSize::Small)
-                    .color(Color::Muted),
-            )
-            .tab_index(0isize)
-            .on_click(cx.listener(move |this, _, window, cx| {
-                open_provider_configuration(this, provider_id.clone(), window, cx);
-            })),
+            Button::new(format!("configure-{}", provider_id.0), "Configure")
+                .style(ButtonStyle::OutlinedGhost)
+                .size(ButtonSize::Medium)
+                .end_icon(
+                    Icon::new(IconName::ChevronRight)
+                        .size(IconSize::Small)
+                        .color(Color::Muted),
+                )
+                .tab_index(0isize)
+                .on_click(cx.listener(move |this, _, window, cx| {
+                    open_provider_configuration(this, provider_id.clone(), window, cx);
+                })),
         )
         .into_any_element()
 }
@@ -799,7 +796,7 @@ fn render_models_section(
         .child(
             h_flex()
                 .justify_between()
-                .child(Label::new(t(keys::misc::MODELS)))
+                .child(Label::new("Models"))
                 .child(
                     Button::new("add-model", t(keys::misc::ADD_MODEL))
                         .start_icon(
@@ -1063,14 +1060,12 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
         .gap_1()
         .justify_end()
         .child(
-            Button::new(
-                "llm-provider-form-cancel",
-                t(keys::agent::AGENT_THREAD_CANCEL),
-            )
-            .on_click(cx.listener(|this, _, window, cx| {
-                this.llm_provider_form = None;
-                this.pop_sub_page(window, cx);
-            })),
+            Button::new("llm-provider-form-cancel", "Cancel").on_click(cx.listener(
+                |this, _, window, cx| {
+                    this.llm_provider_form = None;
+                    this.pop_sub_page(window, cx);
+                },
+            )),
         )
         .child(
             Button::new("llm-provider-form-save", t(keys::misc::SAVE_PROVIDER))

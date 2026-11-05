@@ -406,7 +406,7 @@ fn info_list_to_picker_entries(
     let has_favorites = !favorite_models.is_empty();
     if has_favorites {
         entries.push(ModelPickerEntry::Separator(
-            t(keys::agent::AGENT_FAVORITE_MODELS).into(),
+            t_static(keys::agent::AGENT_FAVORITE_MODELS).into(),
         ));
         for model in favorite_models {
             entries.push(ModelPickerEntry::Model((*model).clone(), true));
@@ -752,7 +752,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(ModelPickerEntry::Separator(s)) if s == t(keys::agent::AGENT_FAVORITE_MODELS)
+            Some(ModelPickerEntry::Separator(s)) if s == t_static(keys::agent::AGENT_FAVORITE_MODELS)
         ));
 
         let model_ids = get_entry_model_ids(&entries);
@@ -814,10 +814,7 @@ mod tests {
     #[gpui::test]
     fn test_favorites_are_not_duplicated_when_repeated_in_other_sections(_cx: &mut TestAppContext) {
         let models = create_model_list(vec![
-            (
-                t_static(keys::agent::AGENT_RECOMMENDED),
-                vec!["zed/claude", "anthropic/claude"],
-            ),
+            ("Recommended", vec!["zed/claude", "anthropic/claude"]),
             ("Zed", vec!["zed/claude", "zed/gpt-5"]),
             ("Antropic", vec!["anthropic/claude"]),
             ("OpenAI", vec!["openai/gpt-5"]),
@@ -831,9 +828,9 @@ mod tests {
         assert_eq!(
             labels,
             vec![
-                t(keys::agent::AGENT_FAVORITE_MODELS),
+                t_static(keys::agent::AGENT_FAVORITE_MODELS),
                 "zed/claude",
-                t_static(keys::agent::AGENT_RECOMMENDED),
+                "Recommended",
                 "zed/claude",
                 "anthropic/claude",
                 "Zed",
@@ -875,7 +872,7 @@ mod tests {
 
         assert!(matches!(
             entries.first(),
-            Some(ModelPickerEntry::Separator(s)) if s == t(keys::agent::AGENT_FAVORITE_MODELS)
+            Some(ModelPickerEntry::Separator(s)) if s == t_static(keys::agent::AGENT_FAVORITE_MODELS)
         ));
 
         assert!(entries.iter().any(|e| matches!(
@@ -904,7 +901,7 @@ mod tests {
         let models = AgentModelList::Flat(vec![
             acp_thread::AgentModelInfo {
                 id: AgentModelId::new("favorite-model"),
-                name: t(keys::agent::AGENT_FAVORITE_MODELS).into(),
+                name: t_static(keys::agent::AGENT_FAVORITE_MODELS).into(),
                 description: None,
                 icon: None,
                 is_latest: false,

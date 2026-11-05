@@ -1160,7 +1160,7 @@ impl Editor {
                 let target_display_point = range.end.to_display_point(editor_snapshot);
 
                 self.render_edit_prediction_end_of_line_popover(
-                    t_static(keys::editor::EDITOR_EP_ACCEPT),
+                    "Accept",
                     editor_snapshot,
                     visible_row_range,
                     target_display_point,
@@ -1284,7 +1284,7 @@ impl Editor {
                                     .bg(Self::edit_prediction_line_popover_bg_color(cx))
                                     .when(keybind_display.show_hold_label, |el| {
                                         el.child(
-                                            Label::new(t(keys::editor::EDITOR_EP_HOLD))
+                                            Label::new(t_static(keys::editor::EDITOR_EP_HOLD))
                                                 .size(LabelSize::Small)
                                                 .when(
                                                     keybind_display.missing_accept_keystroke,
@@ -1405,7 +1405,7 @@ impl Editor {
                                         keystroke, key_color, cx,
                                     ))
                                     .child(
-                                        Label::new(t(keys::editor::EDITOR_EP_PREVIEW))
+                                        Label::new(t_static(keys::editor::EDITOR_EP_PREVIEW))
                                             .into_any_element(),
                                     )
                                     .opacity(if has_completion { 1.0 } else { 0.4 }),
@@ -1821,12 +1821,7 @@ impl Editor {
         cx: &mut App,
     ) -> Option<(AnyElement, gpui::Point<Pixels>)> {
         let mut element = self
-            .render_edit_prediction_line_popover(
-                t_static(keys::editor::EDITOR_EP_SCROLL),
-                Some(scroll_icon),
-                window,
-                cx,
-            )
+            .render_edit_prediction_line_popover("Scroll", Some(scroll_icon), window, cx)
             .into_any();
 
         let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);

@@ -7342,7 +7342,7 @@ impl Editor {
                 let target_display_point = range.end.to_display_point(editor_snapshot);
 
                 self.render_edit_prediction_end_of_line_popover(
-                    t_static(keys::agent::AGENT_THREAD_ACCEPT),
+                    "Accept",
                     editor_snapshot,
                     visible_row_range,
                     target_display_point,
@@ -7486,7 +7486,7 @@ impl Editor {
         cx: &mut App,
     ) -> Option<(AnyElement, gpui::Point<Pixels>)> {
         let mut element = self
-            .render_edit_prediction_line_popover(t_static(keys::agent::AGENT_THREAD_SCROLL), Some(scroll_icon), window, cx)?
+            .render_edit_prediction_line_popover("Scroll", Some(scroll_icon), window, cx)?
             .into_any();
 
         let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);
@@ -21238,7 +21238,7 @@ fn render_diff_hunk_controls(
                 })
         })
         .child(
-            Button::new(("restore", row as u64), t_static(keys::agent::AGENT_THREAD_RESTORE))
+            Button::new(("restore", row as u64), "Restore")
                 .tooltip({
                     let focus_handle = editor.focus_handle(cx);
                     move |window, cx| {

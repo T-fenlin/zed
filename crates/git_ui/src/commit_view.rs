@@ -849,7 +849,7 @@ impl CommitView {
                                     let commit_sha = commit_sha.clone();
                                     move |_, cx| {
                                         Tooltip::with_meta(
-                                            "Copy Commit SHA",
+                                            t_static(keys::git_ui::GIT_BLAME_COPY_COMMIT_SHA),
                                             None,
                                             commit_sha.clone(),
                                             cx,
@@ -917,7 +917,7 @@ impl CommitView {
     }
 
     fn apply_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
-        let action = t(keys::git_ui::GIT_STASH_ACTION_APPLY);
+        let action = "Apply";
         Self::stash_action(
             workspace,
             &action,
@@ -945,7 +945,7 @@ impl CommitView {
     }
 
     fn pop_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
-        let action = t(keys::git_ui::GIT_STASH_ACTION_POP);
+        let action = t_static(keys::git_ui::GIT_STASH_ACTION_POP);
         Self::stash_action(
             workspace,
             &action,
@@ -973,7 +973,7 @@ impl CommitView {
     }
 
     fn remove_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
-        let action = t(keys::git_ui::GIT_STASH_ACTION_DROP);
+        let action = t_static(keys::git_ui::GIT_STASH_ACTION_DROP);
         Self::stash_action(
             workspace,
             &action,
@@ -1032,7 +1032,7 @@ impl CommitView {
             PromptLevel::Info,
             &message,
             None,
-            &[str_action, t_static(keys::git_ui::GIT_B_CANCEL)],
+            &[str_action, "Cancel"],
             cx,
         );
 

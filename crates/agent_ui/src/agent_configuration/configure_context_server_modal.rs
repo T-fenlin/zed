@@ -991,18 +991,15 @@ impl ConfigureContextServerModal {
                     ),
             )
             .child(
-                Button::new(
-                    "authenticate-server",
-                    t(keys::agent::AGENT_THREAD_AUTHENTICATE),
-                )
-                .style(ButtonStyle::Outlined)
-                .label_size(LabelSize::Small)
-                .on_click({
-                    let server_id = server_id.clone();
-                    cx.listener(move |this, _event, _window, cx| {
-                        this.authenticate(server_id.clone(), cx);
-                    })
-                }),
+                Button::new("authenticate-server", "Authenticate")
+                    .style(ButtonStyle::Outlined)
+                    .label_size(LabelSize::Small)
+                    .on_click({
+                        let server_id = server_id.clone();
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.authenticate(server_id.clone(), cx);
+                        })
+                    }),
             )
     }
 
@@ -1064,18 +1061,15 @@ impl ConfigureContextServerModal {
                         },
                     )))
                     .child(
-                        Button::new(
-                            "submit-client-secret",
-                            t(keys::agent::AGENT_A_ELICIT_SUBMIT),
-                        )
-                        .style(ButtonStyle::Outlined)
-                        .label_size(LabelSize::Small)
-                        .on_click({
-                            let server_id = server_id.clone();
-                            cx.listener(move |this, _event, _window, cx| {
-                                this.submit_client_secret(server_id.clone(), cx);
-                            })
-                        }),
+                        Button::new("submit-client-secret", "Submit")
+                            .style(ButtonStyle::Outlined)
+                            .label_size(LabelSize::Small)
+                            .on_click({
+                                let server_id = server_id.clone();
+                                cx.listener(move |this, _event, _window, cx| {
+                                    this.submit_client_secret(server_id.clone(), cx);
+                                })
+                            }),
                     ),
             )
     }
@@ -1095,13 +1089,13 @@ impl ConfigureContextServerModal {
                             .with_rotate_animation(3),
                     )
                     .child(
-                        Label::new(t(keys::agent::AGENT_A_CONTEXT_SERVER_AUTHENTICATING))
+                        Label::new("Authenticating…")
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),
             )
             .child(
-                Button::new("cancel-authentication", t(keys::agent::AGENT_THREAD_CANCEL))
+                Button::new("cancel-authentication", "Cancel")
                     .style(ButtonStyle::Outlined)
                     .label_size(LabelSize::Small)
                     .on_click({

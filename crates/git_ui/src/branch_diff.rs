@@ -484,7 +484,7 @@ impl Item for BranchDiff {
         match self.diff_base(cx) {
             DiffBase::Merge { base_ref } => format!("Changes since {}", base_ref).into(),
             DiffBase::Head | DiffBase::Index | DiffBase::Staged => {
-                t(keys::git_ui::GIT_TAB_CHANGES).into()
+                t_static(keys::git_ui::GIT_TAB_CHANGES).into()
             }
         }
     }

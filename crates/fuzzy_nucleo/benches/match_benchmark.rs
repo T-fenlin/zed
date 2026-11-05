@@ -100,7 +100,7 @@ const QUERY_WORDS: &[&str] = &[
     "workspace",
     "settings",
     "terminal",
-    t_static(keys::settings_ui::SETTINGS_TERMINAL_BREADCRUMBS),
+    "breadcrumbs",
     "git_blame",
     "fixtures",
     "schema",

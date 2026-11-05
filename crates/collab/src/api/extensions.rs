@@ -183,9 +183,7 @@ async fn fetch_extensions_from_blob_store(
                 continue;
             };
             let mut parts = key.split('/');
-            let Some(_) = parts.next().filter(|part| {
-                *part == t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS)
-            }) else {
+            let Some(_) = parts.next().filter(|part| *part == "extensions") else {
                 continue;
             };
             let Some(extension_id) = parts.next() else {

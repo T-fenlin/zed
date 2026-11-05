@@ -1034,7 +1034,7 @@ mod remote_button {
     ) -> SplitButton {
         split_button(
             id,
-            t_static(keys::git_ui::GIT_A_FETCH),
+            "Fetch",
             0,
             0,
             Some(IconName::ArrowCircle),
@@ -1223,18 +1223,18 @@ mod remote_button {
                         .when_some(keybinding_target.clone(), |el, keybinding_target| {
                             el.context(keybinding_target)
                         })
-                        .action(t(keys::git_ui::GIT_A_FETCH), git::Fetch.boxed_clone())
+                        .action("Fetch", git::Fetch.boxed_clone())
                         .action(
                             t(keys::git_ui::GIT_A_FETCH_FROM),
                             git::FetchFrom.boxed_clone(),
                         )
-                        .action(t(keys::git_ui::GIT_A_PULL), git::Pull.boxed_clone())
+                        .action(t_static(keys::git_ui::GIT_A_PULL), git::Pull.boxed_clone())
                         .action(
                             t(keys::git_ui::GIT_A_PULL_REBASE),
                             git::PullRebase.boxed_clone(),
                         )
                         .separator()
-                        .action(t(keys::git_ui::GIT_A_PUSH), git::Push.boxed_clone())
+                        .action(t_static(keys::git_ui::GIT_A_PUSH), git::Push.boxed_clone())
                         .action(t(keys::git_ui::GIT_A_PUSH_TO), git::PushTo.boxed_clone())
                         .action(
                             t(keys::git_ui::GIT_A_FORCE_PUSH),

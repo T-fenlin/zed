@@ -69,7 +69,7 @@ impl DiffHunkRenderer for StagedDiffHunkRenderer {
             .block_mouse_except_scroll()
             .shadow_md()
             .child(
-                Button::new(("unstage", row as u64), t(keys::git_ui::GIT_UNSTAGE))
+                Button::new(("unstage", row as u64), t_static(keys::git_ui::GIT_UNSTAGE))
                     .alpha(if status.is_pending() { 0.66 } else { 1.0 })
                     .tooltip(Tooltip::text("Unstage Hunk"))
                     .on_click({
@@ -638,7 +638,7 @@ impl Render for StagedDiffToolbar {
                 h_group_sm()
                     .when(button_states.selection, |this| {
                         this.child(
-                            Button::new("unstage", t(keys::git_ui::GIT_UNSTAGE))
+                            Button::new("unstage", t_static(keys::git_ui::GIT_UNSTAGE))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::text("Unstage Selected Hunks"))
                                 .on_click(cx.listener(|this, _, window, cx| {
@@ -648,7 +648,7 @@ impl Render for StagedDiffToolbar {
                     })
                     .when(!button_states.selection, |this| {
                         this.child(
-                            Button::new("unstage", t(keys::git_ui::GIT_UNSTAGE))
+                            Button::new("unstage", t_static(keys::git_ui::GIT_UNSTAGE))
                                 .disabled(!button_states.unstage)
                                 .tooltip(Tooltip::for_action_title_in(
                                     "Unstage and Go to Next Hunk",
@@ -675,7 +675,7 @@ impl Render for StagedDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", t(keys::git_ui::GIT_COMMIT))
+                Button::new("commit", "Commit")
                     .tooltip(Tooltip::for_action_title_in(
                         "Commit",
                         &Commit,

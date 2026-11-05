@@ -705,7 +705,7 @@ impl PickerDelegate for OpenPathDelegate {
                             &[("path", &format!("{prompted_path:?}"))],
                         );
                         let detail = t(keys::misc::FILE_EXISTS_DETAIL);
-                        let replace = t(keys::misc::REPLACE);
+                        let replace = "Replace";
                         let answer = window.prompt(
                             gpui::PromptLevel::Critical,
                             &message,

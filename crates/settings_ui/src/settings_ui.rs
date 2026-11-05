@@ -1245,7 +1245,7 @@ impl SettingsPageItem {
                         .child(
                             Button::new(
                                 ("sub-page".into(), sub_page_link.title.clone()),
-                                t(keys::agent::AGENT_B_CONFIGURE),
+                                "Configure",
                             )
                             .aria_label(t_with_args(
                                 keys::settings_ui::SETTINGS_UI_CONFIGURE_ARIA,
@@ -1741,7 +1741,7 @@ enum SettingsUiFile {
 impl SettingsUiFile {
     fn setting_type(&self) -> &'static str {
         match self {
-            SettingsUiFile::User => t_static(keys::settings_ui::SETTINGS_ENUM_USER),
+            SettingsUiFile::User => "User",
             SettingsUiFile::Project(_) => t_static(keys::settings_ui::SETTINGS_ENUM_PROJECT),
             SettingsUiFile::Server(_) => t_static(keys::settings_ui::SETTINGS_ENUM_SERVER),
         }
@@ -2980,7 +2980,7 @@ impl SettingsWindow {
 
     pub(crate) fn display_name(&self, file: &SettingsUiFile) -> Option<String> {
         match file {
-            SettingsUiFile::User => Some(t(keys::keymap::KEYMAP_USER)),
+            SettingsUiFile::User => Some("User"),
             SettingsUiFile::Project((worktree_id, path)) => self
                 .worktree_root_dirs
                 .get(&worktree_id)
@@ -3057,7 +3057,7 @@ impl SettingsWindow {
                     IconButton::new("clear-btn", IconName::Close)
                         .icon_color(Color::Muted)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text(t(keys::settings_ui::SETTINGS_UI_CLEAR)))
+                        .tooltip(Tooltip::text("Clear"))
                         .on_click(cx.listener(|settings_window, _, window, cx| {
                             settings_window.clear_search(window, cx);
                         })),
@@ -4528,7 +4528,7 @@ impl SettingsWindow {
                             .take(item_index)
                             .rev()
                             .find_map(|item| item.header_text())
-                            .unwrap_or_else(|| t(keys::agent::AGENT_MENU_SETTINGS).into());
+                            .unwrap_or_else(|| "Settings".into());
 
                         self.push_sub_page(sub_page_link.clone(), section_header, window, cx);
                         return true;
@@ -5798,11 +5798,11 @@ pub mod test {
             settings_window_with_items(
                 vec![
                     SettingsPageItem::SectionHeader(
-                        t(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
+                        t_static(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
                     ),
                     setting(),
                     SettingsPageItem::SectionHeader(
-                        t(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
+                        t_static(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
                     ),
                     setting(),
                 ],
@@ -5927,18 +5927,18 @@ pub mod test {
             let mut settings_window = settings_window_with_items(
                 vec![
                     SettingsPageItem::SectionHeader(
-                        t(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
+                        t_static(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
                     ),
                     test_action_link(
                         "Preceding setting",
                         Some("A setting with a long description. ".repeat(100)),
                     ),
                     SettingsPageItem::SectionHeader(
-                        t(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
+                        t_static(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
                     ),
                     git_integration,
                     SettingsPageItem::SectionHeader(
-                        t(keys::settings_ui::SETTINGS_ENUM_HIDDEN).into(),
+                        t_static(keys::settings_ui::SETTINGS_ENUM_HIDDEN).into(),
                     ),
                 ],
                 window,
@@ -6073,7 +6073,7 @@ pub mod test {
             settings_window_with_items(
                 vec![
                     SettingsPageItem::SectionHeader(
-                        t(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
+                        t_static(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
                     ),
                     setting,
                 ],
@@ -6128,9 +6128,13 @@ pub mod test {
             ]
             .into_boxed_slice();
             settings_window.pages[1].items = vec![
-                SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_ENUM_FIRST).into()),
+                SettingsPageItem::SectionHeader(
+                    t_static(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
+                ),
                 setting("Last setting", 30),
-                SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_ENUM_LAST).into()),
+                SettingsPageItem::SectionHeader(
+                    t_static(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
+                ),
                 setting("Last setting", 0),
             ]
             .into_boxed_slice();
@@ -6260,10 +6264,10 @@ pub mod test {
                 settings_window_with_items(
                     vec![
                         SettingsPageItem::SectionHeader(
-                            t(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
+                            t_static(keys::settings_ui::SETTINGS_ENUM_FIRST).into(),
                         ),
                         SettingsPageItem::SectionHeader(
-                            t(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
+                            t_static(keys::settings_ui::SETTINGS_ENUM_LAST).into(),
                         ),
                         test_action_link(
                             "Last setting",
@@ -6526,7 +6530,7 @@ pub mod test {
         v Project
         - Project Settings*
         ",
-        toggle_page: t(keys::settings_ui::SETTINGS_ENUM_PROJECT),
+        toggle_page: t_static(keys::settings_ui::SETTINGS_ENUM_PROJECT),
         after: r"
         > General
         > Project*
@@ -6545,7 +6549,7 @@ pub mod test {
         - General
         > Appearance & Behavior
         ",
-        toggle_page: t(keys::settings_ui::SETTINGS_ENUM_PROJECT),
+        toggle_page: t_static(keys::settings_ui::SETTINGS_ENUM_PROJECT),
         after: r"
         v General Page
         - General
@@ -6633,10 +6637,7 @@ pub mod test {
             let privacy_idx = settings_window
                 .navbar_entries
                 .iter()
-                .position(|entry| {
-                    entry.title == t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_PRIVACY)
-                        && !entry.is_root
-                })
+                .position(|entry| entry.title == "Privacy" && !entry.is_root)
                 .expect("Privacy nested entry should exist");
 
             let click_event = |click_count| {
@@ -7193,10 +7194,7 @@ pub mod test {
                 1,
                 "Skills sub-page should stay open when switching scope"
             );
-            assert_eq!(
-                settings_window.sub_page_stack[0].link.title,
-                t_static(keys::settings_ui::SETTINGS_AI_SKILLS)
-            );
+            assert_eq!(settings_window.sub_page_stack[0].link.title, "Skills");
             assert_eq!(
                 displayed_skill_names(settings_window, cx),
                 ["project-skill"]

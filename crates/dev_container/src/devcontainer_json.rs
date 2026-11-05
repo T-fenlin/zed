@@ -703,13 +703,13 @@ mod test {
                 "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
                 "customizations": {
                   "vscode": {
-                    t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
+                    "extensions": [
                       "dbaeumer.vscode-eslint",
                       "GitHub.vscode-pull-request-github",
                     ],
                   },
                   "zed": {
-                    t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): ["vue", "ruby"],
+                    "extensions": ["vue", "ruby"],
                   },
                   "codespaces": {
                     "repositories": {
@@ -750,7 +750,7 @@ mod test {
                 "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
                 "customizations": {
                     "vscode": {
-                        t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): ["dbaeumer.vscode-eslint"]
+                        "extensions": ["dbaeumer.vscode-eslint"]
                     }
                 }
             }
@@ -878,7 +878,7 @@ mod test {
                         // Just confirm that this can be included and ignored
                     },
                     "zed": {
-                        t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
+                        "extensions": [
                             "html"
                         ]
                     }
@@ -1681,7 +1681,7 @@ mod test {
                         // Just confirm that this can be included and ignored
                     },
                     "zed": {
-                        t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
+                        "extensions": [
                             "html"
                         ]
                     }
@@ -1719,7 +1719,7 @@ mod test {
                         // Just confirm that this can be included and ignored
                     },
                     "zed": {
-                        t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
+                        "extensions": [
                             "html"
                         ]
                     }
@@ -1787,7 +1787,7 @@ mod test {
                         // Just confirm that this can be included and ignored
                     },
                     "zed": {
-                        t_static(keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS): [
+                        "extensions": [
                             "html"
                         ]
                     }

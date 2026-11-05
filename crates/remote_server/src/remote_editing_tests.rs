@@ -1296,7 +1296,7 @@ async fn test_remote_settings(cx: &mut TestAppContext, server_cx: &mut TestAppCo
     cx.update_global(|settings_store: &mut SettingsStore, cx| {
         settings_store.set_user_settings(
             r#"{
-                t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"Rust": {"language_servers": ["from-local-settings"]}},
+                "languages": {"Rust": {"language_servers": ["from-local-settings"]}},
                 "terminal": {"shell": {"program": "client-shell"}}
             }"#,
             cx,
@@ -1320,7 +1320,7 @@ async fn test_remote_settings(cx: &mut TestAppContext, server_cx: &mut TestAppCo
         .update_global(|settings_store: &mut SettingsStore, cx| {
             settings_store.set_server_settings(
                 r#"{
-                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"Rust": {"language_servers": ["from-server-settings"]}},
+                    "languages": {"Rust": {"language_servers": ["from-server-settings"]}},
                     "terminal": {"shell": {"program": "remote-shell"}}
                 }"#,
                 cx,
@@ -1369,7 +1369,7 @@ async fn test_remote_settings(cx: &mut TestAppContext, server_cx: &mut TestAppCo
         json!({
             "settings.json": r#"
                   {
-                    t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"Rust":{"language_servers":["override-rust-analyzer"]}},
+                    "languages": {"Rust":{"language_servers":["override-rust-analyzer"]}},
                     "lsp": {
                       "override-rust-analyzer": {
                         "binary": {
@@ -1456,7 +1456,7 @@ async fn test_remote_lsp(cx: &mut TestAppContext, server_cx: &mut TestAppContext
         json!({
             "settings.json": r#"
           {
-            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"Rust":{"language_servers":["rust-analyzer", "fake-analyzer"]}},
+            "languages": {"Rust":{"language_servers":["rust-analyzer", "fake-analyzer"]}},
             "lsp": {
               "rust-analyzer": {
                 "binary": {
@@ -1874,7 +1874,7 @@ async fn test_remote_call_hierarchy(cx: &mut TestAppContext, server_cx: &mut Tes
         json!({
             "settings.json": r#"
           {
-            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"Rust":{"language_servers":["rust-analyzer"]}},
+            "languages": {"Rust":{"language_servers":["rust-analyzer"]}},
             "lsp": {
               "rust-analyzer": {
                 "binary": {
@@ -2972,7 +2972,7 @@ async fn test_remote_cancel_language_server_work(
         json!({
             "settings.json": r#"
           {
-            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"Rust":{"language_servers":["rust-analyzer"]}},
+            "languages": {"Rust":{"language_servers":["rust-analyzer"]}},
             "lsp": {
               "rust-analyzer": {
                 "binary": {
@@ -5412,7 +5412,7 @@ async fn test_remote_apply_code_action_skips_unadvertised_command(
         json!({
             "settings.json": r#"
           {
-            t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {"Rust":{"language_servers":["rust-analyzer"]}},
+            "languages": {"Rust":{"language_servers":["rust-analyzer"]}},
             "lsp": {
               "rust-analyzer": {
                 "binary": {

@@ -1283,32 +1283,20 @@ impl ProjectPanel {
                                 )
                             })
                             .separator()
-                            .action(t(keys::panel::PANEL_CUT), Box::new(Cut))
-                            .action(t(keys::panel::PANEL_COPY), Box::new(Copy))
-                            .action(t(keys::panel::PANEL_DUPLICATE), Box::new(Duplicate))
-                            .action_disabled_when(
-                                !has_pasteable_content,
-                                t(keys::panel::PANEL_PASTE),
-                                Box::new(Paste),
-                            )
+                            .action("Cut", Box::new(Cut))
+                            .action("Copy", Box::new(Copy))
+                            .action(t_static(keys::panel::PANEL_DUPLICATE), Box::new(Duplicate))
+                            .action_disabled_when(!has_pasteable_content, "Paste", Box::new(Paste))
                             .when(!is_collab, |menu| {
                                 let can_undo = self.undo_manager.can_undo();
                                 let can_redo = self.undo_manager.can_redo();
 
-                                menu.action_disabled_when(
-                                    !can_undo,
-                                    t(keys::panel::PANEL_UNDO),
-                                    Box::new(Undo),
-                                )
-                                .action_disabled_when(
-                                    !can_redo,
-                                    t(keys::panel::PANEL_REDO),
-                                    Box::new(Redo),
-                                )
+                                menu.action_disabled_when(!can_undo, "Undo", Box::new(Undo))
+                                    .action_disabled_when(!can_redo, "Redo", Box::new(Redo))
                             })
                             .when(is_remote, |menu| {
                                 menu.separator().action(
-                                    t(keys::panel::PANEL_DOWNLOAD),
+                                    t_static(keys::panel::PANEL_DOWNLOAD),
                                     Box::new(DownloadFromRemote),
                                 )
                             })
@@ -1355,20 +1343,13 @@ impl ProjectPanel {
                                     })
                             })
                             .when(!should_hide_rename, |menu| {
-                                menu.separator()
-                                    .action(t(keys::panel::PANEL_RENAME), Box::new(Rename))
+                                menu.separator().action("Rename", Box::new(Rename))
                             })
                             .when(!is_root && !is_collab, |menu| {
-                                menu.action(
-                                    t(keys::panel::PANEL_TRASH),
-                                    Box::new(Trash { skip_prompt: false }),
-                                )
+                                menu.action("Trash", Box::new(Trash { skip_prompt: false }))
                             })
                             .when(!is_root, |menu| {
-                                menu.action(
-                                    t(keys::panel::PANEL_DELETE),
-                                    Box::new(Delete { skip_prompt: false }),
-                                )
+                                menu.action("Delete", Box::new(Delete { skip_prompt: false }))
                             })
                             .when(!is_collab && is_root, |menu| {
                                 menu.separator()
@@ -2762,7 +2743,7 @@ impl ProjectPanel {
                     keys::panel::PANEL_DISCARD_CHANGES_PROMPT,
                     &[("name", &MarkdownInlineCode(&file_name).to_string())],
                 );
-                let restore = t(keys::panel::PANEL_RESTORE);
+                let restore = "Restore";
                 Some(window.prompt(
                     PromptLevel::Info,
                     &prompt,
@@ -2943,9 +2924,9 @@ impl ProjectPanel {
         S: AsRef<str>,
     {
         let (confirmation_label, detail) = match kind {
-            RemovalKind::Trash => (t(keys::panel::PANEL_TRASH), None),
+            RemovalKind::Trash => ("Trash", None),
             RemovalKind::Delete => (
-                t(keys::panel::PANEL_DELETE),
+                "Delete",
                 Some(t(keys::panel::PANEL_REMOVAL_CANNOT_BE_UNDONE)),
             ),
         };
@@ -4047,7 +4028,7 @@ impl ProjectPanel {
             files: false,
             directories: true,
             multiple: false,
-            prompt: Some(t(keys::panel::PANEL_DOWNLOAD_DIALOG).into()),
+            prompt: Some(t_static(keys::panel::PANEL_DOWNLOAD_DIALOG).into()),
         });
 
         let fs = self.fs.clone();
@@ -5200,7 +5181,7 @@ impl ProjectPanel {
                         keys::panel::PANEL_REPLACE_PROMPT,
                         &[("name", &MarkdownInlineCode(filename).to_string())],
                     );
-                    let replace = t(keys::panel::PANEL_REPLACE);
+                    let replace = "Replace";
                     let answer = cx
                         .update(|window, cx| {
                             window.prompt(

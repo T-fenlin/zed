@@ -73,7 +73,7 @@ fn render_flag_row(
                 this.child(
                     Button::new(
                         SharedString::from(format!("reset-{}", name)),
-                        t(keys::settings_ui::SETTINGS_B_FEATURE_FLAG_RESET),
+                        t_static(keys::settings_ui::SETTINGS_B_FEATURE_FLAG_RESET),
                     )
                     .label_size(LabelSize::Small)
                     .on_click(cx.listener(move |_, _, _, cx| {

@@ -761,7 +761,7 @@ fn show_software_emulation_warning_if_needed(
             t_with_args(keys::zed::ZED_A_GPU_TROUBLESHOOT, &[("url", docs_url)]),
             t(keys::zed::ZED_A_GPU_OVERRIDE)
         );
-        let skip = t(keys::zed::ZED_A_GPU_SKIP);
+        let skip = t_static(keys::zed::ZED_A_GPU_SKIP);
         let troubleshoot = t(keys::zed::ZED_A_TROUBLESHOOT_AND_QUIT);
         let prompt = window.prompt(
             PromptLevel::Critical,
@@ -1564,7 +1564,7 @@ fn open_about_window(cx: &mut App) {
             let version = env!("CARGO_PKG_VERSION");
 
             let debug = if cfg!(debug_assertions) {
-                t_static(keys::zed::ZED_A_ABOUT_DEBUG_SUFFIX)
+                "(debug)"
             } else {
                 ""
             };
@@ -1630,14 +1630,14 @@ fn open_about_window(cx: &mut App) {
                             .child(Headline::new(self.message.clone()))
                             .when_some(self.commit.clone(), |this, commit| {
                                 this.child(
-                                    Label::new(t(keys::git_ui::GIT_COMMIT))
+                                    Label::new("Commit")
                                         .color(Color::Muted)
                                         .size(LabelSize::XSmall),
                                 )
                                 .child(Label::new(commit).size(LabelSize::Small))
                             })
                             .child(
-                                Label::new(t(keys::extensions::EXTENSIONS_VERSION))
+                                Label::new("Version")
                                     .color(Color::Muted)
                                     .size(LabelSize::XSmall),
                             )
@@ -1655,7 +1655,7 @@ fn open_about_window(cx: &mut App) {
                                         window.remove_window();
                                     }))
                                     .child(
-                                        Button::new("ok", t(keys::ui::UI_OK))
+                                        Button::new("ok", "OK")
                                             .full_width()
                                             .style(ButtonStyle::OutlinedGhost)
                                             .toggle_state(ok_is_focused)
@@ -1675,19 +1675,14 @@ fn open_about_window(cx: &mut App) {
                                         },
                                     ))
                                     .child(
-                                        Button::new(
-                                            t(keys::panel::PANEL_DUPLICATE_SUFFIX),
-                                            t(keys::app_menu::MENU_EDIT_COPY),
-                                        )
-                                        .full_width()
-                                        .style(ButtonStyle::Tinted(TintColor::Accent))
-                                        .toggle_state(copy_is_focused)
-                                        .selected_style(ButtonStyle::Tinted(TintColor::Accent))
-                                        .on_click(
-                                            cx.listener(|this, _event, window, cx| {
+                                        Button::new("copy", "Copy")
+                                            .full_width()
+                                            .style(ButtonStyle::Tinted(TintColor::Accent))
+                                            .toggle_state(copy_is_focused)
+                                            .selected_style(ButtonStyle::Tinted(TintColor::Accent))
+                                            .on_click(cx.listener(|this, _event, window, cx| {
                                                 this.copy_details(window, cx);
-                                            }),
-                                        ),
+                                            })),
                                     ),
                             ),
                     )
@@ -1783,12 +1778,12 @@ fn quit(_: &Quit, cx: &mut App) {
         if should_confirm && let Some(multi_workspace) = workspace_windows.first() {
             let answer = multi_workspace
                 .update(cx, |_, window, cx| {
-                    let quit = t(keys::zed::ZED_A_QUIT);
+                    let quit = t_static(keys::zed::ZED_A_QUIT);
                     window.prompt(
                         PromptLevel::Info,
                         &t(keys::zed::ZED_A_QUIT_CONFIRM),
                         None,
-                        &[quit.as_str(), t_static(keys::zed::ZED_A_CANCEL)],
+                        &[quit.as_str(), "Cancel"],
                         cx,
                     )
                 })
@@ -1895,7 +1890,8 @@ fn open_log_file(workspace: &mut Workspace, window: &mut Window, cx: &mut Contex
             });
 
             let buffer = cx.new(|cx| {
-                MultiBuffer::singleton(buffer, cx).with_title(t(keys::zed::ZED_A_LOG_TITLE).into())
+                MultiBuffer::singleton(buffer, cx)
+                    .with_title(t_static(keys::zed::ZED_A_LOG_TITLE).into())
             });
 
             let editor = cx
@@ -2005,11 +2001,11 @@ fn init_global_config_error_notifications(cx: &mut App) {
     cx.observe_new(|_: &mut SettingsObserver, _, cx| {
         cx.subscribe_self::<SettingsObserverEvent>(|_, event, cx| {
             let (result, file_kind, on_click): (_, _, fn(&mut Window, &mut App)) = match event {
-                SettingsObserverEvent::GlobalTasksUpdated(result) => (
-                    result,
-                    t_static(keys::zed::ZED_A_FILE_KIND_TASKS),
-                    |window, cx| window.dispatch_action(OpenTasks.boxed_clone(), cx),
-                ),
+                SettingsObserverEvent::GlobalTasksUpdated(result) => {
+                    (result, "tasks", |window, cx| {
+                        window.dispatch_action(OpenTasks.boxed_clone(), cx)
+                    })
+                }
                 SettingsObserverEvent::GlobalDebugScenariosUpdated(result) => (
                     result,
                     t_static(keys::zed::ZED_A_FILE_KIND_DEBUG_SCENARIOS),
@@ -3175,7 +3171,7 @@ mod tests {
             1,
             "create_new_window: false should reuse the current window"
         );
-        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
+        cx.simulate_prompt_answer("Cancel");
         executor.run_until_parked();
     }
 
@@ -3898,7 +3894,7 @@ mod tests {
                             "settings.json": r#"{"on_new_window": "readme"}"#
                         }
                     },
-                    t_static(keys::lang::LANG_TOOLS_STYLE_NONE): {"code.rs": ""},
+                    "none": {"code.rs": ""},
                     "explicit": {"README.md": "", "code.rs": ""},
                     "missing": {"README.md": ""}
                 }),
@@ -3925,11 +3921,7 @@ mod tests {
             (readme, vec!["invalid"], None, false),
             (
                 readme,
-                vec![
-                    t_static(keys::lang::LANG_TOOLS_STYLE_NONE),
-                    "first",
-                    "second",
-                ],
+                vec!["none", "first", "second"],
                 Some("first/README.txt"),
                 true,
             ),
@@ -4802,7 +4794,7 @@ mod tests {
             })
             .unwrap();
         cx.background_executor.run_until_parked();
-        cx.simulate_prompt_answer(&t(keys::prompt::PROMPT_OVERWRITE));
+        cx.simulate_prompt_answer(&"Overwrite");
         save_task.await.unwrap();
         window
             .update(cx, |_, _, cx| {
@@ -4849,7 +4841,7 @@ mod tests {
             .update(cx, |_, window, cx| {
                 editor.update(cx, |editor, cx| {
                     assert!(!editor.is_dirty(cx));
-                    assert_eq!(editor.title(cx), t_static(keys::lang::LANG_TOOLS_UNTITLED));
+                    assert_eq!(editor.title(cx), "untitled");
                     assert!(Arc::ptr_eq(
                         &editor
                             .buffer()
@@ -7335,7 +7327,7 @@ mod tests {
             "Case 1: Should prompt to save dirty item in active workspace"
         );
 
-        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
+        cx.simulate_prompt_answer("Cancel");
         cx.run_until_parked();
 
         assert_eq!(
@@ -7417,7 +7409,7 @@ mod tests {
             "Case 2: Should prompt to save dirty item in non-active workspace"
         );
 
-        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
+        cx.simulate_prompt_answer("Cancel");
         cx.run_until_parked();
 
         assert_eq!(
@@ -7501,7 +7493,7 @@ mod tests {
             "Case 3: Should prompt to save dirty item in non-active window"
         );
 
-        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
+        cx.simulate_prompt_answer("Cancel");
         cx.run_until_parked();
 
         assert_eq!(
@@ -7623,7 +7615,7 @@ mod tests {
             "Reload should prompt to save the dirty item in the non-active workspace"
         );
 
-        cx.simulate_prompt_answer(t_static(keys::zed::ZED_A_CANCEL));
+        cx.simulate_prompt_answer("Cancel");
         cx.run_until_parked();
 
         assert_eq!(
@@ -8500,7 +8492,7 @@ mod tests {
                 "expected Agent Panel in the View menu when AI is enabled"
             );
             assert!(
-                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
+                has_view_item(cx, "Diagnostics"),
                 "expected Diagnostics to be in View menu"
             );
         });
@@ -8521,7 +8513,7 @@ mod tests {
                 "expected Agent Panel to be removed from the View menu after disabling AI"
             );
             assert!(
-                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
+                has_view_item(cx, "Diagnostics"),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8540,7 +8532,7 @@ mod tests {
                 "expected Agent Panel back in the View menu after re-enabling AI"
             );
             assert!(
-                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
+                has_view_item(cx, "Diagnostics"),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8557,7 +8549,7 @@ mod tests {
                 "expected Agent Panel before disabling AI"
             );
             assert!(
-                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
+                has_view_item(cx, "Diagnostics"),
                 "expected Diagnostics in the View menu"
             );
         });
@@ -8602,7 +8594,7 @@ mod tests {
                 "expected Agent Panel removed even though the keymap file is malformed"
             );
             assert!(
-                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
+                has_view_item(cx, "Diagnostics"),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8624,7 +8616,7 @@ mod tests {
                 "expected Agent Panel added back even though the keymap file is malformed"
             );
             assert!(
-                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
+                has_view_item(cx, "Diagnostics"),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8683,7 +8675,7 @@ mod tests {
         cx.get_menus()
             .expect("reload_keymaps should populate the menu bar")
             .iter()
-            .find(|menu| menu.name == t_static(keys::app_menu::MENU_VIEW_TITLE))
+            .find(|menu| menu.name == "View")
             .expect("expected a View menu")
             .items
             .iter()

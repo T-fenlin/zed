@@ -336,7 +336,7 @@ async fn resolve_pasted_context_items(
 ) -> (Vec<ResolvedPastedContextItem>, Vec<Entity<Worktree>>) {
     let mut items = Vec::new();
     let mut added_worktrees = Vec::new();
-    let default_image_name: SharedString = t(keys::agent::AGENT_THREAD_IMAGE).into();
+    let default_image_name: SharedString = t_static(keys::agent::AGENT_THREAD_IMAGE).into();
     // A bitmap and image files in the clipboard are usually the same image (e.g. a
     // screenshot saved to a temporary file), so skip image files when there's a bitmap.
     let has_clipboard_image = entries
@@ -1674,7 +1674,8 @@ impl MessageEditor {
                     _ => return Ok::<(), anyhow::Error>(()),
                 };
 
-                let default_image_name: SharedString = t(keys::agent::AGENT_THREAD_IMAGE).into();
+                let default_image_name: SharedString =
+                    t_static(keys::agent::AGENT_THREAD_IMAGE).into();
                 let images = cx
                     .background_spawn(async move {
                         paths
@@ -1847,7 +1848,7 @@ impl MessageEditor {
                         MentionUri::parse(&uri, path_style)
                     } else {
                         Ok(MentionUri::PastedImage {
-                            name: t(keys::agent::AGENT_THREAD_IMAGE).to_string(),
+                            name: t_static(keys::agent::AGENT_THREAD_IMAGE).to_string(),
                         })
                     };
                     let Some(mention_uri) = mention_uri.log_err() else {
@@ -3397,7 +3398,7 @@ mod tests {
                     format!("seven.txt b{slash}"),
                     format!("six.txt b{slash}"),
                     format!("five.txt b{slash}"),
-                    "Files & Directories".into(),
+                    t_static(keys::agent::AGENT_B_FILES_AND_DIRECTORIES).into(),
                     "Symbols".into()
                 ]
             );
@@ -3432,10 +3433,10 @@ mod tests {
                     format!("seven.txt b{slash}"),
                     format!("six.txt b{slash}"),
                     format!("five.txt b{slash}"),
-                    "Files & Directories".into(),
+                    t_static(keys::agent::AGENT_B_FILES_AND_DIRECTORIES).into(),
                     "Symbols".into(),
                     "Threads".into(),
-                    t(keys::agent::AGENT_B_FETCH).into()
+                    "Fetch".into()
                 ]
             );
         });
@@ -4681,8 +4682,7 @@ mod tests {
         let source_text = "selection needs work\nselection looks fine";
         let first_range = 0..9;
         let second_start = "selection needs work\n".len();
-        let second_range =
-            second_start..(second_start + t_static(keys::agent::AGENT_B_SELECTION).len());
+        let second_range = second_start..(second_start + "selection".len());
         let first_uri = MentionUri::Selection {
             abs_path: Some(path!("/project/file.rs").into()),
             line_range: 0..=1,
@@ -4844,8 +4844,7 @@ mod tests {
         let source_text = "selection needs work\nselection looks fine";
         let first_range = 0..9;
         let second_start = "selection needs work\n".len();
-        let second_range =
-            second_start..(second_start + t_static(keys::agent::AGENT_B_SELECTION).len());
+        let second_range = second_start..(second_start + "selection".len());
         let first_uri = MentionUri::Selection {
             abs_path: Some(path!("/project/file.rs").into()),
             line_range: 0..=1,
@@ -5036,10 +5035,7 @@ mod tests {
         for block in &blocks {
             if let acp_v2::ContentBlock::Text(text) = block {
                 assert!(
-                    !text
-                        .text
-                        .split_whitespace()
-                        .any(|word| word == t_static(keys::agent::AGENT_B_SELECTION)),
+                    !text.text.split_whitespace().any(|word| word == "selection"),
                     "text block must not contain bare fold placeholder: {:?}",
                     text.text
                 );
@@ -5560,7 +5556,7 @@ mod tests {
                     paste_image_context(&message_editor, entries, inline, &mut cx);
 
                     let image_uri = MentionUri::PastedImage {
-                        name: t(keys::agent::AGENT_THREAD_IMAGE).into(),
+                        name: t_static(keys::agent::AGENT_THREAD_IMAGE).into(),
                     };
                     editor.update(&mut cx, |editor, cx| {
                         assert_eq!(editor.text(cx), format!("{} ", image_uri.as_link()));
@@ -5614,7 +5610,7 @@ mod tests {
             );
 
             let image_uri = MentionUri::PastedImage {
-                name: t(keys::agent::AGENT_THREAD_IMAGE).into(),
+                name: t_static(keys::agent::AGENT_THREAD_IMAGE).into(),
             };
             let contents = mention_contents(&message_editor, &mut cx).await;
             let Some((_, Mention::Image(pasted_image))) =

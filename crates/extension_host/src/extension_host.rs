@@ -35,7 +35,6 @@ use gpui::{
     Task, TaskExt, UpdateGlobal as _, WeakEntity, actions,
 };
 use http_client::{AsyncBody, HttpClient, HttpClientWithUrl};
-use i18n::{keys, t_static};
 use language::{
     LanguageConfig, LanguageMatcher, LanguageName, LanguageQueries, LoadedLanguage, QueryFile,
     QueryFileContents, QueryFiles, Rope,
@@ -1819,9 +1818,7 @@ impl ExtensionStore {
             .with_context(|| format!("missing extension directory {extension_dir:?}"))?
             .is_symlink;
 
-        let language_dir = extension_dir.join(t_static(
-            keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES,
-        ));
+        let language_dir = extension_dir.join("languages");
         if let Ok(mut language_paths) = fs.read_dir(&language_dir).await {
             while let Some(language_path) = language_paths.next().await {
                 let language_path = language_path

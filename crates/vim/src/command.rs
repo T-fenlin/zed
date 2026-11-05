@@ -448,7 +448,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                                     &[("path", &format!("{path:?}"))],
                                 );
                                 let detail = t(keys::misc::FILE_EXISTS_DETAIL);
-                                let replace = t(keys::misc::REPLACE);
+                                let replace = "Replace";
                                 window.prompt(
                                     gpui::PromptLevel::Warning,
                                     &message,
@@ -548,7 +548,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     &[("path", &project_path.path.display(path_style).to_string())],
                 );
                 let detail = t(keys::misc::FILE_EXISTS_DETAIL);
-                let replace = t(keys::misc::REPLACE);
+                let replace = "Replace";
                 let answer = window.prompt(
                     gpui::PromptLevel::Critical,
                     &message,
@@ -3057,7 +3057,7 @@ mod test {
         cx.simulate_keystrokes(": w space dir/file.rs");
         cx.simulate_keystrokes("enter");
 
-        cx.simulate_prompt_answer(&t(keys::misc::REPLACE));
+        cx.simulate_prompt_answer(&"Replace");
         cx.run_until_parked();
 
         cx.workspace(|workspace, _, cx| {

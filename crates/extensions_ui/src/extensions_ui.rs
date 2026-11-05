@@ -914,7 +914,7 @@ impl ExtensionsPage {
     }
 
     fn retry_button(&self, cx: &mut Context<Self>) -> Button {
-        Button::new("retry-fetch-extensions", t(keys::agent::AGENT_RETRY))
+        Button::new("retry-fetch-extensions", "Retry")
             .style(ButtonStyle::Outlined)
             .on_click(cx.listener(|this, _, _, cx| {
                 this.fetch_extensions(FetchDebounce::Immediate, None, cx);
@@ -1509,7 +1509,7 @@ impl Render for ExtensionsPage {
                             .w_full()
                             .gap_1p5()
                             .justify_between()
-                            .child(Headline::new(t(keys::app_menu::MENU_ZED_EXTENSIONS)).size(HeadlineSize::Large))
+                            .child(Headline::new("Extensions").size(HeadlineSize::Large))
                             .child(
                                 Button::new("install-dev-extension", t(keys::extensions::EXTENSIONS_INSTALL_DEV_EXTENSION))
                                     .style(ButtonStyle::Outlined)
@@ -1580,7 +1580,7 @@ impl Render for ExtensionsPage {
                     .border_color(cx.theme().colors().border_variant)
                     .overflow_x_scroll()
                     .child(
-                        Button::new("filter-all-categories", t(keys::agent::AGENT_ALL_MODELS))
+                        Button::new("filter-all-categories", "All")
                             .when(self.provides_filter.is_none(), |button| {
                                 button.style(ButtonStyle::Filled)
                             })
@@ -1673,7 +1673,7 @@ impl Item for ExtensionsPage {
     type Event = ItemEvent;
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        t(keys::extensions::EXTENSIONS_PANEL).into()
+        "Extensions".into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {

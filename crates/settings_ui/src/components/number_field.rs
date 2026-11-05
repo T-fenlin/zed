@@ -611,7 +611,9 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                             base_button(IconName::Dash)
                                 .id((self.id.clone(), "decrement_button"))
                                 .role(Role::Button)
-                                .aria_label(t(keys::settings_ui::SETTINGS_B_NUMBER_DECREMENT))
+                                .aria_label(t_static(
+                                    keys::settings_ui::SETTINGS_B_NUMBER_DECREMENT,
+                                ))
                                 .rounded_tl_sm()
                                 .rounded_bl_sm()
                                 .when_some(self.tab_index, |this, _| this.tab_index(0isize))
@@ -827,7 +829,9 @@ impl<T: NumberFieldType> RenderOnce for NumberField<T> {
                             base_button(IconName::Plus)
                                 .id((self.id.clone(), "increment_button"))
                                 .role(Role::Button)
-                                .aria_label(t(keys::settings_ui::SETTINGS_B_NUMBER_INCREMENT))
+                                .aria_label(t_static(
+                                    keys::settings_ui::SETTINGS_B_NUMBER_INCREMENT,
+                                ))
                                 .rounded_tr_sm()
                                 .rounded_br_sm()
                                 .when_some(self.tab_index, |this, _| this.tab_index(0isize))

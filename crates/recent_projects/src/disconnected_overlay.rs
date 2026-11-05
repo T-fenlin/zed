@@ -188,10 +188,9 @@ impl Render for DisconnectedOverlay {
             .child(
                 Modal::new("disconnected", None)
                     .header(
-                        ModalHeader::new().show_dismiss_button(true).child(
-                            Headline::new(t(keys::titlebar::TITLEBAR_DISCONNECTED))
-                                .size(HeadlineSize::Small),
-                        ),
+                        ModalHeader::new()
+                            .show_dismiss_button(true)
+                            .child(Headline::new("Disconnected").size(HeadlineSize::Small)),
                     )
                     .section(Section::new().child(Label::new(message)))
                     .footer(
@@ -213,14 +212,11 @@ impl Render for DisconnectedOverlay {
                                 )
                                 .when(can_reconnect, |el| {
                                     el.child(
-                                        Button::new(
-                                            "reconnect",
-                                            t(keys::agent::AGENT_THREAD_RECONNECT),
-                                        )
-                                        .style(ButtonStyle::Filled)
-                                        .layer(ElevationIndex::ModalSurface)
-                                        .start_icon(Icon::new(IconName::ArrowCircle))
-                                        .on_click(cx.listener(Self::handle_reconnect)),
+                                        Button::new("reconnect", "Reconnect")
+                                            .style(ButtonStyle::Filled)
+                                            .layer(ElevationIndex::ModalSurface)
+                                            .start_icon(Icon::new(IconName::ArrowCircle))
+                                            .on_click(cx.listener(Self::handle_reconnect)),
                                     )
                                 }),
                         ),

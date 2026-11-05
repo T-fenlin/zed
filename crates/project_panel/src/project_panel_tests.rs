@@ -13027,7 +13027,7 @@ fn submit_deletion(panel: &Entity<ProjectPanel>, cx: &mut VisualTestContext) {
         cx.has_pending_prompt(),
         "Should have a prompt after the deletion"
     );
-    cx.simulate_prompt_answer(&t(keys::panel::PANEL_DELETE));
+    cx.simulate_prompt_answer(&"Delete");
     assert!(
         !cx.has_pending_prompt(),
         "Should have no prompts after prompt was replied to"

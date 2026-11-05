@@ -218,7 +218,7 @@ impl RenderOnce for UpdateButton {
                         IconButton::new(dismiss_button_id, IconName::Close)
                             .icon_size(IconSize::Indicator)
                             .when_some(self.on_dismiss, |this, handler| this.on_click(handler))
-                            .tooltip(Tooltip::text(t(keys::ui::UI_DISMISS))),
+                            .tooltip(Tooltip::text("Dismiss")),
                     ),
                 )
             })

@@ -413,16 +413,13 @@ impl ChannelView {
                 self.channel_buffer.read(cx).is_connected(),
             ) {
                 (false, true) => None,
-                (true, true) => Some(t_static(keys::collab::COLLAB_READ_ONLY)),
-                (_, false) => Some(t_static(keys::collab::COLLAB_DISCONNECTED)),
+                (true, true) => Some("read-only"),
+                (_, false) => Some("disconnected"),
             };
 
             (channel.name.clone(), status.map(Into::into))
         } else {
-            (
-                t(keys::collab::COLLAB_UNKNOWN_VALUE).into(),
-                Some("disconnected".into()),
-            )
+            ("<unknown>".into(), Some("disconnected".into()))
         }
     }
 }

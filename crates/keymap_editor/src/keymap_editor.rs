@@ -56,7 +56,7 @@ use crate::{
 };
 
 fn no_action_arguments_text() -> SharedString {
-    t(keys::keymap::KEYMAP_PLACEHOLDER_NO_ARGUMENTS).into()
+    t_static(keys::keymap::KEYMAP_PLACEHOLDER_NO_ARGUMENTS).into()
 }
 const COLS: usize = 6;
 
@@ -1115,16 +1115,16 @@ impl KeymapEditor {
             let context_menu = ContextMenu::build(window, cx, |menu, _window, _cx| {
                 menu.context(self.focus_handle.clone())
                     .when(selected_binding_is_unmapped, |this| {
-                        this.action(t(keys::keymap::KEYMAP_MENU_CREATE), Box::new(CreateBinding))
+                        this.action("Create", Box::new(CreateBinding))
                     })
                     .action_disabled_when(
                         selected_binding_is_non_interactable,
-                        t_static(keys::keymap::KEYMAP_MENU_EDIT),
+                        "Edit",
                         Box::new(EditBinding),
                     )
                     .action_disabled_when(
                         selected_binding_is_non_interactable,
-                        t_static(keys::keymap::KEYMAP_MENU_DELETE),
+                        "Delete",
                         Box::new(DeleteBinding),
                     )
                     .separator()
@@ -1659,9 +1659,9 @@ impl KeymapEditor {
 
                         menu = menu
                             .context(focus_handle.clone())
-                            .header(t(keys::keymap::KEYMAP_FILTERS))
+                            .header(t_static(keys::keymap::KEYMAP_FILTERS))
                             .map(add_filter(
-                                t_static(keys::keymap::KEYMAP_CONFLICTS),
+                                "Conflicts",
                                 matches!(filter_state, FilterState::Conflicts),
                                 Some(ToggleConflictFilter.boxed_clone()),
                                 &focus_handle,
@@ -1677,9 +1677,9 @@ impl KeymapEditor {
                                 None,
                             ))
                             .separator()
-                            .header(t(keys::keymap::KEYMAP_CATEGORIES))
+                            .header(t_static(keys::keymap::KEYMAP_CATEGORIES))
                             .map(add_filter(
-                                t_static(keys::keymap::KEYMAP_USER),
+                                "User",
                                 source_filters.user,
                                 None,
                                 &focus_handle,
@@ -1689,7 +1689,7 @@ impl KeymapEditor {
                                 }),
                             ))
                             .map(add_filter(
-                                t_static(keys::keymap::KEYMAP_DEFAULT),
+                                "Default",
                                 source_filters.zed_defaults,
                                 None,
                                 &focus_handle,
@@ -1724,7 +1724,7 @@ impl KeymapEditor {
                         self.keybinding_conflict_state.any_user_binding_conflicts(),
                         |this| this.indicator(Indicator::dot().color(Color::Warning)),
                     ),
-                Tooltip::text(t(keys::keymap::KEYMAP_FILTERS)),
+                Tooltip::text(t_static(keys::keymap::KEYMAP_FILTERS)),
             );
 
         fn add_filter(
@@ -1949,7 +1949,7 @@ enum KeybindContextString {
 
 impl KeybindContextString {
     fn global_context() -> SharedString {
-        t(keys::keymap::KEYMAP_PLACEHOLDER_GLOBAL_CONTEXT).into()
+        "<global>".into()
     }
 
     pub fn local(&self) -> Option<&SharedString> {
@@ -2166,7 +2166,7 @@ impl Render for KeymapEditor {
                     .width_config(ColumnWidthConfig::redistributable(
                         self.current_widths.clone(),
                     ))
-                    .header(vec!["".to_string(), t(keys::keymap::KEYMAP_ACTION), t(keys::keymap::KEYMAP_ARGUMENTS), t(keys::keymap::KEYMAP_KEYSTROKES), t(keys::agent::AGENT_MENU_CONTEXT), t(keys::agent::AGENT_THREAD_SOURCE)])
+                    .header(vec!["".to_string(), "Action", "Arguments", t_static(keys::keymap::KEYMAP_KEYSTROKES), "Context", "Source"])
                     .uniform_list(
                         "keymap-editor-table",
                         row_count,
@@ -2202,7 +2202,7 @@ impl Render for KeymapEditor {
                                                     .into_any_element()
                                             } else {
                                                 const NULL: SharedString =
-                                                    SharedString::new_static(t_static(keys::keymap::KEYMAP_PLACEHOLDER_NO_ACTION));
+                                                    SharedString::new_static("<null>");
                                                 muted_styled_text(NULL, cx)
                                                     .into_any_element()
                                             }
@@ -2608,7 +2608,7 @@ impl KeybindingEditorModal {
                     cx,
                     t_static(keys::keymap::KEYMAP_ACTION_PLACEHOLDER),
                 )
-                .label(t(keys::keymap::KEYMAP_ACTION))
+                .label(t_static(keys::keymap::KEYMAP_ACTION))
                 .label_size(LabelSize::Default);
 
                 let editor_entity = input.editor();
@@ -3194,19 +3194,20 @@ impl Render for KeybindingEditorModal {
                                                         .color(Color::Muted),
                                                 )
                                                 .child(
-                                                    Button::new(
-                                                        "show_matching",
-                                                        t(keys::agent::AGENT_VIEW),
-                                                    )
-                                                    .label_size(LabelSize::Small)
-                                                    .end_icon(
-                                                        Icon::new(IconName::ArrowUpRight)
-                                                            .size(IconSize::Small)
-                                                            .color(Color::Muted),
-                                                    )
-                                                    .on_click(cx.listener(|this, _, window, cx| {
-                                                        this.show_matching_bindings(window, cx);
-                                                    })),
+                                                    Button::new("show_matching", "View")
+                                                        .label_size(LabelSize::Small)
+                                                        .end_icon(
+                                                            Icon::new(IconName::ArrowUpRight)
+                                                                .size(IconSize::Small)
+                                                                .color(Color::Muted),
+                                                        )
+                                                        .on_click(cx.listener(
+                                                            |this, _, window, cx| {
+                                                                this.show_matching_bindings(
+                                                                    window, cx,
+                                                                );
+                                                            },
+                                                        )),
                                                 )
                                             },
                                         )),
@@ -3236,15 +3237,14 @@ impl Render for KeybindingEditorModal {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Button::new("cancel", t(keys::agent::AGENT_THREAD_CANCEL))
+                                    Button::new("cancel", "Cancel")
                                         .on_click(cx.listener(|_, _, _, cx| cx.emit(DismissEvent))),
                                 )
-                                .child(
-                                    Button::new("save-btn", t(keys::app_menu::MENU_FILE_SAVE))
-                                        .on_click(cx.listener(|this, _event, _window, cx| {
-                                            this.save_or_display_error(cx);
-                                        })),
-                                ),
+                                .child(Button::new("save-btn", "Save").on_click(cx.listener(
+                                    |this, _event, _window, cx| {
+                                        this.save_or_display_error(cx);
+                                    },
+                                ))),
                         ),
                     ),
             )

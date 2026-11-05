@@ -2865,20 +2865,14 @@ impl gpui::Render for ErrorWrappingTestView {
                     .icon(IconName::XCircle)
                     .title("An Error Happened")
                     .description(long_error_message)
-                    .actions_slot(
-                        Button::new("dismiss", t(keys::agent::AGENT_DISMISS))
-                            .label_size(LabelSize::Small),
-                    ),
+                    .actions_slot(Button::new("dismiss", "Dismiss").label_size(LabelSize::Small)),
             )
             .child(
                 Callout::new()
                     .severity(Severity::Error)
                     .icon(IconName::XCircle)
                     .title(long_error_message)
-                    .actions_slot(
-                        Button::new("retry", t(keys::agent::AGENT_RETRY))
-                            .label_size(LabelSize::Small),
-                    ),
+                    .actions_slot(Button::new("retry", "Retry").label_size(LabelSize::Small)),
             )
     }
 }

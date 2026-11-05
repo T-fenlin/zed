@@ -1257,7 +1257,7 @@ impl RatePredictionsModal {
                 let (trigger_icon, trigger_tooltip) = match completion.trigger {
                     PredictEditsRequestTrigger::Testing => (IconName::Debug, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_TESTING)),
                     PredictEditsRequestTrigger::Diagnostics => {
-                        (IconName::ToolDiagnostics, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_DIAGNOSTICS))
+                        (IconName::ToolDiagnostics, "Diagnostics")
                     }
                     PredictEditsRequestTrigger::DiagnosticNavigation => {
                         (IconName::ArrowRight, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_DIAGNOSTIC_NAVIGATION))
@@ -1287,7 +1287,7 @@ impl RatePredictionsModal {
                     PredictEditsRequestTrigger::SettingsChanged => {
                         (IconName::Settings, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_SETTINGS_CHANGED))
                     }
-                    PredictEditsRequestTrigger::Other => (IconName::CircleHelp, t_static(keys::edit_prediction::EDIT_PREDICTION_TRIGGER_OTHER)),
+                    PredictEditsRequestTrigger::Other => (IconName::CircleHelp, "Other"),
                 };
 
                 let file = completion.buffer.read(cx).file();

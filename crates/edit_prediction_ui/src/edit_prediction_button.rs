@@ -651,9 +651,9 @@ impl EditPredictionButton {
             .collect();
 
         if !providers.is_empty() {
-            menu = menu
-                .separator()
-                .header(t(keys::edit_prediction::EDIT_PREDICTION_PROVIDERS_HEADER));
+            menu = menu.separator().header(t_static(
+                keys::edit_prediction::EDIT_PREDICTION_PROVIDERS_HEADER,
+            ));
 
             for provider in providers {
                 let Some(name) = provider.display_name() else {
@@ -861,7 +861,7 @@ impl EditPredictionButton {
             .separator()
             .header(t(keys::edit_prediction::EDIT_PREDICTION_DISPLAY_MODES))
             .item(
-                ContextMenuEntry::new(t(keys::edit_prediction::EDIT_PREDICTION_MODE_EAGER))
+                ContextMenuEntry::new(t_static(keys::edit_prediction::EDIT_PREDICTION_MODE_EAGER))
                     .toggleable(IconPosition::Start, eager_mode)
                     .documentation_aside(DocumentationSide::Left, move |_| {
                         Label::new(t(keys::edit_prediction::EDIT_PREDICTION_MODE_EAGER_DESC))
@@ -880,7 +880,7 @@ impl EditPredictionButton {
                     }),
             )
             .item(
-                ContextMenuEntry::new(t(keys::edit_prediction::EDIT_PREDICTION_MODE_SUBTLE))
+                ContextMenuEntry::new(t_static(keys::edit_prediction::EDIT_PREDICTION_MODE_SUBTLE))
                     .toggleable(IconPosition::Start, subtle_mode)
                     .documentation_aside(DocumentationSide::Left, move |_| {
                         Label::new(concat!(
@@ -903,9 +903,7 @@ impl EditPredictionButton {
                     }),
             );
 
-        menu = menu
-            .separator()
-            .header(t(keys::edit_prediction::EDIT_PREDICTION_PRIVACY_HEADER));
+        menu = menu.separator().header("Privacy");
 
         if matches!(provider, EditPredictionProvider::Zed) {
             if let Some(provider) = &self.edit_prediction_provider {
@@ -1074,7 +1072,7 @@ impl EditPredictionButton {
                         .current_organization_has_no_active_subscription();
             menu = menu
                 .separator()
-                .header(t(keys::agent::AGENT_B_ACTIONS))
+                .header("Actions")
                 .item(
                     ContextMenuEntry::new(t(
                         keys::edit_prediction::EDIT_PREDICTION_PREDICT_AT_CURSOR,
@@ -1340,7 +1338,9 @@ impl EditPredictionButton {
                     .as_ref()
                     .and_then(|provider| provider.usage(cx))
                 {
-                    menu = menu.header(t(keys::edit_prediction::EDIT_PREDICTION_USAGE_HEADER));
+                    menu = menu.header(t_static(
+                        keys::edit_prediction::EDIT_PREDICTION_USAGE_HEADER,
+                    ));
                     menu = menu
                         .custom_entry(
                             move |_window, cx| {
@@ -1456,7 +1456,7 @@ impl EditPredictionButton {
                         t_static(keys::edit_prediction::EDIT_PREDICTION_EXPERIMENT_MENU),
                         move |menu, _window, _cx| {
                             let mut menu = menu.toggleable_entry(
-                                t_static(keys::edit_prediction::EDIT_PREDICTION_EXPERIMENT_DEFAULT),
+                                "Default",
                                 preferred_for_submenu.is_none(),
                                 IconPosition::Start,
                                 None,
@@ -1946,7 +1946,7 @@ mod tests {
         ] {
             let mut text = format!(
                 r#"// "disabled_globs": ["commented/**"]
-{{t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES):{{"Rust":{{"disabled_globs":["nested/**"]}}}},
+{{"languages":{{"Rust":{{"disabled_globs":["nested/**"]}}}},
 /* "disabled_globs": ["commented/**"] */
 "edit_predictions":{{"disabled_globs":[{contents}],"mode":"subtle"}}}}"#
             );

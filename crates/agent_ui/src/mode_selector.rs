@@ -139,7 +139,7 @@ impl Render for ModeSelector {
             .iter()
             .find(|mode| mode.value == current_mode_id)
             .map(|mode| mode.name.clone())
-            .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
+            .unwrap_or_else(|| "Unknown".into());
 
         let this = cx.weak_entity();
 

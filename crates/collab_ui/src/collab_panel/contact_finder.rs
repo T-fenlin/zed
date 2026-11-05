@@ -39,7 +39,7 @@ impl Render for ContactFinder {
                     .bg(cx.theme().colors().element_background)
                     // HACK: Prevent the background color from overflowing the parent container.
                     .rounded_t(px(8.))
-                    .child(Label::new(t(keys::collab::COLLAB_CONTACTS)))
+                    .child(Label::new(t_static(keys::collab::COLLAB_CONTACTS)))
                     .child(h_flex().child(Label::new(t(keys::collab::COLLAB_INVITE_NEW_CONTACTS)))),
             )
             .child(self.picker.clone())

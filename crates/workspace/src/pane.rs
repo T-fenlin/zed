@@ -2339,8 +2339,8 @@ impl Pane {
             if has_deleted_file && is_singleton {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
-                    let save = t(keys::prompt::PROMPT_SAVE);
-                    let close = t(keys::prompt::PROMPT_CLOSE);
+                    let save = "Save";
+                    let close = "Close";
                     window.prompt(
                         PromptLevel::Warning,
                         &deleted_message,
@@ -2376,7 +2376,7 @@ impl Pane {
             } else {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
-                    let overwrite = t(keys::prompt::PROMPT_OVERWRITE);
+                    let overwrite = "Overwrite";
                     let discard_edits = t(keys::prompt::PROMPT_DISCARD_EDITS);
                     window.prompt(
                         PromptLevel::Warning,
@@ -2421,7 +2421,7 @@ impl Pane {
                         if pane.save_modals_spawned.insert(item_id) {
                             pane.activate_item(item_ix, true, true, window, cx);
                             let prompt = dirty_message_for(item.project_path(cx), path_style);
-                            let save = t(keys::prompt::PROMPT_SAVE);
+                            let save = "Save";
                             let dont_save = t(keys::prompt::PROMPT_DONT_SAVE);
                             Some(window.prompt(
                                 PromptLevel::Warning,
@@ -3189,7 +3189,7 @@ impl Pane {
                     if let Some(pane) = pane.upgrade() {
                         menu = menu
                             .entry(
-                                t_static(keys::workspace::WS_B_CLOSE),
+                                "Close",
                                 Some(Box::new(close_active_item_action)),
                                 window.handler_for(&pane, move |pane, window, cx| {
                                     pane.close_item_by_id(item_id, SaveIntent::Close, window, cx)

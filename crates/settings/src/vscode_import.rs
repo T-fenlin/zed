@@ -329,7 +329,7 @@ impl VsCodeSettings {
                 "editor.find.seedSearchStringFromSelection",
                 |s| match s {
                     "always" => Some(SeedQuerySetting::Always),
-                    t_static(keys::agent::AGENT_B_SELECTION) => Some(SeedQuerySetting::Selection),
+                    "selection" => Some(SeedQuerySetting::Selection),
                     "never" => Some(SeedQuerySetting::Never),
                     _ => None,
                 },
@@ -634,7 +634,7 @@ impl VsCodeSettings {
                 Some(match s {
                     "boundary" => ShowWhitespaceSetting::Boundary,
                     "trailing" => ShowWhitespaceSetting::Trailing,
-                    t_static(keys::agent::AGENT_B_SELECTION) => ShowWhitespaceSetting::Selection,
+                    "selection" => ShowWhitespaceSetting::Selection,
                     "all" => ShowWhitespaceSetting::All,
                     _ => ShowWhitespaceSetting::None,
                 })

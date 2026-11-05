@@ -581,7 +581,7 @@ fn render_registry_agent_button(
             .color(Color::Success)
             .into_any_element()
     } else {
-        Label::new(t(keys::agent::AGENT_A_REGISTRY_INSTALL))
+        Label::new("Install")
             .size(LabelSize::XSmall)
             .color(Color::Muted)
             .into_any_element()

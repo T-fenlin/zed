@@ -246,10 +246,7 @@ impl Component for Callout {
             h_flex()
                 .gap_0p5()
                 .child(Button::new("update", "Backup & Update").label_size(LabelSize::Small))
-                .child(
-                    Button::new("dismiss", t_static(keys::ui::UI_DISMISS))
-                        .label_size(LabelSize::Small),
-                )
+                .child(Button::new("dismiss", "Dismiss").label_size(LabelSize::Small))
         };
 
         let basic_examples = vec![

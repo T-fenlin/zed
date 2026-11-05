@@ -165,7 +165,9 @@ impl RenderOnce for ModelSelectorListItem {
                             .when(is_disabled, |this| this.color(Color::Disabled))
                             .truncate(),
                     )
-                    .when(self.is_latest, |parent| parent.child(Chip::new(t(keys::agent::AGENT_MODELS_LATEST))))
+                    .when(self.is_latest, |parent| {
+                        parent.child(Chip::new(t_static(keys::agent::AGENT_MODELS_LATEST)))
+                    })
                     .when_some(self.cost_info, |this, cost_info| {
                         let tooltip_text = if cost_info.ends_with('×') {
                             format!("Cost Multiplier: {}", cost_info)
@@ -193,9 +195,17 @@ impl RenderOnce for ModelSelectorListItem {
                 this.end_slot_on_hover(div().pr_1p5().when_some(self.on_toggle_favorite, {
                     |this, handle_click| {
                         let (icon, color, tooltip) = if is_favorite {
-                            (IconName::StarFilled, Color::Accent, t(keys::agent::AGENT_MODELS_UNFAVORITE))
+                            (
+                                IconName::StarFilled,
+                                Color::Accent,
+                                t(keys::agent::AGENT_MODELS_UNFAVORITE),
+                            )
                         } else {
-                            (IconName::Star, Color::Default, t(keys::agent::AGENT_MODELS_FAVORITE))
+                            (
+                                IconName::Star,
+                                Color::Default,
+                                t(keys::agent::AGENT_MODELS_FAVORITE),
+                            )
                         };
                         this.child(
                             IconButton::new(("toggle-favorite", self.index), icon)
@@ -239,7 +249,7 @@ impl RenderOnce for ModelSelectorFooter {
             .border_t_1()
             .border_color(cx.theme().colors().border_variant)
             .child(
-                Button::new("configure", t(keys::agent::AGENT_B_CONFIGURE))
+                Button::new("configure", "Configure")
                     .full_width()
                     .style(ButtonStyle::Outlined)
                     .key_binding(

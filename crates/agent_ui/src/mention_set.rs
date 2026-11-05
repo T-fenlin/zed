@@ -1174,7 +1174,7 @@ pub(crate) fn paste_images_as_context(
 
     Some(window.spawn(cx, async move |mut cx| {
         use itertools::Itertools;
-        let default_name: SharedString = t(keys::agent::AGENT_THREAD_IMAGE).into();
+        let default_name: SharedString = t_static(keys::agent::AGENT_THREAD_IMAGE).into();
         let (mut images, paths): (Vec<(gpui::Image, SharedString)>, Vec<_>) = clipboard
             .into_entries()
             .filter_map(|entry| match entry {

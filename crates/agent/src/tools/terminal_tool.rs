@@ -3387,11 +3387,7 @@ mod tests {
                     "Allow always",
                     acp_v2::PermissionOptionKind::AllowAlways,
                 ),
-                (
-                    "deny",
-                    t_static(keys::agent::AGENT_THREAD_DENY),
-                    acp_v2::PermissionOptionKind::RejectOnce
-                ),
+                ("deny", "Deny", acp_v2::PermissionOptionKind::RejectOnce),
             ]
         );
 
@@ -3493,11 +3489,7 @@ mod tests {
                     "Allow always",
                     acp_v2::PermissionOptionKind::AllowAlways,
                 ),
-                (
-                    "deny",
-                    t_static(keys::agent::AGENT_THREAD_DENY),
-                    acp_v2::PermissionOptionKind::RejectOnce
-                ),
+                ("deny", "Deny", acp_v2::PermissionOptionKind::RejectOnce),
             ]
         );
 

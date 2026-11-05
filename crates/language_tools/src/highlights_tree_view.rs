@@ -916,7 +916,7 @@ impl Item for HighlightsTreeView {
     fn to_item_events(_: &Self::Event, _: &mut dyn FnMut(workspace::item::ItemEvent)) {}
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        t(keys::lang::LANG_TOOLS_HIGHLIGHTS_TAB).into()
+        "Highlights".into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {

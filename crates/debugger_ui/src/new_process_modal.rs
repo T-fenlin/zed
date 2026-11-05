@@ -552,7 +552,7 @@ pub(crate) enum NewProcessMode {
 impl std::fmt::Display for NewProcessMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mode = match self {
-            NewProcessMode::Task => t_static(keys::debugger::DEBUGGER_MODE_RUN),
+            NewProcessMode::Task => "Run",
             NewProcessMode::Debug => t_static(keys::debugger::DEBUGGER_MODE_DEBUG),
             NewProcessMode::Attach => t_static(keys::debugger::DEBUGGER_MODE_ATTACH),
             NewProcessMode::Launch => t_static(keys::debugger::DEBUGGER_MODE_LAUNCH),
@@ -761,19 +761,22 @@ impl Render for NewProcessModal {
                                 ),
                             )
                             .child(
-                                Button::new("debugger-spawn", t(keys::debugger::DEBUGGER_START))
-                                    .on_click(cx.listener(|this, _, window, cx| {
-                                        this.start_new_session(window, cx)
-                                    }))
-                                    .disabled(
-                                        self.debugger.is_none()
-                                            || self
-                                                .configure_mode
-                                                .read(cx)
-                                                .program
-                                                .read(cx)
-                                                .is_empty(cx),
-                                    ),
+                                Button::new(
+                                    "debugger-spawn",
+                                    t_static(keys::debugger::DEBUGGER_START),
+                                )
+                                .on_click(cx.listener(|this, _, window, cx| {
+                                    this.start_new_session(window, cx)
+                                }))
+                                .disabled(
+                                    self.debugger.is_none()
+                                        || self
+                                            .configure_mode
+                                            .read(cx)
+                                            .program
+                                            .read(cx)
+                                            .is_empty(cx),
+                                ),
                             ),
                     ),
                     NewProcessMode::Attach => el.child({
@@ -843,7 +846,7 @@ impl ConfigureMode {
     pub(super) fn new(window: &mut Window, cx: &mut App) -> Entity<Self> {
         let program = cx.new(|cx| {
             InputField::new(window, cx, "ENV=Zed ~/bin/program --option")
-                .label(t(keys::debugger::DEBUGGER_PROGRAM))
+                .label("Program")
                 .tab_stop(true)
                 .tab_index(1)
         });
@@ -951,9 +954,7 @@ impl ConfigureMode {
             .child(
                 h_flex()
                     .gap_1()
-                    .child(
-                        Label::new(t(keys::debugger::DEBUGGER_DEBUGGER_LABEL)).color(Color::Muted),
-                    )
+                    .child(Label::new("Debugger:").color(Color::Muted))
                     .child(adapter_menu),
             )
             .child(self.program.clone())
@@ -1361,7 +1362,7 @@ impl PickerDelegate for DebugDelegate {
 
         let args = args.collect::<Vec<_>>();
         let task = task::TaskTemplate {
-            label: t(keys::debugger::DEBUGGER_ONE_OFF).to_owned(), // TODO: rename using command as label
+            label: "one-off".to_owned(), // TODO: rename using command as label
             env,
             command: program,
             args,
@@ -1557,7 +1558,7 @@ impl PickerDelegate for DebugDelegate {
                         let run_entry_label = if is_recent_selected {
                             t_static(keys::debugger::DEBUGGER_RERUN)
                         } else {
-                            t_static(keys::debugger::DEBUGGER_SPAWN)
+                            "Spawn"
                         };
 
                         Button::new("spawn", run_entry_label)

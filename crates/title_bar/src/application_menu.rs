@@ -527,7 +527,7 @@ mod tests {
         cx.update(|cx| {
             cx.set_menus(vec![
                 Menu::new("Zed").items([MenuItem::action(
-                    t_static(keys::titlebar::TITLEBAR_MENU_SETTINGS),
+                    "Settings",
                     OpenApplicationMenu(String::new()),
                 )]),
                 view_menu(true),

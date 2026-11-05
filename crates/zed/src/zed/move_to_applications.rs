@@ -77,8 +77,8 @@ impl MoveToApplicationsRequest {
                 t_static(keys::zed::ZED_B_MOVE_TITLE),
                 Some(t_static(keys::zed::ZED_B_MOVE_DESCRIPTION)),
                 &[
-                    PromptButton::ok(t_static(keys::zed::ZED_B_MOVE_YES)),
-                    PromptButton::cancel(t_static(keys::zed::ZED_B_MOVE_NO)),
+                    PromptButton::ok("Yes"),
+                    PromptButton::cancel("No"),
                     PromptButton::new(t(keys::zed::ZED_B_MOVE_DONT_ASK)),
                 ],
             )

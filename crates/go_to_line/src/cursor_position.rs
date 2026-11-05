@@ -173,8 +173,7 @@ impl CursorPosition {
         let format = LineIndicatorFormat::get(None, cx);
         let is_short_format = format == &LineIndicatorFormat::Short;
         let lines = (lines > 1).then_some((lines, "line"));
-        let selections =
-            (selections > 1).then_some((selections, t_static(keys::agent::AGENT_B_SELECTION)));
+        let selections = (selections > 1).then_some((selections, "selection"));
         let characters = (characters > 0).then_some((characters, "character"));
         if (None, None, None) == (characters, selections, lines) {
             // Nothing to display.

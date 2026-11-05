@@ -430,7 +430,7 @@ impl PickerDelegate for TemplatePickerDelegate {
                 .border_t_1()
                 .border_color(cx.theme().colors().border_variant)
                 .child(
-                    Button::new("run-action", t(keys::app_menu::MENU_RUN_CONTINUE))
+                    Button::new("run-action", "Continue")
                         .key_binding(
                             KeyBinding::for_action(&menu::Confirm, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -924,7 +924,7 @@ impl DevContainerModal {
                                     );
                                     cx.notify();
                                 }))
-                                .child(Label::new(t(keys::prompt::PROMPT_OVERWRITE))),
+                                .child(Label::new("Overwrite")),
                         ),
                 )
                 .child(
@@ -945,7 +945,7 @@ impl DevContainerModal {
                                     this.dismiss(&menu::Cancel, window, cx);
                                     cx.notify();
                                 }))
-                                .child(Label::new(t(keys::agent::AGENT_THREAD_CANCEL))),
+                                .child(Label::new("Cancel")),
                         ),
                 )
                 .into_any_element(),

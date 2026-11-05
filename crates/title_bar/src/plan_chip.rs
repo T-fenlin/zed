@@ -32,7 +32,7 @@ impl RenderOnce for PlanChip {
 
         let (plan_name, label_color, bg_color) = match self.plan {
             Plan::ZedFree => (
-                t(keys::titlebar::TITLEBAR_PLAN_FREE),
+                t_static(keys::titlebar::TITLEBAR_PLAN_FREE),
                 Color::Default,
                 free_chip_bg,
             ),
@@ -42,18 +42,18 @@ impl RenderOnce for PlanChip {
                 pro_chip_bg,
             ),
             Plan::ZedPro => (
-                t(keys::titlebar::TITLEBAR_PLAN_PRO),
+                t_static(keys::titlebar::TITLEBAR_PLAN_PRO),
                 Color::Accent,
                 pro_chip_bg,
             ),
             Plan::ZedBusiness => (
-                t(keys::titlebar::TITLEBAR_PLAN_BUSINESS),
+                t_static(keys::titlebar::TITLEBAR_PLAN_BUSINESS),
                 Color::Accent,
                 pro_chip_bg,
             ),
             Plan::ZedVip => ("VIP".to_string(), Color::Accent, pro_chip_bg),
             Plan::ZedStudent => (
-                t(keys::titlebar::TITLEBAR_PLAN_STUDENT),
+                t_static(keys::titlebar::TITLEBAR_PLAN_STUDENT),
                 Color::Accent,
                 pro_chip_bg,
             ),

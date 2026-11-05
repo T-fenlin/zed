@@ -3318,7 +3318,7 @@ impl ConversationView {
         let action_slot = h_flex()
             .gap_1()
             .child(
-                Button::new("retry-agent-launch", t(keys::agent::AGENT_RETRY))
+                Button::new("retry-agent-launch", "Retry")
                     .tooltip(Tooltip::text(t(keys::agent::AGENT_RESTART_HINT)))
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.retry_connection(window, cx);
@@ -4292,9 +4292,9 @@ fn plan_summary_label(stats: &acp_thread::PlanStats<'_>, entry_count: usize) -> 
         if stats.cancelled == 0 {
             "All Done"
         } else if stats.completed == 0 {
-            t(keys::agent::AGENT_PLAN_CANCELLED)
+            t_static(keys::agent::AGENT_PLAN_CANCELLED)
         } else {
-            t(keys::agent::AGENT_PLAN_FINISHED)
+            t_static(keys::agent::AGENT_PLAN_FINISHED)
         }
         .to_owned()
     } else if stats.completed == 0 {
@@ -8759,7 +8759,7 @@ pub(crate) mod tests {
                 tool_call_id,
                 PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                     "1",
-                    t_static(keys::agent::AGENT_THREAD_ALLOW),
+                    "Allow",
                     acp_v2::PermissionOptionKind::AllowOnce,
                 )]),
             )]));
@@ -12856,7 +12856,7 @@ pub(crate) mod tests {
                     ),
                     PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                         "allow-review",
-                        t_static(keys::agent::AGENT_THREAD_ALLOW),
+                        "Allow",
                         acp_v2::PermissionOptionKind::AllowOnce,
                     )]),
                     acp_thread::AuthorizationKind::PermissionGrant,
@@ -17129,7 +17129,7 @@ pub(crate) mod tests {
             ),
             acp_v2::PermissionOption::new(
                 acp_v2::PermissionOptionId::new("deny"),
-                t_static(keys::agent::AGENT_THREAD_DENY),
+                "Deny",
                 acp_v2::PermissionOptionKind::RejectOnce,
             ),
         ])
@@ -17534,7 +17534,7 @@ pub(crate) mod tests {
             tool_call_id,
             PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                 acp_v2::PermissionOptionId::new(option_id),
-                t_static(keys::agent::AGENT_THREAD_ALLOW),
+                "Allow",
                 acp_v2::PermissionOptionKind::AllowOnce,
             )]),
             cx,
@@ -18540,7 +18540,7 @@ pub(crate) mod tests {
                         acp_v1::ToolCall::new("queued-tool", "Queued permission").into(),
                         PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                             "allow-child",
-                            t_static(keys::agent::AGENT_THREAD_ALLOW),
+                            "Allow",
                             acp_v2::PermissionOptionKind::AllowOnce,
                         )]),
                         acp_thread::AuthorizationKind::PermissionGrant,
@@ -19512,7 +19512,7 @@ pub(crate) mod tests {
                 tool_call_id_value.clone(),
                 PermissionOptions::Flat(vec![acp_v2::PermissionOption::new(
                     "allow",
-                    t_static(keys::agent::AGENT_THREAD_ALLOW),
+                    "Allow",
                     acp_v2::PermissionOptionKind::AllowOnce,
                 )]),
             )]));
@@ -20453,10 +20453,7 @@ pub(crate) mod tests {
         let label = |thread: &Entity<AcpThread>, cx: &mut TestAppContext| {
             thread.read_with(cx, |thread, _| thread_view::subagent_label(thread))
         };
-        assert_eq!(
-            label(&native_child, cx),
-            t(keys::agent::AGENT_THREAD_SUBAGENT)
-        );
+        assert_eq!(label(&native_child, cx), "Subagent");
 
         for thread in [&native_child, &acp_child] {
             thread.update(cx, |thread, cx| {

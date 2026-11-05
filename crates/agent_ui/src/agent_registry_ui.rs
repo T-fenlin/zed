@@ -356,7 +356,7 @@ impl AgentRegistryPage {
             .when_some(fetch_error, |this, _| {
                 let registry_store = self.registry_store.clone();
                 this.child(
-                    Button::new("retry-agent-registry", t(keys::agent::AGENT_RETRY))
+                    Button::new("retry-agent-registry", "Retry")
                         .style(ButtonStyle::Outlined)
                         .size(ButtonSize::Compact)
                         .on_click(move |_, _, cx| {
@@ -532,16 +532,19 @@ impl AgentRegistryPage {
         let button_id = SharedString::from(format!("install-agent-{}", agent.id()));
 
         if !supports_current_platform {
-            return Button::new(button_id, t(keys::agent::AGENT_A_REGISTRY_UNAVAILABLE))
-                .style(ButtonStyle::OutlinedGhost)
-                .disabled(true);
+            return Button::new(
+                button_id,
+                t_static(keys::agent::AGENT_A_REGISTRY_UNAVAILABLE),
+            )
+            .style(ButtonStyle::OutlinedGhost)
+            .disabled(true);
         }
 
         match install_status {
             RegistryInstallStatus::NotInstalled => {
                 let fs = <dyn Fs>::global(cx);
                 let agent_id = agent.id().to_string();
-                Button::new(button_id, t(keys::agent::AGENT_A_REGISTRY_INSTALL))
+                Button::new(button_id, "Install")
                     .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                     .start_icon(
                         Icon::new(IconName::Download)
@@ -574,7 +577,7 @@ impl AgentRegistryPage {
             RegistryInstallStatus::InstalledRegistry => {
                 let fs = <dyn Fs>::global(cx);
                 let agent_id = agent.id().to_string();
-                Button::new(button_id, t(keys::agent::AGENT_A_REGISTRY_REMOVE))
+                Button::new(button_id, "Remove")
                     .style(ButtonStyle::OutlinedGhost)
                     .on_click(move |_, _, cx| {
                         let agent_id = agent_id.clone();
@@ -593,11 +596,9 @@ impl AgentRegistryPage {
                         });
                     })
             }
-            RegistryInstallStatus::InstalledCustom => {
-                Button::new(button_id, t(keys::agent::AGENT_A_REGISTRY_INSTALLED))
-                    .style(ButtonStyle::OutlinedGhost)
-                    .disabled(true)
-            }
+            RegistryInstallStatus::InstalledCustom => Button::new(button_id, "Installed")
+                .style(ButtonStyle::OutlinedGhost)
+                .disabled(true),
         }
     }
 }
@@ -645,7 +646,7 @@ impl Render for AgentRegistryPage {
                                         "registry-filter-buttons",
                                         [
                                             ToggleButtonSimple::new(
-                                                t(keys::agent::AGENT_ALL_MODELS),
+                                                "All",
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = RegistryFilter::All;
                                                     this.filter_registry_agents(cx);
@@ -653,7 +654,7 @@ impl Render for AgentRegistryPage {
                                                 }),
                                             ),
                                             ToggleButtonSimple::new(
-                                                t(keys::agent::AGENT_A_REGISTRY_INSTALLED),
+                                                "Installed",
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = RegistryFilter::Installed;
                                                     this.filter_registry_agents(cx);

@@ -13,6 +13,7 @@ path = "src/component.rs"
 test = false
 
 [dependencies]
+i18n.workspace = true
 collections.workspace = true
 gpui.workspace = true
 inventory.workspace = true

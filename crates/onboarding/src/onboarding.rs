@@ -497,7 +497,7 @@ pub async fn handle_import_vscode_settings(
         };
 
     if !skip_prompt {
-        let import = t(keys::prompt::PROMPT_IMPORT);
+        let import = "Import";
         let prompt_message = t_with_args(
             keys::prompt::PROMPT_IMPORT_VSCODE_SETTINGS,
             &[

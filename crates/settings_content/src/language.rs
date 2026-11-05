@@ -713,7 +713,7 @@ pub struct LanguageSettingsContent {
     /// ```json
     /// {
     ///   "edit_predictions_disabled_in": ["comment"],
-    ///   t_static(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES): {
+    ///   "languages": {
     ///     "Go": {
     ///       "edit_predictions_disabled_in": ["string", "..."]
     ///     }

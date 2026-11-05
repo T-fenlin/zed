@@ -197,7 +197,7 @@ impl RenderOnce for SandboxStatusTooltip {
         v_flex()
             .w(rems_from_px(280_f32))
             .gap_1()
-            .child(Label::new(t(keys::agent::AGENT_SANDBOXING)))
+            .child(Label::new(t_static(keys::agent::AGENT_SANDBOXING)))
             .child(content)
     }
 }
@@ -240,7 +240,7 @@ impl Component for SandboxStatusTooltip {
             )
             .group(
                 SandboxGroup::new(t(keys::agent::AGENT_THREAD_NETWORK_ACCESS))
-                    .row(SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))),
+                    .row(SandboxRow::message("None")),
             );
 
         let unrestricted_section =

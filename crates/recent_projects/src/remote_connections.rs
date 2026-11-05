@@ -319,7 +319,7 @@ pub async fn open_remote_project(
                 };
                 let response = window
                     .update(cx, |_, window, cx| {
-                        let retry = t(keys::agent::AGENT_A_REGISTRY_RETRY);
+                        let retry = "Retry";
                         window.prompt(
                             PromptLevel::Critical,
                             &failure_message,
@@ -381,7 +381,7 @@ pub async fn open_remote_project(
                 };
                 let response = window
                     .update(cx, |_, window, cx| {
-                        let retry = t(keys::agent::AGENT_A_REGISTRY_RETRY);
+                        let retry = "Retry";
                         window.prompt(
                             PromptLevel::Critical,
                             &failure_message,

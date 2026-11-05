@@ -169,7 +169,7 @@ impl SkillCreatorPage {
 
         let name_editor = cx.new(|cx| {
             InputField::new(window, cx, "my-new-skill")
-                .label(t(keys::settings_ui::SETTINGS_A_SKILL_NAME_LABEL))
+                .label(t_static(keys::settings_ui::SETTINGS_A_SKILL_NAME_LABEL))
                 .tab_index(NAME_FIELD_TAB_INDEX)
                 .tab_stop(true)
         });
@@ -182,7 +182,7 @@ impl SkillCreatorPage {
                 cx,
                 &t(keys::settings_ui::SETTINGS_A_SKILL_DESCRIPTION_PLACEHOLDER),
             )
-            .label(t(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION))
+            .label("Description")
             .tab_index(DESCRIPTION_FIELD_TAB_INDEX)
             .tab_stop(true)
         });
@@ -713,10 +713,7 @@ impl SkillCreatorPage {
                     .child(Label::new(t(
                         keys::settings_ui::SETTINGS_A_SKILL_IMPORT_FROM_URL,
                     )))
-                    .child(
-                        Label::new(t(keys::settings_ui::SETTINGS_A_SKILL_OPTIONAL))
-                            .color(Color::Muted),
-                    ),
+                    .child(Label::new("(optional)").color(Color::Muted)),
             )
             .child(self.url_editor.clone())
             .child(match &self.url_import_status {
@@ -854,7 +851,7 @@ impl SkillCreatorPage {
     fn render_footer(&self, _window: &Window, cx: &mut Context<Self>) -> impl IntoElement {
         let saving = self.saving;
         let main_action = if saving {
-            t(keys::settings_ui::SETTINGS_A_SKILL_SAVING)
+            t_static(keys::settings_ui::SETTINGS_A_SKILL_SAVING)
         } else {
             t(keys::settings_ui::SETTINGS_A_SKILL_SAVE_SKILL)
         };

@@ -1408,12 +1408,12 @@ impl Component for ElicitationCardPreview {
                     "Terminal States",
                     vec![
                         single_example(
-                            t(keys::agent::AGENT_A_ELICIT_STATUS_DECLINED),
+                            t_static(keys::agent::AGENT_A_ELICIT_STATUS_DECLINED),
                             render_form_preview(6, ElicitationStatus::Declined, &[], window, cx),
                         )
                         .width(px(640.)),
                         single_example(
-                            t(keys::agent::AGENT_A_ELICIT_STATUS_CANCELED),
+                            t_static(keys::agent::AGENT_A_ELICIT_STATUS_CANCELED),
                             render_form_preview(7, ElicitationStatus::Canceled, &[], window, cx),
                         )
                         .width(px(640.)),
@@ -2093,29 +2093,33 @@ impl<'a> ElicitationCard<'a> {
             (ElicitationStatus::Accepted, acp::ElicitationMode::Url(_))
         );
         let (status_label, status_icon, status_color) = match &self.elicitation.status {
-            ElicitationStatus::Pending { .. } => ("Waiting for input", IconName::Info, Color::Info),
+            ElicitationStatus::Pending { .. } => (
+                t_static(keys::agent::AGENT_A_ELICIT_STATUS_WAITING_INPUT),
+                IconName::Info,
+                Color::Info,
+            ),
             ElicitationStatus::Accepted if is_accepted_url => (
                 t(keys::agent::AGENT_A_ELICIT_STATUS_WAITING_COMPLETION),
                 IconName::Info,
                 Color::Info,
             ),
             ElicitationStatus::Accepted => (
-                t(keys::agent::AGENT_A_ELICIT_STATUS_SUBMITTED),
+                t_static(keys::agent::AGENT_A_ELICIT_STATUS_SUBMITTED),
                 IconName::Check,
                 Color::Success,
             ),
             ElicitationStatus::Declined => (
-                t(keys::agent::AGENT_A_ELICIT_STATUS_DECLINED),
+                t_static(keys::agent::AGENT_A_ELICIT_STATUS_DECLINED),
                 IconName::Close,
                 Color::Muted,
             ),
             ElicitationStatus::Canceled => (
-                t(keys::agent::AGENT_A_ELICIT_STATUS_CANCELED),
+                t_static(keys::agent::AGENT_A_ELICIT_STATUS_CANCELED),
                 IconName::Circle,
                 Color::Muted,
             ),
             ElicitationStatus::Completed => (
-                t(keys::agent::AGENT_A_ELICIT_STATUS_COMPLETED),
+                t_static(keys::agent::AGENT_A_ELICIT_STATUS_COMPLETED),
                 IconName::Check,
                 Color::Success,
             ),
@@ -2457,7 +2461,7 @@ impl<'a> ElicitationCard<'a> {
                             h_flex()
                                 .gap_1()
                                 .child(
-                                    Label::new(t(keys::agent::AGENT_A_ELICIT_DESTINATION))
+                                    Label::new(t_static(keys::agent::AGENT_A_ELICIT_DESTINATION))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted),
                                 )
@@ -2530,11 +2534,7 @@ impl<'a> ElicitationCard<'a> {
                 Color::Muted,
             )
         } else if open_url.is_some() {
-            (
-                t_static(keys::agent::AGENT_A_ELICIT_OPEN),
-                IconName::ArrowUpRight,
-                Color::Muted,
-            )
+            ("Open", IconName::ArrowUpRight, Color::Muted)
         } else {
             ("Submit", IconName::Check, Color::Success)
         };
@@ -2579,44 +2579,35 @@ impl<'a> ElicitationCard<'a> {
             )
             .when(!is_accepted_url, |this| {
                 this.child(
-                    Button::new(
-                        ("elicitation-decline", self.entry_ix),
-                        t(keys::agent::AGENT_A_ELICIT_DECLINE),
-                    )
-                    .tab_index(0_isize)
-                    .start_icon(
-                        Icon::new(IconName::Close)
-                            .size(IconSize::XSmall)
-                            .color(Color::Error),
-                    )
-                    .label_size(LabelSize::Small)
-                    .on_click(move |_, window, cx| {
-                        on_decline(decline_id.clone(), window, cx);
-                    }),
+                    Button::new(("elicitation-decline", self.entry_ix), "Decline")
+                        .tab_index(0_isize)
+                        .start_icon(
+                            Icon::new(IconName::Close)
+                                .size(IconSize::XSmall)
+                                .color(Color::Error),
+                        )
+                        .label_size(LabelSize::Small)
+                        .on_click(move |_, window, cx| {
+                            on_decline(decline_id.clone(), window, cx);
+                        }),
                 )
                 .child(
-                    Button::new(
-                        ("elicitation-cancel", self.entry_ix),
-                        t(keys::agent::AGENT_THREAD_CANCEL),
-                    )
-                    .tab_index(0_isize)
-                    .label_size(LabelSize::Small)
-                    .on_click(move |_, window, cx| {
-                        on_cancel(cancel_id.clone(), window, cx);
-                    }),
+                    Button::new(("elicitation-cancel", self.entry_ix), "Cancel")
+                        .tab_index(0_isize)
+                        .label_size(LabelSize::Small)
+                        .on_click(move |_, window, cx| {
+                            on_cancel(cancel_id.clone(), window, cx);
+                        }),
                 )
             })
             .when(is_accepted_url, |this| {
                 this.child(
-                    Button::new(
-                        ("elicitation-dismiss-url", self.entry_ix),
-                        t(keys::agent::AGENT_THREAD_CANCEL),
-                    )
-                    .tab_index(0_isize)
-                    .label_size(LabelSize::Small)
-                    .on_click(move |_, window, cx| {
-                        on_dismiss_url(dismiss_id.clone(), window, cx);
-                    }),
+                    Button::new(("elicitation-dismiss-url", self.entry_ix), "Cancel")
+                        .tab_index(0_isize)
+                        .label_size(LabelSize::Small)
+                        .on_click(move |_, window, cx| {
+                            on_dismiss_url(dismiss_id.clone(), window, cx);
+                        }),
                 )
             })
             .into_any_element()

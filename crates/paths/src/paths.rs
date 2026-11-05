@@ -1,6 +1,5 @@
 //! Paths to locations used by Zed.
 
-use i18n::{keys, t_static};
 use std::env;
 use std::path::{Path, PathBuf};
 use std::sync::{LazyLock, OnceLock};
@@ -348,11 +347,7 @@ pub const GLOBAL_AGENTS_FILE_DISPLAY: &str =
 /// This is where installed extensions are stored.
 pub fn extensions_dir() -> &'static PathBuf {
     static EXTENSIONS_DIR: OnceLock<PathBuf> = OnceLock::new();
-    EXTENSIONS_DIR.get_or_init(|| {
-        data_dir().join(t_static(
-            keys::settings_ui::SETTINGS_GENERAL_SECTION_EXTENSIONS,
-        ))
-    })
+    EXTENSIONS_DIR.get_or_init(|| data_dir().join("extensions"))
 }
 
 /// Returns the path to the extensions directory.
@@ -445,11 +440,7 @@ pub fn embeddings_dir() -> &'static PathBuf {
 /// This is where language servers are downloaded to for languages built-in to Zed.
 pub fn languages_dir() -> &'static PathBuf {
     static LANGUAGES_DIR: OnceLock<PathBuf> = OnceLock::new();
-    LANGUAGES_DIR.get_or_init(|| {
-        data_dir().join(t_static(
-            keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LANGUAGES,
-        ))
-    })
+    LANGUAGES_DIR.get_or_init(|| data_dir().join("languages"))
 }
 
 /// Returns the path to the debug adapters directory

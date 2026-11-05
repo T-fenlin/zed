@@ -551,7 +551,7 @@ impl Item for AgentDiffPane {
             move |_, _| {
                 v_flex()
                     .child(Label::new(title.clone().unwrap_or_else(|| {
-                        t(keys::agent::AGENT_THREAD_REVIEW).to_string()
+                        t_static(keys::agent::AGENT_THREAD_REVIEW).to_string()
                     })))
                     .child(
                         Label::new(t(keys::agent::AGENT_DIFF_TITLE))
@@ -685,7 +685,7 @@ impl Item for AgentDiffPane {
     fn tab_content_text(&self, _detail: usize, cx: &App) -> SharedString {
         match self.thread.read(cx).title() {
             Some(title) => format!("Review: {}", truncate_and_trailoff(&title, 20)).into(),
-            None => t(keys::agent::AGENT_THREAD_REVIEW).into(),
+            None => t_static(keys::agent::AGENT_THREAD_REVIEW).into(),
         }
     }
 }
@@ -819,52 +819,58 @@ fn render_diff_hunk_controls(
         .block_mouse_except_scroll()
         .when(opaque_window, |this| this.shadow_md())
         .children(vec![
-            Button::new(("reject", row as u64), t(keys::agent::AGENT_THREAD_REJECT))
-                .disabled(is_created_file)
-                .key_binding(
-                    KeyBinding::for_action_in(&Reject, &editor.read(cx).focus_handle(cx), cx)
-                        .map(|kb| kb.size(rems_from_px(12_f32))),
-                )
-                .on_click({
-                    let editor = editor.clone();
-                    let thread = thread.clone();
-                    move |_event, window, cx| {
-                        editor.update(cx, |editor, cx| {
-                            let snapshot = editor.buffer().read(cx).snapshot(cx);
-                            reject_edits_in_ranges(
-                                editor,
-                                &snapshot,
-                                &thread,
-                                vec![hunk_range.start..hunk_range.start],
-                                workspace.clone(),
-                                window,
-                                cx,
-                            );
-                        })
-                    }
-                }),
-            Button::new(("keep", row as u64), t(keys::agent::AGENT_THREAD_KEEP))
-                .key_binding(
-                    KeyBinding::for_action_in(&Keep, &editor.read(cx).focus_handle(cx), cx)
-                        .map(|kb| kb.size(rems_from_px(12_f32))),
-                )
-                .on_click({
-                    let editor = editor.clone();
-                    let thread = thread.clone();
-                    move |_event, window, cx| {
-                        editor.update(cx, |editor, cx| {
-                            let snapshot = editor.buffer().read(cx).snapshot(cx);
-                            keep_edits_in_ranges(
-                                editor,
-                                &snapshot,
-                                &thread,
-                                vec![hunk_range.start..hunk_range.start],
-                                window,
-                                cx,
-                            );
-                        });
-                    }
-                }),
+            Button::new(
+                ("reject", row as u64),
+                t_static(keys::agent::AGENT_THREAD_REJECT),
+            )
+            .disabled(is_created_file)
+            .key_binding(
+                KeyBinding::for_action_in(&Reject, &editor.read(cx).focus_handle(cx), cx)
+                    .map(|kb| kb.size(rems_from_px(12_f32))),
+            )
+            .on_click({
+                let editor = editor.clone();
+                let thread = thread.clone();
+                move |_event, window, cx| {
+                    editor.update(cx, |editor, cx| {
+                        let snapshot = editor.buffer().read(cx).snapshot(cx);
+                        reject_edits_in_ranges(
+                            editor,
+                            &snapshot,
+                            &thread,
+                            vec![hunk_range.start..hunk_range.start],
+                            workspace.clone(),
+                            window,
+                            cx,
+                        );
+                    })
+                }
+            }),
+            Button::new(
+                ("keep", row as u64),
+                t_static(keys::agent::AGENT_THREAD_KEEP),
+            )
+            .key_binding(
+                KeyBinding::for_action_in(&Keep, &editor.read(cx).focus_handle(cx), cx)
+                    .map(|kb| kb.size(rems_from_px(12_f32))),
+            )
+            .on_click({
+                let editor = editor.clone();
+                let thread = thread.clone();
+                move |_event, window, cx| {
+                    editor.update(cx, |editor, cx| {
+                        let snapshot = editor.buffer().read(cx).snapshot(cx);
+                        keep_edits_in_ranges(
+                            editor,
+                            &snapshot,
+                            &thread,
+                            vec![hunk_range.start..hunk_range.start],
+                            window,
+                            cx,
+                        );
+                    });
+                }
+            }),
         ])
         .when(
             !editor.read(cx).buffer().read(cx).all_diff_hunks_expanded(),

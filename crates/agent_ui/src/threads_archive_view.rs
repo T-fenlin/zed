@@ -94,11 +94,11 @@ impl TimeBucket {
 
     fn label(&self) -> ui::SharedString {
         match self {
-            TimeBucket::Today => t(keys::agent::AGENT_TODAY).into(),
-            TimeBucket::Yesterday => t(keys::agent::AGENT_YESTERDAY).into(),
+            TimeBucket::Today => t_static(keys::agent::AGENT_TODAY).into(),
+            TimeBucket::Yesterday => t_static(keys::agent::AGENT_YESTERDAY).into(),
             TimeBucket::ThisWeek => t(keys::agent::AGENT_THIS_WEEK).into(),
             TimeBucket::PastWeek => t(keys::agent::AGENT_PAST_WEEK).into(),
-            TimeBucket::Older => t(keys::agent::AGENT_OLDER).into(),
+            TimeBucket::Older => t_static(keys::agent::AGENT_OLDER).into(),
         }
     }
 }
@@ -1636,7 +1636,7 @@ impl PickerDelegate for ProjectPickerDelegate {
                         })),
                 )
                 .child(
-                    Button::new("select_project", t(keys::recent::RECENT_SELECT))
+                    Button::new("select_project", "Select")
                         .disabled(!has_selection)
                         .key_binding(KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx))
                         .on_click(cx.listener(move |picker, _, window, cx| {

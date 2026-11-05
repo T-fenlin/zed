@@ -56,10 +56,7 @@ static UPDATED_SETTINGS: LazyLock<HashMap<(&str, &str), Vec<(&str, &str)>>> = La
             vec![("true", "\"always\""), ("false", "\"never\"")],
         ),
         (
-            (
-                t_static(keys::settings_ui::SETTINGS_TERMINAL_SECTION_SCROLLBAR),
-                "diagnostics",
-            ),
+            ("scrollbar", "diagnostics"),
             vec![("true", "\"all\""), ("false", "\"none\"")],
         ),
     ])

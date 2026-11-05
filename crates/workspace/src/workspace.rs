@@ -9119,7 +9119,7 @@ impl Workspace {
         div()
             .id("editor-region")
             .role(gpui::Role::Main)
-            .aria_label(t(keys::settings_ui::SETTINGS_EDITOR_EDITOR))
+            .aria_label("Editor")
             .when(window.is_a11y_active(), |this| {
                 this.track_focus(&self.region_focus_handles.editor)
             })
@@ -12073,7 +12073,7 @@ pub fn reload(cx: &mut App) {
     if let (true, Some(window)) = (should_confirm, workspace_windows.first()) {
         prompt = window
             .update(cx, |_, window, cx| {
-                let restart = t(keys::prompt::PROMPT_RESTART);
+                let restart = "Restart";
                 window.prompt(
                     PromptLevel::Info,
                     &t(keys::prompt::PROMPT_RESTART_CONFIRM),

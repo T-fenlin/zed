@@ -134,7 +134,7 @@ fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
                             gpui::PromptLevel::Critical,
                             message,
                             Some(&error_details),
-                            &[t_static(keys::zed::ZED_B_EXIT)],
+                            &["Exit"],
                             cx,
                         );
 
@@ -334,7 +334,7 @@ fn main() {
             .as_ref()
             .map(|sha| sha.short())
             .as_deref()
-            .unwrap_or(t_static(keys::lang::LANG_TOOLS_UNKNOWN)),
+            .unwrap_or("unknown"),
     );
 
     #[cfg(windows)]
@@ -841,7 +841,7 @@ fn main() {
         );
         telemetry::event!(
             "Settings Changed",
-            setting = t_static(keys::zed::ZED_A_MIGRATION_FILE_KEYMAP),
+            setting = "keymap",
             value = BaseKeymap::get_global(cx).to_string()
         );
         telemetry.flush_events().detach();

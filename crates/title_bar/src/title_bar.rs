@@ -757,11 +757,14 @@ impl TitleBar {
 
         if self.project.read(cx).is_disconnected(cx) {
             return Some(
-                Button::new("disconnected", t(keys::titlebar::TITLEBAR_DISCONNECTED))
-                    .disabled(true)
-                    .color(Color::Disabled)
-                    .label_size(LabelSize::Small)
-                    .into_any_element(),
+                Button::new(
+                    "disconnected",
+                    t_static(keys::titlebar::TITLEBAR_DISCONNECTED),
+                )
+                .disabled(true)
+                .color(Color::Disabled)
+                .label_size(LabelSize::Small)
+                .into_any_element(),
             );
         }
 
@@ -1049,7 +1052,7 @@ impl TitleBar {
                         ),
                     move |_window, cx| {
                         Tooltip::with_meta(
-                            t(keys::titlebar::TITLEBAR_WORKTREE),
+                            t_static(keys::titlebar::TITLEBAR_WORKTREE),
                             Some(&zed_actions::git::Worktree),
                             t_with_args(
                                 keys::titlebar::TITLEBAR_CURRENTLY_IN_USE,
@@ -1200,7 +1203,9 @@ impl TitleBar {
                 div()
                     .id("disconnected")
                     .child(Icon::new(IconName::Disconnected).size(IconSize::Small))
-                    .tooltip(Tooltip::text(t(keys::titlebar::TITLEBAR_DISCONNECTED)))
+                    .tooltip(Tooltip::text(t_static(
+                        keys::titlebar::TITLEBAR_DISCONNECTED,
+                    )))
                     .into_any_element(),
             ),
             client::Status::UpgradeRequired => {
@@ -1378,7 +1383,7 @@ impl TitleBar {
                         .separator()
                     })
                     .when(is_signed_in, |this| {
-                        let mut this = this.header(t(keys::titlebar::TITLEBAR_ORGANIZATION));
+                        let mut this = this.header(t_static(keys::titlebar::TITLEBAR_ORGANIZATION));
 
                         for (organization, plan) in &organizations {
                             let organization = organization.clone();
@@ -1431,16 +1436,10 @@ impl TitleBar {
 
                         this.separator()
                     })
+                    .action("Settings", zed_actions::OpenSettings.boxed_clone())
+                    .action("Keymap", Box::new(zed_actions::OpenKeymap))
                     .action(
-                        t(keys::agent::AGENT_MENU_SETTINGS),
-                        zed_actions::OpenSettings.boxed_clone(),
-                    )
-                    .action(
-                        t(keys::settings_ui::SETTINGS_KEYMAP_KEYMAP),
-                        Box::new(zed_actions::OpenKeymap),
-                    )
-                    .action(
-                        t(keys::titlebar::TITLEBAR_MENU_THEMES),
+                        t_static(keys::titlebar::TITLEBAR_MENU_THEMES),
                         zed_actions::theme_selector::Toggle::default().boxed_clone(),
                     )
                     .action(
@@ -1448,7 +1447,7 @@ impl TitleBar {
                         zed_actions::icon_theme_selector::Toggle::default().boxed_clone(),
                     )
                     .action(
-                        t(keys::app_menu::MENU_ZED_EXTENSIONS),
+                        "Extensions",
                         zed_actions::Extensions::default().boxed_clone(),
                     )
                     .when(ai_enabled, |menu| {
@@ -1456,7 +1455,7 @@ impl TitleBar {
                             t(keys::titlebar::TITLEBAR_MENU_PANEL_LAYOUT),
                             move |menu, _window, _cx| {
                                 menu.toggleable_entry(
-                                    t(keys::titlebar::TITLEBAR_MENU_LAYOUT_CLASSIC),
+                                    t_static(keys::titlebar::TITLEBAR_MENU_LAYOUT_CLASSIC),
                                     is_editor,
                                     IconPosition::Start,
                                     Some(UseClassicLayout.boxed_clone()),
@@ -1465,7 +1464,7 @@ impl TitleBar {
                                     },
                                 )
                                 .toggleable_entry(
-                                    t(keys::titlebar::TITLEBAR_MENU_LAYOUT_AGENTIC),
+                                    t_static(keys::titlebar::TITLEBAR_MENU_LAYOUT_AGENTIC),
                                     is_agent,
                                     IconPosition::Start,
                                     Some(UseAgenticLayout.boxed_clone()),

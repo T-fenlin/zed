@@ -238,7 +238,7 @@ impl PickerDelegate for ExtensionVersionSelectorDelegate {
                         .gap_2()
                         .when(!is_version_compatible, |this| {
                             this.child(
-                                Label::new(t(keys::extensions::EXTENSIONS_INCOMPATIBLE))
+                                Label::new(t_static(keys::extensions::EXTENSIONS_INCOMPATIBLE))
                                     .color(Color::Muted),
                             )
                         })
