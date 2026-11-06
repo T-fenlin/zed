@@ -79,11 +79,22 @@ pub enum HighlightCategory {
 impl HighlightCategory {
     fn label(&self) -> SharedString {
         match self {
-            HighlightCategory::Text(key) => format!("text: {key:?}").into(),
+            HighlightCategory::Text(key) => t_with_args(
+                keys::lang::LANG_TOOLS_HIGHLIGHT_TEXT_LABEL,
+                &[("key", &format!("{key:?}"))],
+            )
+            .into(),
             HighlightCategory::SyntaxToken {
                 capture_name,
                 theme_key: Some(theme_key),
-            } => format!("syntax: {capture_name} \u{2192} {theme_key}").into(),
+            } => t_with_args(
+                keys::lang::LANG_TOOLS_HIGHLIGHT_SYNTAX_LABEL,
+                &[
+                    ("capture_name", &(capture_name).to_string()),
+                    ("theme_key", &(theme_key).to_string()),
+                ],
+            )
+            .into(),
             HighlightCategory::SyntaxToken {
                 capture_name,
                 theme_key: None,
@@ -113,7 +124,7 @@ impl HighlightCategory {
                         keys::lang::LANG_TOOLS_HIGHLIGHT_SEMANTIC_MODIFIERS,
                         &[("modifiers", &(modifiers).to_string())],
                     ),
-                    (None, None) => "semantic token".to_string(),
+                    (None, None) => t(keys::lang::LANG_TOOLS_HIGHLIGHT_SEMANTIC),
                 };
 
                 if let Some(theme_key) = theme_key {
@@ -916,7 +927,7 @@ impl Item for HighlightsTreeView {
     fn to_item_events(_: &Self::Event, _: &mut dyn FnMut(workspace::item::ItemEvent)) {}
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Highlights".into()
+        t(keys::lang::LANG_TOOLS_HIGHLIGHTS_TAB).into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {
@@ -1149,7 +1160,7 @@ fn excerpt_label_for(
             let full_path = file.full_path(cx);
             full_path.to_string_lossy().to_string()
         })
-        .unwrap_or_else(|| "untitled".to_string());
+        .unwrap_or_else(|| t(keys::lang::LANG_TOOLS_UNTITLED));
     path_label.into()
 }
 
@@ -1240,7 +1251,7 @@ fn build_highlight_entries(
                 .as_ref()
                 .and_then(|config| config.query.capture_names().get(capture.index as usize))
                 .map(|capture_name| SharedString::from((*capture_name).to_string()))
-                .unwrap_or_else(|| SharedString::from("unknown"));
+                .unwrap_or_else(|| t(keys::lang::LANG_TOOLS_UNKNOWN).into());
 
             let start_anchor = buffer_snapshot.anchor_before(capture.node.start_byte());
             let end_anchor = buffer_snapshot.anchor_after(capture.node.end_byte());
@@ -1332,20 +1343,20 @@ fn render_style_preview(style: HighlightStyle, selected: bool, cx: &App) -> Div 
         parts.push(format_hsla_as_hex(color));
     }
     if style.font_weight.is_some() {
-        parts.push("bold".to_string());
+        parts.push(t(keys::lang::LANG_TOOLS_STYLE_BOLD));
     }
     if style.font_style.is_some() {
-        parts.push("italic".to_string());
+        parts.push(t(keys::lang::LANG_TOOLS_STYLE_ITALIC));
     }
     if style.strikethrough.is_some() {
-        parts.push("strike".to_string());
+        parts.push(t(keys::lang::LANG_TOOLS_STYLE_STRIKE));
     }
     if style.underline.is_some() {
-        parts.push("underline".to_string());
+        parts.push(t(keys::lang::LANG_TOOLS_STYLE_UNDERLINE));
     }
 
     let label_text = if parts.is_empty() {
-        "none".to_string()
+        t(keys::lang::LANG_TOOLS_STYLE_NONE)
     } else {
         parts.join(" ")
     };

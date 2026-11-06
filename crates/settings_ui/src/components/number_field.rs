@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::{
     fmt::Display,
     num::{NonZero, NonZeroU32, NonZeroU64},

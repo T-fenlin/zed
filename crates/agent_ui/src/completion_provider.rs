@@ -1,4 +1,4 @@
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use std::cmp::Reverse;
 use std::ops::Range;
 use std::path::PathBuf;
@@ -180,7 +180,7 @@ impl PromptContextAction {
 
     pub fn label(&self) -> String {
         match self {
-            Self::AddSelections => "Selection",
+            Self::AddSelections => t(keys::agent::AGENT_B_SELECTION),
         }
     }
 
@@ -265,11 +265,11 @@ impl PromptContextType {
     pub fn label(&self) -> String {
         match self {
             Self::File => t(keys::agent::AGENT_THREAD_FILES_DIRS),
-            Self::Symbol => "Symbols",
-            Self::Fetch => "Fetch",
-            Self::Thread => "Threads",
-            Self::Skill => "Skills",
-            Self::Diagnostics => "Diagnostics",
+            Self::Symbol => t(keys::agent::AGENT_B_SYMBOLS),
+            Self::Fetch => t(keys::agent::AGENT_B_FETCH),
+            Self::Thread => t(keys::agent::AGENT_B_THREADS),
+            Self::Skill => t(keys::agent::AGENT_MENU_SKILLS),
+            Self::Diagnostics => t(keys::agent::AGENT_B_DIAGNOSTICS),
             Self::BranchDiff => t(keys::agent::AGENT_THREAD_BRANCH_DIFF),
         }
     }
@@ -397,7 +397,7 @@ impl AvailableCommand {
                 ("commands", t_static(keys::agent::AGENT_B_COMMANDS))
             }
             Some(acp_thread::CommandCategory::Mcp) => {
-                ("mcp-commands", t(keys::agent::AGENT_B_MCP_SERVER_COMMANDS))
+                ("mcp-commands", t_static(keys::agent::AGENT_B_MCP_SERVER_COMMANDS))
             }
             None => ("acp-commands", t_static(keys::agent::AGENT_B_COMMANDS)),
         };
@@ -1554,7 +1554,7 @@ impl<T: PromptCompletionProviderDelegate> CompletionProvider for PromptCompletio
                                     confirm: Some(confirm),
                                     group: show_section_headers.then(|| CompletionGroup {
                                         key: "skills".into(),
-                                        label: Some("Skills".into()),
+                                        label: Some(t(keys::agent::AGENT_MENU_SKILLS).into()),
                                     }),
                                 }
                             }
@@ -1623,7 +1623,7 @@ impl<T: PromptCompletionProviderDelegate> CompletionProvider for PromptCompletio
                             SlashCompletionCandidate::LocalCommand(command) => {
                                 let group = show_section_headers.then(|| CompletionGroup {
                                     key: "local-commands".into(),
-                                    label: Some("Actions".into()),
+                                    label: Some(t(keys::agent::AGENT_B_ACTIONS).into()),
                                 });
 
                                 Completion {
@@ -2188,7 +2188,7 @@ fn diagnostics_label(
     }
 
     if parts.is_empty() {
-        return "Diagnostics".into();
+        return t(keys::agent::AGENT_B_DIAGNOSTICS).into();
     }
 
     let body = if parts.len() == 2 {
@@ -2234,7 +2234,7 @@ fn diagnostics_submenu_label(
             summary.warning_count,
             pluralize("warning", summary.warning_count)
         ),
-        _ => "Diagnostics".into(),
+        _ => t(keys::agent::AGENT_B_DIAGNOSTICS).into(),
     }
 }
 

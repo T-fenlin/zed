@@ -3318,7 +3318,7 @@ impl ConversationView {
         let action_slot = h_flex()
             .gap_1()
             .child(
-                Button::new("retry-agent-launch", "Retry")
+                Button::new("retry-agent-launch", t(keys::agent::AGENT_RETRY))
                     .tooltip(Tooltip::text(t(keys::agent::AGENT_RESTART_HINT)))
                     .on_click(cx.listener(move |this, _, window, cx| {
                         this.retry_connection(window, cx);
@@ -3355,9 +3355,13 @@ impl ConversationView {
                     &[("path", &(path).to_string())],
                 )
             } else {
-                format!(
-                    "Currently using {}, which is only version {} (need at least {minimum_version})",
-                    path, version
+                t_with_args(
+                    keys::agent::AGENT_OUTDATED_VERSION,
+                    &[
+                        ("path", &path.to_string()),
+                        ("version", &version),
+                        ("minimum_version", &minimum_version.to_string()),
+                    ],
                 )
             },
         );
@@ -6353,7 +6357,7 @@ pub(crate) mod tests {
                 "Backend failed",
                 Some("-32099"),
             ),
-            (None, t(keys::agent::AGENT_STOPPED_ERROR), None),
+            (None, t_static(keys::agent::AGENT_STOPPED_ERROR), None),
         ] {
             thread.update(cx, |thread, cx| {
                 thread
@@ -6938,7 +6942,7 @@ pub(crate) mod tests {
                 "user-canceled",
                 "Explore",
                 acp_v2::ToolCallStatus::Failed,
-                Some(t(keys::agent::AGENT_THREAD_USER_CANCELED)),
+                Some(t_static(keys::agent::AGENT_THREAD_USER_CANCELED)),
                 SubagentStatus::Canceled,
                 None,
             ),
@@ -10941,7 +10945,7 @@ pub(crate) mod tests {
             conversation_view
                 .read(cx)
                 .active_thread()
-                .expect(t(keys::agent::AGENT_NO_ACTIVE_THREAD))
+                .expect(t_static(keys::agent::AGENT_NO_ACTIVE_THREAD))
                 .clone()
         })
     }
@@ -16294,7 +16298,7 @@ pub(crate) mod tests {
                     "Missing pattern option"
                 );
                 assert!(
-                    labels.contains(&t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)),
+                    labels.contains(&t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)),
                     "Missing 'Only this time' option"
                 );
             }
@@ -16586,7 +16590,7 @@ pub(crate) mod tests {
                     "Missing 'Always for terminal' option"
                 );
                 assert!(
-                    labels.contains(&t(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)),
+                    labels.contains(&t_static(keys::agent::AGENT_THREAD_ONLY_THIS_TIME)),
                     "Missing 'Only this time' option"
                 );
                 // Should NOT contain a pattern option
@@ -17316,9 +17320,10 @@ pub(crate) mod tests {
         let thread_id = conversation_view.read_with(cx, |view, _cx| view.thread_id);
         let assert_title =
             |title: Option<&str>, title_override: Option<&str>, cx: &VisualTestContext| {
+                let default_title = default_thread_title();
                 let display_title = title_override
                     .or(title)
-                    .unwrap_or(default_thread_title().as_str());
+                    .unwrap_or(default_title.as_str());
                 title_editor.read_with(cx, |editor, cx| {
                     assert_eq!(editor.text(cx), display_title);
                 });

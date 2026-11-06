@@ -628,7 +628,7 @@ impl Editor {
         let prompt_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
             editor.set_placeholder_text(
-                t(keys::editor::EDITOR_REVIEW_COMMENT_PLACEHOLDER),
+                &t(keys::editor::EDITOR_REVIEW_COMMENT_PLACEHOLDER),
                 window,
                 cx,
             );
@@ -2648,7 +2648,7 @@ impl Editor {
                                 IconButton::new("diff-review-close", IconName::Close)
                                     .icon_color(ui::Color::Muted)
                                     .icon_size(action_icon_size)
-                                    .tooltip(Tooltip::text("Close"))
+                                    .tooltip(Tooltip::text(t(keys::tab::TAB_CLOSE)))
                                     .on_click(|_, window, cx| {
                                         window
                                             .dispatch_action(Box::new(crate::actions::Cancel), cx);
@@ -2818,7 +2818,7 @@ impl Editor {
                         )
                         .icon_color(ui::Color::Muted)
                         .icon_size(action_icon_size)
-                        .tooltip(Tooltip::text("Cancel"))
+                        .tooltip(Tooltip::text(t(keys::prompt::PROMPT_CANCEL)))
                         .on_click(move |_, window, cx| {
                             window.dispatch_action(
                                 Box::new(crate::actions::CancelEditReviewComment {

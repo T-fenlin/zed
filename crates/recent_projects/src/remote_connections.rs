@@ -324,7 +324,7 @@ pub async fn open_remote_project(
                             PromptLevel::Critical,
                             &failure_message,
                             Some(&format!("{e:#}")),
-                            &[retry.as_str(), "Cancel"],
+                            &[retry, "Cancel"],
                             cx,
                         )
                     })?
@@ -386,7 +386,7 @@ pub async fn open_remote_project(
                             PromptLevel::Critical,
                             &failure_message,
                             Some(&format!("{e:#}")),
-                            &[retry.as_str(), "Cancel"],
+                            &[retry, "Cancel"],
                             cx,
                         )
                     })?

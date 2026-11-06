@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::ops::Range;
 
 use client::zed_urls;
@@ -356,7 +356,7 @@ impl AgentRegistryPage {
             .when_some(fetch_error, |this, _| {
                 let registry_store = self.registry_store.clone();
                 this.child(
-                    Button::new("retry-agent-registry", "Retry")
+                    Button::new("retry-agent-registry", t(keys::agent::AGENT_A_REGISTRY_RETRY))
                         .style(ButtonStyle::Outlined)
                         .size(ButtonSize::Compact)
                         .on_click(move |_, _, cx| {
@@ -544,7 +544,7 @@ impl AgentRegistryPage {
             RegistryInstallStatus::NotInstalled => {
                 let fs = <dyn Fs>::global(cx);
                 let agent_id = agent.id().to_string();
-                Button::new(button_id, "Install")
+                Button::new(button_id, t(keys::agent::AGENT_A_REGISTRY_INSTALL))
                     .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                     .start_icon(
                         Icon::new(IconName::Download)
@@ -577,7 +577,7 @@ impl AgentRegistryPage {
             RegistryInstallStatus::InstalledRegistry => {
                 let fs = <dyn Fs>::global(cx);
                 let agent_id = agent.id().to_string();
-                Button::new(button_id, "Remove")
+                Button::new(button_id, t(keys::agent::AGENT_A_REGISTRY_REMOVE))
                     .style(ButtonStyle::OutlinedGhost)
                     .on_click(move |_, _, cx| {
                         let agent_id = agent_id.clone();
@@ -596,7 +596,7 @@ impl AgentRegistryPage {
                         });
                     })
             }
-            RegistryInstallStatus::InstalledCustom => Button::new(button_id, "Installed")
+            RegistryInstallStatus::InstalledCustom => Button::new(button_id, t(keys::agent::AGENT_A_REGISTRY_INSTALLED))
                 .style(ButtonStyle::OutlinedGhost)
                 .disabled(true),
         }
@@ -646,7 +646,7 @@ impl Render for AgentRegistryPage {
                                         "registry-filter-buttons",
                                         [
                                             ToggleButtonSimple::new(
-                                                "All",
+                                                t(keys::agent::AGENT_A_REGISTRY_FILTER_ALL),
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = RegistryFilter::All;
                                                     this.filter_registry_agents(cx);
@@ -654,7 +654,7 @@ impl Render for AgentRegistryPage {
                                                 }),
                                             ),
                                             ToggleButtonSimple::new(
-                                                "Installed",
+                                                t(keys::agent::AGENT_A_REGISTRY_INSTALLED),
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = RegistryFilter::Installed;
                                                     this.filter_registry_agents(cx);

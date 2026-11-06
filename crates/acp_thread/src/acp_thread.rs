@@ -9673,7 +9673,7 @@ mod tests {
                 thread.push_assistant_content_block(" text".into(), false, cx);
                 thread.flush_streaming_text(cx);
                 assert_eq!(target.read(cx).source(), "Following text");
-                assert_eq!(preview_markdown.read(cx).source(), preview);
+                assert_eq!(preview_markdown.read(cx).source(), preview.as_str());
             });
         }
 

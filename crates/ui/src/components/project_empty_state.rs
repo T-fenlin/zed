@@ -1,6 +1,6 @@
 use crate::{Divider, DividerColor, KeyBinding, prelude::*};
 use gpui::{ClickEvent, FocusHandle};
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 
 type ClickHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
 
@@ -84,7 +84,7 @@ impl RenderOnce for ProjectEmptyState {
                         h_flex()
                             .gap_2()
                             .child(Divider::horizontal().color(DividerColor::Border))
-                            .child(Label::new("or").size(LabelSize::XSmall).color(Color::Muted))
+                            .child(Label::new(t_static(keys::ui::UI_OR)).size(LabelSize::XSmall).color(Color::Muted))
                             .child(Divider::horizontal().color(DividerColor::Border)),
                     )
                     .child(

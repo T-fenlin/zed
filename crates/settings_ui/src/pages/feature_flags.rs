@@ -1,7 +1,7 @@
 use feature_flags::{FeatureFlagDescriptor, FeatureFlagStore, FeatureFlagVariant};
 use fs::Fs;
 use gpui::{ScrollHandle, prelude::*};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use ui::{Checkbox, ToggleState, prelude::*};
 
 use crate::SettingsWindow;

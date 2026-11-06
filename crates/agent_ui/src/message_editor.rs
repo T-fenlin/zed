@@ -1756,7 +1756,7 @@ impl MessageEditor {
             }
         }
         visible.push(acp_v2::ContentBlock::Text(acp_v2::TextContent::new(
-            "\n[Unsupported message content — this message cannot be edited or resent]",
+            &t(keys::agent::AGENT_B_UNSUPPORTED_MESSAGE_CONTENT),
         )));
         self.set_message(visible, window, cx);
     }
@@ -2321,6 +2321,7 @@ mod tests {
     use super::PromptLocalCommand;
     use acp_thread::MentionUri;
     use agent::{ThreadStore, outline};
+    use i18n::{keys, t, t_static};
     use agent_client_protocol::schema::v2 as acp_v2;
     use base64::Engine as _;
     use editor::{

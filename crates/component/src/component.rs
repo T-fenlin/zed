@@ -268,7 +268,7 @@ pub trait Component {
 /// Defaults to [`Live`](ComponentStatus::Live).
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Display, EnumString)]
 pub enum ComponentStatus {
-    #[strum(serialize = t_static(keys::extensions::EXTENSIONS_WORK_IN_PROGRESS))]
+    #[strum(serialize = "Work In Progress")]
     WorkInProgress,
     #[strum(serialize = "Ready To Build")]
     EngineeringReady,

@@ -7,6 +7,7 @@ use gpui::{
     DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, PromptLevel, Render, ScrollHandle,
     Task, TextStyleRefinement, UnderlineStyle, WeakEntity,
 };
+use i18n::{keys, t, t_static, t_with_args};
 use markdown::{CopyButtonVisibility, Markdown, MarkdownElement, MarkdownStyle};
 use parking_lot::Mutex;
 use project::project_settings::ProjectSettings;
@@ -379,7 +380,7 @@ impl Render for LanguageServerPrompt {
                                                     )
                                                 } else {
                                                     Tooltip::with_meta(
-                                                        "Close",
+                                                        t_static(keys::ui::UI_CLOSE),
                                                         Some(&menu::Cancel),
                                                         t_static(keys::workspace::WS_B_SUPPRESS_WITH_SHIFT_CLICK),
                                                         cx,
@@ -491,8 +492,7 @@ pub mod simple_message_notification {
         WithScrollbar, prelude::*,
     };
     use util::ResultExt as _;
-
-    use i18n::{keys, t, t_static, t_with_args};
+    use i18n::{keys, t, t_static};
 
     use crate::SuppressNotification;
     use crate::workspace_error::{
@@ -1076,13 +1076,13 @@ pub mod simple_message_notification {
                                     )
                                 } else if show_suppress_button {
                                     Tooltip::with_meta(
-                                        "Close",
+                                        t_static(keys::ui::UI_CLOSE),
                                         Some(&menu::Cancel),
                                         t_static(keys::workspace::WS_B_SHIFT_CLICK_TO_SUPPRESS),
                                         cx,
                                     )
                                 } else {
-                                    Tooltip::for_action("Close", &menu::Cancel, cx)
+                                    Tooltip::for_action(t_static(keys::ui::UI_CLOSE), &menu::Cancel, cx)
                                 }
                             })
                             .on_click(cx.listener(move |_, _, _, cx| {

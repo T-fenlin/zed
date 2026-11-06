@@ -17,7 +17,7 @@ use gpui::{
     SharedString, Task, WeakEntity,
 };
 use http_client::{AsyncBody, HttpClientWithUrl};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use itertools::Either;
 use language::Buffer;
 use language_model::{LanguageModelImage, LanguageModelImageExt};
@@ -844,7 +844,7 @@ mod tests {
         assert!(
             error
                 .to_string()
-                .contains(t(keys::agent::AGENT_A_MENTION_THREAD_NATIVE_ONLY)),
+                .contains(t_static(keys::agent::AGENT_A_MENTION_THREAD_NATIVE_ONLY)),
             "Unexpected error: {error:#}"
         );
     }
@@ -1192,7 +1192,7 @@ pub(crate) fn paste_images_as_context(
                     paths
                         .into_iter()
                         .flat_map(|paths| paths.paths().to_owned())
-                        .filter_map(|path| load_external_image_from_path(&path, &default_name))
+                        .filter_map(|path: std::path::PathBuf| load_external_image_from_path(path.as_path(), &default_name))
                         .collect::<Vec<_>>()
                 })
                 .await;

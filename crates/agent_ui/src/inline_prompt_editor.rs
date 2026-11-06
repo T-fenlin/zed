@@ -13,7 +13,7 @@ use gpui::{
     AnyElement, App, ClipboardItem, Context, Entity, EventEmitter, FocusHandle, Focusable,
     Subscription, TextStyle, TextStyleRefinement, WeakEntity, Window, actions,
 };
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use language_model::{LanguageModel, LanguageModelRegistry};
 use markdown::{HeadingLevelStyles, Markdown, MarkdownElement, MarkdownStyle};
 use parking_lot::Mutex;
@@ -1561,8 +1561,8 @@ pub enum GenerationMode {
 impl GenerationMode {
     fn start_label(self) -> String {
         match self {
-            GenerationMode::Generate => t_static(keys::agent::AGENT_GENERATE),
-            GenerationMode::Transform => t_static(keys::agent::AGENT_TRANSFORM),
+            GenerationMode::Generate => t(keys::agent::AGENT_GENERATE),
+            GenerationMode::Transform => t(keys::agent::AGENT_TRANSFORM),
         }
     }
     fn tooltip_interrupt(self) -> String {

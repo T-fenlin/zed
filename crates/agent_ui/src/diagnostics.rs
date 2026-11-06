@@ -1,6 +1,6 @@
 use anyhow::Result;
 use gpui::{App, AppContext as _, Entity, Task};
-use i18n::{keys, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use language::{Anchor, BufferSnapshot, DiagnosticEntryRef, DiagnosticSeverity, ToOffset};
 use multi_buffer::MultiBuffer;
 use project::{DiagnosticSummary, Project};
@@ -138,7 +138,7 @@ pub fn collect_diagnostics(
         }
 
         let mut label = String::new();
-        label.push_str("Diagnostics");
+        label.push_str(&t(keys::agent::AGENT_B_DIAGNOSTICS));
         if let Some(source) = error_source {
             write!(label, " ({})", source).unwrap();
         }
@@ -147,14 +147,30 @@ pub fn collect_diagnostics(
             label.push(':');
 
             if project_summary.error_count > 0 {
-                write!(label, " {} errors", project_summary.error_count).unwrap();
+                write!(
+                    label,
+                    " {}",
+                    t_with_args(
+                        keys::agent::AGENT_B_ERROR_COUNT,
+                        &[("count", &project_summary.error_count.to_string())]
+                    )
+                )
+                .unwrap();
                 if project_summary.warning_count > 0 {
                     label.push(',');
                 }
             }
 
             if project_summary.warning_count > 0 {
-                write!(label, " {} warnings", project_summary.warning_count).unwrap();
+                write!(
+                    label,
+                    " {}",
+                    t_with_args(
+                        keys::agent::AGENT_B_WARNING_COUNT,
+                        &[("count", &project_summary.warning_count.to_string())]
+                    )
+                )
+                .unwrap();
             }
         }
 

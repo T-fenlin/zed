@@ -402,7 +402,7 @@ fn render_subpage_item(
                 }),
         )
         .child(
-            Button::new(format!("configure-{}", provider_id.0), "Configure")
+            Button::new(format!("configure-{}", provider_id.0), t(keys::settings_ui::SETTINGS_UI_CONFIGURE))
                 .style(ButtonStyle::OutlinedGhost)
                 .size(ButtonSize::Medium)
                 .end_icon(
@@ -1060,7 +1060,7 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
         .gap_1()
         .justify_end()
         .child(
-            Button::new("llm-provider-form-cancel", "Cancel").on_click(cx.listener(
+            Button::new("llm-provider-form-cancel", t(keys::settings_ui::SETTINGS_A_MCP_CANCEL)).on_click(cx.listener(
                 |this, _, window, cx| {
                     this.llm_provider_form = None;
                     this.pop_sub_page(window, cx);

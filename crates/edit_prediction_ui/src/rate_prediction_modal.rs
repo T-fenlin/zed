@@ -806,7 +806,7 @@ impl RatePredictionsModal {
                     editor.set_show_indent_guides(false, cx);
                     editor.set_show_edit_predictions(Some(false), window, cx);
                     editor.set_placeholder_text(
-                        t(keys::edit_prediction::EDIT_PREDICTION_FEEDBACK_PLACEHOLDER),
+                        &t(keys::edit_prediction::EDIT_PREDICTION_FEEDBACK_PLACEHOLDER),
                         window,
                         cx,
                     );
@@ -1075,7 +1075,7 @@ impl RatePredictionsModal {
                     let modal = cx.entity().downgrade();
                     let failure_mode_menu =
                         ContextMenu::build(window, cx, move |menu, _window, _cx| {
-                            FeedbackCompletionProvider::FAILURE_MODES
+                            FeedbackCompletionProvider::failure_modes()
                                 .iter()
                                 .fold(menu, |menu, (key, description)| {
                                     let key: SharedString = (*key).into();
@@ -1433,7 +1433,8 @@ impl ModalView for RatePredictionsModal {}
 struct FeedbackCompletionProvider;
 
 impl FeedbackCompletionProvider {
-    const FAILURE_MODES: &'static [(&'static str, &'static str)] = &[
+    fn failure_modes() -> [(&'static str, &'static str); 13] {
+        [
         (
             "@location",
             t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_LOCATION),
@@ -1486,7 +1487,8 @@ impl FeedbackCompletionProvider {
             "@whitespace",
             t_static(keys::edit_prediction::EDIT_PREDICTION_FAILURE_WHITESPACE),
         ),
-    ];
+        ]
+    }
 }
 
 impl editor::CompletionProvider for FeedbackCompletionProvider {
@@ -1531,7 +1533,7 @@ impl editor::CompletionProvider for FeedbackCompletionProvider {
 
         let query_lower = query.to_lowercase();
 
-        let completions: Vec<Completion> = Self::FAILURE_MODES
+        let completions: Vec<Completion> = Self::failure_modes()
             .iter()
             .filter(|(key, _description)| key.starts_with(&query_lower))
             .map(|(key, description)| Completion {

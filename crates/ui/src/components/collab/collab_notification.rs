@@ -156,7 +156,7 @@ impl Component for CollabNotification {
                         CollabNotification::new(
                             avatar,
                             Button::new("dismiss", "Dismiss"),
-                            Button::new("close", "Close"),
+                            Button::new("close", t_static(keys::ui::UI_CLOSE)),
                         )
                         .child(Label::new("maxbrunsfeld accepted your contact request")),
                     )

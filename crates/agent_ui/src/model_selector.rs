@@ -416,7 +416,7 @@ fn info_list_to_picker_entries(
     match model_list {
         AgentModelList::Flat(list) => {
             if has_favorites {
-                entries.push(ModelPickerEntry::Separator("All".into()));
+                entries.push(ModelPickerEntry::Separator(t(keys::agent::AGENT_ALL_MODELS).into()));
             }
             for model in list {
                 let is_favorite = favorites.contains(&model.id);

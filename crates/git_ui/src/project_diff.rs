@@ -951,9 +951,9 @@ impl Render for ProjectDiffToolbar {
             )
             .child(Divider::vertical())
             .child(
-                Button::new("commit", "Commit")
+                Button::new("commit", t_static(keys::git_ui::GIT_COMMIT))
                     .tooltip(Tooltip::for_action_title_in(
-                        "Commit",
+                        t_static(keys::git_ui::GIT_COMMIT),
                         &Commit,
                         &focus_handle,
                     ))

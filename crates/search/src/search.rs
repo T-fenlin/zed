@@ -3,7 +3,7 @@ pub use buffer_search::BufferSearchBar;
 pub use editor::HighlightKey;
 use editor::SearchSettings;
 use gpui::{Action, App, ClickEvent, Entity, FocusHandle, IntoElement, actions};
-use i18n::{keys, t_static};
+use i18n::{keys, t, t_static};
 use project::search::SearchQuery;
 pub use project_search::ProjectSearchView;
 use ui::{IconButtonShape, Tooltip, prelude::*};
@@ -82,9 +82,15 @@ pub enum SearchOption {
     Backwards,
 }
 
-const REPLACE_PLACEHOLDER: &str = "Replace in project…";
-const INCLUDE_PLACEHOLDER: &str = "Include: e.g. src/**/*.rs";
-const EXCLUDE_PLACEHOLDER: &str = "Exclude: e.g. vendor/*, *.lock";
+pub fn replace_placeholder() -> String {
+    t(keys::search::SEARCH_REPLACE_IN_PROJECT)
+}
+pub fn include_placeholder() -> String {
+    t(keys::search::SEARCH_INCLUDE_PLACEHOLDER)
+}
+pub fn exclude_placeholder() -> String {
+    t(keys::search::SEARCH_EXCLUDE_PLACEHOLDER)
+}
 
 pub enum SearchSource<'a, 'b> {
     /// Dispatches the toggle action from the button's focus handle. Only use this when the

@@ -15,71 +15,70 @@ use util::shell::ShellKind;
 
 use crate::{SettingsWindow, components::SettingsInputField};
 
-const HARDCODED_RULES_DESCRIPTION: &str =
-    t_static(keys::settings_ui::SETTINGS_A_TOOLS_HARDCODED_RULES);
-const SETTINGS_DISCLAIMER: &str = "Note: custom tool permissions only apply to the Zed native agent and don’t extend to external agents connected through the Agent Client Protocol (ACP).";
+const HARDCODED_RULES_DESCRIPTION: &str = keys::settings_ui::SETTINGS_A_TOOLS_HARDCODED_RULES;
+const SETTINGS_DISCLAIMER: &str = keys::settings_ui::SETTINGS_A_TOOLS_DISCLAIMER;
 
 /// Tools that support permission rules
 const TOOLS: &[ToolInfo] = &[
     ToolInfo {
         id: "terminal",
-        name: t_static(keys::settings_ui::SETTINGS_TOOLS_TERMINAL),
-        description: t(keys::settings_ui::SETTINGS_TOOLS_TERMINAL_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_TERMINAL_REGEX),
+        name: keys::settings_ui::SETTINGS_TOOLS_TERMINAL,
+        description: keys::settings_ui::SETTINGS_TOOLS_TERMINAL_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_TERMINAL_REGEX,
     },
     ToolInfo {
         id: "edit_file",
-        name: t(keys::settings_ui::SETTINGS_TOOLS_EDIT_FILE),
-        description: t(keys::settings_ui::SETTINGS_TOOLS_EDIT_FILE_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_EDIT_FILE_REGEX),
+        name: keys::settings_ui::SETTINGS_TOOLS_EDIT_FILE,
+        description: keys::settings_ui::SETTINGS_TOOLS_EDIT_FILE_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_EDIT_FILE_REGEX,
     },
     ToolInfo {
         id: "write_file",
         name: "Write File",
-        description: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_FILE_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_FILE_REGEX),
+        description: keys::settings_ui::SETTINGS_TOOLS_CREATE_FILE_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_CREATE_FILE_REGEX,
     },
     ToolInfo {
         id: "delete_path",
         name: "Delete Path",
-        description: t(keys::settings_ui::SETTINGS_TOOLS_DELETE_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_DELETE_REGEX),
+        description: keys::settings_ui::SETTINGS_TOOLS_DELETE_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_DELETE_REGEX,
     },
     ToolInfo {
         id: "copy_path",
         name: "Copy Path",
-        description: t(keys::settings_ui::SETTINGS_TOOLS_COPY_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_MOVE_REGEX),
+        description: keys::settings_ui::SETTINGS_TOOLS_COPY_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_MOVE_REGEX,
     },
     ToolInfo {
         id: "move_path",
         name: "Move Path",
-        description: t(keys::settings_ui::SETTINGS_TOOLS_MOVE_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_MOVE_REGEX),
+        description: keys::settings_ui::SETTINGS_TOOLS_MOVE_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_MOVE_REGEX,
     },
     ToolInfo {
         id: "create_directory",
-        name: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_DIRECTORY),
-        description: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_DIRECTORY_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_CREATE_DIRECTORY_REGEX),
+        name: keys::settings_ui::SETTINGS_TOOLS_CREATE_DIRECTORY,
+        description: keys::settings_ui::SETTINGS_TOOLS_CREATE_DIRECTORY_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_CREATE_DIRECTORY_REGEX,
     },
     ToolInfo {
         id: "fetch",
-        name: "Fetch",
-        description: t(keys::settings_ui::SETTINGS_TOOLS_FETCH_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_FETCH_REGEX),
+        name: keys::settings_ui::SETTINGS_TOOLS_FETCH,
+        description: keys::settings_ui::SETTINGS_TOOLS_FETCH_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_FETCH_REGEX,
     },
     ToolInfo {
         id: "search_web",
-        name: t(keys::settings_ui::SETTINGS_TOOLS_WEB_SEARCH),
-        description: t(keys::settings_ui::SETTINGS_TOOLS_WEB_SEARCH_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_WEB_SEARCH_REGEX),
+        name: keys::settings_ui::SETTINGS_TOOLS_WEB_SEARCH,
+        description: keys::settings_ui::SETTINGS_TOOLS_WEB_SEARCH_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_WEB_SEARCH_REGEX,
     },
     ToolInfo {
         id: "skill",
-        name: t_static(keys::settings_ui::SETTINGS_TOOLS_SKILL),
-        description: t(keys::settings_ui::SETTINGS_TOOLS_SKILL_DESCRIPTION),
-        regex_explanation: t(keys::settings_ui::SETTINGS_TOOLS_SKILL_REGEX),
+        name: keys::settings_ui::SETTINGS_TOOLS_SKILL,
+        description: keys::settings_ui::SETTINGS_TOOLS_SKILL_DESCRIPTION,
+        regex_explanation: keys::settings_ui::SETTINGS_TOOLS_SKILL_REGEX,
     },
 ];
 
@@ -196,7 +195,7 @@ pub(crate) fn render_tool_permissions_setup_page(
         .track_scroll(scroll_handle)
         .child(
             Banner::new().child(
-                Label::new(SETTINGS_DISCLAIMER)
+                Label::new(t_static(SETTINGS_DISCLAIMER))
                     .size(LabelSize::Small)
                     .color(Color::Muted)
                     .mt_0p5(),
@@ -263,7 +262,7 @@ fn render_tool_list_item(
             v_flex()
                 .w_full()
                 .min_w_0()
-                .child(h_flex().gap_1().child(Label::new(tool.name)).when_some(
+                .child(h_flex().gap_1().child(Label::new(t_static(tool.name))).when_some(
                     rule_summary,
                     |this, summary| {
                         this.child(
@@ -274,14 +273,14 @@ fn render_tool_list_item(
                     },
                 ))
                 .child(
-                    Label::new(tool.description)
+                    Label::new(t_static(tool.description))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 ),
         )
         .child({
-            let tool_name = tool.name;
-            Button::new(format!("configure-{}", tool.id), "Configure")
+            let tool_name = t_static(tool.name);
+            Button::new(format!("configure-{}", tool.id), t(keys::settings_ui::SETTINGS_UI_CONFIGURE))
                 .tab_index(tool_index as isize)
                 .style(ButtonStyle::OutlinedGhost)
                 .size(ButtonSize::Medium)
@@ -332,7 +331,7 @@ pub(crate) fn render_tool_config_page(
     cx: &mut Context<SettingsWindow>,
 ) -> AnyElement {
     let rules = get_tool_rules(tool.id, cx);
-    let page_title = format!("{} Tool", tool.name);
+    let page_title = format!("{} Tool", t_static(tool.name));
     let scroll_step = px(80.);
 
     v_flex()
@@ -365,7 +364,7 @@ pub(crate) fn render_tool_config_page(
                 .min_w_0()
                 .child(Label::new(page_title).size(LabelSize::Large))
                 .child(
-                    Label::new(tool.regex_explanation)
+                    Label::new(t_static(tool.regex_explanation))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 ),
@@ -382,7 +381,7 @@ pub(crate) fn render_tool_config_page(
                         .severity(Severity::Warning)
                         .child(Label::new(error).size(LabelSize::Small))
                         .action_slot(
-                            Button::new("dismiss-regex-error", "Dismiss")
+                            Button::new("dismiss-regex-error", t(keys::settings_ui::SETTINGS_A_TOOLS_DISMISS))
                                 .style(ButtonStyle::Tinted(ui::TintColor::Warning))
                                 .on_click(cx.listener(|this, _, _, cx| {
                                     this.regex_validation_error = None;
@@ -448,7 +447,7 @@ fn render_hardcoded_rules(smaller_font_size: bool, cx: &App) -> AnyElement {
             }
         })
         .text_color(cx.theme().colors().text_muted)
-        .child(render_inline_code_markdown(HARDCODED_RULES_DESCRIPTION, cx))
+        .child(render_inline_code_markdown(t_static(HARDCODED_RULES_DESCRIPTION), cx))
         .into_any_element()
 }
 
@@ -794,9 +793,9 @@ fn implied_mode_from_patterns(
 
 fn mode_display_label(mode: ToolPermissionMode) -> String {
     match mode {
-        ToolPermissionMode::Allow => "Allow",
-        ToolPermissionMode::Deny => "Deny",
-        ToolPermissionMode::Confirm => "Confirm",
+        ToolPermissionMode::Allow => "Allow".to_string(),
+        ToolPermissionMode::Deny => "Deny".to_string(),
+        ToolPermissionMode::Confirm => "Confirm".to_string(),
     }
 }
 
@@ -812,7 +811,7 @@ fn render_verdict_label(mode: ToolPermissionMode) -> AnyElement {
     h_flex()
         .gap_1()
         .child(
-            Label::new("Result:")
+            Label::new(t(keys::settings_ui::SETTINGS_A_TOOLS_RESULT))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
         )
@@ -1137,13 +1136,13 @@ fn render_global_default_mode_section(current_mode: ToolPermissionMode) -> AnyEl
                 )
                 .menu(move |window, cx| {
                     Some(ContextMenu::build(window, cx, move |menu, _, _| {
-                        menu.entry("Confirm", None, move |_, cx| {
+                        menu.entry(t(keys::settings_ui::SETTINGS_A_TOOLS_MODE_CONFIRM), None, move |_, cx| {
                             set_global_default_permission(ToolPermissionMode::Confirm, cx);
                         })
-                        .entry("Allow", None, move |_, cx| {
+                        .entry(t(keys::settings_ui::SETTINGS_A_TOOLS_MODE_ALLOW), None, move |_, cx| {
                             set_global_default_permission(ToolPermissionMode::Allow, cx);
                         })
-                        .entry("Deny", None, move |_, cx| {
+                        .entry(t(keys::settings_ui::SETTINGS_A_TOOLS_MODE_DENY), None, move |_, cx| {
                             set_global_default_permission(ToolPermissionMode::Deny, cx);
                         })
                     }))
@@ -1200,13 +1199,13 @@ fn render_default_mode_section(
                         let tool_id_allow = tool_id.clone();
                         let tool_id_deny = tool_id;
 
-                        menu.entry("Confirm", None, move |_, cx| {
+                        menu.entry(t(keys::settings_ui::SETTINGS_A_TOOLS_MODE_CONFIRM), None, move |_, cx| {
                             set_default_mode(&tool_id_confirm, ToolPermissionMode::Confirm, cx);
                         })
-                        .entry("Allow", None, move |_, cx| {
+                        .entry(t(keys::settings_ui::SETTINGS_A_TOOLS_MODE_ALLOW), None, move |_, cx| {
                             set_default_mode(&tool_id_allow, ToolPermissionMode::Allow, cx);
                         })
-                        .entry("Deny", None, move |_, cx| {
+                        .entry(t(keys::settings_ui::SETTINGS_A_TOOLS_MODE_DENY), None, move |_, cx| {
                             set_default_mode(&tool_id_deny, ToolPermissionMode::Deny, cx);
                         })
                     }))

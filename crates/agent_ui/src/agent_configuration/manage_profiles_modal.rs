@@ -1,6 +1,6 @@
 mod profile_modal_header;
 
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::sync::Arc;
 
 use agent::ContextServerRegistry;
@@ -186,7 +186,7 @@ impl ManageProfilesModal {
         let name_editor = cx.new(|cx| Editor::single_line(window, cx));
         name_editor.update(cx, |editor, cx| {
             editor.set_placeholder_text(
-                t(keys::agent::AGENT_PROFILES_NAME_PLACEHOLDER),
+                t_static(keys::agent::AGENT_PROFILES_NAME_PLACEHOLDER),
                 window,
                 cx,
             );
@@ -661,7 +661,7 @@ impl ManageProfilesModal {
                 .profiles
                 .get(base_profile_id)
                 .map(|profile| profile.name.clone())
-                .unwrap_or_else(|| "Unknown".into())
+                .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into())
         });
 
         v_flex()
@@ -693,7 +693,7 @@ impl ManageProfilesModal {
             .profiles
             .get(&mode.profile_id)
             .map(|profile| profile.name.clone())
-            .unwrap_or_else(|| "Unknown".into());
+            .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
         let icon = match mode.profile_id.as_str() {
             "write" => IconName::Pencil,
@@ -1026,7 +1026,7 @@ impl Render for ManageProfilesModal {
                         .profiles
                         .get(profile_id)
                         .map(|profile| profile.name.clone())
-                        .unwrap_or_else(|| "Unknown".into());
+                        .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
                     v_flex()
                         .pb_1()
@@ -1049,7 +1049,7 @@ impl Render for ManageProfilesModal {
                         .profiles
                         .get(profile_id)
                         .map(|profile| profile.name.clone())
-                        .unwrap_or_else(|| "Unknown".into());
+                        .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
                     v_flex()
                         .pb_1()
@@ -1072,7 +1072,7 @@ impl Render for ManageProfilesModal {
                         .profiles
                         .get(profile_id)
                         .map(|profile| profile.name.clone())
-                        .unwrap_or_else(|| "Unknown".into());
+                        .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
                     v_flex()
                         .pb_1()

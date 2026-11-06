@@ -503,7 +503,7 @@ impl Render for KeystrokeInput {
             .rounded_sm()
             .child(recording_pulse(Color::Error))
             .child(
-                Label::new("REC")
+                Label::new(t_static(keys::keymap::KEYMAP_INDICATOR_RECORDING))
                     .size(LabelSize::XSmall)
                     .weight(FontWeight::SEMIBOLD)
                     .color(Color::Error),
@@ -521,7 +521,7 @@ impl Render for KeystrokeInput {
             .rounded_sm()
             .child(recording_pulse(Color::Accent))
             .child(
-                Label::new("SEARCH")
+                Label::new(t_static(keys::keymap::KEYMAP_INDICATOR_SEARCHING))
                     .size(LabelSize::XSmall)
                     .weight(FontWeight::SEMIBOLD)
                     .color(Color::Accent),
@@ -653,7 +653,7 @@ impl Render for KeystrokeInput {
                                     Tooltip::with_meta(
                                         t_static(keys::keymap::KEYMAP_CLEAR_KEYSTROKES),
                                         Some(&ClearKeystrokes),
-                                        "Hit it three times to execute",
+                                        t_static(keys::keymap::KEYMAP_CLEAR_KEYSTROKES_HINT),
                                         cx,
                                     )
                                 })

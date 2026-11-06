@@ -1241,7 +1241,7 @@ fn auto_resolve_permission_outcome(
 
 #[derive(Debug, thiserror::Error)]
 enum CompletionError {
-    #[error(t_static(keys::settings_ui::SETTINGS_EDIT_PRED_MAX_TOKENS))]
+    #[error("max tokens")]
     MaxTokens,
     #[error("refusal")]
     Refusal,
@@ -6584,7 +6584,7 @@ impl ToolCallEventStream {
             docs_section,
         };
         let retry_label = if retries == 0 {
-            "Retry".to_string()
+            t(keys::agent::AGENT_RETRY)
         } else {
             format!("Retry (attempt {retries})")
         };

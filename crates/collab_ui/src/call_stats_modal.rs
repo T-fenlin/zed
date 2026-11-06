@@ -8,7 +8,7 @@ use gpui::{
     ClipboardItem, DismissEvent, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, Render,
     Subscription, Task, TaskExt as _, Window,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use livekit_client::ConnectionQuality;
 use release_channel::{AppVersion, ReleaseChannel};
 use serde::Serialize;
@@ -163,7 +163,7 @@ fn quality_label(quality: Option<ConnectionQuality>) -> (&'static str, Color) {
         Some(ConnectionQuality::Good) => {
             (t_static(keys::collab::COLLAB_QUALITY_GOOD), Color::Success)
         }
-        Some(ConnectionQuality::Poor) => ("Poor", Color::Warning),
+        Some(ConnectionQuality::Poor) => (t_static(keys::collab::COLLAB_QUALITY_POOR), Color::Warning),
         Some(ConnectionQuality::Lost) => {
             (t_static(keys::collab::COLLAB_QUALITY_LOST), Color::Error)
         }
@@ -179,7 +179,7 @@ fn metric_rating(label: &str, value_ms: f64) -> (&'static str, Color) {
             } else if value_ms < 300.0 {
                 (t_static(keys::collab::COLLAB_RATING_HIGH), Color::Warning)
             } else {
-                ("Poor", Color::Error)
+                (t_static(keys::collab::COLLAB_RATING_POOR), Color::Error)
             }
         }
         "Jitter" => {
@@ -188,7 +188,7 @@ fn metric_rating(label: &str, value_ms: f64) -> (&'static str, Color) {
             } else if value_ms < 75.0 {
                 (t_static(keys::collab::COLLAB_RATING_HIGH), Color::Warning)
             } else {
-                ("Poor", Color::Error)
+                (t_static(keys::collab::COLLAB_RATING_POOR), Color::Error)
             }
         }
         _ => (t_static(keys::collab::COLLAB_RATING_NORMAL), Color::Success),
@@ -201,7 +201,7 @@ fn input_lag_rating(value_ms: u128) -> (&'static str, Color) {
     } else if value_ms < 50 {
         (t_static(keys::collab::COLLAB_RATING_HIGH), Color::Warning)
     } else {
-        ("Poor", Color::Error)
+        (t_static(keys::collab::COLLAB_RATING_POOR), Color::Error)
     }
 }
 
@@ -211,7 +211,7 @@ fn packet_loss_rating(loss_pct: f64) -> (&'static str, Color) {
     } else if loss_pct < 5.0 {
         (t_static(keys::collab::COLLAB_RATING_HIGH), Color::Warning)
     } else {
-        ("Poor", Color::Error)
+        (t_static(keys::collab::COLLAB_RATING_POOR), Color::Error)
     }
 }
 
@@ -334,9 +334,13 @@ impl Render for CallStatsModal {
                         .max_h(rems(32.))
                         .overflow_y_scroll()
                         .child(
-                            Label::new(format!(
-                                "{sample_count} samples · {:.0}s retained · {recent_issue_count} affected intervals in the last 60s",
-                                retained_duration.as_secs_f64()
+                            Label::new(t_with_args(
+                                keys::collab::COLLAB_DIAGNOSTICS_SUMMARY,
+                                &[
+                                    ("samples", &sample_count.to_string()),
+                                    ("retained", &format!("{:.0}", retained_duration.as_secs_f64())),
+                                    ("intervals", &recent_issue_count.to_string()),
+                                ],
                             ))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
@@ -344,16 +348,16 @@ impl Render for CallStatsModal {
                         .child(
                             v_flex()
                                 .gap_1()
-                                .child(Label::new("Network").weight(FontWeight::SEMIBOLD))
+                                .child(Label::new(t(keys::collab::COLLAB_NETWORK)).weight(FontWeight::SEMIBOLD))
                                 .child(self.render_metric_row(
-                                    "Latency",
+                                    &t(keys::collab::COLLAB_LATENCY),
                                     t_static(keys::collab::COLLAB_LATENCY_DESCRIPTION),
                                     stats.latency_ms,
                                     |v| format!("{:.0}ms", v),
                                     |v| metric_rating("Latency", v),
                                 ))
                                 .child(self.render_metric_row(
-                                    "Jitter",
+                                    &t(keys::collab::COLLAB_JITTER),
                                     t_static(keys::collab::COLLAB_JITTER_DESCRIPTION),
                                     stats.jitter_ms,
                                     |v| format!("{:.0}ms", v),
@@ -482,24 +486,37 @@ impl CallStatsModal {
                     .child(Label::new(status).color(color)),
             )
             .child(
-                Label::new(format!(
-                    "Loss {packet_loss} · jitter {:.1}ms · jitter buffer {jitter_buffer_delay}",
-                    audio.jitter_ms
+                Label::new(t_with_args(
+                    keys::collab::COLLAB_LOSS_JITTER,
+                    &[
+                        ("loss", &packet_loss),
+                        ("jitter", &format!("{:.1}ms", audio.jitter_ms)),
+                        ("buffer", &jitter_buffer_delay),
+                    ],
                 ))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
             )
             .child(
-                Label::new(format!(
-                    "WebRTC repaired {repaired_audio_duration} in {} {repair_event_label}",
-                    audio.concealment_events,
+                Label::new(t_with_args(
+                    keys::collab::COLLAB_WEBRTC_REPAIRED,
+                    &[
+                        ("duration", &repaired_audio_duration),
+                        ("events", &format!("{} {repair_event_label}", audio.concealment_events)),
+                    ],
                 ))
                 .size(LabelSize::Small)
                 .color(Color::Muted),
             )
             .child(
-                Label::new(format!(
-                    "Local playback starved for {starved_audio_duration} · dropped {dropped_audio_duration} · buffered {buffered_audio_duration} (peak {peak_buffered_audio_duration})",
+                Label::new(t_with_args(
+                    keys::collab::COLLAB_LOCAL_PLAYBACK,
+                    &[
+                        ("starved", &starved_audio_duration),
+                        ("dropped", &dropped_audio_duration),
+                        ("buffered", &buffered_audio_duration),
+                        ("peak", &peak_buffered_audio_duration),
+                    ],
                 ))
                 .size(LabelSize::Small)
                 .color(Color::Muted),

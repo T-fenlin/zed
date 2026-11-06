@@ -564,7 +564,7 @@ impl CreateTagModal {
     ) -> Self {
         let editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text(t(keys::git_ui::GIT_A_TAG_NAME_PLACEHOLDER), window, cx);
+            editor.set_placeholder_text(&t(keys::git_ui::GIT_A_TAG_NAME_PLACEHOLDER), window, cx);
             editor
         });
         Self {
@@ -599,9 +599,10 @@ impl CreateTagModal {
         let repo = self.repo.clone();
         let commit = self.commit.to_string();
         let workspace = self.workspace.clone();
-        let success_message = format!(
-            "Created tag \"{tag_name}\" at {}",
-            self.tag_target_commit_label()
+        let target_label = self.tag_target_commit_label();
+        let success_message = t_with_args(
+            keys::git_ui::GIT_A_TAG_CREATED,
+            &[("tag_name", &tag_name), ("target", target_label.as_str())],
         );
         cx.spawn(async move |_, cx| {
             repo.update(cx, |repo, _| repo.create_tag(tag_name, commit))
@@ -748,7 +749,7 @@ impl RefPickerModal {
     ) -> Self {
         let editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text(t(keys::git_ui::GIT_A_GIT_REF_PLACEHOLDER), window, cx);
+            editor.set_placeholder_text(&t(keys::git_ui::GIT_A_GIT_REF_PLACEHOLDER), window, cx);
             editor
         });
 
@@ -1020,6 +1021,7 @@ fn render_remote_button(
 
 mod remote_button {
     use crate::git_panel::RemoteOperationKind;
+    use i18n::{keys, t, t_static};
     use gpui::{Action, Anchor, AnyView, ClickEvent, FocusHandle};
     use ui::{
         ButtonLike, CommonAnimationExt, ContextMenu, ElevationIndex, PopoverMenu,
@@ -1034,7 +1036,7 @@ mod remote_button {
     ) -> SplitButton {
         split_button(
             id,
-            "Fetch",
+            t(keys::git_ui::GIT_A_FETCH),
             0,
             0,
             Some(IconName::ArrowCircle),
@@ -1223,7 +1225,7 @@ mod remote_button {
                         .when_some(keybinding_target.clone(), |el, keybinding_target| {
                             el.context(keybinding_target)
                         })
-                        .action("Fetch", git::Fetch.boxed_clone())
+                        .action(t(keys::git_ui::GIT_A_FETCH), git::Fetch.boxed_clone())
                         .action(
                             t(keys::git_ui::GIT_A_FETCH_FROM),
                             git::FetchFrom.boxed_clone(),
@@ -1451,7 +1453,7 @@ impl GitCloneModal {
         let repo_input = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
             editor.set_placeholder_text(
-                t(keys::git_ui::GIT_A_REPOSITORY_URL_PLACEHOLDER),
+                &t(keys::git_ui::GIT_A_REPOSITORY_URL_PLACEHOLDER),
                 window,
                 cx,
             );

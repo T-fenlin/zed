@@ -370,7 +370,7 @@ impl CollabPanel {
         cx.new(|cx| {
             let filter_editor = cx.new(|cx| {
                 let mut editor = Editor::single_line(window, cx);
-                editor.set_placeholder_text(t(keys::collab::COLLAB_SEARCH_CHANNELS), window, cx);
+                editor.set_placeholder_text(&t(keys::collab::COLLAB_SEARCH_CHANNELS), window, cx);
                 editor
             });
 
@@ -1263,7 +1263,7 @@ impl CollabPanel {
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
         let project_name: SharedString = if worktree_root_names.is_empty() {
-            "untitled".to_string()
+            t(keys::collab::COLLAB_UNTITLED).to_string()
         } else {
             worktree_root_names.join(", ")
         }
@@ -1392,7 +1392,7 @@ impl CollabPanel {
                             }),
                     ),
             )
-            .child(Label::new("notes"))
+            .child(Label::new(t(keys::collab::COLLAB_NOTES)))
             .tooltip(Tooltip::text(t(keys::collab::COLLAB_OPEN_CHANNEL_NOTES)))
     }
 
@@ -1615,7 +1615,7 @@ impl CollabPanel {
                         }),
                     )
                     .entry(
-                        "Rename",
+                        t_static(keys::collab::COLLAB_RENAME),
                         Some(Box::new(SecondaryConfirm)),
                         window.handler_for(&this, move |this, window, cx| {
                             this.rename_channel(channel_id, window, cx)
@@ -1681,7 +1681,7 @@ impl CollabPanel {
                 }
 
                 context_menu = context_menu.entry(
-                    "Delete",
+                    t_static(keys::collab::COLLAB_DELETE),
                     None,
                     window.handler_for(&this, move |this, window, cx| {
                         this.remove_channel(channel_id, window, cx)
@@ -2581,7 +2581,7 @@ impl CollabPanel {
             PromptLevel::Warning,
             &prompt_message,
             None,
-            &[leave.as_str(), "Cancel"],
+            &[leave, t_static(keys::collab::COLLAB_CANCEL)],
             cx,
         );
         cx.spawn_in(window, async move |this, cx| {
@@ -2615,12 +2615,12 @@ impl CollabPanel {
                 keys::prompt::PROMPT_REMOVE_CHANNEL,
                 &[("name", channel.name.as_str())],
             );
-            let remove = "Remove";
+            let remove = t_static(keys::collab::COLLAB_REMOVE);
             let answer = window.prompt(
                 PromptLevel::Warning,
                 &prompt_message,
                 None,
-                &[remove.as_str(), "Cancel"],
+                &[remove, t_static(keys::collab::COLLAB_CANCEL)],
                 cx,
             );
             let workspace = self.workspace.clone();
@@ -2653,12 +2653,12 @@ impl CollabPanel {
             keys::prompt::PROMPT_REMOVE_CONTACT,
             &[("name", github_login)],
         );
-        let remove = "Remove";
+        let remove = t_static(keys::collab::COLLAB_REMOVE);
         let answer = window.prompt(
             PromptLevel::Warning,
             &prompt_message,
             None,
-            &[remove.as_str(), "Cancel"],
+            &[remove, t_static(keys::collab::COLLAB_CANCEL)],
             cx,
         );
         let workspace = self.workspace.clone();
@@ -2793,7 +2793,7 @@ impl CollabPanel {
                 if is_busy {
                     t_static(keys::collab::COLLAB_CONNECTING)
                 } else {
-                    "Connect"
+                    t_static(keys::collab::COLLAB_CONNECT)
                 },
                 IconName::Public,
             )
@@ -3070,7 +3070,7 @@ impl CollabPanel {
                     SharedString::from(t(keys::collab::COLLAB_CURRENT_CALL))
                 }
             }
-            Section::FavoriteChannels => SharedString::from("Favorites"),
+            Section::FavoriteChannels => SharedString::from(t(keys::collab::COLLAB_FAVORITES)),
             Section::ContactRequests => SharedString::from(t_static(keys::collab::COLLAB_REQUESTS)),
             Section::Contacts => SharedString::from(t_static(keys::collab::COLLAB_CONTACTS)),
             Section::Channels => SharedString::from(t_static(keys::collab::COLLAB_CHANNELS)),
@@ -3310,9 +3310,9 @@ impl CollabPanel {
             .when(open_context_menu.is_none(), |this| {
                 this.tooltip(move |_, cx| {
                     let text = if !online {
-                        format!(" {username} is Offline")
+                        t_with_args(keys::collab::COLLAB_USER_OFFLINE, &[("name", &format!("{username}"))])
                     } else if busy {
-                        format!(" {username} is on a Call")
+                        t_with_args(keys::collab::COLLAB_USER_ON_CALL, &[("name", &format!("{username}"))])
                     } else {
                         let room = ActiveCall::global(cx).read(cx).room();
                         if room.is_some() {
@@ -3823,9 +3823,12 @@ impl CollabPanel {
                 let inviter = user_store.get_cached_user(*inviter_id)?;
                 Some((
                     Some(inviter.clone()),
-                    format!(
-                        "{} invited you to join the #{channel_name} channel",
-                        inviter.username
+                    t_with_args(
+                        keys::collab::COLLAB_NOTIFY_CHANNEL_INVITE,
+                        &[
+                            ("name", &inviter.username),
+                            ("channel", &format!("{channel_name}")),
+                        ],
                     ),
                 ))
             }
@@ -4336,23 +4339,23 @@ impl Render for CollabNotificationToast {
         let needs_response = self.notification.is_some();
 
         let accept_button = if needs_response {
-            Button::new("accept", "Accept").on_click(cx.listener(|this, _, window, cx| {
+            Button::new("accept", t(keys::collab::COLLAB_ACCEPT)).on_click(cx.listener(|this, _, window, cx| {
                 this.respond(true, window, cx);
                 cx.stop_propagation();
             }))
         } else {
-            Button::new("dismiss", "Dismiss").on_click(cx.listener(|_, _, _, cx| {
+            Button::new("dismiss", t(keys::collab::COLLAB_DISMISS)).on_click(cx.listener(|_, _, _, cx| {
                 cx.emit(DismissEvent);
             }))
         };
 
         let decline_button = if needs_response {
-            Button::new("decline", "Decline").on_click(cx.listener(|this, _, window, cx| {
+            Button::new("decline", t(keys::collab::COLLAB_DECLINE)).on_click(cx.listener(|this, _, window, cx| {
                 this.respond(false, window, cx);
                 cx.stop_propagation();
             }))
         } else {
-            Button::new("close", "Close").on_click(cx.listener(|_, _, _, cx| {
+            Button::new("close", t(keys::collab::COLLAB_CLOSE)).on_click(cx.listener(|_, _, _, cx| {
                 cx.emit(DismissEvent);
             }))
         };
@@ -4393,7 +4396,7 @@ impl CollabPanel {
                 ListEntry::Header(section) => {
                     let name = match section {
                         Section::ActiveCall => "Active Call",
-                        Section::FavoriteChannels => "Favorites",
+                        Section::FavoriteChannels => t_static(keys::collab::COLLAB_FAVORITES),
                         Section::Channels => t_static(keys::collab::COLLAB_CHANNELS),
                         Section::ChannelInvites => t_static(keys::collab::COLLAB_CHANNEL_INVITES),
                         Section::ContactRequests => t_static(keys::collab::COLLAB_CONTACT_REQUESTS),

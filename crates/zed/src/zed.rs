@@ -767,7 +767,7 @@ fn show_software_emulation_warning_if_needed(
             PromptLevel::Critical,
             &t(keys::zed::ZED_A_GPU_TITLE),
             Some(&message),
-            &[skip.as_str(), troubleshoot.as_str()],
+            &[skip, troubleshoot.as_str()],
             cx,
         );
         cx.spawn(async move |_, cx| {
@@ -1076,8 +1076,15 @@ fn register_actions(
                 Err(e) => {
                     workspace.show_error(
                         format!(
-                            "Opening this URL in a browser failed because the URL is invalid: {}\n\nError was: {e}",
-                            action.url
+                            "{}\n\n{}",
+                            t_with_args(
+                                keys::zed::ZED_A_OPEN_BROWSER_INVALID_URL,
+                                &[("url", &action.url)],
+                            ),
+                            t_with_args(
+                                keys::zed::ZED_A_OPEN_BROWSER_ERROR,
+                                &[("error", &format!("{e}"))],
+                            )
                         ),
                         cx,
                     );
@@ -1564,9 +1571,9 @@ fn open_about_window(cx: &mut App) {
             let version = env!("CARGO_PKG_VERSION");
 
             let debug = if cfg!(debug_assertions) {
-                "(debug)"
+                t(keys::zed::ZED_A_ABOUT_DEBUG_SUFFIX)
             } else {
-                ""
+                String::new()
             };
             let message: SharedString = format!("{release_channel_name} {version} {debug}").into();
             let commit = AppCommitSha::try_global(cx)
@@ -1589,11 +1596,20 @@ fn open_about_window(cx: &mut App) {
             let content = match self.commit.as_ref() {
                 Some(commit) => {
                     format!(
-                        "{}\nCommit: {}\nVersion: {}",
-                        self.message, commit, self.full_version
+                        "{}\n{}: {}\n{}: {}",
+                        self.message,
+                        t(keys::zed::ZED_A_ABOUT_COMMIT),
+                        commit,
+                        t(keys::zed::ZED_A_ABOUT_VERSION),
+                        self.full_version
                     )
                 }
-                None => format!("{}\nVersion: {}", self.message, self.full_version),
+                None => format!(
+                    "{}\n{}: {}",
+                    self.message,
+                    t(keys::zed::ZED_A_ABOUT_VERSION),
+                    self.full_version
+                ),
             };
             cx.write_to_clipboard(ClipboardItem::new_string(content));
             window.remove_window();
@@ -1630,14 +1646,14 @@ fn open_about_window(cx: &mut App) {
                             .child(Headline::new(self.message.clone()))
                             .when_some(self.commit.clone(), |this, commit| {
                                 this.child(
-                                    Label::new("Commit")
+                                    Label::new(t(keys::zed::ZED_A_ABOUT_COMMIT))
                                         .color(Color::Muted)
                                         .size(LabelSize::XSmall),
                                 )
                                 .child(Label::new(commit).size(LabelSize::Small))
                             })
                             .child(
-                                Label::new("Version")
+                                Label::new(t(keys::zed::ZED_A_ABOUT_VERSION))
                                     .color(Color::Muted)
                                     .size(LabelSize::XSmall),
                             )
@@ -1655,7 +1671,7 @@ fn open_about_window(cx: &mut App) {
                                         window.remove_window();
                                     }))
                                     .child(
-                                        Button::new("ok", "OK")
+                                        Button::new("ok", t(keys::zed::ZED_A_ABOUT_OK))
                                             .full_width()
                                             .style(ButtonStyle::OutlinedGhost)
                                             .toggle_state(ok_is_focused)
@@ -1675,7 +1691,7 @@ fn open_about_window(cx: &mut App) {
                                         },
                                     ))
                                     .child(
-                                        Button::new("copy", "Copy")
+                                        Button::new("copy", t(keys::zed::ZED_A_ABOUT_COPY))
                                             .full_width()
                                             .style(ButtonStyle::Tinted(TintColor::Accent))
                                             .toggle_state(copy_is_focused)
@@ -1722,7 +1738,7 @@ fn open_about_window(cx: &mut App) {
     cx.open_window(
         WindowOptions {
             titlebar: Some(TitlebarOptions {
-                title: Some(t(keys::app_menu::MENU_ZED_ABOUT).into()),
+                title: Some(t(keys::zed::ZED_A_ABOUT_TITLE).into()),
                 appears_transparent: true,
                 traffic_light_position: Some(point(px(12.), px(12.))),
             }),
@@ -1783,7 +1799,7 @@ fn quit(_: &Quit, cx: &mut App) {
                         PromptLevel::Info,
                         &t(keys::zed::ZED_A_QUIT_CONFIRM),
                         None,
-                        &[quit.as_str(), "Cancel"],
+                        &[quit, t_static(keys::zed::ZED_A_CANCEL)],
                         cx,
                     )
                 })
@@ -1859,11 +1875,20 @@ fn open_log_file(workspace: &mut Workspace, window: &mut Window, cx: &mut Contex
                             |cx| {
                                 cx.new(|cx| {
                                     MessageNotification::new(
-                                        format!(
-                                            "Unable to access/open log file at path \
-                                                    {}: {e:#}",
-                                            paths::log_file().display()
-                                        ),
+                                        {
+                                            let log_path = paths::log_file().display().to_string();
+                                            format!(
+                                                "{}\n{:#}",
+                                                t_with_args(
+                                                    keys::zed::ZED_A_LOG_OPEN_ERROR,
+                                                    &[
+                                                        ("path", &log_path),
+                                                        ("error", &format!("{e:#}")),
+                                                    ],
+                                                ),
+                                                e
+                                            )
+                                        },
                                         cx,
                                     )
                                 })
@@ -1947,7 +1972,10 @@ fn notify_settings_errors(result: settings::SettingsParseResult, is_user: bool, 
             } else {
                 show_app_notification(id, cx, move |cx| {
                     cx.new(|cx| {
-                        MessageNotification::new(format!("Invalid user settings file\n{error}"), cx)
+                        MessageNotification::new(
+                            format!("{}\n{error}", t(keys::zed::ZED_A_INVALID_USER_SETTINGS)),
+                            cx,
+                        )
                             .primary_message(t_static(keys::app_menu::MENU_ZED_OPEN_SETTINGS_FILE))
                             .primary_icon(IconName::Settings)
                             .primary_on_click(|window, cx| {
@@ -1979,8 +2007,9 @@ fn notify_settings_errors(result: settings::SettingsParseResult, is_user: bool, 
                     cx.new(|cx| {
                         MessageNotification::new(
                             format!(
-                                "Failed to migrate settings\n\
-                                {err}"
+                                "{}\n\
+                                {err}",
+                                t(keys::zed::ZED_A_SETTINGS_MIGRATION_FAILED)
                             ),
                             cx,
                         )
@@ -2002,7 +2031,7 @@ fn init_global_config_error_notifications(cx: &mut App) {
         cx.subscribe_self::<SettingsObserverEvent>(|_, event, cx| {
             let (result, file_kind, on_click): (_, _, fn(&mut Window, &mut App)) = match event {
                 SettingsObserverEvent::GlobalTasksUpdated(result) => {
-                    (result, "tasks", |window, cx| {
+                    (result, t_static(keys::zed::ZED_A_FILE_KIND_TASKS), |window, cx| {
                         window.dispatch_action(OpenTasks.boxed_clone(), cx)
                     })
                 }
@@ -2017,7 +2046,10 @@ fn init_global_config_error_notifications(cx: &mut App) {
             match result {
                 Ok(_) => dismiss_app_notification(&id, cx),
                 Err(error) => {
-                    let message = format!("Invalid global {file_kind} file\n{error}");
+                    let message = format!(
+                        "{}\n{error}",
+                        t_with_args(keys::zed::ZED_A_INVALID_GLOBAL_FILE, &[("kind", &file_kind)])
+                    );
                     show_app_notification(id, cx, move |cx| {
                         cx.new(|cx| {
                             MessageNotification::new(message.clone(), cx)
@@ -2108,7 +2140,10 @@ pub fn watch_user_agents_md(fs: Arc<dyn fs::Fs>, cx: &mut App) {
         UserAgentsMdState::Error(message) => {
             let path = paths::agents_file().display().to_string();
             log::error!("Failed to load user AGENTS.md from {path}: {message}");
-            let body = format!("Failed to load {path}\n{message}");
+            let body = format!(
+                "{}\n{message}",
+                t_with_args(keys::zed::ZED_A_FAILED_TO_LOAD, &[("path", &path)])
+            );
             let notification_id = notification_id.clone();
             show_app_notification(notification_id, cx, move |cx| {
                 let body = body.clone();
@@ -2267,7 +2302,11 @@ fn show_keymap_file_json_error(
     cx: &mut App,
 ) {
     let message: SharedString =
-        format!("JSON parse error in keymap file. Bindings not reloaded.\n\n{error}").into();
+        format!(
+            "{}\n\n{error}",
+            t(keys::zed::ZED_A_KEYMAP_JSON_ERROR)
+        )
+        .into();
     show_app_notification(notification_id, cx, move |cx| {
         cx.new(|cx| {
             MessageNotification::new(message.clone(), cx)
@@ -8492,7 +8531,7 @@ mod tests {
                 "expected Agent Panel in the View menu when AI is enabled"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to be in View menu"
             );
         });
@@ -8513,7 +8552,7 @@ mod tests {
                 "expected Agent Panel to be removed from the View menu after disabling AI"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8532,7 +8571,7 @@ mod tests {
                 "expected Agent Panel back in the View menu after re-enabling AI"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8549,7 +8588,7 @@ mod tests {
                 "expected Agent Panel before disabling AI"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics in the View menu"
             );
         });
@@ -8594,7 +8633,7 @@ mod tests {
                 "expected Agent Panel removed even though the keymap file is malformed"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to remain in the View menu"
             );
         });
@@ -8616,7 +8655,7 @@ mod tests {
                 "expected Agent Panel added back even though the keymap file is malformed"
             );
             assert!(
-                has_view_item(cx, "Diagnostics"),
+                has_view_item(cx, t_static(keys::app_menu::MENU_VIEW_DIAGNOSTICS)),
                 "expected Diagnostics to remain in the View menu"
             );
         });

@@ -1,4 +1,4 @@
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use std::time::Duration;
 
 use acp_thread::AgentSessionListRequest;
@@ -121,7 +121,7 @@ impl AgentImportStatus {
         match self {
             Self::Loading => Some("Fetching Sessions…".into()),
             Self::Ready { .. } => None,
-            Self::Unsupported => Some("Importing threads from this agent is not possible as it doesn't support ACP's session/list capability.".into()),
+            Self::Unsupported => Some(t(keys::agent::AGENT_IMPORT_UNSUPPORTED).into()),
             Self::Error(error) => Some(format!("Failed to fetch sessions: {error}").into()),
         }
     }
@@ -505,9 +505,13 @@ impl Render for ThreadImportModal {
                             importable_count: count,
                         } => {
                             let label: SharedString = if count == 0 {
-                                "No threads".into()
+                                t(keys::agent::AGENT_IMPORT_NONE).into()
                             } else {
-                                format!("{} threads", count).into()
+                                t_with_args(
+                                    keys::agent::AGENT_IMPORT_THREAD_COUNT,
+                                    &[("count", &count.to_string())],
+                                )
+                                .into()
                             };
                             this.child(Label::new(label).size(LabelSize::Small).color(Color::Muted))
                         }

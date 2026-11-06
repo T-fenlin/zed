@@ -563,7 +563,7 @@ impl ConfigureContextServerModal {
                     secret_editor: cx.new(|cx| {
                         let mut editor = Editor::single_line(window, cx);
                         editor.set_placeholder_text(
-                            t(keys::agent::AGENT_A_CONTEXT_SERVER_SECRET_PLACEHOLDER),
+                            t_static(keys::agent::AGENT_A_CONTEXT_SERVER_SECRET_PLACEHOLDER),
                             window,
                             cx,
                         );
@@ -811,7 +811,7 @@ impl ConfigureContextServerModal {
     }
 
     fn render_modal_description(&self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
-        const MODAL_DESCRIPTION: &str = t(keys::agent::AGENT_A_CONTEXT_SERVER_DESCRIPTION);
+        let modal_description = t(keys::agent::AGENT_A_CONTEXT_SERVER_DESCRIPTION);
 
         if let ConfigurationSource::Extension {
             installation_instructions: Some(installation_instructions),
@@ -827,7 +827,7 @@ impl ConfigureContextServerModal {
                 ))
                 .into_any_element()
         } else {
-            Label::new(MODAL_DESCRIPTION)
+            Label::new(modal_description)
                 .color(Color::Muted)
                 .into_any_element()
         }
@@ -923,9 +923,9 @@ impl ConfigureContextServerModal {
                         Button::new(
                             "cancel",
                             if self.source.has_configuration_options() {
-                                "Cancel"
+                                t(keys::agent::AGENT_A_CONTEXT_SERVER_CANCEL)
                             } else {
-                                "Dismiss"
+                                t(keys::agent::AGENT_A_CONTEXT_SERVER_DISMISS)
                             },
                         )
                         .key_binding(
@@ -991,7 +991,7 @@ impl ConfigureContextServerModal {
                     ),
             )
             .child(
-                Button::new("authenticate-server", "Authenticate")
+                Button::new("authenticate-server", t(keys::agent::AGENT_A_CONTEXT_SERVER_AUTHENTICATE))
                     .style(ButtonStyle::Outlined)
                     .label_size(LabelSize::Small)
                     .on_click({
@@ -1061,7 +1061,7 @@ impl ConfigureContextServerModal {
                         },
                     )))
                     .child(
-                        Button::new("submit-client-secret", "Submit")
+                        Button::new("submit-client-secret", t(keys::agent::AGENT_A_CONTEXT_SERVER_SUBMIT))
                             .style(ButtonStyle::Outlined)
                             .label_size(LabelSize::Small)
                             .on_click({
@@ -1089,13 +1089,13 @@ impl ConfigureContextServerModal {
                             .with_rotate_animation(3),
                     )
                     .child(
-                        Label::new("Authenticating…")
+                        Label::new(t(keys::agent::AGENT_A_CONTEXT_SERVER_AUTHENTICATING))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),
             )
             .child(
-                Button::new("cancel-authentication", "Cancel")
+                Button::new("cancel-authentication", t(keys::agent::AGENT_A_CONTEXT_SERVER_CANCEL))
                     .style(ButtonStyle::Outlined)
                     .label_size(LabelSize::Small)
                     .on_click({

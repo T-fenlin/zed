@@ -1,5 +1,5 @@
 use gpui::{Action, ClickEvent, FocusHandle, prelude::*};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use language_model::DisabledReason;
 use ui::{Chip, ElevationIndex, KeyBinding, ListItem, ListItemSpacing, Tooltip, prelude::*};
 use zed_actions::agent::ToggleModelSelector;
@@ -249,7 +249,7 @@ impl RenderOnce for ModelSelectorFooter {
             .border_t_1()
             .border_color(cx.theme().colors().border_variant)
             .child(
-                Button::new("configure", "Configure")
+                Button::new("configure", t(keys::agent::AGENT_MODELS_CONFIGURE))
                     .full_width()
                     .style(ButtonStyle::Outlined)
                     .key_binding(

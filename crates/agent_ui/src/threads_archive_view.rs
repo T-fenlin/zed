@@ -172,7 +172,7 @@ impl ThreadsArchiveView {
 
         let filter_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text(t(keys::agent::AGENT_SEARCH_THREADS), window, cx);
+            editor.set_placeholder_text(t_static(keys::agent::AGENT_SEARCH_THREADS), window, cx);
             editor
         });
 
@@ -301,11 +301,12 @@ impl ThreadsArchiveView {
 
         for session in sessions {
             let highlight_positions = if !query.is_empty() {
+                let default_title = default_thread_title();
                 let title = session
                     .title
                     .as_ref()
                     .map(|t| t.as_ref())
-                    .unwrap_or(default_thread_title().as_str());
+                    .unwrap_or(default_title.as_str());
                 if let Some(positions) = fuzzy_match_positions(&query, title) {
                     positions
                 } else {

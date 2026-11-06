@@ -259,7 +259,7 @@ impl<S: ApiCompatibleProviderSettings> Render for ApiCompatibleProviderConfigura
                             .when(env_var_set, |this| {
                                 this.tooltip(Tooltip::text(t_with_args(
                                     keys::settings_ui::SETTINGS_B_API_KEY_RESET_TOOLTIP,
-                                    &[("env_var", &().to_string())],
+                                    &[("env_var", env_var_name.as_str())],
                                 )))
                             })
                             .on_click(

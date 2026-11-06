@@ -460,7 +460,7 @@ fn general_page(cx: &App) -> SettingsPage {
 
     fn privacy_section() -> [SettingsPageItem; 4] {
         [
-            SettingsPageItem::SectionHeader("Privacy".into()),
+            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_GENERAL_SECTION_PRIVACY).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_GENERAL_TELEMETRY_DIAGNOSTICS).into(),
                 description: t(
@@ -582,7 +582,7 @@ fn general_page(cx: &App) -> SettingsPage {
     }
 
     SettingsPage {
-        title: "General".into(),
+        title: t(keys::settings_ui::SETTINGS_GENERAL_GENERAL).into(),
         items: concat_sections!(
             @vec,
             general_settings_section(cx),
@@ -697,7 +697,7 @@ fn appearance_page() -> SettingsPage {
                         settings::ThemeSelectionDiscriminants::Dynamic => vec![
                             SettingItem {
                                 files: USER,
-                                title: "Mode".into(),
+                                title: t(keys::settings_ui::SETTINGS_APPEARANCE_MODE).into(),
                                 description: t(keys::settings_ui::SETTINGS_APPEARANCE_CHOOSE_WHETHER_TO_USE_THE_SELECTED_LIGHT).into(),
                                 field: Box::new(SettingField {
                                     organization_override: None,
@@ -878,7 +878,7 @@ fn appearance_page() -> SettingsPage {
                         settings::IconThemeSelectionDiscriminants::Dynamic => vec![
                             SettingItem {
                                 files: USER,
-                                title: "Mode".into(),
+                                title: t(keys::settings_ui::SETTINGS_APPEARANCE_MODE_2).into(),
                                 description: t(keys::settings_ui::SETTINGS_APPEARANCE_CHOOSE_WHETHER_TO_USE_THE_SELECTED_LIGHT_2).into(),
                                 field: Box::new(SettingField {
                                     organization_override: None,
@@ -1916,7 +1916,7 @@ fn keymap_page() -> SettingsPage {
     );
 
     SettingsPage {
-        title: "Keymap".into(),
+        title: t(keys::settings_ui::SETTINGS_KEYMAP_KEYMAP).into(),
         items,
     }
 }
@@ -2431,7 +2431,7 @@ fn editor_page() -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_EDITOR_SECTION_HOVER_POPOVER).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Enabled".into(),
+                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_SHOW_THE_INFORMATIONAL_HOVER_BOX_WHEN_MO,
                 )
@@ -2449,7 +2449,7 @@ fn editor_page() -> SettingsPage {
             }),
             // todo(settings ui): add units to this number input
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Delay".into(),
+                title: t(keys::settings_ui::SETTINGS_EDITOR_DELAY).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_TIME_TO_WAIT_IN_MILLISECONDS_BEFORE_SHOW,
                 )
@@ -2511,7 +2511,7 @@ fn editor_page() -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_EDITOR_SECTION_DRAG_AND_DROP_SELECTION).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Enabled".into(),
+                title: t(keys::settings_ui::SETTINGS_EDITOR_ENABLED_2).into(),
                 description: t(keys::settings_ui::SETTINGS_EDITOR_ENABLE_DRAG_AND_DROP_SELECTION)
                     .into(),
                 field: Box::new(SettingField {
@@ -2536,7 +2536,7 @@ fn editor_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Delay".into(),
+                title: t(keys::settings_ui::SETTINGS_EDITOR_DELAY_2).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_DELAY_IN_MILLISECONDS_BEFORE_DRAG_AND_DR,
                 )
@@ -2836,7 +2836,7 @@ fn editor_page() -> SettingsPage {
                 t_static(keys::settings_ui::SETTINGS_EDITOR_SECTION_SCROLLBAR).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Show".into(),
+                title: t(keys::settings_ui::SETTINGS_EDITOR_SHOW).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_WHEN_TO_SHOW_THE_SCROLLBAR_IN_THE_EDITOR,
                 )
@@ -2996,7 +2996,7 @@ fn editor_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Diagnostics".into(),
+                title: t(keys::settings_ui::SETTINGS_EDITOR_DIAGNOSTICS).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_WHICH_DIAGNOSTIC_INDICATORS_TO_SHOW_IN_T,
                 )
@@ -3096,7 +3096,7 @@ fn editor_page() -> SettingsPage {
                 t_static(keys::settings_ui::SETTINGS_EDITOR_SECTION_MINIMAP).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Show".into(),
+                title: t(keys::settings_ui::SETTINGS_EDITOR_SHOW_2).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_EDITOR_WHEN_TO_SHOW_THE_MINIMAP_IN_THE_EDITOR,
                 )
@@ -3252,7 +3252,7 @@ fn editor_page() -> SettingsPage {
 
     fn toolbar_section() -> [SettingsPageItem; 6] {
         [
-            SettingsPageItem::SectionHeader("Toolbar".into()),
+            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_EDITOR_SECTION_TOOLBAR).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t_static(keys::settings_ui::SETTINGS_EDITOR_BREADCRUMBS).into(),
                 description: t(keys::settings_ui::SETTINGS_EDITOR_SHOW_BREADCRUMBS).into(),
@@ -3764,7 +3764,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
 
     fn diagnostics_section() -> [SettingsPageItem; 3] {
         [
-            SettingsPageItem::SectionHeader("Diagnostics".into()),
+            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_DIAGNOSTICS).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_LANGUAGES_MAX_SEVERITY).into(),
                 description: t(keys::settings_ui::SETTINGS_DIAGNOSTICS_FILTER_LEVEL_HINT).into(),
@@ -3816,7 +3816,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_INLINE_DIAGNOSTICS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Enabled".into(),
+                title: t(keys::settings_ui::SETTINGS_LANGUAGES_ENABLED).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_LANGUAGES_WHETHER_TO_SHOW_DIAGNOSTICS_INLINE_OR_NO,
                 )
@@ -3876,7 +3876,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Padding".into(),
+                title: t(keys::settings_ui::SETTINGS_LANGUAGES_PADDING).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_LANGUAGES_THE_AMOUNT_OF_PADDING_BETWEEN_THE_END_OF,
                 )
@@ -3944,7 +3944,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LSP_PULL_DIAGNOSTICS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Enabled".into(),
+                title: t(keys::settings_ui::SETTINGS_LANGUAGES_ENABLED_2).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_LANGUAGES_WHETHER_TO_PULL_FOR_LANGUAGE_SERVER_POWE,
                 )
@@ -3975,7 +3975,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
             }),
             // todo(settings_ui): Needs unit
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Debounce".into(),
+                title: t(keys::settings_ui::SETTINGS_LANGUAGES_DEBOUNCE).into(),
                 description: t(keys::settings_ui::SETTINGS_DIAGNOSTICS_PULL_DEBOUNCE_HINT).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -4010,7 +4010,7 @@ fn languages_and_tools_page(cx: &App) -> SettingsPage {
                 t(keys::settings_ui::SETTINGS_LANGUAGES_SECTION_LSP_HIGHLIGHTS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Debounce".into(),
+                title: t(keys::settings_ui::SETTINGS_LANGUAGES_DEBOUNCE_2).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_LANGUAGES_THE_DEBOUNCE_DELAY_BEFORE_QUERYING_HIGHL,
                 )
@@ -5791,7 +5791,7 @@ fn window_and_layout_page() -> SettingsPage {
 
     fn window_section() -> [SettingsPageItem; 6] {
         [
-            SettingsPageItem::SectionHeader("Window".into()),
+            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_WINDOW_SECTION_WINDOW).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_WINDOW_TITLE_FORMAT).into(),
                 description: "Window title template. Available variables are `${projectName}`, `${fileName}`, `${filePath}`, `${relativePath}`, `${fileStem}`, `${remoteName}`, `${remoteHost}`, `${appName}`, `${branch}`, and `${separator}`. `${separator}` is omitted when adjacent variables are empty, but literal text is preserved. The collaboration indicator, when present, is appended after the rendered template. If the template renders to nothing, the default template is used instead.".into(),
@@ -7813,7 +7813,7 @@ fn panels_page() -> SettingsPage {
 fn debugger_page() -> SettingsPage {
     fn general_section() -> [SettingsPageItem; 6] {
         [
-            SettingsPageItem::SectionHeader("General".into()),
+            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_DEBUGGER_SECTION_GENERAL).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_DEBUGGER_STEPPING_GRANULARITY).into(),
                 description: t(
@@ -8033,7 +8033,7 @@ fn terminal_page() -> SettingsPage {
                             settings::ShellDiscriminants::System => vec![],
                             settings::ShellDiscriminants::Program => vec![SettingItem {
                                 files: USER | PROJECT,
-                                title: "Program".into(),
+                                title: t(keys::settings_ui::SETTINGS_TERMINAL_PROGRAM).into(),
                                 description: t(keys::settings_ui::SETTINGS_TERMINAL_THE_SHELL_PROGRAM_TO_USE).into(),
                                 field: Box::new(SettingField {
                                     organization_override: None,
@@ -8064,7 +8064,7 @@ fn terminal_page() -> SettingsPage {
                             settings::ShellDiscriminants::WithArguments => vec![
                                 SettingItem {
                                     files: USER | PROJECT,
-                                    title: "Program".into(),
+                                    title: t(keys::settings_ui::SETTINGS_TERMINAL_PROGRAM_2).into(),
                                     description: t(keys::settings_ui::SETTINGS_TERMINAL_THE_SHELL_PROGRAM_TO_RUN).into(),
                                     field: Box::new(SettingField {
                                         organization_override: None,
@@ -8097,7 +8097,7 @@ fn terminal_page() -> SettingsPage {
                                 },
                                 SettingItem {
                                     files: USER | PROJECT,
-                                    title: "Arguments".into(),
+                                    title: t(keys::settings_ui::SETTINGS_TERMINAL_ARGUMENTS).into(),
                                     description: t(keys::settings_ui::SETTINGS_TERMINAL_THE_ARGUMENTS_TO_PASS_TO_THE_SHELL_PROGR).into(),
                                     field: Box::new(
                                         SettingField {
@@ -8801,7 +8801,7 @@ fn terminal_page() -> SettingsPage {
 
     fn toolbar_section() -> [SettingsPageItem; 2] {
         [
-            SettingsPageItem::SectionHeader("Toolbar".into()),
+            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_TERMINAL_SECTION_TOOLBAR).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t_static(keys::settings_ui::SETTINGS_EDITOR_BREADCRUMBS).into(),
                 description: t(
@@ -9084,7 +9084,7 @@ fn version_control_page() -> SettingsPage {
             }),
             // todo(settings_ui): Figure out the right default for this value in default.json
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Debounce".into(),
+                title: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_DEBOUNCE).into(),
                 description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_DEBOUNCE_THRESHOLD_IN_MILLISECONDS_AFTER).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -9107,7 +9107,7 @@ fn version_control_page() -> SettingsPage {
             SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_VERSION_CONTROL_SECTION_INLINE_GIT_BLAME).into()),
             SettingsPageItem::DynamicItem(DynamicItem {
                 discriminant: SettingItem {
-                    title: "Enabled".into(),
+                    title: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_ENABLED).into(),
                     description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_WHETHER_OR_NOT_TO_SHOW_GIT_BLAME_DATA_FO).into(),
                     field: Box::new(SettingField {
                         organization_override: None,
@@ -9176,7 +9176,7 @@ fn version_control_page() -> SettingsPage {
                 ],
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Delay".into(),
+                title: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_DELAY).into(),
                 description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_THE_DELAY_AFTER_WHICH_THE_INLINE_BLAME_I).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -9203,7 +9203,7 @@ fn version_control_page() -> SettingsPage {
                 files: USER,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Padding".into(),
+                title: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_PADDING).into(),
                 description: t(keys::settings_ui::SETTINGS_VERSION_CONTROL_PADDING_BETWEEN_THE_END_OF_THE_SOURCE_LI).into(),
                 field: Box::new(SettingField {
                     organization_override: None,
@@ -9587,7 +9587,7 @@ fn collaboration_page() -> SettingsPage {
 fn ai_page(cx: &App) -> SettingsPage {
     fn general_section() -> [SettingsPageItem; 8] {
         [
-            SettingsPageItem::SectionHeader("General".into()),
+            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_AI_SECTION_GENERAL).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_AI_DISABLE_AI).into(),
                 description: t(
@@ -9773,7 +9773,7 @@ fn ai_page(cx: &App) -> SettingsPage {
 
         items.extend([
             SettingsPageItem::SubPageLink(SubPageLink {
-                title: "Skills".into(),
+                title: t(keys::settings_ui::SETTINGS_AI_SKILLS).into(),
                 r#type: Default::default(),
                 json_path: Some(zed_actions::AGENT_SKILLS_SETTINGS_PATH),
                 description: Some(t(keys::settings_ui::SETTINGS_SKILLS_DESCRIPTION).into()),
@@ -10322,7 +10322,7 @@ fn ai_page(cx: &App) -> SettingsPage {
 fn network_page() -> SettingsPage {
     fn network_section() -> [SettingsPageItem; 3] {
         [
-            SettingsPageItem::SectionHeader("Network".into()),
+            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_NETWORK_SECTION_NETWORK).into()),
             SettingsPageItem::SettingItem(SettingItem {
                 title: t_static(keys::settings_ui::SETTINGS_NETWORK_PROXY).into(),
                 description: t(
@@ -10367,7 +10367,7 @@ fn network_page() -> SettingsPage {
     }
 
     SettingsPage {
-        title: "Network".into(),
+        title: t(keys::settings_ui::SETTINGS_NETWORK_NETWORK).into(),
         items: concat_sections![network_section()],
     }
 }
@@ -10660,7 +10660,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 t(keys::settings_ui::SETTINGS_NETWORK_SECTION_INDENT_GUIDES).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Enabled".into(),
+                title: t(keys::settings_ui::SETTINGS_NETWORK_ENABLED).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_DISPLAY_INDENT_GUIDES_IN_THE_EDITOR,
                 )
@@ -11326,7 +11326,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 t(keys::settings_ui::SETTINGS_NETWORK_SECTION_INLAY_HINTS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Enabled".into(),
+                title: t(keys::settings_ui::SETTINGS_NETWORK_ENABLED_2).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_GLOBAL_SWITCH_TO_TOGGLE_HINTS_ON_AND_OFF,
                 )
@@ -11572,7 +11572,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 t_static(keys::settings_ui::SETTINGS_NETWORK_SECTION_TASKS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Enabled".into(),
+                title: t(keys::settings_ui::SETTINGS_NETWORK_ENABLED_3).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_WHETHER_TASKS_ARE_ENABLED_FOR_THIS_LANGU,
                 )
@@ -11696,7 +11696,7 @@ fn language_settings_data() -> Box<[SettingsPageItem]> {
                 files: USER | PROJECT,
             }),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Debuggers".into(),
+                title: t(keys::settings_ui::SETTINGS_NETWORK_DEBUGGERS).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_PREFERRED_DEBUGGERS_FOR_THIS_LANGUAGE,
                 )
@@ -12231,7 +12231,7 @@ fn non_editor_language_settings_data() -> Box<[SettingsPageItem]> {
                 t(keys::settings_ui::SETTINGS_NETWORK_SECTION_LSP_COMPLETIONS).into(),
             ),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Enabled".into(),
+                title: t(keys::settings_ui::SETTINGS_NETWORK_ENABLED_4).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_WHETHER_TO_FETCH_LSP_COMPLETIONS_OR_NOT,
                 )
@@ -12307,9 +12307,9 @@ fn non_editor_language_settings_data() -> Box<[SettingsPageItem]> {
 
     fn debugger_section() -> [SettingsPageItem; 2] {
         [
-            SettingsPageItem::SectionHeader("Debuggers".into()),
+            SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_NETWORK_SECTION_DEBUGGERS).into()),
             SettingsPageItem::SettingItem(SettingItem {
-                title: "Debuggers".into(),
+                title: t(keys::settings_ui::SETTINGS_NETWORK_DEBUGGERS_2).into(),
                 description: t(
                     keys::settings_ui::SETTINGS_NETWORK_PREFERRED_DEBUGGERS_FOR_THIS_LANGUAGE,
                 )

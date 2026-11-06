@@ -380,7 +380,7 @@ mod tests {
             ),
             (
                 SubagentStatus::Failed,
-                t_static(keys::agent::AGENT_THREAD_SUBAGENT_FAILED),
+                t(keys::agent::AGENT_THREAD_SUBAGENT_FAILED),
             ),
             (
                 SubagentStatus::Canceled,

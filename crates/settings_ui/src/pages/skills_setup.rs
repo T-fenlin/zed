@@ -378,12 +378,12 @@ fn render_skill_row(
                                     ("shared_scope", shared_scope.as_str()),
                                 ],
                             );
-                            let delete = "Delete";
+                            let delete = t(keys::settings_ui::SETTINGS_A_SKILLS_DELETE);
                             let answer = window.prompt(
                                 PromptLevel::Info,
                                 &prompt_message,
                                 Some(&prompt_detail),
-                                &[delete.as_str(), "Cancel"],
+                                &[delete.as_str(), t(keys::settings_ui::SETTINGS_A_SKILLS_CANCEL).as_str()],
                                 cx,
                             );
 
@@ -406,7 +406,7 @@ fn render_skill_row(
                     )),
                 )
                 .child(
-                    Button::new(SharedString::from(format!("open-{}", skill.name)), "Open")
+                    Button::new(SharedString::from(format!("open-{}", skill.name)), t(keys::settings_ui::SETTINGS_A_SKILLS_OPEN))
                         .tab_index(0_isize)
                         .style(ButtonStyle::OutlinedGhost)
                         .size(ButtonSize::Medium)

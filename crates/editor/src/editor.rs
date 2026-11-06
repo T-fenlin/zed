@@ -2225,7 +2225,7 @@ impl Editor {
                             Self::open_transaction_for_hidden_buffers(
                                 workspace,
                                 transaction.clone(),
-                                "Rename".to_string(),
+                                t(keys::editor::EDITOR_RENAME),
                                 window,
                                 cx,
                             );

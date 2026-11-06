@@ -19,7 +19,7 @@ pub fn clone_and_open(
         files: false,
         directories: true,
         multiple: false,
-        prompt: Some("Select as Repository Destination".into()),
+        prompt: Some(t(keys::git_ui::GIT_CLONE_SELECT_DESTINATION).into()),
     });
 
     window

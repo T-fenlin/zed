@@ -1618,7 +1618,10 @@ impl RemoteServerProjects {
             Err(e) => {
                 self.mode = Mode::CreateRemoteServer(CreateRemoteServer {
                     address_editor: editor,
-                    address_error: Some(format!("could not parse: {:?}", e).into()),
+                    address_error: Some(
+                        t_with_args(keys::recent::RECENT_SSH_PARSE_ERROR, &[("error", &format!("{e:?}"))])
+                            .into(),
+                    ),
                     ssh_prompt: None,
                     _creating: None,
                 });
@@ -2447,7 +2450,7 @@ impl RemoteServerProjects {
                                                 .color(Color::Muted)
                                                 .size(IconSize::Small),
                                         )
-                                        .child(Label::new("Exit"))
+                                        .child(Label::new(t(keys::recent::RECENT_EXIT)))
                                         .on_click(cx.listener(|this, _, window, cx| {
                                             this.cancel(&menu::Cancel, window, cx);
                                             cx.notify();
@@ -2583,7 +2586,7 @@ impl RemoteServerProjects {
                                     .child(
                                         Button::new(
                                             "learn-more",
-                                            t(keys::agent::AGENT_THREAD_LEARN_MORE),
+                                            t(keys::recent::RECENT_LEARN_MORE),
                                         )
                                         .label_size(LabelSize::Small)
                                         .end_icon(

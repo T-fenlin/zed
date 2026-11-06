@@ -791,14 +791,17 @@ impl PickerDelegate for Delegate {
         vec![
             picker::PickerAction::header(t_static(keys::search::SEARCH_SPLIT_ELLIPSIS)),
             picker::PickerAction::button(
-                "Left",
+                t_static(keys::search::SEARCH_SPLIT_LEFT),
                 workspace::pane::SplitLeft::default().boxed_clone(),
             ),
             picker::PickerAction::button(
-                "Right",
+                t_static(keys::search::SEARCH_SPLIT_RIGHT),
                 workspace::pane::SplitRight::default().boxed_clone(),
             ),
-            picker::PickerAction::button("Up", workspace::pane::SplitUp::default().boxed_clone()),
+            picker::PickerAction::button(
+                t_static(keys::search::SEARCH_SPLIT_UP),
+                workspace::pane::SplitUp::default().boxed_clone(),
+            ),
             picker::PickerAction::button(
                 t_static(keys::search::SEARCH_SPLIT_DOWN),
                 workspace::pane::SplitDown::default().boxed_clone(),

@@ -149,9 +149,12 @@ impl UpdateButton {
     ) -> String {
         let message = Self::version_tooltip_message(version);
         match progress {
-            Some(progress) => format!(
-                "{message} ({:.0}% downloaded)",
-                progress.clamp(0.0, 1.0) * 100.0
+            Some(progress) => t_with_args(
+                keys::ui::UI_UPDATE_PROGRESS,
+                &[
+                    ("message", &message),
+                    ("percent", &format!("{:.0}", progress.clamp(0.0, 1.0) * 100.0)),
+                ],
             ),
             None => message,
         }

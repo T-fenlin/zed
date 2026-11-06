@@ -394,7 +394,7 @@ impl Render for EditPredictionButton {
                     }
                     _ => {
                         ep_icon = if enabled { icons.base } else { icons.disabled };
-                        tooltip_meta = t(keys::edit_prediction::EDIT_PREDICTION_POWERED_BY_ZETA)
+                        tooltip_meta = t_static(keys::edit_prediction::EDIT_PREDICTION_POWERED_BY_ZETA)
                     }
                 };
 

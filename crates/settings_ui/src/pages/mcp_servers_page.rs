@@ -459,7 +459,7 @@ fn render_status_details(
                             ),
                     )
                     .child(
-                        Button::new("authenticate-server", "Authenticate")
+                        Button::new("authenticate-server", t(keys::settings_ui::SETTINGS_A_MCP_AUTHENTICATE))
                             .style(ButtonStyle::Outlined)
                             .label_size(LabelSize::Small)
                             .on_click({
@@ -501,7 +501,7 @@ fn render_status_details(
                 .gap_2()
                 .child(div().size_3().flex_shrink_0())
                 .child(
-                    Label::new("Authenticating…")
+                    Label::new(t(keys::settings_ui::SETTINGS_A_MCP_AUTHENTICATING))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                 )
@@ -877,8 +877,8 @@ fn new_kv_row(
     cx: &mut Context<SettingsWindow>,
 ) -> KeyValueRow {
     KeyValueRow {
-        key: new_input(&"Key", key, window, cx),
-        value: new_input(&"Value", value, window, cx),
+        key: new_input(&t(keys::settings_ui::SETTINGS_A_MCP_KEY_PLACEHOLDER), key, window, cx),
+        value: new_input(&t(keys::settings_ui::SETTINGS_A_MCP_VALUE_PLACEHOLDER), value, window, cx),
     }
 }
 
@@ -939,14 +939,14 @@ fn render_mcp_server_form_page(
             McpTransport::Stdio => this
                 .child(render_form_field(
                     settings_window,
-                    "Command".into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_COMMAND).into(),
                     t(keys::settings_ui::SETTINGS_A_MCP_COMMAND_DESCRIPTION).into(),
                     &form.command,
                     cx,
                 ))
                 .child(render_form_field(
                     settings_window,
-                    "Arguments".into(),
+                    t(keys::settings_ui::SETTINGS_A_MCP_ARGUMENTS).into(),
                     t(keys::settings_ui::SETTINGS_A_MCP_ARGUMENTS_DESCRIPTION).into(),
                     &form.args,
                     cx,
@@ -1077,7 +1077,7 @@ fn render_kv_section(
                             IconButton::new((kind.remove_id(), ix), IconName::Close)
                                 .icon_size(IconSize::Small)
                                 .icon_color(Color::Muted)
-                                .tooltip(Tooltip::text("Remove"))
+                                .tooltip(Tooltip::text(t(keys::settings_ui::SETTINGS_A_MCP_REMOVE)))
                                 .on_click(cx.listener(move |this, _, _window, cx| {
                                     if let Some(form) = this.mcp_server_form.as_mut() {
                                         let rows = kind.rows_mut(form);
@@ -1092,7 +1092,7 @@ fn render_kv_section(
                 .child(input_box(&row.value, cx))
         }))
         .child(
-            Button::new(kind.add_id(), "Add")
+            Button::new(kind.add_id(), t(keys::settings_ui::SETTINGS_A_MCP_ADD))
                 .style(ButtonStyle::Outlined)
                 .label_size(LabelSize::Small)
                 .start_icon(
@@ -1144,7 +1144,7 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
         .justify_end()
         .pt_2()
         .child(
-            Button::new("mcp-form-cancel", "Cancel")
+            Button::new("mcp-form-cancel", t(keys::settings_ui::SETTINGS_A_MCP_CANCEL))
                 .style(ButtonStyle::Subtle)
                 .on_click(cx.listener(|this, _, window, cx| {
                     this.mcp_server_form = None;
@@ -1152,7 +1152,7 @@ fn render_form_actions(cx: &mut Context<SettingsWindow>) -> impl IntoElement {
                 })),
         )
         .child(
-            Button::new("mcp-form-save", "Save")
+            Button::new("mcp-form-save", t(keys::settings_ui::SETTINGS_A_MCP_SAVE))
                 .style(ButtonStyle::Filled)
                 .on_click(cx.listener(|this, _, window, cx| {
                     save_mcp_server_form(this, window, cx);
@@ -1323,7 +1323,7 @@ fn build_settings_from_values(
                 )
                 .into());
             }
-            let headers = collect_kv(&values.headers, &"header")?;
+            let headers = collect_kv(&values.headers, &t(keys::settings_ui::SETTINGS_A_MCP_HEADER_LABEL))?;
             let oauth_client_id = values.oauth_client_id.trim().to_string();
             let oauth = (!oauth_client_id.is_empty()).then(|| OAuthClientSettings {
                 client_id: oauth_client_id,

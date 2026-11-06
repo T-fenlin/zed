@@ -10,7 +10,7 @@ use gpui::{
     InteractiveElement, IntoElement, Modifiers, ModifiersChangedEvent, ParentElement, PromptLevel,
     Render, SharedString, Styled, Subscription, Task, TaskExt, WeakEntity, Window, actions,
 };
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 use picker::{Picker, PickerDelegate, PickerEditorPosition};
 use project::{Project, git_store::RepositoryEvent, repo_identity_path};
 use ui::{
@@ -419,7 +419,7 @@ impl Render for DeleteWorktreeTooltip {
             Tooltip::with_meta_in(
                 "Delete Worktree",
                 Some(&DeleteWorktree),
-                concat!("Hold ", ui::alt_key_name!(), " to force delete"),
+                &t_with_args(keys::git_ui::GIT_B_HOLD_TO_FORCE_DELETE, &[("key", ui::alt_key_name!())]),
                 &self.focus_handle,
                 cx,
             )
@@ -1448,7 +1448,7 @@ impl PickerDelegate for WorktreePickerDelegate {
             Some(
                 footer
                     .child(
-                        Button::new("create-worktree", "Create")
+                        Button::new("create-worktree", t(keys::git_ui::GIT_B_CREATE))
                             .key_binding(
                                 KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                     .map(|kb| kb.size(rems_from_px(12_f32))),
@@ -1475,7 +1475,7 @@ impl PickerDelegate for WorktreePickerDelegate {
                             .when(!is_deleting && can_delete, |this| {
                                 let focus_handle = focus_handle.clone();
                                 this.child(
-                                    Button::new("delete-worktree", "Delete")
+                                    Button::new("delete-worktree", t(keys::git_ui::GIT_B_DELETE))
                                         .key_binding(
                                             KeyBinding::for_action_in(
                                                 &DeleteWorktree,

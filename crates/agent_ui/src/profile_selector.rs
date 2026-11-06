@@ -201,7 +201,7 @@ impl Render for ProfileSelector {
 
         let selected_profile = profile
             .map(|profile| profile.name.clone())
-            .unwrap_or_else(|| "Unknown".into());
+            .unwrap_or_else(|| t(keys::agent::AGENT_UNKNOWN).into());
 
         let icon = if self.picker_handle.is_deployed() {
             IconName::ChevronUp
@@ -796,7 +796,7 @@ impl PickerDelegate for ProfilePickerDelegate {
                         .border_color(cx.theme().colors().border_variant)
                         .p_1p5()
                         .child(
-                            Button::new("configure", "Configure")
+                            Button::new("configure", t(keys::agent::AGENT_B_CONFIGURE))
                                 .full_width()
                                 .style(ButtonStyle::Outlined)
                                 .key_binding(

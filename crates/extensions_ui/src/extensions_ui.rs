@@ -914,7 +914,7 @@ impl ExtensionsPage {
     }
 
     fn retry_button(&self, cx: &mut Context<Self>) -> Button {
-        Button::new("retry-fetch-extensions", "Retry")
+        Button::new("retry-fetch-extensions", t_static(keys::extensions::EXTENSIONS_RETRY))
             .style(ButtonStyle::Outlined)
             .on_click(cx.listener(|this, _, _, cx| {
                 this.fetch_extensions(FetchDebounce::Immediate, None, cx);
@@ -1509,7 +1509,7 @@ impl Render for ExtensionsPage {
                             .w_full()
                             .gap_1p5()
                             .justify_between()
-                            .child(Headline::new("Extensions").size(HeadlineSize::Large))
+                            .child(Headline::new(t(keys::extensions::EXTENSIONS_PANEL)).size(HeadlineSize::Large))
                             .child(
                                 Button::new("install-dev-extension", t(keys::extensions::EXTENSIONS_INSTALL_DEV_EXTENSION))
                                     .style(ButtonStyle::Outlined)
@@ -1531,7 +1531,7 @@ impl Render for ExtensionsPage {
                                         "filter-buttons",
                                         [
                                             ToggleButtonSimple::new(
-                                                "All",
+                                                t_static(keys::extensions::EXTENSIONS_FILTER_ALL),
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = ExtensionFilter::All;
                                                     this.rebuild_displayed_extensions(cx);
@@ -1539,7 +1539,7 @@ impl Render for ExtensionsPage {
                                                 }),
                                             ),
                                             ToggleButtonSimple::new(
-                                                "Installed",
+                                                t_static(keys::extensions::EXTENSIONS_FILTER_INSTALLED),
                                                 cx.listener(|this, _event, _, cx| {
                                                     this.filter = ExtensionFilter::Installed;
                                                     this.rebuild_displayed_extensions(cx);
@@ -1580,7 +1580,7 @@ impl Render for ExtensionsPage {
                     .border_color(cx.theme().colors().border_variant)
                     .overflow_x_scroll()
                     .child(
-                        Button::new("filter-all-categories", "All")
+                        Button::new("filter-all-categories", t_static(keys::extensions::EXTENSIONS_CATEGORY_ALL))
                             .when(self.provides_filter.is_none(), |button| {
                                 button.style(ButtonStyle::Filled)
                             })
@@ -1673,7 +1673,7 @@ impl Item for ExtensionsPage {
     type Event = ItemEvent;
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Extensions".into()
+        t(keys::extensions::EXTENSIONS_PANEL).into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {

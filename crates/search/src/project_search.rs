@@ -1,6 +1,6 @@
 use crate::{
-    BufferSearchBar, EXCLUDE_PLACEHOLDER, FocusSearch, HighlightKey, INCLUDE_PLACEHOLDER,
-    NextHistoryQuery, PreviousHistoryQuery, REPLACE_PLACEHOLDER, ReplaceAll, ReplaceNext,
+    BufferSearchBar, FocusSearch, HighlightKey,
+    NextHistoryQuery, PreviousHistoryQuery, ReplaceAll, ReplaceNext,
     SearchOption, SearchOptions, SearchSource, SelectNextMatch, SelectPreviousMatch,
     ToggleCaseSensitive, ToggleIncludeIgnored, ToggleRegex, ToggleReplace, ToggleWholeWord,
     buffer_search::Deploy,
@@ -1607,7 +1607,7 @@ impl ProjectSearchView {
         ));
         let replacement_editor = cx.new(|cx| {
             let mut editor = Editor::auto_height(1, 4, window, cx);
-            editor.set_placeholder_text(REPLACE_PLACEHOLDER, window, cx);
+            editor.set_placeholder_text(&crate::replace_placeholder(), window, cx);
             if let Some(text) = replacement_text {
                 editor.set_text(text, window, cx);
             }
@@ -1642,7 +1642,7 @@ impl ProjectSearchView {
 
         let included_files_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text(INCLUDE_PLACEHOLDER, window, cx);
+            editor.set_placeholder_text(&crate::include_placeholder(), window, cx);
 
             editor
         });
@@ -1657,7 +1657,7 @@ impl ProjectSearchView {
 
         let excluded_files_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text(EXCLUDE_PLACEHOLDER, window, cx);
+            editor.set_placeholder_text(&crate::exclude_placeholder(), window, cx);
 
             editor
         });
@@ -1942,9 +1942,10 @@ impl ProjectSearchView {
             let should_prompt_to_save = !skip_save_on_close && !will_autosave && is_dirty;
 
             let should_search = if should_prompt_to_save {
-                let save = "Save";
+                let save = t(keys::search::SEARCH_SAVE);
                 let dont_save = t(keys::search::SEARCH_DONT_SAVE);
-                let options = &[save.as_str(), dont_save.as_str(), "Cancel"];
+                let cancel = t(keys::search::SEARCH_CANCEL);
+                let options = &[save.as_str(), dont_save.as_str(), cancel.as_str()];
                 let result_channel = this.update_in(cx, |_, window, cx| {
                     window.prompt(
                         gpui::PromptLevel::Warning,
@@ -3187,7 +3188,11 @@ impl Render for ProjectSearchBar {
                     )
                     .when(limit_reached, |this| {
                         this.tooltip(Tooltip::text(
-                            "Search Limits Reached\nTry narrowing your search",
+                            format!(
+                                "{}\n{}",
+                                t(keys::search::SEARCH_LIMITS_REACHED),
+                                t(keys::search::SEARCH_NARROW_SEARCH)
+                            ),
                         ))
                     }),
             );

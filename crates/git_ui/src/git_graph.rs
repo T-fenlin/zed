@@ -1648,7 +1648,7 @@ impl GitGraph {
 
         let search_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text(t(keys::git_ui::GIT_GRAPH_SEARCH_COMMITS), window, cx);
+            editor.set_placeholder_text(&t(keys::git_ui::GIT_GRAPH_SEARCH_COMMITS), window, cx);
             editor
         });
 
@@ -2823,19 +2823,19 @@ impl GitGraph {
         let is_path_history = matches!(self.log_source, LogSource::Path(_));
         let columns: &[&str] = if is_path_history {
             &[
-                "Description",
+                t_static(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION),
                 t_static(keys::git_ui::GIT_GRAPH_COLUMN_DATE),
                 "Author",
-                "Commit",
+                t_static(keys::git_ui::GIT_GRAPH_COLUMN_COMMIT),
             ]
         } else {
             &[
                 t_static(keys::git_ui::GIT_GRAPH_REFS),
                 "Graph",
-                "Description",
+                t_static(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION),
                 "Date",
                 "Author",
-                "Commit",
+                t_static(keys::git_ui::GIT_GRAPH_COLUMN_COMMIT),
             ]
         };
 
@@ -4358,7 +4358,7 @@ impl GitGraph {
                             }),
                     )
                     .child(
-                        Label::new("Message")
+                        Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_MESSAGE))
                             .size(LabelSize::Small)
                             .color(Color::Muted),
                     ),
@@ -4491,7 +4491,7 @@ impl Render for GitGraph {
                                                     .color(Color::Muted)
                                                     .truncate()
                                                     .into_any_element(),
-                                                Label::new("Description")
+                                                Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                                 Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_DATE))
@@ -4500,7 +4500,7 @@ impl Render for GitGraph {
                                                 Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Commit")
+                                                Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_COMMIT))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],
@@ -4509,7 +4509,7 @@ impl Render for GitGraph {
                                     } else {
                                         TableRow::from_vec(
                                             vec![
-                                                Label::new("Description")
+                                                Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_DESCRIPTION))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                                 Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_DATE))
@@ -4518,7 +4518,7 @@ impl Render for GitGraph {
                                                 Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_AUTHOR))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
-                                                Label::new("Commit")
+                                                Label::new(t_static(keys::git_ui::GIT_GRAPH_COLUMN_COMMIT))
                                                     .color(Color::Muted)
                                                     .into_any_element(),
                                             ],

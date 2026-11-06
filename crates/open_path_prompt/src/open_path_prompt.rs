@@ -8,7 +8,7 @@ use file_icons::FileIcons;
 use futures::channel::oneshot;
 use fuzzy::{CharBag, StringMatch, StringMatchCandidate};
 use gpui::{HighlightStyle, StyledText, Task};
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use picker::{Picker, PickerDelegate};
 use project::{DirectoryItem, DirectoryLister};
 use settings::SettingsStore;
@@ -705,12 +705,12 @@ impl PickerDelegate for OpenPathDelegate {
                             &[("path", &format!("{prompted_path:?}"))],
                         );
                         let detail = t(keys::misc::FILE_EXISTS_DETAIL);
-                        let replace = "Replace";
+                        let replace = t(keys::misc::REPLACE);
                         let answer = window.prompt(
                             gpui::PromptLevel::Critical,
                             &message,
                             Some(&detail),
-                            &[replace.as_str(), "Cancel"],
+                            &[replace.as_str(), t_static(keys::misc::CANCEL).as_ref()],
                             cx,
                         );
                         self.replace_prompt = cx.spawn_in(window, async move |picker, cx| {

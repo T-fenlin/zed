@@ -1,4 +1,4 @@
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use std::path::{Path, PathBuf};
 
 use anyhow::Context as _;

@@ -688,7 +688,13 @@ impl Inner {
         res?.await.map_err(|err| {
             if already_exists_error(&err) {
                 anyhow!(
-                    "Failed to {operation} `{from_name}` to `{to_name}`. A file or folder already exists there."
+                    t_with_args(
+                        keys::panel::PANEL_FAILED_TO_MOVE_EXISTS,
+                        &[
+                            ("operation", &operation),
+                            ("name", &to_name),
+                        ],
+                    )
                 )
             } else {
                 err
@@ -805,11 +811,11 @@ impl Inner {
                 let entry_id = project
                     .entry_for_path(project_path, cx)
                     .map(|entry| entry.id)
-                    .with_context(|| format!("Failed to trash `{name}`. It no longer exists."))?;
+                    .with_context(|| t_with_args(keys::panel::PANEL_FAILED_TO_TRASH_ENTRY, &[("name", &name)]))?;
 
                 project
                     .trash_entry(entry_id, cx)
-                    .with_context(|| format!("Failed to trash `{name}`."))
+                    .with_context(|| t_with_args(keys::panel::PANEL_FAILED_TO_TRASH_ENTRY, &[("name", &name)]))
             })
         })?;
 
@@ -856,7 +862,7 @@ impl Inner {
                     project_path_display(project, &project_path, path_style, cx)
                 }))
             })
-            .unwrap_or_else(|| "item".to_string());
+            .unwrap_or_else(|| t(keys::panel::PANEL_UNTITLED_ITEM));
 
         workspace
             .update(cx, |workspace, cx| {
@@ -867,9 +873,9 @@ impl Inner {
             .await
             .map_err(|err| match err.downcast_ref::<TrashRestoreError>() {
                 Some(TrashRestoreError::Collision { .. }) => anyhow!(
-                    "Failed to restore `{name}`. Something already exists at its original location."
+                    t_with_args(keys::panel::PANEL_FAILED_TO_RESTORE_ENTRY, &[("name", &name)])
                 ),
-                _ => anyhow!("Failed to restore `{name}`. It may have been permanently deleted."),
+                _ => anyhow!(t_with_args(keys::panel::PANEL_FAILED_TO_RESTORE_ENTRY, &[("name", &name)])),
             })
     }
 

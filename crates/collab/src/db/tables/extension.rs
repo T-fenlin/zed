@@ -1,5 +1,4 @@
 use crate::db::ExtensionId;
-use i18n::{keys, t_static};
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]

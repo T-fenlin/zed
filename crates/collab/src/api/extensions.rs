@@ -11,7 +11,6 @@ use axum::{
 };
 use cloud_api_types::ExtensionApiManifest;
 use collections::HashMap;
-use i18n::{keys, t_static};
 use semver::Version as SemanticVersion;
 use serde::Deserialize;
 use std::{sync::Arc, time::Duration};

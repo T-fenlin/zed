@@ -345,7 +345,7 @@ impl MentionUri {
             MentionUri::Symbol { name, .. } => name.clone(),
             MentionUri::Thread { name, .. } => name.clone(),
             MentionUri::Rule { name, .. } => name.clone(),
-            MentionUri::Diagnostics { .. } => "Diagnostics",
+            MentionUri::Diagnostics { .. } => t(keys::acp::ACP_MENTION_DIAGNOSTICS),
             MentionUri::TerminalSelection { line_count } => {
                 let count = line_count.to_string();
                 t_with_args(keys::acp::ACP_MENTION_TERMINAL, &[("count", &count)])
@@ -844,7 +844,7 @@ pub fn selection_name(path: Option<&Path>, line_range: &RangeInclusive<u32>) -> 
     let name = path
         .and_then(|path| path.file_name())
         .map(|name| name.display().to_string())
-        .unwrap_or_else(|| "Untitled");
+        .unwrap_or_else(|| t(keys::acp::ACP_MENTION_UNTITLED).into());
     format!(
         "{} ({}:{})",
         name,

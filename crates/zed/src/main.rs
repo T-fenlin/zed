@@ -34,7 +34,7 @@ use gpui::{
     App, AppContext, Application, AsyncApp, QuitMode, Task, TaskExt, UpdateGlobal as _, block_on,
 };
 use gpui_platform;
-use i18n::{keys, t, t_static};
+use i18n::{keys, t, t_static, t_with_args};
 
 use gpui_tokio::Tokio;
 use language::LanguageRegistry;
@@ -102,18 +102,33 @@ fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
             #[allow(unused_mut)] // for non-unix platforms
             let mut error_kind_details = match paths.len() {
                 0 => return None,
-                1 => format!(
-                    "{kind} when creating directory {:?}",
-                    paths.first().expect("match arm checks for a single entry")
+                1 => t_with_args(
+                    keys::zed::ZED_B_FILE_CREATION_ERROR_SINGLE,
+                    &[
+                        ("kind", &kind.to_string()),
+                        (
+                            "path",
+                            &format!(
+                                "{:?}",
+                                paths.first().expect("match arm checks for a single entry")
+                            ),
+                        ),
+                    ],
                 ),
-                _many => format!("{kind} when creating directories {paths:?}"),
+                _many => t_with_args(
+                    keys::zed::ZED_B_FILE_CREATION_ERROR_MULTIPLE,
+                    &[("kind", &kind.to_string()), ("paths", &format!("{paths:?}"))],
+                ),
             };
 
             #[cfg(unix)]
             {
                 if kind == io::ErrorKind::PermissionDenied {
-                    error_kind_details.push_str("\n\nConsider using chown and chmod tools for altering the directories permissions if your user has corresponding rights.\
-                        \nFor example, `sudo chown $(whoami):staff ~/.config` and `chmod +uwrx ~/.config`");
+                    error_kind_details.push_str(&format!(
+                        "\n\n{}\n{}",
+                        t(keys::zed::ZED_B_PERMISSION_ADVICE),
+                        t(keys::zed::ZED_B_PERMISSION_ADVICE_EXAMPLE)
+                    ));
                 }
             }
 
@@ -132,9 +147,9 @@ fn files_not_created_on_launch(errors: HashMap<io::ErrorKind, Vec<&Path>>) {
                     .update(cx, |_, window, cx| {
                         let response = window.prompt(
                             gpui::PromptLevel::Critical,
-                            message,
+                            &message,
                             Some(&error_details),
-                            &["Exit"],
+                            &[t_static(keys::zed::ZED_B_EXIT)],
                             cx,
                         );
 
@@ -157,7 +172,8 @@ fn fail_to_open_window_async(e: anyhow::Error, cx: &mut AsyncApp) {
 
 fn fail_to_open_window(e: anyhow::Error, _cx: &mut App) {
     eprintln!(
-        "Zed failed to open a window: {e:?}. See https://zed.dev/docs/linux for troubleshooting steps."
+        "Zed failed to open a window: {}",
+        t_with_args(keys::zed::ZED_B_LINUX_NOTIFICATION_BODY, &[("error", &format!("{e:?}"))])
     );
     #[cfg(not(any(target_os = "linux", target_os = "freebsd")))]
     {
@@ -174,16 +190,15 @@ fn fail_to_open_window(e: anyhow::Error, _cx: &mut App) {
             };
 
             let notification_id = "dev.zed.Oops";
+            let notification_body = t_with_args(
+                keys::zed::ZED_B_LINUX_NOTIFICATION_BODY,
+                &[("error", &format!("{e:?}"))],
+            );
             proxy
                 .add_notification(
                     notification_id,
                     Notification::new(t_static(keys::zed::ZED_B_FAILED_TO_LAUNCH))
-                        .body(Some(
-                            format!(
-                                "{e:?}. See https://zed.dev/docs/linux for troubleshooting steps."
-                            )
-                            .as_str(),
-                        ))
+                        .body(Some(notification_body.as_str()))
                         .priority(Priority::High)
                         .icon(ashpd::desktop::Icon::with_names(&[
                             "dialog-question-symbolic",
@@ -1480,12 +1495,11 @@ pub(crate) async fn restore_or_create_workspace(
         }
 
         if error_count > 0 {
-            let message = if error_count == 1 {
-                "Failed to restore 1 workspace. Check logs for details.".to_string()
-            } else {
-                format!(
-                    "Failed to restore {} workspaces. Check logs for details.",
-                    error_count
+            let message = {
+                let count = error_count.to_string();
+                t_with_args(
+                    keys::zed::ZED_B_FAILED_TO_RESTORE_WORKSPACES,
+                    &[("count", &count)],
                 )
             };
 

@@ -351,7 +351,7 @@ impl EntryViewState {
                             self.thread_store.clone(),
                             self.session_capabilities.clone(),
                             self.agent_id.clone(),
-                            t(keys::agent::AGENT_EDIT_MESSAGE_HINT),
+                            &t(keys::agent::AGENT_EDIT_MESSAGE_HINT),
                             editor::EditorMode::AutoHeight {
                                 min_lines: 1,
                                 max_lines: None,

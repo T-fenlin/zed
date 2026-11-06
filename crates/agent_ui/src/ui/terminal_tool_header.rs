@@ -202,8 +202,7 @@ impl RenderOnce for TerminalToolHeader {
                                         Tooltip::with_meta(
                                             t(keys::agent::AGENT_STOP_COMMAND),
                                             None,
-                                            "Also possible by placing your cursor inside the \
-                                             terminal and using regular terminal bindings.",
+                                            t(keys::agent::AGENT_STOP_COMMAND_HINT),
                                             cx,
                                         )
                                     })

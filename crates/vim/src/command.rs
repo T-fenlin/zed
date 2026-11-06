@@ -11,7 +11,7 @@ use gpui::{
     Action, App, AppContext as _, Context, Global, Keystroke, Task, TaskExt, WeakEntity, Window,
     actions,
 };
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use itertools::Itertools;
 use language::Point;
 use multi_buffer::MultiBufferRow;
@@ -343,7 +343,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
             gpui::PromptLevel::Critical,
             &t(keys::misc::VIM_ARGUMENT_REQUIRED),
             None,
-            &["Cancel"],
+            &[t_static(keys::misc::CANCEL).as_ref()],
             cx,
         );
     });
@@ -383,7 +383,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                             gpui::PromptLevel::Warning,
                             &t(keys::misc::VIM_NO_FILE_NAME),
                             Some(&detail),
-                            &["Cancel"],
+                            &[t_static(keys::misc::CANCEL).as_ref()],
                             cx,
                         );
                         return;
@@ -419,7 +419,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                             gpui::PromptLevel::Warning,
                             &t(keys::misc::VIM_PARTIAL_BUFFER_REQUIRES_BANG),
                             Some(&detail),
-                            &["Cancel"],
+                            &[t_static(keys::misc::CANCEL).as_ref()],
                             cx,
                         );
                         return;
@@ -448,12 +448,12 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                                     &[("path", &format!("{path:?}"))],
                                 );
                                 let detail = t(keys::misc::FILE_EXISTS_DETAIL);
-                                let replace = "Replace";
+                                let replace = t(keys::misc::REPLACE);
                                 window.prompt(
                                     gpui::PromptLevel::Warning,
                                     &message,
                                     Some(&detail),
-                                    &[replace.as_str(), "Cancel"],
+                                    &[replace.as_str(), t_static(keys::misc::CANCEL).as_ref()],
                                     cx,
                                 )
                             });
@@ -548,12 +548,12 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                     &[("path", &project_path.path.display(path_style).to_string())],
                 );
                 let detail = t(keys::misc::FILE_EXISTS_DETAIL);
-                let replace = "Replace";
+                let replace = t(keys::misc::REPLACE);
                 let answer = window.prompt(
                     gpui::PromptLevel::Critical,
                     &message,
                     Some(&detail),
-                    &[replace.as_str(), "Cancel"],
+                    &[replace.as_str(), t_static(keys::misc::CANCEL).as_ref()],
                     cx,
                 );
                 cx.spawn_in(window, async move |editor, cx| {
@@ -623,7 +623,7 @@ pub fn register(editor: &mut Editor, cx: &mut Context<Vim>) {
                 gpui::PromptLevel::Critical,
                 &format!("Invalid argument: {}", s),
                 None,
-                &["Cancel"],
+                &[t_static(keys::misc::CANCEL).as_ref()],
                 cx,
             );
         }

@@ -6,7 +6,7 @@ use edit_prediction::{
 };
 use edit_prediction_ui::{get_available_providers, set_completion_provider};
 use gpui::{App, Entity, ScrollHandle, SharedString, TaskExt, prelude::*};
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use language::language_settings::AllLanguageSettings;
 
 use settings::Settings as _;

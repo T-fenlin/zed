@@ -12,7 +12,7 @@ use gpui::{
     TextStyle, WeakEntity, WindowHandle, actions,
 };
 use http_client::{AsyncBody, HttpClient, HttpRequestExt, Request, StatusCode, Url};
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t, t_static, t_with_args};
 use language::{Buffer, language_settings::SoftWrap};
 use project::{Project, Worktree};
 use settings::{ActionSequence, Settings};
@@ -182,7 +182,7 @@ impl SkillCreatorPage {
                 cx,
                 &t(keys::settings_ui::SETTINGS_A_SKILL_DESCRIPTION_PLACEHOLDER),
             )
-            .label("Description")
+            .label(t(keys::settings_ui::SETTINGS_A_SKILL_DESCRIPTION_LABEL))
             .tab_index(DESCRIPTION_FIELD_TAB_INDEX)
             .tab_stop(true)
         });
@@ -713,7 +713,7 @@ impl SkillCreatorPage {
                     .child(Label::new(t(
                         keys::settings_ui::SETTINGS_A_SKILL_IMPORT_FROM_URL,
                     )))
-                    .child(Label::new("(optional)").color(Color::Muted)),
+                    .child(Label::new(t(keys::settings_ui::SETTINGS_A_SKILL_OPTIONAL)).color(Color::Muted)),
             )
             .child(self.url_editor.clone())
             .child(match &self.url_import_status {
@@ -851,7 +851,7 @@ impl SkillCreatorPage {
     fn render_footer(&self, _window: &Window, cx: &mut Context<Self>) -> impl IntoElement {
         let saving = self.saving;
         let main_action = if saving {
-            t_static(keys::settings_ui::SETTINGS_A_SKILL_SAVING)
+            t(keys::settings_ui::SETTINGS_A_SKILL_SAVING)
         } else {
             t(keys::settings_ui::SETTINGS_A_SKILL_SAVE_SKILL)
         };

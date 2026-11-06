@@ -3884,7 +3884,7 @@ impl AgentPanel {
             Err(_) => {
                 Self::show_deferred_toast(
                     &self.workspace,
-                    "Failed to decode clipboard content (expected base64)",
+                    t_static(keys::agent::AGENT_CLIPBOARD_DECODE_FAILED),
                     cx,
                 );
                 return;
@@ -3896,7 +3896,7 @@ impl AgentPanel {
             Err(_) => {
                 Self::show_deferred_toast(
                     &self.workspace,
-                    t(keys::agent::AGENT_CLIPBOARD_PARSE_FAILED),
+                    t_static(keys::agent::AGENT_CLIPBOARD_PARSE_FAILED),
                     cx,
                 );
                 return;
@@ -3948,7 +3948,7 @@ impl AgentPanel {
         cx: &mut Context<Self>,
     ) {
         let Some(thread_id) = self.active_thread_id(cx) else {
-            Self::show_deferred_toast(&self.workspace, t(keys::agent::AGENT_NO_ACTIVE_THREAD), cx);
+            Self::show_deferred_toast(&self.workspace, t_static(keys::agent::AGENT_NO_ACTIVE_THREAD), cx);
             return;
         };
 
@@ -5791,8 +5791,8 @@ impl AgentPanel {
                                     }),
                                 )
                                 .separator()
-                                .header("Context")
-                                .action("Skills", Box::new(ManageSkills));
+                                .header(t(keys::agent::AGENT_MENU_CONTEXT))
+                                .action(t(keys::agent::AGENT_MENU_SKILLS), Box::new(ManageSkills));
 
                             if project_agents_md_path.is_some() || global_agents_md_loaded {
                                 if global_agents_md_loaded {
@@ -5858,7 +5858,7 @@ impl AgentPanel {
                         }
 
                         menu = menu
-                            .action("Settings", Box::new(OpenSettings))
+                            .action(t(keys::agent::AGENT_MENU_SETTINGS), Box::new(OpenSettings))
                             .separator()
                             .action(
                                 t(keys::agent::AGENT_MENU_TOGGLE_SIDEBAR),
@@ -6202,7 +6202,7 @@ impl AgentPanel {
         let full_screen_button = IconButton::new("toggle-full-screen", icon_name)
             .icon_size(IconSize::Small)
             .toggle_state(is_full_screen)
-            .tooltip(move |_, cx| Tooltip::for_action(tooltip_text, &ToggleZoom, cx))
+            .tooltip(move |_, cx| Tooltip::for_action(tooltip_text.clone(), &ToggleZoom, cx))
             .on_click(cx.listener(move |this, _, window, cx| {
                 this.toggle_zoom(&ToggleZoom, window, cx);
             }));
@@ -6233,7 +6233,7 @@ impl AgentPanel {
                     {
                         move |_window, cx| {
                             Tooltip::for_action_in(
-                                "New Thread\u{2026}",
+                                t(keys::agent::AGENT_MENU_NEW_THREAD),
                                 &ToggleNewThreadMenu,
                                 &focus_handle,
                                 cx,

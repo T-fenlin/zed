@@ -1907,7 +1907,7 @@ fn string_format_json_name(format: &acp::StringFormat) -> Option<&'static str> {
 fn string_format_label(format: &acp::StringFormat) -> Option<String> {
     match format {
         acp::StringFormat::Email => Some(t(keys::agent::AGENT_A_ELICIT_FORMAT_EMAIL)),
-        acp::StringFormat::Uri => Some("a URI"),
+        acp::StringFormat::Uri => Some("a URI".to_string()),
         acp::StringFormat::Date => Some(t(keys::agent::AGENT_A_ELICIT_FORMAT_DATE)),
         acp::StringFormat::DateTime => Some(t(keys::agent::AGENT_A_ELICIT_FORMAT_DATETIME)),
         _ => None,
@@ -2099,7 +2099,7 @@ impl<'a> ElicitationCard<'a> {
                 Color::Info,
             ),
             ElicitationStatus::Accepted if is_accepted_url => (
-                t(keys::agent::AGENT_A_ELICIT_STATUS_WAITING_COMPLETION),
+                t_static(keys::agent::AGENT_A_ELICIT_STATUS_WAITING_COMPLETION),
                 IconName::Info,
                 Color::Info,
             ),
@@ -2534,9 +2534,9 @@ impl<'a> ElicitationCard<'a> {
                 Color::Muted,
             )
         } else if open_url.is_some() {
-            ("Open", IconName::ArrowUpRight, Color::Muted)
+            (t(keys::agent::AGENT_A_ELICIT_OPEN), IconName::ArrowUpRight, Color::Muted)
         } else {
-            ("Submit", IconName::Check, Color::Success)
+            (t(keys::agent::AGENT_A_ELICIT_SUBMIT), IconName::Check, Color::Success)
         };
         let border_color = cx.theme().colors().border.opacity(0.8);
         let on_submit = self.handlers.on_submit.clone();
@@ -2579,7 +2579,7 @@ impl<'a> ElicitationCard<'a> {
             )
             .when(!is_accepted_url, |this| {
                 this.child(
-                    Button::new(("elicitation-decline", self.entry_ix), "Decline")
+                    Button::new(("elicitation-decline", self.entry_ix), t(keys::agent::AGENT_A_ELICIT_DECLINE))
                         .tab_index(0_isize)
                         .start_icon(
                             Icon::new(IconName::Close)
@@ -2592,7 +2592,7 @@ impl<'a> ElicitationCard<'a> {
                         }),
                 )
                 .child(
-                    Button::new(("elicitation-cancel", self.entry_ix), "Cancel")
+                    Button::new(("elicitation-cancel", self.entry_ix), t(keys::agent::AGENT_A_ELICIT_CANCEL))
                         .tab_index(0_isize)
                         .label_size(LabelSize::Small)
                         .on_click(move |_, window, cx| {
@@ -2602,7 +2602,7 @@ impl<'a> ElicitationCard<'a> {
             })
             .when(is_accepted_url, |this| {
                 this.child(
-                    Button::new(("elicitation-dismiss-url", self.entry_ix), "Cancel")
+                    Button::new(("elicitation-dismiss-url", self.entry_ix), t(keys::agent::AGENT_A_ELICIT_CANCEL))
                         .tab_index(0_isize)
                         .label_size(LabelSize::Small)
                         .on_click(move |_, window, cx| {

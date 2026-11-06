@@ -877,7 +877,7 @@ impl Sidebar {
 
         let filter_editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text(t(keys::sidebar::SIDEBAR_SEARCH_THREADS), window, cx);
+            editor.set_placeholder_text(&t(keys::sidebar::SIDEBAR_SEARCH_THREADS), window, cx);
             editor
         });
         let rename_editor = cx.new(|cx| Editor::single_line(window, cx));
@@ -2447,10 +2447,14 @@ impl Sidebar {
                         })
                         .when(waiting_thread_count > 0, |this| {
                             let tooltip_text = if waiting_thread_count == 1 {
-                                "1 thread is waiting for confirmation".to_string()
+                                t_with_args(
+                                    keys::sidebar::SIDEBAR_WAITING_THREADS,
+                                    &[("count", "1")],
+                                )
                             } else {
-                                format!(
-                                    "{waiting_thread_count} threads are waiting for confirmation",
+                                t_with_args(
+                                    keys::sidebar::SIDEBAR_WAITING_THREADS,
+                                    &[("count", &waiting_thread_count.to_string())],
                                 )
                             };
                             this.child(
@@ -2610,7 +2614,7 @@ impl Sidebar {
             return button
                 .tooltip(move |_, cx| {
                     Tooltip::for_action_in(
-                        t(keys::agent::AGENT_START_NEW_THREAD),
+                        t(keys::sidebar::SIDEBAR_START_NEW_THREAD),
                         &NewThread,
                         &focus_handle,
                         cx,
@@ -3230,7 +3234,7 @@ impl Sidebar {
 
                         let project_group_key = project_group_key.clone();
                         let remove_multi_workspace = multi_workspace.clone();
-                        menu.separator().entry("Remove", None, move |window, cx| {
+                        menu.separator().entry(t(keys::sidebar::SIDEBAR_REMOVE), None, move |window, cx| {
                             remove_multi_workspace
                                 .update(cx, |multi_workspace, cx| {
                                     multi_workspace
@@ -4300,7 +4304,10 @@ impl Sidebar {
                                             Toast::new(
                                                 NotificationId::unique::<RestoreWorktreeErrorToast>(
                                                 ),
-                                                format!("Failed to restore worktree: {error:#}"),
+                                                t_with_args(
+                                                    keys::sidebar::SIDEBAR_FAILED_TO_RESTORE_WORKTREE,
+                                                    &[("error", &format!("{error:#}"))],
+                                                ),
                                             )
                                             .autohide(),
                                             cx,
@@ -6552,7 +6559,7 @@ impl Sidebar {
                         });
 
                         if is_zed_thread {
-                            menu = menu.entry(t(keys::agent::AGENT_MENU_REGENERATE_TITLE), None, {
+                            menu = menu.entry(t(keys::sidebar::SIDEBAR_REGENERATE_THREAD_TITLE), None, {
                                 let session_id = session_id.clone();
                                 let sidebar = sidebar.clone();
                                 let thread_workspace = thread_workspace.clone();
@@ -6574,7 +6581,7 @@ impl Sidebar {
                         }
 
                         if can_open_as_markdown {
-                            menu = menu.entry(t(keys::agent::AGENT_MENU_OPEN_MARKDOWN), None, {
+                            menu = menu.entry(t(keys::sidebar::SIDEBAR_OPEN_THREAD_AS_MARKDOWN), None, {
                                 let session_id = session_id.clone();
                                 let markdown_title = markdown_title.clone();
                                 let thread_workspace = thread_workspace.clone();
@@ -7477,7 +7484,7 @@ impl Sidebar {
                                 this.child(
                                     IconButton::new("clear_filter", IconName::Close)
                                         .icon_size(IconSize::Small)
-                                        .tooltip(Tooltip::text(t(keys::agent::AGENT_CLEAR_SEARCH)))
+                                        .tooltip(Tooltip::text(t(keys::sidebar::SIDEBAR_CLEAR_SEARCH)))
                                         .on_click(cx.listener(|this, _, window, cx| {
                                             this.reset_filter_editor_text(window, cx);
                                             this.update_entries(cx);
@@ -7703,7 +7710,8 @@ impl Sidebar {
             .cross_channel_import_channels
             .iter()
             .map(SharedString::as_str)
-            .join(" and ");
+            .collect::<Vec<_>>()
+            .join(&t(keys::sidebar::SIDEBAR_CHANNEL_SEPARATOR));
 
         let description = t_with_args(
             keys::sidebar::SIDEBAR_CROSS_CHANNEL_DESCRIPTION,

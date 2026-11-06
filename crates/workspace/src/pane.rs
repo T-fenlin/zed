@@ -1953,9 +1953,12 @@ impl Pane {
         }
         if file_names.len() > 6 {
             format!(
-                "{}\n.. and {} more",
+                "{}\n{}",
                 file_names.iter().take(5).join("\n"),
-                file_names.len() - 5
+                t_with_args(
+                    keys::workspace::WS_PANE_MORE_FILES,
+                    &[("count", &(file_names.len() - 5).to_string())],
+                )
             )
         } else {
             file_names.into_iter().join("\n")
@@ -2339,13 +2342,14 @@ impl Pane {
             if has_deleted_file && is_singleton {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
-                    let save = "Save";
-                    let close = "Close";
+                    let save = t(keys::prompt::PROMPT_SAVE);
+                    let close = t(keys::workspace::WS_B_CLOSE);
+                    let cancel = t(keys::prompt::PROMPT_CANCEL);
                     window.prompt(
                         PromptLevel::Warning,
                         &deleted_message,
                         None,
-                        &[save.as_str(), close.as_str(), "Cancel"],
+                        &[save.as_str(), close.as_str(), cancel.as_str()],
                         cx,
                     )
                 })?;
@@ -2376,13 +2380,14 @@ impl Pane {
             } else {
                 let answer = pane.update_in(cx, |pane, window, cx| {
                     pane.activate_item(item_ix, true, true, window, cx);
-                    let overwrite = "Overwrite";
+                    let overwrite = t(keys::prompt::PROMPT_OVERWRITE);
+                    let cancel = t(keys::prompt::PROMPT_CANCEL);
                     let discard_edits = t(keys::prompt::PROMPT_DISCARD_EDITS);
                     window.prompt(
                         PromptLevel::Warning,
                         &conflict_message,
                         None,
-                        &[overwrite.as_str(), discard_edits.as_str(), "Cancel"],
+                        &[overwrite.as_str(), discard_edits.as_str(), cancel.as_str()],
                         cx,
                     )
                 })?;
@@ -2421,13 +2426,14 @@ impl Pane {
                         if pane.save_modals_spawned.insert(item_id) {
                             pane.activate_item(item_ix, true, true, window, cx);
                             let prompt = dirty_message_for(item.project_path(cx), path_style);
-                            let save = "Save";
+                            let save = t(keys::prompt::PROMPT_SAVE);
                             let dont_save = t(keys::prompt::PROMPT_DONT_SAVE);
+                            let cancel = t(keys::prompt::PROMPT_CANCEL);
                             Some(window.prompt(
                                 PromptLevel::Warning,
                                 &prompt,
                                 None,
-                                &[save.as_str(), dont_save.as_str(), "Cancel"],
+                                &[save.as_str(), dont_save.as_str(), cancel.as_str()],
                                 cx,
                             ))
                         } else {
@@ -2934,9 +2940,9 @@ impl Pane {
                 .tooltip(move |_, cx| {
                     if toggleable {
                         Tooltip::with_meta(
-                            "Unlock Tab",
+                            t(keys::tab::TAB_UNLOCK),
                             None,
-                            "This will make this tab editable",
+                            t_static(keys::tab::TAB_UNLOCK_HINT),
                             cx,
                         )
                     } else {
@@ -3055,7 +3061,7 @@ impl Pane {
                 let end_slot_tooltip_text: &'static str;
                 let end_slot = if is_pinned {
                     end_slot_action = &TogglePinTab;
-                    end_slot_tooltip_text = "Unpin Tab";
+                    end_slot_tooltip_text = t_static(keys::tab::TAB_UNPIN);
                     IconButton::new("unpin tab", IconName::Pin)
                         .shape(IconButtonShape::Square)
                         .icon_color(Color::Muted)
@@ -3069,7 +3075,7 @@ impl Pane {
                         save_intent: None,
                         close_pinned: false,
                     };
-                    end_slot_tooltip_text = "Close Tab";
+                    end_slot_tooltip_text = t_static(keys::tab::TAB_CLOSE_TAB);
                     match show_close_button {
                         ShowCloseButton::Always => IconButton::new("close tab", IconName::Close),
                         ShowCloseButton::Hover => {
@@ -3189,7 +3195,7 @@ impl Pane {
                     if let Some(pane) = pane.upgrade() {
                         menu = menu
                             .entry(
-                                "Close",
+                                t_static(keys::tab::TAB_CLOSE),
                                 Some(Box::new(close_active_item_action)),
                                 window.handler_for(&pane, move |pane, window, cx| {
                                     pane.close_item_by_id(item_id, SaveIntent::Close, window, cx)
@@ -3272,7 +3278,7 @@ impl Pane {
                                     })),
                             ))
                             .entry(
-                                "Close All",
+                                t_static(keys::tab::TAB_CLOSE_ALL),
                                 Some(Box::new(close_all_items_action.clone())),
                                 window.handler_for(&pane, move |pane, window, cx| {
                                     pane.close_all_items(&close_all_items_action, window, cx)
@@ -3284,7 +3290,7 @@ impl Pane {
                             menu.separator().map(|this| {
                                 if is_pinned {
                                     this.entry(
-                                        "Unpin Tab",
+                                        t(keys::tab::TAB_UNPIN),
                                         Some(TogglePinTab.boxed_clone()),
                                         window.handler_for(&pane, move |pane, window, cx| {
                                             pane.unpin_tab_at(ix, window, cx);
@@ -3292,7 +3298,7 @@ impl Pane {
                                     )
                                 } else {
                                     this.entry(
-                                        "Pin Tab",
+                                        t(keys::tab::TAB_PIN),
                                         Some(TogglePinTab.boxed_clone()),
                                         window.handler_for(&pane, move |pane, window, cx| {
                                             pane.pin_tab_at(ix, window, cx);
@@ -3304,9 +3310,9 @@ impl Pane {
 
                         if capability != Capability::ReadOnly {
                             let read_only_label = if capability.editable() {
-                                "Make Tab Read-Only"
+                                t(keys::tab::TAB_MAKE_READ_ONLY)
                             } else {
-                                "Make Tab Editable"
+                                t(keys::tab::TAB_MAKE_EDITABLE)
                             };
                             menu = menu.separator().entry(
                                 read_only_label,
@@ -3406,7 +3412,7 @@ impl Pane {
                                         project_path.clone(),
                                         |menu, project_path| {
                                             menu.entry(
-                                                "Open File Permalink",
+                                                t(keys::tab::TAB_OPEN_PERMALINK),
                                                 Some(OpenFilePermalink.boxed_clone()),
                                                 window.handler_for(&pane, {
                                                     let project_path = project_path.clone();
@@ -3426,7 +3432,7 @@ impl Pane {
                                                 }),
                                             )
                                             .entry(
-                                                "Copy File Permalink",
+                                                t(keys::tab::TAB_COPY_PERMALINK),
                                                 Some(CopyFilePermalink.boxed_clone()),
                                                 window.handler_for(
                                                     &pane,
@@ -3485,7 +3491,7 @@ impl Pane {
                                 })
                                 .when_some(parent_abs_path, |menu, parent_abs_path| {
                                     menu.entry(
-                                        "Open in Terminal",
+                                        t(keys::tab::TAB_OPEN_IN_TERMINAL),
                                         Some(Box::new(OpenInTerminal)),
                                         window.handler_for(&pane, move |_, window, cx| {
                                             window.dispatch_action(
@@ -3539,7 +3545,7 @@ impl Pane {
                 let focus_handle = focus_handle.clone();
                 move |window, cx| {
                     Tooltip::for_action_in(
-                        "Go Back",
+                        t(keys::tab::TAB_GO_BACK),
                         &GoBack,
                         &window.focused(cx).unwrap_or_else(|| focus_handle.clone()),
                         cx,
@@ -3562,7 +3568,7 @@ impl Pane {
                 let focus_handle = focus_handle.clone();
                 move |window, cx| {
                     Tooltip::for_action_in(
-                        "Go Forward",
+                        t(keys::tab::TAB_GO_FORWARD),
                         &GoForward,
                         &window.focused(cx).unwrap_or_else(|| focus_handle.clone()),
                         cx,

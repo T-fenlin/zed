@@ -1160,7 +1160,7 @@ impl Editor {
                 let target_display_point = range.end.to_display_point(editor_snapshot);
 
                 self.render_edit_prediction_end_of_line_popover(
-                    "Accept",
+                    t(keys::editor::EDITOR_EP_ACCEPT),
                     editor_snapshot,
                     visible_row_range,
                     target_display_point,
@@ -1821,7 +1821,7 @@ impl Editor {
         cx: &mut App,
     ) -> Option<(AnyElement, gpui::Point<Pixels>)> {
         let mut element = self
-            .render_edit_prediction_line_popover("Scroll", Some(scroll_icon), window, cx)
+            .render_edit_prediction_line_popover(t(keys::editor::EDITOR_EP_SCROLL), Some(scroll_icon), window, cx)
             .into_any();
 
         let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);
@@ -1894,7 +1894,7 @@ impl Editor {
             Some((element, origin))
         } else {
             self.render_edit_prediction_end_of_line_popover(
-                t_static(keys::editor::EDITOR_EP_JUMP_TO_EDIT),
+                t(keys::editor::EDITOR_EP_JUMP_TO_EDIT),
                 editor_snapshot,
                 visible_row_range,
                 target_display_point,
@@ -1910,7 +1910,7 @@ impl Editor {
 
     fn render_edit_prediction_end_of_line_popover(
         self: &mut Editor,
-        label: &'static str,
+        label: String,
         editor_snapshot: &EditorSnapshot,
         visible_row_range: Range<DisplayRow>,
         target_display_point: DisplayPoint,
@@ -1927,7 +1927,7 @@ impl Editor {
         );
 
         let mut element = self
-            .render_edit_prediction_line_popover(label, None, window, cx)
+            .render_edit_prediction_line_popover(label.clone(), None, window, cx)
             .into_any();
 
         let size = element.layout_as_root(AvailableSpace::min_size(), window, cx);

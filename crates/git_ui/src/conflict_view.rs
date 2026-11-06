@@ -15,6 +15,7 @@ use project::{
     git_store::{GitStore, GitStoreEvent, RepositoryEvent},
 };
 use settings::Settings;
+use i18n::{keys, t, t_with_args};
 use std::{ops::Range, sync::Arc};
 use ui::{ButtonLike, Divider, Tooltip, prelude::*};
 use util::debug_panic;
@@ -626,20 +627,11 @@ impl Render for MergeConflictIndicator {
 
         let file_count = self.conflicted_paths.len();
 
-        let message: SharedString = format!(
-            "Resolve Merge Conflict{} with Agent",
-            if file_count == 1 { "" } else { "s" }
-        )
-        .into();
+        let message: SharedString = t(keys::git_ui::GIT_CONFLICT_RESOLVE_INDICATOR).into();
 
-        let tooltip_label: SharedString = format!(
-            "Found {} {} across the codebase",
-            file_count,
-            if file_count == 1 {
-                "conflict"
-            } else {
-                "conflicts"
-            }
+        let tooltip_label: SharedString = t_with_args(
+            keys::git_ui::GIT_CONFLICT_FOUND,
+            &[("count", &file_count.to_string())],
         )
         .into();
 

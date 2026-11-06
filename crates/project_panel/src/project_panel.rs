@@ -1283,16 +1283,16 @@ impl ProjectPanel {
                                 )
                             })
                             .separator()
-                            .action("Cut", Box::new(Cut))
-                            .action("Copy", Box::new(Copy))
+                            .action(t_static(keys::panel::PANEL_CUT), Box::new(Cut))
+                            .action(t_static(keys::panel::PANEL_COPY), Box::new(Copy))
                             .action(t_static(keys::panel::PANEL_DUPLICATE), Box::new(Duplicate))
-                            .action_disabled_when(!has_pasteable_content, "Paste", Box::new(Paste))
+                            .action_disabled_when(!has_pasteable_content, t(keys::panel::PANEL_PASTE), Box::new(Paste))
                             .when(!is_collab, |menu| {
                                 let can_undo = self.undo_manager.can_undo();
                                 let can_redo = self.undo_manager.can_redo();
 
-                                menu.action_disabled_when(!can_undo, "Undo", Box::new(Undo))
-                                    .action_disabled_when(!can_redo, "Redo", Box::new(Redo))
+                                menu.action_disabled_when(!can_undo, t(keys::panel::PANEL_UNDO), Box::new(Undo))
+                                    .action_disabled_when(!can_redo, t(keys::panel::PANEL_REDO), Box::new(Redo))
                             })
                             .when(is_remote, |menu| {
                                 menu.separator().action(
@@ -1343,13 +1343,13 @@ impl ProjectPanel {
                                     })
                             })
                             .when(!should_hide_rename, |menu| {
-                                menu.separator().action("Rename", Box::new(Rename))
+                                menu.separator().action(t(keys::panel::PANEL_RENAME), Box::new(Rename))
                             })
                             .when(!is_root && !is_collab, |menu| {
-                                menu.action("Trash", Box::new(Trash { skip_prompt: false }))
+                                menu.action(t(keys::panel::PANEL_TRASH), Box::new(Trash { skip_prompt: false }))
                             })
                             .when(!is_root, |menu| {
-                                menu.action("Delete", Box::new(Delete { skip_prompt: false }))
+                                menu.action(t(keys::panel::PANEL_DELETE), Box::new(Delete { skip_prompt: false }))
                             })
                             .when(!is_collab && is_root, |menu| {
                                 menu.separator()
@@ -2384,13 +2384,9 @@ impl ProjectPanel {
                                 project_panel.project.update(cx, |_, cx| {
                                     cx.emit(project::Event::Toast {
                                         notification_id: "excluded-directory".into(),
-                                        message: format!(
-                                            concat!(
-                                                "Created an excluded directory at {:?}.\n",
-                                                "Alter `file_scan_exclusions` in the settings ",
-                                                "to show it in the panel"
-                                            ),
-                                            abs_path
+                                        message: t_with_args(
+                                            keys::panel::PANEL_EXCLUDED_DIRECTORY_TOAST,
+                                            &[("path", &format!("{:?}", abs_path))],
                                         ),
                                         link: None,
                                     })
@@ -2743,12 +2739,12 @@ impl ProjectPanel {
                     keys::panel::PANEL_DISCARD_CHANGES_PROMPT,
                     &[("name", &MarkdownInlineCode(&file_name).to_string())],
                 );
-                let restore = "Restore";
+                let restore = t(keys::panel::PANEL_RESTORE);
                 Some(window.prompt(
                     PromptLevel::Info,
                     &prompt,
                     None,
-                    &[restore.as_str(), "Cancel"],
+                    &[restore.as_str(), t_static(keys::prompt::PROMPT_CANCEL).as_ref()],
                     cx,
                 ))
             } else {
@@ -2771,7 +2767,10 @@ impl ProjectPanel {
                 if let Err(e) = task.await {
                     panel
                         .update(cx, |panel, cx| {
-                            let message = format!("Failed to restore {}: {}", file_name, e);
+                            let message = t_with_args(
+                                keys::panel::PANEL_FAILED_TO_RESTORE_ENTRY,
+                                &[("name", &file_name)],
+                            );
                             let toast = StatusToast::new(message, cx, |this, _| {
                                 this.icon(
                                     Icon::new(IconName::XCircle)
@@ -2924,9 +2923,9 @@ impl ProjectPanel {
         S: AsRef<str>,
     {
         let (confirmation_label, detail) = match kind {
-            RemovalKind::Trash => ("Trash", None),
+            RemovalKind::Trash => (t(keys::panel::PANEL_TRASH), None),
             RemovalKind::Delete => (
-                "Delete",
+                t(keys::panel::PANEL_DELETE),
                 Some(t(keys::panel::PANEL_REMOVAL_CANNOT_BE_UNDONE)),
             ),
         };
@@ -3042,7 +3041,10 @@ impl ProjectPanel {
                     PromptLevel::Info,
                     &prompt.message,
                     prompt.detail.as_deref(),
-                    &[prompt.confirmation_label.as_str(), "Cancel"],
+                    &[
+                    prompt.confirmation_label.as_str(),
+                    t_static(keys::prompt::PROMPT_CANCEL).as_ref(),
+                ],
                     cx,
                 ))
             } else {
@@ -3128,8 +3130,13 @@ impl ProjectPanel {
         cx: &mut Context<Self>,
     ) {
         let message = match (trash, total_count) {
-            (true, 1) => format!("Failed to trash {failed_count} of {total_count} file."),
-            (true, _) => format!("Failed to trash {failed_count} of {total_count} files."),
+            (true, _) => t_with_args(
+                keys::panel::PANEL_FAILED_TO_TRASH,
+                &[
+                    ("failed", &(failed_count).to_string()),
+                    ("total", &(total_count).to_string()),
+                ],
+            ),
             (false, 1) => format!("Failed to delete {failed_count} of {total_count} file."),
             (false, _) => t_with_args(
                 keys::panel::PANEL_FAILED_TO_DELETE,
@@ -3741,10 +3748,10 @@ impl ProjectPanel {
 
                 let mut new_file_name = file_name_without_extension.to_string();
 
-                let disambiguation = " copy";
+                let disambiguation = format!(" {}", t(keys::panel::PANEL_DUPLICATE_SUFFIX));
                 let mut disambiguation_len = disambiguation.len();
 
-                new_file_name.push_str(disambiguation);
+                new_file_name.push_str(&disambiguation);
 
                 if ix > 0 {
                     let extra_disambiguation = format!(" {}", ix);
@@ -4043,7 +4050,10 @@ impl ProjectPanel {
                             workspace.show_toast(
                                 workspace::Toast::new(
                                     notification_id.clone(),
-                                    format!("Downloading 0/{} files...", total_files),
+                                    t_with_args(
+                                        keys::panel::PANEL_DOWNLOADING_FILES,
+                                        &[("done", "0"), ("total", &total_files.to_string())],
+                                    ),
                                 ),
                                 cx,
                             );
@@ -4059,10 +4069,12 @@ impl ProjectPanel {
                                 workspace.show_toast(
                                     workspace::Toast::new(
                                         notification_id.clone(),
-                                        format!(
-                                            "Downloading {}/{} files...",
-                                            index + 1,
-                                            total_files
+                                        t_with_args(
+                                            keys::panel::PANEL_DOWNLOADING_FILES,
+                                            &[
+                                                ("done", &(index + 1).to_string()),
+                                                ("total", &total_files.to_string()),
+                                            ],
                                         ),
                                     ),
                                     cx,
@@ -5181,14 +5193,14 @@ impl ProjectPanel {
                         keys::panel::PANEL_REPLACE_PROMPT,
                         &[("name", &MarkdownInlineCode(filename).to_string())],
                     );
-                    let replace = "Replace";
+                    let replace = t(keys::panel::PANEL_REPLACE);
                     let answer = cx
                         .update(|window, cx| {
                             window.prompt(
                                 PromptLevel::Info,
                                 &prompt_message,
                                 None,
-                                &[replace.as_str(), "Cancel"],
+                                &[replace.as_str(), t_static(keys::prompt::PROMPT_CANCEL).as_ref()],
                                 cx,
                             )
                         })?

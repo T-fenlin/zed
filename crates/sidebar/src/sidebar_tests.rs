@@ -11316,7 +11316,7 @@ async fn test_unarchive_does_not_create_duplicate_real_thread_metadata(cx: &mut 
         .filter(|entry| !entry.starts_with("v ") && !entry.starts_with("> "))
         .filter(|entry| !entry.contains("Draft"))
         // Parked drafts render with the default title until the user types.
-        .filter(|entry| !entry.contains(default_thread_title()))
+        .filter(|entry| !entry.contains(default_thread_title().as_str()))
         .count();
     assert_eq!(
         real_thread_rows, 1,
@@ -11932,7 +11932,7 @@ async fn test_unarchive_linked_worktree_thread_into_project_group_shows_only_res
         assert!(
             !entries
                 .iter()
-                .any(|entry| entry.contains(default_thread_title())),
+                .any(|entry| entry.contains(default_thread_title().as_str())),
             "expected no default-titled real placeholder row after linked-worktree unarchive, got entries: {entries:?}"
         );
         assert!(

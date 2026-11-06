@@ -107,7 +107,7 @@ pub(crate) fn render_sandbox_settings_page(
                         .severity(Severity::Warning)
                         .child(Label::new(error).size(LabelSize::Small))
                         .action_slot(
-                            Button::new("dismiss-sandbox-host-error", "Dismiss")
+                            Button::new("dismiss-sandbox-host-error", t(keys::settings_ui::SETTINGS_A_TOOLS_DISMISS))
                                 .style(ButtonStyle::Tinted(ui::TintColor::Warning))
                                 .on_click(cx.listener(|this, _, _, cx| {
                                     this.sandbox_host_validation_error = None;

@@ -245,7 +245,7 @@ impl StashMessageModal {
     ) -> Self {
         let editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
-            editor.set_placeholder_text(t(keys::git_ui::GIT_STASH_MESSAGE_PLACEHOLDER), window, cx);
+            editor.set_placeholder_text(&t(keys::git_ui::GIT_STASH_MESSAGE_PLACEHOLDER), window, cx);
             editor
         });
         Self {
@@ -402,7 +402,7 @@ fn git_panel_view_options_menu(
 
         context_menu
             .context(focus_handle.clone())
-            .header("View")
+            .header(t_static(keys::git_ui::GIT_VIEW))
             .item({
                 let view_options_menu_state = view_options_menu_state.clone();
                 ContextMenuEntry::new(t_static(keys::git_ui::GIT_VIEW_LIST))
@@ -764,7 +764,7 @@ impl GitHeaderEntry {
     }
     pub fn title(&self) -> &'static str {
         match self.header {
-            Section::Conflict => "Conflicts",
+            Section::Conflict => t_static(keys::git_ui::GIT_SECTION_CONFLICTS),
             Section::Tracked => t_static(keys::git_ui::GIT_SECTION_TRACKED),
             Section::New => t_static(keys::git_ui::GIT_SECTION_UNTRACKED),
             Section::Staged => t_static(keys::git_ui::GIT_SECTION_STAGED),
@@ -3092,7 +3092,7 @@ impl GitPanel {
             {
                 t(keys::git_ui::GIT_UNSTAGED_CHANGES)
             } else {
-                "changes"
+                t(keys::git_ui::GIT_CHANGES)
             };
 
             let prompt = if skip_prompt {
@@ -3119,7 +3119,7 @@ impl GitPanel {
                 } else if is_trashed {
                     (
                         t_with_args(keys::git_ui::GIT_CONFIRM_TRASH_PATH, &[("path", &path)]),
-                        "Trash",
+                        t(keys::git_ui::GIT_TRASH),
                     )
                 } else {
                     (
@@ -3135,7 +3135,7 @@ impl GitPanel {
                     PromptLevel::Warning,
                     &message,
                     None,
-                    &[confirm_text.as_str(), "Cancel"],
+                    &[confirm_text.as_str(), t_static(keys::git_ui::GIT_B_CANCEL)],
                     cx,
                 ))
             } else {
@@ -3153,7 +3153,7 @@ impl GitPanel {
                             keys::git_ui::GIT_CONFIRM_TRASH_COUNT,
                             &[("count", &untracked_count.to_string())],
                         ),
-                        "Trash",
+                        t_static(keys::git_ui::GIT_TRASH),
                     ),
                     (tracked_count, untracked_count) => (
                         t_with_args(
@@ -3164,7 +3164,7 @@ impl GitPanel {
                                 ("untracked", &untracked_count.to_string()),
                             ],
                         ),
-                        t(keys::git_ui::GIT_DISCARD_AND_TRASH),
+                        t_static(keys::git_ui::GIT_DISCARD_AND_TRASH),
                     ),
                 };
 
@@ -3172,7 +3172,7 @@ impl GitPanel {
                     PromptLevel::Warning,
                     &message,
                     None,
-                    &[confirm_text.as_str(), "Cancel"],
+                    &[confirm_text, t_static(keys::git_ui::GIT_B_CANCEL)],
                     cx,
                 ))
             };
@@ -4308,9 +4308,9 @@ impl GitPanel {
         }?;
 
         let action_text = if git_status_entry.status.is_deleted() {
-            Some("Delete")
+            Some(t_static(keys::git_ui::GIT_B_DELETE))
         } else if git_status_entry.status.is_created() {
-            Some("Create")
+            Some(t_static(keys::git_ui::GIT_B_CREATE))
         } else if git_status_entry.status.is_modified() {
             Some("Update")
         } else {
@@ -6816,7 +6816,7 @@ impl GitPanel {
 
     pub fn configure_commit_button(&self, cx: &mut Context<Self>) -> (bool, &'static str) {
         if self.generate_commit_message_task.is_some() {
-            (false, t(keys::git_ui::GIT_GENERATING_COMMIT_MESSAGE))
+            (false, t_static(keys::git_ui::GIT_GENERATING_COMMIT_MESSAGE))
         } else if self.has_unstaged_conflicts() {
             (false, t_static(keys::git_ui::GIT_RESOLVE_CONFLICTS_FIRST))
         } else if !self.has_staged_changes() && !self.has_tracked_changes() && !self.amend_pending {
@@ -6824,7 +6824,7 @@ impl GitPanel {
         } else if self.pending_commit.is_some() {
             (false, t_static(keys::git_ui::GIT_COMMIT_IN_PROGRESS))
         } else if !self.has_commit_message(cx) {
-            (false, t(keys::git_ui::GIT_NO_COMMIT_MESSAGE))
+            (false, t_static(keys::git_ui::GIT_NO_COMMIT_MESSAGE))
         } else if !self.has_write_access(cx) {
             (false, t_static(keys::git_ui::GIT_NO_WRITE_ACCESS))
         } else {
@@ -6842,7 +6842,7 @@ impl GitPanel {
                 t_static(keys::git_ui::GIT_AMEND)
             }
         } else if self.has_staged_changes() {
-            "Commit"
+            t_static(keys::git_ui::GIT_COMMIT)
         } else {
             t_static(keys::git_ui::GIT_COMMIT_TRACKED)
         }
@@ -7595,17 +7595,17 @@ impl GitPanel {
         v_flex().flex_1().size_full().overflow_hidden().map(|this| {
             let has_repo = self.active_repository.is_some();
             match &self.commit_history {
-                _ if !has_repo => this.child(Self::render_history_placeholder(t(
+                _ if !has_repo => this.child(Self::render_history_placeholder(t_static(
                     keys::git_ui::GIT_HISTORY_NO_REPOSITORY,
                 ))),
                 CommitHistory::Error(_) => this.child(Self::render_history_placeholder(t_static(
                     keys::git_ui::GIT_HISTORY_LOAD_FAILED,
                 ))),
-                CommitHistory::Loading => this.child(Self::render_history_placeholder(t(
+                CommitHistory::Loading => this.child(Self::render_history_placeholder(t_static(
                     keys::git_ui::GIT_HISTORY_LOADING,
                 ))),
                 CommitHistory::Loaded(entries) if entries.is_empty() => this.child(
-                    Self::render_history_placeholder(t(keys::git_ui::GIT_HISTORY_EMPTY)),
+                    Self::render_history_placeholder(t_static(keys::git_ui::GIT_HISTORY_EMPTY)),
                 ),
                 CommitHistory::Loaded(_) => match self.render_commit_history(window, cx) {
                     Some(history) => this.child(history),

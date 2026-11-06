@@ -393,15 +393,15 @@ impl ConfigOptionSelector {
 
     fn current_value_name(&self) -> String {
         let Some(option) = self.current_option() else {
-            return "Unknown".to_string();
+            return t_static(keys::agent::AGENT_UNKNOWN).to_string();
         };
 
         match &option.kind {
             acp::SessionConfigKind::Select(select) => {
                 find_option_name(&select.options, &select.current_value)
-                    .unwrap_or_else(|| "Unknown".to_string())
+                    .unwrap_or_else(|| t_static(keys::agent::AGENT_UNKNOWN).to_string())
             }
-            _ => "Unknown".to_string(),
+            _ => t_static(keys::agent::AGENT_UNKNOWN).to_string(),
         }
     }
 
@@ -418,7 +418,7 @@ impl ConfigOptionSelector {
 
     fn render_trigger_button(&self, _window: &mut Window, _cx: &mut Context<Self>) -> Button {
         let Some(option) = self.current_option() else {
-            return Button::new("config-option-trigger", "Unknown")
+            return Button::new("config-option-trigger", t(keys::agent::AGENT_UNKNOWN))
                 .label_size(LabelSize::Small)
                 .color(Color::Muted)
                 .disabled(true);
@@ -1073,7 +1073,7 @@ fn options_to_picker_entries(
     }
 
     if !favorite_options.is_empty() {
-        entries.push(ConfigOptionPickerEntry::Separator("Favorites".into()));
+        entries.push(ConfigOptionPickerEntry::Separator(t(keys::agent::AGENT_FAVORITES).into()));
         for option in favorite_options {
             entries.push(ConfigOptionPickerEntry::Option(option));
         }

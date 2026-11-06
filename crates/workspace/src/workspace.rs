@@ -12073,12 +12073,13 @@ pub fn reload(cx: &mut App) {
     if let (true, Some(window)) = (should_confirm, workspace_windows.first()) {
         prompt = window
             .update(cx, |_, window, cx| {
-                let restart = "Restart";
+                let restart = t(keys::prompt::PROMPT_RESTART);
+                let cancel = t(keys::prompt::PROMPT_CANCEL);
                 window.prompt(
                     PromptLevel::Info,
                     &t(keys::prompt::PROMPT_RESTART_CONFIRM),
                     None,
-                    &[restart.as_str(), "Cancel"],
+                    &[restart.as_str(), cancel.as_str()],
                     cx,
                 )
             })

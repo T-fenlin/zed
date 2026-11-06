@@ -1245,7 +1245,7 @@ impl SettingsPageItem {
                         .child(
                             Button::new(
                                 ("sub-page".into(), sub_page_link.title.clone()),
-                                "Configure",
+                                t(keys::settings_ui::SETTINGS_TOOL_PERM_CONFIGURE),
                             )
                             .aria_label(t_with_args(
                                 keys::settings_ui::SETTINGS_UI_CONFIGURE_ARIA,
@@ -2980,7 +2980,7 @@ impl SettingsWindow {
 
     pub(crate) fn display_name(&self, file: &SettingsUiFile) -> Option<String> {
         match file {
-            SettingsUiFile::User => Some("User"),
+            SettingsUiFile::User => Some("User".to_string()),
             SettingsUiFile::Project((worktree_id, path)) => self
                 .worktree_root_dirs
                 .get(&worktree_id)

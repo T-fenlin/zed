@@ -672,7 +672,7 @@ impl PickerDelegate for StashListDelegate {
                         }),
                 )
                 .child(
-                    Button::new("view-stash", "View")
+                    Button::new("view-stash", t(keys::git_ui::GIT_VIEW))
                         .key_binding(
                             KeyBinding::for_action_in(
                                 &stash_picker::ShowStashItem,
@@ -698,7 +698,7 @@ impl PickerDelegate for StashListDelegate {
                         }),
                 )
                 .child(
-                    Button::new("apply-stash", "Apply")
+                    Button::new("apply-stash", t(keys::git_ui::GIT_STASH_ACTION_APPLY))
                         .key_binding(
                             KeyBinding::for_action_in(&menu::Confirm, &focus_handle, cx)
                                 .map(|kb| kb.size(rems_from_px(12_f32))),

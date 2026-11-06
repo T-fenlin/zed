@@ -1,6 +1,6 @@
 use collab_ui::collab_panel;
 use gpui::{App, Menu, MenuItem, OsAction};
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 use project::DisableAiSettings;
 use release_channel::ReleaseChannel;
 use settings::Settings;
@@ -100,7 +100,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             git_panel::ToggleFocus,
         ),
         MenuItem::separator(),
-        MenuItem::action("Diagnostics", diagnostics::Deploy),
+        MenuItem::action(t(keys::app_menu::MENU_VIEW_DIAGNOSTICS), diagnostics::Deploy),
         MenuItem::separator(),
     ]);
 
@@ -123,7 +123,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
                     auto_update::Check,
                 ),
                 MenuItem::separator(),
-                MenuItem::submenu(Menu::new("Settings").items([
+                MenuItem::submenu(Menu::new(t(keys::app_menu::MENU_ZED_SETTINGS)).items([
                     MenuItem::action(
                         t(keys::app_menu::MENU_ZED_OPEN_SETTINGS),
                         zed_actions::OpenSettings,
@@ -174,7 +174,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
                     gpui::SystemMenuType::Services,
                 ),
                 MenuItem::separator(),
-                MenuItem::action("Extensions", zed_actions::Extensions::default()),
+                MenuItem::action(t(keys::app_menu::MENU_ZED_EXTENSIONS), zed_actions::Extensions::default()),
                 #[cfg(not(target_os = "windows"))]
                 MenuItem::action(
                     t(keys::app_menu::MENU_ZED_INSTALL_CLI),
@@ -192,7 +192,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "File".into(),
+            name: t_static(keys::app_menu::MENU_FILE_TITLE).into(),
             disabled: false,
             items: vec![
                 MenuItem::action(t_static(keys::app_menu::MENU_FILE_NEW), workspace::NewFile),
@@ -207,7 +207,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
                     if cfg!(not(target_os = "macos")) {
                         t(keys::app_menu::MENU_FILE_OPEN_FOLDER)
                     } else {
-                        t_static(keys::app_menu::MENU_FILE_OPEN_FOLDER_SHORT)
+                        t(keys::app_menu::MENU_FILE_OPEN_FOLDER_SHORT)
                     },
                     workspace::Open::default(),
                 ),
@@ -225,7 +225,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
                     workspace::AddFolderToProject,
                 ),
                 MenuItem::separator(),
-                MenuItem::action("Save", workspace::Save { save_intent: None }),
+                MenuItem::action(t(keys::app_menu::MENU_FILE_SAVE), workspace::Save { save_intent: None }),
                 MenuItem::action(t(keys::app_menu::MENU_FILE_SAVE_AS), workspace::SaveAs),
                 MenuItem::action(
                     t(keys::app_menu::MENU_FILE_SAVE_ALL),
@@ -250,19 +250,19 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "Edit".into(),
+            name: t_static(keys::app_menu::MENU_EDIT_TITLE).into(),
             disabled: false,
             items: vec![
-                MenuItem::os_action("Undo", editor::actions::Undo, OsAction::Undo),
-                MenuItem::os_action("Redo", editor::actions::Redo, OsAction::Redo),
+                MenuItem::os_action(t(keys::app_menu::MENU_EDIT_UNDO), editor::actions::Undo, OsAction::Undo),
+                MenuItem::os_action(t(keys::app_menu::MENU_EDIT_REDO), editor::actions::Redo, OsAction::Redo),
                 MenuItem::separator(),
-                MenuItem::os_action("Cut", editor::actions::Cut, OsAction::Cut),
-                MenuItem::os_action("Copy", editor::actions::Copy, OsAction::Copy),
+                MenuItem::os_action(t(keys::app_menu::MENU_EDIT_CUT), editor::actions::Cut, OsAction::Cut),
+                MenuItem::os_action(t(keys::app_menu::MENU_EDIT_COPY), editor::actions::Copy, OsAction::Copy),
                 MenuItem::action(
                     t(keys::app_menu::MENU_EDIT_COPY_AND_TRIM),
                     editor::actions::CopyAndTrim,
                 ),
-                MenuItem::os_action("Paste", editor::actions::Paste, OsAction::Paste),
+                MenuItem::os_action(t(keys::app_menu::MENU_EDIT_PASTE), editor::actions::Paste, OsAction::Paste),
                 MenuItem::separator(),
                 MenuItem::action(
                     t_static(keys::app_menu::MENU_EDIT_FIND),
@@ -280,7 +280,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "Selection".into(),
+            name: t_static(keys::app_menu::MENU_SELECTION_TITLE).into(),
             disabled: false,
             items: vec![
                 MenuItem::os_action(
@@ -349,15 +349,15 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "View".into(),
+            name: t_static(keys::app_menu::MENU_VIEW_TITLE).into(),
             disabled: false,
             items: view_items,
         },
         Menu {
-            name: "Go".into(),
+            name: t_static(keys::app_menu::MENU_GO_TITLE).into(),
             disabled: false,
             items: vec![
-                MenuItem::action("Back", workspace::GoBack),
+                MenuItem::action(t(keys::app_menu::MENU_GO_BACK), workspace::GoBack),
                 MenuItem::action(
                     t_static(keys::app_menu::MENU_GO_FORWARD),
                     workspace::GoForward,
@@ -418,7 +418,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "Run".into(),
+            name: t_static(keys::app_menu::MENU_RUN_TITLE).into(),
             disabled: false,
             items: vec![
                 MenuItem::action(
@@ -464,7 +464,7 @@ pub fn app_menus(cx: &mut App) -> Vec<Menu> {
             ],
         },
         Menu {
-            name: "Window".into(),
+            name: t_static(keys::app_menu::MENU_WINDOW_TITLE).into(),
             disabled: false,
             items: vec![
                 MenuItem::action(

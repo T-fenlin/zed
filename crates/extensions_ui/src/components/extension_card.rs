@@ -216,7 +216,7 @@ impl ExtensionCard {
     ) -> Button {
         Button::new(
             SharedString::from(format!("configure-{extension_id}")),
-            "Configure",
+            t(keys::extensions::EXTENSIONS_CONFIGURE),
         )
         .on_click({
             let extension_id = extension_id.clone();
@@ -287,7 +287,7 @@ impl ExtensionCard {
     fn install_button(extension_id: &Arc<str>) -> Button {
         Button::new(
             Self::button_id(extension_id, ExtensionOperation::Install),
-            "Install",
+            t(keys::extensions::EXTENSIONS_INSTALL),
         )
         .style(ButtonStyle::Tinted(ui::TintColor::Accent))
         .start_icon(
@@ -340,7 +340,7 @@ impl ExtensionCard {
                 let upgrade = matches!(status, ExtensionStatus::Upgrading).then(|| {
                     Button::new(
                         Self::button_id(&extension.id, ExtensionOperation::Upgrade),
-                        "Upgrade",
+                        t(keys::extensions::EXTENSIONS_UPGRADE),
                     )
                     .disabled(Self::disables_actions(status))
                 });
@@ -361,7 +361,7 @@ impl ExtensionCard {
                     );
                     Button::new(
                         Self::button_id(&extension.id, ExtensionOperation::Upgrade),
-                        "Upgrade",
+                        t(keys::extensions::EXTENSIONS_UPGRADE),
                     )
                     .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                     .when(!is_compatible, |button| {

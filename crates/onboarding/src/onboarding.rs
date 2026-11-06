@@ -8,7 +8,7 @@ use gpui::{
     FocusHandle, Focusable, Global, IntoElement, KeyContext, Render, ScrollHandle, SharedString,
     Subscription, Task, WeakEntity, Window, actions,
 };
-use i18n::{keys, t, t_with_args};
+use i18n::{keys, t_with_args};
 use notifications::status_toast::StatusToast;
 use project::agent_server_store::AllAgentServersSettings;
 use schemars::JsonSchema;
@@ -512,7 +512,7 @@ pub async fn handle_import_vscode_settings(
             gpui::PromptLevel::Warning,
             &prompt_message,
             None,
-            &[import.as_str(), "Cancel"],
+            &[import, "Cancel"],
         );
         let result = cx.spawn(async move |_| prompt.await.ok()).await;
         if result != Some(0) {

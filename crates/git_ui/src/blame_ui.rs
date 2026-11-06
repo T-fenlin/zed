@@ -588,7 +588,7 @@ fn deploy_blame_entry_context_menu(
             .when_some(blame_revision, |this, (revision, path)| {
                 let repository = repository.clone();
                 let workspace = workspace.clone();
-                this.entry("Blame Revision", None, move |window, cx| {
+                this.entry(t_static(keys::git_ui::GIT_BLAME_BLAME_REVISION), None, move |window, cx| {
                     open_buffer_blame_at_revision(
                         repository.clone(),
                         workspace.clone(),
@@ -784,6 +784,6 @@ fn blame_entry_relative_timestamp(blame_entry: &BlameEntry) -> String {
                 time_format::TimestampFormat::Relative,
             )
         }
-        Err(_) => "Error parsing date".to_string(),
+        Err(_) => t(keys::git_ui::GIT_BLAME_DATE_ERROR),
     }
 }

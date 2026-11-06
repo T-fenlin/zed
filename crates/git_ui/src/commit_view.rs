@@ -917,7 +917,7 @@ impl CommitView {
     }
 
     fn apply_stash(workspace: &mut Workspace, window: &mut Window, cx: &mut App) {
-        let action = "Apply";
+        let action = t_static(keys::git_ui::GIT_STASH_ACTION_APPLY);
         Self::stash_action(
             workspace,
             &action,
@@ -1032,7 +1032,7 @@ impl CommitView {
             PromptLevel::Info,
             &message,
             None,
-            &[str_action, "Cancel"],
+            &[str_action, t_static(keys::git_ui::GIT_B_CANCEL)],
             cx,
         );
 

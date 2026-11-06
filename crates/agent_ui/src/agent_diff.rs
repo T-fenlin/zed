@@ -12,7 +12,7 @@ use editor::{
     multibuffer_context_lines,
     scroll::Autoscroll,
 };
-use i18n::{keys, t};
+use i18n::{keys, t, t_static};
 
 use gpui::{
     Action, AnyElement, App, AppContext, Empty, Entity, EventEmitter, FocusHandle, Focusable,

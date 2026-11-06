@@ -186,7 +186,7 @@ impl Render for AgentNotification {
                     .gap_1()
                     .items_center()
                     .child(
-                        Button::new("open", "View")
+                        Button::new("open", t(keys::agent::AGENT_VIEW))
                             .style(ButtonStyle::Tinted(ui::TintColor::Accent))
                             .full_width()
                             .on_click({
@@ -195,7 +195,7 @@ impl Render for AgentNotification {
                                 })
                             }),
                     )
-                    .child(Button::new("dismiss", "Dismiss").full_width().on_click({
+                    .child(Button::new("dismiss", t(keys::agent::AGENT_DISMISS)).full_width().on_click({
                         cx.listener(move |this, _event, _, cx| {
                             this.dismiss(cx);
                         })

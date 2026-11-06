@@ -11,7 +11,7 @@ use gpui::{
     ParentElement, Render, Styled, Task, TaskExt, Window, actions,
 };
 use gpui::{WeakEntity, linear_color_stop, linear_gradient};
-use i18n::{keys, t};
+use i18n::{keys, t_static};
 use menu::{SelectNext, SelectPrevious};
 
 use schemars::JsonSchema;
@@ -164,13 +164,14 @@ impl SectionEntry {
     }
 }
 
-const CONTENT: (Section<4>, Section<3>) = (
+fn content() -> (Section<4>, Section<3>) {
+    (
     Section {
         title: "Get Started",
         entries: [
             SectionEntry {
                 icon: IconName::Plus,
-                title: t(keys::pane::PANE_NEW_FILE),
+                title: t_static(keys::pane::PANE_NEW_FILE),
                 action: &NewFile,
                 visibility_guard: SectionVisibility::Always,
             },
@@ -220,7 +221,8 @@ const CONTENT: (Section<4>, Section<3>) = (
             },
         ],
     },
-);
+    )
+}
 
 struct Section<const COLS: usize> {
     title: &'static str,
@@ -417,7 +419,7 @@ impl WelcomePage {
 
 impl Render for WelcomePage {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let (first_section, second_section) = CONTENT;
+        let (first_section, second_section) = content();
         let first_section_entries = first_section.entries.len();
         let mut next_tab_index = first_section_entries + second_section.entries.len();
 

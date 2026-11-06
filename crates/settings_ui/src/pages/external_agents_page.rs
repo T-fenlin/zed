@@ -467,8 +467,8 @@ fn new_kv_row(
     cx: &mut Context<SettingsWindow>,
 ) -> KeyValueRow {
     KeyValueRow {
-        key: new_input(&"Key", key, window, cx),
-        value: new_input(&"Value", value, window, cx),
+        key: new_input(&t(keys::settings_ui::SETTINGS_EXT_AGENT_KEY), key, window, cx),
+        value: new_input(&t(keys::settings_ui::SETTINGS_EXT_AGENT_VALUE), value, window, cx),
     }
 }
 
@@ -530,7 +530,7 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                "Command".into(),
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_COMMAND).into(),
                 t(keys::settings_ui::SETTINGS_EXT_AGENT_COMMAND_HINT).into(),
                 input_box(&form.command, cx).into_any_element(),
                 None,
@@ -544,7 +544,7 @@ fn render_custom_agent_form_page(
         .child(
             crate::render_settings_item_layout(
                 settings_window,
-                "Arguments".into(),
+                t(keys::settings_ui::SETTINGS_EXT_AGENT_ARGUMENTS).into(),
                 t(keys::settings_ui::SETTINGS_EXT_AGENT_ARGUMENTS_HINT).into(),
                 input_box(&form.args, cx).into_any_element(),
                 None,
@@ -628,7 +628,7 @@ fn render_env_section(
             )
         }))
         .child(
-            Button::new("custom-agent-env-add", "Add")
+            Button::new("custom-agent-env-add", t(keys::settings_ui::SETTINGS_EXT_AGENT_ADD))
                 .style(ButtonStyle::Outlined)
                 .label_size(LabelSize::Small)
                 .tab_index(0isize)
@@ -699,7 +699,7 @@ fn render_form_actions(
                 .border_1()
                 .border_color(cancel_border)
                 .child(
-                    Button::new("custom-agent-form-cancel", "Cancel")
+                    Button::new("custom-agent-form-cancel", t(keys::settings_ui::SETTINGS_A_SKILLS_CANCEL))
                         .style(ButtonStyle::Subtle)
                         .track_focus(&cancel_handle)
                         .on_click(cx.listener(|this, _, window, cx| {
@@ -714,7 +714,7 @@ fn render_form_actions(
                 .border_1()
                 .border_color(save_border)
                 .child(
-                    Button::new("custom-agent-form-save", "Save")
+                    Button::new("custom-agent-form-save", t(keys::settings_ui::SETTINGS_EXT_AGENT_SAVE))
                         .style(ButtonStyle::Filled)
                         .track_focus(&save_handle)
                         .on_click(cx.listener(|this, _, window, cx| {

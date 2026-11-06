@@ -272,7 +272,7 @@ impl ThreadFeedbackState {
                 cx,
             );
             editor.set_placeholder_text(
-                t(keys::agent::AGENT_THREAD_FEEDBACK_PLACEHOLDER),
+                t_static(keys::agent::AGENT_THREAD_FEEDBACK_PLACEHOLDER),
                 window,
                 cx,
             );
@@ -1844,11 +1844,11 @@ impl ThreadView {
                 acp_v2::EmbeddedResourceResource::BlobResourceContents(resource) => {
                     resource.uri.as_str()
                 }
-                _ => t(keys::agent::AGENT_THREAD_ATTACHMENT_RESOURCE),
+                _ => t_static(keys::agent::AGENT_THREAD_ATTACHMENT_RESOURCE),
             },
-            acp_v2::ContentBlock::Image(_) => t(keys::agent::AGENT_THREAD_ATTACHMENT_IMAGE),
-            acp_v2::ContentBlock::Audio(_) => t(keys::agent::AGENT_THREAD_ATTACHMENT_AUDIO),
-            _ => t(keys::agent::AGENT_THREAD_ATTACHMENT_UNSUPPORTED),
+            acp_v2::ContentBlock::Image(_) => t_static(keys::agent::AGENT_THREAD_ATTACHMENT_IMAGE),
+            acp_v2::ContentBlock::Audio(_) => t_static(keys::agent::AGENT_THREAD_ATTACHMENT_AUDIO),
+            _ => t_static(keys::agent::AGENT_THREAD_ATTACHMENT_UNSUPPORTED),
         })
     }
 
@@ -1966,7 +1966,7 @@ impl ThreadView {
                                 true,
                             ),
                             SubmissionState::Cancelled => (t_static(keys::agent::AGENT_PLAN_CANCELLED).into(), None, true),
-                            _ => ("Message".into(), None, false),
+                            _ => (t_static(keys::agent::AGENT_THREAD_SUBMISSION_MESSAGE).into(), None, false),
                         };
                     let preview: String =
                         Itertools::intersperse(Self::submission_text_parts(&record.content), " ")
@@ -2065,7 +2065,7 @@ impl ThreadView {
                                             .child(
                                                 Button::new(
                                                     ("restore-submission", row_id),
-                                                    "Restore",
+                                                    t(keys::agent::AGENT_THREAD_RESTORE),
                                                 )
                                                 .label_size(LabelSize::Small)
                                                 .tooltip(Tooltip::text(t(
@@ -3907,7 +3907,7 @@ impl ThreadView {
                     .dismiss_action(
                         IconButton::new("dismiss-refusal-fallback", IconName::Close)
                             .icon_size(IconSize::Small)
-                            .tooltip(Tooltip::text("Dismiss"))
+                            .tooltip(Tooltip::text(t(keys::agent::AGENT_DISMISS)))
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.thread_retry_status = None;
                                 cx.notify();
@@ -3943,9 +3943,13 @@ impl ThreadView {
                 ],
             )
         } else {
-            format!(
-                "Retrying. Next attempt in {next_attempt_in_secs} seconds (Attempt {} of {}).",
-                state.attempt, state.max_attempts,
+            t_with_args(
+                keys::agent::AGENT_THREAD_RETRY_NS_ATTEMPT,
+                &[
+                    ("seconds", &next_attempt_in_secs.to_string()),
+                    ("attempt", &state.attempt.to_string()),
+                    ("total", &state.max_attempts.to_string()),
+                ],
             )
         };
 
@@ -4433,9 +4437,12 @@ impl ThreadView {
                 let source = if session_id == &self.session_id {
                     None
                 } else {
-                    Some(format!(
-                        "Subagent: {} ({session_id})",
-                        subagent_label(thread)
+                    Some(t_with_args(
+                        keys::agent::AGENT_THREAD_SUBAGENT_SOURCE,
+                        &[
+                            ("title", &subagent_label(thread)),
+                            ("session_id", &session_id.to_string()),
+                        ],
                     ))
                 };
                 cards.push(self.render_generic_permission_card(
@@ -4563,7 +4570,7 @@ impl ThreadView {
                             .child(
                                 Button::new(
                                     format!("generic-permission-cancel-{request_id:?}"),
-                                    "Cancel",
+                                    t(keys::agent::AGENT_THREAD_CANCEL),
                                 )
                                 .label_size(LabelSize::Small)
                                 .on_click(cx.listener(
@@ -4761,7 +4768,7 @@ impl ThreadView {
                     .child(Label::new(label).size(LabelSize::Small).color(Color::Muted)),
             )
             .child(
-                Button::new("main-agent-permission-scroll-to", "Scroll")
+                Button::new("main-agent-permission-scroll-to", t(keys::agent::AGENT_THREAD_SCROLL))
                     .label_size(LabelSize::Small)
                     .end_icon(
                         Icon::new(scroll_icon)
@@ -4850,7 +4857,7 @@ impl ThreadView {
                 .gap_1()
                 .truncate()
                 .child(
-                    Label::new("Current:")
+                    Label::new(t(keys::agent::AGENT_THREAD_CURRENT))
                         .size(LabelSize::Small)
                         .color(Color::Muted),
                 )
@@ -5564,7 +5571,7 @@ impl ThreadView {
                                                 .tooltip({
                                                     move |_window, cx| {
                                                         Tooltip::for_action_in(
-                                                            expand_tooltip,
+                                                            expand_tooltip.clone(),
                                                             &ExpandMessageEditor,
                                                             &focus_handle,
                                                             cx,
@@ -5630,8 +5637,8 @@ impl ThreadView {
             ),
             ForegroundActivity::Unknown => (
                 "activity-unknown",
-                "Activity unknown",
-                "The agent can't currently tell whether it is working. You can send manually; automatic sends wait for confirmed Idle.",
+                "Activity unknown".to_string(),
+                "The agent can't currently tell whether it is working. You can send manually; automatic sends wait for confirmed Idle.".to_string(),
             ),
             ForegroundActivity::Idle
             | ForegroundActivity::Running
@@ -5826,13 +5833,13 @@ impl ThreadView {
                                         move |_window, cx| {
                                             if is_next {
                                                 Tooltip::for_action_in(
-                                                    "Edit",
+                                                    t(keys::agent::AGENT_THREAD_EDIT),
                                                     &EditFirstQueuedMessage,
                                                     &focus_handle,
                                                     cx,
                                                 )
                                             } else {
-                                                Tooltip::simple("Edit", cx)
+                                                Tooltip::simple(t(keys::agent::AGENT_THREAD_EDIT), cx)
                                             }
                                         }
                                     })
@@ -6154,7 +6161,7 @@ impl ThreadView {
             (ThreadSandbox::Sandboxed(settings_policy), ThreadSandbox::Unsandboxed) => {
                 let settings = augment_settings_sandbox_policy(&settings_policy, baseline);
                 SandboxStatusTooltip::disabled_for_thread(sandbox_section(
-                    t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS),
+                    t_static(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS),
                     &settings,
                     true,
                 ))
@@ -6168,14 +6175,14 @@ impl ThreadView {
                 // Omit the per-thread section when it grants nothing extra.
                 let thread = (!sandbox_policy_grants_nothing(&thread)).then(|| {
                     sandbox_section(
-                        t(keys::agent::AGENT_THREAD_ALLOWED_FOR_THREAD),
+                        t_static(keys::agent::AGENT_THREAD_ALLOWED_FOR_THREAD),
                         &thread,
                         false,
                     )
                 });
                 SandboxStatusTooltip::enabled(
                     sandbox_section(
-                        t(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS),
+                        t_static(keys::agent::AGENT_THREAD_DEFINED_IN_SETTINGS),
                         &settings,
                         true,
                     ),
@@ -6255,7 +6262,7 @@ impl ThreadView {
                 PopoverMenu::new("fast-mode-warning")
                     .with_handle(self.fast_mode_menu_handle.clone())
                     .trigger_with_tooltip(icon_button, move |_, cx| {
-                        Tooltip::for_action_in(tooltip_label, &ToggleFastMode, &tooltip_focus, cx)
+                        Tooltip::for_action_in(tooltip_label.clone(), &ToggleFastMode, &tooltip_focus, cx)
                     })
                     .menu(move |window, cx| {
                         let weak_self = weak_self.clone();
@@ -6322,7 +6329,7 @@ impl ThreadView {
         Some(
             icon_button
                 .tooltip(move |_, cx| {
-                    Tooltip::for_action_in(tooltip_label, &ToggleFastMode, &focus_handle, cx)
+                    Tooltip::for_action_in(tooltip_label.clone(), &ToggleFastMode, &focus_handle, cx)
                 })
                 .on_click(cx.listener(move |this, _, _window, cx| {
                     this.apply_fast_mode_speed(new_speed, cx);
@@ -6409,7 +6416,7 @@ impl ThreadView {
                 if let Some(tooltip_label) = tooltip_label {
                     this.tooltip(move |_, cx| {
                         Tooltip::for_action_in(
-                            tooltip_label,
+                            tooltip_label.clone(),
                             &ToggleThinkingMode,
                             &focus_handle,
                             cx,
@@ -6817,7 +6824,7 @@ impl ThreadView {
                         }),
                 )
                 .item(
-                    ContextMenuEntry::new("Symbols")
+                    ContextMenuEntry::new(t(keys::agent::AGENT_THREAD_SYMBOLS))
                         .icon(IconName::Code)
                         .icon_color(Color::Muted)
                         .icon_size(IconSize::XSmall)
@@ -6832,7 +6839,7 @@ impl ThreadView {
                         }),
                 )
                 .item(
-                    ContextMenuEntry::new("Threads")
+                    ContextMenuEntry::new(t(keys::agent::AGENT_THREAD_THREADS))
                         .icon(IconName::Thread)
                         .icon_color(Color::Muted)
                         .icon_size(IconSize::XSmall)
@@ -6847,7 +6854,7 @@ impl ThreadView {
                         }),
                 )
                 .when(!available_skills.is_empty(), |this| {
-                    this.submenu_with_colored_icon("Skills", IconName::Sparkle, Color::Muted, {
+                    this.submenu_with_colored_icon(t(keys::agent::AGENT_MENU_SKILLS), IconName::Sparkle, Color::Muted, {
                         let message_editor = message_editor.clone();
                         let available_skills = available_skills.clone();
                         move |mut menu, _window, _cx| {
@@ -6876,7 +6883,7 @@ impl ThreadView {
                         }),
                 )
                 .item(
-                    ContextMenuEntry::new("Selection")
+                    ContextMenuEntry::new(t(keys::agent::AGENT_THREAD_SELECTION))
                         .icon(IconName::CursorIBeam)
                         .icon_color(Color::Muted)
                         .icon_size(IconSize::XSmall)
@@ -7007,7 +7014,7 @@ impl Render for TokenUsageTooltip {
             container
                 .min_w_40()
                 .child(
-                    Label::new("Context")
+                    Label::new(t(keys::agent::AGENT_MENU_CONTEXT))
                         .color(Color::Muted)
                         .size(LabelSize::Small),
                 )
@@ -7029,7 +7036,7 @@ impl Render for TokenUsageTooltip {
                             .child(
                                 h_flex()
                                     .gap_0p5()
-                                    .child(Label::new("Input:").color(Color::Muted).mr_0p5())
+                                    .child(Label::new(t(keys::agent::AGENT_THREAD_INPUT_LABEL)).color(Color::Muted).mr_0p5())
                                     .child(Label::new(input_tokens))
                                     .child(Label::new("/").color(separator_color))
                                     .child(Label::new(input_max).color(Color::Muted)),
@@ -7037,7 +7044,7 @@ impl Render for TokenUsageTooltip {
                             .child(
                                 h_flex()
                                     .gap_0p5()
-                                    .child(Label::new("Output:").color(Color::Muted).mr_0p5())
+                                    .child(Label::new(t(keys::agent::AGENT_THREAD_OUTPUT_LABEL)).color(Color::Muted).mr_0p5())
                                     .child(Label::new(output_tokens))
                                     .child(Label::new("/").color(separator_color))
                                     .child(Label::new(output_max).color(Color::Muted)),
@@ -7316,7 +7323,7 @@ fn sandbox_fs_rows(fs: &SandboxFsDisplay) -> Vec<SandboxRow> {
             keys::agent::AGENT_THREAD_ALL_PATHS_EXCEPT_GIT,
         ))],
         SandboxFsDisplay::Restricted(entries) if entries.is_empty() => {
-            vec![SandboxRow::message("None")]
+            vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))]
         }
         SandboxFsDisplay::Restricted(entries) => entries
             .iter()
@@ -7339,9 +7346,9 @@ fn sandbox_network_rows(network: &SandboxNetPolicy) -> Vec<SandboxRow> {
         SandboxNetPolicy::Unrestricted => vec![SandboxRow::message(t(
             keys::agent::AGENT_THREAD_ALL_DOMAINS,
         ))],
-        SandboxNetPolicy::Blocked => vec![SandboxRow::message("None")],
+        SandboxNetPolicy::Blocked => vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))],
         SandboxNetPolicy::Restricted { allowed_domains } if allowed_domains.is_empty() => {
-            vec![SandboxRow::message("None")]
+            vec![SandboxRow::message(t(keys::agent::AGENT_THREAD_NONE))]
         }
         SandboxNetPolicy::Restricted { allowed_domains } => allowed_domains
             .iter()
@@ -8130,6 +8137,7 @@ impl ThreadView {
                 (self.is_subagent() && self.is_thread_feedback_enabled(cx)).then(|| {
                     let feedback = self.thread_feedback.feedback;
                     let tooltip_meta = t(keys::agent::AGENT_THREAD_RATING_HINT);
+                    let tooltip_meta2 = tooltip_meta.clone();
 
                     h_flex()
                         .child(
@@ -8148,7 +8156,7 @@ impl ThreadView {
                                     _ => Tooltip::with_meta(
                                         t(keys::agent::AGENT_THREAD_HELPFUL),
                                         None,
-                                        tooltip_meta,
+                                        tooltip_meta.clone(),
                                         cx,
                                     ),
                                 })
@@ -8176,7 +8184,7 @@ impl ThreadView {
                                     _ => Tooltip::with_meta(
                                         t(keys::agent::AGENT_THREAD_NOT_HELPFUL),
                                         None,
-                                        tooltip_meta,
+                                        tooltip_meta2.clone(),
                                         cx,
                                     ),
                                 })
@@ -9881,7 +9889,7 @@ impl ThreadView {
                                         ),
                                     )
                                 }))
-                                .child(input_output_header("Output:".into())),
+                                .child(input_output_header(t(keys::agent::AGENT_THREAD_OUTPUT_LABEL).into())),
                         )
                     })
                     .children(tool_call.content().iter().enumerate().map(
@@ -10853,7 +10861,7 @@ impl ThreadView {
             .bg(cx.theme().colors().editor_background)
             .map(|this| {
                 if is_redirected {
-                    this.child(captioned_path("Source".into(), requested_display, cx))
+                    this.child(captioned_path(t(keys::agent::AGENT_THREAD_SOURCE).into(), requested_display, cx))
                         .child(
                             Icon::new(IconName::ArrowDown)
                                 .color(Color::Muted)
@@ -11013,7 +11021,7 @@ impl ThreadView {
                 h_flex()
                     .gap_0p5()
                     .child(
-                        Button::new(("allow-btn", entry_ix), "Allow")
+                        Button::new(("allow-btn", entry_ix), t(keys::agent::AGENT_THREAD_ALLOW))
                             .disabled(allow_disabled)
                             .start_icon(
                                 Icon::new(IconName::Check)
@@ -11045,7 +11053,7 @@ impl ThreadView {
                             })),
                     )
                     .child(
-                        Button::new(("deny-btn", entry_ix), "Deny")
+                        Button::new(("deny-btn", entry_ix), t(keys::agent::AGENT_THREAD_DENY))
                             .start_icon(
                                 Icon::new(IconName::Close)
                                     .size(IconSize::XSmall)
@@ -11311,7 +11319,7 @@ impl ThreadView {
                                 .py_1()
                                 .w_full()
                                 .child(
-                                    Button::new("apply-patterns", "Apply")
+                                    Button::new("apply-patterns", t(keys::agent::AGENT_THREAD_APPLY))
                                         .full_width()
                                         .style(ButtonStyle::Outlined)
                                         .label_size(LabelSize::Small)
@@ -12420,7 +12428,7 @@ impl ThreadView {
                                     Tooltip::with_meta(
                                         title.to_string(),
                                         None,
-                                        tooltip_meta_description,
+                                        tooltip_meta_description.clone(),
                                         cx,
                                     )
                                 })
@@ -12705,7 +12713,7 @@ impl ThreadView {
             }
             ThreadError::ZedPaymentRequired => self.render_zed_payment_required_error(cx),
             ThreadError::RateLimitExceeded { provider } => self.render_error_callout(
-                t(keys::agent::AGENT_THREAD_ERROR_RATE_LIMIT),
+                t_static(keys::agent::AGENT_THREAD_ERROR_RATE_LIMIT),
                 format!(
                     "{provider}'s rate limit was reached. Zed will retry automatically. \
                     You can also wait a moment and try again."
@@ -12716,7 +12724,7 @@ impl ThreadView {
                 cx,
             ),
             ThreadError::ServerOverloaded { provider } => self.render_error_callout(
-                t(keys::agent::AGENT_THREAD_ERROR_PROVIDER_UNAVAILABLE),
+                t_static(keys::agent::AGENT_THREAD_ERROR_PROVIDER_UNAVAILABLE),
                 format!(
                     "{provider}'s servers are temporarily unavailable. Zed will retry \
                     automatically. If the problem persists, check the provider's status page."
@@ -12734,7 +12742,7 @@ impl ThreadView {
                         format!("No credentials are configured for {provider}.").into()
                     });
                 self.render_error_callout(
-                    t(keys::agent::AGENT_THREAD_ERROR_CREDENTIALS),
+                    t_static(keys::agent::AGENT_THREAD_ERROR_CREDENTIALS),
                     message,
                     false,
                     true,
@@ -12742,7 +12750,7 @@ impl ThreadView {
                 )
             }
             ThreadError::StreamError { provider } => self.render_error_callout(
-                t(keys::agent::AGENT_THREAD_ERROR_CONNECTION),
+                t_static(keys::agent::AGENT_THREAD_ERROR_CONNECTION),
                 format!(
                     "The connection to {provider}'s API was interrupted. Zed will retry \
                     automatically. If the problem persists, check your network connection."
@@ -12757,7 +12765,7 @@ impl ThreadView {
                     .map(|provider| provider.authentication_error_message())
                     .unwrap_or_else(|| format!("Could not authenticate with {provider}.").into());
                 self.render_error_callout(
-                    t(keys::agent::AGENT_THREAD_ERROR_AUTHENTICATION),
+                    t_static(keys::agent::AGENT_THREAD_ERROR_AUTHENTICATION),
                     message,
                     false,
                     false,
@@ -12771,7 +12779,7 @@ impl ThreadView {
                 });
 
                 self.render_error_callout(
-                    t(keys::agent::AGENT_THREAD_ERROR_PERMISSION),
+                    t_static(keys::agent::AGENT_THREAD_ERROR_PERMISSION),
                     message,
                     false,
                     false,
@@ -12779,14 +12787,14 @@ impl ThreadView {
                 )
             }
             ThreadError::ProviderRejection { message } => self.render_error_callout(
-                t(keys::agent::AGENT_THREAD_ERROR_REQUEST),
+                t_static(keys::agent::AGENT_THREAD_ERROR_REQUEST),
                 message.clone(),
                 true,
                 false,
                 cx,
             ),
             ThreadError::MaxOutputTokens => self.render_error_callout(
-                t(keys::agent::AGENT_THREAD_ERROR_OUTPUT_LIMIT),
+                t_static(keys::agent::AGENT_THREAD_ERROR_OUTPUT_LIMIT),
                 "The model stopped because it reached its maximum output length. \
                 You can ask it to continue where it left off."
                     .into(),
@@ -12798,7 +12806,7 @@ impl ThreadView {
                 .render_model_not_available_error(cx)
                 .unwrap_or_else(|| {
                     self.render_error_callout(
-                        t(keys::agent::AGENT_THREAD_ERROR_NO_MODEL),
+                        t_static(keys::agent::AGENT_THREAD_ERROR_NO_MODEL),
                         t(keys::agent::AGENT_THREAD_HINT_SELECT_MODEL).into(),
                         false,
                         false,
@@ -12806,7 +12814,7 @@ impl ThreadView {
                     )
                 }),
             ThreadError::ApiError { provider } => self.render_error_callout(
-                t(keys::agent::AGENT_THREAD_ERROR_API),
+                t_static(keys::agent::AGENT_THREAD_ERROR_API),
                 format!(
                     "{provider}'s API returned an unexpected error. \
                     If the problem persists, try switching models or restarting Zed."
@@ -13023,7 +13031,7 @@ impl ThreadView {
     }
 
     fn retry_button(&self, cx: &mut Context<Self>) -> impl IntoElement {
-        Button::new("retry", "Retry")
+        Button::new("retry", t(keys::agent::AGENT_RETRY))
             .label_size(LabelSize::Small)
             .style(ButtonStyle::Filled)
             .on_click(cx.listener(|this, _, _, cx| {
@@ -13042,7 +13050,7 @@ impl ThreadView {
     }
 
     fn upgrade_button(&self, cx: &mut Context<Self>) -> impl IntoElement {
-        Button::new("upgrade", "Upgrade")
+        Button::new("upgrade", t(keys::agent::AGENT_THREAD_UPGRADE))
             .label_size(LabelSize::Small)
             .style(ButtonStyle::Tinted(ui::TintColor::Accent))
             .on_click(cx.listener({
@@ -13054,7 +13062,7 @@ impl ThreadView {
     }
 
     fn authenticate_button(&self, cx: &mut Context<Self>) -> impl IntoElement {
-        Button::new("authenticate", "Authenticate")
+        Button::new("authenticate", t(keys::agent::AGENT_THREAD_AUTHENTICATE))
             .label_size(LabelSize::Small)
             .style(ButtonStyle::Filled)
             .on_click(cx.listener({
@@ -13211,7 +13219,7 @@ impl ThreadView {
     fn dismiss_error_button(&self, cx: &mut Context<Self>) -> impl IntoElement {
         IconButton::new("dismiss", IconName::Close)
             .icon_size(IconSize::Small)
-            .tooltip(Tooltip::text("Dismiss"))
+            .tooltip(Tooltip::text(t(keys::agent::AGENT_DISMISS)))
             .on_click(cx.listener({
                 move |this, _, _, cx| {
                     this.clear_thread_error(cx);
@@ -13360,7 +13368,7 @@ impl ThreadView {
                     .dismiss_action(
                         IconButton::new(("dismiss-skill-issue", index), IconName::Close)
                             .icon_size(IconSize::Small)
-                            .tooltip(Tooltip::text("Dismiss"))
+                            .tooltip(Tooltip::text(t(keys::agent::AGENT_DISMISS)))
                             .on_click(cx.listener(move |this, _, _, cx| {
                                 this.skill_loading_issues.retain(|issue| *issue != target);
                                 this.dismissed_skill_loading_issues.insert(target.clone());
@@ -13465,7 +13473,7 @@ impl ThreadView {
             callout.dismiss_action(
                 IconButton::new("dismiss-skill-description-warnings", IconName::Close)
                     .icon_size(IconSize::Small)
-                    .tooltip(Tooltip::text("Dismiss"))
+                    .tooltip(Tooltip::text(t(keys::agent::AGENT_DISMISS)))
                     .on_click(cx.listener(move |this, _, _, cx| {
                         this.skill_loading_issues
                             .retain(|issue| !targets.contains(issue));
@@ -13543,7 +13551,7 @@ impl ThreadView {
                 .dismiss_action(
                     IconButton::new("dismiss-multi-root-callout", IconName::Close)
                         .icon_size(IconSize::Small)
-                        .tooltip(Tooltip::text("Dismiss"))
+                        .tooltip(Tooltip::text(t(keys::agent::AGENT_DISMISS)))
                         .on_click(cx.listener(|this, _, _, cx| {
                             this.multi_root_callout_dismissed = true;
                             cx.notify();
@@ -13722,7 +13730,7 @@ impl ThreadView {
                         )
                     })
                     .child(
-                        Button::new("accept-data-retention", "Accept")
+                        Button::new("accept-data-retention", t(keys::agent::AGENT_THREAD_ACCEPT))
                             .label_size(LabelSize::Small)
                             .style(ButtonStyle::Tinted(TintColor::Warning))
                             .on_click(cx.listener(|this, _, _, cx| {

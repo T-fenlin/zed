@@ -380,7 +380,7 @@ impl Render for TitleBar {
                 )
                 .when(is_signing_in, |this| {
                     this.child(
-                        Label::new(t(keys::collab::COLLAB_SIGNING_IN))
+                        Label::new(t(keys::titlebar::TITLEBAR_SIGNING_IN))
                             .size(LabelSize::Small)
                             .color(Color::Muted)
                             .with_animation(
@@ -611,8 +611,8 @@ impl TitleBar {
         // exists when `test-support` is enabled, so an exhaustive match breaks when
         // another crate in the same build enables that feature.
         let (tooltip_title, icon) = match options.connection_type() {
-            "ssh" => (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Server),
-            "wsl" => (t(keys::sidebar::SIDEBAR_REMOTE_PROJECT), IconName::Linux),
+            "ssh" => (t(keys::titlebar::TITLEBAR_REMOTE_PROJECT), IconName::Server),
+            "wsl" => (t(keys::titlebar::TITLEBAR_REMOTE_PROJECT), IconName::Linux),
             "mock" => (
                 t(keys::titlebar::TITLEBAR_MOCK_REMOTE_PROJECT),
                 IconName::Server,
@@ -790,7 +790,7 @@ impl TitleBar {
                     Tooltip::with_meta(
                         tooltip_title,
                         None,
-                        t(keys::collab::COLLAB_CLICK_TO_FOLLOW),
+                        t(keys::titlebar::TITLEBAR_CLICK_TO_FOLLOW),
                         cx,
                     )
                 })
@@ -1246,7 +1246,7 @@ impl TitleBar {
     pub fn render_sign_in_button(&mut self, _: &mut Context<Self>) -> Button {
         let client = self.client.clone();
         let workspace = self.workspace.clone();
-        Button::new("sign_in", t(keys::edit_prediction::EDIT_PREDICTION_SIGN_IN))
+        Button::new("sign_in", t(keys::titlebar::TITLEBAR_SIGN_IN))
             .label_size(LabelSize::Small)
             .tab_index(0isize)
             .on_click(move |_, window, cx| {
@@ -1436,8 +1436,14 @@ impl TitleBar {
 
                         this.separator()
                     })
-                    .action("Settings", zed_actions::OpenSettings.boxed_clone())
-                    .action("Keymap", Box::new(zed_actions::OpenKeymap))
+                    .action(
+                        t(keys::titlebar::TITLEBAR_MENU_SETTINGS),
+                        zed_actions::OpenSettings.boxed_clone(),
+                    )
+                    .action(
+                        t(keys::titlebar::TITLEBAR_MENU_KEYMAP),
+                        Box::new(zed_actions::OpenKeymap),
+                    )
                     .action(
                         t_static(keys::titlebar::TITLEBAR_MENU_THEMES),
                         zed_actions::theme_selector::Toggle::default().boxed_clone(),
@@ -1447,7 +1453,7 @@ impl TitleBar {
                         zed_actions::icon_theme_selector::Toggle::default().boxed_clone(),
                     )
                     .action(
-                        "Extensions",
+                        t(keys::titlebar::TITLEBAR_MENU_EXTENSIONS),
                         zed_actions::Extensions::default().boxed_clone(),
                     )
                     .when(ai_enabled, |menu| {
@@ -1475,7 +1481,7 @@ impl TitleBar {
                                 .when(is_custom, |menu| {
                                     menu.item(
                                         ContextMenuEntry::new(t(
-                                            keys::settings_ui::SETTINGS_ENUM_CUSTOM,
+                                            keys::titlebar::TITLEBAR_MENU_LAYOUT_CUSTOM,
                                         ))
                                         .toggleable(IconPosition::Start, true)
                                         .disabled(true),
@@ -1486,7 +1492,7 @@ impl TitleBar {
                     })
                     .when(is_signed_in, |this| {
                         this.separator().action(
-                            t(keys::edit_prediction::EDIT_PREDICTION_SIGN_OUT),
+                            t(keys::titlebar::TITLEBAR_SIGN_OUT),
                             client::SignOut.boxed_clone(),
                         )
                     })
