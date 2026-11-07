@@ -187,6 +187,7 @@ impl VsCodeSettings {
             audio: None,
             auto_update: None,
             base_keymap: Some(BaseKeymapContent::VSCode),
+            interface_language: None,
             calls: None,
             collaboration_panel: None,
             command_palette: self

@@ -149,6 +149,20 @@ fn general_page(cx: &App) -> SettingsPage {
         vec![
             SettingsPageItem::SectionHeader(t(keys::settings_ui::SETTINGS_GENERAL_SETTINGS).into()),
             SettingsPageItem::SettingItem(SettingItem {
+                title: t(keys::settings_ui::SETTINGS_UI_LOCALE).into(),
+                description: t(keys::settings_ui::SETTINGS_UI_LOCALE_DESCRIPTION).into(),
+                field: Box::new(SettingField {
+                    organization_override: None,
+                    json_path: Some("interface_language"),
+                    pick: |settings_content| settings_content.interface_language.as_ref(),
+                    write: |settings_content, value, _| {
+                        settings_content.interface_language = value;
+                    },
+                }),
+                metadata: None,
+                files: USER,
+            }),
+            SettingsPageItem::SettingItem(SettingItem {
                 title: t(keys::settings_ui::SETTINGS_ACCESSIBLE_MODE).into(),
                 description: t(keys::settings_ui::SETTINGS_ACCESSIBLE_MODE_DESCRIPTION).into(),
                 field: Box::new(SettingField {

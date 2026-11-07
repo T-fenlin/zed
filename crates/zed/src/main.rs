@@ -51,7 +51,7 @@ use project::{project_settings::ProjectSettings, trusted_worktrees};
 use recent_projects::{RemoteSettings, open_remote_project};
 use release_channel::{AppCommitSha, AppVersion, ReleaseChannel};
 use session::{AppSession, Session};
-use settings::{BaseKeymap, Settings, SettingsStore, watch_config_file};
+use settings::{BaseKeymap, InterfaceLanguage, Settings, SettingsStore, watch_config_file};
 use smol::future::poll_once;
 use std::{
     cell::RefCell,
@@ -512,6 +512,18 @@ fn main() {
         }
         settings::init(cx);
         zlog_settings::init(cx);
+
+        // Apply the persisted interface-language setting before any UI is built.
+        // ZED_LANG (if set) takes precedence so launchers can force a language.
+        match InterfaceLanguage::get_global(cx) {
+            InterfaceLanguage::EnUs => i18n::set_locale(i18n::Locale::EnUs),
+            InterfaceLanguage::ZhCn => i18n::set_locale(i18n::Locale::ZhCn),
+            InterfaceLanguage::System => {
+                if std::env::var("ZED_LANG").is_err() {
+                    i18n::set_locale(i18n::Locale::from_tag("zh-CN"));
+                }
+            }
+        }
         zed::watch_settings_files(fs.clone(), cx);
         handle_keymap_file_changes(user_keymap_file_rx, user_keymap_watcher, cx);
 

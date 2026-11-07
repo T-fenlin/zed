@@ -169,11 +169,47 @@ pub enum ReduceMotionMode {
     Off,
 }
 
+/// The language of the Zed user interface.
+///
+/// Default: system
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    Default,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    JsonSchema,
+    MergeFrom,
+    strum::VariantArray,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum InterfaceLanguageContent {
+    /// Follow the system locale.
+    #[default]
+    System,
+    /// English (en-US)
+    EnUs,
+    /// Simplified Chinese (zh-CN)
+    ZhCn,
+}
+
+impl strum::VariantNames for InterfaceLanguageContent {
+    const VARIANTS: &'static [&'static str] = &["System", "EnUs", "ZhCn"];
+}
+
 #[with_fallible_options]
 #[derive(Debug, PartialEq, Default, Clone, Serialize, JsonSchema, MergeFrom)]
 pub struct SettingsContent {
     #[serde(flatten)]
     pub project: ProjectSettingsContent,
+
+    /// The language Zed's interface is displayed in. Changing this requires restarting Zed.
+    ///
+    /// Default: system
+    pub interface_language: Option<InterfaceLanguageContent>,
 
     #[serde(flatten)]
     pub theme: Box<ThemeSettingsContent>,
@@ -406,7 +442,7 @@ fallible_options::flattened_deserialize!(SettingsContent {
     sections: { project, theme, extension, workspace, editor, remote },
     options: {
         call_hierarchy, command_palette, file_finder, git_panel, tabs, tab_bar, tab_switcher, status_bar, preview_tabs, agent,
-        agent_servers, audio, auto_update, base_keymap, collaboration_panel, debugger, diagnostics,
+        agent_servers, audio, auto_update, base_keymap, interface_language, collaboration_panel, debugger, diagnostics,
         git,
         global_lsp_settings, image_viewer, markdown_preview, repl, helix_mode, hide_mouse,
         journal, log, line_indicator_format, language_models, copilot, outline_panel, project_panel,

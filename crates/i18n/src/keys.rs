@@ -982,6 +982,8 @@ pub mod settings_ui {
         SETTINGS_NETWORK_DISABLE_IN_LANGUAGE_SCOPES = "settings-network-disable_in_language_scopes",
         SETTINGS_NETWORK_DISABLE_EDIT_PREDICTIONS_IN_THESE_LANGUA = "settings-network-disable_edit_predictions_in_these_langua",
         SETTINGS_GENERAL_SETTINGS = "settings-general_settings",
+        SETTINGS_UI_LOCALE = "settings-ui_locale",
+        SETTINGS_UI_LOCALE_DESCRIPTION = "settings-ui_locale_description",
         SETTINGS_ACCESSIBLE_MODE = "settings-accessible_mode",
         SETTINGS_ACCESSIBLE_MODE_DESCRIPTION = "settings-accessible_mode_description",
         SETTINGS_WHEN_CLOSING_WITH_NO_TABS = "settings-when_closing_with_no_tabs",
