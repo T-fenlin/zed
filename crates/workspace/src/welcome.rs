@@ -454,9 +454,9 @@ impl Render for WelcomePage {
         };
 
         let welcome_label = if self.fallback_to_recent_projects {
-            "Welcome back to Zed"
+            t_static(keys::welcome::WELCOME_TITLE_BACK)
         } else {
-            "Welcome to Zed"
+            t_static(keys::welcome::WELCOME_TITLE)
         };
 
         h_flex()
@@ -486,7 +486,7 @@ impl Render for WelcomePage {
                             .child(Vector::square(VectorName::ZedLogo, rems_from_px(45_f32)))
                             .child(
                                 v_flex().child(Headline::new(welcome_label)).child(
-                                    Label::new("The editor for what's next")
+                                    Label::new(t_static(keys::welcome::WELCOME_TAGLINE))
                                         .size(LabelSize::Small)
                                         .color(Color::Muted)
                                         .italic(),
@@ -503,7 +503,7 @@ impl Render for WelcomePage {
                     .when(!self.fallback_to_recent_projects, |this| {
                         this.child(
                             v_flex().gap_4().child(Divider::horizontal()).child(
-                                Button::new("welcome-exit", "Return to Onboarding")
+                                Button::new("welcome-exit", t_static(keys::welcome::WELCOME_RETURN_TO_ONBOARDING))
                                     .tab_index(next_tab_index as isize)
                                     .full_width()
                                     .label_size(LabelSize::XSmall)
@@ -529,7 +529,7 @@ impl Item for WelcomePage {
     type Event = ItemEvent;
 
     fn tab_content_text(&self, _detail: usize, _cx: &App) -> SharedString {
-        "Welcome".into()
+        t_static(keys::welcome::WELCOME_TAB_TITLE).into()
     }
 
     fn telemetry_event_text(&self) -> Option<&'static str> {

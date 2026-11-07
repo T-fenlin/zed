@@ -1,6 +1,5 @@
 # 英文目录 en-US/ 为唯一事实来源（source of truth）；本文件为简体中文译文。
 
-ws-pane-unsaved_named = { $name } 含有未保存的修改，是否保存？
 ws-pane-unsaved = 此缓冲区含有未保存的修改，是否保存？
 ws-pane-more_files = ..还有 { $count } 个
 ws-pane_group-unshared_pane = { $user } 位于未共享的面板中

@@ -89,6 +89,7 @@ bundle_sources! {
     "test" => "test.ftl",
     "titlebar" => "titlebar.ftl",
     "ui" => "ui.ftl",
+    "welcome" => "welcome.ftl",
     "workspace" => "workspace.ftl",
     "zed" => "zed.ftl",
 }

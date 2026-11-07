@@ -1,6 +1,5 @@
 # workspace.ftl — English source strings (rebuilt).
 
-ws-pane-unsaved_named = { $name } contains unsaved edits. Do you want to save it?
 ws-pane-unsaved = This buffer contains unsaved edits. Do you want to save it?
 ws-pane-more_files = .. and { $count } more
 ws-pane_group-unshared_pane = { $user } is in an unshared pane

@@ -1,7 +1,5 @@
 # misc.ftl — English source strings (rebuilt).
 
-drop-remote = Cannot drop files on a remote project
-drop-remote_local = Cannot drop local files on a remote SSH/Docker project
 add_provider = Add Provider
 key_in_env = API Key Set in Environment Variable
 key_configured = API Key Configured

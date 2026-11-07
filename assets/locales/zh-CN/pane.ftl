@@ -13,3 +13,5 @@ pane-split_up = 向上拆分
 pane-split_down = 向下拆分
 pane-zoom_in = 放大
 pane-zoom_out = 缩小
+pane-paste_text = 粘贴文本
+pane-close_terminal_tab = 关闭终端标签页

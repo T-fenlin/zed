@@ -13,3 +13,5 @@ pane-split_up = Split Up
 pane-split_down = Split Down
 pane-zoom_in = Zoom In
 pane-zoom_out = Zoom Out
+pane-paste_text = Paste Text
+pane-close_terminal_tab = Close Terminal Tab

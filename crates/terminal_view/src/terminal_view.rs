@@ -600,41 +600,44 @@ impl TerminalView {
         let context_menu = ContextMenu::build(window, cx, |menu, _, _| {
             menu.context(self.focus_handle.clone())
                 .when(self.shows_workspace_actions(), |menu| {
-                    menu.action("New Terminal", Box::new(NewTerminal::default()))
+                    menu.action(
+                        t_static(keys::pane::PANE_NEW_TERMINAL),
+                        Box::new(NewTerminal::default()),
+                    )
                         .action(
-                            "New Center Terminal",
+                            t_static(keys::pane::PANE_NEW_CENTER_TERMINAL),
                             Box::new(NewCenterTerminal::default()),
                         )
                         .separator()
                 })
-                .action("Copy", Box::new(Copy))
+                .action(t_static(keys::app_menu::MENU_EDIT_COPY), Box::new(Copy))
                 .when(
                     !self.read_only && !matches!(self.mode, TerminalMode::Embedded { .. }),
                     |menu| {
-                        menu.action("Paste", Box::new(Paste))
-                            .action("Paste Text", Box::new(PasteText))
+                        menu.action(t_static(keys::app_menu::MENU_EDIT_PASTE), Box::new(Paste))
+                            .action(t_static(keys::pane::PANE_PASTE_TEXT), Box::new(PasteText))
                     },
                 )
-                .action("Select All", Box::new(SelectAll))
+                .action(t_static(keys::zed::ZED_B_SELECT_ALL), Box::new(SelectAll))
                 .when(
                     !self.read_only && !matches!(self.mode, TerminalMode::Embedded { .. }),
-                    |menu| menu.action("Clear", Box::new(Clear)),
+                    |menu| menu.action(t_static(keys::settings_ui::SETTINGS_UI_CLEAR), Box::new(Clear)),
                 )
                 .when(
                     assistant_enabled && !matches!(self.mode, TerminalMode::Embedded { .. }),
                     |menu| {
                         menu.separator()
                             .when(!self.read_only, |menu| {
-                                menu.action("Inline Assist", Box::new(InlineAssist::default()))
+                                menu.action(t_static(keys::zed::ZED_B_INLINE_ASSIST), Box::new(InlineAssist::default()))
                             })
                             .when(has_selection && self.shows_workspace_actions(), |menu| {
-                                menu.action("Add to Agent Thread", Box::new(AddSelectionToThread))
+                                menu.action(t_static(keys::editor::EDITOR_A_ADD_TO_AGENT_THREAD), Box::new(AddSelectionToThread))
                             })
                     },
                 )
                 .when(self.shows_workspace_actions(), |menu| {
                     menu.separator().action(
-                        "Close Terminal Tab",
+                        t_static(keys::pane::PANE_CLOSE_TERMINAL_TAB),
                         Box::new(CloseActiveItem {
                             save_intent: None,
                             close_pinned: true,

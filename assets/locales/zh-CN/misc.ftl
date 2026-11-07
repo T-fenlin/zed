@@ -1,7 +1,5 @@
 # 英文目录 en-US/ 为唯一事实来源（source of truth）；本文件为简体中文译文。
 
-drop-remote = 无法把文件拖放到远程项目
-drop-remote_local = 无法把本地文件拖放到远程 SSH/Docker 项目
 add_provider = 添加服务商
 key_in_env = API 密钥已由环境变量提供
 key_configured = API 密钥已配置

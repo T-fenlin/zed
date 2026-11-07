@@ -26,8 +26,6 @@ collab-cannot_share_public_channel = This project may not be shared in a public 
 collab-stop_sharing_screen = Stop Sharing Screen
 collab-share_screen = Share Screen
 collab-sharing_screen_failed = Sharing Screen Failed
-collab-screen_permission_hint =
-    { $error }
 
     Please check that you have given Zed permissions to record your screen in Settings.
 collab-unknown_screen = Unknown screen
@@ -100,9 +98,6 @@ collab-invite_user_to_join_call = Invite { $name } to Join Call
 collab-decline_invite = Decline invite
 collab-accept_invite = Accept invite
 collab-cancel_invite = Cancel invite
-collab-confirm_leave_channel = Are you sure you want to leave "#{ $name }"?
-collab-confirm_remove_channel = Are you sure you want to remove the channel "{ $name }"?
-collab-confirm_remove_contact = Are you sure you want to remove "{ $name }" from your contacts?
 collab-leave = Leave
 collab-cancel = Cancel
 collab-remove = Remove
@@ -187,7 +182,6 @@ collab-copy_report = Copy Report
 collab-save_report = Save Report…
 collab-audio_affected = Affected
 collab-audio_healthy = Healthy
-collab-repair_event_count = { $count } events
 collab-loss_jitter = Loss { $loss } · Jitter { $jitter } · Jitter buffer { $buffer }
 collab-webrtc_repaired = WebRTC repaired in { $duration } over { $events }
 collab-local_playback = Local playback starved { $starved } · dropped { $dropped } · buffered { $buffered } (peak { $peak })

@@ -26,8 +26,6 @@ collab-cannot_share_public_channel = 此项目无法在公开频道中共享。
 collab-stop_sharing_screen = 停止共享屏幕
 collab-share_screen = 共享屏幕
 collab-sharing_screen_failed = 共享屏幕失败
-collab-screen_permission_hint =
-    { $error }
 
     请检查你是否已在系统设置中授予 Zed 录制屏幕的权限。
 collab-unknown_screen = 未知屏幕
@@ -100,9 +98,6 @@ collab-invite_user_to_join_call = 邀请 { $name } 加入通话
 collab-decline_invite = 拒绝邀请
 collab-accept_invite = 接受邀请
 collab-cancel_invite = 取消邀请
-collab-confirm_leave_channel = 确定要离开 "#{ $name }" 吗？
-collab-confirm_remove_channel = 确定要移除频道 "{ $name }" 吗？
-collab-confirm_remove_contact = 确定要将 "{ $name }" 从联系人中移除吗？
 collab-leave = 离开
 collab-cancel = 取消
 collab-remove = 移除
@@ -187,7 +182,6 @@ collab-copy_report = 复制报告
 collab-save_report = 保存报告…
 collab-audio_affected = 受影响
 collab-audio_healthy = 正常
-collab-repair_event_count = { $count } 次事件
 collab-loss_jitter = 丢包 { $loss } · 抖动 { $jitter } · 抖动缓冲 { $buffer }
 collab-webrtc_repaired = WebRTC 修复了 { $duration }，共 { $events }
 collab-local_playback = 本地播放中断 { $starved } · 丢弃 { $dropped } · 缓冲 { $buffered }（峰值 { $peak }）
